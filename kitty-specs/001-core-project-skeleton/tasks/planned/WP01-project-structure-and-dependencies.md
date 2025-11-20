@@ -1,10 +1,47 @@
 ---
-lane: "for_review"
+lane: "planned"
 assignee: "GitHub Copilot (Claude Sonnet 4.5)"
 agent: "claude"
 shell_pid: "42480"
-review_status: ""
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Critical Issue**:
+1. **Virtual Environment Location Problem** - The worktree has a local `venv/` directory, but Django is installed in the main repository's venv at `C:\Users\brian\Documents\Django-core\venv\`. This creates a deployment hazard where:
+   - Fresh clones/worktrees won't have Django installed
+   - The Independent Test will fail (step 6: `pip install -r requirements\local.txt` expects an empty venv)
+   - `python manage.py --version` fails without using the main repo's Python path
+   - This violates Constitution Principle VIII (Developer Experience): "< 10 minutes fresh clone to running"
+
+**What Was Done Well**:
+- ✅ Directory structure is perfect: `src/config/`, `src/core_apps/`, `src/common/` all exist
+- ✅ All Django files present: `__init__.py`, `settings.py`, `urls.py`, `wsgi.py`, `asgi.py`
+- ✅ Requirements files correctly structured with `-r base.txt` inheritance
+- ✅ All dependencies pinned to exact versions with clear comments
+- ✅ `pyproject.toml` has comprehensive tool configurations (pytest, black, ruff, mypy, coverage)
+- ✅ `manage.py` correctly modified to add `src/` to Python path
+- ✅ Project name correctly uses "django-core" (per applied refinement)
+- ✅ Code formatting applied (double quotes, consistent style)
+
+**Action Items** (must complete before re-review):
+- [ ] Install Django and all dependencies into the worktree's local `venv/` directory:
+  ```powershell
+  .\venv\Scripts\Activate.ps1
+  pip install -r requirements\local.txt
+  ```
+- [ ] Verify Django works with the local venv: `python manage.py --version` should return "5.1.4"
+- [ ] Commit the updated venv state (or update `.gitignore` if venv should be excluded and document the setup step)
+- [ ] Re-run the Independent Test from WP01 prompt to confirm all 8 steps pass
+
+**Additional Notes**:
+- The local `venv/` directory exists but is empty (Django not installed there)
+- The main repo venv at `..\..\venv\` has Django 5.1.4 but shouldn't be used for worktree isolation
+- This issue will block downstream developers who follow the documented setup process
 
 # Work Package WP01: Project Structure & Dependencies
 
@@ -24,6 +61,7 @@ review_status: ""
   - Created pyproject.toml with Python 3.12+ requirement and all tool configurations
   - Verified Django version command works successfully
 - 2025-11-20T23:05:00Z – claude – shell_pid=42480 – lane=for_review – Ready for review
+- 2025-11-20T23:20:00Z – claude-reviewer – shell_pid=29144 – lane=planned – Code review completed: Virtual environment dependency issue found. Django installed in main repo venv (..\..\venv\) instead of worktree's local venv. Must install dependencies in local venv and verify Independent Test passes.
 
 ---
 
