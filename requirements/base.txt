@@ -1,0 +1,11 @@
+# Core dependencies for django-core project
+# These packages are required in all environments
+
+# Core Django framework
+Django==5.1.4
+
+# Django REST Framework for API development
+djangorestframework==3.14.0
+
+# Environment variable management
+django-environ==0.11.2
