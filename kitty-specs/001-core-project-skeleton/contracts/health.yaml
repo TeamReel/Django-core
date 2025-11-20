@@ -1,0 +1,122 @@
+openapi: 3.0.3
+info:
+  title: Django Core-App Health Check API
+  description: |
+    Health check endpoint for the Django Core-App skeleton.
+    Returns system health status for monitoring and load balancer checks.
+  version: 1.0.0
+  contact:
+    name: Django Core-App Team
+    url: https://github.com/TeamReel/Django-core
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://staging.example.com
+    description: Staging environment
+  - url: https://api.example.com
+    description: Production environment
+
+paths:
+  /health/:
+    get:
+      summary: Health Check
+      description: |
+        Returns the health status of the application.
+        Used by load balancers, monitoring systems, and Kubernetes probes.
+        
+        This is a simple implementation that always returns 200 OK when the
+        Django application is running. Future features may add database checks,
+        cache checks, and other dependency validations.
+      operationId: getHealthStatus
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: Successful health check
+                  value:
+                    status: healthy
+                    timestamp: '2025-11-20T12:34:56.789123Z'
+        '500':
+          description: Application is unhealthy (future implementation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                unhealthy:
+                  summary: Failed health check
+                  value:
+                    status: unhealthy
+                    timestamp: '2025-11-20T12:34:56.789123Z'
+                    errors:
+                      - Database connection failed
+                      - Cache unavailable
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - unhealthy
+          description: Overall health status of the application
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when health check was performed
+          example: '2025-11-20T12:34:56.789123Z'
+        errors:
+          type: array
+          description: |
+            List of error messages if status is unhealthy.
+            Not present in skeleton implementation (future feature).
+          items:
+            type: string
+          example:
+            - Database connection failed
+            - Cache unavailable
+        checks:
+          type: object
+          description: |
+            Detailed check results for individual components.
+            Not present in skeleton implementation (future feature).
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum:
+                  - ok
+                  - error
+              message:
+                type: string
+          example:
+            database:
+              status: ok
+              message: Connected to PostgreSQL
+            cache:
+              status: error
+              message: Redis connection timeout
+
+tags:
+  - name: Health
+    description: Application health and monitoring endpoints
+
+externalDocs:
+  description: Django Core-App Documentation
+  url: https://github.com/TeamReel/Django-core/tree/main/docs

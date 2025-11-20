@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "001",
+    "slug":  "001-core-project-skeleton",
+    "friendly_name":  "Core Project Skeleton",
+    "source_description":  "Establish a clean, product-agnostic Django 5.x project skeleton with src/ layout, environment-based settings, DRF setup, pytest toolchain, and documented extension patterns. No domain logic or UI.",
+    "created_at":  "2025-11-20T21:14:34Z"
+}
