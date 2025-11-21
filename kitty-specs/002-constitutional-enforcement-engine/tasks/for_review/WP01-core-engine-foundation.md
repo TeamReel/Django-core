@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 feature_id: 002-constitutional-enforcement-engine
-lane: doing
+lane: for_review
 title: "Core engine foundation & data model"
 subtasks:
   - T001
@@ -19,6 +19,7 @@ assignee: Claude AI
 history:
   - 2025-11-21T16:00:00Z – claude – shell_pid=23572 – lane=doing – Started WP01 implementation
   - 2025-11-21T17:30:00Z – claude – shell_pid=23572 – lane=doing – Completed all subtasks T001-T009
+  - 2025-11-21T17:45:00Z – claude – shell_pid=23572 – lane=for_review – Ready for review
 ---
 
 # WP01 – Core engine foundation & data model
