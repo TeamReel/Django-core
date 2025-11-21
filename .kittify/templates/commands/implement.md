@@ -91,14 +91,14 @@ This is intentional - worktrees provide isolation for parallel feature developme
    - Calculate overall status:
      * **PASS**: All checklists have 0 incomplete items
      * **FAIL**: One or more checklists have incomplete items
-   
+
    - **If any checklist is incomplete**:
      * Display the table with incomplete item counts
      * **STOP** and ask: "Some checklists are incomplete. Do you want to proceed with implementation anyway? (yes/no)"
      * Wait for user response before continuing
      * If user says "no" or "wait" or "stop", halt execution
      * If user says "yes" or "proceed" or "continue", proceed to step 3
-   
+
    - **If all checklists are complete**:
      * Display the table showing all checklists passed
      * Automatically proceed to step 3

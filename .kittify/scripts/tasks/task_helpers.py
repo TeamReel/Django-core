@@ -29,9 +29,13 @@ def find_repo_root(start: Optional[Path] = None) -> Path:
 
 
 def run_git(args: List[str], cwd: Path, check: bool = True) -> subprocess.CompletedProcess:
-    """Run a git command inside the repository."""
+    """Run a git command inside the repository using a safe subprocess call.
+
+    Expects a fixed executable (``git``) and explicit arguments, and
+    always passes arguments as a list rather than a shell string.
+    """
     try:
-        return subprocess.run(
+        return subprocess.run(  # noqa: S603, S607
             ["git", *args],
             cwd=str(cwd),
             check=check,
@@ -43,7 +47,7 @@ def run_git(args: List[str], cwd: Path, check: bool = True) -> subprocess.Comple
     except subprocess.CalledProcessError as exc:
         if check:
             message = exc.stderr.strip() or exc.stdout.strip() or "Unknown git error"
-            raise TaskCliError(message)
+            raise TaskCliError(message) from exc
         return exc
 
 

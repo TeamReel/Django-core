@@ -231,7 +231,7 @@ $meta = [ordered]@{
 $meta | ConvertTo-Json | Set-Content -Path $metaFile -Encoding UTF8
 
 if ($Json) {
-    $obj = [PSCustomObject]@{ 
+    $obj = [PSCustomObject]@{
         BRANCH_NAME = $branchName
         SPEC_FILE = $specFile
         FEATURE_NUM = $featureNum

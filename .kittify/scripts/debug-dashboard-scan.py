@@ -4,12 +4,17 @@
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+from specify_cli.dashboard.scanner import gather_feature_paths, scan_all_features
 
-from specify_cli.dashboard.scanner import scan_all_features, gather_feature_paths
 
-def main():
+def _add_src_to_sys_path() -> None:
+    """Ensure the src directory is on sys.path for imports."""
+    src_dir = Path(__file__).parent.parent / "src"
+    sys.path.insert(0, str(src_dir))
+
+
+def main() -> None:
+    _add_src_to_sys_path()
     if len(sys.argv) > 1:
         project_dir = Path(sys.argv[1]).resolve()
     else:
@@ -25,13 +30,15 @@ def main():
         print("  No features found!")
         print()
         print("Checking directories:")
-        print(f"  Main specs: {project_dir / 'kitty-specs'} exists: {(project_dir / 'kitty-specs').exists()}")
-        print(f"  Worktrees: {project_dir / '.worktrees'} exists: {(project_dir / '.worktrees').exists()}")
+        main_specs = project_dir / "kitty-specs"
+        worktrees_dir = project_dir / ".worktrees"
+        print(f"  Main specs: {main_specs} exists: {main_specs.exists()}")
+        print(f"  Worktrees: {worktrees_dir} exists: {worktrees_dir.exists()}")
 
-        if (project_dir / '.worktrees').exists():
-            for wt_dir in (project_dir / '.worktrees').iterdir():
+        if (project_dir / ".worktrees").exists():
+            for wt_dir in (project_dir / ".worktrees").iterdir():
                 if wt_dir.is_dir():
-                    wt_specs = wt_dir / 'kitty-specs'
+                    wt_specs = wt_dir / "kitty-specs"
                     print(f"    {wt_dir.name}/kitty-specs exists: {wt_specs.exists()}")
                     if wt_specs.exists():
                         for feat_dir in wt_specs.iterdir():
@@ -56,6 +63,7 @@ def main():
             print(f"    Workflow: {feature['workflow']}")
             print(f"    Kanban: {feature['kanban_stats']}")
             print()
+
 
 if __name__ == "__main__":
     main()

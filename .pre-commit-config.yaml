@@ -3,8 +3,11 @@ repos:
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
+        exclude: '^(venv/|\.venv/|env/|\.worktrees/|\.git/|\.mypy_cache/|\.pytest_cache/|htmlcov/|\.kittify/venv/)'
       - id: end-of-file-fixer
+        exclude: '^(venv/|\.venv/|env/|\.worktrees/|\.git/|\.mypy_cache/|\.pytest_cache/|htmlcov/|\.kittify/venv/)'
       - id: check-yaml
+        files: '^(\.github/|\.kittify/|kitty-specs/|docs/|src/|tests/)'
       - id: check-added-large-files
 
   - repo: https://github.com/psf/black
@@ -12,12 +15,16 @@ repos:
     hooks:
       - id: black
         language_version: python3.12
+        files: '^(src/|tests/|\.kittify/|kitty-specs/|docs/|manage\.py|pyproject\.toml)'
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.8
     hooks:
       - id: ruff
         args: ["--fix", "--exit-non-zero-on-fix"]
+        files: '^(src/|tests/|\.kittify/|kitty-specs/)'
+        exclude: '^(?:\.kittify/scripts/)'
+
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.7.1
@@ -25,3 +32,4 @@ repos:
       - id: mypy
         args: ["--config-file=pyproject.toml"]
         additional_dependencies: [django-stubs==4.2.7, djangorestframework-stubs==3.14.5, django-environ==0.11.2, djangorestframework==3.14.0, pytest==7.4.3, pytest-django==4.7.0]
+        files: '^(src/|tests/)'

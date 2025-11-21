@@ -3,9 +3,9 @@
 
 <!-- Replace [FEATURE NAME] with the confirmed friendly title generated during /spec-kitty.specify. -->
 
-**Feature Branch**: `[###-feature-name]`  
-**Created**: [DATE]  
-**Status**: Draft  
+**Feature Branch**: `[###-feature-name]`
+**Created**: [DATE]
+**Status**: Draft
 **Input**: User description: "$ARGUMENTS"
 
 ## User Scenarios & Testing *(mandatory)*
@@ -14,7 +14,7 @@
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
+
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
   Think of each story as a standalone slice of functionality that can be:
   - Developed independently
@@ -88,7 +88,7 @@
 ### Functional Requirements
 
 - **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
+- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
 - **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
@@ -102,6 +102,58 @@
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
+
+## Constitution Alignment *(mandatory)*
+
+<!--
+  Verify this feature complies with the Django Core-App Constitution.
+  Reference: .kittify/memory/constitution.md
+-->
+
+### Product-Agnostic Constraint (Principle I)
+- [ ] This feature contains NO product-specific logic, pricing, workflows, or UI flows
+- [ ] All functionality is reusable across multiple downstream products
+- [ ] Extension points are clearly documented if product-specific behavior is needed
+
+### Architecture & Modularity (Principle II)
+- [ ] Feature respects clear layering and single responsibility per Django app
+- [ ] No circular dependencies introduced
+- [ ] Extension points are stable and documented
+
+### Code Quality (Principle III)
+- [ ] Python 3.12+ baseline maintained
+- [ ] Type hints will be used in core modules
+- [ ] Code will be formatted with Black and linted with Ruff
+
+### Testing (Principle IV)
+- [ ] Test plan includes pytest + pytest-django tests
+- [ ] Coverage targets defined
+- [ ] Integration tests planned for key flows
+
+### Security & Privacy (Principle V)
+- [ ] Secure defaults (CSRF, secure cookies, ALLOWED_HOSTS) maintained
+- [ ] No secrets in code; env vars/secret managers documented
+- [ ] Authentication/authorization handled through centralized mechanisms
+- [ ] No sensitive data will be logged
+
+### Performance & Reliability (Principle VI)
+- [ ] No N+1 queries (query optimization plan documented if applicable)
+- [ ] Pagination implemented for unbounded responses
+- [ ] Structured logging and metrics hooks included
+- [ ] Graceful degradation strategy defined for failure scenarios
+
+### API Design (Principle VII)
+- [ ] DRF standards followed
+- [ ] API responses are consistent and documented
+- [ ] Breaking changes use versioning or deprecation paths
+- [ ] Validation occurs at boundary (serializers/forms)
+
+### Documentation (Principle XI)
+- [ ] Feature documentation plan included
+- [ ] Extension guide updates identified if applicable
+- [ ] ADR planned if major architectural decision involved
+
+**Violations Requiring Justification**: [List any principle violations and why simpler alternatives were rejected, or write "None"]
 
 ## Success Criteria *(mandatory)*
 
