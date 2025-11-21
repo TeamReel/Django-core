@@ -11,7 +11,8 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "config.settings"
+DJANGO_SETTINGS_MODULE = "config.settings.local"
+pythonpath = ["src"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
@@ -73,11 +74,14 @@ plugins = ["mypy_django_plugin.main"]
 
 [[tool.mypy.overrides]]
 module = "config.settings.*"
-django_settings_module = "config.settings"
 
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
+[tool.django-stubs]
+django_settings_module = "config.settings.local"
+strict_settings = true
 
 [tool.coverage.run]
 source = ["src"]

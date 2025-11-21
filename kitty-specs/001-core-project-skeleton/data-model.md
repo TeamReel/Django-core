@@ -1,8 +1,8 @@
 # Data Model: Core Project Skeleton
 *Path: [kitty-specs/001-core-project-skeleton/data-model.md](kitty-specs/001-core-project-skeleton/data-model.md)*
 
-**Feature**: Core Project Skeleton  
-**Date**: 2025-11-20  
+**Feature**: Core Project Skeleton
+**Date**: 2025-11-20
 **Status**: N/A - No domain models in this feature
 
 ---
@@ -63,14 +63,14 @@ from typing import Optional
 
 class ExampleModel(models.Model):
     """Example domain model (future feature)."""
-    
+
     name: str = models.CharField(max_length=255)
     description: Optional[str] = models.TextField(blank=True, null=True)
     created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self) -> str:
         return self.name
-    
+
     class Meta:
         verbose_name = "Example"
         verbose_name_plural = "Examples"
@@ -89,7 +89,7 @@ Constitutional requirement: No N+1 queries allowed.
    ```python
    # Good
    users = User.objects.select_related('organization').all()
-   
+
    # Bad (N+1 query)
    users = User.objects.all()
    for user in users:
@@ -100,7 +100,7 @@ Constitutional requirement: No N+1 queries allowed.
    ```python
    # Good
    projects = Project.objects.prefetch_related('members').all()
-   
+
    # Bad (N+1 query)
    projects = Project.objects.all()
    for project in projects:
@@ -151,7 +151,7 @@ When models are added, tests must cover:
        org = Organization.objects.create(name='Test Org')
        User.objects.create(email='user1@example.com', organization=org)
        User.objects.create(email='user2@example.com', organization=org)
-       
+
        # Should be 1 query (with select_related)
        with django_assert_num_queries(1):
            users = User.objects.select_related('organization').all()

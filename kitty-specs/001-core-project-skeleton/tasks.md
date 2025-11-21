@@ -349,7 +349,7 @@ Tasks are organized to reflect constitutional principles:
 ## Dependency & Execution Summary
 
 - **Sequence**: WP01 → WP02 → WP03 → WP04 → WP05 → WP06 → WP07 → WP08
-- **Parallelization**: 
+- **Parallelization**:
   - Within WP01: T004-T007 (requirements files and pyproject.toml)
   - Within WP02: T012-T014 (environment-specific settings after base)
   - Within WP03: T017-T018 (health check and middleware)

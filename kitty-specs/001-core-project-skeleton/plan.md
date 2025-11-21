@@ -12,13 +12,13 @@ Establish a production-ready Django 5.x project skeleton with src/ layout, envir
 
 ## Technical Context
 
-**Language/Version**: Python 3.12+  
-**Primary Dependencies**: Django 5.1+, djangorestframework 3.14+, django-environ 0.11+  
-**Storage**: DATABASE_URL pattern (SQLite default for local dev, PostgreSQL documented for production)  
-**Testing**: pytest 7.4+, pytest-django 4.5+, coverage 7.3+  
-**Target Platform**: Cross-platform (Linux, macOS, Windows) web application server  
-**Project Type**: Single Django project (backend API)  
-**Performance Goals**: 
+**Language/Version**: Python 3.12+
+**Primary Dependencies**: Django 5.1+, djangorestframework 3.14+, django-environ 0.11+
+**Storage**: DATABASE_URL pattern (SQLite default for local dev, PostgreSQL documented for production)
+**Testing**: pytest 7.4+, pytest-django 4.5+, coverage 7.3+
+**Target Platform**: Cross-platform (Linux, macOS, Windows) web application server
+**Project Type**: Single Django project (backend API)
+**Performance Goals**:
 - Health check endpoint < 100ms response time
 - Full test suite < 5 seconds (skeleton only)
 - Pre-commit hooks < 30 seconds
@@ -185,7 +185,7 @@ django-core/
 └── README.md                     # Project overview and quick start
 ```
 
-**Structure Decision**: 
+**Structure Decision**:
 
 Using **src/ layout** for Django project with clear separation:
 - `src/config/` - Django project configuration package (settings, URLs, WSGI/ASGI)

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 
-def main():
+def main() -> None:
     """Run administrative tasks."""
     # Add src/ directory to Python path
     src_dir = Path(__file__).resolve().parent / "src"

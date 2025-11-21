@@ -24,7 +24,7 @@ paths:
       description: |
         Returns the health status of the application.
         Used by load balancers, monitoring systems, and Kubernetes probes.
-        
+
         This is a simple implementation that always returns 200 OK when the
         Django application is running. Future features may add database checks,
         cache checks, and other dependency validations.

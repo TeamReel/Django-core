@@ -1,8 +1,8 @@
 # Work Package WP07: Documentation
 
-**Status**: Planned  
-**Priority**: P1 (Should Have)  
-**Feature**: 001-core-project-skeleton  
+**Status**: Planned
+**Priority**: P1 (Should Have)
+**Feature**: 001-core-project-skeleton
 **User Stories**: US-002 (Extend Skeleton)
 
 ---
@@ -202,7 +202,7 @@ TBD
 1. Create serializer:
    ```python
    from rest_framework import serializers
-   
+
    class MySerializer(serializers.ModelSerializer):
        class Meta:
            model = MyModel
@@ -212,7 +212,7 @@ TBD
 2. Create viewset:
    ```python
    from rest_framework import viewsets
-   
+
    class MyViewSet(viewsets.ModelViewSet):
        queryset = MyModel.objects.all()
        serializer_class = MySerializer
@@ -221,10 +221,10 @@ TBD
 3. Register in urls.py:
    ```python
    from rest_framework.routers import DefaultRouter
-   
+
    router = DefaultRouter()
    router.register('mymodel', MyViewSet)
-   
+
    urlpatterns = [
        path('api/', include(router.urls)),
    ]
@@ -259,8 +259,8 @@ TBD
 ```markdown
 # ADR-001: Use src/ Layout for Django Project
 
-**Status**: Accepted  
-**Date**: 2025-01-20  
+**Status**: Accepted
+**Date**: 2025-01-20
 **Deciders**: Core team
 
 ## Context

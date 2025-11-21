@@ -1,9 +1,9 @@
 # Feature Specification: Core Project Skeleton
 *Path: [kitty-specs/001-core-project-skeleton/spec.md](kitty-specs/001-core-project-skeleton/spec.md)*
 
-**Feature Branch**: `001-core-project-skeleton`  
-**Created**: 2025-11-20  
-**Status**: Draft  
+**Feature Branch**: `001-core-project-skeleton`
+**Created**: 2025-11-20
+**Status**: Draft
 **Input**: User description: "Establish a clean, product-agnostic Django 5.x project skeleton with src/ layout, environment-based settings, DRF setup, pytest toolchain, and documented extension patterns. No domain logic or UI."
 
 ## Summary

@@ -1,8 +1,8 @@
 # Quick Start: Core Project Skeleton
 *Path: [kitty-specs/001-core-project-skeleton/quickstart.md](kitty-specs/001-core-project-skeleton/quickstart.md)*
 
-**Feature**: Core Project Skeleton  
-**Audience**: Developers setting up the Django Core-App locally  
+**Feature**: Core Project Skeleton
+**Audience**: Developers setting up the Django Core-App locally
 **Time**: < 10 minutes
 
 ---
@@ -268,22 +268,22 @@ Django-core/
 
 ## Troubleshooting
 
-**Problem**: `ModuleNotFoundError: No module named 'config'`  
+**Problem**: `ModuleNotFoundError: No module named 'config'`
 **Solution**: Make sure you're in the project root and virtual environment is active.
 
-**Problem**: `django.core.exceptions.ImproperlyConfigured: Set the SECRET_KEY environment variable`  
+**Problem**: `django.core.exceptions.ImproperlyConfigured: Set the SECRET_KEY environment variable`
 **Solution**: Create `.env` file with `SECRET_KEY=your-secret-key-here`
 
-**Problem**: Health check returns 404  
+**Problem**: Health check returns 404
 **Solution**: Make sure URL is http://127.0.0.1:8000/health/ (note trailing slash)
 
-**Problem**: Tests fail with database errors  
+**Problem**: Tests fail with database errors
 **Solution**: Run `python manage.py migrate` to apply migrations first
 
-**Problem**: mypy reports errors in Django code  
+**Problem**: mypy reports errors in Django code
 **Solution**: Ensure `django-stubs` is installed: `pip install django-stubs djangorestframework-stubs`
 
-**Problem**: Pre-commit hooks are slow  
+**Problem**: Pre-commit hooks are slow
 **Solution**: This is normal on first run. Subsequent runs are faster (only changed files).
 
 ---

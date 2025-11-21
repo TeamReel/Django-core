@@ -1,8 +1,8 @@
 # Work Package WP06: Environment & Git Configuration
 
-**Status**: Planned  
-**Priority**: P0 (Must Have)  
-**Feature**: 001-core-project-skeleton  
+**Status**: Planned
+**Priority**: P0 (Must Have)
+**Feature**: 001-core-project-skeleton
 **User Stories**: US-004 (Environment Config)
 
 ---

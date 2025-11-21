@@ -1,8 +1,8 @@
 # Research: Core Project Skeleton
 *Path: [kitty-specs/001-core-project-skeleton/research.md](kitty-specs/001-core-project-skeleton/research.md)*
 
-**Feature**: Core Project Skeleton  
-**Date**: 2025-11-20  
+**Feature**: Core Project Skeleton
+**Date**: 2025-11-20
 **Status**: Complete
 
 ## Research Questions and Findings

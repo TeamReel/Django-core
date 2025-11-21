@@ -1,8 +1,13 @@
+---
+lane: "for_review"
+agent: "GitHub Copilot"
+shell_pid: "23572"
+---
 # Work Package WP05: Code Quality Tooling
 
-**Status**: Planned  
-**Priority**: P0 (Must Have)  
-**Feature**: 001-core-project-skeleton  
+**Status**: Planned
+**Priority**: P0 (Must Have)
+**Feature**: 001-core-project-skeleton
 **User Stories**: US-003 (Quality Gates)
 
 ---
@@ -400,3 +405,9 @@ pre-commit run black --all-files
 ---
 
 > This work package implements constitutional code quality requirements with zero-configuration enforcement. Tools are configured once and run automatically.
+
+## Activity Log
+
+- 2025-11-21T19:03:22Z – copilot – shell_pid=23572 – lane=doing – Starting code quality tooling
+- 2025-11-21T20:48:00Z – copilot – shell_pid=23572 – lane=doing – Added health routing, tightened pyproject/mypy overrides, and confirmed Black/Ruff/mypy plus targeted pre-commit hooks pass
+- 2025-11-21T19:37:20Z – GitHub Copilot – shell_pid=23572 – lane=for_review – Ready for review

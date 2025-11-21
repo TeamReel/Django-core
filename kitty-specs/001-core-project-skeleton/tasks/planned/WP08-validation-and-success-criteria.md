@@ -1,8 +1,8 @@
 # Work Package WP08: Validation & Success Criteria
 
-**Status**: Planned  
-**Priority**: P2 (Nice to Have - Validation)  
-**Feature**: 001-core-project-skeleton  
+**Status**: Planned
+**Priority**: P2 (Nice to Have - Validation)
+**Feature**: 001-core-project-skeleton
 **User Stories**: US-001, US-003 (Validation)
 
 ---
@@ -179,8 +179,8 @@ Validate the complete skeleton meets all success criteria and constitutional req
 - Start server: `python manage.py runserver`
 - Measure response time:
   ```powershell
-  Measure-Command { 
-      Invoke-WebRequest -Uri "http://localhost:8000/health/" 
+  Measure-Command {
+      Invoke-WebRequest -Uri "http://localhost:8000/health/"
   } | Select-Object TotalMilliseconds
   ```
 - Expected: < 100ms
@@ -326,8 +326,8 @@ pytest --cov=src --cov-report=term -v
 pre-commit run --all-files
 
 # Performance
-Measure-Command { 
-    Invoke-WebRequest -Uri "http://localhost:8000/health/" 
+Measure-Command {
+    Invoke-WebRequest -Uri "http://localhost:8000/health/"
 } | Select-Object TotalMilliseconds
 ```
 
