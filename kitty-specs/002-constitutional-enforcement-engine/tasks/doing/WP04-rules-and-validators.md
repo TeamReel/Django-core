@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 feature_id: 002-constitutional-enforcement-engine
-lane: planned
+lane: "doing"
 title: "Rule & validator systems"
 subtasks:
   - T025
@@ -13,6 +13,8 @@ subtasks:
   - T031
   - T032
 history: []
+agent: "claude"
+shell_pid: "29324"
 ---
 
 # WP04 – Rule & validator systems
@@ -33,3 +35,7 @@ Rules and validators codify constitutional checks. Start with a pragmatic built-
 ## Definition of Done
 - All subtasks T025–T032 implemented and covered by tests.
 - Engine can execute configured rules and validators and produce stable `CheckResult` structures.
+
+## Activity Log
+
+- 2025-11-22T17:16:17Z – claude – shell_pid=29324 – lane=doing – Started implementation: Rule and validator systems
