@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 feature_id: 002-constitutional-enforcement-engine
-lane: planned
+lane: doing
 title: "Django Core-App adapter"
 subtasks:
   - T049
@@ -9,7 +9,14 @@ subtasks:
   - T051
   - T052
   - T053
-history: []
+agent: claude
+shell_pid: "$PID"
+history:
+  - timestamp: 2025-11-22T23:00:00Z
+    agent: claude
+    shell_pid: "$PID"
+    lane: doing
+    note: "Started implementation of Django Core-App adapter"
 ---
 
 # WP08 – Django Core-App adapter
