@@ -1,7 +1,7 @@
 ---
 work_package_id: WP06
 feature_id: 002-constitutional-enforcement-engine
-lane: doing
+lane: for_review
 title: "Git adapter"
 subtasks:
   - T039
@@ -17,6 +17,11 @@ history:
     shell_pid: "29324"
     lane: doing
     note: "Started implementation of Git adapter"
+  - timestamp: "2025-11-22T20:00:00Z"
+    agent: claude
+    shell_pid: "29324"
+    lane: for_review
+    note: "Completed implementation - all 22 tests passing, integrated with RepositoryContextBuilder"
 ---
 
 # WP06 – Git adapter

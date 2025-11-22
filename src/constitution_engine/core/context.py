@@ -315,7 +315,7 @@ class RepositoryContextBuilder:
             # Try to use the new GitAdapter (WP06) if available
             if _GIT_ADAPTER_AVAILABLE:
                 try:
-                    git_adapter = GitAdapter(repo_path)  # type: ignore[misc]
+                    git_adapter = GitAdapter(repo_path)  # type: ignore[unreachable]
                     git_info = git_adapter.get_info()
 
                     git_branch = git_info.branch
