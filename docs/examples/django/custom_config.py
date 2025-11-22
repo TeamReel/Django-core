@@ -28,32 +28,32 @@ def main():
             "node_modules",
         ],
     )
-    
+
     # Alternative: Use the convenience method
     adapter = DjangoAdapter.from_project_root(
         "/path/to/django-project",
         settings_module="config.settings.production",
         excluded_apps=["migrations", "legacy_app"],
     )
-    
+
     # Get detailed project structure
     structure = adapter.get_project_structure()
-    
+
     print("Apps:")
     for app_path in structure["apps"]:
         print(f"  - {app_path.name}")
-    
+
     print("\nSettings files:")
     for settings_path in structure["settings"]:
         print(f"  - {settings_path}")
-    
+
     print("\nTest paths:")
     for test_path in structure["tests"]:
         print(f"  - {test_path}")
-    
+
     # Build repository context
     context = adapter.build_context()
-    
+
     print("\nRepository Context:")
     print(f"  Root: {context.root_path}")
     print(f"  Languages: {context.detected_languages}")

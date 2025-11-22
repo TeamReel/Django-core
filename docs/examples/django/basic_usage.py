@@ -20,27 +20,27 @@ def main():
         test_dir="tests",
         manage_py_path="manage.py",
     )
-    
+
     # Create adapter and build context
     adapter = DjangoAdapter(django_config)
     context = adapter.build_context()
-    
+
     print(f"Project root: {context.root_path}")
     print(f"Detected languages: {context.detected_languages}")
     print(f"Tags: {context.tags}")
     print(f"Apps discovered: {len(context.metadata.get('apps', []))}")
-    
+
     # Get project structure
     structure = adapter.get_project_structure()
     print(f"\nProject structure:")
     print(f"  Apps: {len(structure['apps'])}")
     print(f"  Settings files: {len(structure['settings'])}")
     print(f"  Test paths: {len(structure['tests'])}")
-    
+
     # Run the engine with the context
     engine = Engine()
     # results = engine.run(context)  # Uncomment when engine is configured
-    
+
     print("\nDjango adapter example completed!")
 
 
