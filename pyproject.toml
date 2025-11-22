@@ -103,7 +103,7 @@ omit = [
 ]
 
 [tool.coverage.report]
-fail_under = 40
+fail_under = 75
 show_missing = true
 skip_covered = false
 exclude_lines = [
@@ -111,6 +111,8 @@ exclude_lines = [
     "def __repr__",
     "raise AssertionError",
     "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
 ]
 
 [tool.coverage.html]
