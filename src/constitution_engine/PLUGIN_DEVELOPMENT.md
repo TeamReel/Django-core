@@ -98,6 +98,277 @@ class MyCustomRule:
 
 - `identifier` (str): Unique rule ID (e.g., "no-secrets-in-code")
 - `description` (str): Human-readable description
+
+### CheckResult Model
+
+**IMPORTANT**: Rules must return `CheckResult` objects with the correct fields:
+
+```python
+from constitution_engine.core.models import CheckResult, CheckStatus, Severity
+from pathlib import Path
+
+# Correct CheckResult usage
+result = CheckResult(
+    rule_identifier="my-rule-id",      # Required: string identifier
+    status=CheckStatus.FAIL,            # Required: PASS, FAIL, SKIP, or ERROR
+    message="Descriptive error message",# Required: string message
+    affected_paths=[Path("file.py")],   # Required: list of Path objects (can be empty)
+    severity=Severity.ERROR,            # Required: INFO, WARNING, ERROR, or CRITICAL
+    details={"key": "value"},           # Required: dict for additional context (can be empty)
+)
+```
+
+**Common Mistakes**:
+- Using `identifier` instead of `rule_identifier`
+- Using `location` instead of `affected_paths`
+- Using `metadata` instead of `details`
+- Forgetting to import and use `CheckStatus` enum
+
+### Real-World Rule Examples
+
+#### Example 1: Subprocess-Based Rule (mypy_rule.py)
+
+```python
+"""Constitutional rule enforcing mypy type checking."""
+
+import subprocess
+from pathlib import Path
+
+from constitution_engine.core.interfaces import RuleProtocol
+from constitution_engine.core.models import (
+    CheckResult,
+    CheckStatus,
+    ConfigurationProfile,
+    RepositoryContext,
+    Severity,
+)
+
+class MypyRule:
+    """Ensures all Python code passes mypy type checking."""
+
+    identifier = "mypy-must-pass"
+    description = "All Python code must pass mypy type checking"
+    enabled = True
+
+    def execute(
+        self, context: RepositoryContext, config: ConfigurationProfile
+    ) -> list[CheckResult]:
+        """Run mypy and return results."""
+        try:
+            # Check if mypy is available
+            subprocess.run(
+                ["mypy", "--version"],
+                capture_output=True,
+                check=True,
+                timeout=5,
+            )
+        except FileNotFoundError:
+            return [
+                CheckResult(
+                    rule_identifier=self.identifier,
+                    status=CheckStatus.SKIP,
+                    message="Mypy is not installed. Install with: pip install mypy",
+                    affected_paths=[],
+                    severity=Severity.INFO,
+                    details={"reason": "tool_not_found"},
+                )
+            ]
+
+        try:
+            # Run mypy
+            result = subprocess.run(
+                ["mypy", str(context.root_path)],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+
+            if result.returncode == 0:
+                return [
+                    CheckResult(
+                        rule_identifier=self.identifier,
+                        status=CheckStatus.PASS,
+                        message="Mypy type checking passed",
+                        affected_paths=[],
+                        severity=Severity.INFO,
+                        details={"stdout": result.stdout},
+                    )
+                ]
+
+            # Parse errors
+            return [
+                CheckResult(
+                    rule_identifier=self.identifier,
+                    status=CheckStatus.FAIL,
+                    message=f"Mypy type checking failed:\n{result.stdout}",
+                    affected_paths=[],
+                    severity=Severity.ERROR,
+                    details={"stdout": result.stdout, "stderr": result.stderr},
+                )
+            ]
+
+        except subprocess.TimeoutExpired:
+            return [
+                CheckResult(
+                    rule_identifier=self.identifier,
+                    status=CheckStatus.ERROR,
+                    message="Mypy execution timed out after 60 seconds",
+                    affected_paths=[],
+                    severity=Severity.ERROR,
+                    details={"timeout": 60},
+                )
+            ]
+```
+
+**Key Lessons**:
+- Use `CheckStatus.SKIP` when tool is unavailable
+- Use `CheckStatus.ERROR` for execution failures
+- Use `CheckStatus.FAIL` for violations
+- Handle subprocess timeouts and errors
+- Include diagnostic info in `details`
+
+#### Example 2: File Parsing Rule (pinned_dependencies_rule.py)
+
+```python
+"""Constitutional rule ensuring production dependencies are pinned."""
+
+import re
+from pathlib import Path
+
+from constitution_engine.core.interfaces import RuleProtocol
+from constitution_engine.core.models import (
+    CheckResult,
+    CheckStatus,
+    ConfigurationProfile,
+    RepositoryContext,
+    Severity,
+)
+
+class PinnedDependenciesRule:
+    """Ensures production dependencies are pinned to specific versions."""
+
+    identifier = "no-unpinned-production-dependencies"
+    description = "Production dependencies must be pinned to specific versions"
+    enabled = True
+
+    def execute(
+        self, context: RepositoryContext, config: ConfigurationProfile
+    ) -> list[CheckResult]:
+        """Check for unpinned dependencies."""
+        results = []
+
+        # Check requirements files
+        req_files = [
+            context.root_path / "requirements.txt",
+            context.root_path / "requirements" / "production.txt",
+            context.root_path / "requirements" / "base.txt",
+        ]
+
+        found_any = False
+        for req_file in req_files:
+            if req_file.exists():
+                found_any = True
+                results.extend(self._check_requirements_file(req_file))
+
+        # Check pyproject.toml
+        pyproject = context.root_path / "pyproject.toml"
+        if pyproject.exists():
+            found_any = True
+            results.extend(self._check_pyproject(pyproject))
+
+        if not found_any:
+            return [
+                CheckResult(
+                    rule_identifier=self.identifier,
+                    status=CheckStatus.SKIP,
+                    message="No dependency files found",
+                    affected_paths=[],
+                    severity=Severity.INFO,
+                    details={},
+                )
+            ]
+
+        if not results:
+            # All dependencies are pinned
+            return [
+                CheckResult(
+                    rule_identifier=self.identifier,
+                    status=CheckStatus.PASS,
+                    message="All production dependencies are properly pinned",
+                    affected_paths=[],
+                    severity=Severity.INFO,
+                    details={},
+                )
+            ]
+
+        return results
+
+    def _check_requirements_file(self, file_path: Path) -> list[CheckResult]:
+        """Check a requirements.txt file for unpinned dependencies."""
+        results = []
+        content = file_path.read_text()
+
+        for line_num, line in enumerate(content.splitlines(), start=1):
+            line = line.strip()
+
+            # Skip comments and empty lines
+            if not line or line.startswith("#"):
+                continue
+
+            # Pattern: package_name==version
+            if "==" not in line:
+                results.append(
+                    CheckResult(
+                        rule_identifier=self.identifier,
+                        status=CheckStatus.FAIL,
+                        message=f"Unpinned dependency in {file_path.name}: {line}",
+                        affected_paths=[file_path],
+                        severity=Severity.ERROR,
+                        details={
+                            "file": str(file_path),
+                            "line": line_num,
+                            "dependency": line,
+                        },
+                    )
+                )
+
+        return results
+
+    def _check_pyproject(self, file_path: Path) -> list[CheckResult]:
+        """Check pyproject.toml for unpinned dependencies."""
+        results = []
+        content = file_path.read_text()
+
+        # Look for caret (^) or wildcard (*) version specs
+        unpinned_pattern = re.compile(r'["\'][\^*][\d\.]')
+
+        for line_num, line in enumerate(content.splitlines(), start=1):
+            if unpinned_pattern.search(line):
+                results.append(
+                    CheckResult(
+                        rule_identifier=self.identifier,
+                        status=CheckStatus.FAIL,
+                        message=f"Unpinned dependency in pyproject.toml: {line.strip()}",
+                        affected_paths=[file_path],
+                        severity=Severity.ERROR,
+                        details={
+                            "file": str(file_path),
+                            "line": line_num,
+                            "content": line.strip(),
+                        },
+                    )
+                )
+
+        return results
+```
+
+**Key Lessons**:
+- Multiple files can be checked in one rule
+- Use `affected_paths` to indicate which files have issues
+- Include file path and line number in `details`
+- Return PASS result when all checks succeed
+- Skip entire rule if no relevant files exist
+
 - `enabled` (bool): Whether rule is enabled by default
 
 ### Required Methods
@@ -106,9 +377,12 @@ class MyCustomRule:
 
 ## Creating a Validator Plugin
 
-Validators implement the `ValidatorProtocol` interface.
+Validators implement the `ValidatorProtocol` interface. There are two types of validators:
 
-### Minimal Validator Example
+1. **Pre-execution validators**: Run before rules to validate configuration
+2. **Post-processing validators**: Run after rules to filter/modify results
+
+### Validator Protocol
 
 ```python
 from constitution_engine.core.interfaces import ValidatorProtocol
@@ -134,26 +408,181 @@ class MyCustomValidator:
         Validate results or perform additional checks.
 
         Args:
-            results: Check results from rules
+            results: Check results from rules (may be empty for pre-validators)
             context: Repository information
             config: Engine configuration
 
         Returns:
-            Additional check results or modified results
+            List of check results (original + validation results for pre-validators,
+            or modified/filtered results for post-processors)
         """
         # Your validation logic here
-        validated_results = []
-
-        # Example: Filter out duplicate results
-        seen = set()
-        for result in results:
-            key = (result.rule_id, result.message, result.file_path)
-            if key not in seen:
-                validated_results.append(result)
-                seen.add(key)
-
-        return validated_results
+        return results
 ```
+
+### Example 1: Pre-Execution Validator (workflow_validator.py)
+
+```python
+"""Pre-execution validator for workflow configuration."""
+
+from constitution_engine.core.interfaces import ValidatorProtocol
+from constitution_engine.core.models import (
+    CheckResult,
+    CheckStatus,
+    ConfigurationProfile,
+    RepositoryContext,
+    Severity,
+)
+
+class WorkflowConfigValidator:
+    """Validates workflow configuration before rule execution."""
+
+    identifier = "workflow-config-validator"
+    description = "Validates configuration before executing rules"
+
+    def validate(
+        self,
+        results: list[CheckResult],
+        context: RepositoryContext,
+        config: ConfigurationProfile,
+    ) -> list[CheckResult]:
+        """Validate configuration and return validation results."""
+        validation_results = []
+
+        # Check 1: Ensure required constitutional rules are present
+        required_rules = [
+            "no-disabled-security-rules",
+            "mypy-must-pass",
+            "ruff-must-pass",
+        ]
+
+        for rule_id in required_rules:
+            if rule_id not in config.enabled_rules:
+                validation_results.append(
+                    CheckResult(
+                        rule_identifier=self.identifier,
+                        status=CheckStatus.FAIL,
+                        message=f"Required constitutional rule is not enabled: {rule_id}",
+                        affected_paths=[],
+                        severity=Severity.HIGH,
+                        details={
+                            "rule_id": rule_id,
+                            "category": "missing_required_rule",
+                        },
+                    )
+                )
+
+        # Check 2: Detect duplicate rule IDs
+        rule_counts = {}
+        for rule_id in config.enabled_rules:
+            rule_counts[rule_id] = rule_counts.get(rule_id, 0) + 1
+
+        for rule_id, count in rule_counts.items():
+            if count > 1:
+                validation_results.append(
+                    CheckResult(
+                        rule_identifier=self.identifier,
+                        status=CheckStatus.FAIL,
+                        message=f"Duplicate rule ID in configuration: {rule_id} (appears {count} times)",
+                        affected_paths=[],
+                        severity=Severity.HIGH,
+                        details={"rule_id": rule_id, "count": count},
+                    )
+                )
+
+        if not validation_results:
+            # Configuration is valid
+            validation_results.append(
+                CheckResult(
+                    rule_identifier=self.identifier,
+                    status=CheckStatus.PASS,
+                    message="Workflow configuration is valid",
+                    affected_paths=[],
+                    severity=Severity.LOW,
+                    details={"passed": True},
+                )
+            )
+
+        # Append to existing results (which will be empty for pre-validators)
+        return results + validation_results
+```
+
+**Key Lessons**:
+- Pre-validators receive empty `results` list
+- Return validation failures as CheckResults
+- Engine checks for failures and may abort rule execution
+- Include PASS result when validation succeeds
+
+### Example 2: Post-Processing Validator (deduplicator.py)
+
+```python
+"""Post-processing validator for removing duplicate check results."""
+
+from constitution_engine.core.interfaces import ValidatorProtocol
+from constitution_engine.core.models import (
+    CheckResult,
+    ConfigurationProfile,
+    RepositoryContext,
+)
+
+class DeduplicatorValidator:
+    """Removes duplicate check results based on unique key."""
+
+    identifier = "duplicate-deduplicator"
+    description = "Removes duplicate check results"
+
+    def validate(
+        self,
+        results: list[CheckResult],
+        context: RepositoryContext,
+        config: ConfigurationProfile,
+    ) -> list[CheckResult]:
+        """Remove duplicate results and return deduplicated list."""
+        seen_keys = set()
+        deduplicated = []
+
+        for result in results:
+            # Create unique key from result attributes
+            key = self._make_result_key(result)
+
+            if key not in seen_keys:
+                seen_keys.add(key)
+                deduplicated.append(result)
+
+        return deduplicated
+
+    def _make_result_key(self, result: CheckResult) -> tuple:
+        """Create a unique key for a check result."""
+        # Convert paths to strings for hashability
+        path_strs = tuple(str(p) for p in result.affected_paths)
+
+        return (
+            result.rule_identifier,
+            result.severity,
+            result.message,
+            path_strs,
+        )
+```
+
+**Key Lessons**:
+- Post-processors receive all results from rules and pre-validators
+- Can modify, filter, or transform the results list
+- Return the modified list (not results + new_results)
+- Don't add validation results, just return processed results
+
+### Validator Types in Engine Pipeline
+
+The engine runs validators in two phases:
+
+1. **Phase 0 (Pre-execution)**:
+   - Runs validators with `identifier == "workflow-config-validator"`
+   - Receives empty results list
+   - If any failures, abort rule execution
+
+2. **Phase 2 (Post-processing)**:
+   - Runs all other validators
+   - Receives results from rules + pre-validators
+   - Each validator processes the output of the previous one
 
 ### Required Attributes
 
@@ -464,18 +893,80 @@ registry = get_global_registry()
 registry.clear_cache()
 ```
 
-## Example: Complete Rule Plugin
+## Example Plugins
 
-See `src/constitution_engine/modules/python/builtin/no_disabled_security.py` for a complete example of a production-ready rule plugin.
+See the following for complete production-ready examples:
+- **Rules**: `src/constitution_engine/modules/python/builtin/mypy_rule.py`
+- **Rules**: `src/constitution_engine/modules/python/builtin/pinned_dependencies_rule.py`
+- **Validators**: `src/constitution_engine/modules/python/builtin/workflow_validator.py`
+- **Validators**: `src/constitution_engine/modules/python/builtin/deduplicator.py`
+
+## Testing Your Plugins
+
+### Unit Tests
+
+```python
+import pytest
+from pathlib import Path
+from constitution_engine.core.models import (
+    CheckStatus,
+    ConfigurationProfile,
+    RepositoryContext,
+)
+from my_package.rules import MyRule
+
+def test_my_rule_passes():
+    """Test rule with passing condition."""
+    rule = MyRule()
+    context = RepositoryContext(root_path=Path("/tmp/test"))
+    config = ConfigurationProfile()
+    
+    results = rule.execute(context, config)
+    
+    assert len(results) == 1
+    assert results[0].status == CheckStatus.PASS
+
+def test_my_rule_fails():
+    """Test rule with failing condition."""
+    rule = MyRule()
+    context = RepositoryContext(root_path=Path("/tmp/test"))
+    config = ConfigurationProfile()
+    
+    results = rule.execute(context, config)
+    
+    assert any(r.status == CheckStatus.FAIL for r in results)
+```
+
+### Integration Tests
+
+```python
+def test_plugin_discovery():
+    """Test that plugin discovery finds the rule."""
+    from constitution_engine.core.plugins import (
+        discover_builtin_plugins,
+        get_global_registry,
+    )
+    
+    registry = get_global_registry()
+    discover_builtin_plugins()
+    
+    rules = registry.list_rules()
+    rule_ids = [r.identifier for r in rules]
+    
+    assert "my-rule-id" in rule_ids
+```
 
 ## Support
 
 For questions or issues:
 1. Check logs in `constitution_engine.core.plugins` logger
 2. Review test cases in `tests/constitution_engine/core/test_plugins.py`
-3. Consult the core interfaces in `src/constitution_engine/core/interfaces.py`
+3. Review test cases in `tests/constitution_engine/core/test_rules.py`
+4. Review test cases in `tests/constitution_engine/core/test_validators.py`
+5. Consult the core interfaces in `src/constitution_engine/core/interfaces.py`
 
 ---
 
-**Last Updated**: 2025-11-22
-**Engine Version**: 0.1.0 (WP03)
+**Last Updated**: 2025-11-22  
+**Engine Version**: 0.1.0 (WP04 - Rules & Validators)
+
