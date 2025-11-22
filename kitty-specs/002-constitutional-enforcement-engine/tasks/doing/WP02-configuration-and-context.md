@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 feature_id: 002-constitutional-enforcement-engine
-lane: planned
+lane: "doing"
 title: "Configuration loader & RepositoryContext builder"
 subtasks:
   - T010
@@ -13,6 +13,8 @@ subtasks:
   - T016
   - T017
 history: []
+agent: "claude"
+shell_pid: "29324"
 ---
 
 # WP02 – Configuration loader & RepositoryContext builder
@@ -34,3 +36,7 @@ This package builds on WP01’s core entities and engine skeleton. Configuration
 - All subtasks T010–T017 implemented and covered by tests.
 - `Engine` can be invoked via a `run_with_config(path)`-style helper that wires config + context.
 - Misconfigurations produce clear error messages and non-zero exits in CLI use.
+
+## Activity Log
+
+- 2025-11-22T11:17:55Z – claude – shell_pid=29324 – lane=doing – Started implementation
