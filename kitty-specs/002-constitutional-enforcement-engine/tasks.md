@@ -201,14 +201,14 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Provide clear documentation and onboarding for contributors and integrators.
 **Independent Test**: A new engineer can set up, run, and extend the engine using only the docs.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP10-docs-and-onboarding.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/for_review/WP10-docs-and-onboarding.md`
 
 ### Included Subtasks
-- [ ] T059 Create or update `kitty-specs/002-constitutional-enforcement-engine/quickstart.md` with a minimal getting-started flow.
-- [ ] T060 [P] Write or update a top-level README section (or dedicated README) for `constitution_engine/` explaining purpose, architecture, and extension points.
-- [ ] T061 [P] Add focused HOWTO docs for creating new rules, validators, reporters, and adapters.
-- [ ] T062 Add notes about constitutional alignment and non-goals (what the engine will not do).
-- [ ] T063 Ensure all referenced docs and examples are accurate and up-to-date.
+- [x] T059 Create or update `kitty-specs/002-constitutional-enforcement-engine/quickstart.md` with a minimal getting-started flow.
+- [x] T060 [P] Write or update a top-level README section (or dedicated README) for `constitution_engine/` explaining purpose, architecture, and extension points.
+- [x] T061 [P] Add focused HOWTO docs for creating new rules, validators, reporters, and adapters.
+- [x] T062 Add notes about constitutional alignment and non-goals (what the engine will not do).
+- [x] T063 Ensure all referenced docs and examples are accurate and up-to-date.
 
 ### Dependencies
 - Depends on at least WP01–WP05; ideally after core behavior stabilizes.
