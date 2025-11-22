@@ -25,7 +25,7 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Establish the `constitution_engine` package, core data classes, and a minimal pipeline skeleton.
 **Independent Test**: Unit tests for core dataclasses and a no-op engine run pass.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP01-core-engine-foundation.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/done/WP01-core-engine-foundation.md`
 
 ### Included Subtasks
 - [x] T001 Create `src/constitution_engine/__init__.py` and package layout (`core/`, `rules/`, `validators/`, `reporters/`, `modules/`, `adapters/`).
@@ -47,17 +47,17 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Load engine configuration from files/env and construct a `RepositoryContext` the engine can consume.
 **Independent Test**: Given a sample config file and synthetic repo structure, the loader builds the expected configuration + context objects.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP02-configuration-and-context.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/done/WP02-configuration-and-context.md`
 
 ### Included Subtasks
-- [ ] T010 Implement configuration schema (e.g. dataclasses or Pydantic) in `src/constitution_engine/core/config.py`.
-- [ ] T011 [P] Implement file-based configuration loader (e.g. `yaml`/`toml`) with override support from environment variables.
-- [ ] T012 [P] Implement `RepositoryContextBuilder` in `src/constitution_engine/core/context.py` that inspects a given repo path and builds a `RepositoryContext` (files, languages, tags, optional Git metadata).
-- [ ] T013 Add validation to reject malformed or constitution-violating config (e.g. disabled safety rules) with helpful error messages.
-- [ ] T014 [P] Add unit tests for configuration parsing and validation.
-- [ ] T015 [P] Add unit tests for `RepositoryContextBuilder` using a small synthetic repository in `tests/fixtures/repos/basic`.
-- [ ] T016 Integrate the config loader and context builder into the core `Engine`, so a single `run_with_config(path)` call is possible.
-- [ ] T017 Ensure error handling surfaces clear, actionable messages for missing/misconfigured files.
+- [x] T010 Implement configuration schema (e.g. dataclasses or Pydantic) in `src/constitution_engine/core/config.py`.
+- [x] T011 [P] Implement file-based configuration loader (e.g. `yaml`/`toml`) with override support from environment variables.
+- [x] T012 [P] Implement `RepositoryContextBuilder` in `src/constitution_engine/core/context.py` that inspects a given repo path and builds a `RepositoryContext` (files, languages, tags, optional Git metadata).
+- [x] T013 Add validation to reject malformed or constitution-violating config (e.g. disabled safety rules) with helpful error messages.
+- [x] T014 [P] Add unit tests for configuration parsing and validation.
+- [x] T015 [P] Add unit tests for `RepositoryContextBuilder` using a small synthetic repository in `tests/fixtures/repos/basic`.
+- [x] T016 Integrate the config loader and context builder into the core `Engine`, so a single `run_with_config(path)` call is possible.
+- [x] T017 Ensure error handling surfaces clear, actionable messages for missing/misconfigured files.
 
 ### Dependencies
 - Depends on WP01 (core entities and engine skeleton).
@@ -68,16 +68,16 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Discover and load rule/validator/reporter modules based on configuration and entry-point conventions.
 **Independent Test**: Given a configuration pointing to built-in and custom modules, the discovery system returns the expected plugin instances.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP03-plugin-discovery.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/done/WP03-plugin-discovery.md`
 
 ### Included Subtasks
-- [ ] T018 Implement a simple discovery mechanism for built-in modules under `src/constitution_engine/modules/python/`.
-- [ ] T019 [P] Define a plugin registration and lookup API (e.g. registry or entry-point style) in `src/constitution_engine/core/plugins.py`.
-- [ ] T020 [P] Support optional dynamic discovery via Python entry points or a plugin registry in config.
-- [ ] T021 Add safety checks so only constitution-compliant, whitelisted modules can be loaded by default.
-- [ ] T022 Add unit tests for discovery (built-in only, plus one fake custom plugin module).
-- [ ] T023 Integrate discovery into the `Engine` so rules/validators/reporters are resolved from configuration.
-- [ ] T024 Document how to add new modules/plugins in developer docs.
+- [x] T018 Implement a simple discovery mechanism for built-in modules under `src/constitution_engine/modules/python/`.
+- [x] T019 [P] Define a plugin registration and lookup API (e.g. registry or entry-point style) in `src/constitution_engine/core/plugins.py`.
+- [x] T020 [P] Support optional dynamic discovery via Python entry points or a plugin registry in config.
+- [x] T021 Add safety checks so only constitution-compliant, whitelisted modules can be loaded by default.
+- [x] T022 Add unit tests for discovery (built-in only, plus one fake custom plugin module).
+- [x] T023 Integrate discovery into the `Engine` so rules/validators/reporters are resolved from configuration.
+- [x] T024 Document how to add new modules/plugins in developer docs.
 
 ### Dependencies
 - Depends on WP01 (interfaces and core package).
@@ -89,17 +89,17 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Implement a minimal but extensible rule and validator system, including workflow-level validators.
 **Independent Test**: A small set of built-in rules and validators can be configured, executed, and produce structured `CheckResult`s.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP04-rules-and-validators.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/done/WP04-rules-and-validators.md`
 
 ### Included Subtasks
-- [ ] T025 Design rule and validator interfaces (or protocols) and move them into `src/constitution_engine/rules/base.py` and `src/constitution_engine/validators/base.py`.
-- [ ] T026 [P] Implement a small set of built-in rules (e.g. "mypy must pass", "Ruff must pass", "no unpinned production dependencies") under `src/constitution_engine/rules/builtins/`.
-- [ ] T027 [P] Implement validator(s) that post-process `CheckResult`s (e.g. severity normalization, duplicate de-duplication) under `src/constitution_engine/validators/builtins/`.
-- [ ] T028 Implement a workflow-level validator that can reject a pipeline if required rules are missing or misconfigured.
-- [ ] T029 [P] Add unit tests for rule execution and validator behavior using synthetic results.
-- [ ] T030 Integrate rules and validators into the engine pipeline, ensuring ordering and error handling are deterministic.
-- [ ] T031 Add configuration mappings from rule IDs/names to concrete implementations.
-- [ ] T032 Document rule and validator extension points.
+- [x] T025 Design rule and validator interfaces (or protocols) and move them into `src/constitution_engine/rules/base.py` and `src/constitution_engine/validators/base.py`.
+- [x] T026 [P] Implement a small set of built-in rules (e.g. "mypy must pass", "Ruff must pass", "no unpinned production dependencies") under `src/constitution_engine/rules/builtins/`.
+- [x] T027 [P] Implement validator(s) that post-process `CheckResult`s (e.g. severity normalization, duplicate de-duplication) under `src/constitution_engine/validators/builtins/`.
+- [x] T028 Implement a workflow-level validator that can reject a pipeline if required rules are missing or misconfigured.
+- [x] T029 [P] Add unit tests for rule execution and validator behavior using synthetic results.
+- [x] T030 Integrate rules and validators into the engine pipeline, ensuring ordering and error handling are deterministic.
+- [x] T031 Add configuration mappings from rule IDs/names to concrete implementations.
+- [x] T032 Document rule and validator extension points.
 
 ### Dependencies
 - Depends on WP01–WP03.
