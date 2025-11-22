@@ -183,14 +183,14 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Ensure the engine has a solid automated test suite across layers.
 **Independent Test**: `pytest` (or equivalent) with coverage meets agreed thresholds and key flows have integration/e2e coverage.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP09-testing-strategy.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/done/WP09-testing-strategy.md`
 
 ### Included Subtasks
-- [ ] T054 Review and expand unit tests to cover core engine, config, plugins, rules, validators, reporters, and adapters.
-- [ ] T055 [P] Add integration tests that run the engine end-to-end against synthetic repos under `tests/fixtures/repos/`.
-- [ ] T056 [P] Add at least one e2e-style test that exercises the CLI in a temporary directory.
-- [ ] T057 Configure coverage measurement and thresholds; ensure coverage reports are easy to run locally and in CI.
-- [ ] T058 Add testing guidance to developer documentation (how to run tests, fixtures layout).
+- [x] T054 Review and expand unit tests to cover core engine, config, plugins, rules, validators, reporters, and adapters.
+- [x] T055 [P] Add integration tests that run the engine end-to-end against synthetic repos under `tests/fixtures/repos/`.
+- [x] T056 [P] Add at least one e2e-style test that exercises the CLI in a temporary directory.
+- [x] T057 Configure coverage measurement and thresholds; ensure coverage reports are easy to run locally and in CI.
+- [x] T058 Add testing guidance to developer documentation (how to run tests, fixtures layout).
 
 ### Dependencies
 - Depends on WP01–WP08.
