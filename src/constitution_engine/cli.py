@@ -185,9 +185,7 @@ Environment Variables:
         "-r",
         type=Path,
         default=Path.cwd(),
-        help=(
-            "Path to repository to analyze (default: current directory)"
-        ),
+        help=("Path to repository to analyze (default: current directory)"),
     )
 
     parser.add_argument(
@@ -313,9 +311,7 @@ def cli(args: list[str] | None = None) -> int:
                         if result.severity in (Severity.HIGH, Severity.CRITICAL)
                         else "warning"
                     )
-                    file_path = (
-                        str(result.affected_paths[0]) if result.affected_paths else None
-                    )
+                    file_path = str(result.affected_paths[0]) if result.affected_paths else None
                     emit_github_annotation(
                         level=level,
                         message=f"[{result.rule_identifier}] {result.message}",
