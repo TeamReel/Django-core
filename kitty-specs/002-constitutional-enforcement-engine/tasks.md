@@ -129,14 +129,14 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Provide a Git adapter capable of reading repository state and (optionally) writing annotations suitable for local developer workflows.
 **Independent Test**: Given a local Git repo path, the adapter can fetch commit info, changed files, and optionally produce annotations.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP06-git-adapter.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/done/WP06-git-adapter.md`
 
 ### Included Subtasks
-- [ ] T039 Implement a Git adapter in `src/constitution_engine/adapters/git/adapter.py` that reads repo metadata (HEAD, branch, changed files).
-- [ ] T040 [P] Decide whether to depend on a lightweight library (e.g. GitPython) or shell out; implement with safe subprocess handling if shelling out.
-- [ ] T041 [P] Add unit tests around Git adapter behavior using a temporary test repo.
-- [ ] T042 Integrate Git adapter into `RepositoryContextBuilder`/engine where helpful but keep it optional.
-- [ ] T043 Document usage and configuration for the Git adapter.
+- [x] T039 Implement a Git adapter in `src/constitution_engine/adapters/git/adapter.py` that reads repo metadata (HEAD, branch, changed files).
+- [x] T040 [P] Decide whether to depend on a lightweight library (e.g. GitPython) or shell out; implement with safe subprocess handling if shelling out.
+- [x] T041 [P] Add unit tests around Git adapter behavior using a temporary test repo.
+- [x] T042 Integrate Git adapter into `RepositoryContextBuilder`/engine where helpful but keep it optional.
+- [x] T043 Document usage and configuration for the Git adapter.
 
 ### Dependencies
 - Depends on WP02 (RepositoryContext) and WP03 (plugin/config awareness).
