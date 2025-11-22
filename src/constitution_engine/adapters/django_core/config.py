@@ -95,7 +95,9 @@ class DjangoAdapterConfig:
         return app_name in self.excluded_apps
 
     @classmethod
-    def from_project_root(cls, project_root: Path | str, **overrides: object) -> DjangoAdapterConfig:
+    def from_project_root(
+        cls, project_root: Path | str, **overrides: object
+    ) -> DjangoAdapterConfig:
         """Create configuration from a project root with optional overrides.
 
         Args:

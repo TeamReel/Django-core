@@ -1,7 +1,7 @@
 ---
 work_package_id: WP10
 feature_id: 002-constitutional-enforcement-engine
-lane: planned
+lane: doing
 title: "Documentation & developer onboarding"
 subtasks:
   - T059
@@ -9,7 +9,14 @@ subtasks:
   - T061
   - T062
   - T063
-history: []
+agent: claude
+shell_pid: "$PID"
+history:
+  - timestamp: 2025-11-23T00:00:00Z
+    agent: claude
+    shell_pid: "$PID"
+    lane: doing
+    note: "Started implementation of documentation and developer onboarding"
 ---
 
 # WP10 – Documentation & developer onboarding

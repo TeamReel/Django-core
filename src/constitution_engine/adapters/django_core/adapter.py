@@ -94,7 +94,9 @@ class DjangoAdapter:
             List of app directory paths
         """
         apps = self._discover_apps()
-        return [app["path"] if isinstance(app["path"], Path) else Path(str(app["path"])) for app in apps]
+        return [
+            app["path"] if isinstance(app["path"], Path) else Path(str(app["path"])) for app in apps
+        ]
 
     def get_test_paths(self) -> list[Path]:
         """Get paths to test directories and files.
@@ -169,7 +171,9 @@ class DjangoAdapter:
         }
 
     @classmethod
-    def from_project_root(cls, project_root: Path | str, **config_overrides: object) -> DjangoAdapter:
+    def from_project_root(
+        cls, project_root: Path | str, **config_overrides: object
+    ) -> DjangoAdapter:
         """Create a Django adapter from a project root.
 
         Args:
