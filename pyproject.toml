@@ -4,7 +4,13 @@ version = "0.1.0"
 description = "Product-agnostic Django skeleton following Core-App Constitution"
 requires-python = ">=3.12"
 readme = "README.md"
-license = { text = "TBD" }
+
+[project.scripts]
+constitution-engine = "constitution_engine.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["constitution_engine*"]
 
 [build-system]
 requires = ["setuptools>=68.0"]
@@ -97,7 +103,7 @@ omit = [
 ]
 
 [tool.coverage.report]
-fail_under = 40
+fail_under = 75
 show_missing = true
 skip_covered = false
 exclude_lines = [
@@ -105,6 +111,8 @@ exclude_lines = [
     "def __repr__",
     "raise AssertionError",
     "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
 ]
 
 [tool.coverage.html]
