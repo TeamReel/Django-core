@@ -1,7 +1,7 @@
 ---
 work_package_id: WP07
 feature_id: 002-constitutional-enforcement-engine
-lane: doing
+lane: for_review
 title: "GitHub Actions adapter & CI wiring"
 subtasks:
   - T044
@@ -17,6 +17,11 @@ history:
     shell_pid: "29324"
     lane: doing
     note: "Started implementation of CLI and GitHub Actions integration"
+  - timestamp: "2025-11-22T21:15:00Z"
+    agent: claude
+    shell_pid: "29324"
+    lane: for_review
+    note: "Completed all 5 subtasks (T044-T048): CLI, workflow, annotations, docs, tests. 226 tests passing."
 ---
 
 # WP07 – GitHub Actions adapter & CI wiring
