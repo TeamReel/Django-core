@@ -165,14 +165,14 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Provide a thin, configuration-only adapter so the engine can reason about Django Core-App style projects without importing them.
 **Independent Test**: Given a pointer to the Django Core-App skeleton, the adapter configures modules/rules appropriately without importing Django itself.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP08-django-core-app-adapter.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/done/WP08-django-core-app-adapter.md`
 
 ### Included Subtasks
-- [ ] T049 Design a minimal adapter configuration format for Django projects (e.g. paths to apps, tests, settings) in `src/constitution_engine/adapters/django_core/config.py`.
-- [ ] T050 [P] Implement adapter logic that derives a useful `RepositoryContext` view for a Django Core-App style repo, using only the filesystem.
-- [ ] T051 [P] Add sample configuration + fixtures pointing at the Django Core-App skeleton (or a reduced clone) for tests.
-- [ ] T052 Add unit/integration tests verifying that the adapter yields expected context and default rules.
-- [ ] T053 Document how to use this adapter and its limitations.
+- [x] T049 Design a minimal adapter configuration format for Django projects (e.g. paths to apps, tests, settings) in `src/constitution_engine/adapters/django_core/config.py`.
+- [x] T050 [P] Implement adapter logic that derives a useful `RepositoryContext` view for a Django Core-App style repo, using only the filesystem.
+- [x] T051 [P] Add sample configuration + fixtures pointing at the Django Core-App skeleton (or a reduced clone) for tests.
+- [x] T052 Add unit/integration tests verifying that the adapter yields expected context and default rules.
+- [x] T053 Document how to use this adapter and its limitations.
 
 ### Dependencies
 - Depends on WP02 (context builder) and WP03 (plugin configuration).
