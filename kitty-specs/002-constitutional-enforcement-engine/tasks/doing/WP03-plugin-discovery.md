@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 feature_id: 002-constitutional-enforcement-engine
-lane: planned
+lane: "doing"
 title: "Plugin/module discovery system"
 subtasks:
   - T018
@@ -12,6 +12,8 @@ subtasks:
   - T023
   - T024
 history: []
+agent: "claude"
+shell_pid: "29324"
 ---
 
 # WP03 – Plugin/module discovery system
@@ -32,3 +34,7 @@ Discovery builds on WP01–WP02. Start with simple built-in discovery; design ex
 ## Definition of Done
 - All subtasks T018–T024 implemented and tested.
 - Engine can resolve configured rule/validator/reporter IDs into concrete implementations via the discovery system.
+
+## Activity Log
+
+- 2025-11-22T11:46:52Z – claude – shell_pid=29324 – lane=doing – Started implementation
