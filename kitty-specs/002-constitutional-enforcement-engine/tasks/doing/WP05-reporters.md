@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 feature_id: 002-constitutional-enforcement-engine
-lane: planned
+lane: "doing"
 title: "Reporter subsystem"
 subtasks:
   - T033
@@ -10,7 +10,13 @@ subtasks:
   - T036
   - T037
   - T038
-history: []
+history:
+  - timestamp: "2025-11-22T18:50:00Z"
+    event: "started"
+    agent: "claude"
+    shell_pid: "29324"
+agent: "claude"
+shell_pid: "29324"
 ---
 
 # WP05 – Reporter subsystem
