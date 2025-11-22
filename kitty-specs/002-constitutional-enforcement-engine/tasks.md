@@ -110,15 +110,15 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Provide human-readable and machine-readable reporters for engine results.
 **Independent Test**: Given a list of `CheckResult`s, reporters can render console output and JSON output that downstream tools can consume.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP05-reporters.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/done/WP05-reporters.md`
 
 ### Included Subtasks
-- [ ] T033 Define reporter interface(s) in `src/constitution_engine/reporters/base.py`.
-- [ ] T034 [P] Implement a console reporter with concise, color-safe output.
-- [ ] T035 [P] Implement a JSON reporter that emits a stable, versioned schema.
-- [ ] T036 Add unit tests for reporters using sample `CheckResult` lists.
-- [ ] T037 Wire reporters into the engine, configurable via configuration (e.g. `output: ["console", "json"]`).
-- [ ] T038 Document reporter configuration and JSON schema guarantees.
+- [x] T033 Define reporter interface(s) in `src/constitution_engine/reporters/base.py`.
+- [x] T034 [P] Implement a console reporter with concise, color-safe output.
+- [x] T035 [P] Implement a JSON reporter that emits a stable, versioned schema.
+- [x] T036 Add unit tests for reporters using sample `CheckResult` lists.
+- [x] T037 Wire reporters into the engine, configurable via configuration (e.g. `output: ["console", "json"]`).
+- [x] T038 Document reporter configuration and JSON schema guarantees.
 
 ### Dependencies
 - Depends on WP01–WP04.
