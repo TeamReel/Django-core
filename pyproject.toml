@@ -5,6 +5,9 @@ description = "Product-agnostic Django skeleton following Core-App Constitution"
 requires-python = ">=3.12"
 readme = "README.md"
 
+[project.scripts]
+constitution-engine = "constitution_engine.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["constitution_engine*"]
