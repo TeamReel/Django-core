@@ -1,0 +1,101 @@
+# Constitutional Enforcement Engine Configuration
+# This is a sample configuration demonstrating the available rules and validators
+
+# Engine behavior
+fail_fast: false
+constitution_path: null  # Auto-discover .constitution.yaml
+target_directories: []  # Empty = scan entire repository
+exclude_patterns:
+  - "**/__pycache__/**"
+  - "**/node_modules/**"
+  - "**/.venv/**"
+  - "**/.git/**"
+  - "**/dist/**"
+  - "**/build/**"
+
+# Rules configuration
+rules:
+  # Constitutional type checking - ensures Python code is properly typed
+  - identifier: "mypy-must-pass"
+    enabled: true
+    severity: "high"
+    description: "All Python code must pass mypy type checking"
+    parameters:
+      timeout: 60
+      # Additional mypy configuration can be placed in mypy.ini or pyproject.toml
+
+  # Constitutional linting - ensures Python code follows style guidelines
+  - identifier: "ruff-must-pass"
+    enabled: true
+    severity: "high"
+    description: "All Python code must pass Ruff linting"
+    parameters:
+      timeout: 60
+      # Additional ruff configuration can be placed in ruff.toml or pyproject.toml
+
+  # Constitutional dependency management - ensures production deps are pinned
+  - identifier: "no-unpinned-production-dependencies"
+    enabled: true
+    severity: "high"
+    description: "Production dependencies must be pinned to specific versions"
+    parameters:
+      check_files:
+        - "requirements.txt"
+        - "requirements/production.txt"
+        - "requirements/base.txt"
+        - "pyproject.toml"
+
+  # Meta-rule: Security rules cannot be disabled
+  - identifier: "no-disabled-security-rules"
+    enabled: true
+    severity: "critical"
+    description: "Security-critical rules must not be disabled"
+    parameters: {}
+
+# Validators configuration
+validators:
+  # Pre-execution validator - checks configuration before running rules
+  - identifier: "workflow-config-validator"
+    enabled: true
+    description: "Validates workflow configuration before rule execution"
+    parameters:
+      required_rules:
+        - "no-disabled-security-rules"
+        - "mypy-must-pass"
+        - "ruff-must-pass"
+      critical_rules:
+        - "no-disabled-security-rules"
+
+  # Post-processing validator - removes duplicate results
+  - identifier: "duplicate-deduplicator"
+    enabled: true
+    description: "Removes duplicate check results based on unique key"
+    parameters: {}
+
+# Reporters configuration
+reporters:
+  - name: "console"
+    enabled: true
+    parameters:
+      verbose: true
+      show_summary: true
+
+  - name: "json"
+    enabled: false
+    output_path: "constitution-results.json"
+    parameters:
+      pretty: true
+
+# Modules configuration
+modules:
+  # Built-in Python module with constitutional rules
+  - name: "constitution_engine.modules.python.builtin"
+    enabled: true
+    source_type: "builtin"
+    parameters: {}
+
+# Metadata
+metadata:
+  version: "0.1.0"
+  description: "Sample constitutional enforcement configuration"
+  author: "Constitution Engine"
