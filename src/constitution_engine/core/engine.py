@@ -153,24 +153,20 @@ class Engine:
 
     def get_exit_code(self, results: list[CheckResult]) -> int:
         """
-        Determine exit code based on check results.
+        Determine appropriate exit code from check results.
 
         Args:
-            results: All check results from a run
+            results: Check results from engine run
 
         Returns:
-            0 if all checks passed, 1 if any failures
+            Exit code (0 = success, non-zero = failure)
         """
-        has_failures = any(r.is_failure for r in results)
+        if not results:
+            return 0
 
-        if has_failures:
+        # Check for failures
+        failures = [r for r in results if r.is_failure]
+        if failures:
             return 1
-
-        if self.config.fail_on_warning:
-            from constitution_engine.core.models import Severity
-
-            has_warnings = any(r.severity == Severity.WARNING for r in results)
-            if has_warnings:
-                return 1
 
         return 0

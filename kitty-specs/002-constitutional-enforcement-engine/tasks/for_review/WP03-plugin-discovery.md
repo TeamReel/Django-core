@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 feature_id: 002-constitutional-enforcement-engine
-lane: "doing"
+lane: "for_review"
 title: "Plugin/module discovery system"
 subtasks:
   - T018
@@ -38,3 +38,4 @@ Discovery builds on WP01–WP02. Start with simple built-in discovery; design ex
 ## Activity Log
 
 - 2025-11-22T11:46:52Z – claude – shell_pid=29324 – lane=doing – Started implementation
+- 2025-11-22T12:18:16Z – claude – shell_pid=29324 – lane=for_review – Plugin discovery system complete: Built-in and entry point discovery, safety whitelist, 17 passing tests, engine integration, and full documentation

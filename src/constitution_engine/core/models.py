@@ -26,15 +26,22 @@ __all__ = [
 class Severity(str, Enum):
     """Severity level for rules and check results."""
 
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+    # Alternative names for compatibility
+    INFO = "low"
+    WARNING = "medium"
+    ERROR = "high"
+    FATAL = "critical"
 
 
 class CheckStatus(str, Enum):
     """Status of a check result."""
 
-    PASS = "pass"  # noqa: S105
+    PASS = "pass"
     FAIL = "fail"
     SKIP = "skip"
     ERROR = "error"
@@ -43,24 +50,26 @@ class CheckStatus(str, Enum):
 @dataclass(frozen=True)
 class ConstitutionRule:
     """
-    Represents a single constitutional rule or constraint.
+    Represents a single enforceable rule from the project constitution.
 
     Attributes:
-        identifier: Unique rule identifier (e.g., "CONST-001", "PY-MYPY")
-        description: Human-readable description of the rule
-        severity: Severity level (error, warning, info)
-        category: Optional category for grouping (e.g., "security", "style")
-        enabled: Whether the rule is enabled by default
+        identifier: Unique rule identifier (e.g. "RULE-001")
+        description: Human-readable description
+        severity: Severity level for violations
+        category: Rule category (e.g. "security", "quality")
+        enabled: Whether the rule is active
+        metadata: Additional rule metadata
     """
 
     identifier: str
     description: str
     severity: Severity = Severity.ERROR
-    category: str | None = None
+    category: str = "general"
     enabled: bool = True
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        """Validate rule configuration."""
+        """Validate rule data."""
         if not self.identifier:
             raise ValueError("Rule identifier cannot be empty")
         if not self.description:
@@ -93,7 +102,7 @@ class CheckResult:
         if not self.rule_identifier:
             raise ValueError("Rule identifier cannot be empty")
         if not self.message:
-            raise ValueError("Result message cannot be empty")
+            raise ValueError("Message cannot be empty")
 
     @property
     def is_failure(self) -> bool:
@@ -109,53 +118,65 @@ class CheckResult:
 @dataclass
 class ConfigurationProfile:
     """
-    Represents the effective configuration for the engine.
+    Represents the engine's effective configuration.
 
     Attributes:
-        enabled_rules: List of rule identifiers to execute
-        target_directories: Directories to scan (relative to repo root)
-        excluded_patterns: Glob patterns to exclude from checks
+        enabled_rules: List of rule identifiers to run (empty = all enabled rules)
+        target_directories: Directories to analyze (empty = root directory)
+        adapter_options: Configuration for specific adapters
+        output_formats: List of output format preferences
         constitution_path: Path to constitution file
-        spec_kitty_enabled: Whether to check Spec Kitty artefacts
-        fail_on_warning: Whether warnings should cause non-zero exit
-        config_source: Path to the config file that was loaded
+        metadata: Additional configuration metadata
     """
 
     enabled_rules: list[str] = field(default_factory=list)
-    target_directories: list[Path] = field(default_factory=lambda: [Path()])
-    excluded_patterns: list[str] = field(
-        default_factory=lambda: ["venv/", ".git/", "__pycache__/", "*.pyc"]
-    )
+    target_directories: list[Path] = field(default_factory=list)
+    adapter_options: dict[str, Any] = field(default_factory=dict)
+    output_formats: list[str] = field(default_factory=lambda: ["console"])
     constitution_path: Path | None = None
-    spec_kitty_enabled: bool = True
-    fail_on_warning: bool = False
-    config_source: Path | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Validate and normalize configuration."""
+        # Convert string paths to Path objects
+        self.target_directories = [
+            Path(path) if isinstance(path, str) else path for path in self.target_directories
+        ]
+        if isinstance(self.constitution_path, str):
+            self.constitution_path = Path(self.constitution_path)
 
 
 @dataclass
 class RepositoryContext:
     """
-    Represents high-level information about the repository under test.
+    Represents information about the repository under analysis.
 
     Attributes:
         root_path: Absolute path to repository root
-        detected_languages: Programming languages detected in the repo
-        has_git: Whether the repository is a Git repository
-        spec_kitty_features: Detected Spec Kitty feature directories
-        constitution_file: Path to constitution file if found
-        metadata: Additional repository metadata
+        constitution_path: Path to constitution file if found
+        detected_languages: Set of detected programming languages
+        git_branch: Current Git branch (if available)
+        git_commit: Current Git commit hash (if available)
+        tags: Repository tags/labels
+        metadata: Additional context metadata
     """
 
     root_path: Path
+    constitution_path: Path | None = None
     detected_languages: set[str] = field(default_factory=set)
-    has_git: bool = False
-    spec_kitty_features: list[Path] = field(default_factory=list)
-    constitution_file: Path | None = None
+    git_branch: str | None = None
+    git_commit: str | None = None
+    tags: set[str] = field(default_factory=set)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        """Validate repository context."""
-        if not self.root_path.exists():
-            raise ValueError(f"Repository root does not exist: {self.root_path}")
+        """Validate and normalize context."""
+        if isinstance(self.root_path, str):
+            self.root_path = Path(self.root_path)
+
+        # Ensure root_path is absolute
         if not self.root_path.is_absolute():
-            raise ValueError(f"Repository root must be absolute: {self.root_path}")
+            self.root_path = self.root_path.absolute()
+
+        if isinstance(self.constitution_path, str):
+            self.constitution_path = Path(self.constitution_path)

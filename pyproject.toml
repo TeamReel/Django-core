@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Product-agnostic Django skeleton following Core-App Constitution"
 requires-python = ">=3.12"
 readme = "README.md"
-license = { text = "TBD" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["constitution_engine*"]
 
 [build-system]
 requires = ["setuptools>=68.0"]

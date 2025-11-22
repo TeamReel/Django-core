@@ -1,1 +1,8 @@
-"""Modules package for language-specific rule packs."""
+"""
+Built-in modules for the Constitutional Enforcement Engine.
+
+This package contains built-in rules, validators, and reporters that ship
+with the engine.
+"""
+
+__all__ = []

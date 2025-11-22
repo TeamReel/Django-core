@@ -1,1 +1,1 @@
-"""Tests for core subpackage."""
+"""Test configuration for constitution_engine core tests."""

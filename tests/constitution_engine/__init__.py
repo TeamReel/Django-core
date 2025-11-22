@@ -1,1 +1,1 @@
-"""Tests for core engine module."""
+"""Test configuration for constitution_engine core tests."""
