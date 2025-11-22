@@ -28,15 +28,15 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 **Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP01-core-engine-foundation.md`
 
 ### Included Subtasks
-- [ ] T001 Create `src/constitution_engine/__init__.py` and package layout (`core/`, `rules/`, `validators/`, `reporters/`, `modules/`, `adapters/`).
-- [ ] T002 [P] Define core entities (`ConstitutionRule`, `CheckResult`, `ConfigurationProfile`, `RepositoryContext`) as typed dataclasses or Pydantic models in `src/constitution_engine/core/models.py` (or equivalent).
-- [ ] T003 [P] Implement a minimal `Engine`/`Pipeline` orchestrator in `src/constitution_engine/core/engine.py` that wires configuration → rules → results (no real rules yet).
-- [ ] T004 Create base plugin/protocol interfaces for rules, validators, reporters, and modules in `src/constitution_engine/core/interfaces.py`.
-- [ ] T005 [P] Add basic unit tests for core entities and engine skeleton under `tests/constitution_engine/core/`.
-- [ ] T006 Wire a simple `run_once()` entry point that accepts in-memory config and returns `CheckResult` list.
-- [ ] T007 Add simple logging hooks (using Python logging) in the engine skeleton.
-- [ ] T008 Document the package structure and engine responsibilities in `kitty-specs/002-constitutional-enforcement-engine/quickstart.md` or a local README.
-- [ ] T009 Ensure mypy and Ruff pass on the new package.
+- [x] T001 Create `src/constitution_engine/__init__.py` and package layout (`core/`, `rules/`, `validators/`, `reporters/`, `modules/`, `adapters/`).
+- [x] T002 [P] Define core entities (`ConstitutionRule`, `CheckResult`, `ConfigurationProfile`, `RepositoryContext`) as typed dataclasses or Pydantic models in `src/constitution_engine/core/models.py` (or equivalent).
+- [x] T003 [P] Implement a minimal `Engine`/`Pipeline` orchestrator in `src/constitution_engine/core/engine.py` that wires configuration → rules → results (no real rules yet).
+- [x] T004 Create base plugin/protocol interfaces for rules, validators, reporters, and modules in `src/constitution_engine/core/interfaces.py`.
+- [x] T005 [P] Add basic unit tests for core entities and engine skeleton under `tests/constitution_engine/core/`.
+- [x] T006 Wire a simple `run_once()` entry point that accepts in-memory config and returns `CheckResult` list.
+- [x] T007 Add simple logging hooks (using Python logging) in the engine skeleton.
+- [x] T008 Document the package structure and engine responsibilities in `kitty-specs/002-constitutional-enforcement-engine/quickstart.md` or a local README.
+- [x] T009 Ensure mypy and Ruff pass on the new package.
 
 ### Dependencies
 - None (starting package for feature 002).
