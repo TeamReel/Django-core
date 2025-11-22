@@ -201,7 +201,7 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Provide clear documentation and onboarding for contributors and integrators.
 **Independent Test**: A new engineer can set up, run, and extend the engine using only the docs.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/for_review/WP10-docs-and-onboarding.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/done/WP10-docs-and-onboarding.md`
 
 ### Included Subtasks
 - [x] T059 Create or update `kitty-specs/002-constitutional-enforcement-engine/quickstart.md` with a minimal getting-started flow.
