@@ -84,8 +84,7 @@ class Engine:
         # Run workflow config validator first to catch config issues early
         pre_results: list[CheckResult] = []
         pre_validators = [
-            v for v in self._validators 
-            if v.identifier in ["workflow-config-validator"]
+            v for v in self._validators if v.identifier in ["workflow-config-validator"]
         ]
         for validator in pre_validators:
             try:
@@ -134,8 +133,7 @@ class Engine:
         # Run deduplicator and other post-processors
         all_results = pre_results + rule_results
         post_validators = [
-            v for v in self._validators 
-            if v.identifier not in ["workflow-config-validator"]
+            v for v in self._validators if v.identifier not in ["workflow-config-validator"]
         ]
         for validator in post_validators:
             try:
@@ -143,8 +141,7 @@ class Engine:
                 # Post-processors may modify or filter results
                 all_results = validator.validate(all_results, self.context, self.config)
                 logger.debug(
-                    f"Post-validator {validator.identifier} returned "
-                    f"{len(all_results)} results"
+                    f"Post-validator {validator.identifier} returned " f"{len(all_results)} results"
                 )
             except Exception:
                 logger.exception(f"Error running post-validator: {validator.identifier}")

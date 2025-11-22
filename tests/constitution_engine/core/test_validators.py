@@ -167,7 +167,9 @@ class TestWorkflowConfigValidator:
         validator = WorkflowConfigValidator()
         context = RepositoryContext(root_path=Path("/tmp/test"))
         config = ConfigurationProfile(
-            enabled_rules=["ruff-must-pass"]  # Missing no-disabled-security-rules and mypy-must-pass
+            enabled_rules=[
+                "ruff-must-pass"
+            ]  # Missing no-disabled-security-rules and mypy-must-pass
         )
 
         results = validator.validate([], context, config)

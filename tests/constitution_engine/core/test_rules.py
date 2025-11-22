@@ -214,8 +214,7 @@ class TestPinnedDependenciesRule:
 
         # Should detect 'requests' as unpinned
         unpinned_results = [
-            r for r in results
-            if r.status == CheckStatus.FAIL and "requests" in r.message
+            r for r in results if r.status == CheckStatus.FAIL and "requests" in r.message
         ]
         assert len(unpinned_results) == 1
         assert "unpinned" in unpinned_results[0].message.lower()
@@ -227,10 +226,7 @@ class TestPinnedDependenciesRule:
         # Create a pyproject.toml with unpinned dependency
         pyproject = tmp_path / "pyproject.toml"
         pyproject.write_text(
-            '[project.dependencies]\n'
-            'django = "4.2.0"\n'
-            'requests = "*"\n'
-            'celery = "^5.0"\n'
+            "[project.dependencies]\n" 'django = "4.2.0"\n' 'requests = "*"\n' 'celery = "^5.0"\n'
         )
 
         context = RepositoryContext(root_path=tmp_path)

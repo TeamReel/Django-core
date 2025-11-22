@@ -83,9 +83,7 @@ class TestEngineIntegration:
 
     def test_engine_aborts_on_invalid_config(self, tmp_path):
         """Test that engine aborts rule execution on invalid configuration."""
-        config = ConfigurationProfile(
-            enabled_rules=["ruff-must-pass"]  # Missing required rules
-        )
+        config = ConfigurationProfile(enabled_rules=["ruff-must-pass"])  # Missing required rules
         context = RepositoryContext(root_path=tmp_path)
         engine = Engine(config=config, context=context)
 
@@ -104,8 +102,7 @@ class TestEngineIntegration:
 
         # Should NOT have results from PinnedDependenciesRule
         pinned_deps_results = [
-            r for r in results 
-            if r.rule_identifier == "no-unpinned-production-dependencies"
+            r for r in results if r.rule_identifier == "no-unpinned-production-dependencies"
         ]
         assert len(pinned_deps_results) == 0
 
@@ -150,10 +147,11 @@ class TestEngineIntegration:
             # Deduplicator should remove one of the duplicate mypy errors
             # Count failures from mypy
             mypy_failures = [
-                r for r in results 
+                r
+                for r in results
                 if r.rule_identifier == "mypy-must-pass" and r.status == CheckStatus.FAIL
             ]
-            
+
             # Should have deduplicated results (not 2x the same error)
             assert len(mypy_failures) <= 1
 
@@ -186,7 +184,8 @@ class TestEngineIntegration:
 
         # Should detect the unpinned 'requests' dependency
         unpinned_failures = [
-            r for r in results 
+            r
+            for r in results
             if r.rule_identifier == "no-unpinned-production-dependencies"
             and r.status == CheckStatus.FAIL
             and "requests" in r.message
