@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 feature_id: 002-constitutional-enforcement-engine
-lane: "doing"
+lane: "for_review"
 title: "Rule & validator systems"
 subtasks:
   - T025
@@ -12,9 +12,16 @@ subtasks:
   - T030
   - T031
   - T032
-history: []
-agent: "claude"
-shell_pid: "29324"
+history:
+  - timestamp: "2025-11-22T17:16:17Z"
+    event: "started"
+    agent: "claude"
+    shell_pid: "29324"
+  - timestamp: "2025-11-22T18:38:45Z"
+    event: "moved_to_for_review"
+    agent: "claude"
+    shell_pid: "29324"
+    note: "All 8 subtasks completed: interfaces, rules (mypy/ruff/pinned-deps), validators (deduplicator/workflow), tests (20 tests), engine integration (4 integration tests), configuration, and documentation. Total: 127 tests passing."
 ---
 
 # WP04 – Rule & validator systems
