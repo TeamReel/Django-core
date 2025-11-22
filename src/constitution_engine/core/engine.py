@@ -73,11 +73,40 @@ class Engine:
             List of all check results from rules and validators
 
         Workflow:
-            1. Execute all registered rules
-            2. Run validators on the results
-            3. Return combined results
+            1. Run pre-execution validators (config validation)
+            2. Execute all registered rules
+            3. Run post-processing validators (deduplication, etc.)
+            4. Return combined results
         """
         logger.info(f"Starting engine run for repository: {self.context.root_path}")
+
+        # Phase 0: Pre-execution validation
+        # Run workflow config validator first to catch config issues early
+        pre_results: list[CheckResult] = []
+        pre_validators = [
+            v for v in self._validators 
+            if v.identifier in ["workflow-config-validator"]
+        ]
+        for validator in pre_validators:
+            try:
+                logger.debug(f"Running pre-execution validator: {validator.identifier}")
+                validator_results = validator.validate([], self.context, self.config)
+                pre_results.extend(validator_results)
+                logger.debug(
+                    f"Pre-validator {validator.identifier} produced "
+                    f"{len(validator_results)} results"
+                )
+            except Exception:
+                logger.exception(f"Error running pre-validator: {validator.identifier}")
+
+        # Check for pre-validation failures - abort if config is invalid
+        pre_failures = [r for r in pre_results if r.is_failure]
+        if pre_failures:
+            logger.error(
+                f"Pre-execution validation failed with {len(pre_failures)} errors. "
+                "Aborting rule execution."
+            )
+            return pre_results
 
         # Phase 1: Execute rules
         rule_results: list[CheckResult] = []
@@ -101,19 +130,24 @@ class Engine:
 
         logger.info(f"Rules produced {len(rule_results)} results")
 
-        # Phase 2: Run validators
-        all_results = rule_results.copy()
-        for validator in self._validators:
+        # Phase 2: Post-processing validation
+        # Run deduplicator and other post-processors
+        all_results = pre_results + rule_results
+        post_validators = [
+            v for v in self._validators 
+            if v.identifier not in ["workflow-config-validator"]
+        ]
+        for validator in post_validators:
             try:
-                logger.debug(f"Running validator: {validator.identifier}")
-                validator_results = validator.validate(all_results, self.context, self.config)
-                all_results.extend(validator_results)
+                logger.debug(f"Running post-processing validator: {validator.identifier}")
+                # Post-processors may modify or filter results
+                all_results = validator.validate(all_results, self.context, self.config)
                 logger.debug(
-                    f"Validator {validator.identifier} produced "
-                    f"{len(validator_results)} results"
+                    f"Post-validator {validator.identifier} returned "
+                    f"{len(all_results)} results"
                 )
             except Exception:
-                logger.exception(f"Error running validator: {validator.identifier}")
+                logger.exception(f"Error running post-validator: {validator.identifier}")
                 # Continue with other validators even if one fails
 
         logger.info(f"Engine run complete: {len(all_results)} total results")
