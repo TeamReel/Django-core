@@ -147,14 +147,14 @@ description: "Work package task list for Constitutional Enforcement Engine (Lite
 
 **Goal**: Deliver a minimal but robust GitHub Actions integration for running the engine in CI.
 **Independent Test**: A sample GitHub Actions workflow can run the engine against a repo and fail appropriately on violations.
-**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/planned/WP07-github-actions-adapter.md`
+**Prompt**: `kitty-specs/002-constitutional-enforcement-engine/tasks/done/WP07-github-actions-adapter.md`
 
 ### Included Subtasks
-- [ ] T044 Implement a CLI entry point (e.g. `constitution-engine` console script) suitable for CI consumption.
-- [ ] T045 [P] Create a reference GitHub Actions workflow file under `.github/workflows/constitution-engine.yml` (in docs or example directory) that runs the engine.
-- [ ] T046 [P] Add mapping from engine results to process exit codes and optional GitHub annotations.
-- [ ] T047 Document environment variables and inputs expected by the action/workflow.
-- [ ] T048 Add an end-to-end test (or manual script) that runs the CLI against a sample repo and asserts exit codes.
+- [x] T044 Implement a CLI entry point (e.g. `constitution-engine` console script) suitable for CI consumption.
+- [x] T045 [P] Create a reference GitHub Actions workflow file under `.github/workflows/constitution-engine.yml` (in docs or example directory) that runs the engine.
+- [x] T046 [P] Add mapping from engine results to process exit codes and optional GitHub annotations.
+- [x] T047 Document environment variables and inputs expected by the action/workflow.
+- [x] T048 Add an end-to-end test (or manual script) that runs the CLI against a sample repo and asserts exit codes.
 
 ### Dependencies
 - Depends on WP01–WP05; benefits from WP06.

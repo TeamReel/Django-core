@@ -44,7 +44,7 @@ def emit_github_annotation(
         line: Optional line number
     """
     parts = [f"::{level}"]
-    
+
     if file or line:
         params = []
         if file:
@@ -52,7 +52,7 @@ def emit_github_annotation(
         if line:
             params.append(f"line={line}")
         parts[0] += f" {','.join(params)}"
-    
+
     parts.append(f"::{message}")
     print("".join(parts))
 
@@ -79,19 +79,19 @@ def emit_github_summary(results: list) -> None:
 
     with open(summary_file, "a", encoding="utf-8") as f:
         f.write("# Constitutional Enforcement Results\n\n")
-        
+
         if success:
             f.write("✅ **All checks passed!**\n\n")
         else:
             f.write("❌ **Constitutional violations detected**\n\n")
-        
+
         f.write("## Summary\n\n")
         f.write(f"- ✅ Passed: {pass_count}\n")
         f.write(f"- ❌ Failed: {fail_count}\n")
         f.write(f"- 🔥 Errors: {error_count}\n")
         f.write(f"- ⏭️ Skipped: {skip_count}\n")
         f.write(f"- 📊 Total: {total}\n\n")
-        
+
         # Show failures
         if fail_count > 0 or error_count > 0:
             f.write("## Violations\n\n")
@@ -103,11 +103,11 @@ def emit_github_summary(results: list) -> None:
                         "high": "❌",
                         "critical": "🚨",
                     }.get(result.severity.value.lower(), "❓")
-                    
+
                     f.write(f"### {severity_emoji} {result.rule_identifier}\n\n")
                     f.write(f"**Severity**: {result.severity.value}\n\n")
                     f.write(f"**Message**: {result.message}\n\n")
-                    
+
                     if result.affected_paths:
                         f.write("**Affected files**:\n")
                         for path in result.affected_paths[:5]:  # Limit to 5 files
@@ -174,7 +174,10 @@ Environment Variables:
         "-c",
         type=Path,
         default=None,
-        help="Path to configuration file (default: search for .constitution.yaml in current and parent directories)",
+        help=(
+            "Path to configuration file (default: search for "
+            ".constitution.yaml in current and parent directories)"
+        ),
     )
 
     parser.add_argument(
@@ -182,7 +185,9 @@ Environment Variables:
         "-r",
         type=Path,
         default=Path.cwd(),
-        help="Path to repository to analyze (default: current directory)",
+        help=(
+            "Path to repository to analyze (default: current directory)"
+        ),
     )
 
     parser.add_argument(
@@ -284,14 +289,6 @@ def cli(args: list[str] | None = None) -> int:
         if config_path:
             logger.info(f"Using configuration: {config_path}")
 
-        # Create engine factory
-        factory = EngineFactory(
-            include_git_metadata=not parsed_args.no_git,
-            validate_config=True,
-            apply_env_overrides=True,
-            discover_plugins=True,
-        )
-
         # Run engine
         results, reports, exit_code = run_with_config(
             repo_path=repo_path,
@@ -311,8 +308,14 @@ def cli(args: list[str] | None = None) -> int:
             for result in results:
                 if result.status == CheckStatus.FAIL:
                     # Determine annotation level based on severity
-                    level = "error" if result.severity in (Severity.HIGH, Severity.CRITICAL) else "warning"
-                    file_path = result.affected_paths[0] if result.affected_paths else None
+                    level = (
+                        "error"
+                        if result.severity in (Severity.HIGH, Severity.CRITICAL)
+                        else "warning"
+                    )
+                    file_path = (
+                        str(result.affected_paths[0]) if result.affected_paths else None
+                    )
                     emit_github_annotation(
                         level=level,
                         message=f"[{result.rule_identifier}] {result.message}",
@@ -323,7 +326,7 @@ def cli(args: list[str] | None = None) -> int:
                         level="error",
                         message=f"[{result.rule_identifier}] Check error: {result.message}",
                     )
-            
+
             # Emit step summary
             emit_github_summary(results)
 
