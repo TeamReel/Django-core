@@ -9,9 +9,26 @@ import logging
 import os
 import subprocess
 from pathlib import Path
-from typing import Dict, Optional, Set
+from typing import TYPE_CHECKING, Any, Dict, Optional, Set
 
 from constitution_engine.core.models import RepositoryContext
+
+# Import GitAdapter if available (WP06)
+if TYPE_CHECKING:
+    from constitution_engine.adapters.git import GitAdapter as GitAdapterType
+    from constitution_engine.adapters.git import GitNotAvailableError as GitNotAvailableErrorType
+else:
+    GitAdapterType = None  # type: ignore[assignment, misc]
+    GitNotAvailableErrorType = Exception  # type: ignore[assignment, misc]
+
+try:
+    from constitution_engine.adapters.git import GitAdapter, GitNotAvailableError
+
+    _GIT_ADAPTER_AVAILABLE = True
+except ImportError:
+    _GIT_ADAPTER_AVAILABLE = False
+    GitAdapter = None  # type: ignore[assignment, misc]
+    GitNotAvailableError = Exception  # type: ignore[assignment, misc]
 
 __all__ = [
     "RepositoryContextBuilder",
@@ -37,7 +54,7 @@ class GitMetadata:
 
         try:
             result = subprocess.run(
-                ["git", "rev-parse", "--git-dir"],
+                ["git", "rev-parse", "--git-dir"],  # noqa: S603, S607
                 cwd=self.repo_path,
                 capture_output=True,
                 text=True,
@@ -56,7 +73,7 @@ class GitMetadata:
 
         try:
             result = subprocess.run(
-                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],  # noqa: S603, S607
                 cwd=self.repo_path,
                 capture_output=True,
                 text=True,
@@ -77,7 +94,7 @@ class GitMetadata:
 
         try:
             result = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
+                ["git", "rev-parse", "HEAD"],  # noqa: S603, S607
                 cwd=self.repo_path,
                 capture_output=True,
                 text=True,
@@ -97,11 +114,11 @@ class GitMetadata:
 
         try:
             result = subprocess.run(
-                ["git", "diff", "--name-only", base_ref],
+                ["git", "diff", "--name-only", base_ref],  # noqa: S603, S607
                 cwd=self.repo_path,
                 capture_output=True,
                 text=True,
-                timeout=10,
+                timeout=5,
             )
             if result.returncode == 0:
                 changed_files = set()
@@ -290,17 +307,42 @@ class RepositoryContextBuilder:
             constitution_path = self._find_constitution_file(repo_path)
 
         # Collect Git metadata if enabled
-        git_branch = None
-        git_commit = None
-        git_metadata = {}
+        git_branch: str | None = None
+        git_commit: str | None = None
+        git_metadata: dict[str, Any] = {}
 
         if self.include_git_metadata:
-            git = GitMetadata(repo_path)
-            git_branch = git.get_current_branch()
-            git_commit = git.get_current_commit()
+            # Try to use the new GitAdapter (WP06) if available
+            if _GIT_ADAPTER_AVAILABLE:
+                try:
+                    git_adapter = GitAdapter(repo_path)  # type: ignore[misc]
+                    git_info = git_adapter.get_info()
 
-            if git.is_git_available():
-                git_metadata["changed_files"] = [str(p) for p in git.get_changed_files()]
+                    git_branch = git_info.branch
+                    git_commit = git_info.commit_hash_full
+                    git_metadata["changed_files"] = [str(p) for p in git_info.changed_files]
+                    git_metadata["is_dirty"] = git_info.is_dirty
+                    git_metadata["remote_url"] = git_info.remote_url
+
+                    logger.debug("Using GitAdapter for Git metadata")
+                except Exception as e:  # GitNotAvailableError or any other error
+                    logger.debug(f"GitAdapter not available, falling back to GitMetadata: {e}")
+                    # Fall back to original GitMetadata
+                    git = GitMetadata(repo_path)
+                    git_branch = git.get_current_branch()
+                    git_commit = git.get_current_commit()
+
+                    if git.is_git_available():
+                        git_metadata["changed_files"] = [str(p) for p in git.get_changed_files()]
+            else:
+                # Use original GitMetadata implementation
+                logger.debug("Using legacy GitMetadata")
+                git = GitMetadata(repo_path)
+                git_branch = git.get_current_branch()
+                git_commit = git.get_current_commit()
+
+                if git.is_git_available():
+                    git_metadata["changed_files"] = [str(p) for p in git.get_changed_files()]
 
         # Detect repository tags/characteristics
         tags = self._detect_repository_tags(repo_path, detected_languages)
