@@ -8,12 +8,10 @@ functionality, and timezone handling.
 import subprocess
 from pathlib import Path
 
-import pytest
 from django.conf import settings
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.middleware.common import CommonMiddleware
 from django.middleware.locale import LocaleMiddleware
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import RequestFactory, TestCase
 from django.utils import timezone
 from django.utils.translation import activate, get_language, gettext, gettext_lazy
 
@@ -125,9 +123,7 @@ class LocaleMiddlewareTest(TestCase):
     def test_middleware_ordering_correct(self):
         """Verify LocaleMiddleware comes after SessionMiddleware."""
         middleware = settings.MIDDLEWARE
-        session_idx = middleware.index(
-            "django.contrib.sessions.middleware.SessionMiddleware"
-        )
+        session_idx = middleware.index("django.contrib.sessions.middleware.SessionMiddleware")
         locale_idx = middleware.index("django.middleware.locale.LocaleMiddleware")
         # LocaleMiddleware should come after SessionMiddleware
         self.assertLess(session_idx, locale_idx)
@@ -185,7 +181,7 @@ class TranslationWorkflowTest(TestCase):
 
     def test_makemessages_command_exists(self):
         """Verify makemessages command can be invoked."""
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603, S607
             ["python", "manage.py", "makemessages", "--help"],
             capture_output=True,
             text=True,
@@ -198,7 +194,7 @@ class TranslationWorkflowTest(TestCase):
 
     def test_compilemessages_command_exists(self):
         """Verify compilemessages command can be invoked."""
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603, S607
             ["python", "manage.py", "compilemessages", "--help"],
             capture_output=True,
             text=True,

@@ -24,6 +24,7 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 testpaths = ["tests"]
 addopts = "-v --tb=short --strict-markers --reuse-db"
+norecursedirs = ["tests/fixtures"]
 
 [tool.black]
 line-length = 100

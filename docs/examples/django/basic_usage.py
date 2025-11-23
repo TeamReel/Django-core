@@ -32,7 +32,7 @@ def main():
 
     # Get project structure
     structure = adapter.get_project_structure()
-    print(f"\nProject structure:")
+    print("\nProject structure:")
     print(f"  Apps: {len(structure['apps'])}")
     print(f"  Settings files: {len(structure['settings'])}")
     print(f"  Test paths: {len(structure['tests'])}")

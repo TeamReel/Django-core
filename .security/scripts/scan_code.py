@@ -414,7 +414,7 @@ def main() -> int:
             print(json.dumps(report, indent=2))
 
         # Print summary
-        print(f"\n📊 Static Code Analysis Summary:")
+        print("\n📊 Static Code Analysis Summary:")
         print(f"   Total issues: {report['total_issues']}")
         print(f"   Blocking: {report['blocking_issues']}")
         print(f"   Warnings: {report['warning_issues']}")

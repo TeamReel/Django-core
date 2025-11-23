@@ -5,7 +5,7 @@ Implements the ReporterProtocol and generates security baseline reports.
 
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from security_baseline.reports import (
@@ -70,7 +70,7 @@ class SecurityReporter:
         report = SecurityReport(
             report_id=f"security-{int(time.time())}",
             report_type="runtime_startup",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             environment=environment,
             enforcement_mode=enforcement_mode,
             violations=violations,

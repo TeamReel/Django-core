@@ -142,7 +142,7 @@ def parse_settings_file(file_path: Path) -> dict[str, tuple[Any, int]]:
                         line_number = node.lineno
                         settings[setting_name] = (value, line_number)
 
-    except Exception as e:
+    except Exception:
         # If parsing fails, return empty dict and let validation report the error
         pass
 
@@ -570,7 +570,7 @@ def main() -> int:
             print(json.dumps(report, indent=2))
 
         # Print summary
-        print(f"\n📊 Configuration Audit Summary:")
+        print("\n📊 Configuration Audit Summary:")
         print(f"   Files audited: {len(settings_files)}")
         print(f"   Total violations: {report['total_issues']}")
         print(f"   Blocking: {report['blocking_issues']}")

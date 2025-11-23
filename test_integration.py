@@ -4,8 +4,9 @@ This validates the Definition of Done requirement for WP02.
 """
 
 import tempfile
-import yaml
 from pathlib import Path
+
+import yaml
 
 # Create a minimal test repository structure
 with tempfile.TemporaryDirectory() as tmp_dir:
@@ -29,7 +30,7 @@ with tempfile.TemporaryDirectory() as tmp_dir:
 
     # Test import of integration API
     try:
-        from constitution_engine.core.integration import run_with_config, create_engine_from_config
+        from constitution_engine.core.integration import create_engine_from_config, run_with_config
 
         print("✅ Integration API imports successfully")
 

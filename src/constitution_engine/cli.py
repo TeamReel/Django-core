@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from typing import NoReturn
 
-from constitution_engine.core.integration import EngineFactory, run_with_config
+from constitution_engine.core.integration import run_with_config
 from constitution_engine.core.models import CheckStatus, Severity
 
 __all__ = ["main", "cli"]
@@ -143,7 +143,10 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(
         prog="constitution-engine",
-        description="Constitutional Enforcement Engine - Validate repositories against constitutional rules",
+        description=(
+            "Constitutional Enforcement Engine - "
+            "Validate repositories against constitutional rules"
+        ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

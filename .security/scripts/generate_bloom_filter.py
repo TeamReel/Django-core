@@ -46,8 +46,9 @@ See Also:
 
 import argparse
 import sys
-from pybloom_live import BloomFilter
 from pathlib import Path
+
+from pybloom_live import BloomFilter
 
 
 def main():
@@ -125,14 +126,14 @@ def main():
         return 1
 
     file_size_mb = output_path.stat().st_size / 1024 / 1024
-    print(f"\n✓ Done!")
+    print("\n✓ Done!")
     print(f"  Bloom filter size: {file_size_mb:.2f} MB")
     print(f"  Passwords indexed: {i+1:,}")
     print(f"  False positive rate: {args.error_rate * 100:.3f}%")
-    print(f"\nTo use this bloom filter:")
+    print("\nTo use this bloom filter:")
     print(f"  1. Move {args.output} to project root/.security/data/")
-    print(f"  2. Restart Django server")
-    print(f"  3. Verify with: pytest tests/security_baseline/validators/test_breach_detector.py")
+    print("  2. Restart Django server")
+    print("  3. Verify with: pytest tests/security_baseline/validators/test_breach_detector.py")
 
     return 0
 
