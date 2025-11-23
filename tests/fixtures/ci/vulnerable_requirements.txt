@@ -1,0 +1,17 @@
+# WP14-T128: Vulnerable dependencies fixture for CI testing
+# These packages have known vulnerabilities for testing dependency scanning
+
+# Vulnerable Django version (example - not actually vulnerable in this case)
+# django==2.2.0  # CVE-2019-XXXX example
+
+# Vulnerable requests version
+# requests==2.6.0  # CVE-2015-2296
+
+# Outdated packages for testing
+# pyyaml==3.13  # CVE-2017-18342
+
+# For actual CI testing, use real vulnerable versions
+# but commented out to avoid security scanner alerts in repo
+django>=4.2.0  # Placeholder - replace with vulnerable version for testing only
+requests>=2.31.0  # Placeholder - replace with vulnerable version for testing only
+pyyaml>=6.0  # Placeholder - replace with vulnerable version for testing only

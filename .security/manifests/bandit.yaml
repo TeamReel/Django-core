@@ -1,0 +1,33 @@
+# Bandit Static Security Analysis Configuration
+# Used by .security/scripts/scan_code.py (WP11)
+
+version: "1.0"
+
+severity_thresholds:
+  block_on: ["HIGH", "CRITICAL"]
+  warn_on: ["MEDIUM", "LOW"]
+
+scan_paths:
+  - "src/"
+  - "tests/"
+
+exclude_paths:
+  - ".venv/"
+  - "*/migrations/"
+  - "*/__pycache__/"
+  - "*.pyc"
+
+timeout_seconds: 300  # 5 minutes for incremental, 600 for full scan
+
+# Exemptions for specific security findings
+# Each exemption must have:
+#   - test_id: Bandit test ID (e.g., B201, B601)
+#   - file: File path where the issue exists
+#   - justification: Reason for exemption
+#   - expires: Expiration date (YYYY-MM-DD) - must be re-justified after expiration
+exemptions:
+  # Example exemption (remove when implementing actual exemptions):
+  # - test_id: "B201"
+  #   file: "src/example/legacy_code.py"
+  #   justification: "subprocess.call required for legacy integration - migrating in Q2 2025"
+  #   expires: "2025-06-30"

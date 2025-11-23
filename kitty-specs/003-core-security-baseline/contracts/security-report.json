@@ -1,0 +1,443 @@
+# Security Report Contract
+
+**Version**: 1.0.0
+**Format**: JSON Schema
+**Purpose**: Defines the structure of SecurityReport output for runtime checks and CI scanning
+
+## SecurityReport Schema
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://django-core-app/schemas/security-report.json",
+  "title": "Security Report",
+  "description": "Aggregated security validation report from runtime or CI scanning",
+  "type": "object",
+  "required": [
+    "report_id",
+    "report_type",
+    "timestamp",
+    "environment",
+    "enforcement_mode",
+    "violations",
+    "passed_rules",
+    "overall_status",
+    "execution_time_ms"
+  ],
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this report",
+      "example": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    "report_type": {
+      "type": "string",
+      "enum": [
+        "runtime_startup",
+        "ci_dependency_scan",
+        "ci_static_analysis",
+        "ci_config_audit",
+        "ci_unified"
+      ],
+      "description": "Type of security check performed"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when report was generated",
+      "example": "2025-11-22T10:30:45.123Z"
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["local", "staging", "production", "ci"],
+      "description": "Environment where checks were executed"
+    },
+    "enforcement_mode": {
+      "type": "string",
+      "enum": ["strict", "advisory"],
+      "description": "Whether violations block deployment (strict) or only warn (advisory)"
+    },
+    "violations": {
+      "type": "array",
+      "description": "List of all security rule violations detected",
+      "items": {
+        "$ref": "#/definitions/SecurityRuleViolation"
+      }
+    },
+    "passed_rules": {
+      "type": "array",
+      "description": "List of rule IDs that passed validation",
+      "items": {
+        "type": "string",
+        "pattern": "^SEC[0-9]{3}-[A-Z-]+$",
+        "example": "SEC001-DEBUG-MODE"
+      }
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "WARNING"],
+      "description": "Overall security posture: PASS (no violations), FAIL (critical/high in strict), WARNING (violations in advisory)"
+    },
+    "owasp_asvs_coverage": {
+      "$ref": "#/definitions/ASVSCoverage",
+      "description": "OWASP ASVS Level 1 control coverage statistics"
+    },
+    "execution_time_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Time taken to execute security checks in milliseconds",
+      "example": 187
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional contextual information",
+      "properties": {
+        "git_commit": {
+          "type": "string",
+          "description": "Git commit SHA",
+          "example": "cd1f0dd"
+        },
+        "git_branch": {
+          "type": "string",
+          "description": "Git branch name",
+          "example": "003-core-security-baseline"
+        },
+        "django_version": {
+          "type": "string",
+          "description": "Django framework version",
+          "example": "5.0.1"
+        },
+        "python_version": {
+          "type": "string",
+          "description": "Python runtime version",
+          "example": "3.12.0"
+        },
+        "ci_job_id": {
+          "type": "string",
+          "description": "CI job identifier (GitHub Actions run ID, etc.)",
+          "example": "1234567890"
+        },
+        "ci_job_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to CI job logs"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "SecurityRuleViolation": {
+      "type": "object",
+      "required": [
+        "rule_id",
+        "rule_name",
+        "message",
+        "severity",
+        "owasp_asvs_refs",
+        "remediation",
+        "timestamp"
+      ],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "pattern": "^SEC[0-9]{3}-[A-Z-]+$",
+          "description": "Unique rule identifier",
+          "example": "SEC001-DEBUG-MODE"
+        },
+        "rule_name": {
+          "type": "string",
+          "description": "Human-readable rule name",
+          "example": "Debug Mode Production Check"
+        },
+        "message": {
+          "type": "string",
+          "description": "Specific violation message",
+          "example": "DEBUG=True detected in production environment"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+          "description": "Severity level of the violation"
+        },
+        "violated_setting": {
+          "type": "string",
+          "description": "Django setting or configuration key that caused violation",
+          "example": "DEBUG"
+        },
+        "current_value": {
+          "description": "Current (invalid) value of the setting",
+          "example": true
+        },
+        "expected_value": {
+          "description": "Expected (valid) value or constraint",
+          "example": false
+        },
+        "owasp_asvs_refs": {
+          "type": "array",
+          "description": "OWASP ASVS control IDs this violation impacts",
+          "items": {
+            "type": "string",
+            "pattern": "^V[0-9]+\\.[0-9]+\\.[0-9]+$",
+            "example": "V1.2.2"
+          }
+        },
+        "remediation": {
+          "type": "string",
+          "description": "Step-by-step instructions to fix the violation",
+          "example": "Set DEBUG=False in config/settings/production.py"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When violation was detected"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment where violation occurred",
+          "example": "production"
+        }
+      }
+    },
+    "ASVSCoverage": {
+      "type": "object",
+      "description": "OWASP ASVS control coverage statistics",
+      "required": ["total_controls_checked", "level_1_coverage_percent", "categories"],
+      "properties": {
+        "total_controls_checked": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of OWASP ASVS Level 1 controls validated",
+          "example": 26
+        },
+        "level_1_coverage_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of required Level 1 controls covered (target: 100%)",
+          "example": 104
+        },
+        "categories": {
+          "type": "object",
+          "description": "Control count by OWASP ASVS category",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "example": {
+            "V1_Architecture_Design_Threat_Modeling": 8,
+            "V2_Authentication": 5,
+            "V3_Session_Management": 4,
+            "V5_Validation_Sanitization_Encoding": 3,
+            "V8_Data_Protection": 3,
+            "V9_Communication": 2,
+            "V14_Configuration": 1
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+## Example Reports
+
+### Runtime Startup Report (PASS)
+
+```json
+{
+  "report_id": "550e8400-e29b-41d4-a716-446655440000",
+  "report_type": "runtime_startup",
+  "timestamp": "2025-11-22T10:30:45.123Z",
+  "environment": "production",
+  "enforcement_mode": "strict",
+  "violations": [],
+  "passed_rules": [
+    "SEC001-DEBUG-MODE",
+    "SEC002-SECRET-KEY",
+    "SEC003-ALLOWED-HOSTS",
+    "SEC004-SESSION-SECURITY",
+    "SEC005-CSRF-PROTECTION",
+    "SEC006-SECURITY-HEADERS",
+    "SEC007-CSP-HEADERS",
+    "SEC008-PASSWORD-VALIDATION",
+    "SEC009-SSL-REDIRECT",
+    "SEC010-DATABASE-SSL"
+  ],
+  "overall_status": "PASS",
+  "owasp_asvs_coverage": {
+    "total_controls_checked": 26,
+    "level_1_coverage_percent": 104,
+    "categories": {
+      "V1_Architecture_Design_Threat_Modeling": 8,
+      "V2_Authentication": 5,
+      "V3_Session_Management": 4,
+      "V5_Validation_Sanitization_Encoding": 3,
+      "V8_Data_Protection": 3,
+      "V9_Communication": 2,
+      "V14_Configuration": 1
+    }
+  },
+  "execution_time_ms": 187,
+  "metadata": {
+    "git_commit": "cd1f0dd",
+    "git_branch": "main",
+    "django_version": "5.0.1",
+    "python_version": "3.12.0"
+  }
+}
+```
+
+### Runtime Startup Report (FAIL)
+
+```json
+{
+  "report_id": "660f9511-f30c-52e5-b827-557766551111",
+  "report_type": "runtime_startup",
+  "timestamp": "2025-11-22T11:15:30.456Z",
+  "environment": "production",
+  "enforcement_mode": "strict",
+  "violations": [
+    {
+      "rule_id": "SEC001-DEBUG-MODE",
+      "rule_name": "Debug Mode Production Check",
+      "message": "DEBUG=True detected in production environment",
+      "severity": "CRITICAL",
+      "violated_setting": "DEBUG",
+      "current_value": true,
+      "expected_value": false,
+      "owasp_asvs_refs": ["V1.2.2", "V14.1.1"],
+      "remediation": "Set DEBUG=False in config/settings/production.py",
+      "timestamp": "2025-11-22T11:15:30.451Z",
+      "environment": "production"
+    },
+    {
+      "rule_id": "SEC003-ALLOWED-HOSTS",
+      "rule_name": "Allowed Hosts Configuration Check",
+      "message": "ALLOWED_HOSTS=['*'] is insecure in production",
+      "severity": "HIGH",
+      "violated_setting": "ALLOWED_HOSTS",
+      "current_value": ["*"],
+      "expected_value": "Explicit list of domains",
+      "owasp_asvs_refs": ["V1.2.2", "V5.1.1"],
+      "remediation": "Set ALLOWED_HOSTS=['example.com', 'www.example.com'] in config/settings/production.py",
+      "timestamp": "2025-11-22T11:15:30.452Z",
+      "environment": "production"
+    }
+  ],
+  "passed_rules": [
+    "SEC002-SECRET-KEY",
+    "SEC004-SESSION-SECURITY",
+    "SEC005-CSRF-PROTECTION",
+    "SEC006-SECURITY-HEADERS",
+    "SEC007-CSP-HEADERS",
+    "SEC008-PASSWORD-VALIDATION",
+    "SEC009-SSL-REDIRECT",
+    "SEC010-DATABASE-SSL"
+  ],
+  "overall_status": "FAIL",
+  "owasp_asvs_coverage": {
+    "total_controls_checked": 26,
+    "level_1_coverage_percent": 104,
+    "categories": {
+      "V1_Architecture_Design_Threat_Modeling": 8,
+      "V2_Authentication": 5,
+      "V3_Session_Management": 4,
+      "V5_Validation_Sanitization_Encoding": 3,
+      "V8_Data_Protection": 3,
+      "V9_Communication": 2,
+      "V14_Configuration": 1
+    }
+  },
+  "execution_time_ms": 192,
+  "metadata": {
+    "git_commit": "abc1234",
+    "git_branch": "feature-branch",
+    "django_version": "5.0.1",
+    "python_version": "3.12.0"
+  }
+}
+```
+
+### CI Dependency Scan Report
+
+```json
+{
+  "report_id": "770a0622-040d-63f6-c938-668877662222",
+  "report_type": "ci_dependency_scan",
+  "timestamp": "2025-11-22T12:00:00.789Z",
+  "environment": "ci",
+  "enforcement_mode": "strict",
+  "violations": [
+    {
+      "rule_id": "DEP001-VULNERABLE-PACKAGE",
+      "rule_name": "Vulnerable Dependency Detection",
+      "message": "Package 'requests' version 2.28.0 has known vulnerabilities",
+      "severity": "HIGH",
+      "violated_setting": "requirements/base.txt:requests==2.28.0",
+      "current_value": "2.28.0",
+      "expected_value": ">=2.31.0",
+      "owasp_asvs_refs": ["V14.2.1"],
+      "remediation": "Update requirements/base.txt: requests>=2.31.0",
+      "timestamp": "2025-11-22T12:00:00.785Z",
+      "environment": "ci",
+      "cve_ids": ["CVE-2023-32681"],
+      "advisory_url": "https://github.com/advisories/GHSA-j8r2-6x86-q33q"
+    }
+  ],
+  "passed_rules": [],
+  "overall_status": "FAIL",
+  "owasp_asvs_coverage": {
+    "total_controls_checked": 1,
+    "level_1_coverage_percent": 4,
+    "categories": {
+      "V14_Configuration": 1
+    }
+  },
+  "execution_time_ms": 4523,
+  "metadata": {
+    "git_commit": "def5678",
+    "git_branch": "feature-branch",
+    "ci_job_id": "1234567890",
+    "ci_job_url": "https://github.com/TeamReel/Django-core/actions/runs/1234567890",
+    "scan_tool": "pip-audit",
+    "scan_tool_version": "2.6.1"
+  }
+}
+```
+
+## Contract Validation
+
+### Schema Validation
+
+All SecurityReport outputs MUST validate against the JSON schema above. Validation can be performed using:
+
+```python
+import jsonschema
+
+schema = load_schema("security-report.json")
+report = generate_security_report()
+
+jsonschema.validate(instance=report.to_dict(), schema=schema)
+```
+
+### Required Fields
+
+- **report_id**: Must be valid UUID v4
+- **timestamp**: Must be ISO 8601 format with timezone
+- **environment**: Must be one of: local, staging, production, ci
+- **enforcement_mode**: Must be one of: strict, advisory
+- **overall_status**: Must be derived correctly:
+  - FAIL: strict mode AND (critical OR high) violations present
+  - WARNING: advisory mode AND any violations present
+  - PASS: no violations OR (advisory mode AND only low/medium violations)
+
+### Backwards Compatibility
+
+- Schema version is embedded in `$schema` field
+- Future schema changes MUST increment version (1.0.0 → 2.0.0 for breaking changes)
+- Consumers MUST ignore unknown fields (forward compatibility)
+
+---
+
+**Contract Status**: ✅ Complete - JSON Schema defined with examples

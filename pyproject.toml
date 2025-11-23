@@ -96,14 +96,22 @@ strict_settings = true
 
 [tool.coverage.run]
 source = ["src"]
+# WP14-T132: Coverage exclusions for test files, migrations, and generated code
 omit = [
     "*/tests/*",
+    "*/test_*.py",
     "*/migrations/*",
     "*/__init__.py",
+    "*/__pycache__/*",
+    "*/.*",
+    "*/venv/*",
+    "*/node_modules/*",
 ]
+branch = true
 
 [tool.coverage.report]
-fail_under = 75
+# WP14-T127: Coverage threshold set to 80% per SC-008 requirement
+fail_under = 80
 show_missing = true
 skip_covered = false
 exclude_lines = [
@@ -113,6 +121,8 @@ exclude_lines = [
     "raise NotImplementedError",
     "if TYPE_CHECKING:",
     "if __name__ == .__main__.:",
+    "@abstractmethod",
+    "@overload",
 ]
 
 [tool.coverage.html]

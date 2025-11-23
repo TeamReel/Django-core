@@ -1,0 +1,27 @@
+{
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-11-23T16:58:33Z",
+      "accepted_by": "GitHub Copilot",
+      "accepted_from_commit": "8d955af6451ac7f1534b74bf96988132f9010fb3",
+      "branch": "003-core-security-baseline",
+      "mode": "local",
+      "validation_commands": [
+        "pytest",
+        "python manage.py check",
+        "ruff check .",
+        "mypy ."
+      ]
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2025-11-23T16:58:33Z",
+  "accepted_by": "GitHub Copilot",
+  "accepted_from_commit": "8d955af6451ac7f1534b74bf96988132f9010fb3",
+  "created_at": "2025-11-22T19:47:06Z",
+  "feature_number": "003",
+  "friendly_name": "Core Security Baseline",
+  "slug": "003-core-security-baseline",
+  "source_description": "core-security-baseline: Runtime security enforcement (sessions, CSRF, headers, passwords) + CI scanning (dependencies, static analysis, configuration audit) integrated with Constitutional Engine"
+}

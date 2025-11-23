@@ -1,0 +1,13 @@
+# pip-audit Dependency Vulnerability Scanning Configuration
+# Used by .security/scripts/scan_dependencies.py (WP10)
+
+version: "1.0"
+
+severity_thresholds:
+  block_on: ["CRITICAL", "HIGH"]
+  warn_on: ["MEDIUM", "LOW"]
+
+timeout_seconds: 300  # 5 minutes
+
+# Exemptions populated in WP10
+exemptions: []

@@ -22,6 +22,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Core-App modules
+    "constitution_engine",
+    "security_baseline",
 ]
 
 MIDDLEWARE = [
@@ -84,3 +87,14 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# WP13: Security enforcement mode configuration (FR-024)
+# Controls how security violations are handled:
+# - "strict": Block startup on violations (production default)
+# - "advisory": Log violations but allow startup (development default)
+# - "mixed": Block on CRITICAL, warn on HIGH/MEDIUM (staging default)
+SECURITY_ENFORCEMENT_MODE = os.getenv("SECURITY_ENFORCEMENT_MODE", "strict")
+
+# WP13: Environment detection for security profiles
+# Used by ManifestLoader to select appropriate security configuration
+ENVIRONMENT = os.getenv("DJANGO_ENV", "local")

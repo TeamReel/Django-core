@@ -9,3 +9,12 @@ djangorestframework==3.14.0
 
 # Environment variable management
 django-environ==0.11.2
+
+# Security Baseline Runtime Dependencies (Feature 003)
+# Added in WP01 (Project Structure and Dependencies)
+
+# YAML parsing for security manifests
+pyyaml>=6.0.1
+
+# Bloom filter for password breach detection (SEC020)
+pybloom-live>=3.1.0

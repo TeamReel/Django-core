@@ -1,0 +1,99 @@
+# Staging Environment Overrides
+# Applies to DJANGO_ENV=staging
+# Mixed enforcement: Critical checks strict, others advisory
+
+version: "1.0"
+environment: "staging"
+
+# Mixed mode: Block on CRITICAL, warn on HIGH/MEDIUM
+enforcement_mode: "mixed"
+
+rules:
+  # DEBUG must be False in staging (strict)
+  SEC001-DEBUG-MODE:
+    enforcement_mode: "strict"
+
+  # SECRET_KEY must be strong in staging (strict)
+  SEC002-SECRET-KEY:
+    enforcement_mode: "strict"
+
+  # ALLOWED_HOSTS must be specific (strict)
+  SEC003-ALLOWED-HOSTS:
+    enforcement_mode: "strict"
+
+  # Session security required (strict)
+  SEC004-SESSION-COOKIE-SECURE:
+    enforcement_mode: "strict"
+
+  SEC005-SESSION-COOKIE-HTTPONLY:
+    enforcement_mode: "strict"
+
+  SEC006-SESSION-COOKIE-SAMESITE:
+    enforcement_mode: "strict"
+
+  # CSRF protection required (strict)
+  SEC007-CSRF-COOKIE-SECURE:
+    enforcement_mode: "strict"
+
+  SEC008-CSRF-COOKIE-HTTPONLY:
+    enforcement_mode: "strict"
+
+  SEC009-CSRF-MIDDLEWARE:
+    enforcement_mode: "strict"
+
+  # Security headers required but can be advisory (testing)
+  SEC010-HSTS-HEADER:
+    enforcement_mode: "advisory"  # May not have HTTPS cert yet
+
+  SEC014-CSP-HEADER:
+    enforcement_mode: "advisory"  # May need refinement
+
+  SEC015-SSL-REDIRECT:
+    enforcement_mode: "advisory"
+
+  # Database SSL recommended but not enforced (testing)
+  SEC016-DATABASE-SSL:
+    enforcement_mode: "advisory"
+
+  # Password validation strict
+  SEC017-PASSWORD-LENGTH:
+    enforcement_mode: "strict"
+
+  SEC018-PASSWORD-COMPLEXITY:
+    enforcement_mode: "strict"
+
+  SEC019-PASSWORD-SIMILARITY:
+    enforcement_mode: "strict"
+
+  # Breach detection advisory (bloom filter may not be available)
+  SEC020-PASSWORD-BREACH:
+    enforcement_mode: "advisory"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  structured: true
+
+# Notes:
+# - Staging should closely mirror production but allow testing
+# - Use real HTTPS certificates (Let's Encrypt staging)
+# - Database SSL recommended but not required for RDS/Cloud SQL staging instances
+
+# Rule Exemptions (WP13 - FR-021)
+# Staging exemptions for pre-production testing scenarios
+exemptions:
+  - rule_id: "SEC010-HSTS-HEADER"
+    justification: "Staging environment testing HTTPS configuration, HSTS may cause browser issues during cert updates"
+    expires: "2026-06-30"
+    environments: ["staging"]
+    approved_by: "security-team"
+    approved_date: "2025-01-15"
+    notes: "Review before production deployment"
+
+  - rule_id: "SEC016-DATABASE-SSL"
+    justification: "RDS staging instance configured without SSL for cost optimization, production will enforce SSL"
+    expires: "2025-12-31"
+    environments: ["staging"]
+    approved_by: "infrastructure-team"
+    approved_date: "2025-01-20"
+    notes: "Must be enabled in production environment"

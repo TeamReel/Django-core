@@ -1,0 +1,88 @@
+# Local Development Environment Overrides
+# Applies to DJANGO_ENV=local
+# Relaxed security for development convenience
+
+version: "1.0"
+environment: "local"
+
+# Advisory mode: Log violations but allow startup
+enforcement_mode: "advisory"
+
+rules:
+  # Allow DEBUG mode in local development
+  SEC001-DEBUG-MODE:
+    enabled: false  # Disable check - DEBUG=True is OK locally
+    enforcement_mode: "advisory"
+
+  # SECRET_KEY can be simple in local (but still check it exists)
+  SEC002-SECRET-KEY:
+    enforcement_mode: "advisory"
+
+  # ALLOWED_HOSTS can be loose locally (['*'] is OK)
+  SEC003-ALLOWED-HOSTS:
+    enforcement_mode: "advisory"
+
+  # Session cookies don't need Secure flag on localhost (HTTP)
+  SEC004-SESSION-COOKIE-SECURE:
+    enabled: false  # Disable - HTTP is OK locally
+
+  # CSRF cookies don't need Secure flag on localhost
+  SEC007-CSRF-COOKIE-SECURE:
+    enabled: false
+
+  # HSTS not needed locally (no HTTPS)
+  SEC010-HSTS-HEADER:
+    enabled: false
+
+  # SSL redirect not needed locally
+  SEC015-SSL-REDIRECT:
+    enabled: false
+
+  # Database SSL not needed locally (localhost connections)
+  SEC016-DATABASE-SSL:
+    enabled: false
+
+  # Password breach detection optional locally
+  SEC020-PASSWORD-BREACH:
+    enforcement_mode: "advisory"
+
+# Logging configuration
+logging:
+  level: "DEBUG"
+  structured: false  # Use human-readable logs locally
+
+# Notes:
+# - This manifest allows insecure defaults for local development
+# - Use docker-compose or runserver without HTTPS
+# - Never use these settings in staging or production!
+
+# Rule Exemptions (WP13 - FR-021)
+# Exemptions allow bypassing specific rules with justification and expiration tracking
+exemptions:
+  - rule_id: "SEC001-DEBUG-MODE"
+    justification: "Development environment requires DEBUG=True for detailed error pages and debugging toolbar"
+    expires: "2026-12-31"  # Annual renewal required
+    environments: ["local"]
+    approved_by: "dev-team"
+    approved_date: "2025-01-01"
+
+  - rule_id: "SEC004-SESSION-COOKIE-SECURE"
+    justification: "Local development runs on HTTP (localhost:8000), Secure flag not applicable"
+    expires: "2026-12-31"
+    environments: ["local"]
+    approved_by: "dev-team"
+    approved_date: "2025-01-01"
+
+  - rule_id: "SEC007-CSRF-COOKIE-SECURE"
+    justification: "Local development runs on HTTP (localhost:8000), Secure flag not applicable"
+    expires: "2026-12-31"
+    environments: ["local"]
+    approved_by: "dev-team"
+    approved_date: "2025-01-01"
+
+  - rule_id: "SEC016-DATABASE-SSL"
+    justification: "Local PostgreSQL runs on localhost without SSL, acceptable for development"
+    expires: "2026-12-31"
+    environments: ["local"]
+    approved_by: "dev-team"
+    approved_date: "2025-01-01"

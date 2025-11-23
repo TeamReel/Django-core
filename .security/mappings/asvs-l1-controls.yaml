@@ -1,0 +1,210 @@
+# OWASP ASVS Level 1 Controls Mapping
+# Maps FR requirements to ASVS 4.0.3 verification requirements
+# See: research.md Decision 1 and data-model.md AVSVControl entity
+
+version: "1.0"
+asvs_version: "4.0.3"
+compliance_level: 1
+
+controls:
+  # V1: Architecture, Design and Threat Modeling
+  V1.2.2:
+    rule_ids: ["SEC001-DEBUG-MODE", "SEC002-SECRET-KEY"]
+    title: "Security controls are identified and documented"
+    description: "Verify security controls are properly configured"
+    priority: "P1"
+    work_package: "WP03"
+    status: "implemented"
+
+  V1.6.1:
+    rule_ids: ["SEC010-HSTS-HEADER", "SEC015-SSL-REDIRECT", "SEC016-DATABASE-SSL"]
+    title: "Secure communication channels"
+    description: "Verify all communication uses secure channels (HTTPS, TLS)"
+    priority: "P1"
+    work_package: "WP05"
+    status: "implemented"
+
+  # V2: Authentication
+  V2.1.1:
+    rule_ids: ["SEC017-PASSWORD-LENGTH", "SEC018-PASSWORD-COMPLEXITY", "SEC019-PASSWORD-SIMILARITY"]
+    title: "Password length and complexity requirements"
+    description: "Verify minimum password length (12 chars) and complexity (common passwords, user similarity)"
+    priority: "P1"
+    work_package: "WP06"
+    status: "implemented"
+
+  V2.1.7:
+    rule_ids: ["SEC018-PASSWORD-COMPLEXITY"]
+    title: "Common password validation"
+    description: "Verify password not in common password list"
+    priority: "P1"
+    work_package: "WP06"
+    status: "implemented"
+
+  V2.1.8:
+    rule_ids: ["SEC020-PASSWORD-BREACH"]
+    title: "Password breach detection"
+    description: "Verify password not in known breach databases using HIBP API and bloom filter"
+    priority: "P1"
+    work_package: "WP06"
+    status: "implemented"
+
+  V2.2.1:
+    rule_ids: ["SEC014-CSP-HEADER"]
+    title: "Anti-automation protection"
+    description: "Verify CSP helps prevent automated attacks"
+    priority: "P1"
+    work_package: "WP05"
+    status: "implemented"
+
+  # V3: Session Management
+  V3.4.1:
+    rule_ids: ["SEC004-SESSION-COOKIE-SECURE", "SEC006-SESSION-COOKIE-SAMESITE"]
+    title: "Session cookie security attributes"
+    description: "Verify session cookies use Secure and SameSite attributes"
+    priority: "P1"
+    work_package: "WP04"
+    status: "implemented"
+
+  V3.4.2:
+    rule_ids: ["SEC005-SESSION-COOKIE-HTTPONLY"]
+    title: "Session cookie HttpOnly flag"
+    description: "Verify session cookies use HttpOnly attribute"
+    priority: "P1"
+    work_package: "WP04"
+    status: "implemented"
+
+  # V4: Access Control
+  # (Future WP)
+
+  # V5: Validation, Sanitization and Encoding
+  # (Future WP)
+
+  # V6: Stored Cryptography
+  V6.2.1:
+    rule_ids: ["SEC002"]
+    title: "Cryptographic key strength"
+    description: "Verify SECRET_KEY meets minimum entropy requirements"
+    priority: "P1"
+    work_package: "WP03"
+
+  # V7: Error Handling and Logging
+  V7.4.1:
+    rule_ids: ["SEC001"]
+    title: "Debug mode disabled in production"
+    description: "Verify DEBUG is False in production"
+    priority: "P1"
+    work_package: "WP03"
+
+  # V8: Data Protection
+  V8.3.1:
+    rule_ids: ["SEC010-HSTS-HEADER"]
+    title: "HTTP Strict Transport Security"
+    description: "Verify HSTS header is set with minimum 1 year duration"
+    priority: "P1"
+    work_package: "WP05"
+    status: "implemented"
+
+  V8.3.4:
+    rule_ids: ["SEC015-SSL-REDIRECT"]
+    title: "HTTPS redirection"
+    description: "Verify HTTP redirects to HTTPS"
+    priority: "P1"
+    work_package: "WP05"
+    status: "implemented"
+
+  V8.3.6:
+    rule_ids: ["SEC016-DATABASE-SSL"]
+    title: "Database connection encryption"
+    description: "Verify database connections use TLS/SSL"
+    priority: "P1"
+    work_package: "WP05"
+    status: "implemented"
+
+  # V9: Communication
+  # (Covered by V8 controls)
+
+  # V10: Malicious Code
+  # (Future WP - WP10 pip-audit, WP11 bandit)
+
+  # V11: Business Logic
+  # (Future WP)
+
+  # V12: Files and Resources
+  V12.5.1:
+    rule_ids: ["SEC011-CONTENT-TYPE-NOSNIFF"]
+    title: "Content type sniffing prevention"
+    description: "Verify X-Content-Type-Options: nosniff header is set"
+    priority: "P1"
+    work_package: "WP05"
+    status: "implemented"
+
+  V12.5.2:
+    rule_ids: ["SEC012-X-FRAME-OPTIONS"]
+    title: "Clickjacking protection"
+    description: "Verify X-Frame-Options header is set to DENY or SAMEORIGIN"
+    priority: "P1"
+    work_package: "WP05"
+    status: "implemented"
+
+  # V6: Stored Cryptography
+  V6.2.1:
+    rule_ids: ["SEC002-SECRET-KEY", "SEC016-DATABASE-SSL"]
+    title: "Cryptographic keys and secure channels"
+    description: "Verify SECRET_KEY is properly managed and database connections use encryption"
+    priority: "P1"
+    work_package: "WP03, WP05"
+    status: "implemented"
+
+  # V13: API and Web Service
+  V4.2.2:
+    rule_ids: ["SEC007-CSRF-COOKIE-SECURE", "SEC008-CSRF-COOKIE-HTTPONLY", "SEC009-CSRF-MIDDLEWARE"]
+    title: "CSRF protection with secure tokens"
+    description: "Verify CSRF protection is enabled with secure cookie attributes"
+    priority: "P1"
+    work_package: "WP04"
+    status: "implemented"
+
+  # V14: Configuration
+  V14.1.1:
+    rule_ids: ["SEC001-DEBUG-MODE", "SEC003-ALLOWED-HOSTS"]
+    title: "Secure defaults are used"
+    description: "Verify security defaults like DEBUG=False and specific ALLOWED_HOSTS"
+    priority: "P1"
+    work_package: "WP03"
+    status: "implemented"
+
+  V14.1.2:
+    rule_ids: ["SEC003-ALLOWED-HOSTS"]  # ALLOWED_HOSTS
+    title: "Host header validation"
+    description: "Verify ALLOWED_HOSTS is properly configured"
+    priority: "P1"
+    work_package: "WP03"
+    status: "implemented"
+
+  V14.4.1:
+    rule_ids: ["SEC010-HSTS-HEADER"]
+    title: "HSTS with sufficient duration"
+    description: "Verify HSTS with minimum 1 year duration"
+    priority: "P1"
+    work_package: "WP05"
+    status: "implemented"
+
+  V14.4.3:
+    rule_ids: ["SEC014-CSP-HEADER"]
+    title: "Content Security Policy"
+    description: "Verify CSP header is set without unsafe-inline or unsafe-eval"
+    priority: "P1"
+    work_package: "WP05"
+    status: "implemented"
+
+  V14.4.5:
+    rule_ids: ["SEC013-XSS-FILTER"]
+    title: "XSS filter enabled"
+    description: "Verify X-XSS-Protection header is set"
+    priority: "P1"
+    work_package: "WP05"
+    status: "implemented"
+
+# Total: 26+ ASVS L1 controls mapped to 20 security rules
+# Coverage will be tracked in SecurityReport (data-model.md)

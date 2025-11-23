@@ -1,0 +1,152 @@
+# Security Baseline Runtime Manifest
+# Defines security rules for Django startup validation
+# See: kitty-specs/003-core-security-baseline/quickstart.md
+
+version: "1.0"
+
+rules:
+  # Django Settings Security Rules (WP03)
+  SEC001-DEBUG-MODE:
+    name: "Debug Mode Production Check"
+    category: "django_settings"
+    severity: "CRITICAL"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC002-SECRET-KEY:
+    name: "Secret Key Validation"
+    category: "django_settings"
+    severity: "CRITICAL"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC003-ALLOWED-HOSTS:
+    name: "Allowed Hosts Validation"
+    category: "django_settings"
+    severity: "CRITICAL"
+    enforcement_mode: "strict"
+    enabled: true
+
+  # Session Security Rules (WP04)
+  SEC004-SESSION-COOKIE-SECURE:
+    name: "Session Cookie Secure Flag"
+    category: "session_security"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC005-SESSION-COOKIE-HTTPONLY:
+    name: "Session Cookie HttpOnly Flag"
+    category: "session_security"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC006-SESSION-COOKIE-SAMESITE:
+    name: "Session Cookie SameSite Attribute"
+    category: "session_security"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  # CSRF Protection Rules (WP04)
+  SEC007-CSRF-COOKIE-SECURE:
+    name: "CSRF Cookie Secure Flag"
+    category: "csrf_protection"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC008-CSRF-COOKIE-HTTPONLY:
+    name: "CSRF Cookie HttpOnly Flag"
+    category: "csrf_protection"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC009-CSRF-MIDDLEWARE:
+    name: "CSRF Middleware Enabled"
+    category: "csrf_protection"
+    severity: "CRITICAL"
+    enforcement_mode: "strict"
+    enabled: true
+
+  # Security Headers Rules (WP05)
+  SEC010-HSTS-HEADER:
+    name: "HSTS Header Configuration"
+    category: "security_headers"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC011-CONTENT-TYPE-NOSNIFF:
+    name: "Content Type Nosniff Header"
+    category: "security_headers"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC012-X-FRAME-OPTIONS:
+    name: "X-Frame-Options Header"
+    category: "security_headers"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC013-XSS-FILTER:
+    name: "XSS Filter Header"
+    category: "security_headers"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC014-CSP-HEADER:
+    name: "Content Security Policy"
+    category: "security_headers"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC015-SSL-REDIRECT:
+    name: "SSL Redirect Configuration"
+    category: "security_headers"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  # Database SSL Rules (WP05)
+  SEC016-DATABASE-SSL:
+    name: "Database SSL Configuration"
+    category: "database_security"
+    severity: "CRITICAL"
+    enforcement_mode: "strict"
+    enabled: true
+
+  # Password Validation Rules (WP06)
+  SEC017-PASSWORD-LENGTH:
+    name: "Password Minimum Length"
+    category: "password_validation"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC018-PASSWORD-COMPLEXITY:
+    name: "Password Complexity Check"
+    category: "password_validation"
+    severity: "MEDIUM"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC019-PASSWORD-SIMILARITY:
+    name: "Password User Attribute Similarity"
+    category: "password_validation"
+    severity: "MEDIUM"
+    enforcement_mode: "strict"
+    enabled: true
+
+  SEC020-PASSWORD-BREACH:
+    name: "Password Breach Detection"
+    category: "password_validation"
+    severity: "HIGH"
+    enforcement_mode: "strict"
+    enabled: true

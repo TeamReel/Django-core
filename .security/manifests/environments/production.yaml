@@ -1,0 +1,142 @@
+# Production Environment Overrides
+# Applies to DJANGO_ENV=production
+# Strict enforcement: All security rules enabled and enforced
+
+version: "1.0"
+environment: "production"
+
+# Strict mode: Block startup on any violation
+enforcement_mode: "strict"
+
+rules:
+  # All rules enabled and strict in production
+  SEC001-DEBUG-MODE:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "CRITICAL"
+
+  SEC002-SECRET-KEY:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "CRITICAL"
+
+  SEC003-ALLOWED-HOSTS:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "CRITICAL"
+
+  SEC004-SESSION-COOKIE-SECURE:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+  SEC005-SESSION-COOKIE-HTTPONLY:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+  SEC006-SESSION-COOKIE-SAMESITE:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+  SEC007-CSRF-COOKIE-SECURE:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+  SEC008-CSRF-COOKIE-HTTPONLY:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+  SEC009-CSRF-MIDDLEWARE:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+  SEC010-HSTS-HEADER:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+  SEC011-CONTENT-TYPE-NOSNIFF:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "MEDIUM"
+
+  SEC012-X-FRAME-OPTIONS:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "MEDIUM"
+
+  SEC013-XSS-FILTER:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "MEDIUM"
+
+  SEC014-CSP-HEADER:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+  SEC015-SSL-REDIRECT:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+  SEC016-DATABASE-SSL:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "CRITICAL"
+
+  SEC017-PASSWORD-LENGTH:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+  SEC018-PASSWORD-COMPLEXITY:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "MEDIUM"
+
+  SEC019-PASSWORD-SIMILARITY:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "MEDIUM"
+
+  SEC020-PASSWORD-BREACH:
+    enabled: true
+    enforcement_mode: "strict"
+    severity: "HIGH"
+
+# Logging configuration
+logging:
+  level: "WARNING"  # Only warnings and errors in production
+  structured: true   # JSON structured logs for aggregation
+
+# Monitoring and alerting
+monitoring:
+  enabled: true
+  alerts_on_violations: true
+
+# Notes:
+# - All security checks enforced in production
+# - No exemptions or overrides allowed
+# - Violations block deployment/startup
+# - Use infrastructure-as-code (Terraform, CloudFormation) to ensure compliance
+# - Database SSL required for RDS, Cloud SQL, Azure Database
+# - HTTPS required with valid certificates (Let's Encrypt, AWS ACM, etc.)
+
+# Rule Exemptions (WP13 - FR-021)
+# Production environment should have NO exemptions
+# Any exceptions require security team approval and executive signoff
+# Format (for reference only - keep list empty in production):
+# - rule_id: "SEC-XXX-RULE-NAME"
+#   justification: "Business-critical reason with risk acceptance"
+#   expires: "YYYY-MM-DD"  # Maximum 90 days
+#   environments: ["production"]
+#   approved_by: "security-team + exec-sponsor"
+#   approved_date: "YYYY-MM-DD"
+#   risk_acceptance: "Documented in security risk register"
+exemptions: []  # MUST remain empty - production exemptions require security review

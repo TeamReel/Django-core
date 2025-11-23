@@ -18,3 +18,12 @@ djangorestframework-stubs==3.14.5
 
 # Git hooks
 pre-commit==3.6.0
+
+# Security Scanning Tools (Feature 003)
+# Added in WP01 (Project Structure and Dependencies)
+
+# Dependency vulnerability scanning (WP10)
+pip-audit>=2.6.0
+
+# Python static security analysis (WP11)
+bandit>=1.7.5
