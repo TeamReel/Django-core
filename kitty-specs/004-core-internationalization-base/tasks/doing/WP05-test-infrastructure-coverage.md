@@ -1,7 +1,10 @@
 ---
 work_package_id: WP05
 title: Test Infrastructure & Coverage
-lane: planned
+lane: doing
+assignee: github-copilot
+agent: github-copilot
+shell_pid: "6824"
 subtasks:
   - T019
   - T020
@@ -14,6 +17,12 @@ history:
   - date: 2025-11-23
     action: created
     author: spec-kitty.tasks
+  - date: 2025-11-23T21:20:00Z
+    action: started_implementation
+    author: github-copilot
+    shell_pid: 6824
+    lane: doing
+    note: "Started implementation"
 ---
 
 # WP05: Test Infrastructure & Coverage
