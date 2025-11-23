@@ -30,6 +30,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",  # Language detection and activation
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -75,13 +76,35 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# Internationalization and Localization
+# https://docs.djangoproject.com/en/5.1/topics/i18n/
+
+# Default language for all server-rendered content
 LANGUAGE_CODE = "en-us"
 
+# UTC for all server-side datetime operations
 TIME_ZONE = "UTC"
 
+# Enable Django translation system
 USE_I18N = True
 
+# Enable localized formatting (deprecated Django 5.0+, but harmless)
+USE_L10N = True
+
+# Store datetimes as timezone-aware (UTC)
 USE_TZ = True
+
+# Available languages for content translation
+# Additional languages can be added without code changes
+LANGUAGES = [
+    ("en", "English"),
+]
+
+# Translation file directories
+# Per-app locale/ directories are auto-detected (e.g., src/<app>/locale/)
+LOCALE_PATHS = [
+    BASE_DIR / "locale",  # Centralized translations for core messages
+]
 
 
 STATIC_URL = "static/"
