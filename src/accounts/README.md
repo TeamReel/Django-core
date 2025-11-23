@@ -1,0 +1,278 @@
+# Accounts Module
+
+**Purpose**: Provides core authentication and user management functionality for the Django Core-App.
+
+## Overview
+
+The `accounts` module implements a custom user model with email-as-username authentication, role-based access control, and comprehensive user management features. It serves as the foundation for authentication across all downstream projects.
+
+## User Model Fields
+
+The custom `User` model (inheriting from `AbstractBaseUser` and `PermissionsMixin`) includes:
+
+### Core Authentication Fields
+- **email** (EmailField, unique): Primary identifier for authentication (replaces username)
+- **password** (CharField): Hashed password using Django's PBKDF2 with 260,000+ iterations
+- **is_active** (BooleanField, default=False): Account activation status (False until email verified)
+- **is_staff** (BooleanField, default=False): Django admin access permission
+- **is_superuser** (BooleanField, default=False): Platform administrator with all permissions
+
+### Personal Information
+- **first_name** (CharField, max_length=150, blank=True): User's first name
+- **last_name** (CharField, max_length=150, blank=True): User's last name
+
+### Email Verification
+- **email_verified** (BooleanField, default=False): Email verification status
+- **email_verification_sent_at** (DateTimeField, nullable): Timestamp of last verification email sent
+
+### Timestamps
+- **date_joined** (DateTimeField, auto_now_add=True): Account creation timestamp
+- **last_login** (DateTimeField, nullable): Last successful login timestamp
+
+### Inherited from PermissionsMixin
+- **groups** (ManyToManyField): Role assignments (superadmin/admin/user)
+- **user_permissions** (ManyToManyField): Individual permission assignments
+
+## Authentication Flow
+
+### Registration
+1. User submits email and password via registration form or API
+2. System creates user with `is_active=False` and `email_verified=False`
+3. Verification email sent with secure token (24-hour expiry)
+4. User clicks verification link
+5. System sets `email_verified=True` and `is_active=True`
+6. User can now sign in
+
+### Sign In
+1. User submits email and password
+2. System checks `email_verified=True` and `is_active=True`
+3. If verified, create session (24h inactive timeout, 7d absolute)
+4. If unverified, reject with "verify your email" message
+
+### Password Reset
+1. User requests reset via email
+2. System sends reset email (1-hour token expiry) only to verified accounts
+3. User clicks link and sets new password
+4. System invalidates all existing sessions (security measure)
+5. User signs in with new password
+
+## Role System
+
+The module implements a three-tier role system using Django Groups:
+
+### Superadmin (Platform Administrator)
+- **Identification**: `is_superuser=True`
+- **Permissions**: All platform-level permissions (Django's built-in superuser)
+- **Capabilities**: Manage all users, assign any role, full Django Admin access
+
+### Admin (Tenant Administrator)
+- **Identification**: Member of 'admin' group
+- **Permissions**: User management within tenant scope
+- **Capabilities**: View/activate/deactivate users, assign 'user' role only, trigger password resets
+
+### User (Regular User)
+- **Identification**: Member of 'user' group
+- **Permissions**: Basic access, no administrative capabilities
+- **Capabilities**: Self-service profile, password reset, standard application features
+
+### Role Properties
+
+The User model provides convenience properties for role checking:
+
+```python
+user.is_superadmin  # Returns user.is_superuser
+user.is_admin  # Returns True if user in 'admin' group
+user.is_regular_user  # Returns True if user in 'user' group (and not admin/superadmin)
+```
+
+## Extending the User Model
+
+Downstream projects can extend the User model for product-specific attributes:
+
+```python
+from accounts.models import User
+
+class CustomUser(User):
+    """Extended user model with product-specific fields."""
+
+    phone_number = models.CharField(max_length=20, blank=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True)
+    company = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        db_table = 'custom_user'
+```
+
+**Important**: This extension must happen **before** running migrations. The accounts module is designed to remain product-agnostic.
+
+## Token Security
+
+The module uses two types of cryptographic tokens:
+
+### Email Verification Tokens
+- **Generator**: `EmailVerificationTokenGenerator` (extends Django's `PasswordResetTokenGenerator`)
+- **Expiry**: 24 hours
+- **Format**: URL-safe, base64-encoded, HMAC-SHA256 signed
+- **State Binding**: Includes user ID, email, and `email_verified` status (prevents reuse after verification)
+- **Stateless**: No database storage required (verification via signature)
+
+### Password Reset Tokens
+- **Generator**: Django's built-in `PasswordResetTokenGenerator`
+- **Expiry**: 1 hour
+- **Format**: URL-safe, base64-encoded, HMAC-SHA256 signed
+- **State Binding**: Includes user ID and password hash (automatically invalidates after password change)
+- **Single Use**: Changing password updates hash, invalidating all previous tokens
+
+## API Endpoints
+
+The module provides both form-based views and REST API endpoints. See OpenAPI specifications:
+- **Authentication**: `kitty-specs/005-core-accounts-authentication/contracts/auth.yaml`
+- **Admin User Management**: `kitty-specs/005-core-accounts-authentication/contracts/admin.yaml`
+
+### Key API Endpoints
+- `POST /api/v1/auth/register` - User registration
+- `POST /api/v1/auth/verify-email/{user_id}/{token}` - Email verification
+- `POST /api/v1/auth/login` - Sign in
+- `POST /api/v1/auth/logout` - Sign out
+- `POST /api/v1/auth/password-reset-request` - Request password reset
+- `POST /api/v1/auth/password-reset-confirm` - Confirm password reset
+- `GET /api/v1/admin/users` - List users (admin only)
+- `PATCH /api/v1/admin/users/{id}/activate` - Activate user (admin only)
+- `PATCH /api/v1/admin/users/{id}/deactivate` - Deactivate user (admin only)
+- `PATCH /api/v1/admin/users/{id}/role` - Change user role (admin/superadmin only)
+
+## Configuration
+
+### Required Settings
+
+Add to `config/settings/base.py`:
+
+```python
+# Custom User Model
+AUTH_USER_MODEL = 'accounts.User'
+
+# Session Configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 604800  # 7 days
+SESSION_INACTIVITY_TIMEOUT = 86400  # 24 hours
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Add to INSTALLED_APPS
+INSTALLED_APPS = [
+    'accounts.apps.AccountsConfig',  # Must be before django.contrib.admin
+    'django.contrib.admin',
+    # ... other apps
+]
+```
+
+### Email Backend Configuration
+
+**Development** (`config/settings/local.py`):
+```python
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_FROM = 'noreply@localhost'
+```
+
+**Production** (`config/settings/production.py`):
+```python
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_FROM = os.getenv('EMAIL_FROM', 'noreply@example.com')
+```
+
+### Environment Variables (Production)
+
+```bash
+# Required for email functionality
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=your-email@example.com
+EMAIL_HOST_PASSWORD=your-app-password
+EMAIL_FROM=noreply@example.com
+
+# Security (Feature 003)
+SESSION_COOKIE_SECURE=True
+```
+
+## Creating the Initial Superuser
+
+Use Django's management command to create the first superadmin account:
+
+```bash
+python manage.py createsuperuser
+# Enter email and password when prompted
+```
+
+The superuser is created with:
+- `is_superuser=True` (all permissions)
+- `is_staff=True` (Django Admin access)
+- `is_active=True` (can login immediately)
+- `email_verified=True` (bypasses verification requirement)
+
+## Testing
+
+Run the accounts module test suite:
+
+```bash
+# Run all accounts tests
+pytest tests/accounts/
+
+# Run specific test module
+pytest tests/accounts/test_models.py
+
+# Run with coverage
+pytest tests/accounts/ --cov=accounts --cov-report=html
+```
+
+Test coverage targets:
+- **Overall**: >85% coverage for authentication flows
+- **Permissions**: 100% coverage for role-based access control
+
+## Security Considerations
+
+### Email Enumeration Protection
+- Password reset requests always return "check your inbox" message
+- No indication whether email exists in system
+- Emails only sent to verified accounts
+
+### Brute-Force Protection
+- Integration with Feature 003 Security Baseline
+- Rate limiting on login endpoints
+- Account lockout after multiple failed attempts
+
+### Session Security
+- 24-hour inactive timeout (enforced via middleware)
+- 7-day absolute timeout (Django SESSION_COOKIE_AGE)
+- HTTP-only cookies (no JavaScript access)
+- Secure cookies in production (HTTPS only)
+- SameSite=Lax (CSRF protection)
+
+### Password Requirements
+- Minimum 8 characters
+- At least one uppercase letter
+- At least one lowercase letter
+- At least one number
+- At least one special character
+
+## Dependencies
+
+- **Django 5.1+**: Core framework
+- **Django REST Framework 3.14+**: API endpoints
+- **PostgreSQL**: Database backend (sessions, user storage)
+- **Feature 003 (Security Baseline)**: Brute-force protection, secure session configuration
+
+## License
+
+See project root LICENSE file.
+
+## Support
+
+For issues or questions, refer to:
+- **Specification**: `kitty-specs/005-core-accounts-authentication/spec.md`
+- **Implementation Plan**: `kitty-specs/005-core-accounts-authentication/plan.md`
+- **Data Model**: `kitty-specs/005-core-accounts-authentication/data-model.md`

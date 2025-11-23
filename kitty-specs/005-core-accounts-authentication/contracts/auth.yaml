@@ -1,0 +1,569 @@
+openapi: 3.0.3
+info:
+  title: Core Accounts & Authentication API
+  description: |
+    Authentication endpoints for user registration, email verification, login, logout, and password reset.
+
+    **Authentication**: Session-based (cookies)
+    **CSRF Protection**: Required for all state-changing operations (POST/PATCH/DELETE)
+  version: 1.0.0
+  contact:
+    name: TeamReel Django-Core
+    url: https://github.com/TeamReel/django-core
+
+servers:
+  - url: /api/v1
+    description: API v1 base path
+
+tags:
+  - name: Authentication
+    description: User authentication operations
+  - name: Password Management
+    description: Password reset and recovery
+
+paths:
+  /auth/register:
+    post:
+      summary: Register new user account
+      description: |
+        Creates a new user account with email-as-username. The account is created in an inactive state
+        (`is_active=False`, `email_verified=False`). A verification email is sent to the provided email address.
+
+        **Validations**:
+        - Email must be valid format and unique
+        - Password must meet strength requirements (8+ chars, uppercase, lowercase, number, special)
+        - First name and last name are optional
+
+        **Post-Registration**:
+        - User assigned to 'user' group automatically
+        - Verification email sent (check email for link)
+        - Account cannot sign in until email verified
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              valid:
+                summary: Valid registration
+                value:
+                  email: user@example.com
+                  password: SecureP@ss123
+                  first_name: John
+                  last_name: Doe
+      responses:
+        '201':
+          description: User account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+              examples:
+                success:
+                  value:
+                    id: 456
+                    email: user@example.com
+                    first_name: John
+                    last_name: Doe
+                    email_verified: false
+                    is_active: false
+                    message: Registration successful. Please check your email to verify your account.
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                email_taken:
+                  summary: Email already registered
+                  value:
+                    error: validation_error
+                    message: A user with this email already exists.
+                    details:
+                      email:
+                        - A user with this email already exists.
+                weak_password:
+                  summary: Password too weak
+                  value:
+                    error: validation_error
+                    message: Password does not meet requirements.
+                    details:
+                      password:
+                        - Password must be at least 8 characters long.
+                        - Password must contain at least one uppercase letter.
+                        - Password must contain at least one lowercase letter.
+                        - Password must contain at least one number.
+                        - Password must contain at least one special character.
+
+  /auth/verify-email/{user_id}/{token}:
+    post:
+      summary: Verify email address
+      description: |
+        Verifies user's email address using the token sent via email. Upon successful verification:
+        - Sets `email_verified=True`
+        - Sets `is_active=True`
+        - User can now sign in
+
+        **Token Properties**:
+        - Valid for 24 hours
+        - Single-use (invalid after email verified)
+        - Cannot be forged (cryptographically signed)
+      tags:
+        - Authentication
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Email verification token (from email link)
+      responses:
+        '200':
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                success:
+                  value:
+                    message: Email verified successfully. You can now sign in.
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_token:
+                  summary: Invalid token
+                  value:
+                    error: invalid_token
+                    message: The verification link is invalid or has expired.
+                already_verified:
+                  summary: Email already verified
+                  value:
+                    error: already_verified
+                    message: This email address has already been verified.
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                user_not_found:
+                  value:
+                    error: not_found
+                    message: User not found.
+
+  /auth/login:
+    post:
+      summary: Sign in to user account
+      description: |
+        Authenticates user with email and password. Creates a session and returns session cookie.
+
+        **Requirements**:
+        - Email must be verified (`email_verified=True`)
+        - Account must be active (`is_active=True`)
+
+        **Session Properties**:
+        - Inactive timeout: 24 hours
+        - Absolute timeout: 7 days
+        - Stored in database
+        - HttpOnly, Secure (in production), SameSite=Lax
+
+        **Security**:
+        - Brute-force protection via Feature 003 (rate limiting)
+        - Constant-time password comparison
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              valid:
+                value:
+                  email: user@example.com
+                  password: SecureP@ss123
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: Session cookie
+              schema:
+                type: string
+                example: sessionid=abc123; HttpOnly; Secure; SameSite=Lax; Max-Age=604800
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              examples:
+                success:
+                  value:
+                    id: 456
+                    email: user@example.com
+                    first_name: John
+                    last_name: Doe
+                    role: user
+                    message: Login successful.
+        '400':
+          description: Invalid credentials or account not verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_credentials:
+                  summary: Wrong email or password
+                  value:
+                    error: invalid_credentials
+                    message: Invalid email or password.
+                email_not_verified:
+                  summary: Email not verified
+                  value:
+                    error: email_not_verified
+                    message: Please verify your email address before signing in. Check your inbox for the verification link.
+                account_inactive:
+                  summary: Account deactivated
+                  value:
+                    error: account_inactive
+                    message: Your account has been deactivated. Please contact support.
+        '429':
+          description: Rate limit exceeded (Feature 003)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rate_limited:
+                  value:
+                    error: rate_limit_exceeded
+                    message: Too many login attempts. Please try again later.
+
+  /auth/logout:
+    post:
+      summary: Sign out of user account
+      description: |
+        Terminates the current session. Deletes session from database and clears session cookie.
+
+        **Authentication**: Requires active session
+      tags:
+        - Authentication
+      security:
+        - sessionAuth: []
+      responses:
+        '204':
+          description: Logout successful (no content)
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_authenticated:
+                  value:
+                    error: not_authenticated
+                    message: Authentication required.
+
+  /auth/password-reset-request:
+    post:
+      summary: Request password reset
+      description: |
+        Initiates password reset flow. Sends password reset email if account exists.
+
+        **Security**:
+        - Does not reveal whether email exists (email enumeration protection)
+        - Always returns 200 OK regardless of email existence
+        - Rate-limited via Feature 003
+
+        **Token Properties**:
+        - Valid for 1 hour
+        - Single-use (invalid after password reset)
+        - Cannot be forged (cryptographically signed)
+      tags:
+        - Password Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+            examples:
+              valid:
+                value:
+                  email: user@example.com
+      responses:
+        '200':
+          description: Password reset email sent (or email not found, indistinguishable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                success:
+                  value:
+                    message: If an account with that email exists, a password reset link has been sent.
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_email:
+                  value:
+                    error: validation_error
+                    message: Invalid email format.
+                    details:
+                      email:
+                        - Enter a valid email address.
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/password-reset-confirm:
+    post:
+      summary: Confirm password reset
+      description: |
+        Resets user's password using the token from the email link.
+
+        **Validations**:
+        - Token must be valid and not expired (1 hour)
+        - New password must meet strength requirements
+        - Token invalid after use (cannot reset twice with same token)
+
+        **Post-Reset**:
+        - All existing sessions invalidated
+        - User must sign in again with new password
+      tags:
+        - Password Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+            examples:
+              valid:
+                value:
+                  uidb64: NDU2
+                  token: 1a2b3c-7d8e9f...
+                  new_password: NewSecureP@ss456
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                success:
+                  value:
+                    message: Password reset successful. You can now sign in with your new password.
+        '400':
+          description: Invalid token or weak password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_token:
+                  summary: Invalid or expired token
+                  value:
+                    error: invalid_token
+                    message: The password reset link is invalid or has expired.
+                weak_password:
+                  summary: Password too weak
+                  value:
+                    error: validation_error
+                    message: Password does not meet requirements.
+                    details:
+                      new_password:
+                        - Password must be at least 8 characters long.
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+      description: Session-based authentication via HttpOnly cookie
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: User's email address (also serves as username)
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          description: Password (8+ chars, uppercase, lowercase, number, special)
+          example: SecureP@ss123
+        first_name:
+          type: string
+          maxLength: 150
+          description: User's first name (optional)
+          example: John
+        last_name:
+          type: string
+          maxLength: 150
+          description: User's last name (optional)
+          example: Doe
+
+    RegisterResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: User ID
+          example: 456
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        email_verified:
+          type: boolean
+          description: Email verification status
+          example: false
+        is_active:
+          type: boolean
+          description: Account active status
+          example: false
+        message:
+          type: string
+          example: Registration successful. Please check your email to verify your account.
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: SecureP@ss123
+
+    LoginResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 456
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        role:
+          type: string
+          enum: [superadmin, admin, user]
+          description: User's primary role
+          example: user
+        message:
+          type: string
+          example: Login successful.
+
+    PasswordResetRequestRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+
+    PasswordResetConfirmRequest:
+      type: object
+      required:
+        - uidb64
+        - token
+        - new_password
+      properties:
+        uidb64:
+          type: string
+          description: Base64-encoded user ID (from email link)
+          example: NDU2
+        token:
+          type: string
+          description: Password reset token (from email link)
+          example: 1a2b3c-7d8e9f...
+        new_password:
+          type: string
+          format: password
+          minLength: 8
+          description: New password (8+ chars, uppercase, lowercase, number, special)
+          example: NewSecureP@ss456
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Operation completed successfully.
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code
+          example: validation_error
+        message:
+          type: string
+          description: Human-readable error message
+          example: Invalid input data.
+        details:
+          type: object
+          description: Field-specific validation errors (optional)
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            email:
+              - A user with this email already exists.

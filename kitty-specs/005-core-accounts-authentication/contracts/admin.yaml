@@ -1,0 +1,658 @@
+openapi: 3.0.3
+info:
+  title: Admin User Management API
+  description: |
+    Administrative endpoints for managing user accounts, roles, and permissions.
+
+    **Authentication**: Session-based (cookies)
+    **CSRF Protection**: Required for all state-changing operations (PATCH/POST)
+    **Authorization**: Role-based (superadmin, admin roles only)
+  version: 1.0.0
+  contact:
+    name: TeamReel Django-Core
+    url: https://github.com/TeamReel/django-core
+
+servers:
+  - url: /api/v1
+    description: API v1 base path
+
+tags:
+  - name: User Management
+    description: Administrative user account operations
+
+paths:
+  /admin/users:
+    get:
+      summary: List all users
+      description: |
+        Retrieves paginated list of user accounts with filtering and sorting.
+
+        **Authorization**:
+        - Superadmin: Can view all users
+        - Admin: Can view all users
+        - Regular user: 403 Forbidden
+
+        **Performance**: Query optimized with `select_related('groups')` to avoid N+1.
+        Target: <2s for 10,000 users (FR-006).
+      tags:
+        - User Management
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          description: Page number (1-indexed)
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+          description: Number of results per page
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+          description: Filter by active status (true/false)
+        - name: email_verified
+          in: query
+          schema:
+            type: boolean
+          description: Filter by email verification status
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [superadmin, admin, user]
+          description: Filter by role (group name)
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by email, first name, or last name (case-insensitive)
+        - name: ordering
+          in: query
+          schema:
+            type: string
+            enum: [email, -email, date_joined, -date_joined, last_login, -last_login]
+            default: -date_joined
+          description: Sort order (prefix with '-' for descending)
+      responses:
+        '200':
+          description: User list retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+              examples:
+                success:
+                  value:
+                    count: 152
+                    next: /api/v1/admin/users?page=2
+                    previous: null
+                    results:
+                      - id: 456
+                        email: john.doe@example.com
+                        first_name: John
+                        last_name: Doe
+                        role: user
+                        is_active: true
+                        email_verified: true
+                        date_joined: '2025-01-15T10:30:00Z'
+                        last_login: '2025-11-22T14:25:00Z'
+                      - id: 457
+                        email: jane.admin@example.com
+                        first_name: Jane
+                        last_name: Admin
+                        role: admin
+                        is_active: true
+                        email_verified: true
+                        date_joined: '2025-01-10T09:00:00Z'
+                        last_login: '2025-11-23T08:15:00Z'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    error: permission_denied
+                    message: You do not have permission to perform this action.
+
+  /admin/users/{id}:
+    get:
+      summary: Get user details
+      description: |
+        Retrieves detailed information about a specific user.
+
+        **Authorization**:
+        - Superadmin: Can view any user
+        - Admin: Can view any user
+        - Regular user: 403 Forbidden
+      tags:
+        - User Management
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+              examples:
+                success:
+                  value:
+                    id: 456
+                    email: john.doe@example.com
+                    first_name: John
+                    last_name: Doe
+                    role: user
+                    is_active: true
+                    email_verified: true
+                    is_staff: false
+                    is_superuser: false
+                    date_joined: '2025-01-15T10:30:00Z'
+                    last_login: '2025-11-22T14:25:00Z'
+                    groups:
+                      - id: 3
+                        name: user
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  value:
+                    error: not_found
+                    message: User not found.
+
+  /admin/users/{id}/activate:
+    patch:
+      summary: Activate user account
+      description: |
+        Sets user's `is_active=True`, allowing them to sign in.
+
+        **Authorization**:
+        - Superadmin: Can activate any user
+        - Admin: Can activate any user
+        - Regular user: 403 Forbidden
+
+        **Note**: Cannot activate own account (no practical use case).
+      tags:
+        - User Management
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      responses:
+        '200':
+          description: User activated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+              examples:
+                success:
+                  value:
+                    id: 456
+                    email: john.doe@example.com
+                    first_name: John
+                    last_name: Doe
+                    role: user
+                    is_active: true
+                    email_verified: true
+                    message: User activated successfully.
+        '400':
+          description: User already active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                already_active:
+                  value:
+                    error: bad_request
+                    message: User is already active.
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/users/{id}/deactivate:
+    patch:
+      summary: Deactivate user account
+      description: |
+        Sets user's `is_active=False`, preventing them from signing in. Existing sessions remain valid until expiry.
+
+        **Authorization**:
+        - Superadmin: Can deactivate any user (including other superadmins)
+        - Admin: Can deactivate regular users only (not admins or superadmins)
+        - Regular user: 403 Forbidden
+
+        **Protection**: Cannot deactivate own account (prevented in view logic).
+      tags:
+        - User Management
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      responses:
+        '200':
+          description: User deactivated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+              examples:
+                success:
+                  value:
+                    id: 456
+                    email: john.doe@example.com
+                    first_name: John
+                    last_name: Doe
+                    role: user
+                    is_active: false
+                    email_verified: true
+                    message: User deactivated successfully.
+        '400':
+          description: Cannot deactivate own account or user already inactive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                self_deactivation:
+                  summary: Attempting to deactivate own account
+                  value:
+                    error: bad_request
+                    message: You cannot deactivate your own account.
+                already_inactive:
+                  summary: User already inactive
+                  value:
+                    error: bad_request
+                    message: User is already inactive.
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    error: permission_denied
+                    message: You do not have permission to deactivate this user.
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/users/{id}/reset-password:
+    post:
+      summary: Send password reset email to user
+      description: |
+        Sends a password reset email to the specified user. Useful for admin-initiated password resets.
+
+        **Authorization**:
+        - Superadmin: Can reset any user's password
+        - Admin: Can reset regular users' passwords only
+        - Regular user: 403 Forbidden
+
+        **Behavior**: Same as user-initiated reset (1-hour token, email sent).
+      tags:
+        - User Management
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      responses:
+        '200':
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                success:
+                  value:
+                    message: Password reset email sent to john.doe@example.com.
+        '400':
+          description: User account inactive or email not verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                account_inactive:
+                  value:
+                    error: bad_request
+                    message: Cannot send password reset to inactive account.
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/users/{id}/role:
+    patch:
+      summary: Change user's role
+      description: |
+        Updates user's role by modifying group membership.
+
+        **Authorization**:
+        - Superadmin: Can assign any role (superadmin, admin, user)
+        - Admin: Can assign 'user' role only (not admin or superadmin)
+        - Regular user: 403 Forbidden
+
+        **Behavior**:
+        - Removes user from all existing groups
+        - Adds user to specified group
+        - User immediately gains/loses permissions
+
+        **Protection**: Cannot change own role (prevented in view logic).
+      tags:
+        - User Management
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeRoleRequest'
+            examples:
+              promote_to_admin:
+                summary: Promote user to admin
+                value:
+                  role: admin
+              demote_to_user:
+                summary: Demote admin to user
+                value:
+                  role: user
+      responses:
+        '200':
+          description: Role changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+              examples:
+                success:
+                  value:
+                    id: 456
+                    email: john.doe@example.com
+                    first_name: John
+                    last_name: Doe
+                    role: admin
+                    is_active: true
+                    email_verified: true
+                    message: User role changed to admin.
+        '400':
+          description: Invalid role or attempting to change own role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                self_role_change:
+                  summary: Attempting to change own role
+                  value:
+                    error: bad_request
+                    message: You cannot change your own role.
+                invalid_role:
+                  summary: Invalid role name
+                  value:
+                    error: validation_error
+                    message: Invalid role.
+                    details:
+                      role:
+                        - Select a valid choice. 'owner' is not one of the available choices.
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    error: permission_denied
+                    message: You do not have permission to assign this role.
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+      description: Session-based authentication via HttpOnly cookie
+
+  schemas:
+    UserListResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Total number of users matching filters
+          example: 152
+        next:
+          type: string
+          nullable: true
+          description: URL to next page (null if last page)
+          example: /api/v1/admin/users?page=2
+        previous:
+          type: string
+          nullable: true
+          description: URL to previous page (null if first page)
+          example: null
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSummary'
+
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 456
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        role:
+          type: string
+          enum: [superadmin, admin, user]
+          description: Primary role (group name)
+          example: user
+        is_active:
+          type: boolean
+          example: true
+        email_verified:
+          type: boolean
+          example: true
+        date_joined:
+          type: string
+          format: date-time
+          example: '2025-01-15T10:30:00Z'
+        last_login:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-11-22T14:25:00Z'
+
+    UserDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/UserSummary'
+        - type: object
+          properties:
+            is_staff:
+              type: boolean
+              description: Can access Django admin
+              example: false
+            is_superuser:
+              type: boolean
+              description: Has all permissions
+              example: false
+            groups:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+                  name:
+                    type: string
+                    example: user
+            message:
+              type: string
+              description: Optional action result message
+              example: User activated successfully.
+
+    ChangeRoleRequest:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          enum: [superadmin, admin, user]
+          description: New role for the user
+          example: admin
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Operation completed successfully.
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code
+          example: permission_denied
+        message:
+          type: string
+          description: Human-readable error message
+          example: You do not have permission to perform this action.
+        details:
+          type: object
+          description: Field-specific validation errors (optional)
+          additionalProperties:
+            type: array
+            items:
+              type: string

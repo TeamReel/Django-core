@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "005",
+    "slug":  "005-core-accounts-authentication",
+    "friendly_name":  "Core Accounts \u0026 Authentication",
+    "source_description":  "Define a generic accounts module with a custom user model, authentication flows and base permissions suitable for multi-tenant SaaS products.",
+    "created_at":  "2025-11-23T20:46:59Z"
+}
