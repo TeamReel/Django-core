@@ -1,7 +1,10 @@
 ---
 work_package_id: WP06
 title: Developer Documentation & Quickstart
-lane: planned
+lane: doing
+assignee: github-copilot
+agent: github-copilot
+shell_pid: 6824
 subtasks:
   - T026
   - T027
@@ -12,6 +15,11 @@ history:
   - date: 2025-11-23
     action: created
     author: spec-kitty.tasks
+  - date: 2025-11-23T21:45:00Z
+    action: started_implementation
+    author: github-copilot
+    shell_pid: 6824
+    note: "Moving WP06 to doing lane. Final work package - documentation and knowledge sharing."
 ---
 
 # WP06: Developer Documentation & Quickstart
