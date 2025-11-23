@@ -8,8 +8,8 @@ OWASP ASVS References:
 - V14.4.3: Content Security Policy (CSP)
 """
 
-from datetime import datetime
 import os
+from datetime import datetime
 
 from security_baseline.rules.base import SecurityRule, SecurityRuleViolation
 from security_baseline.rules.registry import register

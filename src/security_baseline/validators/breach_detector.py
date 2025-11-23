@@ -14,11 +14,12 @@ Verify that a password breach detection service is in use.
 """
 
 import hashlib
-import requests
-from pathlib import Path
-from pybloom_live import BloomFilter
-from typing import Optional
 import time
+from pathlib import Path
+from typing import Optional
+
+import requests
+from pybloom_live import BloomFilter
 
 
 class BreachDetector:

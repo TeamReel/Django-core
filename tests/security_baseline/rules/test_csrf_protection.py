@@ -1,11 +1,10 @@
 """Unit tests for CSRF protection rules."""
 
-import pytest
 from unittest.mock import Mock
 
 from security_baseline.rules.csrf_protection import (
-    CsrfCookieSecureRule,
     CsrfCookieHttpOnlyRule,
+    CsrfCookieSecureRule,
     CsrfMiddlewareEnabledRule,
 )
 

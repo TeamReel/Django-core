@@ -7,8 +7,8 @@ OWASP ASVS References:
 - V6.2.1: Cryptographic communications
 """
 
-from datetime import datetime
 import os
+from datetime import datetime
 
 from security_baseline.rules.base import SecurityRule, SecurityRuleViolation
 from security_baseline.rules.registry import register

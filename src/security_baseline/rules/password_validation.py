@@ -9,8 +9,8 @@ OWASP ASVS References:
 - V2.1.8: Password breach detection
 """
 
-from datetime import datetime
 import os
+from datetime import datetime
 
 from security_baseline.rules.base import SecurityRule, SecurityRuleViolation
 from security_baseline.rules.registry import register

@@ -4,8 +4,6 @@ Provides fixtures and configuration for all security baseline tests.
 WP14-T126: Comprehensive pytest fixtures for testing infrastructure.
 """
 
-import tempfile
-from pathlib import Path
 
 import pytest
 import yaml

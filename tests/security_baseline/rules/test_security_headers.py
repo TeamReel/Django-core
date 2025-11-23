@@ -1,15 +1,14 @@
 """Unit tests for security headers rules."""
 
-import pytest
 from unittest.mock import Mock
 
 from security_baseline.rules.security_headers import (
-    HSTSHeaderRule,
     ContentTypeNosniffRule,
+    CSPHeaderRule,
+    HSTSHeaderRule,
+    SSLRedirectRule,
     XFrameOptionsRule,
     XSSFilterRule,
-    CSPHeaderRule,
-    SSLRedirectRule,
 )
 
 

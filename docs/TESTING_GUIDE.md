@@ -276,10 +276,10 @@ def test_rule_violation_detected(mock_insecure_django_settings):
     rule = DebugModeProductionRule()
     context = mock_insecure_django_settings
     environment = "production"
-    
+
     # Act
     violation = rule.validate(context, environment)
-    
+
     # Assert
     assert violation is not None
     assert violation.rule_id == "SEC001-DEBUG-MODE"
@@ -342,7 +342,7 @@ def test_debug_mode_various_configs(debug, environment, should_fail):
     settings = {"DEBUG": debug}
     rule = DebugModeProductionRule()
     violation = rule.validate(settings, environment)
-    
+
     if should_fail:
         assert violation is not None
     else:

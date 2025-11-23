@@ -1,8 +1,8 @@
 # ADR-003: pip-audit for Dependency Scanning
 
-**Status**: Accepted  
-**Date**: 2025-11-20  
-**Deciders**: Security Team, DevOps Team  
+**Status**: Accepted
+**Date**: 2025-11-20
+**Deciders**: Security Team, DevOps Team
 **Technical Story**: [WP06] Implement CI scripts for dependency scanning
 
 ---

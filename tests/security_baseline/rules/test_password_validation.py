@@ -1,13 +1,12 @@
 """Unit tests for password validation rules."""
 
-import pytest
 from unittest.mock import Mock
 
 from security_baseline.rules.password_validation import (
-    PasswordLengthRule,
-    PasswordComplexityRule,
-    PasswordSimilarityRule,
     PasswordBreachRule,
+    PasswordComplexityRule,
+    PasswordLengthRule,
+    PasswordSimilarityRule,
 )
 
 

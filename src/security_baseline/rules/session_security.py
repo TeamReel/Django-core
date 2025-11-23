@@ -7,8 +7,8 @@ OWASP ASVS References:
 - V3.4.2: Session Cookie HttpOnly attribute
 """
 
-from datetime import datetime
 import os
+from datetime import datetime
 
 from security_baseline.rules.base import SecurityRule, SecurityRuleViolation
 from security_baseline.rules.registry import register

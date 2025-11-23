@@ -1,12 +1,11 @@
 """Unit tests for session security rules."""
 
-import pytest
 from unittest.mock import Mock
 
 from security_baseline.rules.session_security import (
-    SessionCookieSecureRule,
     SessionCookieHttpOnlyRule,
     SessionCookieSameSiteRule,
+    SessionCookieSecureRule,
 )
 
 

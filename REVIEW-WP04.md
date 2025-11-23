@@ -1,9 +1,9 @@
 # Code Review Report: WP04 - Session and CSRF Security Rules
 
-**Feature**: 003-core-security-baseline  
-**Work Package**: WP04  
-**Reviewed By**: claude-reviewer  
-**Review Date**: 2025-11-23  
+**Feature**: 003-core-security-baseline
+**Work Package**: WP04
+**Reviewed By**: claude-reviewer
+**Review Date**: 2025-11-23
 **Review Status**: ✅ APPROVED
 
 ---

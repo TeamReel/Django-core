@@ -1,6 +1,5 @@
 """Unit tests for Django settings security rules."""
 
-import pytest
 from unittest.mock import Mock
 
 from security_baseline.rules.django_settings import (

@@ -7,8 +7,8 @@ OWASP ASVS References:
 - V4.2.2: CSRF protection and secure cookie attributes
 """
 
-from datetime import datetime
 import os
+from datetime import datetime
 
 from security_baseline.rules.base import SecurityRule, SecurityRuleViolation
 from security_baseline.rules.registry import register

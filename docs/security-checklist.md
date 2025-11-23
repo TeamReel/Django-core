@@ -103,7 +103,7 @@ pytest tests/security_baseline/rules/test_security_headers.py::TestHSTSHeaderRul
 python -c "from config.settings.production import *; print(f'HSTS: {SECURE_HSTS_SECONDS}, SSL: {SECURE_SSL_REDIRECT}')"
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - SECURE_HSTS_SECONDS >= 31536000 (1 year)
 - SECURE_SSL_REDIRECT=True
 - SECURE_PROXY_SSL_HEADER configured
@@ -164,7 +164,7 @@ ls -lh .security/data/pwned-passwords.bloom
 python -c "from security_baseline.validators.breach_detector import BreachDetector; d = BreachDetector(); print(d.is_password_breached('password123'))"
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - Bloom filter present
 - HIBP API integration functional
 - Known breached passwords detected
@@ -243,7 +243,7 @@ pytest tests/security_baseline/rules/test_session_security.py::TestSessionCookie
 python -c "from config.settings.production import *; print(f'Secure: {SESSION_COOKIE_SECURE}, HttpOnly: {SESSION_COOKIE_HTTPONLY}, SameSite: {SESSION_COOKIE_SAMESITE}')"
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - SESSION_COOKIE_SECURE=True
 - SESSION_COOKIE_HTTPONLY=True
 - SESSION_COOKIE_SAMESITE='Strict' or 'Lax'
@@ -324,7 +324,7 @@ pytest tests/security_baseline/rules/test_security_headers.py::TestCSPHeaderRule
 python manage.py shell -c "from django.template import Engine; print(Engine.get_default().engine.autoescape)"
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - SECURE_BROWSER_XSS_FILTER=True
 - CSP header configured
 - Template auto-escaping enabled
@@ -382,7 +382,7 @@ pytest tests/security_baseline/rules/test_security_headers.py::TestSSLRedirectRu
 python -c "from config.settings.production import *; print(f'SSL Redirect: {SECURE_SSL_REDIRECT}, Secure Cookies: {SESSION_COOKIE_SECURE}')"
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - SECURE_SSL_REDIRECT=True
 - SESSION_COOKIE_SECURE=True
 - CSRF_COOKIE_SECURE=True
@@ -437,7 +437,7 @@ pytest tests/security_baseline/reports/test_logging.py -v
 ls -lh .security/reports/security-*.json
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - Security logger configured
 - Reports generated on validation runs
 - Correlation IDs present
@@ -467,7 +467,7 @@ pytest tests/security_baseline/rules/test_django_settings.py::TestSecretKeyValid
 pytest tests/security_baseline/reports/test_security_report.py::TestSecurityReport::test_sensitive_value_sanitization -v
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - SECRET_KEY >= 50 characters
 - Report sanitization active
 - No secrets in logs/reports
@@ -499,7 +499,7 @@ python .security/scripts/scan_dependencies.py requirements/production.txt
 pytest tests/security_baseline/ci/test_scan_dependencies.py -v
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - pip-audit installed and functional
 - No HIGH/CRITICAL vulnerabilities in production dependencies
 - CI pipeline includes dependency scanning
@@ -529,7 +529,7 @@ python .security/scripts/scan_code.py --path src/
 pytest tests/security_baseline/ci/test_scan_code.py -v
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - Bandit installed and functional
 - No HIGH/CRITICAL security findings
 - CI pipeline includes static analysis
@@ -590,7 +590,7 @@ ls docs/ci-integration-examples/
 pytest tests/security_baseline/ci/ -v
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - CI integration examples documented
 - Security scanning scripts functional
 - Automated enforcement in CI
@@ -620,7 +620,7 @@ python .security/scripts/scan_dependencies.py requirements/production.txt --fail
 pytest tests/security_baseline/ci/test_scan_dependencies.py -v
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - Dependencies scanned in CI
 - HIGH/CRITICAL vulnerabilities block build
 - Exemptions documented
@@ -677,7 +677,7 @@ pytest tests/security_baseline/reports/test_logging.py -v
 ls -la .security/reports/
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - Security reports generated
 - Reports not in version control
 - Access restricted
@@ -710,7 +710,7 @@ grep -r "SECRET_KEY.*=" src/ --include="*.py" | grep -v "getenv\|env" || echo "�
 grep "os.getenv\|env(" config/settings/production.py | wc -l
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - SECRET_KEY >= 50 characters
 - Secrets from environment variables
 - No hardcoded credentials
@@ -740,7 +740,7 @@ pytest tests/security_baseline/rules/test_django_settings.py::TestAllowedHostsVa
 python -c "from config.settings.production import ALLOWED_HOSTS; assert '*' not in ALLOWED_HOSTS, 'Wildcard not allowed!'; print(f'✅ ALLOWED_HOSTS: {ALLOWED_HOSTS}')"
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - ALLOWED_HOSTS configured (no wildcards in production)
 - Host header validation active
 - Blocks invalid host headers
@@ -770,7 +770,7 @@ pytest tests/security_baseline/rules/test_csrf_protection.py -v
 python -c "from config.settings.production import *; print(f'Secure: {CSRF_COOKIE_SECURE}, HttpOnly: {CSRF_COOKIE_HTTPONLY}, Middleware: {\"CsrfViewMiddleware\" in str(MIDDLEWARE)}')"
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - CSRF_COOKIE_SECURE=True
 - CSRF_COOKIE_HTTPONLY=True
 - CsrfViewMiddleware enabled
@@ -805,7 +805,7 @@ pytest tests/security_baseline/rules/test_database_ssl.py -v
 python -c "from config.settings.production import *; print(f'HSTS: {SECURE_HSTS_SECONDS}, SSL: {SECURE_SSL_REDIRECT}, DB SSL: {DATABASES[\"default\"].get(\"OPTIONS\", {}).get(\"sslmode\")}')"
 ```
 
-**Pass Criteria**: 
+**Pass Criteria**:
 - All 7 security headers/SSL rules pass
 - Database connections use SSL/TLS
 - Production configuration validated
@@ -918,6 +918,6 @@ All controls are:
 
 ---
 
-**Last Updated**: 2025-11-23  
-**ASVS Version**: 4.0 Level 1  
+**Last Updated**: 2025-11-23
+**ASVS Version**: 4.0 Level 1
 **Validation Status**: ✅ PASS (26/26 controls)

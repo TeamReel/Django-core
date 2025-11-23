@@ -1,8 +1,8 @@
 # ADR-004: Security Enforcement Modes
 
-**Status**: Accepted  
-**Date**: 2025-11-21  
-**Deciders**: Security Team, Platform Team  
+**Status**: Accepted
+**Date**: 2025-11-21
+**Deciders**: Security Team, Platform Team
 **Technical Story**: [WP10] Environment Profiles and Flexible Enforcement
 
 ---
@@ -196,11 +196,11 @@ def resolve_enforcement_mode(rule: SecurityRule, manifest: dict) -> str:
     rule_config = manifest.get("rules", {}).get(rule.rule_id, {})
     if "enforcement_mode" in rule_config:
         return rule_config["enforcement_mode"]
-    
+
     # 2. Check global setting
     if "enforcement_mode" in manifest:
         return manifest["enforcement_mode"]
-    
+
     # 3. Default to strict
     return "strict"
 ```
@@ -212,7 +212,7 @@ def should_block_startup(violations: list[SecurityRuleViolation], mode: str) -> 
     """Determine if violations should block startup."""
     if mode == "advisory":
         return False  # Advisory never blocks
-    
+
     # Strict mode: block on CRITICAL or HIGH
     blocking_severities = {"CRITICAL", "HIGH"}
     return any(v.severity in blocking_severities for v in violations)
@@ -230,13 +230,13 @@ environments:
     rules:
       SEC001-DEBUG-MODE:
         enabled: false  # Allow DEBUG in local
-      
+
   staging:
     enforcement_mode: "advisory"
     rules:
       SEC010-HSTS-HEADER:
         enforcement_mode: "advisory"  # Progressive rollout
-      
+
   production:
     enforcement_mode: "strict"
     # All rules enforced strictly

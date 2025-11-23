@@ -1,6 +1,5 @@
 """Unit tests for database SSL validation rule."""
 
-import pytest
 from unittest.mock import Mock
 
 from security_baseline.rules.database_ssl import DatabaseSSLValidationRule

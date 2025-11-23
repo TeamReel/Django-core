@@ -143,13 +143,13 @@ environments:
     rules:
       SEC001-DEBUG-MODE:
         enabled: false  # Allow DEBUG in local
-      
+
   staging:
     enforcement_mode: "advisory"
     rules:
       SEC010-HSTS-HEADER:
         enabled: false  # No HSTS in staging
-      
+
   production:
     enforcement_mode: "strict"
     rules:
@@ -262,13 +262,13 @@ environments:
         enabled: false
       SEC010-HSTS-HEADER:
         enabled: false
-      
+
   staging:
     enforcement_mode: "advisory"
     rules:
       SEC010-HSTS-HEADER:
         enabled: false
-      
+
   production:
     enforcement_mode: "strict"
     # All rules enabled by default

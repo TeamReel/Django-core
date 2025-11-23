@@ -12,14 +12,14 @@ Purpose:
 Usage:
     1. Download HIBP dataset from: https://haveibeenpwned.com/Passwords
        (pwned-passwords-sha1-ordered-by-hash-v8.txt.7z)
-    
+
     2. Extract the dataset (warning: 20+GB uncompressed)
-    
+
     3. Generate bloom filter:
        python .security/scripts/generate_bloom_filter.py \\
            --input pwned-passwords-sha1-ordered-by-hash-v8.txt \\
            --output .security/data/breached-passwords.bloom
-    
+
     4. Verify output:
        - File size should be ~50MB
        - False positive rate <0.1%

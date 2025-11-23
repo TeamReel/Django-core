@@ -1,9 +1,9 @@
 """Unit tests for breach detector with performance benchmarks."""
 
-import pytest
-from unittest.mock import Mock, patch, mock_open
 import time
+from unittest.mock import Mock, patch
 
+import pytest
 from security_baseline.validators.breach_detector import BreachDetector
 
 

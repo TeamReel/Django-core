@@ -35,15 +35,15 @@ def test_debug_in_production_strict_mode():
 def test_insecure_session_csrf_config_strict_mode():
     """Verify insecure session/CSRF config generates multiple violations in strict mode."""
     from django.conf import settings
+    from security_baseline.rules.csrf_protection import (
+        CsrfCookieHttpOnlyRule,
+        CsrfCookieSecureRule,
+        CsrfMiddlewareEnabledRule,
+    )
     from security_baseline.rules.session_security import (
-        SessionCookieSecureRule,
         SessionCookieHttpOnlyRule,
         SessionCookieSameSiteRule,
-    )
-    from security_baseline.rules.csrf_protection import (
-        CsrfCookieSecureRule,
-        CsrfCookieHttpOnlyRule,
-        CsrfMiddlewareEnabledRule,
+        SessionCookieSecureRule,
     )
 
     context = {"settings": settings, "environment": "production"}
