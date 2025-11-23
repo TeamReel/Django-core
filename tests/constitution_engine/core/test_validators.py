@@ -6,8 +6,6 @@ Tests the DeduplicatorValidator and WorkflowConfigValidator.
 
 from pathlib import Path
 
-import pytest
-
 from constitution_engine.core.models import (
     CheckResult,
     CheckStatus,

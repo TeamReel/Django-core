@@ -4,18 +4,13 @@ Integration tests for engine pipeline with rules and validators.
 Tests the complete pipeline: pre-validation -> rules -> post-processing.
 """
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from constitution_engine.core.engine import Engine
 from constitution_engine.core.models import (
-    CheckResult,
     CheckStatus,
     ConfigurationProfile,
     RepositoryContext,
-    Severity,
 )
 from constitution_engine.modules.python.builtin.deduplicator import (
     DeduplicatorValidator,

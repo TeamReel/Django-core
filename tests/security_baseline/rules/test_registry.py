@@ -5,7 +5,7 @@ from security_baseline.rules.base import SecurityRule
 from security_baseline.rules.registry import SecurityRuleRegistry, register
 
 
-class TestRule(SecurityRule):
+class SampleSecurityRule(SecurityRule):
     def __init__(self):
         super().__init__(
             rule_id="TEST001",
@@ -33,7 +33,7 @@ def test_register_rule():
     registry = SecurityRuleRegistry()
     registry._rules.clear()  # Clear for isolated test
 
-    registry.register(TestRule)
+    registry.register(SampleSecurityRule)
 
     assert "TEST001" in registry._rules
     assert len(registry.get_all_rules()) == 1
@@ -44,17 +44,17 @@ def test_register_duplicate_raises_error():
     registry = SecurityRuleRegistry()
     registry._rules.clear()
 
-    registry.register(TestRule)
+    registry.register(SampleSecurityRule)
 
     with pytest.raises(ValueError, match="already registered"):
-        registry.register(TestRule)
+        registry.register(SampleSecurityRule)
 
 
 def test_get_rule_by_id():
     """Verify get_rule retrieves correct rule."""
     registry = SecurityRuleRegistry()
     registry._rules.clear()
-    registry.register(TestRule)
+    registry.register(SampleSecurityRule)
 
     rule = registry.get_rule("TEST001")
     assert rule is not None
@@ -74,7 +74,7 @@ def test_get_rules_by_category():
     """Verify category filtering."""
     registry = SecurityRuleRegistry()
     registry._rules.clear()
-    registry.register(TestRule)
+    registry.register(SampleSecurityRule)
 
     rules = registry.get_rules_by_category("test")
     assert len(rules) == 1
@@ -87,7 +87,7 @@ def test_register_decorator():
     registry._rules.clear()
 
     @register
-    class DecoratorTestRule(SecurityRule):
+    class DecoratorSampleSecurityRule(SecurityRule):
         def __init__(self):
             super().__init__(
                 rule_id="DECORATOR001",

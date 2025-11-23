@@ -1,0 +1,38 @@
+# Partial French translations for fallback testing
+# Deliberately incomplete to test fallback behavior
+
+msgid ""
+msgstr ""
+"Project-Id-Version: Django Core Test Fixtures\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-23 21:20+0000\n"
+"PO-Revision-Date: 2025-11-23 21:20+0000\n"
+"Last-Translator: Test Suite\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+# Only partial translations - some messages deliberately missing
+msgid "test.greeting"
+msgstr "Bonjour, le monde!"
+
+msgid "test.welcome"
+msgstr "Bienvenue à Django i18n!"
+
+# test.farewell deliberately missing to test fallback to English
+
+msgid "user.login.success"
+msgstr "Connexion réussie"
+
+# user.login.failure missing for fallback test
+# user.created.success missing for fallback test
+
+msgid "validation.required"
+msgstr "Ce champ est obligatoire"
+
+# validation.invalid_email missing for fallback test
+
+# All system messages missing to test fallback behavior

@@ -8,14 +8,10 @@ import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from constitution_engine.core.models import (
-    CheckResult,
     CheckStatus,
     ConfigurationProfile,
     RepositoryContext,
-    Severity,
 )
 from constitution_engine.modules.python.builtin.mypy_rule import MypyRule
 from constitution_engine.modules.python.builtin.pinned_dependencies_rule import (
