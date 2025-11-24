@@ -1,0 +1,11 @@
+date,source,finding,decision_impact
+2025-11-24,Django Documentation,UUID fields provide better distribution for database partitioning,"Decision: Use UUID for primary keys (Organisation.id, Membership.id)"
+2025-11-24,Django-redis Documentation,Redis cache backend supports atomic INCR operation with automatic TTL,"Decision: Implement rate limiting with Redis cache.incr()"
+2025-11-24,Django-prometheus Documentation,Provides built-in middleware and metrics exporters for Django,"Decision: Use django-prometheus for /metrics endpoint"
+2025-11-24,DRF Documentation,Permission classes can be composed for complex authorization logic,"Decision: Create custom IsOrganisationAdmin permission class"
+2025-11-24,PostgreSQL Documentation,Composite indexes on (user_id + organisation_id) improve membership lookups,"Decision: Add UniqueConstraint(user_id, organisation_id) on Membership"
+2025-11-24,Django ORM Best Practices,select_related() reduces N+1 queries for foreign key relationships,"Decision: Use select_related('creator', 'user', 'invited_by') in queries"
+2025-11-24,REST API Design Patterns,Nested routes improve discoverability for related resources,"Decision: Use /api/organisations/{id}/members/ for membership endpoints"
+2025-11-24,Django Soft Delete Patterns,Boolean flag + timestamp allows for cleanup scheduling,"Decision: Use is_active + deleted_at fields for soft delete"
+2025-11-24,Rate Limiting Best Practices,Per-user and per-resource limits prevent different abuse vectors,"Decision: 5 orgs/user/day + 20 invites/org/hour"
+2025-11-24,Prometheus Metrics Best Practices,Counters for rates + gauges for states + histograms for latency,"Decision: Implement 8 metric types (org_count, creation_rate, etc.)"
