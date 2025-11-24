@@ -70,15 +70,27 @@ python manage.py migrate
 # Create initial superadmin account
 python manage.py createsuperuser
 # Enter email: admin@example.com
-# Enter password: (8+ chars, complexity rules)
+# Enter password: (8+ chars, uppercase, lowercase, number, special char)
+# Confirm password: (must match)
 ```
 
-The superuser is automatically:
-- Assigned to `superadmin` group
-- `is_superuser=True`
-- `is_staff=True`
-- `email_verified=True` (bypasses verification requirement)
-- `is_active=True`
+**What the command does**:
+- Validates email format and uniqueness
+- Validates password against complexity requirements (min 8 chars, uppercase, lowercase, number, special char)
+- Creates user with `is_superuser=True`, `is_staff=True`, `is_active=True`, `email_verified=True`
+- Assigns user to 'superadmin' group automatically
+- Bypasses email verification (ready to login immediately)
+
+**Non-interactive mode** (requires email, but password must still be entered interactively):
+```powershell
+python manage.py createsuperuser --email admin@example.com --no-input
+# Password will be prompted (not passed on command line for security)
+```
+
+**Common errors**:
+- "User with email X already exists" → Use a different email or delete existing user
+- "Warning: superadmin group does not exist" → Run `python manage.py migrate` first
+- Password validation errors → Ensure password meets complexity requirements
 
 ---
 

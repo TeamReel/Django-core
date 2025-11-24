@@ -284,18 +284,50 @@ SESSION_COOKIE_SECURE=True
 
 ## Creating the Initial Superuser
 
-Use Django's management command to create the first superadmin account:
+Use the custom `createsuperuser` management command to create the first superadmin account:
 
+### Interactive Mode (Recommended)
 ```bash
 python manage.py createsuperuser
 # Enter email and password when prompted
 ```
 
+The command will:
+- Prompt for email address with validation
+- Check email uniqueness (prevents duplicates)
+- Prompt for password twice for confirmation
+- Validate password against Django's password validators
+- Create the superuser with proper permissions
+
+### Non-Interactive Mode
+```bash
+python manage.py createsuperuser --email admin@example.com --no-input
+```
+
+**Note**: Non-interactive mode requires `--email` but will still fail because password input is required for security. Password cannot be passed via command line to prevent it from appearing in shell history.
+
+### Superuser Properties
+
 The superuser is created with:
-- `is_superuser=True` (all permissions)
-- `is_staff=True` (Django Admin access)
-- `is_active=True` (can login immediately)
-- `email_verified=True` (bypasses verification requirement)
+- **`is_superuser=True`**: All permissions granted (Django permission system)
+- **`is_staff=True`**: Django Admin access enabled
+- **`is_active=True`**: Can login immediately without activation
+- **`email_verified=True`**: Email verification bypassed
+- **Groups**: Automatically assigned to 'superadmin' group (if group exists)
+
+### First-Time Setup
+
+When creating the first superuser:
+1. Run migrations first: `python manage.py migrate`
+2. Create the superuser: `python manage.py createsuperuser`
+3. If you see "Warning: superadmin group does not exist", the user is still created correctly
+4. The 'superadmin' group is created during migrations (from WP02 data migrations)
+
+### Troubleshooting
+
+**"User with email X already exists"**: A user with this email is already in the database. Use a different email or delete the existing user.
+
+**"Warning: superadmin group does not exist"**: Migrations haven't been run yet. The superuser is created successfully but won't be assigned to any group. Run `python manage.py migrate` to create the group, then manually assign the user to the group via Django Admin or shell.
 
 ## Testing
 
