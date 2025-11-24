@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from accounts.models import User
 from accounts.permissions import IsAdmin
 from accounts.serializers import (
+    ChangeRoleSerializer,
     LoginSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
@@ -435,3 +436,65 @@ def admin_user_reset_password(request, user_id):
     )
 
     return Response({"message": f"Password reset email sent to {user.email}."})
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAdmin])
+def admin_change_role(request, user_id):
+    """Change a user's role (admin only)."""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "not_found", "message": "User not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Prevent self-role-change
+    if user.id == request.user.id:
+        return Response(
+            {"error": "bad_request", "message": "You cannot change your own role."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    serializer = ChangeRoleSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    new_role = serializer.validated_data["role"]
+
+    # Permission check: admins can only assign 'user' role
+    if not request.user.is_superuser and new_role in ["superadmin", "admin"]:
+        return Response(
+            {
+                "error": "permission_denied",
+                "message": "You do not have permission to assign this role.",
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # Remove from all groups
+    user.groups.clear()
+
+    # Assign new role
+    if new_role == "superadmin":
+        user.is_superuser = True
+        user.is_staff = True
+    elif new_role == "admin":
+        user.is_superuser = False
+        from django.contrib.auth.models import Group
+
+        admin_group = Group.objects.get(name="admin")
+        user.groups.add(admin_group)
+        user.is_staff = True
+    else:  # user
+        user.is_superuser = False
+        user.is_staff = False
+        from django.contrib.auth.models import Group
+
+        user_group = Group.objects.get(name="user")
+        user.groups.add(user_group)
+
+    user.save()
+    serializer = UserDetailSerializer(user)
+    return Response(serializer.data)

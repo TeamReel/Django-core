@@ -105,6 +105,87 @@ class CustomUser(User):
 
 **Important**: This extension must happen **before** running migrations. The accounts module is designed to remain product-agnostic.
 
+## Role-Based Access Control
+
+### Role Hierarchy
+
+The module enforces a three-tier role hierarchy with clear permission boundaries:
+
+1. **Superadmin** (`is_superuser=True`): Platform administrators with full access
+2. **Admin** (member of 'admin' group): Tenant administrators with limited user management
+3. **User** (member of 'user' group): Regular users with basic access
+
+### Permission Matrix
+
+| Action | Superadmin | Admin | User |
+|--------|------------|-------|------|
+| View all users | ✓ | ✓ | ✗ |
+| View user details | ✓ | ✓ | ✗ |
+| Activate/deactivate users | ✓ | ✓ (users only) | ✗ |
+| Assign any role | ✓ | ✗ | ✗ |
+| Assign 'user' role | ✓ | ✓ | ✗ |
+| Change own role | ✗ | ✗ | ✗ |
+| Deactivate own account | ✗ | ✗ | ✗ |
+| Trigger password reset | ✓ | ✓ (users only) | ✗ |
+
+### API Endpoints
+
+#### Public Endpoints (AllowAny)
+- `POST /api/v1/auth/register` - User registration
+- `POST /api/v1/auth/verify-email/{user_id}/{token}` - Email verification
+- `POST /api/v1/auth/login` - User login
+- `POST /api/v1/auth/password-reset` - Password reset request
+- `POST /api/v1/auth/password-reset-confirm` - Password reset confirmation
+
+#### Authenticated Endpoints (IsAuthenticated)
+- `POST /api/v1/auth/logout` - User logout
+
+#### Admin Endpoints (IsAdmin - superadmin or admin)
+- `GET /api/v1/admin/users` - List users (paginated, 50/page)
+- `GET /api/v1/admin/users/{id}` - Get user details
+- `PATCH /api/v1/admin/users/{id}/activate` - Activate user
+- `PATCH /api/v1/admin/users/{id}/deactivate` - Deactivate user (with protections)
+- `POST /api/v1/admin/users/{id}/reset-password` - Send password reset email
+- `PATCH /api/v1/admin/users/{id}/role` - Change user role (superadmin: all roles, admin: user role only)
+
+### Permission Classes
+
+The module provides custom DRF permission classes:
+
+```python
+from accounts.permissions import IsAdmin
+
+@api_view(['GET'])
+@permission_classes([IsAdmin])
+def admin_user_list(request):
+    # Only accessible by superadmins and admins
+    pass
+```
+
+**IsAdmin**: Grants access to users with `is_superuser=True` or membership in 'admin' group.
+
+### View Decorators
+
+For Django template views, use the `admin_required` decorator:
+
+```python
+from accounts.decorators import admin_required
+
+@admin_required
+def admin_dashboard(request):
+    # Only accessible by superadmins and admins
+    pass
+```
+
+### Privilege Escalation Prevention
+
+The system enforces strict rules to prevent privilege escalation:
+
+- **Self-role-change protection**: Users cannot change their own role
+- **Role hierarchy enforcement**: Admins cannot assign superadmin or admin roles
+- **Self-deactivation protection**: Users cannot deactivate their own account
+- **Role-based deactivation**: Admins can only deactivate regular users (not superadmins or other admins)
+
 ## Token Security
 
 The module uses two types of cryptographic tokens:

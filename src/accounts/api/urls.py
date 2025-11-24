@@ -43,4 +43,9 @@ urlpatterns = [
         views.admin_user_reset_password,
         name="api_admin_user_reset_password",
     ),
+    path(
+        "admin/users/<int:user_id>/role",
+        views.admin_change_role,
+        name="api_admin_change_role",
+    ),
 ]

@@ -72,3 +72,9 @@ class UserDetailSerializer(UserListSerializer):
 
     class Meta(UserListSerializer.Meta):
         fields = UserListSerializer.Meta.fields + ["is_staff", "is_superuser", "groups"]
+
+
+class ChangeRoleSerializer(serializers.Serializer):
+    """Serializer for changing user role."""
+
+    role = serializers.ChoiceField(choices=["superadmin", "admin", "user"])
