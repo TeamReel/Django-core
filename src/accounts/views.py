@@ -67,6 +67,46 @@ def verify_email(request, user_id, token):
         return redirect("register")
 
 
-def login(request):
-    """Placeholder login view for WP04 testing."""
-    return render(request, "accounts/login.html")
+def login_view(request):
+    """Handle user login with email verification check."""
+    from django.contrib.auth import authenticate
+    from django.contrib.auth import login as auth_login
+
+    from accounts.forms import LoginForm
+
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
+            user = authenticate(request, email=email, password=password)
+            if user:
+                if not user.email_verified:
+                    messages.error(
+                        request,
+                        "Please verify your email address before signing in.",
+                    )
+                    return redirect("register")
+                if not user.is_active:
+                    messages.error(request, "Your account has been deactivated.")
+                    return redirect("login")
+                auth_login(request, user)
+                request.session["last_activity"] = timezone.now().timestamp()
+                messages.success(request, f"Welcome back, {user.get_short_name()}!")
+                # Redirect to next parameter or home
+                next_url = request.GET.get("next", "/")
+                return redirect(next_url)
+            else:
+                messages.error(request, "Invalid email or password.")
+    else:
+        form = LoginForm()
+    return render(request, "accounts/registration/login.html", {"form": form})
+
+
+def logout_view(request):
+    """Handle user logout."""
+    from django.contrib.auth import logout as auth_logout
+
+    auth_logout(request)
+    messages.success(request, "You have been logged out.")
+    return redirect("login")

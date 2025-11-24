@@ -9,4 +9,6 @@ urlpatterns = [
         views.verify_email_api,
         name="api_verify_email",
     ),
+    path("auth/login", views.login_api, name="api_login"),
+    path("auth/logout", views.logout_api, name="api_logout"),
 ]

@@ -4,6 +4,13 @@ from rest_framework import serializers
 from accounts.models import User
 
 
+class LoginSerializer(serializers.Serializer):
+    """Serializer for user login."""
+
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
 

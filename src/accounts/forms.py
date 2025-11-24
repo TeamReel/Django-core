@@ -4,6 +4,13 @@ from django.contrib.auth.password_validation import validate_password
 from accounts.models import User
 
 
+class LoginForm(forms.Form):
+    """Form for user login."""
+
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+
+
 class RegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, validators=[validate_password])
     password_confirm = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")

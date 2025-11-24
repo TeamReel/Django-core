@@ -1,4 +1,7 @@
 from django.conf import settings
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -9,7 +12,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from accounts.models import User
-from accounts.serializers import RegistrationSerializer
+from accounts.serializers import LoginSerializer, RegistrationSerializer
 from accounts.tokens import email_verification_token
 
 
@@ -92,3 +95,63 @@ def verify_email_api(request, user_id, token):
         },
         status=status.HTTP_400_BAD_REQUEST,
     )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def login_api(request):
+    """API endpoint for user login."""
+    serializer = LoginSerializer(data=request.data)
+    if serializer.is_valid():
+        user = authenticate(
+            email=serializer.validated_data["email"],
+            password=serializer.validated_data["password"],
+        )
+        if user:
+            if not user.email_verified:
+                return Response(
+                    {
+                        "error": "email_not_verified",
+                        "message": ("Please verify your email address before signing in."),
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if not user.is_active:
+                return Response(
+                    {
+                        "error": "account_inactive",
+                        "message": "Your account has been deactivated.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            auth_login(request, user)
+            request.session["last_activity"] = timezone.now().timestamp()
+            return Response(
+                {
+                    "id": user.id,
+                    "email": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "role": (
+                        "superadmin"
+                        if user.is_superuser
+                        else ("admin" if user.is_admin else "user")
+                    ),
+                    "message": "Login successful.",
+                }
+            )
+        return Response(
+            {
+                "error": "invalid_credentials",
+                "message": "Invalid email or password.",
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+def logout_api(request):
+    """API endpoint for user logout."""
+    auth_logout(request)
+    return Response(status=status.HTTP_204_NO_CONTENT)

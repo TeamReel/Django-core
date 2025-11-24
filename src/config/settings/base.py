@@ -36,6 +36,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "accounts.middleware.SessionInactivityMiddleware",  # Enforce inactivity timeout
     "django.middleware.locale.LocaleMiddleware",  # Language detection and activation
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -165,3 +166,10 @@ REST_FRAMEWORK = {
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Development default
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@example.com")
 EMAIL_SUBJECT_PREFIX = "[Django Core] "
+
+# Session Configuration
+SESSION_COOKIE_AGE = 604800  # 7 days (absolute timeout)
+SESSION_SAVE_EVERY_REQUEST = False  # Only save on modification
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
+SESSION_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
+SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
