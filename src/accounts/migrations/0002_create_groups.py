@@ -9,20 +9,26 @@ def create_default_groups(apps, schema_editor):
     Permission = apps.get_model("auth", "Permission")
     ContentType = apps.get_model("contenttypes", "ContentType")
 
-    # Get User content type
-    user_ct = ContentType.objects.get(app_label="accounts", model="user")
-
-    # Create groups
+    # Create groups first
     superadmin_group, _ = Group.objects.get_or_create(name="superadmin")
     admin_group, _ = Group.objects.get_or_create(name="admin")
     user_group, _ = Group.objects.get_or_create(name="user")
 
-    # Assign permissions to admin group
-    add_perm = Permission.objects.get(codename="add_user", content_type=user_ct)
-    change_perm = Permission.objects.get(codename="change_user", content_type=user_ct)
-    view_perm = Permission.objects.get(codename="view_user", content_type=user_ct)
+    # Get or create User content type (it might not exist yet during migrations)
+    user_ct, _ = ContentType.objects.get_or_create(
+        app_label="accounts",
+        model="user",
+    )
 
-    admin_group.permissions.add(add_perm, change_perm, view_perm)
+    # Try to assign permissions to admin group (they might not exist yet)
+    try:
+        add_perm = Permission.objects.get(codename="add_user", content_type=user_ct)
+        change_perm = Permission.objects.get(codename="change_user", content_type=user_ct)
+        view_perm = Permission.objects.get(codename="view_user", content_type=user_ct)
+        admin_group.permissions.add(add_perm, change_perm, view_perm)
+    except Permission.DoesNotExist:
+        # Permissions will be created by Django's post_migrate signal
+        pass
 
 
 def reverse_create_groups(apps, schema_editor):

@@ -19,8 +19,8 @@ class TestUserModel:
         assert user.check_password("Test123!@#")
 
     def test_create_user_without_email(self):
-        """Test that creating user without email raises error."""
-        with pytest.raises(ValueError, match="Email is required"):
+        """Test that creating a user without email raises ValueError."""
+        with pytest.raises(ValueError, match="Users must have an email address"):
             User.objects.create_user(email="", password="Test123!@#")
 
     def test_create_user_normalizes_email(self):
@@ -108,6 +108,8 @@ class TestUserRoleProperties:
         user.is_active = True
         user.email_verified = True
         user.save()
+        # Remove all groups (including the auto-assigned 'user' group from signal)
+        user.groups.clear()
         assert user.is_regular_user is False
         assert user.is_admin is False
         assert user.is_superadmin is False

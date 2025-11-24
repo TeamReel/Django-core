@@ -54,7 +54,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_regular_user(self) -> bool:
-        """Check if user is a regular user (basic access)."""
+        """Check if user is a regular user (basic access only, not admin/superadmin)."""
         return (
             self.groups.filter(name="user").exists()
             and not self.is_admin
