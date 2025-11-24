@@ -9,7 +9,7 @@ subtasks:
   - "T015"
 title: "Django Groups & Permissions Setup"
 phase: "Phase 0 - Infrastructure"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "12572"
@@ -26,6 +26,11 @@ history:
     agent: "claude"
     shell_pid: "12572"
     action: "Started implementation of Django Groups & Permissions Setup"
+  - timestamp: "2025-11-24T17:54:09+01:00"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "12572"
+    action: "Completed all 6 subtasks: T010 (data migration creates 3 groups + assigns admin permissions), T011 (verified), T012 (role properties already exist from WP01), T013 (post-save signal for auto-assignment), T014 (signal registered in apps.py), T015 (DRF permission classes: IsSuperadmin, IsAdmin, IsAdminOrReadOnly). Manual verification passed: groups exist, admin has 3 permissions, signal auto-assigns 'user' group, role properties work correctly."
 ---
 
 # Work Package Prompt: WP02 – Django Groups & Permissions Setup
