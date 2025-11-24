@@ -206,21 +206,23 @@
 
 **Independent Test**: Verified user can sign in with email/password, session persists across requests, sign out destroys session, unverified user blocked.
 
-**Prompt**: `tasks/planned/WP05-user-story-2-sign-in-and-sign-out.md`
+**Prompt**: `tasks/for_review/WP05-user-story-2-sign-in-and-sign-out.md`
 
 ### Included Subtasks
-- [ ] T031 Create login form in `accounts/forms.py` (LoginForm with email/password)
-- [ ] T032 Create login view in `accounts/views.py` (validates credentials, checks email_verified, creates session)
-- [ ] T033 Implement email verification check in login flow (reject if email_verified=False)
-- [ ] T034 Create logout view (destroys session, clears cookie)
-- [ ] T035 [P] Create DRF login serializer in `accounts/serializers.py`
-- [ ] T036 [P] Create DRF login API endpoint (POST /api/v1/auth/login) with session creation
-- [ ] T037 [P] Create DRF logout API endpoint (POST /api/v1/auth/logout)
-- [ ] T038 Integrate with Feature 003 security baseline for rate limiting on login endpoint
-- [ ] T039 Configure session middleware timeout checks (24h inactive, 7d absolute)
-- [ ] T040 Create custom middleware in `accounts/middleware.py` for inactive session timeout
-- [ ] T041 Register middleware in `config/settings/base.py`
-- [ ] T042 Update URL routing for login/logout endpoints
+- [X] T031 Create login form in `accounts/forms.py` (LoginForm with email/password)
+- [X] T032 Create login view in `accounts/views.py` (validates credentials, checks email_verified, creates session)
+- [X] T033 Implement email verification check in login flow (reject if email_verified=False)
+- [X] T034 Create logout view (destroys session, clears cookie)
+- [X] T035 [P] Create DRF login serializer in `accounts/serializers.py`
+- [X] T036 [P] Create DRF login API endpoint (POST /api/v1/auth/login) with session creation
+- [X] T037 [P] Create DRF logout API endpoint (POST /api/v1/auth/logout)
+- [X] T038 Integrate with Feature 003 security baseline for rate limiting on login endpoint
+- [X] T039 Configure session middleware timeout checks (24h inactive, 7d absolute)
+- [X] T040 Create custom middleware in `accounts/middleware.py` for inactive session timeout
+- [X] T041 Register middleware in `config/settings/base.py`
+- [X] T042 Update URL routing for login/logout endpoints
+
+**Status**: ✅ **COMPLETED** - See `tasks/for_review/WP05-user-story-2-sign-in-and-sign-out.md` for review notes
 
 ### Constitutional Alignment
 - Principle V (Security): Session-based auth, brute-force protection, email verification required
