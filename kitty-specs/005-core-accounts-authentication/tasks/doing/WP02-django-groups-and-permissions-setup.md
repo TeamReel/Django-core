@@ -9,10 +9,10 @@ subtasks:
   - "T015"
 title: "Django Groups & Permissions Setup"
 phase: "Phase 0 - Infrastructure"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "12572"
 review_status: ""
 reviewed_by: ""
 history:
@@ -21,6 +21,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-11-24T17:50:48+01:00"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "12572"
+    action: "Started implementation of Django Groups & Permissions Setup"
 ---
 
 # Work Package Prompt: WP02 – Django Groups & Permissions Setup
