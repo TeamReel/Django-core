@@ -3,10 +3,10 @@ work_package_id: "WP06"
 subtasks: ["T043", "T044", "T045", "T046", "T047", "T048", "T049", "T050", "T051", "T052"]
 title: "User Story 3 – Password Reset Flow"
 phase: "Phase 1 - Core Auth Flows"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "11524"
 review_status: ""
 reviewed_by: ""
 history:
@@ -15,6 +15,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-11-24T19:12:00+01:00"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Started implementation of User Story 3: Password Reset Flow"
 ---
 
 # Work Package Prompt: WP06 – User Story 3: Password Reset Flow
