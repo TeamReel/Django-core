@@ -13,10 +13,10 @@ subtasks:
   - "T030"
 title: "User Story 1 – Registration & Email Verification"
 phase: "Phase 1 - Core Auth Flows"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "12572"
 review_status: ""
 reviewed_by: ""
 history:
@@ -25,6 +25,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-11-24T18:25:19+01:00"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "12572"
+    action: "Started implementation of User Story 1: Registration & Email Verification"
 ---
 
 # Work Package Prompt: WP04 – User Story 1: Registration & Email Verification
