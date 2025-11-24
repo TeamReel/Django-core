@@ -6,6 +6,14 @@
 **Status**: Draft
 **Input**: User description: "Define a generic organisation module with membership relations and basic management flows"
 
+## Clarifications
+
+### Session 2025-11-24
+
+- Q: How should the system handle soft-deleted organisations and their memberships? → A: Soft-delete hides org from all APIs immediately; superadmins can restore within 30 days, then hard-delete
+- Q: Should the system enforce rate limits on creation and invitation operations? → A: Limit users to 5 org creations per day, 20 invitations per hour per org
+- Q: What key metrics should the system expose for operational monitoring? → A: Comprehensive: org/membership counts, creation/invitation/role change rates, per-user distribution, permission latency, rate limit hits
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Organisation Creation & Initial Setup (Priority: P1)
@@ -98,6 +106,7 @@ Organisation admins update organisation details such as name, description, and o
 - How does system handle concurrent membership changes? (Database constraints and transactions prevent race conditions; last write wins for role changes)
 - What happens when a user is removed from an organisation while actively using it? (Current session remains valid but next request requires re-authentication; user is redirected to organisation selection or home)
 - How are organisation names validated? (Unique per instance, 3-100 characters, alphanumeric plus spaces/hyphens/underscores)
+- What happens when a user hits rate limits for organisation creation or invitations? (System returns 429 Too Many Requests with retry-after timestamp; user must wait before attempting again)
 
 ## Requirements *(mandatory)*
 
@@ -123,6 +132,18 @@ Organisation admins update organisation details such as name, description, and o
 - **FR-018**: System MUST validate organisation names for uniqueness, length (3-100 chars), and allowed characters
 - **FR-019**: System MUST associate each organisation with a creation timestamp and creator reference
 - **FR-020**: System MUST associate each membership with join timestamp and inviter reference (if applicable)
+- **FR-021**: System MUST support soft-delete of organisations (marking as inactive) that immediately hides them from all user-facing APIs
+- **FR-022**: Soft-deleted organisations MUST remain accessible to superadmins for restoration within 30 days
+- **FR-023**: System MUST automatically hard-delete soft-deleted organisations after 30 days retention period
+- **FR-024**: When an organisation is soft-deleted, all associated memberships MUST also be marked inactive but preserved for audit trail
+- **FR-025**: System MUST enforce rate limit of 5 organisation creations per user per 24-hour period
+- **FR-026**: System MUST enforce rate limit of 20 member invitations per organisation per hour
+- **FR-027**: Rate limit violations MUST return appropriate error responses indicating when the user can retry
+- **FR-028**: System MUST expose metrics for: total organisation count, total membership count, active vs inactive organisation ratios
+- **FR-029**: System MUST track operational rates for: organisation creation, member invitation, role changes, organisation deletion events
+- **FR-030**: System MUST expose distribution metrics for: organisations per user (p50, p95, p99)
+- **FR-031**: System MUST measure and expose permission check latency (avg, p95, p99)
+- **FR-032**: System MUST track rate limit hit frequency per endpoint to identify abuse patterns
 
 ### Key Entities
 
@@ -174,6 +195,8 @@ Organisation admins update organisation details such as name, description, and o
 
 **Performance Plan**: Use `select_related('user', 'organisation')` on membership queries. Paginate organisation lists and member lists. Index on (user, organisation) for membership lookups.
 
+**Observability**: Expose comprehensive metrics including total counts, operational rates (creation/invitation/changes), per-user distribution percentiles, permission check latency, and rate limit violations for monitoring system health and detecting abuse patterns.
+
 ### API Design (Principle VII)
 - [x] DRF standards followed
 - [x] API responses are consistent and documented
@@ -207,7 +230,7 @@ Organisation admins update organisation details such as name, description, and o
 1. **User Identity**: Assumes B05-core-accounts is fully implemented with stable User model and authentication
 2. **Audit Integration**: Assumes B09-audit-logging provides a stable interface for recording events (if not yet available, implement logging hooks that can be wired later)
 3. **Invitation Mechanism**: Initially assumes invitations are immediate (user must already exist); future enhancement may add email-based invitations for non-existent users
-4. **Organisation Deletion**: Assumes soft-delete (marking inactive) rather than hard-delete to preserve audit trails; organisations can be permanently deleted only by superadmins
+4. **Organisation Deletion**: Soft-deleted organisations are hidden from all APIs immediately; superadmins can restore within 30 days; after 30 days, organisations are permanently hard-deleted along with associated memberships
 5. **Resource Association**: Assumes downstream modules will add foreign keys to Organisation for multi-tenant resources; this module provides the foundation but doesn't enforce resource association patterns
 6. **Single Active Context**: Assumes UI/frontend will manage "active organisation" selection; backend APIs operate on explicit organisation parameters, not implicit context
 7. **No Billing Integration**: Organisations have no concept of payment status, subscription, or limits; such features would be added by downstream product apps
