@@ -111,17 +111,19 @@ The module uses two types of cryptographic tokens:
 
 ### Email Verification Tokens
 - **Generator**: `EmailVerificationTokenGenerator` (extends Django's `PasswordResetTokenGenerator`)
-- **Expiry**: 24 hours
-- **Format**: URL-safe, base64-encoded, HMAC-SHA256 signed
-- **State Binding**: Includes user ID, email, and `email_verified` status (prevents reuse after verification)
-- **Stateless**: No database storage required (verification via signature)
+- **Expiry**: 24 hours from generation
+- **Format**: `<timestamp>-<hash>` (cryptographically signed with SECRET_KEY)
+- **State Binding**: Token includes email_verified status, invalid after verification
+- **Storage**: Stateless (no database storage, signed with SECRET_KEY)
 
 ### Password Reset Tokens
 - **Generator**: Django's built-in `PasswordResetTokenGenerator`
-- **Expiry**: 1 hour
-- **Format**: URL-safe, base64-encoded, HMAC-SHA256 signed
-- **State Binding**: Includes user ID and password hash (automatically invalidates after password change)
-- **Single Use**: Changing password updates hash, invalidating all previous tokens
+- **Expiry**: 1 hour from generation (Django default)
+- **Format**: `<timestamp>-<hash>`
+- **State Binding**: Token includes password hash, invalid after password change
+- **Single Use**: Automatically invalid after successful reset
+
+Both token types use Django's PasswordResetTokenGenerator with HMAC-SHA256 signing.
 
 ## API Endpoints
 
