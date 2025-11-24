@@ -155,19 +155,21 @@
 
 **Independent Test**: User can register with valid email/password, receive verification email (console in dev), click link, get activated, and sign in.
 
-**Prompt**: `tasks/planned/WP04-user-story-1-registration-and-email-verification.md`
+**Prompt**: `tasks/for_review/WP04-user-story-1-registration-and-email-verification.md`
 
 ### Included Subtasks
-- [ ] T021 Create registration form in `accounts/forms.py` (RegistrationForm with email/password/first_name/last_name)
-- [ ] T022 Create registration view in `accounts/views.py` (handles POST, validates, creates inactive user)
-- [ ] T023 Implement verification email sending (multipart HTML+text templates)
-- [ ] T024 Create email templates: `accounts/templates/accounts/email/verification.html` and `verification.txt`
-- [ ] T025 Create email verification view (validates token, activates user, sets email_verified=True)
-- [ ] T026 [P] Create DRF registration serializer in `accounts/serializers.py`
-- [ ] T027 [P] Create DRF registration API endpoint in `accounts/api/views.py` (POST /api/v1/auth/register)
-- [ ] T028 [P] Create email verification API endpoint (POST /api/v1/auth/verify-email/{user_id}/{token})
-- [ ] T029 Configure URL routing in `accounts/urls.py` and `accounts/api/urls.py`
-- [ ] T030 Update `config/urls.py` to include accounts URLs
+- [X] T021 Create registration form in `accounts/forms.py` (RegistrationForm with email/password/first_name/last_name)
+- [X] T022 Create registration view in `accounts/views.py` (handles POST, validates, creates inactive user)
+- [X] T023 Implement verification email sending (multipart HTML+text templates)
+- [X] T024 Create email templates: `accounts/templates/accounts/email/verification.html` and `verification.txt`
+- [X] T025 Create email verification view (validates token, activates user, sets email_verified=True)
+- [X] T026 [P] Create DRF registration serializer in `accounts/serializers.py`
+- [X] T027 [P] Create DRF registration API endpoint in `accounts/api/views.py` (POST /api/v1/auth/register)
+- [X] T028 [P] Create email verification API endpoint (POST /api/v1/auth/verify-email/{user_id}/{token})
+- [X] T029 Configure URL routing in `accounts/urls.py` and `accounts/api/urls.py`
+- [X] T030 Update `config/urls.py` to include accounts URLs
+
+**Status**: ✅ **COMPLETED** - See `tasks/for_review/WP04-user-story-1-registration-and-email-verification.md` for review notes
 
 ### Constitutional Alignment
 - Principle I (Product-Agnostic): Generic registration, no product-specific fields
