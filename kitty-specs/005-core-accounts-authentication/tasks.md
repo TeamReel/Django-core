@@ -259,19 +259,21 @@
 
 **Independent Test**: User requests reset, receives email (console in dev), clicks link, sets new password, can sign in with new credentials.
 
-**Prompt**: `tasks/planned/WP06-user-story-3-password-reset-flow.md`
+**Prompt**: `tasks/for_review/WP06-user-story-3-password-reset-flow.md`
 
 ### Included Subtasks
-- [ ] T043 Create password reset request form in `accounts/forms.py` (email field only)
-- [ ] T044 Create password reset request view (validates email, sends token, no enumeration)
-- [ ] T045 Create password reset email templates: `accounts/templates/accounts/email/password_reset.html` and `password_reset.txt`
-- [ ] T046 Create password reset confirm form (token + new password fields)
-- [ ] T047 Create password reset confirm view (validates token, checks expiry, updates password)
-- [ ] T048 Invalidate all existing sessions on password change (security measure)
-- [ ] T049 [P] Create DRF password reset request serializer and endpoint (POST /api/v1/auth/password-reset-request)
-- [ ] T050 [P] Create DRF password reset confirm serializer and endpoint (POST /api/v1/auth/password-reset-confirm)
-- [ ] T051 Update URL routing for password reset endpoints
-- [ ] T052 [P] Document password reset security properties in accounts/README.md
+- [X] T043 Create password reset request form in `accounts/forms.py` (email field only)
+- [X] T044 Create password reset request view (validates email, sends token, no enumeration)
+- [X] T045 Create password reset email templates: `accounts/templates/accounts/email/password_reset.html` and `password_reset.txt`
+- [X] T046 Create password reset confirm form (token + new password fields)
+- [X] T047 Create password reset confirm view (validates token, checks expiry, updates password)
+- [X] T048 Invalidate all existing sessions on password change (security measure)
+- [X] T049 [P] Create DRF password reset request serializer and endpoint (POST /api/v1/auth/password-reset-request)
+- [X] T050 [P] Create DRF password reset confirm serializer and endpoint (POST /api/v1/auth/password-reset-confirm)
+- [X] T051 Update URL routing for password reset endpoints
+- [X] T052 [P] Document password reset security properties in accounts/README.md
+
+**Status**: 🔄 **IN REVIEW** - Implementation complete, all 12 tests passed, awaiting review
 
 ### Constitutional Alignment
 - Principle V (Security): No email enumeration, token expiry, session invalidation
