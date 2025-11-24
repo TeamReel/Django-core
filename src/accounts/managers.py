@@ -1,4 +1,5 @@
 """Custom managers for accounts models."""
+
 from django.contrib.auth.models import BaseUserManager
 from typing import Optional
 

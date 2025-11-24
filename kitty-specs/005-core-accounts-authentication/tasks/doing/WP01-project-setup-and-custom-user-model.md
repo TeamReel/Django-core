@@ -12,7 +12,7 @@ subtasks:
   - "T009"
 title: "Project Setup & Custom User Model"
 phase: "Phase 0 - Infrastructure"
-lane: "for_review"
+lane: "doing"
 assignee: ""
 agent: "claude"
 shell_pid: "12572"

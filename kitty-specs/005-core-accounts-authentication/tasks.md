@@ -27,15 +27,17 @@
 **Prompt**: `tasks/planned/WP01-project-setup-and-custom-user-model.md`
 
 ### Included Subtasks
-- [ ] T001 Create `src/accounts/` Django app with `__init__.py`, `py.typed` marker
-- [ ] T002 Create custom User model in `accounts/models.py` (AbstractBaseUser + PermissionsMixin)
-- [ ] T003 Create UserManager in `accounts/managers.py` with `create_user()` and `create_superuser()` methods
-- [ ] T004 [P] Configure `AUTH_USER_MODEL = 'accounts.User'` in `config/settings/base.py`
-- [ ] T005 [P] Add session configuration to `config/settings/base.py` (24h inactive, 7d absolute, database-backed)
-- [ ] T006 [P] Add email backend configuration to `config/settings/local.py` (console) and `production.py` (SMTP)
-- [ ] T007 Create initial migration `0001_initial.py` for User model
-- [ ] T008 [P] Create accounts app README.md documenting user model extension pattern
-- [ ] T009 [P] Add djangorestframework to `requirements/base.txt`
+- [X] T001 Create `src/accounts/` Django app with `__init__.py`, `py.typed` marker
+- [X] T002 Create custom User model in `accounts/models.py` (AbstractBaseUser + PermissionsMixin)
+- [X] T003 Create UserManager in `accounts/managers.py` with `create_user()` and `create_superuser()` methods
+- [X] T004 [P] Configure `AUTH_USER_MODEL = 'accounts.User'` in `config/settings/base.py`
+- [X] T005 [P] Add session configuration to `config/settings/base.py` (24h inactive, 7d absolute, database-backed)
+- [X] T006 [P] Add email backend configuration to `config/settings/local.py` (console) and `production.py` (SMTP)
+- [X] T007 Create initial migration `0001_initial.py` for User model
+- [X] T008 [P] Create accounts app README.md documenting user model extension pattern
+- [X] T009 [P] Add djangorestframework to `requirements/base.txt`
+
+**Status**: ✅ **COMPLETED** - See `tasks/done/WP01-project-setup-and-custom-user-model.md` for review notes
 
 ### Constitutional Alignment
 - Principle I (Product-Agnostic): Generic user model, no product-specific fields
