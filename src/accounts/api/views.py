@@ -2,17 +2,25 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.encoding import force_bytes, force_str
 from django.utils.html import strip_tags
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from accounts.models import User
-from accounts.serializers import LoginSerializer, RegistrationSerializer
+from accounts.serializers import (
+    LoginSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    RegistrationSerializer,
+)
 from accounts.tokens import email_verification_token
 
 
@@ -155,3 +163,97 @@ def logout_api(request):
     """API endpoint for user logout."""
     auth_logout(request)
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def password_reset_request_api(request):
+    """API endpoint for password reset request with no email enumeration."""
+    serializer = PasswordResetRequestSerializer(data=request.data)
+    if serializer.is_valid():
+        email = serializer.validated_data["email"]
+        try:
+            user = User.objects.get(email=email, email_verified=True, is_active=True)
+            # Generate reset token and send email
+            token = default_token_generator.make_token(user)
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            # Build absolute URI for password reset
+            reset_path = f"/accounts/reset-password/{uidb64}/{token}/"
+            if request.build_absolute_uri:
+                reset_url = request.build_absolute_uri(reset_path)
+            else:
+                reset_url = f"http://localhost:8000{reset_path}"
+
+            context = {"user": user, "reset_url": reset_url}
+            html_message = render_to_string("accounts/email/password_reset.html", context)
+            plain_message = strip_tags(html_message)
+            send_mail(
+                subject="Reset your password",
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                html_message=html_message,
+            )
+        except User.DoesNotExist:
+            # No enumeration - don't reveal if email exists
+            pass
+
+        # Always return the same message
+        return Response(
+            {
+                "message": (
+                    "If an account with that email exists, a password reset link "
+                    "has been sent. Please check your inbox."
+                )
+            }
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def password_reset_confirm_api(request):
+    """API endpoint for password reset confirmation with token validation."""
+    serializer = PasswordResetConfirmSerializer(data=request.data)
+    if serializer.is_valid():
+        try:
+            uid = force_str(urlsafe_base64_decode(serializer.validated_data["uidb64"]))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response(
+                {
+                    "error": "invalid_token",
+                    "message": "The password reset link is invalid or has expired.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if default_token_generator.check_token(user, serializer.validated_data["token"]):
+            # Set new password
+            user.set_password(serializer.validated_data["new_password"])
+            user.save()
+
+            # Invalidate all existing sessions for this user
+            from django.contrib.sessions.models import Session
+
+            for session in Session.objects.all():
+                session_data = session.get_decoded()
+                if session_data.get("_auth_user_id") == str(user.id):
+                    session.delete()
+
+            return Response(
+                {
+                    "message": (
+                        "Password reset successful. You can now sign in " "with your new password."
+                    )
+                }
+            )
+
+        return Response(
+            {
+                "error": "invalid_token",
+                "message": "The password reset link is invalid or has expired.",
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

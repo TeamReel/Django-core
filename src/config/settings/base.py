@@ -173,3 +173,8 @@ SESSION_SAVE_EVERY_REQUEST = False  # Only save on modification
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
 SESSION_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
 SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
+
+# Password Reset Configuration
+# Django's default_token_generator uses PASSWORD_RESET_TIMEOUT setting
+# Token expires after 1 hour (3600 seconds)
+PASSWORD_RESET_TIMEOUT = 3600  # 1 hour in seconds

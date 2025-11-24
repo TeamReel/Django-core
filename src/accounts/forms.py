@@ -11,6 +11,27 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
 
 
+class PasswordResetRequestForm(forms.Form):
+    """Form for requesting a password reset."""
+
+    email = forms.EmailField()
+
+
+class PasswordResetConfirmForm(forms.Form):
+    """Form for confirming password reset with new password."""
+
+    new_password = forms.CharField(widget=forms.PasswordInput, validators=[validate_password])
+    new_password_confirm = forms.CharField(widget=forms.PasswordInput, label="Confirm New Password")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get("new_password")
+        new_password_confirm = cleaned_data.get("new_password_confirm")
+        if new_password and new_password_confirm and new_password != new_password_confirm:
+            raise forms.ValidationError("Passwords do not match.")
+        return cleaned_data
+
+
 class RegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, validators=[validate_password])
     password_confirm = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
