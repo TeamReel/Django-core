@@ -13,7 +13,7 @@ subtasks:
   - "T030"
 title: "User Story 1 – Registration & Email Verification"
 phase: "Phase 1 - Core Auth Flows"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "12572"
@@ -30,6 +30,11 @@ history:
     agent: "claude"
     shell_pid: "12572"
     action: "Started implementation of User Story 1: Registration & Email Verification"
+  - timestamp: "2025-11-24T18:32:02+01:00"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "12572"
+    action: "Completed implementation - all verification tests passed"
 ---
 
 # Work Package Prompt: WP04 – User Story 1: Registration & Email Verification

@@ -160,3 +160,8 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
 }
+
+# Email Configuration
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Development default
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@example.com")
+EMAIL_SUBJECT_PREFIX = "[Django Core] "
