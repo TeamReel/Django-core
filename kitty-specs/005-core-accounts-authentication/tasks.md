@@ -114,7 +114,7 @@
 
 **Independent Test**: Password validators reject weak passwords, tokens generate correctly and validate with expiry, token reuse prevented.
 
-**Prompt**: `tasks/for_review/WP03-password-validation-and-token-utilities.md`
+**Prompt**: `tasks/done/WP03-password-validation-and-token-utilities.md`
 
 ### Included Subtasks
 - [X] T016 Create custom password validators in `accounts/validators.py` (uppercase, lowercase, number, special char)
@@ -123,11 +123,7 @@
 - [X] T019 Instantiate `email_verification_token` generator in `accounts/tokens.py`
 - [X] T020 [P] Update `accounts/README.md` with token security documentation
 
-**Status**: ✅ **COMPLETED** - See `tasks/for_review/WP03-password-validation-and-token-utilities.md` for implementation details
-- [ ] T017 Configure password validators in `config/settings/base.py` (Django AUTH_PASSWORD_VALIDATORS)
-- [ ] T018 Create EmailVerificationTokenGenerator in `accounts/tokens.py` (extends PasswordResetTokenGenerator)
-- [ ] T019 Implement token validation logic with 24-hour expiry check and email_verified state binding
-- [ ] T020 [P] Document token security properties in accounts/README.md (stateless, signed, expiry)
+**Status**: ✅ **COMPLETED** - See `tasks/done/WP03-password-validation-and-token-utilities.md` for review notes
 
 ### Constitutional Alignment
 - Principle V (Security): Strong password requirements, secure token generation
