@@ -3,10 +3,10 @@ work_package_id: "WP08"
 subtasks: ["T065", "T066", "T067", "T068", "T069", "T070", "T071", "T072"]
 title: "User Story 5 – Role-Based Access Control"
 phase: "Phase 2 - Admin & Roles"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "11524"
 review_status: ""
 reviewed_by: ""
 history:
@@ -15,6 +15,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-11-24T20:13:53+01:00"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Started implementation of User Story 5: Role-Based Access Control"
 ---
 
 # Work Package Prompt: WP08 – User Story 5: Role-Based Access Control
