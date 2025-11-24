@@ -361,17 +361,19 @@
 
 **Independent Test**: Superadmin can assign any role, admin can assign 'user' role only, users cannot change own role, permission checks work correctly across all endpoints.
 
-**Prompt**: `tasks/planned/WP08-user-story-5-role-based-access-control.md`
+**Prompt**: `tasks/done/WP08-user-story-5-role-based-access-control.md`
 
 ### Included Subtasks
-- [ ] T065 Create DRF role change endpoint (PATCH /api/v1/admin/users/{id}/role)
-- [ ] T066 Implement role change validation: superadmin can assign all, admin can assign 'user' only
-- [ ] T067 Prevent users from changing their own role (self-modification check)
-- [ ] T068 Create role change serializer in `accounts/serializers.py`
-- [ ] T069 [P] Apply permission checks to all existing endpoints (registration, login, admin APIs)
-- [ ] T070 [P] Create permission check decorator for view-based access control
-- [ ] T071 [P] Document role-based access control model in accounts/README.md
-- [ ] T072 Update URL routing for role change endpoint
+- [X] T065 Create DRF role change endpoint (PATCH /api/v1/admin/users/{id}/role)
+- [X] T066 Implement role change validation: superadmin can assign all, admin can assign 'user' only
+- [X] T067 Prevent users from changing their own role (self-modification check)
+- [X] T068 Create role change serializer in `accounts/serializers.py`
+- [X] T069 [P] Apply permission checks to all existing endpoints (registration, login, admin APIs)
+- [X] T070 [P] Create permission check decorator for view-based access control
+- [X] T071 [P] Document role-based access control model in accounts/README.md
+- [X] T072 Update URL routing for role change endpoint
+
+**Status**: ✅ **COMPLETED** - See `tasks/done/WP08-user-story-5-role-based-access-control.md` for review notes
 
 ### Constitutional Alignment
 - Principle V (Security): Least privilege, role-based access control, privilege escalation prevention
