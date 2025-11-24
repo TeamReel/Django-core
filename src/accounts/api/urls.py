@@ -21,4 +21,26 @@ urlpatterns = [
         views.password_reset_confirm_api,
         name="api_password_reset_confirm",
     ),
+    # Admin user management endpoints
+    path("admin/users", views.admin_user_list, name="api_admin_user_list"),
+    path(
+        "admin/users/<int:user_id>",
+        views.admin_user_detail,
+        name="api_admin_user_detail",
+    ),
+    path(
+        "admin/users/<int:user_id>/activate",
+        views.admin_user_activate,
+        name="api_admin_user_activate",
+    ),
+    path(
+        "admin/users/<int:user_id>/deactivate",
+        views.admin_user_deactivate,
+        name="api_admin_user_deactivate",
+    ),
+    path(
+        "admin/users/<int:user_id>/reset-password",
+        views.admin_user_reset_password,
+        name="api_admin_user_reset_password",
+    ),
 ]

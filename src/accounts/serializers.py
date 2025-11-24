@@ -35,3 +35,40 @@ class RegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    """Serializer for user list (admin)."""
+
+    role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+            "is_active",
+            "email_verified",
+            "date_joined",
+            "last_login",
+        ]
+
+    def get_role(self, obj):
+        """Get user's role."""
+        if obj.is_superuser:
+            return "superadmin"
+        elif obj.is_admin:
+            return "admin"
+        return "user"
+
+
+class UserDetailSerializer(UserListSerializer):
+    """Serializer for user detail (admin)."""
+
+    groups = serializers.StringRelatedField(many=True)
+
+    class Meta(UserListSerializer.Meta):
+        fields = UserListSerializer.Meta.fields + ["is_staff", "is_superuser", "groups"]

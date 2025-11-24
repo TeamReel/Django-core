@@ -11,15 +11,19 @@ from django.utils.html import strip_tags
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from accounts.models import User
+from accounts.permissions import IsAdmin
 from accounts.serializers import (
     LoginSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     RegistrationSerializer,
+    UserDetailSerializer,
+    UserListSerializer,
 )
 from accounts.tokens import email_verification_token
 
@@ -257,3 +261,177 @@ def password_reset_confirm_api(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Admin User Management API Endpoints
+
+
+class UserPagination(PageNumberPagination):
+    """Pagination class for user list."""
+
+    page_size = 50
+
+
+@api_view(["GET"])
+@permission_classes([IsAdmin])
+def admin_user_list(request):
+    """List all users with pagination and filters (admin only)."""
+    queryset = User.objects.select_related().prefetch_related("groups").order_by("-date_joined")
+
+    # Apply filters
+    is_active = request.query_params.get("is_active")
+    if is_active is not None:
+        queryset = queryset.filter(is_active=is_active.lower() == "true")
+
+    email_verified = request.query_params.get("email_verified")
+    if email_verified is not None:
+        queryset = queryset.filter(email_verified=email_verified.lower() == "true")
+
+    role = request.query_params.get("role")
+    if role:
+        if role == "superadmin":
+            queryset = queryset.filter(is_superuser=True)
+        elif role == "admin":
+            queryset = queryset.filter(groups__name="admin")
+        elif role == "user":
+            queryset = queryset.filter(groups__name="user", is_superuser=False)
+
+    # Paginate
+    paginator = UserPagination()
+    page = paginator.paginate_queryset(queryset, request)
+    serializer = UserListSerializer(page, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAdmin])
+def admin_user_detail(request, user_id):
+    """Get user details (admin only)."""
+    try:
+        user = User.objects.prefetch_related("groups").get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "not_found", "message": "User not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    serializer = UserDetailSerializer(user)
+    return Response(serializer.data)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAdmin])
+def admin_user_activate(request, user_id):
+    """Activate a user (admin only)."""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "not_found", "message": "User not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if user.is_active:
+        return Response(
+            {"error": "bad_request", "message": "User is already active."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user.is_active = True
+    user.save()
+    serializer = UserDetailSerializer(user)
+    return Response(serializer.data)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAdmin])
+def admin_user_deactivate(request, user_id):
+    """Deactivate a user with protection checks (admin only)."""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "not_found", "message": "User not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Prevent self-deactivation
+    if user.id == request.user.id:
+        return Response(
+            {"error": "bad_request", "message": "You cannot deactivate your own account."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Admins can't deactivate superadmins or other admins
+    if not request.user.is_superuser:
+        if user.is_superuser or user.is_admin:
+            return Response(
+                {
+                    "error": "permission_denied",
+                    "message": "You do not have permission to deactivate this user.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+    if not user.is_active:
+        return Response(
+            {"error": "bad_request", "message": "User is already inactive."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user.is_active = False
+    user.save()
+    serializer = UserDetailSerializer(user)
+    return Response(serializer.data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAdmin])
+def admin_user_reset_password(request, user_id):
+    """Send password reset email to a user (admin only)."""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "not_found", "message": "User not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if not user.is_active:
+        return Response(
+            {
+                "error": "bad_request",
+                "message": "Cannot send password reset to inactive account.",
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not user.email_verified:
+        return Response(
+            {
+                "error": "bad_request",
+                "message": "Cannot send password reset to unverified account.",
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Generate reset token and send email (same logic as user-initiated reset)
+    token = default_token_generator.make_token(user)
+    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+    reset_path = f"/accounts/reset-password/{uidb64}/{token}/"
+    if request.build_absolute_uri:
+        reset_url = request.build_absolute_uri(reset_path)
+    else:
+        reset_url = f"http://localhost:8000{reset_path}"
+
+    context = {"user": user, "reset_url": reset_url}
+    html_message = render_to_string("accounts/email/password_reset.html", context)
+    plain_message = strip_tags(html_message)
+    send_mail(
+        subject="Reset your password",
+        message=plain_message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        html_message=html_message,
+    )
+
+    return Response({"message": f"Password reset email sent to {user.email}."})
