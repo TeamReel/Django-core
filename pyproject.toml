@@ -23,8 +23,25 @@ python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 testpaths = ["tests"]
-addopts = "-v --tb=short --strict-markers --reuse-db"
-norecursedirs = ["tests/fixtures"]
+addopts = """
+    -v
+    --tb=short
+    --strict-markers
+    --reuse-db
+    --cov=src
+    --cov-report=term-missing:skip-covered
+    --cov-report=html
+    --cov-report=json
+    --no-cov-on-fail
+    """
+norecursedirs = ["tests/fixtures", "migrations", ".git", ".venv", "venv"]
+markers = [
+    "unit: Unit tests for isolated components",
+    "integration: Integration tests for component interactions",
+    "api: API endpoint tests",
+    "slow: Tests that take a long time to run",
+    "security: Security-related tests",
+]
 
 [tool.black]
 line-length = 100
@@ -65,7 +82,12 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101"]  # Allow assert in tests
+"tests/**/*.py" = [
+    "S101",  # Allow assert in tests
+    "S105",  # Allow hardcoded passwords in tests
+    "S106",  # Allow hardcoded password arguments in tests
+    "S311",  # Allow pseudo-random generators in tests
+]
 
 [tool.mypy]
 python_version = "3.12"

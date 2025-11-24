@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify your email address</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        h2 { color: #007bff; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }
+        .button:hover { background-color: #0056b3; }
+        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <h2>Verify your email address</h2>
+    <p>Hi {{ user.get_short_name }},</p>
+    <p>Thank you for registering. Please click the button below to verify your email address:</p>
+    <p><a href="{{ verification_url }}" class="button">Verify Email Address</a></p>
+    <p>Or copy and paste this link into your browser:</p>
+    <p><a href="{{ verification_url }}">{{ verification_url }}</a></p>
+    <p>This link expires in 24 hours.</p>
+    <p>If you did not create this account, please ignore this email.</p>
+    <div class="footer">
+        <p>This is an automated email from Django Core. Please do not reply to this email.</p>
+    </div>
+</body>
+</html>

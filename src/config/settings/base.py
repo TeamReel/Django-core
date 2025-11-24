@@ -14,14 +14,20 @@ DEBUG = False
 
 ALLOWED_HOSTS: list[str] = []
 
+# Custom User Model
+AUTH_USER_MODEL = "accounts.User"
+
 
 INSTALLED_APPS = [
+    "accounts.apps.AccountsConfig",  # Must be before admin
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third-party apps
+    "rest_framework",
     # Core-App modules
     "constitution_engine",
     "security_baseline",
@@ -30,6 +36,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "accounts.middleware.SessionInactivityMiddleware",  # Enforce inactivity timeout
     "django.middleware.locale.LocaleMiddleware",  # Language detection and activation
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -70,10 +77,30 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 8},
+    },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {"NAME": "accounts.validators.UppercaseValidator"},
+    {"NAME": "accounts.validators.LowercaseValidator"},
+    {"NAME": "accounts.validators.NumberValidator"},
+    {"NAME": "accounts.validators.SpecialCharacterValidator"},
 ]
+
+
+# Session Configuration
+# 24 hours inactive timeout OR 7 days absolute (whichever comes first)
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Database-backed
+SESSION_COOKIE_AGE = 604800  # 7 days in seconds (absolute timeout)
+SESSION_SAVE_EVERY_REQUEST = False  # Only save when modified
+SESSION_COOKIE_HTTPONLY = True  # Security: no JS access
+SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
+SESSION_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
+
+# Custom: Inactive timeout enforced via middleware (24 hours)
+SESSION_INACTIVITY_TIMEOUT = 86400  # 24 hours in seconds
 
 
 # Internationalization and Localization
@@ -121,3 +148,33 @@ SECURITY_ENFORCEMENT_MODE = os.getenv("SECURITY_ENFORCEMENT_MODE", "strict")
 # WP13: Environment detection for security profiles
 # Used by ManifestLoader to select appropriate security configuration
 ENVIRONMENT = os.getenv("DJANGO_ENV", "local")
+
+
+# Django REST Framework Configuration
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 50,
+}
+
+# Email Configuration
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Development default
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@example.com")
+EMAIL_SUBJECT_PREFIX = "[Django Core] "
+
+# Session Configuration
+SESSION_COOKIE_AGE = 604800  # 7 days (absolute timeout)
+SESSION_SAVE_EVERY_REQUEST = False  # Only save on modification
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
+SESSION_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
+SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
+
+# Password Reset Configuration
+# Django's default_token_generator uses PASSWORD_RESET_TIMEOUT setting
+# Token expires after 1 hour (3600 seconds)
+PASSWORD_RESET_TIMEOUT = 3600  # 1 hour in seconds

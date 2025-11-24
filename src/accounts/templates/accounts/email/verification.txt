@@ -1,0 +1,14 @@
+Verify your email address
+
+Hi {{ user.get_short_name }},
+
+Thank you for registering. Please click the link below to verify your email address:
+
+{{ verification_url }}
+
+This link expires in 24 hours.
+
+If you did not create this account, please ignore this email.
+
+---
+This is an automated email from Django Core. Please do not reply to this email.

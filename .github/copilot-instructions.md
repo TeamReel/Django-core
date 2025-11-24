@@ -6,6 +6,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-23
 
 ## Active Technologies
 - Python 3.12+ + Django 5.1+, gettext utilities (004-core-internationalization-base)
+- Python 3.12+ + Django 5.1+, Django REST Framework 3.14+, django-stubs (type hints) (005-core-accounts-authentication)
+- PostgreSQL (custom user model, sessions, Django groups/permissions) (005-core-accounts-authentication)
 
 ## Project Structure
 ```
@@ -30,6 +32,7 @@ Quick reminders:
 Python 3.12+: Follow standard conventions
 
 ## Recent Changes
+- 005-core-accounts-authentication: Added Python 3.12+ + Django 5.1+, Django REST Framework 3.14+, django-stubs (type hints)
 - 004-core-internationalization-base: Added Python 3.12+ + Django 5.1+, gettext utilities
 
 <!-- MANUAL ADDITIONS START -->
