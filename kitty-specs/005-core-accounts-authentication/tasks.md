@@ -74,12 +74,14 @@
 **Prompt**: `tasks/planned/WP02-django-groups-and-permissions-setup.md`
 
 ### Included Subtasks
-- [ ] T010 Create data migration `0002_create_groups.py` to create superadmin/admin/user groups
-- [ ] T011 Assign permissions to admin group in migration (add_user, change_user, view_user)
-- [ ] T012 Add role helper properties to User model (is_superadmin, is_admin, is_regular_user)
-- [ ] T013 Create post-save signal in `accounts/signals.py` to auto-assign 'user' group
-- [ ] T014 Register signal in `accounts/apps.py` ready() method
-- [ ] T015 [P] Create custom DRF permission classes in `accounts/permissions.py` (IsSuperadmin, IsAdmin, IsAdminOrReadOnly)
+- [X] T010 Create data migration `0002_create_groups.py` to create superadmin/admin/user groups
+- [X] T011 Assign permissions to admin group in migration (add_user, change_user, view_user)
+- [X] T012 Add role helper properties to User model (is_superadmin, is_admin, is_regular_user)
+- [X] T013 Create post-save signal in `accounts/signals.py` to auto-assign 'user' group
+- [X] T014 Register signal in `accounts/apps.py` ready() method
+- [X] T015 [P] Create custom DRF permission classes in `accounts/permissions.py` (IsSuperadmin, IsAdmin, IsAdminOrReadOnly)
+
+**Status**: ✅ **COMPLETED** - See `tasks/done/WP02-django-groups-and-permissions-setup.md` for review notes
 
 ### Constitutional Alignment
 - Principle II (Architecture): Leverages Django's built-in permissions system
