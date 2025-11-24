@@ -309,21 +309,21 @@
 
 **Independent Test**: Admin can view user list (paginated), activate/deactivate users, trigger password resets, regular users blocked from access.
 
-**Prompt**: `tasks/planned/WP07-user-story-4-admin-user-management.md`
+**Prompt**: `tasks/done/WP07-user-story-4-admin-user-management.md`
 
 ### Included Subtasks
-- [ ] T053 Configure Django Admin for User model in `accounts/admin.py` (list display, filters, search)
-- [ ] T054 Create admin actions: activate_users, deactivate_users, send_password_reset
-- [ ] T055 Implement self-modification protection (cannot deactivate own account or change own role)
-- [ ] T056 [P] Create DRF admin user list endpoint (GET /api/v1/admin/users) with pagination
-- [ ] T057 [P] Create DRF admin user detail endpoint (GET /api/v1/admin/users/{id})
-- [ ] T058 [P] Create DRF admin activate endpoint (PATCH /api/v1/admin/users/{id}/activate)
-- [ ] T059 [P] Create DRF admin deactivate endpoint (PATCH /api/v1/admin/users/{id}/deactivate)
-- [ ] T060 [P] Create DRF admin password reset endpoint (POST /api/v1/admin/users/{id}/reset-password)
-- [ ] T061 Apply permission checks: superadmin can manage all, admin can manage 'user' role only
-- [ ] T062 Optimize user list query with select_related('groups') to avoid N+1
-- [ ] T063 Configure pagination (50 per page) for admin user list API
-- [ ] T064 Update URL routing for admin API endpoints
+- [X] T053 Configure Django Admin for User model in `accounts/admin.py` (list display, filters, search)
+- [X] T054 Create admin actions: activate_users, deactivate_users, send_password_reset
+- [X] T055 Implement self-modification protection (cannot deactivate own account or change own role)
+- [X] T056 [P] Create DRF admin user list endpoint (GET /api/v1/admin/users) with pagination
+- [X] T057 [P] Create DRF admin user detail endpoint (GET /api/v1/admin/users/{id})
+- [X] T058 [P] Create DRF admin activate endpoint (PATCH /api/v1/admin/users/{id}/activate)
+- [X] T059 [P] Create DRF admin deactivate endpoint (PATCH /api/v1/admin/users/{id}/deactivate)
+- [X] T060 [P] Create DRF admin password reset endpoint (POST /api/v1/admin/users/{id}/reset-password)
+- [X] T061 Apply permission checks: superadmin can manage all, admin can manage 'user' role only
+- [X] T062 Optimize user list query with select_related('groups') to avoid N+1
+- [X] T063 Configure pagination (50 per page) for admin user list API
+- [X] T064 Update URL routing for admin API endpoints
 
 ### Constitutional Alignment
 - Principle V (Security): Role-based access control, self-modification protection
