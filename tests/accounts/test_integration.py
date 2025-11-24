@@ -157,9 +157,7 @@ class TestPasswordResetFlow:
 class TestAdminUserManagementFlow:
     """Test complete admin user management workflows."""
 
-    def test_admin_create_and_manage_user_lifecycle(
-        self, admin_client, api_client, user_group, admin_group
-    ):
+    def test_admin_create_and_manage_user_lifecycle(self, admin_client, api_client):
         """Test admin managing complete user lifecycle.
 
         Tests: create -> activate -> change role -> deactivate.
@@ -172,9 +170,7 @@ class TestAdminUserManagementFlow:
             "first_name": "Managed",
             "last_name": "User",
         }
-        reg_response = api_client.post(
-            "/api/v1/auth/register", reg_data, format="json"
-        )
+        reg_response = api_client.post("/api/v1/auth/register", reg_data, format="json")
         assert reg_response.status_code == status.HTTP_201_CREATED
         user_id = reg_response.data["id"]
 
@@ -190,17 +186,13 @@ class TestAdminUserManagementFlow:
         user.save()
 
         # Step 4: Admin activates user
-        activate_response = admin_client.patch(
-            f"/api/v1/admin/users/{user_id}/activate"
-        )
+        activate_response = admin_client.patch(f"/api/v1/admin/users/{user_id}/activate")
         assert activate_response.status_code == status.HTTP_200_OK
         assert activate_response.data["is_active"] is True
 
         # Step 5: User can now login
         login_data = {"email": "managed@example.com", "password": "SecurePass123!"}
-        login_response = api_client.post(
-            "/api/v1/auth/login", login_data, format="json"
-        )
+        login_response = api_client.post("/api/v1/auth/login", login_data, format="json")
         assert login_response.status_code == status.HTTP_200_OK
         assert login_response.data["role"] == "user"
 
@@ -220,9 +212,7 @@ class TestAdminUserManagementFlow:
         login_response = api_client.post("/api/v1/auth/login", login_data, format="json")
         assert login_response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_superadmin_role_management_flow(
-        self, superadmin_client, regular_user, admin_group, superadmin_group
-    ):
+    def test_superadmin_role_management_flow(self, superadmin_client, regular_user):
         """Test superadmin promoting users through role hierarchy."""
         # Step 1: User starts as regular user
         detail_response = superadmin_client.get(f"/api/v1/admin/users/{regular_user.id}")
@@ -331,7 +321,7 @@ class TestSecurityConstraints:
         assert deactivate_response.status_code == status.HTTP_400_BAD_REQUEST
         assert "cannot deactivate your own" in deactivate_response.data["message"].lower()
 
-    def test_inactive_user_cannot_login(self, api_client, db):
+    def test_inactive_user_cannot_login(self, api_client):
         """Test that deactivated users cannot login."""
         # Create and then deactivate user
         user = User.objects.create_user(

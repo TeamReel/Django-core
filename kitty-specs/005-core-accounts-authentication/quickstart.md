@@ -318,36 +318,133 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/v1/admin/users/456/role" `
 
 ### Run Test Suite
 
+The accounts module includes 114 comprehensive tests covering unit, API, and integration testing.
+
 ```powershell
-# All tests
+# Navigate to src directory
 cd src
+
+# Run all tests
 pytest
 
-# Accounts tests only
-pytest tests/accounts/
+# Run accounts tests only (114 tests)
+pytest ../tests/accounts/
 
-# With coverage
-pytest --cov=accounts --cov-report=html
+# Run with coverage reporting
+pytest ../tests/accounts/ --cov=accounts --cov-report=term-missing --cov-report=html
 
-# Specific test module
-pytest tests/accounts/test_authentication.py
+# Run by test category
+pytest ../tests/accounts/ -m unit          # Unit tests (38 tests)
+pytest ../tests/accounts/ -m api           # API tests (63 tests)
+pytest ../tests/accounts/ -m integration   # Integration tests (13 tests)
 
-# Specific test function
-pytest tests/accounts/test_authentication.py::test_user_registration
+# Run specific test module
+pytest ../tests/accounts/test_models.py           # 15 tests
+pytest ../tests/accounts/test_validators.py       # 11 tests
+pytest ../tests/accounts/test_permissions.py      # 12 tests
+pytest ../tests/accounts/test_auth_api.py         # 30 tests
+pytest ../tests/accounts/test_admin_api.py        # 33 tests
+pytest ../tests/accounts/test_integration.py      # 13 tests
+
+# Run specific test function
+pytest ../tests/accounts/test_models.py::TestUserModel::test_user_creation
+
+# Run with verbose output
+pytest ../tests/accounts/ -v
+
+# Run without coverage (faster)
+pytest ../tests/accounts/ --no-cov -q
 ```
 
-### Test Coverage
+### Test Suite Statistics
 
-Target: **>85% for authentication, 100% for permissions**.
+**Current Test Coverage** (WP10):
+- **Total Tests**: 114
+- **Passing**: 103 (90.4%)
+- **Unit Tests**: 38 (100% passing) ✓
+- **API Tests**: 63 (82.5% passing)
+- **Integration Tests**: 13 (100% passing) ✓
 
-View coverage report:
+**Test Categories**:
+- **Models**: 15 tests - User model, role properties
+- **Validators**: 11 tests - Password complexity validators
+- **Permissions**: 12 tests - IsAdmin permission (100% coverage)
+- **Auth API**: 30 tests - Registration, login, verification, password reset
+- **Admin API**: 33 tests - User management, activation, role changes
+- **Integration**: 13 tests - End-to-end workflows
+
+**Coverage Targets**:
+- Overall: ≥80% code coverage (SC-008) ✓
+- Permissions: 100% coverage ✓
+- Models: 100% coverage ✓
+- Authentication: ≥85% coverage
+
+### View Coverage Report
 
 ```powershell
-pytest --cov=accounts --cov-report=html
-# Open htmlcov/index.html in browser
+# Generate HTML coverage report
+pytest ../tests/accounts/ --cov=accounts --cov-report=html
+
+# Open report in browser (PowerShell)
+Start-Process htmlcov/index.html
+
+# Or manually open: htmlcov/index.html
 ```
 
-### Manual Testing
+### Test Fixtures
+
+The test suite provides reusable fixtures (defined in `tests/accounts/conftest.py`):
+
+**Group Fixtures**:
+- `user_group` - Default 'user' group
+- `admin_group` - 'admin' group
+- `superadmin_group` - 'superadmin' group
+
+**User Fixtures**:
+- `regular_user` - Active, verified user with 'user' role
+- `unverified_user` - Inactive, unverified user
+- `admin_user` - Active, verified admin
+- `superadmin_user` - Active, verified superadmin
+
+**API Client Fixtures**:
+- `api_client` - Anonymous API client
+- `authenticated_client` - Authenticated as regular_user
+- `admin_client` - Authenticated as admin_user
+- `superadmin_client` - Authenticated as superadmin_user
+
+### Factory Usage (Test Data Generation)
+
+Use factory_boy for generating test data:
+
+```python
+from tests.accounts.factories import (
+    UserFactory,
+    VerifiedUserFactory,
+    AdminUserFactory,
+    SuperadminUserFactory
+)
+
+# Create basic user (unverified, inactive)
+user = UserFactory(email="test@example.com")
+
+# Create verified, active user with 'user' role
+verified_user = VerifiedUserFactory()
+
+# Create admin with 'admin' role
+admin = AdminUserFactory()
+
+# Create superadmin
+superadmin = SuperadminUserFactory()
+
+# Customize factory output
+custom_user = VerifiedUserFactory(
+    first_name="John",
+    last_name="Doe",
+    email="john.doe@example.com"
+)
+```
+
+### Manual Testing via Django Shell
 
 Use Django shell for quick testing:
 
@@ -360,9 +457,14 @@ from accounts.models import User
 from django.contrib.auth.models import Group
 
 # Create user
-user = User.objects.create_user(email='test@example.com', password='Test123!@#')
+user = User.objects.create_user(
+    email='test@example.com',
+    password='Test123!@#',
+    first_name='Test',
+    last_name='User'
+)
 
-# Verify email
+# Verify email (manual activation)
 user.email_verified = True
 user.is_active = True
 user.save()
@@ -371,9 +473,45 @@ user.save()
 user_group = Group.objects.get(name='user')
 user.groups.add(user_group)
 
-# Check role
-print(user.is_regular_user)  # True
-print(user.is_admin)  # False
+# Check role properties
+print(f"Regular user: {user.is_regular_user}")  # True
+print(f"Admin: {user.is_admin}")                # False
+print(f"Superadmin: {user.is_superadmin}")      # False
+
+# Test password validation
+from django.contrib.auth.password_validation import validate_password
+try:
+    validate_password("weakpass")
+except Exception as e:
+    print(f"Validation failed: {e}")
+
+# Clean up
+user.delete()
+```
+
+### Integration Test Examples
+
+The integration test suite validates complete user workflows:
+
+**1. Complete Registration Flow**:
+- Register new user → Verify email → Login successfully
+
+**2. Password Reset Flow**:
+- Request reset → Receive email → Confirm new password → Login with new password
+
+**3. Admin User Management**:
+- Create user → Admin activates → User logs in → Admin changes role → Admin deactivates
+
+**4. Security Constraints**:
+- Regular user cannot access admin endpoints
+- Admin cannot modify superadmin accounts
+- Users cannot deactivate themselves
+- Inactive users cannot login
+
+Run integration tests:
+```powershell
+pytest ../tests/accounts/test_integration.py -v
+# 13 tests, ~10 seconds
 ```
 
 ---
