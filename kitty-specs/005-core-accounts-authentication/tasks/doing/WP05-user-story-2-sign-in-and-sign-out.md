@@ -3,10 +3,10 @@ work_package_id: "WP05"
 subtasks: ["T031", "T032", "T033", "T034", "T035", "T036", "T037", "T038", "T039", "T040", "T041", "T042"]
 title: "User Story 2 – Sign In/Sign Out"
 phase: "Phase 1 - Core Auth Flows"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "11524"
 review_status: ""
 reviewed_by: ""
 history:
@@ -15,6 +15,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-11-24T18:43:45+01:00"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Started implementation of User Story 2: Sign In and Sign Out"
 ---
 
 # Work Package Prompt: WP05 – User Story 2: Sign In/Sign Out
