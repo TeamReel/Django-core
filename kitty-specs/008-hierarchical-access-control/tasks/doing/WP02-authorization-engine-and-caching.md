@@ -13,10 +13,10 @@ subtasks:
   - "T019"
 title: "Authorization Engine & Caching"
 phase: "Phase 1 - Core Implementation"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "GitHub Copilot"
+agent: "claude"
+shell_pid: "11524"
 review_status: ""
 reviewed_by: ""
 history:
@@ -25,6 +25,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-11-25T21:20:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Started implementation"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP02-authorization-engine-and-caching.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP02-authorization-engine-and-caching.md)*
 
