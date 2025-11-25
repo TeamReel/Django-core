@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 title: Django Admin & Cleanup Management
-lane: "doing"
+lane: "for_review"
 subtasks: [T046, T047, T048, T049, T050, T051]
 priority: Medium
 user_story: None (operational)
@@ -130,3 +130,4 @@ python manage.py cleanup_deleted_organisations --days=7
 ## Activity Log
 
 - 2025-11-25T09:43:13Z – claude – shell_pid= – lane=doing – Started implementation
+- 2025-11-25T09:45:44Z – claude – shell_pid= – lane=for_review – Implementation complete: Added Django admin with restore action and cleanup command with --dry-run and --days flags
