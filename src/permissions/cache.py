@@ -8,6 +8,7 @@ Example Keys:
     perms:123e4567:projects.delete:project:proj-abc
     perms:123e4567:org.invite_users:organisation:org-xyz
 """
+
 import logging
 from typing import Optional
 from uuid import UUID

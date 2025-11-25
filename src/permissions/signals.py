@@ -5,6 +5,7 @@ Triggers:
 - RoleAssignment created/deleted → invalidate user cache
 - Role permissions modified → invalidate all users with that role
 """
+
 import logging
 
 from django.db.models.signals import m2m_changed, post_delete, post_save

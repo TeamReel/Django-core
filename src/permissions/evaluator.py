@@ -10,6 +10,7 @@ Evaluation Flow:
 6. Return True if permission found in any role, False otherwise
 7. Cache result with TTL
 """
+
 import logging
 from typing import Optional
 from uuid import UUID

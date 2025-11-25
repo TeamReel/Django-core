@@ -11,6 +11,7 @@ Usage:
         is_sensitive=False
     )
 """
+
 import re
 import threading
 from typing import Dict
