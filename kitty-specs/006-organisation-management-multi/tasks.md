@@ -247,11 +247,11 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T028**: Implement `get_admin_count()` helper method on Organisation model to count active admin memberships
-- [ ] **T029**: Add validation in MembershipViewSet.update() to check admin count before role downgrade
-- [ ] **T030**: Add validation in MembershipViewSet.destroy() to check admin count before deletion
-- [ ] **T031**: Implement business rule: prevent self-removal if user is last admin
-- [ ] **T032**: Add audit logging hooks on role change and membership deletion using Django signals
+- [x] **T028**: Implement `get_admin_count()` helper method on Organisation model to count active admin memberships
+- [x] **T029**: Add validation in MembershipViewSet.update() to check admin count before role downgrade
+- [x] **T030**: Add validation in MembershipViewSet.destroy() to check admin count before deletion
+- [x] **T031**: Implement business rule: prevent self-removal if user is last admin
+- [x] **T032**: Add audit logging hooks on role change and membership deletion using Django signals
 
 **Implementation Sketch**:
 1. Add method to Organisation: `self.memberships.filter(role='admin', is_active=True).count()`
@@ -264,7 +264,7 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Dependencies**: WP04 (membership creation must work first)
 
-**Prompt**: [tasks/planned/WP05-membership-management-api.md](tasks/planned/WP05-membership-management-api.md)
+**Prompt**: [tasks/for_review/WP05-membership-management-api.md](tasks/for_review/WP05-membership-management-api.md) ✅ **Completed, Awaiting Review**
 
 ---
 
