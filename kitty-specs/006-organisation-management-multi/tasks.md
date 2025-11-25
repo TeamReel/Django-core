@@ -201,12 +201,12 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T022**: Create custom permission class `IsOrganisationAdmin` in `organisations/permissions.py` that checks membership role
-- [ ] **T023**: Create MembershipSerializer in `organisations/api/serializers.py` with user, organisation, role, joined_at, invited_by fields
-- [ ] **T024**: Implement MembershipViewSet as nested route under organisations in `organisations/api/views.py`
-- [ ] **T025**: Add validation to prevent duplicate memberships (check existing membership in create)
-- [ ] **T026**: Override perform_create to set invited_by=request.user
-- [ ] **T027**: Configure nested routing in URLs: `/api/organisations/{organisation_id}/members/`
+- [x] **T022**: Create custom permission class `IsOrganisationAdmin` in `organisations/permissions.py` that checks membership role
+- [x] **T023**: Create MembershipSerializer in `organisations/api/serializers.py` with user, organisation, role, joined_at, invited_by fields
+- [x] **T024**: Implement MembershipViewSet as nested route under organisations in `organisations/api/views.py`
+- [x] **T025**: Add validation to prevent duplicate memberships (check existing membership in create)
+- [x] **T026**: Override perform_create to set invited_by=request.user
+- [x] **T027**: Configure nested routing in URLs: `/api/organisations/{organisation_id}/members/`
 
 **Implementation Sketch**:
 1. Create permission class that gets organisation from view kwargs, queries membership for request.user with role='admin'
@@ -221,7 +221,7 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Dependencies**: WP03 (organisation creation must work first)
 
-**Prompt**: [tasks/planned/WP04-member-invitation-roles.md](tasks/planned/WP04-member-invitation-roles.md)
+**Prompt**: [tasks/for_review/WP04-member-invitation-roles.md](tasks/for_review/WP04-member-invitation-roles.md) ✅ **Completed, Awaiting Review**
 
 ---
 
