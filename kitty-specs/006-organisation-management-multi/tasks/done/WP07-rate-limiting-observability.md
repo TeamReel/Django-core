@@ -5,7 +5,9 @@ lane: "done"
 subtasks: [T039, T040, T041, T042, T043, T044, T045]
 priority: Critical
 user_story: All
-agent: "claude-reviewer"
+agent: "claude"
+assignee: "claude"
+shell_pid: "11524"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
 history:

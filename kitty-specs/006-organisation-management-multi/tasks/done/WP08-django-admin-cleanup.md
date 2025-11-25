@@ -5,7 +5,9 @@ lane: "done"
 subtasks: [T046, T047, T048, T049, T050, T051]
 priority: Medium
 user_story: None (operational)
-agent: "claude-reviewer"
+agent: "claude"
+assignee: "claude"
+shell_pid: "11524"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
 history:
