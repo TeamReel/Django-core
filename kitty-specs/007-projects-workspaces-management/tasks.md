@@ -156,12 +156,12 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T015**: Create ProjectSerializer and ProjectListSerializer in `projects/api/serializers.py` with nested org/creator
-- [ ] **T016**: Implement validation in serializer: name length, slug pattern, description length, case-insensitive name uniqueness
-- [ ] **T017**: Create ProjectViewSet in `projects/api/views.py` with create, list, retrieve actions
-- [ ] **T018**: Configure cursor pagination (50 items/page) and queryset optimization (select_related)
-- [ ] **T019**: Add URL patterns in `projects/api/urls.py`: nested under organisations + top-level routes
-- [ ] **T020**: Implement permissions: reuse IsOrganisationAdmin from Feature 006, filter queryset by user's organisations
+- [x] **T015**: Create ProjectSerializer and ProjectListSerializer in `projects/api/serializers.py` with nested org/creator
+- [x] **T016**: Implement validation in serializer: name length, slug pattern, description length, case-insensitive name uniqueness
+- [x] **T017**: Create ProjectViewSet in `projects/api/views.py` with create, list, retrieve actions
+- [x] **T018**: Configure cursor pagination (50 items/page) and queryset optimization (select_related)
+- [x] **T019**: Add URL patterns in `projects/api/urls.py`: nested under organisations + top-level routes
+- [x] **T020**: Implement permissions: reuse IsOrganisationAdmin from Feature 006, filter queryset by user's organisations
 
 **Implementation Sketch**:
 1. Create serializers with nested OrganisationSerializer and UserSerializer for read operations
