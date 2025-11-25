@@ -52,11 +52,11 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T001**: Create `src/projects/` Django app with `__init__.py`, `apps.py`, `models.py`, `admin.py`, `signals.py`
-- [ ] **T002**: Create sub-packages: `projects/api/` with `serializers.py`, `views.py`, `urls.py`, `permissions.py`
-- [ ] **T003**: Add `projects` to `INSTALLED_APPS` in `src/config/settings/base.py`
-- [ ] **T004**: Include `projects.api.urls` in `src/config/urls.py` for both nested and top-level routing
-- [ ] **T005**: Create `projects/README.md` with app documentation and extension guide for product features
+- [x] **T001**: Create `src/projects/` Django app with `__init__.py`, `apps.py`, `models.py`, `admin.py`, `signals.py`
+- [x] **T002**: Create sub-packages: `projects/api/` with `serializers.py`, `views.py`, `urls.py`, `permissions.py`
+- [x] **T003**: Add `projects` to `INSTALLED_APPS` in `src/config/settings/base.py`
+- [x] **T004**: Include `projects.api.urls` in `src/config/urls.py` for both nested and top-level routing
+- [x] **T005**: Create `projects/README.md` with app documentation and extension guide for product features
 
 **Implementation Sketch**:
 1. Create app directory structure manually or via Django's startapp
