@@ -13,11 +13,11 @@ subtasks:
   - "T040"
 title: "DRF API Layer"
 phase: "Phase 3 - Integration"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: "has_feedback"
+lane: "doing"
+assignee: "GitHub Copilot"
+agent: "claude"
+shell_pid: "11524"
+review_status: "acknowledged"
 reviewed_by: "claude"
 history:
   - timestamp: "2025-11-25T00:00:00Z"
@@ -40,6 +40,11 @@ history:
     agent: "claude"
     shell_pid: "11524"
     action: "Code review complete: NEEDS CHANGES - Missing test suite (blocker), needs URL verification"
+  - timestamp: "2025-11-26T00:45:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Acknowledged review feedback, starting rework - will create comprehensive test suite"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP04-drf-api-layer.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP04-drf-api-layer.md)*
 

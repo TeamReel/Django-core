@@ -139,6 +139,10 @@ class RoleAssignmentSerializer(serializers.ModelSerializer):
             "assigned_at",
         ]
         read_only_fields = ["id", "assigned_by", "assigned_at", "user_email", "role_name"]
+        extra_kwargs = {
+            "target_organization": {"required": False, "allow_null": True},
+            "target_project": {"required": False, "allow_null": True},
+        }
 
     def validate(self, attrs):
         """Validate role assignment data."""

@@ -26,7 +26,6 @@ class RoleViewSet(viewsets.ModelViewSet):
 
     queryset = Role.objects.all().prefetch_related("permissions")
     serializer_class = RoleSerializer
-    permission_classes = [IsAuthenticated, HasPermission("permissions.view_roles")]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["scope"]
     search_fields = ["name", "description"]
@@ -36,8 +35,8 @@ class RoleViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         """Require modify_role permission for write operations."""
         if self.action in ["create", "update", "partial_update", "destroy"]:
-            return [IsAuthenticated(), HasPermission("permissions.modify_role")()]
-        return super().get_permissions()
+            return [IsAuthenticated(), HasPermission("permissions.modify_role")]
+        return [IsAuthenticated(), HasPermission("permissions.view_roles")]
 
 
 class RoleAssignmentViewSet(viewsets.ModelViewSet):
@@ -62,7 +61,6 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
         "user", "role", "target_organization", "target_project", "assigned_by"
     )
     serializer_class = RoleAssignmentSerializer
-    permission_classes = [IsAuthenticated, HasPermission("permissions.view_roles")]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ["user", "role", "scope", "target_organization", "target_project"]
     ordering_fields = ["assigned_at"]
@@ -72,5 +70,5 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         """Require assign_role permission for write operations."""
         if self.action in ["create", "destroy"]:
-            return [IsAuthenticated(), HasPermission("permissions.assign_role")()]
-        return super().get_permissions()
+            return [IsAuthenticated(), HasPermission("permissions.assign_role")]
+        return [IsAuthenticated(), HasPermission("permissions.view_roles")]
