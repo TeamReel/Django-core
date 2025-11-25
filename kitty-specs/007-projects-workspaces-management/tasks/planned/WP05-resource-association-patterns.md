@@ -1,0 +1,32 @@
+# WP05: Resource Association Patterns & Documentation (User Story 3)
+
+**Work Package ID**: WP05
+**Status**: Planned
+**Priority**: P3
+**Estimated Effort**: 3-4 hours
+
+## Objective
+Document and test patterns for associating product-specific resources with projects via foreign keys.
+
+## Dependencies
+WP03 (API must exist for integration examples)
+
+## Subtasks
+
+### T026-T027: Documentation
+Update `projects/README.md` with "Extending Projects" section:
+- FK pattern examples
+- API serializer examples
+- Viewset filtering patterns
+
+### T028-T029: Integration Tests
+Create example test in `tests/projects/test_integration.py`:
+- Create project
+- Create resource with FK to project
+- Query resources by project
+- Test cascade behavior
+
+## Success Criteria
+- README includes working code examples
+- Integration test demonstrates association pattern
+- Cascade behavior documented (soft delete doesn't cascade)

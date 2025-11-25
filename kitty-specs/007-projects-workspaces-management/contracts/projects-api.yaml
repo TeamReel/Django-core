@@ -1,0 +1,701 @@
+openapi: 3.0.3
+info:
+  title: Projects & Workspaces Management API
+  description: |
+    REST API for managing projects/workspaces within organisations.
+
+    Projects provide context containers for scoping resources within multi-tenant organisations.
+    All operations require authentication. Write operations require organisation admin permissions.
+
+    **Feature**: 007-projects-workspaces-management
+    **Version**: 1.0.0
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: https://staging-api.example.com
+    description: Staging server
+  - url: http://localhost:8000
+    description: Local development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /api/organisations/{organisation_id}/projects/:
+    get:
+      summary: List projects in an organisation
+      description: |
+        Returns a paginated list of projects for the specified organisation.
+        Only active projects are returned by default. Use `include_archived=true` to include archived projects.
+      operationId: listOrganisationProjects
+      tags:
+        - Projects (Nested)
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdPath'
+        - $ref: '#/components/parameters/CursorPagination'
+        - $ref: '#/components/parameters/PageSize'
+        - name: include_archived
+          in: query
+          description: Include archived projects in results
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: search
+          in: query
+          description: Search projects by name (case-insensitive)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved projects list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectListPaginated'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Organisation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new project
+      description: |
+        Creates a new project within the specified organisation.
+        Requires organisation admin permissions.
+
+        The `slug` field is auto-generated from `name` if not provided.
+        If a slug collision occurs, a sequential suffix is added (e.g., project-alpha-2).
+      operationId: createProject
+      tags:
+        - Projects (Nested)
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreate'
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetail'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Organisation not found
+
+  /api/organisations/{organisation_id}/projects/{id}/:
+    get:
+      summary: Get project details
+      description: Retrieve detailed information about a specific project
+      operationId: getProjectDetail
+      tags:
+        - Projects (Nested)
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdPath'
+        - $ref: '#/components/parameters/ProjectIdPath'
+      responses:
+        '200':
+          description: Successfully retrieved project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Project or organisation not found
+
+    patch:
+      summary: Update project
+      description: |
+        Update project details (name, description).
+        Requires organisation admin permissions.
+
+        **Note**: The `slug` field cannot be updated after creation.
+      operationId: updateProject
+      tags:
+        - Projects (Nested)
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdPath'
+        - $ref: '#/components/parameters/ProjectIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpdate'
+      responses:
+        '200':
+          description: Project updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetail'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Project or organisation not found
+
+    delete:
+      summary: Delete project (hard delete)
+      description: |
+        Permanently delete a project.
+        **Warning**: This is a hard delete. Use the archive endpoint for soft deletion instead.
+        Requires organisation admin permissions.
+      operationId: deleteProject
+      tags:
+        - Projects (Nested)
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdPath'
+        - $ref: '#/components/parameters/ProjectIdPath'
+      responses:
+        '204':
+          description: Project deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Project or organisation not found
+
+  /api/organisations/{organisation_id}/projects/{id}/archive/:
+    post:
+      summary: Archive project (soft delete)
+      description: |
+        Archive a project by setting `is_active=false` and recording `archived_at` timestamp.
+        Archived projects are excluded from default queries.
+        Requires organisation admin permissions.
+      operationId: archiveProject
+      tags:
+        - Projects (Nested)
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdPath'
+        - $ref: '#/components/parameters/ProjectIdPath'
+      responses:
+        '204':
+          description: Project archived successfully
+        '400':
+          description: Project is already archived
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Project or organisation not found
+
+  /api/organisations/{organisation_id}/projects/{id}/restore/:
+    post:
+      summary: Restore archived project
+      description: |
+        Restore an archived project by setting `is_active=true` and clearing `archived_at`.
+        Requires organisation admin permissions.
+      operationId: restoreProject
+      tags:
+        - Projects (Nested)
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdPath'
+        - $ref: '#/components/parameters/ProjectIdPath'
+      responses:
+        '204':
+          description: Project restored successfully
+        '400':
+          description: Project is already active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Project or organisation not found
+
+  /api/projects/:
+    get:
+      summary: List all user's projects (top-level)
+      description: |
+        Returns a paginated list of all projects accessible to the authenticated user
+        across all organisations they are a member of.
+
+        This is a convenience endpoint for user dashboards showing projects from multiple organisations.
+      operationId: listAllProjects
+      tags:
+        - Projects (Top-Level)
+      parameters:
+        - $ref: '#/components/parameters/CursorPagination'
+        - $ref: '#/components/parameters/PageSize'
+        - name: organisation
+          in: query
+          description: Filter by organisation ID
+          required: false
+          schema:
+            type: integer
+        - name: include_archived
+          in: query
+          description: Include archived projects in results
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: search
+          in: query
+          description: Search projects by name (case-insensitive)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved projects list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectListPaginated'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/projects/{id}/:
+    get:
+      summary: Get project details (top-level)
+      description: Retrieve detailed information about a specific project (alternative to nested endpoint)
+      operationId: getProjectDetailTopLevel
+      tags:
+        - Projects (Top-Level)
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdPath'
+      responses:
+        '200':
+          description: Successfully retrieved project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Project not found
+
+    patch:
+      summary: Update project (top-level)
+      description: |
+        Update project details (alternative to nested endpoint).
+        Requires organisation admin permissions.
+      operationId: updateProjectTopLevel
+      tags:
+        - Projects (Top-Level)
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpdate'
+      responses:
+        '200':
+          description: Project updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetail'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Project not found
+
+  /api/projects/{id}/archive/:
+    post:
+      summary: Archive project (top-level)
+      description: Archive a project (alternative to nested endpoint)
+      operationId: archiveProjectTopLevel
+      tags:
+        - Projects (Top-Level)
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdPath'
+      responses:
+        '204':
+          description: Project archived successfully
+        '400':
+          description: Project is already archived
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Project not found
+
+  /api/projects/{id}/restore/:
+    post:
+      summary: Restore archived project (top-level)
+      description: Restore an archived project (alternative to nested endpoint)
+      operationId: restoreProjectTopLevel
+      tags:
+        - Projects (Top-Level)
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdPath'
+      responses:
+        '204':
+          description: Project restored successfully
+        '400':
+          description: Project is already active
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Project not found
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from authentication endpoint
+
+  parameters:
+    OrganisationIdPath:
+      name: organisation_id
+      in: path
+      description: Organisation ID
+      required: true
+      schema:
+        type: integer
+        example: 42
+
+    ProjectIdPath:
+      name: id
+      in: path
+      description: Project ID
+      required: true
+      schema:
+        type: integer
+        example: 123
+
+    CursorPagination:
+      name: cursor
+      in: query
+      description: Cursor for pagination (opaque string from previous response)
+      required: false
+      schema:
+        type: string
+        example: cD0yMDI1LTExLTI1VDEwOjMwOjAwWg==
+
+    PageSize:
+      name: page_size
+      in: query
+      description: Number of results per page (max 200)
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+        example: 50
+
+  schemas:
+    ProjectListItem:
+      type: object
+      description: Project summary for list views
+      required:
+        - id
+        - organisation
+        - name
+        - slug
+        - is_active
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          example: 123
+          description: Unique project identifier
+        organisation:
+          $ref: '#/components/schemas/OrganisationNested'
+        name:
+          type: string
+          maxLength: 200
+          example: Mobile App Redesign
+          description: Human-readable project name
+        slug:
+          type: string
+          maxLength: 200
+          pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          example: mobile-app-redesign
+          description: URL-safe identifier
+        description:
+          type: string
+          maxLength: 2000
+          example: Q1 2026 mobile app redesign project
+          description: Optional project description
+        is_active:
+          type: boolean
+          example: true
+          description: False when project is archived
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-11-25T10:30:00Z'
+          description: Project creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          example: '2025-11-25T10:30:00Z'
+          description: Last update timestamp
+        archived_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+          description: Archive timestamp (null if active)
+
+    ProjectDetail:
+      type: object
+      description: Complete project information
+      required:
+        - id
+        - organisation
+        - creator
+        - name
+        - slug
+        - is_active
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          example: 123
+        organisation:
+          $ref: '#/components/schemas/OrganisationNested'
+        creator:
+          $ref: '#/components/schemas/UserNested'
+        name:
+          type: string
+          maxLength: 200
+          example: Mobile App Redesign
+        slug:
+          type: string
+          maxLength: 200
+          pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          example: mobile-app-redesign
+        description:
+          type: string
+          maxLength: 2000
+          example: Q1 2026 mobile app redesign project
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-11-25T10:30:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2025-11-25T10:30:00Z'
+        archived_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+
+    ProjectCreate:
+      type: object
+      description: Payload for creating a new project
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Mobile App Redesign
+          description: Human-readable project name
+        slug:
+          type: string
+          maxLength: 200
+          pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          example: mobile-app-redesign
+          description: Optional custom slug (auto-generated from name if not provided)
+        description:
+          type: string
+          maxLength: 2000
+          example: Q1 2026 mobile app redesign project
+          description: Optional project description
+
+    ProjectUpdate:
+      type: object
+      description: Payload for updating a project
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Mobile App Redesign - Phase 1
+          description: Human-readable project name
+        description:
+          type: string
+          maxLength: 2000
+          example: Q1 2026 mobile app redesign - focus on UX improvements
+          description: Optional project description
+
+    ProjectListPaginated:
+      type: object
+      description: Paginated list of projects
+      required:
+        - results
+      properties:
+        next:
+          type: string
+          format: uri
+          nullable: true
+          example: https://api.example.com/api/projects/?cursor=cD0yMDI1LTEx...
+          description: URL to next page (null if last page)
+        previous:
+          type: string
+          format: uri
+          nullable: true
+          example: null
+          description: URL to previous page (null if first page)
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectListItem'
+
+    OrganisationNested:
+      type: object
+      description: Nested organisation reference
+      required:
+        - id
+        - name
+        - slug
+      properties:
+        id:
+          type: integer
+          example: 42
+        name:
+          type: string
+          example: Acme Corp
+        slug:
+          type: string
+          example: acme-corp
+
+    UserNested:
+      type: object
+      description: Nested user reference
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: integer
+          example: 5
+        email:
+          type: string
+          format: email
+          example: alice@example.com
+        first_name:
+          type: string
+          example: Alice
+        last_name:
+          type: string
+          example: Johnson
+
+    Error:
+      type: object
+      description: Generic error response
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          example: Not found.
+          description: Human-readable error message
+
+    ValidationError:
+      type: object
+      description: Validation error response with field-specific errors
+      additionalProperties:
+        type: array
+        items:
+          type: string
+      example:
+        name:
+          - This field is required.
+        slug:
+          - A project with this slug already exists in this organisation.
+
+  responses:
+    Unauthorized:
+      description: Authentication credentials missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: Authentication credentials were not provided.
+
+    Forbidden:
+      description: Authenticated but insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: You do not have permission to perform this action.
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+
+tags:
+  - name: Projects (Nested)
+    description: |
+      Organisation-scoped project endpoints.
+      Use these for admin UIs and when organisation context is explicit.
+
+  - name: Projects (Top-Level)
+    description: |
+      Top-level project endpoints.
+      Use these for user dashboards and cross-organisation queries.

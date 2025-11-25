@@ -10,6 +10,7 @@ Auto-generated from all feature plans. Last updated: 2025-11-23
 - PostgreSQL (custom user model, sessions, Django groups/permissions) (005-core-accounts-authentication)
 - Redis + django-redis (rate limiting, caching) (006-organisation-management-multi)
 - django-prometheus + prometheus-client (metrics, observability) (006-organisation-management-multi)
+- PostgreSQL (Project model with foreign keys to Organisation and User, unique constraints, indexes) (007-projects-workspaces-management)
 
 ## Project Structure
 ```
@@ -34,9 +35,9 @@ Quick reminders:
 Python 3.12+: Follow standard conventions
 
 ## Recent Changes
+- 007-projects-workspaces-management: Added Python 3.12+ + Django 5.1+, Django REST Framework 3.14+, django-stubs (type hints)
 - 006-organisation-management-multi: Added Redis + django-redis (rate limiting, caching), django-prometheus + prometheus-client (metrics, observability)
 - 005-core-accounts-authentication: Added Python 3.12+ + Django 5.1+, Django REST Framework 3.14+, django-stubs (type hints)
-- 004-core-internationalization-base: Added Python 3.12+ + Django 5.1+, gettext utilities
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

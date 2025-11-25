@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "007",
+    "slug":  "007-projects-workspaces-management",
+    "friendly_name":  "Projects \u0026 Workspaces Management",
+    "source_description":  "Create a reusable project/workspace model that acts as a context container within organisations for resources, configuration and workflows.",
+    "created_at":  "2025-11-25T10:21:35Z"
+}
