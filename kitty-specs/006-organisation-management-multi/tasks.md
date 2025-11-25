@@ -290,12 +290,12 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T033**: Implement get_queryset() override in OrganisationViewSet to filter by user's memberships
-- [ ] **T034**: Add optimisation: use select_related('creator') and prefetch_related('memberships') to prevent N+1
-- [ ] **T035**: Implement partial_update in viewset with admin permission check
-- [ ] **T036**: Add pagination configuration (PageNumberPagination, page_size=20)
-- [ ] **T037**: Create OrganisationListSerializer with minimal fields (id, name, slug, member_count, user_role)
-- [ ] **T038**: Update viewset to use different serializers for list vs detail (get_serializer_class)
+- [x] **T033**: Implement get_queryset() override in OrganisationViewSet to filter by user's memberships
+- [x] **T034**: Add optimisation: use select_related('creator') and prefetch_related('memberships') to prevent N+1
+- [x] **T035**: Implement partial_update in viewset with admin permission check
+- [x] **T036**: Add pagination configuration (PageNumberPagination, page_size=20)
+- [x] **T037**: Create OrganisationListSerializer with minimal fields (id, name, slug, member_count, user_role)
+- [x] **T038**: Update viewset to use different serializers for list vs detail (get_serializer_class)
 
 **Implementation Sketch**:
 1. Override get_queryset to filter organisations where user has membership
@@ -309,7 +309,7 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Dependencies**: WP03 (organisation API must exist)
 
-**Prompt**: [tasks/planned/WP06-organisation-viewing-updates.md](tasks/planned/WP06-organisation-viewing-updates.md)
+**Prompt**: [tasks/for_review/WP06-organisation-viewing-updates.md](tasks/for_review/WP06-organisation-viewing-updates.md) ✅ **Completed, Awaiting Review**
 
 ---
 
