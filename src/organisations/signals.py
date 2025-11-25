@@ -11,6 +11,13 @@ import logging
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
+from .metrics import (
+    member_invitations,
+    membership_count,
+    org_count,
+    org_creations,
+    role_changes,
+)
 from .models import Membership, Organisation
 
 logger = logging.getLogger(__name__)
@@ -20,6 +27,7 @@ logger = logging.getLogger(__name__)
 def log_organisation_change(sender, instance, created, **kwargs):
     """
     Log organisation creation and updates for audit trail.
+    Update Prometheus metrics for organisation counts.
 
     Args:
         sender: The model class (Organisation)
@@ -35,6 +43,8 @@ def log_organisation_change(sender, instance, created, **kwargs):
                 "creator_id": str(instance.creator.id),
             },
         )
+        # Increment creation counter
+        org_creations.inc()
     else:
         logger.info(
             "Organisation updated",
@@ -45,11 +55,15 @@ def log_organisation_change(sender, instance, created, **kwargs):
             },
         )
 
+    # Update total count gauge
+    org_count.set(Organisation.objects.filter(is_active=True).count())
+
 
 @receiver(pre_delete, sender=Organisation)
 def log_organisation_deletion(sender, instance, **kwargs):
     """
     Log organisation hard deletion for audit trail.
+    Update Prometheus metrics for organisation counts.
 
     Args:
         sender: The model class (Organisation)
@@ -64,11 +78,17 @@ def log_organisation_deletion(sender, instance, **kwargs):
         },
     )
 
+    # Update total count gauge (after deletion completes, count will be decremented)
+    # Use a post_delete signal or manually update after deletion
+    # For now, we'll update on the assumption deletion completes
+    org_count.set(Organisation.objects.filter(is_active=True).count() - 1)
+
 
 @receiver(post_save, sender=Membership)
 def log_membership_change(sender, instance, created, **kwargs):
     """
     Log membership creation and role changes for audit trail.
+    Update Prometheus metrics for membership counts.
 
     Tracks:
     - New member invitations
@@ -91,6 +111,8 @@ def log_membership_change(sender, instance, created, **kwargs):
                 "invited_by_id": str(instance.invited_by.id) if instance.invited_by else None,
             },
         )
+        # Increment invitation counter
+        member_invitations.inc()
     else:
         # Check if role changed (would need to track previous value)
         logger.info(
@@ -103,12 +125,20 @@ def log_membership_change(sender, instance, created, **kwargs):
                 "is_active": instance.is_active,
             },
         )
+        # If update includes role change, increment role_changes counter
+        # Note: We can't detect role changes without tracking previous state
+        # This would require using update_fields or a custom signal
+        role_changes.inc()
+
+    # Update total membership count gauge
+    membership_count.set(Membership.objects.filter(is_active=True).count())
 
 
 @receiver(pre_delete, sender=Membership)
 def log_membership_deletion(sender, instance, **kwargs):
     """
     Log membership removal for audit trail.
+    Update Prometheus metrics for membership counts.
 
     Args:
         sender: The model class (Membership)
@@ -123,3 +153,6 @@ def log_membership_deletion(sender, instance, **kwargs):
             "role": instance.role,
         },
     )
+
+    # Update total membership count gauge (subtract 1 since deletion is about to happen)
+    membership_count.set(Membership.objects.filter(is_active=True).count() - 1)

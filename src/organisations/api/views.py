@@ -6,10 +6,14 @@ Provides:
 """
 
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import permissions, viewsets
+from rest_framework.exceptions import Throttled
 from rest_framework.pagination import PageNumberPagination
 
+from organisations.metrics import rate_limit_hits
 from organisations.models import Membership, Organisation
+from organisations.ratelimit import check_rate_limit
 
 from .serializers import (
     OrganisationCreateSerializer,
@@ -75,6 +79,32 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated(), IsOrganisationAdmin()]
         return super().get_permissions()
 
+    def create(self, request, *args, **kwargs):
+        """
+        Create organisation with rate limiting (5 per user per day).
+
+        Rate limit: 5 organisations per user per 24 hours.
+        Returns 429 Too Many Requests if limit exceeded.
+        """
+        # Check rate limit
+        key = f"ratelimit:org_create:{request.user.id}:{timezone.now().date()}"
+        allowed, remaining, reset = check_rate_limit(key, 5, 86400)  # 24 hours
+
+        if not allowed:
+            # Track rate limit hit in metrics
+            rate_limit_hits.labels(endpoint="organisation_create").inc()
+            raise Throttled(wait=reset - timezone.now().timestamp())
+
+        # Proceed with creation
+        response = super().create(request, *args, **kwargs)
+
+        # Add rate limit headers
+        response["X-RateLimit-Limit"] = "5"
+        response["X-RateLimit-Remaining"] = str(remaining)
+        response["X-RateLimit-Reset"] = str(int(reset))
+
+        return response
+
     def perform_create(self, serializer):
         """
         Create organisation and automatically assign creator as first admin.
@@ -128,6 +158,34 @@ class MembershipViewSet(viewsets.ModelViewSet):
 
             return [permissions.IsAuthenticated(), IsOrganisationAdmin()]
         return super().get_permissions()
+
+    def create(self, request, *args, **kwargs):
+        """
+        Invite member with rate limiting (20 per org per hour).
+
+        Rate limit: 20 invitations per organisation per hour.
+        Returns 429 Too Many Requests if limit exceeded.
+        """
+        org_id = self.kwargs.get("organisation_pk")
+
+        # Check rate limit
+        key = f"ratelimit:member_invite:{org_id}:{timezone.now().strftime('%Y-%m-%d-%H')}"
+        allowed, remaining, reset = check_rate_limit(key, 20, 3600)  # 1 hour
+
+        if not allowed:
+            # Track rate limit hit in metrics
+            rate_limit_hits.labels(endpoint="member_invite").inc()
+            raise Throttled(wait=reset - timezone.now().timestamp())
+
+        # Proceed with creation
+        response = super().create(request, *args, **kwargs)
+
+        # Add rate limit headers
+        response["X-RateLimit-Limit"] = "20"
+        response["X-RateLimit-Remaining"] = str(remaining)
+        response["X-RateLimit-Reset"] = str(int(reset))
+
+        return response
 
     def perform_create(self, serializer):
         """Set invited_by to current user when creating membership."""
