@@ -13,10 +13,10 @@ subtasks:
   - "T040"
 title: "DRF API Layer"
 phase: "Phase 3 - Integration"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "GitHub Copilot"
+agent: "claude"
+shell_pid: "11524"
 review_status: ""
 reviewed_by: ""
 history:
@@ -25,6 +25,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-11-26T00:00:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Started implementation of DRF API layer"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP04-drf-api-layer.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP04-drf-api-layer.md)*
 
