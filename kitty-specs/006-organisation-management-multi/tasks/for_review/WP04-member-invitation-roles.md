@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Member Invitation & Role Assignment (User Story 2)
-lane: "doing"
+lane: "for_review"
 subtasks: [T022, T023, T024, T025, T026, T027]
 priority: P2
 user_story: US2
@@ -83,3 +83,4 @@ Implement nested API endpoints for admins to invite members (POST /api/organisat
 ## Activity Log
 
 - 2025-11-25T08:35:32Z – system – shell_pid= – lane=doing – Moved to doing
+- 2025-11-25T08:38:04Z – system – shell_pid= – lane=for_review – Moved to for_review
