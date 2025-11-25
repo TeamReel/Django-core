@@ -39,7 +39,7 @@ def invalidate_cache_on_assignment_deleted(_sender, instance, **_kwargs):
 
 
 @receiver(m2m_changed, sender=Role.permissions.through)
-def invalidate_cache_on_role_permissions_changed(_sender, instance, action, **_kwargs):
+def invalidate_cache_on_role_permissions_changed(sender, instance, action, **kwargs):
     """
     Invalidate cache for all users with role when role permissions modified.
     """
