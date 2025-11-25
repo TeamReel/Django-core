@@ -2,6 +2,8 @@
 work_package_id: WP06
 title: Organisation Viewing & Updates (User Stories 4-5)
 lane: "for_review"
+review_status: "approved without changes"
+reviewed_by: "claude-reviewer"
 subtasks: [T033, T034, T035, T036, T037, T038]
 priority: P4-P5
 user_story: US4, US5
