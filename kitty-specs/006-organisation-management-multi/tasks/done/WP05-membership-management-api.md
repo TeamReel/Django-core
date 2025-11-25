@@ -1,13 +1,13 @@
 ---
 work_package_id: WP05
 title: Membership Management (User Story 3)
-lane: "for_review"
+lane: "done"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
 subtasks: [T028, T029, T030, T031, T032]
 priority: P3
 user_story: US3
-agent: "claude"
+agent: "claude-reviewer"
 shell_pid: "11524"
 history:
   - date: 2025-11-24
@@ -86,3 +86,4 @@ Implement PATCH /api/organisations/{id}/members/{user_id}/ for role changes and 
 - 2025-11-25T08:50:39Z – claude – shell_pid=11524 – lane=doing – Started implementation
 - 2025-11-25T09:06:16Z – claude – shell_pid=11524 – lane=doing – Completed implementation
 - 2025-11-25T09:13:35Z – claude – shell_pid=11524 – lane=for_review – Ready for review
+- 2025-11-25T09:19:35Z – claude-reviewer – shell_pid=11524 – lane=done – Review complete: Approved without changes
