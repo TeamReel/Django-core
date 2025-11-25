@@ -78,3 +78,4 @@ Filter organisation list to user's memberships, add pagination, enable profile u
 ## Activity Log
 
 - 2025-11-25T09:21:39Z – claude – shell_pid=11524 – lane=doing – Started implementation
+- 2025-11-25T09:33:25Z – claude – shell_pid=11524 – lane=doing – Completed implementation
