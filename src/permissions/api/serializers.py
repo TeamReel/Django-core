@@ -28,6 +28,7 @@ Usage Examples:
         "target_organization": "<org_uuid>"
     }
 """
+
 from rest_framework import serializers
 
 from permissions.models import Permission, Role, RoleAssignment, ScopeChoices

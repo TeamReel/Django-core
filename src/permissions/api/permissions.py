@@ -1,6 +1,7 @@
 """
 DRF permission classes for permissions API.
 """
+
 from rest_framework.permissions import BasePermission
 
 from permissions.evaluator import check_permission

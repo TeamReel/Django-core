@@ -13,12 +13,12 @@ subtasks:
   - "T040"
 title: "DRF API Layer"
 phase: "Phase 3 - Integration"
-lane: "for_review"
-assignee: "GitHub Copilot"
-agent: "claude"
-shell_pid: "11524"
-review_status: ""
-reviewed_by: ""
+lane: "planned"
+assignee: ""
+agent: ""
+shell_pid: ""
+review_status: "has_feedback"
+reviewed_by: "claude"
 history:
   - timestamp: "2025-11-25T00:00:00Z"
     lane: "planned"
@@ -35,6 +35,11 @@ history:
     agent: "claude"
     shell_pid: "11524"
     action: "Implementation complete - API layer ready for review"
+  - timestamp: "2025-11-26T00:30:00Z"
+    lane: "planned"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Code review complete: NEEDS CHANGES - Missing test suite (blocker), needs URL verification"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP04-drf-api-layer.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP04-drf-api-layer.md)*
 
@@ -48,6 +53,89 @@ history:
 - **You must address all feedback** before your work is complete. Feedback items are your implementation TODO list.
 - **Mark as acknowledged**: When you understand the feedback and begin addressing it, update `review_status: acknowledged` in the frontmatter.
 - **Report progress**: As you address each feedback item, update the Activity Log explaining what you changed.
+
+---
+
+## Review Feedback
+
+> **Populated by `/spec-kitty.review`** – Reviewers add detailed feedback here when work needs changes. Implementation must address every item listed below before returning for re-review.
+
+**Status**: ❌ **NEEDS CHANGES**
+
+**Reviewed By**: claude
+**Review Date**: 2025-11-26T00:30:00Z
+**Shell PID**: 11524
+
+### Critical Issues
+
+1. **BLOCKER: Missing Test Suite** - The Definition of Done explicitly requires "Test suite has 70+ API tests with >90% coverage for api/" and "All tests pass: `pytest tests/permissions/test_api.py -v`". Currently, **NO tests exist** for the API layer.
+   - **Impact**: Cannot verify API functionality, permission enforcement, validation logic, or error handling
+   - **Required Action**: Create `tests/permissions/test_api.py` with comprehensive test coverage as detailed in the prompt (T031-T035 sections each include specific test examples)
+   - **Minimum Required**:
+     - 25+ RoleViewSet tests (authentication, authorization, CRUD, filtering, search)
+     - 20+ RoleAssignmentViewSet tests (create, delete, filtering, validation)
+     - 15+ Serializer tests (validation, nested permissions, error messages)
+     - 10+ HasPermission class tests (permission checking, error messages)
+
+2. **MAJOR: Missing urls.py File** - While `src/permissions/api/urls.py` was created, it needs to export the router properly for inclusion in config/urls.py
+   - **Current**: Router defined but needs verification
+   - **Action**: Verify URLconf works by running `python manage.py show_urls | findstr permissions`
+
+3. **MINOR: Incomplete API Documentation** - The module-level docstring in serializers.py was added (✓), but views.py and permissions.py could benefit from similar usage examples
+   - **Impact**: Developers may not understand how to use HasPermission class correctly
+   - **Action**: Add usage examples to permissions.py module docstring
+
+### What Was Done Well
+
+✅ **Implementation Quality**:
+- Excellent serializer structure with nested permissions
+- Proper validation in RoleAssignmentSerializer (scope matching, target requirements)
+- Clean separation of concerns (serializers, views, permissions, urls)
+- Good use of DRF patterns (ModelViewSet, permissions classes)
+- Proper query optimization (prefetch_related, select_related)
+
+✅ **Permission Enforcement**:
+- HasPermission class correctly integrates with evaluator
+- get_permissions() override provides granular permission control
+- Read vs write permissions properly separated
+
+✅ **Code Quality**:
+- Black formatted and Ruff compliant
+- Clear docstrings on classes and methods
+- Proper error handling in validation
+
+✅ **API Design**:
+- RESTful URLs with DefaultRouter
+- Comprehensive filtering (scope, user, role, targets)
+- Search functionality on name/description
+- No PUT/PATCH on RoleAssignmentViewSet (correct - delete/create pattern)
+
+### Action Items (Must Complete Before Re-Review)
+
+- [ ] **CRITICAL**: Create comprehensive test suite in `tests/permissions/test_api.py`
+  - Include all test cases from T031-T035 sections
+  - Achieve >90% coverage for api/ directory
+  - Verify all tests pass with `pytest tests/permissions/test_api.py -v`
+
+- [ ] **MAJOR**: Verify URL configuration works
+  - Run `python manage.py show_urls | findstr permissions`
+  - Confirm routes appear: `/api/permissions/roles/`, `/api/permissions/role-assignments/`
+
+- [ ] **MINOR**: Add usage examples to permissions.py module docstring
+  - Show how to use HasPermission in viewsets
+  - Document both class-level and per-action usage patterns
+
+### Validation Checklist (For Re-Review)
+
+Before re-submitting for review, verify:
+- [ ] Run `pytest tests/permissions/test_api.py -v` → All tests pass
+- [ ] Run `pytest tests/permissions/test_api.py --cov=permissions.api --cov-report=term-missing` → >90% coverage
+- [ ] Run `python manage.py show_urls | findstr permissions` → Routes appear correctly
+- [ ] All code formatted with Black → `black --check .`
+- [ ] All code passes Ruff → `ruff check .`
+- [ ] Test unauthenticated API access → Returns 401
+- [ ] Test unauthorized API access → Returns 403 with clear message
+- [ ] Test authorized API access → CRUD operations work
 
 ---
 
