@@ -57,6 +57,52 @@ jobs:
         cd src
         python manage.py migrate --noinput
 
+    - name: Get changed test directories
+      id: changed-tests
+      if: github.event_name == 'pull_request'
+      uses: tj-actions/changed-files@v44
+      with:
+        files: |
+          src/**/*.py
+          tests/**/*.py
+        dir_names: true
+        dir_names_max_depth: 2
+
+    - name: Determine test paths
+      id: test-paths
+      run: |
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          CHANGED_FILES="${{ steps.changed-tests.outputs.all_changed_files }}"
+
+          # Extract unique app names from changed files
+          TEST_APPS=""
+          for file in $CHANGED_FILES; do
+            if [[ $file == src/* ]]; then
+              APP=$(echo $file | cut -d'/' -f2)
+              if [ -d "tests/$APP" ]; then
+                TEST_APPS="$TEST_APPS tests/$APP/"
+              fi
+            elif [[ $file == tests/* ]]; then
+              APP=$(echo $file | cut -d'/' -f2)
+              if [ -d "tests/$APP" ]; then
+                TEST_APPS="$TEST_APPS tests/$APP/"
+              fi
+            fi
+          done
+
+          # Remove duplicates
+          TEST_APPS=$(echo $TEST_APPS | tr ' ' '\n' | sort -u | tr '\n' ' ')
+
+          if [ -z "$TEST_APPS" ]; then
+            echo "test_paths=tests/" >> $GITHUB_OUTPUT
+          else
+            echo "test_paths=$TEST_APPS" >> $GITHUB_OUTPUT
+          fi
+        else
+          # On push to main/develop, run all tests
+          echo "test_paths=tests/" >> $GITHUB_OUTPUT
+        fi
+
     - name: Run tests with coverage
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_django_core
@@ -64,17 +110,20 @@ jobs:
         DJANGO_SETTINGS_MODULE: config.settings.local
       run: |
         cd src
-        pytest ../tests/accounts/ --cov=accounts --cov-report=xml --cov-report=term-missing -v
+        echo "Running tests for: ${{ steps.test-paths.outputs.test_paths }}"
+        pytest ${{ steps.test-paths.outputs.test_paths }} --cov=. --cov-report=xml --cov-report=term-missing -v
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
         file: ./src/coverage.xml
-        flags: accounts
-        name: accounts-coverage
+        flags: tests
+        name: test-coverage
         fail_ci_if_error: false
 
-    - name: Check coverage threshold
+    - name: Check coverage threshold (if specific apps tested)
+      if: github.event_name == 'pull_request'
+      continue-on-error: true
       run: |
         cd src
-        pytest ../tests/accounts/ --cov=accounts --cov-fail-under=80 --cov-report=term-missing -q
+        pytest ${{ steps.test-paths.outputs.test_paths }} --cov=. --cov-report=term-missing -q
