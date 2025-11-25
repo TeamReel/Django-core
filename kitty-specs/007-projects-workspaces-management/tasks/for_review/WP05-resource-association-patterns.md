@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "copilot"
 shell_pid: "11524"
 ---
@@ -40,3 +40,4 @@ Create example test in `tests/projects/test_integration.py`:
 
 - 2025-11-25T14:32:32Z – copilot – shell_pid=11524 – lane=doing – Started implementation: Resource association patterns and documentation
 - 2025-11-25T14:35:00Z – copilot – shell_pid=11524 – lane=doing – Completed implementation: Created comprehensive integration test examples (T026-T029), verified README documentation complete
+- 2025-11-25T14:38:19Z – copilot – shell_pid=11524 – lane=for_review – Ready for review: Integration tests and documentation complete
