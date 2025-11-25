@@ -1,10 +1,11 @@
 ---
 work_package_id: WP08
 title: Django Admin & Cleanup Management
-lane: planned
+lane: "doing"
 subtasks: [T046, T047, T048, T049, T050, T051]
 priority: Medium
 user_story: None (operational)
+agent: "claude"
 history:
   - date: 2025-11-24
     action: created
@@ -125,3 +126,7 @@ python manage.py cleanup_deleted_organisations --days=7
 
 - Spec: FR-023 (30-day retention)
 - Research: Q4 (soft-delete strategy)
+
+## Activity Log
+
+- 2025-11-25T09:43:13Z – claude – shell_pid= – lane=doing – Started implementation
