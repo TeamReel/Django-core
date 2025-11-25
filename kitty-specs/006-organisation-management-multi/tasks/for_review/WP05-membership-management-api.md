@@ -2,6 +2,8 @@
 work_package_id: WP05
 title: Membership Management (User Story 3)
 lane: "for_review"
+review_status: "approved without changes"
+reviewed_by: "claude-reviewer"
 subtasks: [T028, T029, T030, T031, T032]
 priority: P3
 user_story: US3
