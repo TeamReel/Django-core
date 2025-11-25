@@ -1,10 +1,12 @@
 ---
 work_package_id: WP05
 title: Membership Management (User Story 3)
-lane: planned
+lane: "doing"
 subtasks: [T028, T029, T030, T031, T032]
 priority: P3
 user_story: US3
+agent: "claude"
+shell_pid: "11524"
 history:
   - date: 2025-11-24
     action: created
@@ -76,3 +78,7 @@ Implement PATCH /api/organisations/{id}/members/{user_id}/ for role changes and 
 ## Related Docs
 
 - Spec: User Story 3, FR-007, FR-008, FR-010, FR-011
+
+## Activity Log
+
+- 2025-11-25T08:50:39Z – claude – shell_pid=11524 – lane=doing – Started implementation
