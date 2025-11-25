@@ -103,14 +103,14 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T007**: Define Organisation model in `organisations/models.py` with UUID PK, fields, and indexes
-- [ ] **T008**: Define Membership model with UUID PK, foreign keys, role choices, and unique constraint
-- [ ] **T009**: Implement custom model managers in `organisations/managers.py`: OrganisationQuerySet with `active()`, `deleted()` methods
-- [ ] **T010**: Implement soft-delete logic: override `delete()` method to set is_active=False and deleted_at=now()
-- [ ] **T011**: Add `hard_delete()` method for superadmin permanent deletion
-- [ ] **T012**: Implement slug auto-generation from organisation name in `save()` method using Django's slugify
-- [ ] **T013**: Generate and apply initial migration: `python manage.py makemigrations organisations && python manage.py migrate`
-- [ ] **T014**: Add `__str__()` methods, Meta classes with ordering, and model validation
+- [x] **T007**: Define Organisation model in `organisations/models.py` with UUID PK, fields, and indexes
+- [x] **T008**: Define Membership model with UUID PK, foreign keys, role choices, and unique constraint
+- [x] **T009**: Implement custom model managers in `organisations/managers.py`: OrganisationQuerySet with `active()`, `deleted()` methods
+- [x] **T010**: Implement soft-delete logic: override `delete()` method to set is_active=False and deleted_at=now()
+- [x] **T011**: Add `hard_delete()` method for superadmin permanent deletion
+- [x] **T012**: Implement slug auto-generation from organisation name in `save()` method using Django's slugify
+- [x] **T013**: Generate and apply initial migration: `python manage.py makemigrations organisations && python manage.py migrate`
+- [x] **T014**: Add `__str__()` methods, Meta classes with ordering, and model validation
 
 **Implementation Sketch**:
 1. Import UUID, User model, Django fields
@@ -126,7 +126,7 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Dependencies**: WP01 (app structure must exist)
 
-**Prompt**: [tasks/planned/WP02-core-data-models-managers.md](tasks/planned/WP02-core-data-models-managers.md)
+**Prompt**: [tasks/for_review/WP02-core-data-models-managers.md](tasks/for_review/WP02-core-data-models-managers.md) ✅ **Completed, Awaiting Review**
 
 ---
 
