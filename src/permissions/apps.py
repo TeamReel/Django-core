@@ -16,14 +16,13 @@ class PermissionsConfig(AppConfig):
         Initialize app when Django starts.
 
         This method is called once Django has loaded all apps.
-        Used in WP07 to register default permissions via registry.
+        Imports signal handlers for cache invalidation (WP02).
+        Registry initialization will be added in WP07.
         """
-        # Import signal handlers when app is ready
-        # (Will be implemented in WP02 for cache invalidation)
-        # from . import signals  # noqa
+        # Import signal handlers for cache invalidation
+        from . import signals  # noqa: F401
 
         # Initialize permission registry
         # (Will be implemented in WP07)
         # from .registry import registry
         # registry.register_defaults()
-        pass
