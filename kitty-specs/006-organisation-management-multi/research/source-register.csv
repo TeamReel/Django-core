@@ -1,0 +1,11 @@
+source_id,type,url,accessed_date,relevance
+DJANGO-DOCS-UUID,documentation,https://docs.djangoproject.com/en/5.1/ref/models/fields/#uuidfield,2025-11-24,High - Primary key decision
+DJANGO-REDIS-DOCS,documentation,https://github.com/jazzband/django-redis,2025-11-24,High - Rate limiting implementation
+DJANGO-PROMETHEUS-DOCS,documentation,https://github.com/korfuri/django-prometheus,2025-11-24,High - Metrics integration
+DRF-PERMISSIONS,documentation,https://www.django-rest-framework.org/api-guide/permissions/,2025-11-24,High - Authorization pattern
+POSTGRES-INDEXES,documentation,https://www.postgresql.org/docs/current/indexes-multicolumn.html,2025-11-24,Medium - Query optimization
+DJANGO-ORM-PERFORMANCE,documentation,https://docs.djangoproject.com/en/5.1/topics/db/optimization/,2025-11-24,High - N+1 query prevention
+REST-API-DESIGN,article,https://restfulapi.net/resource-naming/,2025-11-24,Medium - Endpoint structure
+SOFT-DELETE-PATTERNS,article,https://www.django-antipatterns.com/antipattern/soft-deletion.html,2025-11-24,High - Soft delete strategy
+RATE-LIMITING-BEST-PRACTICES,article,https://cloud.google.com/architecture/rate-limiting-strategies,2025-11-24,Medium - Rate limit design
+PROMETHEUS-BEST-PRACTICES,documentation,https://prometheus.io/docs/practices/naming/,2025-11-24,High - Metrics naming conventions

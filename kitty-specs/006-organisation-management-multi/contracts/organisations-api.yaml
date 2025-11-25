@@ -1,0 +1,859 @@
+openapi: 3.0.3
+info:
+  title: Organisation Management API
+  description: |
+    RESTful API for managing organisations and memberships with role-based access control.
+
+    ## Authentication
+    All endpoints require authentication via session or token authentication.
+
+    ## Rate Limiting
+    - Organisation creation: 5 per user per 24 hours
+    - Member invitations: 20 per organisation per hour
+
+    Rate limit headers are returned with each response:
+    - `X-RateLimit-Limit`: Maximum requests allowed
+    - `X-RateLimit-Remaining`: Remaining requests in current window
+    - `X-RateLimit-Reset`: Unix timestamp when limit resets
+
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://staging.example.com
+    description: Staging environment
+  - url: https://api.example.com
+    description: Production environment
+
+tags:
+  - name: organisations
+    description: Organisation management operations
+  - name: memberships
+    description: Membership and invitation operations
+
+paths:
+  /api/organisations/:
+    get:
+      summary: List organisations
+      description: |
+        Returns organisations where the authenticated user is a member.
+        Results are paginated and ordered by name.
+      operationId: listOrganisations
+      tags:
+        - organisations
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: is_active
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+            default: true
+        - name: search
+          in: query
+          description: Search by name or slug
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+    post:
+      summary: Create organisation
+      description: |
+        Creates a new organisation. The authenticated user becomes the creator and first admin.
+        Rate limited to 5 creations per user per 24 hours.
+      operationId: createOrganisation
+      tags:
+        - organisations
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganisationCreateRequest'
+            examples:
+              basic:
+                value:
+                  name: "Engineering Team"
+                  description: "Core engineering team for product development"
+              minimal:
+                value:
+                  name: "Sales Team"
+      responses:
+        '201':
+          description: Organisation created successfully
+          headers:
+            Location:
+              description: URL of the created organisation
+              schema:
+                type: string
+                format: uri
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationDetailResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /api/organisations/{id}/:
+    get:
+      summary: Get organisation details
+      description: Returns details of a specific organisation. User must be a member.
+      operationId: getOrganisation
+      tags:
+        - organisations
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationDetailResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update organisation
+      description: |
+        Updates organisation details. Only admins can update.
+        Partial updates supported - only provided fields are updated.
+      operationId: updateOrganisation
+      tags:
+        - organisations
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganisationUpdateRequest'
+            examples:
+              name_only:
+                value:
+                  name: "Engineering Department"
+              description_only:
+                value:
+                  description: "Updated team description"
+              both:
+                value:
+                  name: "Product Engineering"
+                  description: "Cross-functional product development team"
+      responses:
+        '200':
+          description: Organisation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationDetailResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete organisation (soft delete)
+      description: |
+        Soft-deletes an organisation. Only admins can delete.
+        Organisation is hidden from APIs but retained for 30 days.
+        Superadmins can restore within this period.
+      operationId: deleteOrganisation
+      tags:
+        - organisations
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdParam'
+      responses:
+        '204':
+          description: Organisation deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/organisations/{id}/restore/:
+    post:
+      summary: Restore soft-deleted organisation
+      description: |
+        Restores a soft-deleted organisation within 30-day window.
+        Only superadmins can restore.
+      operationId: restoreOrganisation
+      tags:
+        - organisations
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdParam'
+      responses:
+        '200':
+          description: Organisation restored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationDetailResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '410':
+          description: Organisation permanently deleted (beyond 30-day window)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organisations/{id}/members/:
+    get:
+      summary: List organisation members
+      description: |
+        Returns all active members of an organisation.
+        Any member can view the member list.
+      operationId: listMembers
+      tags:
+        - memberships
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdParam'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: role
+          in: query
+          description: Filter by role
+          schema:
+            type: string
+            enum: [admin, member]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      summary: Invite member to organisation
+      description: |
+        Invites a user to join the organisation. Only admins can invite.
+        Rate limited to 20 invitations per organisation per hour.
+      operationId: inviteMember
+      tags:
+        - memberships
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipCreateRequest'
+            examples:
+              admin_invite:
+                value:
+                  user_id: "123e4567-e89b-12d3-a456-426614174000"
+                  role: "admin"
+              member_invite:
+                value:
+                  user_id: "987fcdeb-51a2-43f1-9876-543210fedcba"
+                  role: "member"
+      responses:
+        '201':
+          description: Member invited successfully
+          headers:
+            Location:
+              description: URL of the membership
+              schema:
+                type: string
+                format: uri
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipDetailResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: User already a member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "User is already a member of this organisation"
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /api/organisations/{id}/members/{user_id}/:
+    get:
+      summary: Get membership details
+      description: Returns details of a specific membership. Any member can view.
+      operationId: getMembership
+      tags:
+        - memberships
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdParam'
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipDetailResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update member role
+      description: |
+        Updates a member's role. Only admins can update roles.
+        Cannot downgrade the last admin to member.
+      operationId: updateMembership
+      tags:
+        - memberships
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdParam'
+        - $ref: '#/components/parameters/UserIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipUpdateRequest'
+            examples:
+              promote_to_admin:
+                value:
+                  role: "admin"
+              demote_to_member:
+                value:
+                  role: "member"
+      responses:
+        '200':
+          description: Membership updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipDetailResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Cannot perform operation (e.g., removing last admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Cannot demote the last admin"
+
+    delete:
+      summary: Remove member from organisation
+      description: |
+        Removes a member from the organisation. Only admins can remove members.
+        Cannot remove the last admin.
+        Members can remove themselves (leave organisation).
+      operationId: removeMembership
+      tags:
+        - memberships
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganisationIdParam'
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        '204':
+          description: Member removed successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Cannot perform operation (e.g., removing last admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Cannot remove the last admin"
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    OrganisationIdParam:
+      name: id
+      in: path
+      required: true
+      description: Organisation UUID
+      schema:
+        type: string
+        format: uuid
+      example: "123e4567-e89b-12d3-a456-426614174000"
+
+    UserIdParam:
+      name: user_id
+      in: path
+      required: true
+      description: User UUID
+      schema:
+        type: string
+        format: uuid
+      example: "987fcdeb-51a2-43f1-9876-543210fedcba"
+
+    PageParam:
+      name: page
+      in: query
+      description: Page number for pagination
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    PageSizeParam:
+      name: page_size
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  headers:
+    RateLimitLimit:
+      description: Maximum number of requests allowed in the time window
+      schema:
+        type: integer
+      example: 5
+
+    RateLimitRemaining:
+      description: Number of requests remaining in the current time window
+      schema:
+        type: integer
+      example: 3
+
+    RateLimitReset:
+      description: Unix timestamp when the rate limit resets
+      schema:
+        type: integer
+        format: int64
+      example: 1700000000
+
+  schemas:
+    OrganisationBase:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          pattern: '^[a-zA-Z0-9\s\-_]+$'
+          description: Organisation display name
+          example: "Engineering Team"
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Optional organisation description
+          example: "Core engineering team for product development"
+
+    OrganisationCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/OrganisationBase'
+        - type: object
+          required:
+            - name
+
+    OrganisationUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/OrganisationBase'
+
+    OrganisationSummary:
+      allOf:
+        - $ref: '#/components/schemas/OrganisationBase'
+        - type: object
+          required:
+            - id
+            - slug
+            - created_at
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique organisation identifier
+              example: "123e4567-e89b-12d3-a456-426614174000"
+            slug:
+              type: string
+              pattern: '^[a-z0-9\-]+$'
+              description: URL-friendly identifier
+              example: "engineering-team"
+            created_at:
+              type: string
+              format: date-time
+              description: Creation timestamp
+              example: "2025-11-24T10:30:00Z"
+
+    OrganisationDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/OrganisationSummary'
+        - type: object
+          required:
+            - updated_at
+            - creator
+            - member_count
+            - admin_count
+            - user_role
+          properties:
+            updated_at:
+              type: string
+              format: date-time
+              description: Last update timestamp
+              example: "2025-11-24T15:45:00Z"
+            creator:
+              $ref: '#/components/schemas/UserSummary'
+            member_count:
+              type: integer
+              minimum: 0
+              description: Total active member count
+              example: 12
+            admin_count:
+              type: integer
+              minimum: 1
+              description: Active admin count
+              example: 3
+            user_role:
+              type: string
+              enum: [admin, member]
+              description: Current user's role in this organisation
+              example: "admin"
+
+    OrganisationListResponse:
+      type: object
+      required:
+        - count
+        - next
+        - previous
+        - results
+      properties:
+        count:
+          type: integer
+          description: Total number of organisations
+          example: 42
+        next:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to next page
+          example: "http://api.example.com/api/organisations/?page=2"
+        previous:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to previous page
+          example: null
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganisationSummary'
+
+    MembershipBase:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [admin, member]
+          description: Member role
+          example: "admin"
+
+    MembershipCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/MembershipBase'
+        - type: object
+          required:
+            - user_id
+            - role
+          properties:
+            user_id:
+              type: string
+              format: uuid
+              description: User to invite
+              example: "987fcdeb-51a2-43f1-9876-543210fedcba"
+
+    MembershipUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/MembershipBase'
+        - type: object
+          required:
+            - role
+
+    MembershipDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/MembershipBase'
+        - type: object
+          required:
+            - id
+            - user
+            - organisation
+            - joined_at
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Membership identifier
+              example: "456e7890-e12b-34c5-a678-901234567890"
+            user:
+              $ref: '#/components/schemas/UserSummary'
+            organisation:
+              $ref: '#/components/schemas/OrganisationSummary'
+            joined_at:
+              type: string
+              format: date-time
+              description: Membership start timestamp
+              example: "2025-11-20T09:15:00Z"
+            invited_by:
+              allOf:
+                - $ref: '#/components/schemas/UserSummary'
+                - nullable: true
+
+    MembershipListResponse:
+      type: object
+      required:
+        - count
+        - next
+        - previous
+        - results
+      properties:
+        count:
+          type: integer
+          description: Total number of members
+          example: 12
+        next:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to next page
+        previous:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to previous page
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipDetailResponse'
+
+    UserSummary:
+      type: object
+      required:
+        - id
+        - username
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User identifier
+          example: "987fcdeb-51a2-43f1-9876-543210fedcba"
+        username:
+          type: string
+          description: Username
+          example: "john.doe"
+        email:
+          type: string
+          format: email
+          description: User email
+          example: "john.doe@example.com"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Organisation name already exists"
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error details
+          example:
+            field: "name"
+            code: "unique"
+
+  responses:
+    BadRequest:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: "Validation failed"
+                details:
+                  name: ["This field is required"]
+            invalid_format:
+              value:
+                error: "Invalid UUID format"
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Authentication credentials were not provided"
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "You do not have permission to perform this action"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Organisation not found"
+
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+            example: 0
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          description: Seconds until rate limit resets
+          schema:
+            type: integer
+          example: 3600
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Rate limit exceeded. Try again in 3600 seconds."

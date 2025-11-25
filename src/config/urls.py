@@ -24,4 +24,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("api/v1/", include("accounts.api.urls")),
+    path("api/organisations/", include("organisations.api.urls")),
+    path("", include("django_prometheus.urls")),  # Exposes /metrics endpoint
 ]
