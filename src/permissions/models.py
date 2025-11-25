@@ -1,4 +1,5 @@
 """Database models for hierarchical access control system"""
+
 import re
 import uuid
 from typing import TYPE_CHECKING

@@ -157,26 +157,26 @@
 
 ---
 
-## Work Package WP01: Data Models & Migrations (Priority: P0)
+## Work Package WP01: Data Models & Migrations (Priority: P0) ✅ DONE
 
 **Goal**: Establish database schema with Role, Permission, RoleAssignment models, proper indexes, and foreign key constraints per Constitution Principles II, V, VI.
 
 **Independent Test**: Migrations run successfully, models instantiate, unique constraints enforce one role per scope, foreign key cascades delete orphaned assignments when org/project deleted.
 
-**Prompt**: `kitty-specs/008-hierarchical-access-control/tasks/planned/WP01-data-models-and-migrations.md`
+**Prompt**: `kitty-specs/008-hierarchical-access-control/tasks/done/WP01-data-models-and-migrations.md`
 
 **Phase**: Phase 0 - Foundation
 
 **Included Subtasks**:
-- [ ] [T001] Create `src/permissions/` Django app structure with `py.typed` marker
-- [ ] [T002] Define Role model with UUID PK, name, scope enum, M2M permissions, unique constraint (name, scope)
-- [ ] [T003] Define Permission model with UUID PK, permission string (regex validated), resource_type, is_sensitive flag
-- [ ] [T004] Define RoleAssignment model with UUID PK, user FK, role FK, scope enum, targets, unique constraint (user, scope, targets)
-- [ ] [T005] Create migration 0001_initial with indexes: (name, scope), (user_id), (scope, target_org), (scope, target_project)
-- [ ] [T006] Create custom managers: `RoleManager.with_permissions()`, `RoleAssignmentManager.for_user(user)` with select_related optimization
-- [ ] [T007] Configure foreign key cascades: user/org/project CASCADE, role RESTRICT, assigned_by SET NULL
-- [ ] [T008] Add `permissions` app to `INSTALLED_APPS` in config/settings/base.py
-- [ ] [T009] Configure `PERMISSIONS_CACHE_TTL = 300` in settings (5-minute TTL)
+- [x] [T001] Create `src/permissions/` Django app structure with `py.typed` marker
+- [x] [T002] Define Role model with UUID PK, name, scope enum, M2M permissions, unique constraint (name, scope)
+- [x] [T003] Define Permission model with UUID PK, permission string (regex validated), resource_type, is_sensitive flag
+- [x] [T004] Define RoleAssignment model with UUID PK, user FK, role FK, scope enum, targets, unique constraint (user, scope, targets)
+- [x] [T005] Create migration 0001_initial with indexes: (name, scope), (user_id), (scope, target_org), (scope, target_project)
+- [x] [T006] Create custom managers: `RoleManager.with_permissions()`, `RoleAssignmentManager.for_user(user)` with select_related optimization
+- [x] [T007] Configure foreign key cascades: user/org/project CASCADE, role RESTRICT, assigned_by SET NULL
+- [x] [T008] Add `permissions` app to `INSTALLED_APPS` in config/settings/base.py
+- [x] [T009] Configure `PERMISSIONS_CACHE_TTL = 300` in settings (5-minute TTL)
 
 **Implementation Sketch**:
 1. Use Django `startapp` pattern to create `src/permissions/` with standard structure

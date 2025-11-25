@@ -1,4 +1,5 @@
 """Custom model managers with query optimizations"""
+
 from typing import TYPE_CHECKING
 
 from django.db import models

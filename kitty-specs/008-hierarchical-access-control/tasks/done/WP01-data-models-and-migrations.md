@@ -12,12 +12,12 @@ subtasks:
   - "T009"
 title: "Data Models & Migrations"
 phase: "Phase 0 - Foundation"
-lane: "for_review"
+lane: "done"
 assignee: "GitHub Copilot"
 agent: "claude"
 shell_pid: "11524"
-review_status: ""
-reviewed_by: ""
+review_status: "approved without changes"
+reviewed_by: "claude"
 history:
   - timestamp: "2025-11-25T00:00:00Z"
     lane: "planned"
@@ -34,6 +34,11 @@ history:
     agent: "claude"
     shell_pid: "11524"
     action: "Completed implementation - all 9 subtasks (T001-T009)"
+  - timestamp: "2025-11-25T21:15:00Z"
+    lane: "done"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Code review complete - approved without changes"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP01-data-models-and-migrations.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP01-data-models-and-migrations.md)*
 
