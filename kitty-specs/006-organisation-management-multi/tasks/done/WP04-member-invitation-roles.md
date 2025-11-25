@@ -1,7 +1,9 @@
 ---
 work_package_id: WP04
 title: Member Invitation & Role Assignment (User Story 2)
-lane: "for_review"
+lane: "done"
+review_status: "approved without changes"
+reviewed_by: "claude-reviewer"
 subtasks: [T022, T023, T024, T025, T026, T027]
 priority: P2
 user_story: US2
@@ -84,3 +86,5 @@ Implement nested API endpoints for admins to invite members (POST /api/organisat
 
 - 2025-11-25T08:35:32Z – system – shell_pid= – lane=doing – Moved to doing
 - 2025-11-25T08:38:04Z – system – shell_pid= – lane=for_review – Moved to for_review
+- 2025-11-25T08:40:53Z – system – shell_pid= – lane=done – Moved to done
+- 2025-11-25T08:40:53Z – claude-reviewer – shell_pid=11524 – lane=done – Review complete: Approved without changes. All Definition of Done items verified.
