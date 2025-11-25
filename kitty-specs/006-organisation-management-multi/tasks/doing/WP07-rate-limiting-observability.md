@@ -1,10 +1,11 @@
 ---
 work_package_id: WP07
 title: Rate Limiting & Observability
-lane: planned
+lane: "doing"
 subtasks: [T039, T040, T041, T042, T043, T044, T045]
 priority: Critical
 user_story: All
+agent: "claude"
 history:
   - date: 2025-11-24
     action: created
@@ -111,3 +112,7 @@ Implement Redis-backed rate limiting (5 orgs/user/day, 20 invites/org/hour) and 
 
 - Research: Q2 (rate limiting), Q3 (metrics)
 - Spec: FR-025 through FR-032
+
+## Activity Log
+
+- 2025-11-25T09:37:55Z – claude – shell_pid= – lane=doing – Started implementation
