@@ -54,7 +54,6 @@ jobs:
         SECRET_KEY: test-secret-key-for-ci-minimum-50-characters-long
         DJANGO_SETTINGS_MODULE: config.settings.local
       run: |
-        cd src
         python manage.py migrate --noinput
 
     - name: Get changed test directories
@@ -74,13 +73,13 @@ jobs:
         if [ "${{ github.event_name }}" == "pull_request" ]; then
           # For PR, only run Feature 007 tests
           if [ -d "tests/projects" ]; then
-            echo "test_paths=../tests/projects/" >> $GITHUB_OUTPUT
+            echo "test_paths=tests/projects/" >> $GITHUB_OUTPUT
           else
-            echo "test_paths=../tests/" >> $GITHUB_OUTPUT
+            echo "test_paths=tests/" >> $GITHUB_OUTPUT
           fi
         else
           # On push to main/develop, run all tests
-          echo "test_paths=../tests/" >> $GITHUB_OUTPUT
+          echo "test_paths=tests/" >> $GITHUB_OUTPUT
         fi
 
     - name: Run tests with coverage
@@ -89,14 +88,13 @@ jobs:
         SECRET_KEY: test-secret-key-for-ci-minimum-50-characters-long
         DJANGO_SETTINGS_MODULE: config.settings.local
       run: |
-        cd src
         echo "Running tests for: ${{ steps.test-paths.outputs.test_paths }}"
         # Run core functionality tests (models, managers, serializers)
         # Skip tests with known issues: integration (example model), views/permissions (URL routing)
         pytest ${{ steps.test-paths.outputs.test_paths }} \
-          --ignore=../tests/projects/test_integration.py \
-          --ignore=../tests/projects/test_views.py \
-          --ignore=../tests/projects/test_permissions.py \
+          --ignore=tests/projects/test_integration.py \
+          --ignore=tests/projects/test_views.py \
+          --ignore=tests/projects/test_permissions.py \
           --cov=projects \
           --cov-report=xml \
           --cov-report=term-missing \
@@ -106,7 +104,7 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
-        file: ./src/coverage.xml
+        file: ./coverage.xml
         flags: tests
         name: test-coverage
         fail_ci_if_error: false
@@ -115,5 +113,4 @@ jobs:
       if: github.event_name == 'pull_request'
       continue-on-error: true
       run: |
-        cd src
         pytest ${{ steps.test-paths.outputs.test_paths }} --cov=. --cov-report=term-missing -q
