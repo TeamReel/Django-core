@@ -244,10 +244,10 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T026**: Update projects/README.md with "Extending Projects" section showing FK pattern
-- [ ] **T027**: Add code examples: model definition, API serializer, viewset filtering
-- [ ] **T028**: Create example test in tests/projects/test_integration.py showing resource association pattern
-- [ ] **T029**: Document cascade behavior: project archived → resources should handle gracefully (no cascade on soft delete)
+- [x] **T026**: Update projects/README.md with "Extending Projects" section showing FK pattern
+- [x] **T027**: Add code examples: model definition, API serializer, viewset filtering
+- [x] **T028**: Create example test in tests/projects/test_integration.py showing resource association pattern
+- [x] **T029**: Document cascade behavior: project archived → resources should handle gracefully (no cascade on soft delete)
 
 **Implementation Sketch**:
 1. Write README section with title "Extending Projects for Product Features"
@@ -352,12 +352,12 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 ## Success Metrics
 
-- [ ] All 44 subtasks completed
-- [ ] All 9 spec success criteria met (SC-001 through SC-009)
-- [ ] 90%+ test coverage achieved
-- [ ] All user stories validated with API tests
-- [ ] Performance targets met: <1s list queries, <30s create
-- [ ] Zero constitutional violations
+- [x] All 44 subtasks completed
+- [x] All 9 spec success criteria met (SC-001 through SC-009)
+- [x] 90%+ test coverage achieved
+- [x] All user stories validated with API tests
+- [x] Performance targets met: <1s list queries, <30s create
+- [x] Zero constitutional violations
 - [ ] Feature accepted and merged to main
 
 ---

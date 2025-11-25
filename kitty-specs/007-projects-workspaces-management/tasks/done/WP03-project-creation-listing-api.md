@@ -1,6 +1,8 @@
 ---
 lane: "done"
 agent: "copilot-reviewer"
+shell_pid: "11524"
+assignee: "brian"
 implementation_status: "code_complete"
 test_status: "pending_merge"
 review_status: "approved_with_fix"

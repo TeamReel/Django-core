@@ -2,6 +2,7 @@
 lane: "done"
 agent: "copilot-reviewer"
 shell_pid: "11524"
+assignee: "brian"
 review_status: "approved without changes"
 reviewed_by: "copilot-reviewer"
 ---
