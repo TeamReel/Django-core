@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "copilot"
+shell_pid: "11524"
+---
 # WP05: Resource Association Patterns & Documentation (User Story 3)
 
 **Work Package ID**: WP05
@@ -30,3 +35,7 @@ Create example test in `tests/projects/test_integration.py`:
 - README includes working code examples
 - Integration test demonstrates association pattern
 - Cascade behavior documented (soft delete doesn't cascade)
+
+## Activity Log
+
+- 2025-11-25T14:32:32Z – copilot – shell_pid=11524 – lane=doing – Started implementation: Resource association patterns and documentation
