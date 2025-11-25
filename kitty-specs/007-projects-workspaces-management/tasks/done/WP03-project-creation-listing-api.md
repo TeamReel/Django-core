@@ -1,5 +1,5 @@
 ---
-lane: "for_review"
+lane: "done"
 agent: "copilot-reviewer"
 implementation_status: "code_complete"
 test_status: "pending_merge"
@@ -182,3 +182,4 @@ Comprehensive test suite created covering:
 - 2025-11-25T16:45:00Z – copilot – shell_pid= – lane=doing – Implementation complete: all 6 subtasks (T015-T020) code-complete with 471 lines across 5 files, Django checks passing (0 issues), comprehensive test suite created (27 tests), ready for review
 - 2025-11-25T13:29:37Z – copilot – shell_pid= – lane=for_review – Moved to for_review
 - 2025-11-25T13:35:00Z – copilot-reviewer – shell_pid= – lane=planned – Code review complete: Critical issue found - nested router not registered in urlpatterns (missing `/api/organisations/{org_id}/projects/` routes). Excellent serializer/ViewSet implementation otherwise. Fix required before approval.
+- 2025-11-25T13:46:34Z – copilot-reviewer – shell_pid= – lane=done – Approved: Critical nested router issue fixed and verified. Implementation quality excellent.
