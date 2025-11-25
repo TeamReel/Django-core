@@ -154,13 +154,13 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T015**: Create `organisations/api/serializers.py` with OrganisationSerializer (read) and OrganisationCreateSerializer (write)
-- [ ] **T016**: Implement validation in serializer: unique name, length 3-100, pattern `^[a-zA-Z0-9\s\-_]+$`
-- [ ] **T017**: Create `organisations/api/views.py` with OrganisationViewSet (DRF ModelViewSet)
-- [ ] **T018**: Implement `perform_create()` override to set creator=request.user and create first admin membership atomically using transaction.atomic()
-- [ ] **T019**: Add computed fields to detail serializer: member_count, admin_count, user_role
-- [ ] **T020**: Configure URL routing in `organisations/api/urls.py` using DRF router
-- [ ] **T021**: Register organisations API URLs in `src/config/urls.py` at `/api/organisations/`
+- [x] **T015**: Create `organisations/api/serializers.py` with OrganisationSerializer (read) and OrganisationCreateSerializer (write)
+- [x] **T016**: Implement validation in serializer: unique name, length 3-100, pattern `^[a-zA-Z0-9\s\-_]+$`
+- [x] **T017**: Create `organisations/api/views.py` with OrganisationViewSet (DRF ModelViewSet)
+- [x] **T018**: Implement `perform_create()` override to set creator=request.user and create first admin membership atomically using transaction.atomic()
+- [x] **T019**: Add computed fields to detail serializer: member_count, admin_count, user_role
+- [x] **T020**: Configure URL routing in `organisations/api/urls.py` using DRF router
+- [x] **T021**: Register organisations API URLs in `src/config/urls.py` at `/api/organisations/`
 
 **Implementation Sketch**:
 1. Create serializer with fields matching model
@@ -175,7 +175,7 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Dependencies**: WP02 (models must exist)
 
-**Prompt**: [tasks/planned/WP03-organisation-creation-api.md](tasks/planned/WP03-organisation-creation-api.md)
+**Prompt**: [tasks/for_review/WP03-organisation-creation-api.md](tasks/for_review/WP03-organisation-creation-api.md) ✅ **Completed, Awaiting Review**
 
 ---
 
