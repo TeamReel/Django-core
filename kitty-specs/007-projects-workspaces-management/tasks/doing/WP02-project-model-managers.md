@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "copilot"
+shell_pid: "11524"
+---
 # WP02: Project Model & Managers
 
 **Work Package ID**: WP02
@@ -347,3 +352,7 @@ print(p1.archived_at)  # timestamp
 Project.objects.all()  # Only p2
 Project.all_objects.all()  # Both p1 and p2
 ```
+
+## Activity Log
+
+- 2025-11-25T12:58:43Z – copilot – shell_pid=11524 – lane=doing – Started WP02: Project Model & Managers implementation
