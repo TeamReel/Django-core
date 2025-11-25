@@ -14,10 +14,10 @@ subtasks:
   - "T030"
 title: "Default Roles & Permissions"
 phase: "Phase 2 - Core Implementation"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "GitHub Copilot"
+agent: "claude"
+shell_pid: "11524"
 review_status: ""
 reviewed_by: ""
 history:
@@ -26,6 +26,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-11-25T22:35:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Started implementation"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP03-default-roles-and-permissions.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP03-default-roles-and-permissions.md)*
 
