@@ -14,11 +14,11 @@ subtasks:
   - "T030"
 title: "Default Roles & Permissions"
 phase: "Phase 2 - Core Implementation"
-lane: "planned"
-assignee: ""
+lane: "doing"
+assignee: "GitHub Copilot"
 agent: "claude"
 shell_pid: "11524"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude"
 history:
   - timestamp: "2025-11-25T00:00:00Z"
@@ -41,6 +41,11 @@ history:
     agent: "claude"
     shell_pid: "11524"
     action: "Code review complete: Missing test suite (blocker), needs Unicode fix, documentation updates"
+  - timestamp: "2025-11-25T23:20:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Acknowledged review feedback - addressing test suite, Unicode fix, documentation"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP03-default-roles-and-permissions.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP03-default-roles-and-permissions.md)*
 
