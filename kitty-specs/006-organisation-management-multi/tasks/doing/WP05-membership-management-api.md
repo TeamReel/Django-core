@@ -82,3 +82,4 @@ Implement PATCH /api/organisations/{id}/members/{user_id}/ for role changes and 
 ## Activity Log
 
 - 2025-11-25T08:50:39Z – claude – shell_pid=11524 – lane=doing – Started implementation
+- 2025-11-25T09:06:16Z – claude – shell_pid=11524 – lane=doing – Completed implementation
