@@ -16,4 +16,7 @@ nested_projects_router = routers.NestedDefaultRouter(
 )
 nested_projects_router.register(r"projects", ProjectViewSet, basename="organisation-project")
 
-urlpatterns = router.urls
+urlpatterns = [
+    *router.urls,  # Top-level /api/projects/ routes
+    *nested_projects_router.urls,  # Nested /api/organisations/{organisation_id}/projects/ routes
+]
