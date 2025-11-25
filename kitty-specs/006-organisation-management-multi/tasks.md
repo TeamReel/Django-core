@@ -55,12 +55,12 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T001**: Create `src/organisations/` Django app with `__init__.py`, `apps.py`, `models.py`, `admin.py`
-- [ ] **T002**: Create sub-packages: `organisations/api/`, `organisations/managers/`, `organisations/permissions/`
-- [ ] **T003**: Add dependencies to `requirements/base.txt`: django-redis==5.4.0, django-prometheus==2.3.1, prometheus-client==0.19.0
-- [ ] **T004**: Add `organisations` to `INSTALLED_APPS` in `src/config/settings/base.py`
-- [ ] **T005**: Configure Redis cache backend in `src/config/settings/base.py` with django_redis
-- [ ] **T006**: Add django_prometheus middleware to settings and configure /metrics endpoint in URLs
+- [x] **T001**: Create `src/organisations/` Django app with `__init__.py`, `apps.py`, `models.py`, `admin.py`
+- [x] **T002**: Create sub-packages: `organisations/api/`, `organisations/managers/`, `organisations/permissions/`
+- [x] **T003**: Add dependencies to `requirements/base.txt`: django-redis==5.4.0, django-prometheus==2.3.1, prometheus-client==0.19.0
+- [x] **T004**: Add `organisations` to `INSTALLED_APPS` in `src/config/settings/base.py`
+- [x] **T005**: Configure Redis cache backend in `src/config/settings/base.py` with django_redis
+- [x] **T006**: Add django_prometheus middleware to settings and configure /metrics endpoint in URLs
 
 **Implementation Sketch**:
 1. Use Django's `startapp` or manually create app structure
@@ -74,7 +74,7 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Dependencies**: None
 
-**Prompt**: [tasks/planned/WP01-project-foundation-dependencies.md](tasks/planned/WP01-project-foundation-dependencies.md)
+**Prompt**: [tasks/done/WP01-project-foundation-dependencies.md](tasks/done/WP01-project-foundation-dependencies.md) ✅ **Completed and Reviewed**
 
 ---
 
