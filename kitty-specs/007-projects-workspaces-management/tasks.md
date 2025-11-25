@@ -321,13 +321,13 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T038**: Create ProjectAdmin in projects/admin.py with list_display, search_fields, list_filter
-- [ ] **T039**: Add ProjectInline to OrganisationAdmin in organisations app
-- [ ] **T040**: Implement signal handlers in projects/signals.py: log creation, updates, archival
-- [ ] **T041**: Register signals in projects/apps.py ready() method
-- [ ] **T042**: Add py.typed file to projects/ for type hint support
-- [ ] **T043**: Add docstrings to all classes and methods
-- [ ] **T044**: Final review: run `python manage.py check --deploy`, `ruff check`, `black --check`
+- [x] **T038**: Create ProjectAdmin in projects/admin.py with list_display, search_fields, list_filter
+- [x] **T039**: Add ProjectInline to OrganisationAdmin in organisations app
+- [x] **T040**: Implement signal handlers in projects/signals.py: log creation, updates, archival
+- [x] **T041**: Register signals in projects/apps.py ready() method
+- [x] **T042**: Add py.typed file to projects/ for type hint support
+- [x] **T043**: Add docstrings to all classes and methods
+- [x] **T044**: Final review: run `python manage.py check --deploy`, `ruff check`, `black --check`
 
 **Parallel Opportunities**: T038-T039 [P], T040-T041 [P], T042-T044 [P]
 
