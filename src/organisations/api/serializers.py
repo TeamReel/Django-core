@@ -9,7 +9,7 @@ Provides:
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from organisations.models import Organisation
+from organisations.models import Membership, Organisation
 
 User = get_user_model()
 
@@ -94,4 +94,76 @@ class OrganisationCreateSerializer(serializers.ModelSerializer):
         return value
 
 
-# Serializers will be added in WP03
+class MembershipSerializer(serializers.ModelSerializer):
+    """
+    Read serializer for Membership with nested user and organisation details.
+    """
+
+    user = UserSerializer(read_only=True)
+    organisation = serializers.SerializerMethodField()
+    invited_by = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Membership
+        fields = [
+            "id",
+            "user",
+            "organisation",
+            "role",
+            "joined_at",
+            "invited_by",
+            "is_active",
+        ]
+        read_only_fields = fields
+
+    def get_organisation(self, obj):
+        """Return minimal organisation details."""
+        return {
+            "id": obj.organisation.id,
+            "name": obj.organisation.name,
+            "slug": obj.organisation.slug,
+        }
+
+
+class MembershipCreateSerializer(serializers.ModelSerializer):
+    """
+    Write serializer for creating memberships (inviting members).
+
+    Validates:
+    - user_id: Must be a valid user
+    - role: Must be 'admin' or 'member'
+    - No duplicate memberships (validated in validate())
+    """
+
+    user_id = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = Membership
+        fields = ["user_id", "role"]
+
+    def validate_user_id(self, value):
+        """Validate that user exists."""
+        if not User.objects.filter(id=value).exists():
+            raise serializers.ValidationError("User does not exist.")
+        return value
+
+    def validate(self, attrs):
+        """Validate no duplicate membership exists."""
+        org_id = self.context["view"].kwargs.get("organisation_pk")
+        user_id = attrs["user_id"]
+
+        if Membership.objects.filter(user_id=user_id, organisation_id=org_id).exists():
+            raise serializers.ValidationError(
+                {"user_id": "User is already a member of this organisation."}
+            )
+
+        return attrs
+
+    def create(self, validated_data):
+        """Create membership with resolved user and organisation."""
+        org_id = self.context["view"].kwargs["organisation_pk"]
+        user_id = validated_data.pop("user_id")
+
+        return Membership.objects.create(
+            user_id=user_id, organisation_id=org_id, role=validated_data["role"]
+        )
