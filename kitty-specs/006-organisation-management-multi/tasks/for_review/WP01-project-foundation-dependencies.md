@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Project Foundation & Dependencies
-lane: "doing"
+lane: "for_review"
 subtasks:
   - T001
   - T002
@@ -284,3 +284,4 @@ The project follows the Django Core-App Constitution principles: product-agnosti
 
 - 2025-11-25T07:41:42Z – claude – shell_pid=11524 – lane=doing – Started implementation of foundation and dependencies
 - 2025-11-25T07:50:00Z – claude – shell_pid=11524 – lane=doing – Completed all 6 subtasks (T001-T006): Created app structure, sub-packages, added dependencies, configured Redis/Prometheus. Commit: ca3c8c8
+- 2025-11-25T07:49:04Z – claude – shell_pid=11524 – lane=for_review – Completed all 6 subtasks - ready for review
