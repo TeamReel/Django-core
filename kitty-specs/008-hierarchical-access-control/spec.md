@@ -6,6 +6,14 @@
 **Status**: Draft
 **Input**: User description: "Define hierarchical access control across users, organisations and projects, enabling fine-grained, inheritance-based permission logic with audit visibility."
 
+## Clarifications
+
+### Session 2025-11-25
+
+- Q: When a role's permission set needs to change (e.g., "Organization Admin" gains a new permission), which behavior should the system enforce? → A: Roles can be modified in-place, triggering immediate cache invalidation for all users with that role
+- Q: Should the system include pre-defined starter roles on initial deployment? → A: Yes - provide standard roles (Global Admin, Org Admin, Org Member, Org Viewer, Project Admin, Project Member, Project Viewer) with sensible permission defaults
+- Q: When a user has multiple roles at the same scope level (e.g., both "Project Admin" and "Project Viewer" on the same project), how should the system behave? → A: Allow only one role per scope - assigning new role replaces previous one
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Organization Admin Assigns Roles (Priority: P1)
@@ -96,6 +104,8 @@ As a system integrator building new Django apps, I need to apply the permission 
 ### Edge Cases
 
 - **Cyclic role dependencies**: What happens when role inheritance could create cycles (e.g., Role A includes Role B, Role B includes Role A)? System must detect and reject cyclic definitions at role creation time.
+- **Role modification impact**: When a role's permissions are modified in-place, all users with that role must have their cached evaluations invalidated immediately to reflect new permissions.
+- **Role replacement on assignment**: When assigning a new role to a user at a scope where they already have a role, the system replaces the existing role assignment (enforced by unique constraint on user+scope+target).
 - **Orphaned role assignments**: How does the system handle role assignments when the target organization or project is deleted? Role assignments should be cascade-deleted when parent resource is removed.
 - **Permission check on deleted resources**: What happens when checking permissions on a resource that was recently deleted but still in cache? System should handle gracefully and return denial.
 - **Cache invalidation race conditions**: How does the system handle permission checks during cache invalidation (e.g., role removed but cache not yet cleared)? Acceptable to grant access for up to cache TTL; critical operations should force cache refresh.
@@ -107,8 +117,9 @@ As a system integrator building new Django apps, I need to apply the permission 
 
 ### Functional Requirements
 
-- **FR-001**: System MUST support custom role definitions with assignable permission sets (e.g., "Organization Admin" role with permissions ["org.invite_users", "org.manage_settings", "projects.create"])
-- **FR-002**: System MUST support permission assignment at three scope levels: Global (system-wide), Organization (all projects within org), and Project (specific project only)
+- **FR-001**: System MUST support custom role definitions with assignable permission sets (e.g., "Organization Admin" role with permissions ["org.invite_users", "org.manage_settings", "projects.create"]). Roles can be modified in-place; modifications trigger immediate cache invalidation for all affected users.
+- **FR-001a**: System MUST provide pre-defined starter roles on initial deployment: Global Admin, Organization Admin, Organization Member, Organization Viewer, Project Admin, Project Member, Project Viewer with sensible default permissions mapped to resource types.
+- **FR-002**: System MUST support permission assignment at three scope levels: Global (system-wide), Organization (all projects within org), and Project (specific project only). Users may have only one role per scope level; assigning a new role at the same scope replaces the previous assignment.
 - **FR-003**: System MUST evaluate permissions using additive inheritance where project-level roles grant additional permissions beyond organization-level roles (most permissive wins)
 - **FR-004**: System MUST cache role assignments and permission evaluations in Redis with 5-minute TTL to achieve <2ms latency for common permission checks
 - **FR-005**: System MUST invalidate relevant cache entries when roles are assigned, removed, or modified
@@ -133,7 +144,7 @@ As a system integrator building new Django apps, I need to apply the permission 
 
 - **Permission**: Represents a specific capability on a resource type. Key attributes: permission string (e.g., "projects.delete"), resource_type (e.g., "project"), description, is_sensitive (triggers audit logging). Organized into categories by resource type for clarity.
 
-- **RoleAssignment**: Links users to roles at specific scopes. Key attributes: user (reference to User model), role (reference to Role), scope (global/organization/project), target_organization (nullable, for org-scoped assignments), target_project (nullable, for project-scoped assignments), assigned_by (audit), assigned_at (audit). Unique constraint on (user, role, scope, target_organization, target_project).
+- **RoleAssignment**: Links users to roles at specific scopes. Key attributes: user (reference to User model), role (reference to Role), scope (global/organization/project), target_organization (nullable, for org-scoped assignments), target_project (nullable, for project-scoped assignments), assigned_by (audit), assigned_at (audit). Unique constraint on (user, scope, target_organization, target_project) - enforces one role per user per scope level.
 
 - **PermissionEvaluationContext**: Cached evaluation result. Key attributes: user, permission, resource_type, resource_id (nullable), decision (grant/deny), evaluated_roles (list of role IDs that contributed to decision), evaluated_at, cache_key. Stored in Redis with 5-minute TTL.
 
@@ -230,7 +241,7 @@ As a system integrator building new Django apps, I need to apply the permission 
 - **Redis availability**: Assumes Redis is already deployed and configured for caching (dependency on B06-organisation-management's Redis setup). If Redis is unavailable, system falls back to database evaluation.
 - **B09 audit logging**: Assumes audit logging feature (B09) provides event ingestion API. If not available yet, audit events will be logged to Django logger temporarily.
 - **Permission categories**: Assumes pre-defined permission categories will be sufficient for initial release (accounts, organisations, projects resources). New categories can be added via registry without migration.
-- **Role immutability**: Assumes role definitions (name, permissions) are relatively stable. Changing role definitions invalidates all cached evaluations for that role (acceptable with 5-minute max staleness).
+- **Role modification frequency**: Assumes role definitions will be modified occasionally during system evolution but not constantly. Each modification triggers cache invalidation for all users with that role.
 - **Single Django database**: Assumes all authorization data (roles, assignments) lives in primary PostgreSQL database. Future: could support read replicas for evaluation queries.
 - **No external IAM integration in V1**: Assumes integration with external SSO/IAM systems (enterprise LDAP, Okta) is future work. V1 uses internal role model only.
 - **UTF-8 permission strings**: Assumes permission strings use ASCII alphanumeric + dots (e.g., "projects.delete"). No internationalization of permission names in V1.
@@ -259,7 +270,7 @@ As a system integrator building new Django apps, I need to apply the permission 
 ## Risks
 
 - **Cache invalidation complexity**: Risk that cache invalidation fails or is delayed, causing stale permission evaluations. Mitigation: Conservative 5-minute TTL, force-refresh option for critical operations, monitoring of cache age.
-- **Performance degradation with deep hierarchies**: Risk that permission evaluation becomes slow with many role assignments per user. Mitigation: Limit role assignments per user (e.g., max 10), optimize query patterns with indexes, load test with realistic data volumes.
+- **Performance degradation with deep hierarchies**: Risk that permission evaluation becomes slow with many role assignments per user. Mitigation: Enforce one role per scope level (max 3 total: global + org + project), optimize query patterns with indexes, load test with realistic data volumes.
 - **Authorization bypass vulnerabilities**: Risk of security bugs in permission evaluation logic allowing privilege escalation. Mitigation: Comprehensive test suite (180+ tests), security review before release, deny-by-default design, fuzz testing of evaluation engine.
 - **Audit log volume**: Risk that verbose audit logging causes performance issues or storage costs. Mitigation: Make audit logging configurable per permission type, sample high-frequency checks, use async logging, set retention policies.
 - **Redis unavailability impact**: Risk that Redis outage makes permission checks unacceptably slow. Mitigation: Database fallback mode, circuit breaker to detect Redis failures quickly, alerts on degraded performance.
