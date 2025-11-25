@@ -10,6 +10,7 @@ Tests all WP02 functionality:
 This is a test script, not production code.
 Ignoring module-level import order and assert usage.
 """
+
 # ruff: noqa: E402, S101, S106
 
 import os

@@ -1,4 +1,5 @@
 """Custom managers for the Project model."""
+
 from django.db import models
 
 

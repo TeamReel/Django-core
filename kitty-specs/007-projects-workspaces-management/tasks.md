@@ -99,15 +99,15 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T006**: Define Project model in `projects/models.py` with all fields, foreign keys, and help text
-- [ ] **T007**: Add unique constraints: `UNIQUE(organisation, slug)` and `UNIQUE(LOWER(name), organisation)`
-- [ ] **T008**: Create database indexes on organisation_id, slug, is_active, and composite (organisation_id, is_active)
-- [ ] **T009**: Implement custom managers in `projects/managers.py`: ActiveProjectManager and AllProjectManager
-- [ ] **T010**: Implement slug generation algorithm in `_generate_unique_slug()` with sequential suffix pattern
-- [ ] **T011**: Override `save()` method to auto-generate slug if empty and call `full_clean()`
-- [ ] **T012**: Implement `clean()` method to validate archived_at consistency with is_active
-- [ ] **T013**: Add `archive()` and `restore()` convenience methods for soft deletion
-- [ ] **T014**: Generate and apply initial migration: `makemigrations projects && migrate`
+- [x] **T006**: Define Project model in `projects/models.py` with all fields, foreign keys, and help text
+- [x] **T007**: Add unique constraints: `UNIQUE(organisation, slug)` and `UNIQUE(LOWER(name), organisation)`
+- [x] **T008**: Create database indexes on organisation_id, slug, is_active, and composite (organisation_id, is_active)
+- [x] **T009**: Implement custom managers in `projects/managers.py`: ActiveProjectManager and AllProjectManager
+- [x] **T010**: Implement slug generation algorithm in `_generate_unique_slug()` with sequential suffix pattern
+- [x] **T011**: Override `save()` method to auto-generate slug if empty and call `full_clean()`
+- [x] **T012**: Implement `clean()` method to validate archived_at consistency with is_active
+- [x] **T013**: Add `archive()` and `restore()` convenience methods for soft deletion
+- [x] **T014**: Generate and apply initial migration: `makemigrations projects && migrate`
 
 **Implementation Sketch**:
 1. Import models, fields, functions (Lower), timezone, slugify
