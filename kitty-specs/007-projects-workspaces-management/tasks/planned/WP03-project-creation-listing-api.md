@@ -1,9 +1,91 @@
 ---
-lane: "for_review"
+lane: "planned"
 agent: "copilot"
 implementation_status: "code_complete"
 test_status: "pending_merge"
+review_status: "has_feedback"
+reviewed_by: "copilot-reviewer"
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Reviewed By**: copilot-reviewer
+**Review Date**: 2025-11-25
+
+### Critical Issue: Nested Router Not Registered
+
+**Problem**: The nested router for `/api/organisations/{org_id}/projects/` is created but never added to `urlpatterns`, making those endpoints inaccessible.
+
+**Location**: `src/projects/api/urls.py` line 19
+
+**Current Code**:
+```python
+urlpatterns = router.urls  # Only includes top-level /api/projects/ routes!
+```
+
+**What's Missing**: The `nested_projects_router` is defined but not included in the URL configuration. This means:
+- ✅ `/api/projects/` works (top-level)
+- ❌ `/api/organisations/{org_id}/projects/` returns 404 (nested routes missing)
+
+**Required Fix**:
+```python
+urlpatterns = [
+    *router.urls,                    # Top-level routes
+    *nested_projects_router.urls,    # Nested routes under organisations
+]
+```
+
+**Why This Matters**:
+- User Story 1 explicitly requires nested routes for organisation-scoped project access
+- The contract (`projects-api.yaml`) documents nested endpoints as primary interface
+- Tests reference `organisation-projects-list` URL name that won't resolve
+- Half of the dual-routing feature is non-functional
+
+### What Was Done Well
+
+✅ **Excellent serializer implementation**:
+- Proper nested object serialization (org + creator)
+- Comprehensive validation (name length, description, case-insensitive uniqueness)
+- Correct separation of List/Detail/Update serializers
+- Smart use of `name__iexact` for case-insensitive lookups
+
+✅ **Well-structured ViewSet**:
+- Clean dual-routing logic in `get_queryset()`
+- Proper query optimization with `select_related`
+- Archive/restore actions correctly return 204 No Content
+- Good separation of concerns with `get_serializer_class()`
+
+✅ **Solid permissions implementation**:
+- Correctly checks membership for reads, admin for writes
+- Proper integration with Feature 006's IsOrganisationAdmin
+- Handles both nested and top-level route contexts
+
+✅ **Comprehensive test suite**:
+- 27 tests covering all major scenarios
+- Good coverage of validation, permissions, pagination
+- Tests correctly reference expected URL names
+
+✅ **Documentation**:
+- Clear docstrings
+- Good inline comments
+- Task documentation thorough
+
+### Action Items (Must Complete Before Re-Review)
+
+- [ ] **Fix URL configuration**: Add `nested_projects_router.urls` to `urlpatterns` in `src/projects/api/urls.py`
+- [ ] **Verify nested routes work**: After fix, confirm URL resolution with `python manage.py show_urls | grep organisations.*projects` or similar
+- [ ] **Update activity log**: Add entry documenting the fix
+
+### Additional Observations (Non-Blocking)
+
+**Minor**: The `organisations_router = routers.DefaultRouter()` on line 13 is created but never used. This can be cleaned up or documented as placeholder for future integration. Not blocking since it doesn't break anything.
+
+**Note**: E2E tests cannot run until Feature 007 is merged (projects app not in main workspace INSTALLED_APPS). This is expected and acceptable. The comprehensive test suite will validate functionality post-merge.
+
+---
+
 # WP03: Project Creation & Listing API (User Story 1)
 
 **Work Package ID**: WP03
@@ -99,3 +181,4 @@ Comprehensive test suite created covering:
 - 2025-11-25T13:17:49Z – system – shell_pid= – lane=doing – Moved to doing
 - 2025-11-25T16:45:00Z – copilot – shell_pid= – lane=doing – Implementation complete: all 6 subtasks (T015-T020) code-complete with 471 lines across 5 files, Django checks passing (0 issues), comprehensive test suite created (27 tests), ready for review
 - 2025-11-25T13:29:37Z – copilot – shell_pid= – lane=for_review – Moved to for_review
+- 2025-11-25T13:35:00Z – copilot-reviewer – shell_pid= – lane=planned – Code review complete: Critical issue found - nested router not registered in urlpatterns (missing `/api/organisations/{org_id}/projects/` routes). Excellent serializer/ViewSet implementation otherwise. Fix required before approval.
