@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: Core Data Models & Managers
-lane: planned
+lane: "doing"
 subtasks:
   - T007
   - T008
@@ -13,6 +13,8 @@ subtasks:
   - T014
 priority: Critical
 user_story: All
+agent: "claude"
+shell_pid: "11524"
 history:
   - date: 2025-11-24
     action: created
@@ -463,3 +465,7 @@ assert membership.is_active == False
 - Data Model: [data-model.md](../data-model.md) - Complete field definitions
 - Research: [research.md](../research.md) - Q4 (soft-delete strategy), Q5 (permissions)
 - Spec: [spec.md](../spec.md) - FR-001 through FR-020, Entity definitions
+
+## Activity Log
+
+- 2025-11-25T07:56:35Z – claude – shell_pid=11524 – lane=doing – Started implementation of core data models and managers
