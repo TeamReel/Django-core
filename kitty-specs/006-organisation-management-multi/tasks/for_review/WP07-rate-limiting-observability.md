@@ -1,7 +1,7 @@
 ---
 work_package_id: WP07
 title: Rate Limiting & Observability
-lane: "doing"
+lane: "for_review"
 subtasks: [T039, T040, T041, T042, T043, T044, T045]
 priority: Critical
 user_story: All
@@ -116,3 +116,4 @@ Implement Redis-backed rate limiting (5 orgs/user/day, 20 invites/org/hour) and 
 ## Activity Log
 
 - 2025-11-25T09:37:55Z – claude – shell_pid= – lane=doing – Started implementation
+- 2025-11-25T09:42:15Z – claude – shell_pid= – lane=for_review – Implementation complete: Added rate limiting (5 orgs/user/day, 20 invites/org/hour) and Prometheus metrics (org_count, membership_count, counters)
