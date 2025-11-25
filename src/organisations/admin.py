@@ -7,6 +7,7 @@ Provides:
 """
 
 from django.contrib import admin
+from projects.admin import ProjectInline
 
 from .models import Membership, Organisation
 
@@ -21,6 +22,7 @@ class OrganisationAdmin(admin.ModelAdmin):
     - Filtering by active status and creation date
     - Search by name and slug
     - Custom action to restore soft-deleted organisations
+    - Inline display of projects
     """
 
     list_display = ["name", "slug", "creator", "is_active", "created_at", "deleted_at"]
@@ -28,6 +30,7 @@ class OrganisationAdmin(admin.ModelAdmin):
     search_fields = ["name", "slug"]
     readonly_fields = ["id", "slug", "created_at", "updated_at"]
     actions = ["restore_organisations"]
+    inlines = [ProjectInline]
 
     def restore_organisations(self, request, queryset):
         """
