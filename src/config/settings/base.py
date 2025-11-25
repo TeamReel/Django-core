@@ -19,6 +19,7 @@ AUTH_USER_MODEL = "accounts.User"
 
 
 INSTALLED_APPS = [
+    "django_prometheus",  # Must be first for middleware instrumentation
     "accounts.apps.AccountsConfig",  # Must be before admin
     "django.contrib.admin",
     "django.contrib.auth",
@@ -31,9 +32,11 @@ INSTALLED_APPS = [
     # Core-App modules
     "constitution_engine",
     "security_baseline",
+    "organisations.apps.OrganisationsConfig",
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Must be first
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "accounts.middleware.SessionInactivityMiddleware",  # Enforce inactivity timeout
@@ -43,6 +46,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",  # Must be last
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -72,6 +76,29 @@ DATABASES = {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
+}
+
+
+# Cache Configuration
+# Redis backend for rate limiting and caching
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/1")
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "KEY_PREFIX": "django_core",
+        "TIMEOUT": 300,  # 5 minutes default
+    }
+}
+
+# Rate Limiting Configuration
+# Used by organisations app for creation and invitation limits
+ORGANISATION_RATE_LIMITS = {
+    "create_org_per_user_per_day": 5,
+    "invite_member_per_org_per_hour": 20,
 }
 
 
