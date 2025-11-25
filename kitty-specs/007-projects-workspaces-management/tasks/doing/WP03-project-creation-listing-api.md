@@ -1,3 +1,7 @@
+---
+lane: "doing"
+agent: "system"
+---
 # WP03: Project Creation & Listing API (User Story 1)
 
 **Work Package ID**: WP03
@@ -40,3 +44,7 @@ Filter queryset by user's organisation memberships.
 - GET returns paginated list with nested org/creator
 - Permissions enforced (admin for create, member for view)
 - Handle slug collisions with sequential suffix
+
+## Activity Log
+
+- 2025-11-25T13:17:49Z – system – shell_pid= – lane=doing – Moved to doing
