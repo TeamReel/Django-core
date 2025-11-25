@@ -1,0 +1,27 @@
+{
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-11-25T15:40:10Z",
+      "accepted_by": "brian",
+      "accepted_from_commit": "c9e6e6cc268ebf066f7da887116bf5088b2c15bc",
+      "branch": "007-projects-workspaces-management",
+      "mode": "pr",
+      "validation_commands": [
+        "pytest",
+        "ruff check .",
+        "mypy .",
+        "python manage.py check"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-11-25T15:40:10Z",
+  "accepted_by": "brian",
+  "accepted_from_commit": "c9e6e6cc268ebf066f7da887116bf5088b2c15bc",
+  "created_at": "2025-11-25T10:21:35Z",
+  "feature_number": "007",
+  "friendly_name": "Projects & Workspaces Management",
+  "slug": "007-projects-workspaces-management",
+  "source_description": "Create a reusable project/workspace model that acts as a context container within organisations for resources, configuration and workflows."
+}

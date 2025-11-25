@@ -25,5 +25,7 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("api/v1/", include("accounts.api.urls")),
     path("api/organisations/", include("organisations.api.urls")),
+    # Projects API - top-level routes
+    path("api/", include("projects.api.urls")),
     path("", include("django_prometheus.urls")),  # Exposes /metrics endpoint
 ]
