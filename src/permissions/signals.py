@@ -32,7 +32,7 @@ def invalidate_cache_on_assignment_created(sender, instance, created, **kwargs):
 
 
 @receiver(post_delete, sender=RoleAssignment)
-def invalidate_cache_on_assignment_deleted(_sender, instance, **_kwargs):
+def invalidate_cache_on_assignment_deleted(sender, instance, **kwargs):
     """Invalidate user cache when role assignment deleted."""
     logger.info("Role removed: invalidating cache for user %s", instance.user_id)
     invalidate_user_cache(instance.user_id)
