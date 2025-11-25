@@ -388,12 +388,12 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T046**: Register Organisation and Membership in `organisations/admin.py` with ModelAdmin configurations
-- [ ] **T047**: Add list_display, list_filter, search_fields for admin usability
-- [ ] **T048**: Add custom admin action "Restore soft-deleted organisation" for superadmins
-- [ ] **T049**: Create management command `src/organisations/management/commands/cleanup_deleted_organisations.py`
-- [ ] **T050**: Implement cleanup logic: query orgs with `deleted_at < now() - 30 days`, call hard_delete()
-- [ ] **T051**: Add --dry-run and --days flags to command for flexibility and safety
+- [x] **T046**: Register Organisation and Membership in `organisations/admin.py` with ModelAdmin configurations
+- [x] **T047**: Add list_display, list_filter, search_fields for admin usability
+- [x] **T048**: Add custom admin action "Restore soft-deleted organisation" for superadmins
+- [x] **T049**: Create management command `src/organisations/management/commands/cleanup_deleted_organisations.py`
+- [x] **T050**: Implement cleanup logic: query orgs with `deleted_at < now() - 30 days`, call hard_delete()
+- [x] **T051**: Add --dry-run and --days flags to command for flexibility and safety
 
 **Implementation Sketch**:
 1. Create OrganisationAdmin and MembershipAdmin classes
