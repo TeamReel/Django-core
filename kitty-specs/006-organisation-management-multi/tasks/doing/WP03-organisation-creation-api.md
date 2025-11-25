@@ -1,10 +1,11 @@
 ---
 work_package_id: WP03
 title: Organisation Creation API (User Story 1)
-lane: planned
+lane: "doing"
 subtasks: [T015, T016, T017, T018, T019, T020, T021]
 priority: P1
 user_story: US1
+agent: "system"
 history:
   - date: 2025-11-24
     action: created
@@ -107,3 +108,7 @@ curl http://localhost:8000/api/organisations/{id}/ \
 
 - Spec: User Story 1, FR-001, FR-002, FR-016
 - Contracts: [organisations-api.yaml](../contracts/organisations-api.yaml)
+
+## Activity Log
+
+- 2025-11-25T08:27:59Z – system – shell_pid= – lane=doing – Moved to doing
