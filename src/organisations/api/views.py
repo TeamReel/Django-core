@@ -7,10 +7,23 @@ Provides:
 
 from django.db import transaction
 from rest_framework import permissions, viewsets
+from rest_framework.pagination import PageNumberPagination
 
 from organisations.models import Membership, Organisation
 
-from .serializers import OrganisationCreateSerializer, OrganisationSerializer
+from .serializers import (
+    OrganisationCreateSerializer,
+    OrganisationListSerializer,
+    OrganisationSerializer,
+)
+
+
+class OrganisationPagination(PageNumberPagination):
+    """Pagination configuration for organisation list."""
+
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class OrganisationViewSet(viewsets.ModelViewSet):
@@ -21,18 +34,46 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     - POST /api/organisations/ - Create organisation (creator becomes first admin)
     - GET /api/organisations/ - List organisations (user is member of)
     - GET /api/organisations/{id}/ - Retrieve organisation details
-    - PUT/PATCH /api/organisations/{id}/ - Update organisation
-    - DELETE /api/organisations/{id}/ - Soft-delete organisation
+    - PUT/PATCH /api/organisations/{id}/ - Update organisation (admin only)
+    - DELETE /api/organisations/{id}/ - Soft-delete organisation (admin only)
     """
 
-    queryset = Organisation.objects.active()
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = OrganisationPagination
+
+    def get_queryset(self):
+        """
+        Filter organisations to only those the user is a member of.
+
+        Optimizations:
+        - select_related('creator'): Avoid N+1 for creator field
+        - prefetch_related('memberships'): Optimize member count queries
+        - distinct(): Ensure no duplicates from join
+        """
+        return (
+            Organisation.objects.filter(
+                memberships__user=self.request.user, memberships__is_active=True, is_active=True
+            )
+            .select_related("creator")
+            .prefetch_related("memberships")
+            .distinct()
+        )
 
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
         if self.action == "create":
             return OrganisationCreateSerializer
+        if self.action == "list":
+            return OrganisationListSerializer
         return OrganisationSerializer
+
+    def get_permissions(self):
+        """Require admin permission for update and delete actions."""
+        if self.action in ["update", "partial_update", "destroy"]:
+            from organisations.permissions import IsOrganisationAdmin
+
+            return [permissions.IsAuthenticated(), IsOrganisationAdmin()]
+        return super().get_permissions()
 
     def perform_create(self, serializer):
         """

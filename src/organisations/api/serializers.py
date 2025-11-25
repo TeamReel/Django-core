@@ -23,6 +23,38 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class OrganisationListSerializer(serializers.ModelSerializer):
+    """
+    Lightweight serializer for organisation list view.
+
+    Includes only essential fields to reduce payload size and improve performance.
+    Computed fields:
+    - member_count: Total active members
+    - user_role: Current user's role in this organisation
+    """
+
+    member_count = serializers.SerializerMethodField()
+    user_role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organisation
+        fields = ["id", "name", "slug", "member_count", "user_role"]
+        read_only_fields = fields
+
+    def get_member_count(self, obj):
+        """Return count of active members."""
+        return obj.memberships.filter(is_active=True).count()
+
+    def get_user_role(self, obj):
+        """Return current user's role in this organisation, or None."""
+        user = self.context.get("request").user if self.context.get("request") else None
+        if not user or not user.is_authenticated:
+            return None
+
+        membership = obj.memberships.filter(user=user, is_active=True).first()
+        return membership.role if membership else None
+
+
 class OrganisationSerializer(serializers.ModelSerializer):
     """
     Read serializer for Organisation with computed fields.
