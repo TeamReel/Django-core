@@ -14,12 +14,12 @@ subtasks:
   - "T030"
 title: "Default Roles & Permissions"
 phase: "Phase 2 - Core Implementation"
-lane: "for_review"
-assignee: "GitHub Copilot"
+lane: "planned"
+assignee: ""
 agent: "claude"
 shell_pid: "11524"
-review_status: ""
-reviewed_by: ""
+review_status: "has_feedback"
+reviewed_by: "claude"
 history:
   - timestamp: "2025-11-25T00:00:00Z"
     lane: "planned"
@@ -35,7 +35,12 @@ history:
     lane: "for_review"
     agent: "claude"
     shell_pid: "11524"
-    action: "Started implementation"
+    action: "Completed implementation, moved to for_review"
+  - timestamp: "2025-11-25T23:15:00Z"
+    lane: "planned"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "Code review complete: Missing test suite (blocker), needs Unicode fix, documentation updates"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP03-default-roles-and-permissions.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP03-default-roles-and-permissions.md)*
 
@@ -56,7 +61,85 @@ history:
 
 > **Populated by `/spec-kitty.review`** – Reviewers add detailed feedback here when work needs changes. Implementation must address every item listed below before returning for re-review.
 
-*[This section is empty initially. Reviewers will populate it if the work is returned from review. If you see feedback here, treat each item as a must-do before completion.]*
+**Status**: ❌ **Needs Changes**
+
+**Reviewed By**: claude
+**Review Date**: 2025-11-25T23:15:00Z
+**Shell PID**: 11524
+
+### Critical Issues
+
+1. **BLOCKER: Missing Test Suite** - The Definition of Done explicitly requires "Test suite has 13+ tests with 100% coverage for seed commands" and "All tests pass: `pytest tests/permissions/test_seed_command.py -v`". Currently, **NO tests exist** for the seed commands.
+   - **Impact**: Cannot verify idempotency, permission correctness, role mappings, or force flag behavior
+   - **Required Action**: Create `tests/permissions/test_seed_command.py` with comprehensive test coverage
+
+2. **MAJOR: Missing Sensitive Permissions** - The spec requires marking **5+ sensitive permissions** specifically including `permissions.create_role`, `permissions.modify_role`, `permissions.delete_role`, `permissions.assign_role`. However, the implementation has **11 sensitive permissions** (which is good), but we need to verify the count includes ALL required ones.
+   - **Verification needed**: Confirm all 5 required permissions.* are marked sensitive
+   - **Current count**: 11 total (exceeds requirement ✓)
+
+3. **MINOR: Inconsistent Permission Count** - The spec mentions "17 base permissions" but with the wildcard `*` permission, we actually create **18 permissions** (17 base + 1 wildcard). This should be clarified in documentation.
+   - **Impact**: Minor documentation discrepancy
+   - **Action**: Update success message to clarify "17 base permissions + 1 wildcard"
+
+4. **MINOR: Unicode in warm_permission_cache.py** - Line 59 uses `✓` checkmark character which will cause `UnicodeEncodeError` on Windows consoles (same issue we fixed in seed_default_roles.py).
+   - **Impact**: Windows compatibility issue
+   - **Action**: Replace `✓` with "OK" or similar ASCII character
+
+### What Was Done Well
+
+✅ **Implementation Quality**:
+- Excellent use of `transaction.atomic()` for database consistency
+- Proper idempotency with `get_or_create` pattern
+- Clear, informative output messages with Django style formatting
+- Correct permission mappings for all 7 roles
+- Global Admin wildcard `*` permission correctly implemented
+- Organization Admin correctly gets all org.* and project.* permissions
+- `--force` flag implementation allows development reset
+
+✅ **Code Quality**:
+- Well-documented docstrings
+- Clean separation between permissions and roles creation
+- Proper use of select_related/prefetch_related in warm_permission_cache
+- Black formatted and Ruff compliant
+
+✅ **Manual Testing**:
+- Successfully created 17 base permissions
+- Successfully created 7 roles with correct mappings
+- Idempotency verified (ran twice, no errors)
+- All 11 sensitive permissions correctly marked
+
+### Action Items (Must Complete Before Re-Review)
+
+- [ ] **CRITICAL**: Create comprehensive test suite at `tests/permissions/test_seed_command.py`:
+  - [ ] Test idempotency (run seed twice, verify counts)
+  - [ ] Test force flag (modify role, run with --force, verify restored)
+  - [ ] Test permission creation (verify 17 base + 1 wildcard)
+  - [ ] Test role creation (verify 7 roles with correct scopes)
+  - [ ] Test permission mappings (each role has expected permissions)
+  - [ ] Test sensitive flags (11 permissions marked)
+  - [ ] Test Global Admin wildcard
+  - [ ] Test warm_permission_cache command
+  - [ ] Test warm_permission_cache with no global assignments
+  - [ ] Minimum 13 tests total with 100% coverage
+
+- [ ] **MAJOR**: Fix Unicode character in `warm_permission_cache.py` line 59:
+  - Replace `✓` with "OK" for Windows compatibility
+
+- [ ] **MINOR**: Update success messages to clarify permission count:
+  - Distinguish between "17 base permissions" and total count including wildcard
+
+- [ ] **DOCUMENTATION**: Add brief comment in seed_permissions() explaining why some permissions are marked sensitive (helps future maintainers)
+
+### Validation Checklist (For Re-Review)
+
+Before re-submitting for review, verify:
+- [ ] Run `pytest tests/permissions/test_seed_command.py -v` → All tests pass
+- [ ] Run `pytest tests/permissions/test_seed_command.py --cov=permissions.management.commands --cov-report=term-missing` → 100% coverage
+- [ ] Run `python manage.py seed_default_roles` twice → No errors, same counts
+- [ ] Run `python manage.py seed_default_roles --force` → Roles updated successfully
+- [ ] Run `python manage.py warm_permission_cache` → No Unicode errors on Windows
+- [ ] All code formatted with Black → `black --check .`
+- [ ] All code passes Ruff → `ruff check .`
 
 ---
 
