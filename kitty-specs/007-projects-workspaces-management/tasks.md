@@ -203,11 +203,11 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T021**: Add update and partial_update actions to ProjectViewSet with field validation
-- [ ] **T022**: Implement @action for archive: validate is_active=True, call project.archive(), return 204
-- [ ] **T023**: Implement @action for restore: validate is_active=False, call project.restore(), return 204
-- [ ] **T024**: Add read-only constraint to slug field in serializer (cannot be updated)
-- [ ] **T025**: Add tests for edge cases: archive archived project (400), restore active project (400)
+- [x] **T021**: Add update and partial_update actions to ProjectViewSet with field validation
+- [x] **T022**: Implement @action for archive: validate is_active=True, call project.archive(), return 204
+- [x] **T023**: Implement @action for restore: validate is_active=False, call project.restore(), return 204
+- [x] **T024**: Add read-only constraint to slug field in serializer (cannot be updated)
+- [x] **T025**: Add tests for edge cases: archive archived project (400), restore active project (400)
 
 **Implementation Sketch**:
 1. ProjectViewSet already has update/partial_update from ModelViewSet
