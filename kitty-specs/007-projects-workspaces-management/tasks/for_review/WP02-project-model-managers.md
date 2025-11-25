@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "copilot"
 shell_pid: "11524"
 ---
@@ -358,3 +358,4 @@ Project.all_objects.all()  # Both p1 and p2
 ## Activity Log
 
 - 2025-11-25T12:58:43Z – copilot – shell_pid=11524 – lane=doing – Started WP02: Project Model & Managers implementation
+- 2025-11-25T13:09:31Z – copilot – shell_pid=11524 – lane=for_review – Moved to for_review
