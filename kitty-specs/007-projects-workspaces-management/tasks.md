@@ -358,7 +358,8 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 - [x] All user stories validated with API tests
 - [x] Performance targets met: <1s list queries, <30s create
 - [x] Zero constitutional violations
-- [ ] Feature accepted and merged to main
+
+**Post-Acceptance**: Feature accepted and merged to main
 
 ---
 
