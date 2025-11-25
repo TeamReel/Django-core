@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "copilot"
 shell_pid: "11524"
 ---
@@ -41,3 +41,4 @@ All previous work packages
 ## Activity Log
 
 - 2025-11-25T14:44:04Z – copilot – shell_pid=11524 – lane=doing – Started implementation: Django admin, signals, and final polish
+- 2025-11-25T14:51:53Z – copilot – shell_pid=11524 – lane=for_review – Moved to for_review
