@@ -197,27 +197,27 @@
 
 ---
 
-## Work Package WP02: Authorization Engine & Caching (Priority: P0)
+## Work Package WP02: Authorization Engine & Caching (Priority: P0) ✅ DONE
 
 **Goal**: Implement permission evaluation logic with additive inheritance, Redis caching (<2ms), and graceful degradation per Constitution Principles V, VI.
 
 **Independent Test**: Permission checks return correct grant/deny based on role hierarchy, cache hit rate >90%, Redis failure falls back to database with <500ms latency.
 
-**Prompt**: `kitty-specs/008-hierarchical-access-control/tasks/planned/WP02-authorization-engine-and-caching.md`
+**Prompt**: `kitty-specs/008-hierarchical-access-control/tasks/for_review/WP02-authorization-engine-and-caching.md`
 
 **Phase**: Phase 1 - Core Implementation
 
 **Included Subtasks**:
-- [ ] [T010] Implement permission registry in `registry.py`: `register(permission, resource_type, is_sensitive)` with duplicate detection
-- [ ] [T011] Implement cache layer in `cache.py`: `get_cached_evaluation(user, permission, resource_id)` with Redis keys `perms:{user}:{perm}:{resource}:{id}`
-- [ ] [T012] Implement cache invalidation in `cache.py`: `invalidate_user_cache(user_id)`, `invalidate_role_cache(role_id)`
-- [ ] [T013] Implement evaluator in `evaluator.py`: `check_permission(user, permission, resource_id, resource_type)` with deny-by-default
-- [ ] [T014] Implement additive inheritance logic: union organization + project permissions, most permissive wins
-- [ ] [T015] Implement global superuser short-circuit: if user has global role with `*`, grant immediately
-- [ ] [T016] Implement batch check in `evaluator.py`: `check_permissions_batch(user, permissions_list)` returning dict
-- [ ] [T017] Add query optimization: `select_related('role', 'user', 'target_organization', 'target_project')` in managers
-- [ ] [T018] Implement graceful degradation: if Redis unavailable, fall back to database evaluation with logging
-- [ ] [T019] Add post-save/delete signals in `signals.py` for automatic cache invalidation on RoleAssignment/Role changes
+- [x] [T010] Implement permission registry in `registry.py`: `register(permission, resource_type, is_sensitive)` with duplicate detection
+- [x] [T011] Implement cache layer in `cache.py`: `get_cached_evaluation(user, permission, resource_id)` with Redis keys `perms:{user}:{perm}:{resource}:{id}`
+- [x] [T012] Implement cache invalidation in `cache.py`: `invalidate_user_cache(user_id)`, `invalidate_role_cache(role_id)`
+- [x] [T013] Implement evaluator in `evaluator.py`: `check_permission(user, permission, resource_id, resource_type)` with deny-by-default
+- [x] [T014] Implement additive inheritance logic: union organization + project permissions, most permissive wins
+- [x] [T015] Implement global superuser short-circuit: if user has global role with `*`, grant immediately
+- [x] [T016] Implement batch check in `evaluator.py`: `check_permissions_batch(user, permissions_list)` returning dict
+- [x] [T017] Add query optimization: `select_related('role', 'user', 'target_organization', 'target_project')` in managers
+- [x] [T018] Implement graceful degradation: if Redis unavailable, fall back to database evaluation with logging
+- [x] [T019] Add post-save/delete signals in `signals.py` for automatic cache invalidation on RoleAssignment/Role changes
 
 **Implementation Sketch**:
 1. Create singleton `PermissionRegistry` class with thread-safe registration using `threading.Lock`
