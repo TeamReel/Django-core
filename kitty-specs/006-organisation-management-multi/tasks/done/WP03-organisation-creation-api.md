@@ -1,7 +1,9 @@
 ---
 work_package_id: WP03
 title: Organisation Creation API (User Story 1)
-lane: "for_review"
+lane: "done"
+review_status: "approved without changes"
+reviewed_by: "claude-reviewer"
 subtasks: [T015, T016, T017, T018, T019, T020, T021]
 priority: P1
 user_story: US1
@@ -113,3 +115,4 @@ curl http://localhost:8000/api/organisations/{id}/ \
 
 - 2025-11-25T08:27:59Z – system – shell_pid= – lane=doing – Moved to doing
 - 2025-11-25T08:30:34Z – system – shell_pid= – lane=for_review – Moved to for_review
+- 2025-11-25T08:33:35Z – claude-reviewer – shell_pid=11524 – lane=done – Review complete: Approved without changes. All Definition of Done items verified.
