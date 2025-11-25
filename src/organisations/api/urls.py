@@ -1,9 +1,12 @@
 """
-API URL configuration for organisations endpoints.
-
-Will be implemented in WP03.
+URL configuration for organisations API.
 """
 
-urlpatterns = [
-    # API routes will be added in WP03
-]
+from rest_framework.routers import DefaultRouter
+
+from .views import OrganisationViewSet
+
+router = DefaultRouter()
+router.register("", OrganisationViewSet, basename="organisation")
+
+urlpatterns = router.urls
