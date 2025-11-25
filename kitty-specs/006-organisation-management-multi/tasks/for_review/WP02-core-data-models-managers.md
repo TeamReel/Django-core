@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: Core Data Models & Managers
-lane: "doing"
+lane: "for_review"
 subtasks:
   - T007
   - T008
@@ -469,3 +469,4 @@ assert membership.is_active == False
 ## Activity Log
 
 - 2025-11-25T07:56:35Z – claude – shell_pid=11524 – lane=doing – Started implementation of core data models and managers
+- 2025-11-25T08:06:13Z – claude – shell_pid=11524 – lane=for_review – Moved to for_review
