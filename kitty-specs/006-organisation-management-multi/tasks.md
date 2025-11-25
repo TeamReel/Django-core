@@ -338,13 +338,13 @@ Subtasks are referenced by ID (T001, T002, etc.) and organized into work package
 
 **Subtasks**:
 
-- [ ] **T039**: Create rate limiting utility in `organisations/ratelimit.py` with `check_rate_limit(key, limit, window)` function using cache.incr()
-- [ ] **T040**: Add rate limit check to OrganisationViewSet.create() before org creation (5 per user per day)
-- [ ] **T041**: Add rate limit check to MembershipViewSet.create() before invitation (20 per org per hour)
-- [ ] **T042**: Implement rate limit response with 429 status, Retry-After header, and descriptive error message
-- [ ] **T043**: Create `organisations/metrics.py` with Prometheus gauges and counters using prometheus_client
-- [ ] **T044**: Create `organisations/signals.py` to connect Django signals (post_save, post_delete) to metric updates
-- [ ] **T045**: Verify /metrics endpoint exposes custom organisation metrics in Prometheus format
+- [x] **T039**: Create rate limiting utility in `organisations/ratelimit.py` with `check_rate_limit(key, limit, window)` function using cache.incr()
+- [x] **T040**: Add rate limit check to OrganisationViewSet.create() before org creation (5 per user per day)
+- [x] **T041**: Add rate limit check to MembershipViewSet.create() before invitation (20 per org per hour)
+- [x] **T042**: Implement rate limit response with 429 status, Retry-After header, and descriptive error message
+- [x] **T043**: Create `organisations/metrics.py` with Prometheus gauges and counters using prometheus_client
+- [x] **T044**: Create `organisations/signals.py` to connect Django signals (post_save, post_delete) to metric updates
+- [x] **T045**: Verify /metrics endpoint exposes custom organisation metrics in Prometheus format
 
 **Implementation Sketch**:
 1. Create function that uses cache.add() for first hit (with TTL), cache.incr() for subsequent
