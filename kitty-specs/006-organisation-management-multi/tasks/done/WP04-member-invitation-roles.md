@@ -8,6 +8,8 @@ subtasks: [T022, T023, T024, T025, T026, T027]
 priority: P2
 user_story: US2
 agent: "system"
+assignee: "claude"
+shell_pid: "11524"
 history:
   - date: 2025-11-24
     action: created

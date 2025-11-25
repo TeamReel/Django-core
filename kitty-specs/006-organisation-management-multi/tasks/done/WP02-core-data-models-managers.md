@@ -16,6 +16,7 @@ subtasks:
 priority: Critical
 user_story: All
 agent: "claude"
+assignee: "claude"
 shell_pid: "11524"
 history:
   - date: 2025-11-24

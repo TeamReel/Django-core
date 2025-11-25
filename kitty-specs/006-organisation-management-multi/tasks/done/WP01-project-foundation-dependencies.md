@@ -12,6 +12,7 @@ subtasks:
 priority: Critical
 user_story: Setup
 agent: "claude"
+assignee: "claude"
 shell_pid: "11524"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"

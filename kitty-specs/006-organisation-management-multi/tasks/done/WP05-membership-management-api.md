@@ -8,6 +8,7 @@ subtasks: [T028, T029, T030, T031, T032]
 priority: P3
 user_story: US3
 agent: "claude-reviewer"
+assignee: "claude"
 shell_pid: "11524"
 history:
   - date: 2025-11-24
