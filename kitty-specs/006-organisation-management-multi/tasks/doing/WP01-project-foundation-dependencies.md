@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Project Foundation & Dependencies
-lane: planned
+lane: "doing"
 subtasks:
   - T001
   - T002
@@ -11,6 +11,8 @@ subtasks:
   - T006
 priority: Critical
 user_story: Setup
+agent: "claude"
+shell_pid: "11524"
 history:
   - date: 2025-11-24
     action: created
@@ -277,3 +279,7 @@ The project follows the Django Core-App Constitution principles: product-agnosti
 - Research: [research.md](../research.md) - Q1 (app structure), Q2 (Redis), Q3 (Prometheus)
 - Quickstart: [quickstart.md](../quickstart.md) - Redis setup, configuration examples
 - Plan: [plan.md](../plan.md) - Technical context, dependencies
+
+## Activity Log
+
+- 2025-11-25T07:41:42Z – claude – shell_pid=11524 – lane=doing – Started implementation of foundation and dependencies
