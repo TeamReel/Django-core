@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "security_baseline",
     "organisations.apps.OrganisationsConfig",
     "projects.apps.ProjectsConfig",
+    "permissions.apps.PermissionsConfig",  # Hierarchical RBAC system
 ]
 
 MIDDLEWARE = [
@@ -206,3 +207,6 @@ SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
 # Django's default_token_generator uses PASSWORD_RESET_TIMEOUT setting
 # Token expires after 1 hour (3600 seconds)
 PASSWORD_RESET_TIMEOUT = 3600  # 1 hour in seconds
+
+# Permissions System Configuration
+PERMISSIONS_CACHE_TTL = 300  # 5 minutes (for Redis cache in permission evaluations)
