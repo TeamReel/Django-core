@@ -53,10 +53,10 @@ class Command(BaseCommand):
                 assignment.user.email if hasattr(assignment, "user") else assignment.user_id
             )
             self.stdout.write(
-                f"  ✓ Warmed cache for user: {user_email} "
+                f"  OK Warmed cache for user: {user_email} "
                 f"({len(common_permissions)} permissions)"
             )
 
         self.stdout.write(
-            self.style.SUCCESS(f"✓ Cache warming complete: {cache_count} evaluations cached")
+            self.style.SUCCESS(f"OK Cache warming complete: {cache_count} evaluations cached")
         )

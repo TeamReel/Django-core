@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender=RoleAssignment)
-def invalidate_cache_on_assignment_created(_sender, instance, created, **_kwargs):
+def invalidate_cache_on_assignment_created(sender, instance, created, **kwargs):
     """Invalidate user cache when role assignment created or updated."""
     if created:
         logger.info("Role assigned: invalidating cache for user %s", instance.user_id)

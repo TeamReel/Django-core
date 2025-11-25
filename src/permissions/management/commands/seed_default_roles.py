@@ -43,7 +43,11 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Default permissions and roles seeded successfully!"))
 
     def seed_permissions(self):
-        """Create the 17 base permissions required by the system."""
+        """Create the 17 base permissions required by the system.
+
+        Sensitive permissions (is_sensitive=True) trigger audit logging for security-critical
+        operations like user removal, role assignments, and deletions.
+        """
         self.stdout.write(self.style.NOTICE("\nCreating base permissions..."))
 
         # Define permissions: (permission_string, resource_type, description, is_sensitive)
@@ -174,7 +178,13 @@ class Command(BaseCommand):
                     self.style.WARNING(f"  [=] Permission already exists: {perm_str}")
                 )
 
-        self.stdout.write(self.style.SUCCESS(f"\nCreated {created_count} new permissions"))
+        total_perms = Permission.objects.count()
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"\nCreated {created_count} new base permissions "
+                f"(Total: {total_perms} including wildcard)"
+            )
+        )
 
     def seed_roles(self, force=False):
         """Create the 7 default roles with their permission assignments."""
