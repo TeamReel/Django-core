@@ -1,7 +1,7 @@
 ---
 work_package_id: WP06
 title: Organisation Viewing & Updates (User Stories 4-5)
-lane: "doing"
+lane: "for_review"
 subtasks: [T033, T034, T035, T036, T037, T038]
 priority: P4-P5
 user_story: US4, US5
@@ -79,3 +79,4 @@ Filter organisation list to user's memberships, add pagination, enable profile u
 
 - 2025-11-25T09:21:39Z – claude – shell_pid=11524 – lane=doing – Started implementation
 - 2025-11-25T09:33:25Z – claude – shell_pid=11524 – lane=doing – Completed implementation
+- 2025-11-25T09:27:25Z – claude – shell_pid=11524 – lane=for_review – Ready for review
