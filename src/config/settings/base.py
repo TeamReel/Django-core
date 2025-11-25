@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "constitution_engine",
     "security_baseline",
     "organisations.apps.OrganisationsConfig",
+    "projects.apps.ProjectsConfig",
 ]
 
 MIDDLEWARE = [
