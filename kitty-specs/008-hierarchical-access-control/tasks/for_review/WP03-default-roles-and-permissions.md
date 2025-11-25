@@ -14,11 +14,11 @@ subtasks:
   - "T030"
 title: "Default Roles & Permissions"
 phase: "Phase 2 - Core Implementation"
-lane: "doing"
+lane: "for_review"
 assignee: "GitHub Copilot"
 agent: "claude"
 shell_pid: "11524"
-review_status: "acknowledged"
+review_status: "feedback_addressed"
 reviewed_by: "claude"
 history:
   - timestamp: "2025-11-25T00:00:00Z"
@@ -46,6 +46,11 @@ history:
     agent: "claude"
     shell_pid: "11524"
     action: "Acknowledged review feedback - addressing test suite, Unicode fix, documentation"
+  - timestamp: "2025-11-25T23:30:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "11524"
+    action: "All review feedback addressed - 19 tests created (100% coverage), Unicode fixed, documentation added"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP03-default-roles-and-permissions.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP03-default-roles-and-permissions.md)*
 
@@ -115,36 +120,36 @@ history:
 
 ### Action Items (Must Complete Before Re-Review)
 
-- [ ] **CRITICAL**: Create comprehensive test suite at `tests/permissions/test_seed_command.py`:
-  - [ ] Test idempotency (run seed twice, verify counts)
-  - [ ] Test force flag (modify role, run with --force, verify restored)
-  - [ ] Test permission creation (verify 17 base + 1 wildcard)
-  - [ ] Test role creation (verify 7 roles with correct scopes)
-  - [ ] Test permission mappings (each role has expected permissions)
-  - [ ] Test sensitive flags (11 permissions marked)
-  - [ ] Test Global Admin wildcard
-  - [ ] Test warm_permission_cache command
-  - [ ] Test warm_permission_cache with no global assignments
-  - [ ] Minimum 13 tests total with 100% coverage
+- [X] **CRITICAL**: Create comprehensive test suite at `tests/permissions/test_seed_command.py`:
+  - [X] Test idempotency (run seed twice, verify counts)
+  - [X] Test force flag (modify role, run with --force, verify restored)
+  - [X] Test permission creation (verify 17 base + 1 wildcard)
+  - [X] Test role creation (verify 7 roles with correct scopes)
+  - [X] Test permission mappings (each role has expected permissions)
+  - [X] Test sensitive flags (11 permissions marked)
+  - [X] Test Global Admin wildcard
+  - [X] Test warm_permission_cache command
+  - [X] Test warm_permission_cache with no global assignments
+  - [X] Minimum 13 tests total with 100% coverage → **19 tests created, 100% coverage achieved**
 
-- [ ] **MAJOR**: Fix Unicode character in `warm_permission_cache.py` line 59:
-  - Replace `✓` with "OK" for Windows compatibility
+- [X] **MAJOR**: Fix Unicode character in `warm_permission_cache.py` line 59:
+  - Replace `✓` with "OK" for Windows compatibility → **DONE**
 
-- [ ] **MINOR**: Update success messages to clarify permission count:
-  - Distinguish between "17 base permissions" and total count including wildcard
+- [X] **MINOR**: Update success messages to clarify permission count:
+  - Distinguish between "17 base permissions" and total count including wildcard → **DONE**
 
-- [ ] **DOCUMENTATION**: Add brief comment in seed_permissions() explaining why some permissions are marked sensitive (helps future maintainers)
+- [X] **DOCUMENTATION**: Add brief comment in seed_permissions() explaining why some permissions are marked sensitive (helps future maintainers) → **DONE**
 
 ### Validation Checklist (For Re-Review)
 
 Before re-submitting for review, verify:
-- [ ] Run `pytest tests/permissions/test_seed_command.py -v` → All tests pass
-- [ ] Run `pytest tests/permissions/test_seed_command.py --cov=permissions.management.commands --cov-report=term-missing` → 100% coverage
-- [ ] Run `python manage.py seed_default_roles` twice → No errors, same counts
-- [ ] Run `python manage.py seed_default_roles --force` → Roles updated successfully
-- [ ] Run `python manage.py warm_permission_cache` → No Unicode errors on Windows
-- [ ] All code formatted with Black → `black --check .`
-- [ ] All code passes Ruff → `ruff check .`
+- [X] Run `pytest tests/permissions/test_seed_command.py -v` → All tests pass **✓ 19 passed**
+- [X] Run `pytest tests/permissions/test_seed_command.py --cov=permissions.management.commands --cov-report=term-missing` → 100% coverage **✓ 100% achieved**
+- [X] Run `python manage.py seed_default_roles` twice → No errors, same counts **✓ Verified**
+- [X] Run `python manage.py seed_default_roles --force` → Roles updated successfully **✓ Verified**
+- [X] Run `python manage.py warm_permission_cache` → No Unicode errors on Windows **✓ Verified**
+- [X] All code formatted with Black → `black --check .` **✓ Passed**
+- [X] All code passes Ruff → `ruff check .` **✓ Passed**
 
 ---
 
