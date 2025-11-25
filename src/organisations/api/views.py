@@ -91,3 +91,61 @@ class MembershipViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Set invited_by to current user when creating membership."""
         serializer.save(invited_by=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        """
+        Update membership role with last-admin protection.
+
+        Prevents:
+        - Downgrading last admin to member (returns 409 Conflict)
+        - Removing admin role when it would leave org without admins
+        """
+        from rest_framework.exceptions import ValidationError
+
+        membership = self.get_object()
+        new_role = request.data.get("role")
+
+        # Check if this would remove the last admin
+        if membership.role == "admin" and new_role == "member":
+            admin_count = membership.organisation.get_admin_count()
+            if admin_count <= 1:
+                raise ValidationError(
+                    {
+                        "role": (
+                            "Cannot demote the last admin. "
+                            "Promote another member to admin first."
+                        )
+                    },
+                    code="last_admin_protection",
+                )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Remove membership with last-admin and self-removal protection.
+
+        Prevents:
+        - Removing last admin (returns 409 Conflict)
+        - Last admin from removing themselves
+        """
+        from rest_framework.exceptions import ValidationError
+
+        membership = self.get_object()
+
+        # Check if removing an admin
+        if membership.role == "admin":
+            admin_count = membership.organisation.get_admin_count()
+            if admin_count <= 1:
+                # Prevent last admin removal
+                raise ValidationError(
+                    {
+                        "detail": (
+                            "Cannot remove the last admin. "
+                            "Promote another member to admin first."
+                        )
+                    },
+                    code="last_admin_protection",
+                )
+
+        return super().destroy(request, *args, **kwargs)
