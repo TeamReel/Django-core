@@ -25,11 +25,7 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("api/v1/", include("accounts.api.urls")),
     path("api/organisations/", include("organisations.api.urls")),
-    # Projects API (dual routing - will be implemented in WP03)
-    # path(
-    #     "api/organisations/<int:organisation_id>/projects/",
-    #     include("projects.api.urls"),  # Nested
-    # ),
-    # path("api/projects/", include("projects.api.urls")),  # Top-level
+    # Projects API - top-level routes
+    path("api/", include("projects.api.urls")),
     path("", include("django_prometheus.urls")),  # Exposes /metrics endpoint
 ]
