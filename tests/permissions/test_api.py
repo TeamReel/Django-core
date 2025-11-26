@@ -732,3 +732,486 @@ class TestHasPermissionClass:
 
         assert "projects.delete" in permission_class.message
         assert "Permission denied" in permission_class.message
+
+
+# ============================================================================
+# Pagination Tests
+# ============================================================================
+
+
+@pytest.mark.django_db
+class TestRolePagination:
+    """Test pagination for Role list endpoint."""
+
+    def test_pagination_default_page_size(self, api_client, admin_user):
+        """Default pagination should return correct page size."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        # Create 30 roles
+        for i in range(30):
+            Role.objects.create(name=f"Role {i}", scope=ScopeChoices.GLOBAL)
+
+        response = api_client.get("/api/permissions/roles/")
+        assert response.status_code == 200
+        assert "results" in response.data
+        assert "count" in response.data
+        assert response.data["count"] >= 30
+
+    def test_pagination_with_custom_page_size(self, api_client, admin_user):
+        """Should respect custom page_size parameter."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        # Create 15 roles
+        for i in range(15):
+            Role.objects.create(name=f"Role {i}", scope=ScopeChoices.GLOBAL)
+
+        response = api_client.get("/api/permissions/roles/?page_size=5")
+        assert response.status_code == 200
+        assert len(response.data["results"]) <= 5
+
+    def test_pagination_next_page(self, api_client, admin_user):
+        """Should provide next page link when more results exist."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        # Create enough roles to span multiple pages
+        for i in range(25):
+            Role.objects.create(name=f"Role {i}", scope=ScopeChoices.GLOBAL)
+
+        response = api_client.get("/api/permissions/roles/?page_size=10")
+        assert response.status_code == 200
+        assert response.data["next"] is not None
+
+    def test_pagination_previous_page(self, api_client, admin_user):
+        """Should provide previous page link on subsequent pages."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        # Create enough roles to span multiple pages
+        for i in range(25):
+            Role.objects.create(name=f"Role {i}", scope=ScopeChoices.GLOBAL)
+
+        response = api_client.get("/api/permissions/roles/?page_size=10&page=2")
+        assert response.status_code == 200
+        assert response.data["previous"] is not None
+
+    def test_pagination_last_page(self, api_client, admin_user):
+        """Last page should have no next link."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        # Create exactly 20 roles
+        for i in range(20):
+            Role.objects.create(name=f"Role {i}", scope=ScopeChoices.GLOBAL)
+
+        response = api_client.get("/api/permissions/roles/?page_size=20")
+        assert response.status_code == 200
+        assert response.data["next"] is None
+
+
+# ============================================================================
+# Edge Case Tests
+# ============================================================================
+
+
+@pytest.mark.django_db
+class TestRoleEdgeCases:
+    """Test edge cases for Role API."""
+
+    def test_create_role_with_empty_name(self, api_client, admin_user):
+        """Creating role with empty name should fail."""
+        modify_perm = Permission.objects.create(
+            permission="permissions.modify_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(modify_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        data = {"name": "", "scope": "global", "permissions": []}
+
+        response = api_client.post("/api/permissions/roles/", data, format="json")
+        assert response.status_code == 400
+        assert "name" in response.data
+
+    def test_create_role_with_very_long_name(self, api_client, admin_user):
+        """Creating role with excessively long name should fail."""
+        modify_perm = Permission.objects.create(
+            permission="permissions.modify_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(modify_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        data = {"name": "A" * 256, "scope": "global", "permissions": []}
+
+        response = api_client.post("/api/permissions/roles/", data, format="json")
+        assert response.status_code == 400
+
+    def test_retrieve_nonexistent_role(self, api_client, admin_user):
+        """Retrieving non-existent role should return 404."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        fake_uuid = "00000000-0000-0000-0000-000000000000"
+        response = api_client.get(f"/api/permissions/roles/{fake_uuid}/")
+        assert response.status_code == 404
+
+    def test_delete_nonexistent_role(self, api_client, admin_user):
+        """Deleting non-existent role should return 404."""
+        modify_perm = Permission.objects.create(
+            permission="permissions.modify_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(modify_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        fake_uuid = "00000000-0000-0000-0000-000000000000"
+        response = api_client.delete(f"/api/permissions/roles/{fake_uuid}/")
+        assert response.status_code == 404
+
+    def test_list_roles_empty_database(self, api_client, admin_user):
+        """Listing roles when none exist should return empty list."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        # Delete the admin role fixture creates
+        Role.objects.all().delete()
+
+        response = api_client.get("/api/permissions/roles/")
+        assert response.status_code == 200
+        assert len(response.data["results"]) == 0
+
+    def test_filter_with_invalid_scope(self, api_client, admin_user):
+        """Filtering with invalid scope should return empty or error."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        response = api_client.get("/api/permissions/roles/?scope=invalid")
+        assert response.status_code == 200
+        # Invalid scope filter should return no results
+        assert len(response.data["results"]) == 0
+
+    def test_search_with_special_characters(self, api_client, admin_user):
+        """Search should handle special characters gracefully."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        Role.objects.create(name="Test@Role#123", scope=ScopeChoices.GLOBAL)
+
+        response = api_client.get("/api/permissions/roles/?search=@Role#")
+        assert response.status_code == 200
+
+    def test_ordering_with_invalid_field(self, api_client, admin_user):
+        """Ordering by invalid field should be ignored or return error."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        response = api_client.get("/api/permissions/roles/?ordering=invalid_field")
+        assert response.status_code == 200  # Should not crash
+
+
+@pytest.mark.django_db
+class TestRoleAssignmentEdgeCases:
+    """Test edge cases for RoleAssignment API."""
+
+    def test_create_duplicate_assignment(self, api_client, admin_user):
+        """Creating duplicate assignment should fail or be idempotent."""
+        assign_perm = Permission.objects.create(
+            permission="permissions.assign_role", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(assign_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        user = User.objects.create(email="user@example.com")
+        role = Role.objects.create(name="Test Role", scope=ScopeChoices.GLOBAL)
+
+        data = {
+            "user": str(user.id),
+            "role": str(role.id),
+            "scope": "global",
+            "target_organization": None,
+            "target_project": None,
+        }
+
+        # Create first assignment
+        response1 = api_client.post(
+            "/api/permissions/role-assignments/", data, format="json"
+        )
+        assert response1.status_code == 201
+
+        # Try to create duplicate
+        response2 = api_client.post(
+            "/api/permissions/role-assignments/", data, format="json"
+        )
+        # Should either fail with 400 or succeed idempotently
+        assert response2.status_code in [201, 400]
+
+    def test_delete_nonexistent_assignment(self, api_client, admin_user):
+        """Deleting non-existent assignment should return 404."""
+        assign_perm = Permission.objects.create(
+            permission="permissions.assign_role", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(assign_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        fake_uuid = "00000000-0000-0000-0000-000000000000"
+        response = api_client.delete(f"/api/permissions/role-assignments/{fake_uuid}/")
+        assert response.status_code == 404
+
+    def test_filter_by_nonexistent_user(self, api_client, admin_user):
+        """Filtering by non-existent user should return empty list."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        response = api_client.get("/api/permissions/role-assignments/?user=99999")
+        assert response.status_code == 200
+        assert len(response.data["results"]) == 0
+
+    def test_filter_by_nonexistent_role(self, api_client, admin_user):
+        """Filtering by non-existent role should return empty list."""
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        fake_uuid = "00000000-0000-0000-0000-000000000000"
+        response = api_client.get(
+            f"/api/permissions/role-assignments/?role={fake_uuid}"
+        )
+        assert response.status_code == 200
+        assert len(response.data["results"]) == 0
+
+
+# ============================================================================
+# Integration Tests
+# ============================================================================
+
+
+@pytest.mark.django_db
+class TestRoleIntegration:
+    """Integration tests for complete Role workflows."""
+
+    def test_full_crud_workflow(self, api_client, admin_user):
+        """Test complete CRUD lifecycle for a role."""
+        # Setup permissions
+        view_perm = Permission.objects.create(
+            permission="permissions.view_roles", resource_type="permission"
+        )
+        modify_perm = Permission.objects.create(
+            permission="permissions.modify_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(view_perm, modify_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        # CREATE
+        perm = Permission.objects.create(
+            permission="test.action", resource_type="test"
+        )
+        create_data = {
+            "name": "Integration Test Role",
+            "scope": "global",
+            "permissions": [str(perm.id)],
+        }
+        create_response = api_client.post(
+            "/api/permissions/roles/", create_data, format="json"
+        )
+        assert create_response.status_code == 201
+        role_id = create_response.data["id"]
+
+        # READ
+        read_response = api_client.get(f"/api/permissions/roles/{role_id}/")
+        assert read_response.status_code == 200
+        assert read_response.data["name"] == "Integration Test Role"
+
+        # UPDATE
+        update_data = {
+            "name": "Updated Integration Role",
+            "scope": "global",
+            "permissions": [str(perm.id)],
+        }
+        update_response = api_client.put(
+            f"/api/permissions/roles/{role_id}/", update_data, format="json"
+        )
+        assert update_response.status_code == 200
+        assert update_response.data["name"] == "Updated Integration Role"
+
+        # DELETE
+        delete_response = api_client.delete(f"/api/permissions/roles/{role_id}/")
+        assert delete_response.status_code == 204
+
+        # VERIFY DELETION
+        verify_response = api_client.get(f"/api/permissions/roles/{role_id}/")
+        assert verify_response.status_code == 404
+
+    def test_role_with_multiple_permissions(self, api_client, admin_user):
+        """Test creating and managing role with multiple permissions."""
+        modify_perm = Permission.objects.create(
+            permission="permissions.modify_roles", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(modify_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        # Create multiple permissions
+        perms = [
+            Permission.objects.create(
+                permission=f"test.action{i}", resource_type="test"
+            )
+            for i in range(5)
+        ]
+
+        data = {
+            "name": "Multi-Permission Role",
+            "scope": "global",
+            "permissions": [str(p.id) for p in perms],
+        }
+
+        response = api_client.post("/api/permissions/roles/", data, format="json")
+        assert response.status_code == 201
+        assert len(response.data["permissions"]) == 5
+
+
+@pytest.mark.django_db
+class TestRoleAssignmentIntegration:
+    """Integration tests for complete RoleAssignment workflows."""
+
+    def test_assign_and_revoke_workflow(self, api_client, admin_user):
+        """Test complete assign and revoke workflow."""
+        assign_perm = Permission.objects.create(
+            permission="permissions.assign_role", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(assign_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        user = User.objects.create(email="test@example.com")
+        role = Role.objects.create(name="Test Role", scope=ScopeChoices.GLOBAL)
+
+        # ASSIGN
+        assign_data = {
+            "user": str(user.id),
+            "role": str(role.id),
+            "scope": "global",
+            "target_organization": None,
+            "target_project": None,
+        }
+        assign_response = api_client.post(
+            "/api/permissions/role-assignments/", assign_data, format="json"
+        )
+        assert assign_response.status_code == 201
+        assignment_id = assign_response.data["id"]
+
+        # VERIFY
+        verify_response = api_client.get(
+            f"/api/permissions/role-assignments/?user={user.id}"
+        )
+        assert verify_response.status_code == 200
+        assert len(verify_response.data["results"]) >= 1
+
+        # REVOKE
+        revoke_response = api_client.delete(
+            f"/api/permissions/role-assignments/{assignment_id}/"
+        )
+        assert revoke_response.status_code == 204
+
+        # VERIFY REVOCATION
+        final_response = api_client.get(
+            f"/api/permissions/role-assignments/?user={user.id}"
+        )
+        assert final_response.status_code == 200
+        # Assignment should be gone
+        assert (
+            str(assignment_id) not in [r["id"] for r in final_response.data["results"]]
+        )
+
+    def test_multiple_assignments_same_user(self, api_client, admin_user):
+        """Test assigning multiple roles to same user."""
+        assign_perm = Permission.objects.create(
+            permission="permissions.assign_role", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(assign_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        user = User.objects.create(email="multi@example.com")
+        roles = [
+            Role.objects.create(name=f"Role {i}", scope=ScopeChoices.GLOBAL)
+            for i in range(3)
+        ]
+
+        # Assign all roles
+        for role in roles:
+            data = {
+                "user": str(user.id),
+                "role": str(role.id),
+                "scope": "global",
+                "target_organization": None,
+                "target_project": None,
+            }
+            response = api_client.post(
+                "/api/permissions/role-assignments/", data, format="json"
+            )
+            assert response.status_code == 201
+
+        # Verify all assignments
+        response = api_client.get(f"/api/permissions/role-assignments/?user={user.id}")
+        assert response.status_code == 200
+        assert len(response.data["results"]) >= 3
+
+    def test_organizational_scope_workflow(self, api_client, admin_user):
+        """Test role assignment with organization scope."""
+        assign_perm = Permission.objects.create(
+            permission="permissions.assign_role", resource_type="permission"
+        )
+        admin_user.role_assignments.first().role.permissions.add(assign_perm)
+        api_client.force_authenticate(user=admin_user)
+
+        user = User.objects.create(email="org@example.com")
+        creator = User.objects.create(email="creator@example.com")
+        role = Role.objects.create(name="Org Role", scope=ScopeChoices.ORGANIZATION)
+        org = Organisation.objects.create(name="Test Org", creator=creator)
+
+        data = {
+            "user": str(user.id),
+            "role": str(role.id),
+            "scope": "organization",
+            "target_organization": str(org.id),
+            "target_project": None,
+        }
+
+        response = api_client.post(
+            "/api/permissions/role-assignments/", data, format="json"
+        )
+        assert response.status_code == 201
+        assert response.data["target_organization"] == str(org.id)
+        assert response.data["scope"] == "organization"
