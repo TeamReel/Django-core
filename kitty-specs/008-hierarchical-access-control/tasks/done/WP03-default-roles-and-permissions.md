@@ -14,7 +14,7 @@ subtasks:
   - "T030"
 title: "Default Roles & Permissions"
 phase: "Phase 2 - Core Implementation"
-lane: "doing"
+lane: "done"
 assignee: "GitHub Copilot"
 agent: "claude"
 shell_pid: "43840"
@@ -1179,3 +1179,4 @@ python manage.py shell
 4. Run `.kittify/scripts/powershell/tasks-move-to-lane.ps1 008-hierarchical-access-control WP03 <lane>` to move the prompt, update metadata, and append history in one step
 5. Commit the change with message: `chore(008): Move WP03 to <lane>`
 - 2025-11-26T18:54:25Z – claude – shell_pid=43840 – lane=doing – Started implementation of default roles and permissions
+- 2025-11-26T18:55:24Z – claude – shell_pid=43840 – lane=done – WP03 already approved - returning to done
