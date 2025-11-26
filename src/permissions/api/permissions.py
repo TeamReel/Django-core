@@ -5,15 +5,15 @@ This module provides custom Django REST Framework permission classes
 that integrate with the hierarchical access control system.
 
 Usage Examples:
-    
+
     Basic usage in a ViewSet:
         from rest_framework import viewsets
         from rest_framework.permissions import IsAuthenticated
         from permissions.api.permissions import HasPermission
-        
+
         class ProjectViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated, HasPermission('projects.view')]
-            
+
             def get_permissions(self):
                 if self.action == 'create':
                     return [IsAuthenticated(), HasPermission('projects.create')()]
@@ -22,7 +22,7 @@ Usage Examples:
                 elif self.action == 'destroy':
                     return [IsAuthenticated(), HasPermission('projects.delete')()]
                 return super().get_permissions()
-    
+
     Multiple permissions (requires all):
         class SecureViewSet(viewsets.ModelViewSet):
             permission_classes = [
@@ -30,7 +30,7 @@ Usage Examples:
                 HasPermission('resource.view'),
                 HasPermission('resource.access'),
             ]
-    
+
     Per-action permissions:
         @action(detail=True, methods=['post'])
         def archive(self, request, pk=None):
