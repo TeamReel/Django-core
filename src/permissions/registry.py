@@ -12,11 +12,15 @@ Usage:
     )
 """
 
+import inspect
+import logging
 import re
 import threading
 from typing import Dict
 
 from django.core.exceptions import ImproperlyConfigured
+
+logger = logging.getLogger(__name__)
 
 
 class PermissionRegistry:
@@ -58,7 +62,7 @@ class PermissionRegistry:
                 'reports.generate', 'report', 'Generate reports', False
             )
         """
-        # Validate format
+        # Validate format: must not contain digits
         if not re.match(r"^[a-z_]+\.[a-z_]+$", permission):
             raise ImproperlyConfigured(
                 f"Permission '{permission}' must match format 'resource.action' "
@@ -69,12 +73,21 @@ class PermissionRegistry:
             if permission in self._permissions:
                 raise ImproperlyConfigured(f"Permission '{permission}' is already registered")
 
+            # Track which app registered this permission
+            caller_frame = inspect.currentframe()
+            caller_module = "unknown"
+            if caller_frame and caller_frame.f_back and caller_frame.f_back.f_back:
+                caller_module = caller_frame.f_back.f_back.f_globals.get("__name__", "unknown")
+
             self._permissions[permission] = {
                 "permission": permission,
                 "resource_type": resource_type,
                 "description": description,
                 "is_sensitive": is_sensitive,
+                "registered_by": caller_module,
             }
+
+            logger.info("Registered permission: %s (from %s)", permission, caller_module)
 
     def get(self, permission: str) -> dict | None:
         """Get metadata for a registered permission."""
@@ -84,15 +97,17 @@ class PermissionRegistry:
         """Check if permission is registered."""
         return permission in self._permissions
 
-    def get_by_resource_type(self, resource_type: str) -> list[dict]:
+    def get_by_resource_type(self, resource_type: str) -> list[str]:
         """Get all permissions for a resource type."""
         return [
-            perm for perm in self._permissions.values() if perm["resource_type"] == resource_type
+            perm_str
+            for perm_str, perm in self._permissions.items()
+            if perm["resource_type"] == resource_type
         ]
 
-    def all(self) -> Dict[str, dict]:
+    def all(self) -> list[str]:
         """Get all registered permissions (read-only)."""
-        return self._permissions.copy()
+        return list(self._permissions.keys())
 
     def clear(self) -> None:
         """Clear all registered permissions (for testing)."""
