@@ -9,10 +9,10 @@ subtasks:
   - "T062"
 title: "Registry & AppConfig"
 phase: "Phase 6 - Extensibility"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "43840"
 review_status: ""
 reviewed_by: ""
 history:
@@ -373,3 +373,7 @@ def test_downstream_app_can_register():
 ✅ Check thread safety (lock around shared state)
 ✅ Confirm clear error messages for validation failures
 ✅ Validate documentation shows complete example
+
+## Activity Log
+
+- 2025-11-26T20:32:57Z – claude – shell_pid=43840 – lane=doing – Started implementation of Registry & AppConfig
