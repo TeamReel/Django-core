@@ -58,16 +58,16 @@
 
 ### Phase 3: DRF API & Integration
 
-- **[T031] [P]** Create `RoleSerializer` with nested permissions, validation for scope matching
-- **[T032] [P]** Create `RoleAssignmentSerializer` with validation: user exists, role exists, scope+targets valid
-- **[T033] [P]** Create `RoleViewSet` with list/retrieve/create/update/partial_update/destroy, permission check `permissions.modify_role`
-- **[T034] [P]** Create `RoleAssignmentViewSet` with create/destroy, permission check `permissions.assign_role`
-- **[T035] [P]** Implement custom DRF permission class `HasPermission(permission_string)` calling evaluator
-- **[T036] [P]** Add filtering to RoleViewSet: filter by scope, search by name
-- **[T037] [P]** Add filtering to RoleAssignmentViewSet: filter by user, role, scope, target_org, target_project
-- **[T038]** Create API URLs in `api/urls.py`: `/api/permissions/roles/`, `/api/permissions/role-assignments/`
-- **[T039]** Include permissions.api.urls in config/urls.py: `path('api/permissions/', include('permissions.api.urls'))`
-- **[T040]** Add API documentation docstrings for all viewsets (used by DRF browsable API)
+- **[T031] [P] ✅** Create `RoleSerializer` with nested permissions, validation for scope matching
+- **[T032] [P] ✅** Create `RoleAssignmentSerializer` with validation: user exists, role exists, scope+targets valid
+- **[T033] [P] ✅** Create `RoleViewSet` with list/retrieve/create/update/partial_update/destroy, permission check `permissions.modify_role`
+- **[T034] [P] ✅** Create `RoleAssignmentViewSet` with create/destroy, permission check `permissions.assign_role`
+- **[T035] [P] ✅** Implement custom DRF permission class `HasPermission(permission_string)` calling evaluator
+- **[T036] [P] ✅** Add filtering to RoleViewSet: filter by scope, search by name
+- **[T037] [P] ✅** Add filtering to RoleAssignmentViewSet: filter by user, role, scope, target_org, target_project
+- **[T038] ✅** Create API URLs in `api/urls.py`: `/api/permissions/roles/`, `/api/permissions/role-assignments/`
+- **[T039] ✅** Include permissions.api.urls in config/urls.py: `path('api/permissions/', include('permissions.api.urls'))`
+- **[T040] ✅** Add API documentation docstrings for all viewsets (used by DRF browsable API)
 
 ### Phase 4: Audit Logging Integration
 
@@ -283,27 +283,27 @@
 
 ---
 
-## Work Package WP04: DRF API Layer (Priority: P1)
+## Work Package WP04: DRF API Layer (Priority: P1) ✅ DONE
 
 **Goal**: Expose role and role assignment management via REST API with DRF serializers, viewsets, custom permission classes per Principles II, VII.
 
 **Independent Test**: API endpoints return correct responses, validation catches invalid inputs, permission checks deny unauthorized access, pagination works.
 
-**Prompt**: `kitty-specs/008-hierarchical-access-control/tasks/planned/WP04-drf-api-layer.md`
+**Prompt**: `kitty-specs/008-hierarchical-access-control/tasks/done/WP04-drf-api-layer.md`
 
 **Phase**: Phase 3 - Integration
 
 **Included Subtasks**:
-- [ ] [T031] [P] Create `RoleSerializer` with nested permissions, validation for scope matching
-- [ ] [T032] [P] Create `RoleAssignmentSerializer` with validation: user exists, role exists, scope+targets valid
-- [ ] [T033] [P] Create `RoleViewSet` with list/retrieve/create/update/partial_update/destroy, permission check `permissions.modify_role`
-- [ ] [T034] [P] Create `RoleAssignmentViewSet` with create/destroy, permission check `permissions.assign_role`
-- [ ] [T035] [P] Implement custom DRF permission class `HasPermission(permission_string)` calling evaluator
-- [ ] [T036] [P] Add filtering to RoleViewSet: filter by scope, search by name
-- [ ] [T037] [P] Add filtering to RoleAssignmentViewSet: filter by user, role, scope, target_org, target_project
-- [ ] [T038] Create API URLs in `api/urls.py`: `/api/permissions/roles/`, `/api/permissions/role-assignments/`
-- [ ] [T039] Include permissions.api.urls in config/urls.py: `path('api/permissions/', include('permissions.api.urls'))`
-- [ ] [T040] Add API documentation docstrings for all viewsets (used by DRF browsable API)
+- [X] [T031] [P] Create `RoleSerializer` with nested permissions, validation for scope matching
+- [X] [T032] [P] Create `RoleAssignmentSerializer` with validation: user exists, role exists, scope+targets valid
+- [X] [T033] [P] Create `RoleViewSet` with list/retrieve/create/update/partial_update/destroy, permission check `permissions.modify_role`
+- [X] [T034] [P] Create `RoleAssignmentViewSet` with create/destroy, permission check `permissions.assign_role`
+- [X] [T035] [P] Implement custom DRF permission class `HasPermission(permission_string)` calling evaluator
+- [X] [T036] [P] Add filtering to RoleViewSet: filter by scope, search by name
+- [X] [T037] [P] Add filtering to RoleAssignmentViewSet: filter by user, role, scope, target_org, target_project
+- [X] [T038] Create API URLs in `api/urls.py`: `/api/permissions/roles/`, `/api/permissions/role-assignments/`
+- [X] [T039] Include permissions.api.urls in config/urls.py: `path('api/permissions/', include('permissions.api.urls'))`
+- [X] [T040] Add API documentation docstrings for all viewsets (used by DRF browsable API)
 
 **Implementation Sketch**:
 1. Create serializers extending `serializers.ModelSerializer` with explicit fields
