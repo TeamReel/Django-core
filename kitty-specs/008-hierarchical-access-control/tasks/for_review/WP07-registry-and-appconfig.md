@@ -9,7 +9,7 @@ subtasks:
   - "T062"
 title: "Registry & AppConfig"
 phase: "Phase 6 - Extensibility"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "43840"
@@ -377,3 +377,4 @@ def test_downstream_app_can_register():
 ## Activity Log
 
 - 2025-11-26T20:32:57Z – claude – shell_pid=43840 – lane=doing – Started implementation of Registry & AppConfig
+- 2025-11-26T20:45:32Z – claude – shell_pid=43840 – lane=for_review – Moved to for_review
