@@ -211,3 +211,50 @@ PASSWORD_RESET_TIMEOUT = 3600  # 1 hour in seconds
 # Permissions System Configuration
 PERMISSIONS_CACHE_PREFIX = "perms"  # Cache key prefix for permission evaluations
 PERMISSIONS_CACHE_TTL = 300  # 5 minutes (for Redis cache in permission evaluations)
+PERMISSIONS_AUDIT_BACKEND = "permissions.audit.DjangoLoggingBackend"  # Default to Django logging
+
+# Logging Configuration
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+        "json": {
+            "format": "{message}",  # Message already JSON from audit backend
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "audit_file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(Path(BASE_DIR).parent / "logs" / "permissions_audit.log"),
+            "maxBytes": 10485760,  # 10MB
+            "backupCount": 5,
+            "formatter": "json",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+        "permissions": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "permissions.audit": {
+            "handlers": ["audit_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

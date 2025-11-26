@@ -9,19 +9,22 @@ Evaluation Flow:
 5. Check project scope (union with org permissions)
 6. Return True if permission found in any role, False otherwise
 7. Cache result with TTL
+8. Emit audit event if permission is sensitive or decision is deny
 """
 
 import logging
 from typing import Optional
 from uuid import UUID
 
+from permissions.audit import get_audit_backend
 from permissions.cache import (
     get_cached_evaluation,
     set_cached_evaluation,
 )
-from permissions.models import RoleAssignment, ScopeChoices
+from permissions.models import Permission, RoleAssignment, ScopeChoices
 
 logger = logging.getLogger(__name__)
+audit_backend = get_audit_backend()
 
 
 def check_permission(
@@ -134,6 +137,26 @@ def check_permission(
 
     # Cache result
     set_cached_evaluation(user_id, permission, resource_type, resource_id, decision)
+
+    # Emit audit event if permission is sensitive or decision is deny
+    try:
+        perm_obj = Permission.objects.filter(permission=permission).first()
+        is_sensitive = perm_obj.is_sensitive if perm_obj else False
+    except Exception:
+        is_sensitive = False
+
+    if is_sensitive or not decision:
+        audit_backend.emit(
+            user_id=str(user_id),
+            permission=permission,
+            resource_type=resource_type,
+            resource_id=str(resource_id) if resource_id else None,
+            decision="grant" if decision else "deny",
+            context={
+                "evaluated_roles": [str(a.role_id) for a in assignments] if "assignments" in locals() else [],
+                "cache_hit": cached is not None,
+            },
+        )
 
     return decision
 

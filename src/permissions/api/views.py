@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from permissions.api.permissions import HasPermission
 from permissions.api.serializers import RoleAssignmentSerializer, RoleSerializer
+from permissions.audit import emit_role_assignment_audit, emit_role_modification_audit
 from permissions.models import Role, RoleAssignment
 
 
@@ -37,6 +38,31 @@ class RoleViewSet(viewsets.ModelViewSet):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsAuthenticated(), HasPermission("permissions.modify_role")]
         return [IsAuthenticated(), HasPermission("permissions.view_roles")]
+
+    def perform_update(self, serializer):
+        """Emit audit event when role is modified."""
+        instance = serializer.instance
+        old_permissions = set(instance.permissions.values_list("permission", flat=True))
+        
+        # Save the changes
+        serializer.save()
+        
+        # Determine what changed
+        new_permissions = set(instance.permissions.values_list("permission", flat=True))
+        added_permissions = new_permissions - old_permissions
+        removed_permissions = old_permissions - new_permissions
+        
+        if added_permissions or removed_permissions or serializer.validated_data.keys():
+            emit_role_modification_audit(
+                user_id=str(self.request.user.id),
+                role_id=str(instance.id),
+                role_name=instance.name,
+                changes={
+                    "permissions_added": list(added_permissions),
+                    "permissions_removed": list(removed_permissions),
+                    "fields_updated": list(serializer.validated_data.keys()),
+                },
+            )
 
 
 class RoleAssignmentViewSet(viewsets.ModelViewSet):
@@ -72,3 +98,17 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
         if self.action in ["create", "destroy"]:
             return [IsAuthenticated(), HasPermission("permissions.assign_role")]
         return [IsAuthenticated(), HasPermission("permissions.view_roles")]
+
+    def perform_create(self, serializer):
+        """Emit audit event when role assignment is created."""
+        instance = serializer.save()
+        
+        emit_role_assignment_audit(
+            user_id=str(self.request.user.id),
+            assigned_to_user_id=str(instance.user_id),
+            role_id=str(instance.role_id),
+            role_name=instance.role.name,
+            scope=instance.scope,
+            target_org_id=str(instance.target_organization_id) if instance.target_organization_id else None,
+            target_project_id=str(instance.target_project_id) if instance.target_project_id else None,
+        )
