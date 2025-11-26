@@ -6,7 +6,6 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from permissions.audit import (
     B09Backend,
     DjangoLoggingBackend,
@@ -23,9 +22,7 @@ def user(db):
     """Create test user."""
     from accounts.models import User
 
-    return User.objects.create_user(
-        email="testuser@example.com", password="testpass123"
-    )
+    return User.objects.create_user(email="testuser@example.com", password="testpass123")
 
 
 @pytest.fixture
@@ -66,9 +63,7 @@ class TestB09Backend:
         """Verify B09Backend emits events when B09 is available."""
         mock_emit = MagicMock()
         mocker.patch("permissions.audit.importlib.util.find_spec", return_value=True)
-        mocker.patch(
-            "permissions.audit.B09Backend._check_b09_available", return_value=True
-        )
+        mocker.patch("permissions.audit.B09Backend._check_b09_available", return_value=True)
 
         backend = B09Backend()
         backend.b09_available = True
@@ -111,7 +106,7 @@ class TestB09Backend:
     def test_b09_backend_handles_emit_errors_gracefully(self, mocker):
         """Verify B09Backend logs but doesn't crash on emit errors."""
         from unittest.mock import patch as mock_patch
-        
+
         mock_emit = MagicMock(side_effect=Exception("B09 API error"))
         mocker.patch("permissions.audit.importlib.util.find_spec", return_value=True)
 
@@ -143,7 +138,7 @@ class TestDjangoLoggingBackend:
     def test_django_backend_emits_json_log(self):
         """Verify DjangoLoggingBackend emits JSON-formatted logs."""
         from unittest.mock import patch
-        
+
         backend = DjangoLoggingBackend()
 
         # Mock the logger to verify it's called
@@ -160,7 +155,7 @@ class TestDjangoLoggingBackend:
             # Verify logger.info was called
             mock_logger.info.assert_called_once()
             call_args = mock_logger.info.call_args[0][0]
-            
+
             # Parse JSON from logged message
             event = json.loads(call_args)
 
@@ -198,9 +193,7 @@ class TestEvaluatorAuditIntegration:
         self, user, global_role, sensitive_permission, mocker
     ):
         """Verify audit event emitted when sensitive permission is granted."""
-        RoleAssignment.objects.create(
-            user=user, role=global_role, scope=ScopeChoices.GLOBAL
-        )
+        RoleAssignment.objects.create(user=user, role=global_role, scope=ScopeChoices.GLOBAL)
 
         mock_backend = mocker.patch("permissions.evaluator.audit_backend")
 
@@ -257,9 +250,7 @@ class TestEvaluatorAuditIntegration:
         self, user, global_role, non_sensitive_permission, mocker
     ):
         """Verify no audit event for non-sensitive permission grant."""
-        RoleAssignment.objects.create(
-            user=user, role=global_role, scope=ScopeChoices.GLOBAL
-        )
+        RoleAssignment.objects.create(user=user, role=global_role, scope=ScopeChoices.GLOBAL)
         global_role.permissions.add(non_sensitive_permission)
 
         mock_backend = mocker.patch("permissions.evaluator.audit_backend")
@@ -282,9 +273,7 @@ class TestEvaluatorAuditIntegration:
 
         mock_backend = mocker.patch("permissions.evaluator.audit_backend")
 
-        check_permission(
-            user.id, "projects.delete", resource_id=None, resource_type="project"
-        )
+        check_permission(user.id, "projects.delete", resource_id=None, resource_type="project")
 
         call_kwargs = mock_backend.emit.call_args.kwargs
         assert "context" in call_kwargs
@@ -354,9 +343,7 @@ class TestRoleModificationAudit:
         assert call_kwargs["decision"] == "grant"
         assert call_kwargs["context"]["action"] == "modify_role"
         assert call_kwargs["context"]["role_name"] == "Project Admin"
-        assert call_kwargs["context"]["changes"]["permissions_added"] == [
-            "projects.delete"
-        ]
+        assert call_kwargs["context"]["changes"]["permissions_added"] == ["projects.delete"]
 
 
 @pytest.mark.django_db
@@ -364,20 +351,14 @@ class TestRoleModificationAudit:
 class TestAuditPerformance:
     """Test audit logging performance."""
 
-    def test_audit_emission_adds_minimal_latency(
-        self, user, global_role, sensitive_permission
-    ):
+    def test_audit_emission_adds_minimal_latency(self, user, global_role, sensitive_permission):
         """Verify audit emission adds <100ms latency to permission checks."""
         import time
 
-        RoleAssignment.objects.create(
-            user=user, role=global_role, scope=ScopeChoices.GLOBAL
-        )
+        RoleAssignment.objects.create(user=user, role=global_role, scope=ScopeChoices.GLOBAL)
 
         start_time = time.time()
-        check_permission(
-            user.id, "projects.delete", resource_id=None, resource_type="project"
-        )
+        check_permission(user.id, "projects.delete", resource_id=None, resource_type="project")
         elapsed_time = time.time() - start_time
 
         # Should complete in less than 100ms (0.1 seconds)

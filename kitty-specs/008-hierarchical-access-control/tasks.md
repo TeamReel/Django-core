@@ -326,24 +326,24 @@
 
 ---
 
-## Work Package WP05: Audit Logging Integration (Priority: P2)
+## Work Package WP05: Audit Logging Integration (Priority: P2) ✅ DONE
 
 **Goal**: Emit audit events for sensitive permission checks with evaluation context, integrate with B09 or fall back to Django logging per FR-007, Principle V.
 
 **Independent Test**: Sensitive permission checks emit audit events, B09 adapter calls external API when available, fallback logs to Django logger when B09 unavailable.
 
-**Prompt**: `kitty-specs/008-hierarchical-access-control/tasks/planned/WP05-audit-logging-integration.md`
+**Prompt**: `kitty-specs/008-hierarchical-access-control/tasks/done/WP05-audit-logging-integration.md`
 
 **Phase**: Phase 4 - Integration
 
 **Included Subtasks**:
-- [ ] [T041] Create B09 adapter in `audit.py`: `emit_audit_event(user, permission, resource, decision, context)` with B09 API call
-- [ ] [T042] Implement Django logging fallback in `audit.py`: if B09 unavailable, log to `permissions.audit` logger
-- [ ] [T043] Integrate audit calls in evaluator: check `permission.is_sensitive`, emit event with evaluation context
-- [ ] [T044] Include evaluated_roles in audit context: list role IDs that contributed to grant/deny decision
-- [ ] [T045] Add audit log for role assignments: log who assigned, what role, to whom, when
-- [ ] [T046] Add audit log for role modifications: log who modified, which role, what permissions changed
-- [ ] [T047] Configure structured logging format: JSON with user_id, permission, resource_type, resource_id, decision, timestamp
+- [x] [T041] Create B09 adapter in `audit.py`: `emit_audit_event(user, permission, resource, decision, context)` with B09 API call
+- [x] [T042] Implement Django logging fallback in `audit.py`: if B09 unavailable, log to `permissions.audit` logger
+- [x] [T043] Integrate audit calls in evaluator: check `permission.is_sensitive`, emit event with evaluation context
+- [x] [T044] Include evaluated_roles in audit context: list role IDs that contributed to grant/deny decision
+- [x] [T045] Add audit log for role assignments: log who assigned, what role, to whom, when
+- [x] [T046] Add audit log for role modifications: log who modified, which role, what permissions changed
+- [x] [T047] Configure structured logging format: JSON with user_id, permission, resource_type, resource_id, decision, timestamp
 
 **Implementation Sketch**:
 1. Create adapter interface: `class AuditBackend(Protocol): def emit(...) -> None`

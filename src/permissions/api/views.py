@@ -43,15 +43,15 @@ class RoleViewSet(viewsets.ModelViewSet):
         """Emit audit event when role is modified."""
         instance = serializer.instance
         old_permissions = set(instance.permissions.values_list("permission", flat=True))
-        
+
         # Save the changes
         serializer.save()
-        
+
         # Determine what changed
         new_permissions = set(instance.permissions.values_list("permission", flat=True))
         added_permissions = new_permissions - old_permissions
         removed_permissions = old_permissions - new_permissions
-        
+
         if added_permissions or removed_permissions or serializer.validated_data.keys():
             emit_role_modification_audit(
                 user_id=str(self.request.user.id),
@@ -102,13 +102,17 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Emit audit event when role assignment is created."""
         instance = serializer.save()
-        
+
         emit_role_assignment_audit(
             user_id=str(self.request.user.id),
             assigned_to_user_id=str(instance.user_id),
             role_id=str(instance.role_id),
             role_name=instance.role.name,
             scope=instance.scope,
-            target_org_id=str(instance.target_organization_id) if instance.target_organization_id else None,
-            target_project_id=str(instance.target_project_id) if instance.target_project_id else None,
+            target_org_id=(
+                str(instance.target_organization_id) if instance.target_organization_id else None
+            ),
+            target_project_id=(
+                str(instance.target_project_id) if instance.target_project_id else None
+            ),
         )

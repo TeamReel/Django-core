@@ -153,7 +153,9 @@ def check_permission(
             resource_id=str(resource_id) if resource_id else None,
             decision="grant" if decision else "deny",
             context={
-                "evaluated_roles": [str(a.role_id) for a in assignments] if "assignments" in locals() else [],
+                "evaluated_roles": (
+                    [str(a.role_id) for a in assignments] if "assignments" in locals() else []
+                ),
                 "cache_hit": cached is not None,
             },
         )
