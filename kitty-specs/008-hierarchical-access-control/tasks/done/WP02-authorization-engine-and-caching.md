@@ -40,6 +40,11 @@ history:
     agent: "claude"
     shell_pid: "11524"
     action: "Approved without changes - all 10 subtasks complete, architecture sound, tests deferred to WP08"
+  - timestamp: "2025-11-27T12:30:00Z"
+    lane: "done"
+    agent: "copilot"
+    shell_pid: "acceptance"
+    action: "Moved to done lane for feature acceptance"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP02-authorization-engine-and-caching.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP02-authorization-engine-and-caching.md)*
 

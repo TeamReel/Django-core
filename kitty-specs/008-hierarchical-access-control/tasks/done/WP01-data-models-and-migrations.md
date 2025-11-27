@@ -39,6 +39,11 @@ history:
     agent: "claude"
     shell_pid: "11524"
     action: "Code review complete - approved without changes"
+  - timestamp: "2025-11-27T12:30:00Z"
+    lane: "done"
+    agent: "copilot"
+    shell_pid: "acceptance"
+    action: "Moved to done lane for feature acceptance"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP01-data-models-and-migrations.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP01-data-models-and-migrations.md)*
 

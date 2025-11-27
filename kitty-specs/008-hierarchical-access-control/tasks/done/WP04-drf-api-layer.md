@@ -55,6 +55,11 @@ history:
     agent: "claude"
     shell_pid: "11524"
     action: "Code review APPROVED: All feedback addressed - 61 tests passing (100%), 93%/83% coverage, comprehensive documentation, URLs verified"
+  - timestamp: "2025-11-27T12:30:00Z"
+    lane: "done"
+    agent: "copilot"
+    shell_pid: "acceptance"
+    action: "Moved to done lane for feature acceptance"
 ---
 *Path: [kitty-specs/008-hierarchical-access-control/tasks/planned/WP04-drf-api-layer.md](kitty-specs/008-hierarchical-access-control/tasks/planned/WP04-drf-api-layer.md)*
 
