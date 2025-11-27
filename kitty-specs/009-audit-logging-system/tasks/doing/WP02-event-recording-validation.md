@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "45896"
+---
 # WP02: Event Recording & Validation
 
 ```yaml
@@ -537,3 +542,7 @@ pytest tests/audit/ -m "not slow"
 - Tests that mock too much (e.g., mocking entire AuditEvent model)
 - Validation using dict size instead of JSON byte size
 - Graceful failure that swallows exceptions without logging
+
+## Activity Log
+
+- 2025-11-27T14:10:29Z – claude – shell_pid=45896 – lane=doing – Started WP02 implementation
