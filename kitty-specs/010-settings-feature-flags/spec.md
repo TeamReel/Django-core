@@ -6,6 +6,14 @@
 **Status**: Draft
 **Input**: User description: "Implement a flexible, cache-friendly settings and feature flags subsystem that supports configuration at global, organisation, and project scope without code redeploys, including safe rollout patterns and fallbacks."
 
+## Clarifications
+
+### Session 2025-11-27
+
+- Q: When a flag or setting is updated, how should cache invalidation occur across multiple application instances? → A: Redis pub/sub notifications (real-time invalidation across instances)
+- Q: How should global-scope flags and settings store their scope identifier? → A: NULL scope_id for global (nullable FK)
+- Q: Can a feature flag and a setting share the same key (e.g., both named "experimental_mode"), or must all keys be globally unique across both types? → A: Separate namespaces (flag "x" and setting "x" can coexist)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Enable Feature for Test Organisation (Priority: P1)
@@ -88,17 +96,17 @@ An administrator configures various setting types (string, integer, boolean, JSO
 
 ### Functional Requirements
 
-- **FR-001**: System MUST store feature flags and settings with three scope types: global, organisation, and project
+- **FR-001**: System MUST store feature flags and settings with three scope types: global, organisation, and project. Flags and settings maintain separate key namespaces (a flag and setting may share the same key name without conflict)
 - **FR-002**: System MUST resolve flag/setting values using precedence: project scope > organisation scope > global scope
 - **FR-003**: System MUST support setting value types: boolean, string, integer, and JSON
 - **FR-004**: System MUST provide a query API that accepts scope context (project, organisation, or neither) and returns resolved values
 - **FR-005**: System MUST cache resolved values with a configurable TTL (default 5 minutes) to minimize database queries under high read load
-- **FR-006**: System MUST invalidate cache entries when flag or setting values are updated at any scope
+- **FR-006**: System MUST invalidate cache entries when flag or setting values are updated at any scope using Redis pub/sub to broadcast invalidation messages to all application instances
 - **FR-007**: System MUST integrate with B09 audit logging to record create, update, and delete operations on flags and settings, including actor identity and scope context
 - **FR-008**: System MUST provide Django admin interface for managing flags and settings across all scopes
 - **FR-009**: System MUST validate setting values match their declared type before saving (e.g., reject malformed JSON)
 - **FR-010**: System MUST allow default values to be specified when querying non-existent flags or settings
-- **FR-011**: System MUST enforce unique constraints on (key, scope_type, scope_id) to prevent duplicate settings at the same scope
+- **FR-011**: System MUST enforce unique constraints on (key, scope_type, scope_id) to prevent duplicate settings at the same scope, where scope_id may be NULL for global scope
 - **FR-012**: System MUST support querying all flags/settings for a given scope (e.g., "get all organisation-level settings")
 - **FR-013**: System MUST document safe rollout patterns including gradual rollout strategies, fallback procedures, and cache invalidation best practices
 - **FR-014**: System MUST NOT store secrets, credentials, or PII as setting values
@@ -106,8 +114,8 @@ An administrator configures various setting types (string, integer, boolean, JSO
 
 ### Key Entities
 
-- **Flag**: A boolean feature toggle with a unique key, scope (global/organisation/project), scope identifier, enabled/disabled state, optional description, and metadata for audit context.
-- **Setting**: A typed configuration value with a unique key, scope (global/organisation/project), scope identifier, value (stored as text/JSON), declared type (boolean/string/integer/JSON), optional description, and metadata for audit context.
+- **Flag**: A boolean feature toggle with a unique key, scope (global/organisation/project), scope identifier (NULL for global scope, FK to organisation or project for scoped flags), enabled/disabled state, optional description, and metadata for audit context.
+- **Setting**: A typed configuration value with a unique key, scope (global/organisation/project), scope identifier (NULL for global scope, FK to organisation or project for scoped settings), value (stored as text/JSON), declared type (boolean/string/integer/JSON), optional description, and metadata for audit context.
 - **Scope**: An enumeration representing the three hierarchy levels (GLOBAL, ORGANISATION, PROJECT) with clear precedence rules.
 
 **Relationships**:
@@ -176,9 +184,10 @@ An administrator configures various setting types (string, integer, boolean, JSO
 **Performance Strategy**:
 - Use `select_related` when resolving scope precedence to avoid N+1
 - Cache resolved values with Redis; fallback to database if cache unavailable
+- Use Redis pub/sub for real-time cache invalidation across all application instances
 - Batch queries when fetching multiple settings for same scope
 - Pagination for admin list views and bulk export APIs
-- Metrics: cache hit rate, query latency, flag resolution time
+- Metrics: cache hit rate, query latency, flag resolution time, invalidation message propagation latency
 
 **Degradation Strategy**:
 - If cache unavailable, query database directly (slower but functional)
@@ -192,8 +201,8 @@ An administrator configures various setting types (string, integer, boolean, JSO
 - [x] Validation occurs at boundary (serializers/forms)
 
 **API Patterns**:
-- REST API endpoints: `GET /api/settings/flags/{key}`, `GET /api/settings/config/{key}`
-- Python API: `settings.get_flag(key, project=None, org=None, default=False)`
+- REST API endpoints: `GET /api/settings/flags/{key}`, `GET /api/settings/config/{key}` (separate endpoints enforce namespace separation)
+- Python API: `settings.get_flag(key, project=None, org=None, default=False)` and `settings.get_setting(key, project=None, org=None, default=None)` (separate functions enforce namespace separation)
 - Consistent error responses (404 for missing key, 400 for validation errors)
 - Deprecation: If flag schema changes, use API versioning (`/api/v2/settings/`)
 
