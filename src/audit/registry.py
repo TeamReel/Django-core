@@ -4,6 +4,7 @@ Event type registry for audit system.
 Provides centralized management of event types with format validation
 and metadata tracking. Event types must be registered before use.
 """
+
 from dataclasses import dataclass, field
 from threading import Lock
 from typing import Dict, List, Optional

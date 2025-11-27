@@ -3,6 +3,7 @@ Prometheus metrics for audit system.
 
 Metrics provide observability into audit system health and usage patterns.
 """
+
 from prometheus_client import Counter
 
 # Counter: audit_events_recorded_total

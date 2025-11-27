@@ -3,6 +3,7 @@ Audit event models.
 
 Provides immutable audit trail for system-wide activity tracking.
 """
+
 from django.conf import settings
 from django.db import models
 

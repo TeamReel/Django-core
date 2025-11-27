@@ -4,6 +4,7 @@ Audit logging API.
 Provides the primary interface for recording audit events throughout
 the application. All audit recording should go through this module.
 """
+
 import json
 import logging
 from typing import Any, Dict, Optional

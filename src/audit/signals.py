@@ -4,6 +4,7 @@ Audit system signals.
 Signals allow downstream applications to react to audit system events
 without tight coupling.
 """
+
 import django.dispatch
 
 # Signal: audit_record_failed
