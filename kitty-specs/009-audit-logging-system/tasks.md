@@ -25,7 +25,7 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 
 | ID | Work Package | Priority | Status | Subtasks | Prompt |
 |----|--------------|----------|--------|----------|--------|
-| WP01 | Audit App Foundation & Core API | P1 | Planned | 10 | [WP01-audit-app-foundation.md](tasks/planned/WP01-audit-app-foundation.md) |
+| WP01 | Audit App Foundation & Core API | P1 | Done ✅ | 10 | [WP01-audit-app-foundation.md](tasks/done/WP01-audit-app-foundation.md) |
 | WP02 | Event Recording & Validation | P1 | Planned | 5 | [WP02-event-recording-validation.md](tasks/planned/WP02-event-recording-validation.md) |
 | WP03 | Django Admin Search & Filter | P1 | Planned | 7 | [WP03-admin-search-filter.md](tasks/planned/WP03-admin-search-filter.md) |
 | WP04 | Timeline & CSV Export | P2 | Planned | 6 | [WP04-timeline-csv-export.md](tasks/planned/WP04-timeline-csv-export.md) |
@@ -47,16 +47,16 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 **Independent Test**: Call `audit_log.record('auth.login', user=user, metadata={'ip': '127.0.0.1'})` from Python shell and verify event exists in database with correct fields.
 
 **Subtasks**:
-- [ ] T001: Create audit Django app structure (models.py, admin.py, apps.py, __init__.py, py.typed)
-- [ ] T002: Create AuditEvent model with all fields (id, created_at, event_type, user, organization, project, metadata) and Meta configuration
-- [ ] T003: Create initial migration (0001_initial.py) with GIN index on metadata field and all standard indexes
-- [ ] T004 [P]: Implement event type registry (registry.py) with thread-safe registration, format validation, EventTypeMetadata dataclass
-- [ ] T005 [P]: Implement audit_log.record() API (api.py) with validation, graceful failure, signal emission, metric increment
-- [ ] T006 [P]: Create Django signal (audit_record_failed) in signals.py with sender, exception, event_data arguments
-- [ ] T007 [P]: Implement Prometheus metrics in metrics.py (audit_events_recorded_total, audit_failures_total counters with labels)
-- [ ] T008: Register core event types in apps.py ready() method (auth.login, auth.logout, auth.login_failed, auth.password_changed, permission.checked, permission.granted, permission.denied, role.assigned, role.revoked, config.updated, config.feature_toggled, resource.created, resource.deleted)
-- [ ] T009: Configure audit app in settings.INSTALLED_APPS and update database routing if needed
-- [ ] T010: Create src/audit/README.md with API documentation, usage examples, event type conventions
+- [X] T001: Create audit Django app structure (models.py, admin.py, apps.py, __init__.py, py.typed)
+- [X] T002: Create AuditEvent model with all fields (id, created_at, event_type, user, organization, project, metadata) and Meta configuration
+- [X] T003: Create initial migration (0001_initial.py) with GIN index on metadata field and all standard indexes
+- [X] T004 [P]: Implement event type registry (registry.py) with thread-safe registration, format validation, EventTypeMetadata dataclass
+- [X] T005 [P]: Implement audit_log.record() API (api.py) with validation, graceful failure, signal emission, metric increment
+- [X] T006 [P]: Create Django signal (audit_record_failed) in signals.py with sender, exception, event_data arguments
+- [X] T007 [P]: Implement Prometheus metrics in metrics.py (audit_events_recorded_total, audit_failures_total counters with labels)
+- [X] T008: Register core event types in apps.py ready() method (auth.login, auth.logout, auth.login_failed, auth.password_changed, permission.checked, permission.granted, permission.denied, role.assigned, role.revoked, config.updated, config.feature_toggled, resource.created, resource.deleted)
+- [X] T009: Configure audit app in settings.INSTALLED_APPS and update database routing if needed
+- [X] T010: Create src/audit/README.md with API documentation, usage examples, event type conventions
 
 **Implementation Sketch**:
 1. Run `django-admin startapp audit` in src/ directory
