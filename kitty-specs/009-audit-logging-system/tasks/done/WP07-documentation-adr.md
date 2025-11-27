@@ -43,7 +43,7 @@ history:
     shell_pid: 45896
     note: Completed all documentation tasks - README, ADR-009, copilot-instructions updated
   - date: 2025-11-27T18:35:00Z
-    action: approved
+    action: moved_to_done
     author: GitHub Copilot (Claude Sonnet 4.5)
     shell_pid: 45896
     note: "Code review approved: All documentation complete and accurate - README comprehensive, ADR follows template, copilot-instructions updated, all links valid"

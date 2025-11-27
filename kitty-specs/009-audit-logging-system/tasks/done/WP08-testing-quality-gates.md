@@ -43,7 +43,7 @@ history:
     shell_pid: 45896
     note: Completed all quality gates - tests passing, type checking clean, CHANGELOG updated
   - date: 2025-11-27T18:20:00Z
-    action: approved
+    action: moved_to_done
     author: GitHub Copilot (Claude Sonnet 4.5)
     shell_pid: 45896
     note: "Code review approved: All quality gates passed (96% coverage, 100% api.py, 0 mypy errors, CHANGELOG complete, code quality clean)"

@@ -32,7 +32,7 @@ history:
     action: created
     author: AI Agent
   - date: 2025-11-27T15:09:00Z
-    action: approved
+    action: moved_to_done
     author: claude-sonnet-4.5-reviewer
     shell_pid: 45896
     note: Approved and moved to done lane
