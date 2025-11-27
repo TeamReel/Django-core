@@ -7,6 +7,9 @@ from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
+# Ensure logs directory exists
+LOGS_DIR = Path(BASE_DIR).parent / "logs"
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 
@@ -35,6 +38,7 @@ INSTALLED_APPS = [
     "organisations.apps.OrganisationsConfig",
     "projects.apps.ProjectsConfig",
     "permissions.apps.PermissionsConfig",  # Hierarchical RBAC system
+    "audit.apps.AuditConfig",  # Audit logging system
 ]
 
 MIDDLEWARE = [
@@ -235,7 +239,7 @@ LOGGING = {
         "audit_file": {
             "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": str(Path(BASE_DIR).parent / "logs" / "permissions_audit.log"),
+            "filename": str(LOGS_DIR / "permissions_audit.log"),
             "maxBytes": 10485760,  # 10MB
             "backupCount": 5,
             "formatter": "json",

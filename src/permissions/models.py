@@ -1,5 +1,6 @@
 """Database models for hierarchical access control system"""
 
+import logging
 import re
 import uuid
 from typing import TYPE_CHECKING
@@ -7,6 +8,16 @@ from typing import TYPE_CHECKING
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+# Audit system integration (graceful degradation if not installed)
+try:
+    from audit.api import audit_log
+
+    AUDIT_AVAILABLE = True
+except ImportError:
+    AUDIT_AVAILABLE = False
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from django.db.models.manager import RelatedManager
@@ -243,6 +254,78 @@ class RoleAssignment(models.Model):
             return f"{self.user} -> {self.role} @ {self.target_organization}"
         else:  # PROJECT
             return f"{self.user} -> {self.role} @ {self.target_project}"
+
+    def save(self, *args, **kwargs):
+        """
+        Save role assignment and log audit event.
+
+        Logs role.assigned event only for new assignments (not updates).
+        """
+        # For UUIDField primary keys, check _state.adding instead of pk
+        is_new = self._state.adding
+
+        # Save to database
+        super().save(*args, **kwargs)
+
+        # Log audit event for new assignments only
+        if is_new and AUDIT_AVAILABLE:
+            try:
+                audit_log.record(
+                    "role.assigned",
+                    user=self.assigned_by if self.assigned_by else None,
+                    organization=self.target_organization,
+                    project=self.target_project,
+                    metadata={
+                        "role_name": self.role.name,
+                        "role_id": str(self.role.id),
+                        "target_user_id": str(self.user.id),
+                        "target_user_email": self.user.email,
+                        "scope": self.scope,
+                    },
+                )
+            except Exception as e:
+                # Graceful degradation: audit failure doesn't break role assignment
+                logger.warning("Failed to log role assignment to audit system: %s", e)
+
+    def delete(self, *args, **kwargs):
+        """
+        Delete role assignment and log audit event.
+
+        Accepts optional revoked_by kwarg to track who performed the revocation.
+        Accepts optional reason kwarg to document why the role was revoked.
+        """
+        # Capture data before deletion
+        role_name = self.role.name
+        role_id = str(self.role.id)
+        user_id = str(self.user.id)
+        user_email = self.user.email
+        organization = self.target_organization
+        project = self.target_project
+        revoked_by = kwargs.pop("revoked_by", None)  # Custom kwarg for context
+        reason = kwargs.pop("reason", "Not specified")  # Custom kwarg for reason
+
+        # Delete from database
+        super().delete(*args, **kwargs)
+
+        # Log audit event
+        if AUDIT_AVAILABLE:
+            try:
+                audit_log.record(
+                    "role.revoked",
+                    user=revoked_by,
+                    organization=organization,
+                    project=project,
+                    metadata={
+                        "role_name": role_name,
+                        "role_id": role_id,
+                        "target_user_id": user_id,
+                        "target_user_email": user_email,
+                        "reason": reason,
+                    },
+                )
+            except Exception as e:
+                # Graceful degradation
+                logger.warning("Failed to log role revocation to audit system: %s", e)
 
     def clean(self) -> None:
         """Validate scope and target consistency"""

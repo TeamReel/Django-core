@@ -23,6 +23,14 @@ from permissions.cache import (
 )
 from permissions.models import Permission, RoleAssignment, ScopeChoices
 
+# Audit system integration (graceful degradation if not installed)
+try:
+    from audit.api import audit_log
+
+    AUDIT_AVAILABLE = True
+except ImportError:
+    AUDIT_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 audit_backend = get_audit_backend()
 
@@ -138,7 +146,57 @@ def check_permission(
     # Cache result
     set_cached_evaluation(user_id, permission, resource_type, resource_id, decision)
 
-    # Emit audit event if permission is sensitive or decision is deny
+    # NEW: Log permission check to audit system (B09 integration)
+    if AUDIT_AVAILABLE:
+        try:
+            # Get user object for audit context
+            from django.contrib.auth import get_user_model
+
+            user_model = get_user_model()
+            try:
+                user = user_model.objects.get(id=user_id)
+            except user_model.DoesNotExist:
+                user = None
+
+            # Get organization/project context if resource_id provided
+            organization = None
+            project = None
+
+            if resource_id:
+                if resource_type == "organisation":
+                    from organisations.models import Organisation
+
+                    try:
+                        organization = Organisation.objects.get(id=resource_id)
+                    except Organisation.DoesNotExist:
+                        pass
+                elif resource_type == "project":
+                    from projects.models import Project
+
+                    try:
+                        project = Project.objects.get(id=resource_id)
+                        organization = project.organisation if project else None
+                    except Project.DoesNotExist:
+                        pass
+
+            # Record permission check event
+            audit_log.record(
+                "permission.checked",
+                user=user,
+                organization=organization,
+                project=project,
+                metadata={
+                    "permission": permission,
+                    "result": "allowed" if decision else "denied",
+                    "resource_type": resource_type,
+                    "resource_id": str(resource_id) if resource_id else None,
+                },
+            )
+        except Exception as e:
+            # Graceful degradation: audit failure doesn't break permission check
+            logger.warning("Failed to log permission check to audit system: %s", e)
+
+    # Emit audit event if permission is sensitive or decision is deny (legacy B08 audit)
     try:
         perm_obj = Permission.objects.filter(permission=permission).first()
         is_sensitive = perm_obj.is_sensitive if perm_obj else False
