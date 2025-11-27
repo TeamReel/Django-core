@@ -1,6 +1,7 @@
 ---
 lane: "done"
 agent: "claude"
+assignee: "claude"
 shell_pid: "45896"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
@@ -13,11 +14,17 @@ feature: 009-audit-logging-system
 priority: P1
 estimated_subtasks: 7
 dependencies: [WP01]
-lane: planned
+lane: done
+assignee: claude
 history:
   - date: 2025-11-27
     action: created
     author: AI Agent
+  - date: 2025-11-27T15:30:00Z
+    action: approved
+    author: claude-reviewer
+    shell_pid: 45896
+    note: Approved and moved to done lane
 ```
 
 ## Objective

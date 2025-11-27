@@ -1,6 +1,7 @@
 ---
 lane: "done"
 agent: "claude-reviewer"
+assignee: "claude"
 shell_pid: "45896"
 ---
 # WP04: Timeline & CSV Export
