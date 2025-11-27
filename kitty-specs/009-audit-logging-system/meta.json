@@ -1,7 +1,21 @@
 {
-    "feature_number":  "009",
-    "slug":  "009-audit-logging-system",
-    "friendly_name":  "Audit Logging System",
-    "source_description":  "Provide a structured, extensible audit logging system for recording important security- and configuration-sensitive actions across the platform, with clean APIs for writing and retrieving audit events.",
-    "created_at":  "2025-11-27T12:44:00Z"
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-11-27T19:22:15Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "13470021296ca2b2c286605a7fb7e96c12498bff",
+      "branch": "009-audit-logging-system",
+      "mode": "pr"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-11-27T19:22:15Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "13470021296ca2b2c286605a7fb7e96c12498bff",
+  "created_at": "2025-11-27T12:44:00Z",
+  "feature_number": "009",
+  "friendly_name": "Audit Logging System",
+  "slug": "009-audit-logging-system",
+  "source_description": "Provide a structured, extensible audit logging system for recording important security- and configuration-sensitive actions across the platform, with clean APIs for writing and retrieving audit events."
 }
