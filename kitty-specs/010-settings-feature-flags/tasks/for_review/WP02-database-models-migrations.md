@@ -11,7 +11,7 @@ subtasks:
   - "T015"
 title: "Database Models & Migrations"
 phase: "Phase 0 - Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "copilot"
 shell_pid: "45896"
@@ -206,3 +206,4 @@ f2 = FeatureFlag.objects.create(key='test', scope_type=ScopeType.GLOBAL)
 
 - 2025-11-27T21:45:00Z – system – lane=planned – Prompt created.
 - 2025-11-27T20:59:01Z – copilot – shell_pid=45896 – lane=doing – Started WP02: Database Models & Migrations
+- 2025-11-27T21:05:22Z – copilot – shell_pid=45896 – lane=for_review – All 8 subtasks complete. Models implemented, migrations tested, Django check passes.
