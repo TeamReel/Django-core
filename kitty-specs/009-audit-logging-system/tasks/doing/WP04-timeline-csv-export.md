@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "$PID"
+---
 # WP04: Timeline & CSV Export
 
 ```yaml
@@ -524,3 +529,7 @@ class TestAuditEventCSVExport:
 - CSV export times out with 1000 events (missing optimization)
 - CSV has parsing errors in Excel (quotes/commas not escaped)
 - Metadata column not valid JSON (serialization error)
+
+## Activity Log
+
+- 2025-11-27T16:00:00Z – claude – shell_pid=$PID – lane=doing – Started implementation
