@@ -32,7 +32,7 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 | WP05 | B08 Permission Integration | P1 | Done ✅ | 7 | [WP05-b08-integration.md](tasks/done/WP05-b08-integration.md) |
 | WP06 | Management Commands | P2 | Done ✅ | 4 | [WP06-management-commands.md](tasks/done/WP06-management-commands.md) |
 | WP07 | Documentation & ADR | P2 | Planned | 3 | [WP07-documentation-adr.md](tasks/planned/WP07-documentation-adr.md) |
-| WP08 | Testing & Quality Gates | P1 | Planned | 3 | [WP08-testing-quality-gates.md](tasks/planned/WP08-testing-quality-gates.md) |
+| WP08 | Testing & Quality Gates | P1 | Done ✅ | 3 | [WP08-testing-quality-gates.md](tasks/done/WP08-testing-quality-gates.md) |
 
 ---
 
@@ -352,9 +352,9 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 **Independent Test**: CI passes all checks (linting, formatting, type checking, tests, coverage).
 
 **Subtasks**:
-- [ ] T043: Run full test suite with coverage (`pytest --cov=src/audit --cov-report=term-missing`) and verify >85% coverage for audit app
-- [ ] T044: Run mypy type checking on audit module (`mypy src/audit/`) and fix any type errors
-- [ ] T045: Update CHANGELOG.md with Feature 009 additions (audit logging system, B08 integration, management commands)
+- [X] T043: Run full test suite with coverage (`pytest --cov=src/audit --cov-report=term-missing`) and verify >85% coverage for audit app
+- [X] T044: Run mypy type checking on audit module (`mypy src/audit/`) and fix any type errors
+- [X] T045: Update CHANGELOG.md with Feature 009 additions (audit logging system, B08 integration, management commands)
 
 **Implementation Sketch**:
 1. Run pytest with coverage flags
@@ -378,7 +378,7 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 - CHANGELOG has Feature 009 entry with all major changes
 - CI pipeline passes
 
-**Prompt**: [tasks/planned/WP08-testing-quality-gates.md](tasks/planned/WP08-testing-quality-gates.md)
+**Prompt**: [tasks/done/WP08-testing-quality-gates.md](tasks/done/WP08-testing-quality-gates.md)
 
 ---
 
