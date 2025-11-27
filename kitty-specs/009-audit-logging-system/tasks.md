@@ -31,7 +31,7 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 | WP04 | Timeline & CSV Export | P2 | Done ✅ | 6 | [WP04-timeline-csv-export.md](tasks/done/WP04-timeline-csv-export.md) |
 | WP05 | B08 Permission Integration | P1 | Done ✅ | 7 | [WP05-b08-integration.md](tasks/done/WP05-b08-integration.md) |
 | WP06 | Management Commands | P2 | Done ✅ | 4 | [WP06-management-commands.md](tasks/done/WP06-management-commands.md) |
-| WP07 | Documentation & ADR | P2 | Planned | 3 | [WP07-documentation-adr.md](tasks/planned/WP07-documentation-adr.md) |
+| WP07 | Documentation & ADR | P2 | Done ✅ | 3 | [WP07-documentation-adr.md](tasks/for_review/WP07-documentation-adr.md) |
 | WP08 | Testing & Quality Gates | P1 | Done ✅ | 3 | [WP08-testing-quality-gates.md](tasks/done/WP08-testing-quality-gates.md) |
 
 ---
@@ -315,9 +315,9 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 **Independent Test**: Read main README and verify audit system section exists with links to quickstart.md.
 
 **Subtasks**:
-- [ ] T040: Update main project README.md with "Audit Logging" section covering capabilities, quickstart link, B08 integration
-- [ ] T041: Create ADR (docs/architecture/decisions/ADR-009-audit-event-storage.md) documenting PostgreSQL JSON vs separate tables decision with rationale
-- [ ] T042: Update .github/copilot-instructions.md with audit logging technologies (PostgreSQL JSONField + GIN, django-prometheus) - ALREADY DONE in planning phase
+- [X] T040: Update main project README.md with "Audit Logging" section covering capabilities, quickstart link, B08 integration
+- [X] T041: Create ADR (docs/architecture/decisions/ADR-009-audit-event-storage.md) documenting PostgreSQL JSON vs separate tables decision with rationale
+- [X] T042: Update .github/copilot-instructions.md with audit logging technologies (PostgreSQL JSONField + GIN, django-prometheus) - ALREADY DONE in planning phase
 
 **Implementation Sketch**:
 1. Add new section to main README with overview and links
@@ -337,7 +337,7 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 - ADR-009 exists with Context, Decision, Consequences sections
 - Copilot instructions include audit technologies
 
-**Prompt**: [tasks/planned/WP07-documentation-adr.md](tasks/planned/WP07-documentation-adr.md)
+**Prompt**: [tasks/for_review/WP07-documentation-adr.md](tasks/for_review/WP07-documentation-adr.md)
 
 ---
 
