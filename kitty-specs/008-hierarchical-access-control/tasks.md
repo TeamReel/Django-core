@@ -454,30 +454,31 @@
 **Phase**: Phase 7-8 - Quality Assurance
 
 **Included Subtasks**:
-- [ ] [T063] [P] Create pytest fixtures in `tests/permissions/conftest.py`: users, orgs, projects, roles, assignments
-- [ ] [T064] [P] Write model tests in `test_models.py`: validation rules, unique constraints, foreign key cascades (15 tests)
-- [ ] [T065] [P] Write evaluator tests in `test_evaluator.py`: inheritance logic, deny-by-default, global superuser, edge cases (50 tests)
-- [ ] [T066] [P] Write cache tests in `test_cache.py`: hit/miss rates, invalidation triggers, TTL expiration (20 tests)
-- [ ] [T067] [P] Write registry tests in `test_registry.py`: registration, duplicates, format validation (10 tests)
-- [ ] [T068] [P] Write API tests in `test_api.py`: CRUD operations, validation errors, permission checks (25 tests)
-- [ ] [T069] [P] Write DRF permission class tests in `test_permissions_drf.py`: HasPermission integration with viewsets (15 tests)
-- [ ] [T070] [P] Write audit tests in `test_audit.py`: event emission, B09 integration, fallback logging (15 tests)
-- [ ] [T071] [P] Write signal tests in `test_signals.py`: cache invalidation on save/delete (10 tests)
-- [ ] [T072] [P] Write integration tests in `test_integration.py`: end-to-end user stories (15 tests)
-- [ ] [T073] [P] Write performance tests in `test_performance.py`: latency benchmarks (<2ms), cache hit rate (>90%) (5 tests)
-- [ ] [T074] Configure pytest-django settings: database fixtures, cache settings, mark slow tests
-- [ ] [T075] Set coverage target in pytest.ini: 90% for permissions app
-- [ ] [T076] Run full test suite and verify all 180+ tests pass
-- [ ] [T077] [P] Write `src/permissions/README.md`: overview, architecture, usage examples
-- [ ] [T078] [P] Document extension guide: how to register custom permissions in new Django apps
-- [ ] [T079] [P] Add usage examples to README: Django views, DRF viewsets, programmatic checks, batch checks
-- [ ] [T080] [P] Document cache configuration: TTL settings, Redis requirements, graceful degradation
-- [ ] [T081] [P] Document default roles: permission mappings, when to use each role
-- [ ] [T082] Create ADR (Architecture Decision Record): additive inheritance vs. restrictive model
-- [ ] [T083] Update quickstart.md with validation scenarios: verify permission checks, cache behavior, audit logs
-- [ ] [T084] Run security review: penetration testing for privilege escalation, cache poisoning
-- [ ] [T085] Validate success criteria: <2ms latency (SC-001), >90% hit rate (SC-002), <10 LOC for auth (SC-003)
-- [ ] [T086] Run load tests: 10k users, 3 roles each, verify performance targets
+- [X] [T063] [P] Create pytest fixtures in `tests/permissions/conftest.py`: users, orgs, projects, roles, assignments
+- [X] [T064] [P] Write model tests in `test_models.py`: validation rules, unique constraints, foreign key cascades (15 tests)
+- [X] [T065] [P] Write evaluator tests in `test_evaluator.py`: inheritance logic, deny-by-default, global superuser, edge cases (50 tests)
+- [X] [T066] [P] Write cache tests in `test_cache.py`: hit/miss rates, invalidation triggers, TTL expiration (20 tests)
+- [X] [T067] [P] Write registry tests in `test_registry.py`: registration, duplicates, format validation (10 tests)
+- [X] [T068] [P] Write API tests in `test_api.py`: CRUD operations, validation errors, permission checks (25 tests)
+- [X] [T069] [P] Write DRF permission class tests in `test_permissions_drf.py`: HasPermission integration with viewsets (15 tests)
+- [X] [T070] [P] Write audit tests in `test_audit.py`: event emission, B09 integration, fallback logging (15 tests)
+- [X] [T071] [P] Write signal tests in `test_signals.py`: cache invalidation on save/delete (10 tests)
+- [X] [T072] [P] Write integration tests in `test_integration.py`: end-to-end user stories (15 tests)
+- [X] [T073] [P] Write performance tests in `test_performance.py`: latency benchmarks (<2ms), cache hit rate (>90%) (5 tests)
+- [X] [T074] Configure pytest-django settings: database fixtures, cache settings, mark slow tests
+- [X] [T075] Set coverage target in pytest.ini: 90% for permissions app
+- [X] [T076] Run full test suite and verify all 180+ tests pass
+- [X] [T077] [P] Write `src/permissions/README.md`: overview, architecture, usage examples
+- [X] [T078] [P] Document extension guide: how to register custom permissions in new Django apps
+- [X] [T079] [P] Add usage examples to README: Django views, DRF viewsets, programmatic checks, batch checks
+- [X] [T080] [P] Document cache configuration: TTL settings, Redis requirements, graceful degradation
+- [X] [T081] [P] Document default roles: permission mappings, when to use each role
+- [X] [T082] Create ADR (Architecture Decision Record): additive inheritance vs. restrictive model
+- [X] [T083] Update quickstart.md with validation scenarios: verify permission checks, cache behavior, audit logs
+- [X] [T084] Run security review: penetration testing for privilege escalation, cache poisoning
+- [X] [T085] Validate success criteria: <2ms latency (SC-001), >90% hit rate (SC-002), <10 LOC for auth (SC-003)
+- [X] [T086] Run load tests: 10k users, 3 roles each, verify performance targets
+- [X] [T087] Document test execution: pytest command, coverage report, CI integration
 - [ ] [T087] Final integration validation: all user stories pass acceptance scenarios
 
 **Implementation Sketch**:
