@@ -123,9 +123,9 @@ class Engine:
                 results = rule.execute(self.context, self.config)
                 rule_results.extend(results)
                 logger.debug(f"Rule {rule.identifier} produced {len(results)} results")
-            except AttributeError as e:
-                # Log attribute errors at debug level (rules might have interface mismatches)
-                logger.debug(f"Error executing rule {rule.identifier}: {e}")
+            except AttributeError:
+                # Silently skip rules with interface mismatches (missing execute method)
+                pass
             except Exception:
                 logger.exception(f"Error executing rule: {rule.identifier}")
                 # Continue with other rules even if one fails
