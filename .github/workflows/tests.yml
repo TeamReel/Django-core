@@ -71,8 +71,10 @@ jobs:
       id: test-paths
       run: |
         if [ "${{ github.event_name }}" == "pull_request" ]; then
-          # For PR, only run Feature 007 tests
-          if [ -d "tests/projects" ]; then
+          # For PR, run tests for changed features
+          if [ -d "tests/audit" ]; then
+            echo "test_paths=tests/audit/" >> $GITHUB_OUTPUT
+          elif [ -d "tests/projects" ]; then
             echo "test_paths=tests/projects/" >> $GITHUB_OUTPUT
           else
             echo "test_paths=tests/" >> $GITHUB_OUTPUT
@@ -91,15 +93,24 @@ jobs:
         echo "Running tests for: ${{ steps.test-paths.outputs.test_paths }}"
         # Run core functionality tests (models, managers, serializers)
         # Skip tests with known issues: integration (example model), views/permissions (URL routing)
-        pytest ${{ steps.test-paths.outputs.test_paths }} \
-          --ignore=tests/projects/test_integration.py \
-          --ignore=tests/projects/test_views.py \
-          --ignore=tests/projects/test_permissions.py \
-          --cov=projects \
-          --cov-report=xml \
-          --cov-report=term-missing \
-          --tb=short \
-          -v || echo "Tests completed - some expected failures in edge cases"
+        if [ "${{ steps.test-paths.outputs.test_paths }}" == "tests/audit/" ]; then
+          pytest ${{ steps.test-paths.outputs.test_paths }} \
+            --cov=audit \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --tb=short \
+            -v
+        else
+          pytest ${{ steps.test-paths.outputs.test_paths }} \
+            --ignore=tests/projects/test_integration.py \
+            --ignore=tests/projects/test_views.py \
+            --ignore=tests/projects/test_permissions.py \
+            --cov=projects \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --tb=short \
+            -v || echo "Tests completed - some expected failures in edge cases"
+        fi
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
