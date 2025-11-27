@@ -29,5 +29,7 @@ urlpatterns = [
     path("api/", include("projects.api.urls")),
     # Permissions API
     path("api/permissions/", include("permissions.api.urls")),
+    # Settings & Feature Flags API
+    path("api/v1/settings/", include("settings.urls")),
     path("", include("django_prometheus.urls")),  # Exposes /metrics endpoint
 ]
