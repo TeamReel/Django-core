@@ -1,4 +1,5 @@
 """Django models for Settings & Feature Flags system."""
+
 import uuid
 
 from django.conf import settings as django_settings
