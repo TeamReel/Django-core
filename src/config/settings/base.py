@@ -33,13 +33,16 @@ INSTALLED_APPS = [
     # Third-party apps
     "rest_framework",
     # Core-App modules
-    "constitution_engine",
     "security_baseline",
     "organisations.apps.OrganisationsConfig",
     "projects.apps.ProjectsConfig",
     "permissions.apps.PermissionsConfig",  # Hierarchical RBAC system
     "audit.apps.AuditConfig",  # Audit logging system
 ]
+
+# Conditionally add constitution_engine (can be disabled in CI/tests)
+if os.getenv("CONSTITUTION_ENGINE_ENABLED", "true").lower() != "false":
+    INSTALLED_APPS.insert(INSTALLED_APPS.index("security_baseline"), "constitution_engine")
 
 MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Must be first
