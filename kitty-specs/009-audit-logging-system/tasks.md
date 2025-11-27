@@ -27,10 +27,10 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 |----|--------------|----------|--------|----------|--------|
 | WP01 | Audit App Foundation & Core API | P1 | Done ✅ | 10 | [WP01-audit-app-foundation.md](tasks/done/WP01-audit-app-foundation.md) |
 | WP02 | Event Recording & Validation | P1 | Done ✅ | 5 | [WP02-event-recording-validation.md](tasks/done/WP02-event-recording-validation.md) |
-| WP03 | Django Admin Search & Filter | P1 | Planned | 7 | [WP03-admin-search-filter.md](tasks/planned/WP03-admin-search-filter.md) |
-| WP04 | Timeline & CSV Export | P2 | Planned | 6 | [WP04-timeline-csv-export.md](tasks/planned/WP04-timeline-csv-export.md) |
-| WP05 | B08 Permission Integration | P1 | Planned | 7 | [WP05-b08-integration.md](tasks/planned/WP05-b08-integration.md) |
-| WP06 | Management Commands | P2 | Planned | 4 | [WP06-management-commands.md](tasks/planned/WP06-management-commands.md) |
+| WP03 | Django Admin Search & Filter | P1 | Done ✅ | 7 | [WP03-admin-search-filter.md](tasks/done/WP03-admin-search-filter.md) |
+| WP04 | Timeline & CSV Export | P2 | Done ✅ | 6 | [WP04-timeline-csv-export.md](tasks/done/WP04-timeline-csv-export.md) |
+| WP05 | B08 Permission Integration | P1 | Done ✅ | 7 | [WP05-b08-integration.md](tasks/done/WP05-b08-integration.md) |
+| WP06 | Management Commands | P2 | Done ✅ | 4 | [WP06-management-commands.md](tasks/done/WP06-management-commands.md) |
 | WP07 | Documentation & ADR | P2 | Planned | 3 | [WP07-documentation-adr.md](tasks/planned/WP07-documentation-adr.md) |
 | WP08 | Testing & Quality Gates | P1 | Planned | 3 | [WP08-testing-quality-gates.md](tasks/planned/WP08-testing-quality-gates.md) |
 
