@@ -11,10 +11,10 @@ subtasks:
   - "T015"
 title: "Database Models & Migrations"
 phase: "Phase 0 - Foundation"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "copilot"
+shell_pid: "45896"
 review_status: ""
 reviewed_by: ""
 history:
@@ -205,3 +205,4 @@ f2 = FeatureFlag.objects.create(key='test', scope_type=ScopeType.GLOBAL)
 ## Activity Log
 
 - 2025-11-27T21:45:00Z – system – lane=planned – Prompt created.
+- 2025-11-27T20:59:01Z – copilot – shell_pid=45896 – lane=doing – Started WP02: Database Models & Migrations
