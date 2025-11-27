@@ -96,7 +96,7 @@ As a system administrator, I want audit events to automatically capture permissi
 ### Edge Cases
 
 - What happens when the database is unavailable during event recording? (System logs to fallback logger, does not crash, retries on next event if configured)
-- How does the system handle extremely large metadata payloads? (Enforce size limits, e.g., 10KB max metadata JSON, truncate with warning)
+- How does the system handle extremely large metadata payloads? (Enforce 10KB max metadata JSON size, reject event with ValueError if exceeded)
 - What happens when a user is deleted but has audit events? (User reference uses soft foreign key or nullable FK to preserve events even after user deletion)
 - How are events recorded for system actions with no user? (Support null user field, record system_actor="background_task" or similar in metadata)
 - What if two events are recorded with identical timestamps? (Include microsecond precision and auto-increment ID for ordering)
@@ -106,7 +106,7 @@ As a system administrator, I want audit events to automatically capture permissi
 
 ### Functional Requirements
 
-- **FR-001**: System MUST provide a Python API for recording audit events with required fields: event_type, timestamp, user (nullable), organization (nullable), project (nullable), and extensible metadata (JSON)
+- **FR-001**: System MUST provide a Python API for recording audit events with required fields: event_type, timestamp, user (nullable), organization (nullable), project (nullable), and extensible metadata (JSON). Metadata exceeding 10KB must raise ValueError and reject the event
 - **FR-002**: System MUST persist audit events to PostgreSQL with automatic timestamp capture (created_at field)
 - **FR-003**: System MUST support at least these event type categories: authentication (auth.*), permission (permission.*), configuration (config.*), role management (role.*), resource access (resource.*)
 - **FR-004**: System MUST provide Django admin interface for searching and filtering audit events by user, event_type, date range, organization, and project
@@ -115,11 +115,11 @@ As a system administrator, I want audit events to automatically capture permissi
 - **FR-007**: System MUST integrate with B08 Hierarchical Access Control to automatically log permission checks and role assignments/revocations
 - **FR-008**: System MUST support null values for user, organization, and project fields to handle system-generated events and cross-entity actions
 - **FR-009**: System MUST provide a management command for seeding example audit events for testing and demonstration purposes
-- **FR-010**: System MUST document retention policy recommendations (e.g., 90 days default, 1 year for compliance) without enforcing automated deletion in MVP
+- **FR-010**: System MUST document retention policy with 90 days as recommended default (1 year for compliance-sensitive environments) without enforcing automated deletion in MVP
 - **FR-011**: System MUST support exporting filtered audit events to CSV format from Django admin
 - **FR-012**: System MUST include indexes on frequently-queried fields (user, event_type, created_at, organization, project) for search performance
 - **FR-013**: System MUST validate event_type follows naming convention (category.action format, lowercase with underscores, e.g., "auth.login", "permission.checked")
-- **FR-014**: System MUST capture IP address and user agent in metadata for authentication events
+- **FR-014**: System MUST capture IP address and user agent in metadata for all events with HTTP request context (authentication, permission checks, configuration changes, etc.)
 - **FR-015**: System MUST provide read-only Django admin interface (auditors can view but not edit/delete events)
 
 ### Key Entities *(include if feature involves data)*
@@ -195,7 +195,7 @@ As a system administrator, I want audit events to automatically capture permissi
 
 - **SC-001**: Developers can emit audit events with <5 lines of code (measure: count LOC in working examples)
 - **SC-002**: Auditors can locate specific events within 30 seconds using Django admin filters (measure: user testing with sample scenarios)
-- **SC-003**: System records 100 audit events per second without degrading primary application performance by more than 10ms per request (measure: load testing with concurrent writes)
+- **SC-003**: System records 100 audit events per second per application instance without degrading primary application performance by more than 10ms per request (measure: load testing with concurrent writes on single instance)
 - **SC-004**: Audit event search returns results in under 2 seconds for 100,000+ event database (measure: query performance tests with realistic data volume)
 - **SC-005**: 95% of permission checks from B08 automatically generate corresponding audit events without manual developer action (measure: integration test coverage)
 - **SC-006**: Zero security incidents go undetected due to missing audit events for critical actions (auth, permission, config) (measure: security review checklist, manual verification)
@@ -249,3 +249,29 @@ As a system administrator, I want audit events to automatically capture permissi
 ## Open Questions *(track items needing clarification)*
 
 *None - all critical decisions resolved during discovery phase.*
+
+---
+
+## Clarifications
+
+### Session 2025-11-27
+
+**Q1: Metadata Size Enforcement** - What should happen when metadata exceeds 10KB limit?
+- **Answer**: Reject the entire event (raise exception, don't record)
+- **Impact**: FR-001 will include size validation that raises `ValueError` when metadata exceeds 10KB JSON size
+
+**Q2: Default Retention Period** - What should the documented default retention period be?
+- **Answer**: 90 days
+- **Impact**: FR-010 updated to specify 90 days as recommended default, with 1 year as option for compliance-sensitive environments
+
+**Q3: Metadata Truncation Behavior** - Should edge case match Q1 answer (reject vs truncate)?
+- **Answer**: Yes, update edge case to "reject with exception"
+- **Impact**: Edge case updated to align with rejection behavior from Q1
+
+**Q4: Performance Target Scope** - What is the scope of "100 events/second" in SC-003?
+- **Answer**: Per application instance
+- **Impact**: SC-003 updated to clarify "per application instance" for performance target
+
+**Q5: IP/User Agent Capture Scope** - Should IP/user agent be captured beyond auth events?
+- **Answer**: All events with HTTP request context
+- **Impact**: FR-014 updated to capture IP/user agent for all events when HTTP request is available, not just authentication
