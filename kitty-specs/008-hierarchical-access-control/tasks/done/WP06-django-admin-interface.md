@@ -13,7 +13,7 @@ subtasks:
 title: "Django Admin Interface"
 phase: "Phase 5 - Administrative"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude"
 shell_pid: "43840"
 review_status: "approved without changes"

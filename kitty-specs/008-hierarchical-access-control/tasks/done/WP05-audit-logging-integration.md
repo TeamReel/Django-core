@@ -11,7 +11,7 @@ subtasks:
 title: "Audit Logging Integration"
 phase: "Phase 4 - Integration"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude"
 shell_pid: "43840"
 review_status: "approved"

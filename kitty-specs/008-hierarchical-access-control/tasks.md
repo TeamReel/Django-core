@@ -252,17 +252,17 @@
 **Phase**: Phase 2 - Core Implementation
 
 **Included Subtasks**:
-- [ ] [T020] Create management command `seed_default_roles.py`: seed 7 starter roles (Global Admin, Org Admin/Member/Viewer, Project Admin/Member/Viewer)
-- [ ] [T021] Define permission mappings for Global Admin: all permissions (`*`)
-- [ ] [T022] Define permission mappings for Organization Admin: `org.*` + `projects.*` (full org + all projects)
-- [ ] [T023] Define permission mappings for Organization Member: `org.view_members`, `projects.create`, `projects.view`, `projects.update`
-- [ ] [T024] Define permission mappings for Organization Viewer: `org.view_members`, `projects.view`
-- [ ] [T025] Define permission mappings for Project Admin: `projects.*` (full project control)
-- [ ] [T026] Define permission mappings for Project Member: `projects.view`, `projects.update`
-- [ ] [T027] Define permission mappings for Project Viewer: `projects.view`
-- [ ] [T028] Register base permissions in migration: 17 permissions (6 org.*, 6 projects.*, 5 permissions.*)
-- [ ] [T029] Mark sensitive permissions: `projects.delete`, `org.remove_users`, `permissions.assign_role`
-- [ ] [T030] Create management command `warm_permission_cache.py`: pre-warm global roles and superuser assignments on startup
+- [X] [T020] Create management command `seed_default_roles.py`: seed 7 starter roles (Global Admin, Org Admin/Member/Viewer, Project Admin/Member/Viewer)
+- [X] [T021] Define permission mappings for Global Admin: all permissions (`*`)
+- [X] [T022] Define permission mappings for Organization Admin: `org.*` + `projects.*` (full org + all projects)
+- [X] [T023] Define permission mappings for Organization Member: `org.view_members`, `projects.create`, `projects.view`, `projects.update`
+- [X] [T024] Define permission mappings for Organization Viewer: `org.view_members`, `projects.view`
+- [X] [T025] Define permission mappings for Project Admin: `projects.*` (full project control)
+- [X] [T026] Define permission mappings for Project Member: `projects.view`, `projects.update`
+- [X] [T027] Define permission mappings for Project Viewer: `projects.view`
+- [X] [T028] Register base permissions in migration: 17 permissions (6 org.*, 6 projects.*, 5 permissions.*)
+- [X] [T029] Mark sensitive permissions: `projects.delete`, `org.remove_users`, `permissions.assign_role`
+- [X] [T030] Create management command `warm_permission_cache.py`: pre-warm global roles and superuser assignments on startup
 
 **Implementation Sketch**:
 1. Create data migration 0002_seed_default_roles with permission creation first, then roles, then M2M links
@@ -376,15 +376,15 @@
 **Phase**: Phase 5 - Administrative
 
 **Included Subtasks**:
-- [ ] [T048] [P] Create RoleAdmin with list_display: name, scope, created_at, permission count
-- [ ] [T049] [P] Add M2M filter widget for permissions in RoleAdmin
-- [ ] [T050] [P] Create PermissionAdmin with list_display: permission, resource_type, is_sensitive
-- [ ] [T051] [P] Add inline editing for is_sensitive flag in PermissionAdmin
-- [ ] [T052] [P] Create RoleAssignmentAdmin with list_display: user, role, scope, target_org, target_project, assigned_at
-- [ ] [T053] [P] Add filters to RoleAssignmentAdmin: scope, role, assigned_at date
-- [ ] [T054] [P] Add search fields to RoleAdmin: name, description
-- [ ] [T055] [P] Add search fields to RoleAssignmentAdmin: user__email, role__name
-- [ ] [T056] Register admin classes in admin.py
+- [X] [T048] [P] Create RoleAdmin with list_display: name, scope, created_at, permission count
+- [X] [T049] [P] Add M2M filter widget for permissions in RoleAdmin
+- [X] [T050] [P] Create PermissionAdmin with list_display: permission, resource_type, is_sensitive
+- [X] [T051] [P] Add inline editing for is_sensitive flag in PermissionAdmin
+- [X] [T052] [P] Create RoleAssignmentAdmin with list_display: user, role, scope, target_org, target_project, assigned_at
+- [X] [T053] [P] Add filters to RoleAssignmentAdmin: scope, role, assigned_at date
+- [X] [T054] [P] Add search fields to RoleAdmin: name, description
+- [X] [T055] [P] Add search fields to RoleAssignmentAdmin: user__email, role__name
+- [X] [T056] Register admin classes in admin.py
 
 **Implementation Sketch**:
 1. Create admin classes extending `admin.ModelAdmin` with list_display tuples
@@ -417,12 +417,12 @@
 **Phase**: Phase 6 - Extensibility
 
 **Included Subtasks**:
-- [ ] [T057] Create PermissionsConfig in `apps.py` with name='permissions'
-- [ ] [T058] Implement ready() hook in PermissionsConfig: initialize permission registry
-- [ ] [T059] Call registry.register() for base permissions in ready(): accounts.*, organisations.*, projects.*, permissions.*
-- [ ] [T060] Add registry validation: raise ImproperlyConfigured if duplicate permission registered
-- [ ] [T061] Document registry usage in `src/permissions/README.md`: how to register custom permissions in downstream apps
-- [ ] [T062] Add permission format validation in registry: regex `^[a-z_]+\.[a-z_]+$`
+- [X] [T057] Create PermissionsConfig in `apps.py` with name='permissions'
+- [X] [T058] Implement ready() hook in PermissionsConfig: initialize permission registry
+- [X] [T059] Call registry.register() for base permissions in ready(): accounts.*, organisations.*, projects.*, permissions.*
+- [X] [T060] Add registry validation: raise ImproperlyConfigured if duplicate permission registered
+- [X] [T061] Document registry usage in `src/permissions/README.md`: how to register custom permissions in downstream apps
+- [X] [T062] Add permission format validation in registry: regex `^[a-z_]+\.[a-z_]+$`
 
 **Implementation Sketch**:
 1. Create PermissionsConfig extending `apps.AppConfig` with `name = 'permissions'`
@@ -479,7 +479,7 @@
 - [X] [T085] Validate success criteria: <2ms latency (SC-001), >90% hit rate (SC-002), <10 LOC for auth (SC-003)
 - [X] [T086] Run load tests: 10k users, 3 roles each, verify performance targets
 - [X] [T087] Document test execution: pytest command, coverage report, CI integration
-- [ ] [T087] Final integration validation: all user stories pass acceptance scenarios
+- [X] [T087] Final integration validation: all user stories pass acceptance scenarios
 
 **Implementation Sketch**:
 1. Create comprehensive fixtures using @pytest.fixture with scope='function' for isolation

@@ -10,7 +10,7 @@ subtasks:
 title: "Registry & AppConfig"
 phase: "Phase 6 - Extensibility"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude-reviewer"
 shell_pid: "$PID"
 review_status: "approved without changes"

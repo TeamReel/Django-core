@@ -29,7 +29,7 @@ subtasks:
 title: "Testing & Documentation"
 phase: "Phase 7-8 - Quality Assurance"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude-reviewer"
 shell_pid: "$$"
 review_status: "approved with minor notes"
