@@ -63,7 +63,8 @@ jobs:
         DJANGO_SETTINGS_MODULE: config.settings.local
       run: |
         # Run audit tests for Feature 009
-        pytest tests/audit/ -v --tb=short --cov=src/audit --cov-report=xml --cov-report=term-missing
+        # Override addopts to prevent double coverage calculation (src + src/audit)
+        pytest -o "addopts=" tests/audit/ -v --tb=short --strict-markers --cov=src/audit --cov-report=xml --cov-report=term-missing --no-cov-on-fail
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
