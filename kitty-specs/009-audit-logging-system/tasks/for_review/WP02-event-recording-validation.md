@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "45896"
 ---
@@ -546,3 +546,4 @@ pytest tests/audit/ -m "not slow"
 ## Activity Log
 
 - 2025-11-27T14:10:29Z – claude – shell_pid=45896 – lane=doing – Started WP02 implementation
+- 2025-11-27T14:14:52Z – claude – shell_pid=45896 – lane=for_review – Ready for review
