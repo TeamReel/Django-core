@@ -1,12 +1,15 @@
 """
 Audit admin interface.
 
-Read-only Django admin for viewing audit events with search, filters, and pagination.
+Read-only Django admin for viewing audit events with search, filters, pagination,
+timeline navigation, and CSV export.
 """
 
+import csv
 import json
 
 from django.contrib import admin
+from django.http import HttpResponse
 from django.utils.html import format_html
 
 from audit.models import AuditEvent
@@ -20,7 +23,7 @@ class AuditEventAdmin(admin.ModelAdmin):
     Design: Multi-layer enforcement of read-only access:
     - Permission overrides (has_add/change/delete_permission return False)
     - Readonly fields (all fields marked readonly)
-    - Action removal (delete_selected removed)
+    - Action removal (delete_selected removed, except export_as_csv)
     """
 
     # Display configuration (T016)
@@ -62,6 +65,31 @@ class AuditEventAdmin(admin.ModelAdmin):
         "metadata",  # JSONField full-text search (uses GIN index)
     ]
 
+    # Date hierarchy for timeline navigation (T023)
+    date_hierarchy = "created_at"
+
+    # Fieldsets for detail view organization (T024)
+    fieldsets = [
+        (
+            "Event Information",
+            {"fields": ["id", "created_at", "event_type"]},
+        ),
+        (
+            "Context",
+            {"fields": ["user", "organization", "project"]},
+        ),
+        (
+            "Metadata",
+            {
+                "fields": ["metadata_display"],
+                "description": "Event-specific details stored as JSON",
+            },
+        ),
+    ]
+
+    # Admin actions (T026)
+    actions = ["export_as_csv"]
+
     # Permission overrides (T019)
     def has_add_permission(self, request):  # noqa: ARG002
         """No one can add audit events via admin (not even superusers)."""
@@ -90,13 +118,65 @@ class AuditEventAdmin(admin.ModelAdmin):
         queryset = super().get_queryset(request)
         return queryset.select_related("user", "organization", "project")
 
-    # Remove bulk actions (T019)
+    # Remove bulk actions except export (T019)
     def get_actions(self, request):
-        """Remove delete_selected action."""
+        """Remove delete_selected action, keep export_as_csv."""
         actions = super().get_actions(request)
         if "delete_selected" in actions:
             del actions["delete_selected"]
         return actions
+
+    # CSV Export Action (T026, T027)
+    def export_as_csv(self, request, queryset):  # noqa: ARG002
+        """
+        Export selected audit events to CSV.
+
+        Columns: ID, Created At, Event Type, User Email, Organization,
+                 Project, Metadata (as JSON string)
+
+        Handles edge cases:
+        - Unicode characters (ensure_ascii=False)
+        - Quotes and commas in metadata (json.dumps handles escaping)
+        - Empty/null fields (blank strings for missing relations)
+        - Large datasets (uses queryset.iterator() for streaming)
+        """
+        # Create response with CSV content type
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="audit_events.csv"'
+
+        # Create CSV writer
+        writer = csv.writer(response)
+
+        # Write header row
+        writer.writerow(
+            [
+                "ID",
+                "Created At",
+                "Event Type",
+                "User Email",
+                "Organization",
+                "Project",
+                "Metadata",
+            ]
+        )
+
+        # Write data rows (use iterator() for large datasets)
+        for event in queryset.select_related("user", "organization", "project").iterator():
+            writer.writerow(
+                [
+                    event.id,
+                    event.created_at.isoformat(),
+                    event.event_type,
+                    event.user.email if event.user else "",
+                    event.organization.name if event.organization else "",
+                    event.project.name if event.project else "",
+                    json.dumps(event.metadata, ensure_ascii=False),  # Handles unicode/quotes/commas
+                ]
+            )
+
+        return response
+
+    export_as_csv.short_description = "Export selected events to CSV"
 
     # Custom display methods (T016)
     def user_display(self, obj):
