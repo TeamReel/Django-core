@@ -89,13 +89,14 @@ jobs:
         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_django_core
         SECRET_KEY: test-secret-key-for-ci-minimum-50-characters-long
         DJANGO_SETTINGS_MODULE: config.settings.local
+        PYTHONPATH: src
       run: |
         echo "Running tests for: ${{ steps.test-paths.outputs.test_paths }}"
         # Run core functionality tests (models, managers, serializers)
         # Skip tests with known issues: integration (example model), views/permissions (URL routing)
         if [ "${{ steps.test-paths.outputs.test_paths }}" == "tests/audit/" ]; then
           pytest ${{ steps.test-paths.outputs.test_paths }} \
-            --cov=audit \
+            --cov=src/audit \
             --cov-report=xml \
             --cov-report=term-missing \
             --tb=short \
@@ -105,7 +106,7 @@ jobs:
             --ignore=tests/projects/test_integration.py \
             --ignore=tests/projects/test_views.py \
             --ignore=tests/projects/test_permissions.py \
-            --cov=projects \
+            --cov=src/projects \
             --cov-report=xml \
             --cov-report=term-missing \
             --tb=short \
