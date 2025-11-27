@@ -30,7 +30,7 @@ This feature implements a centralised configuration management system with featu
 
 | ID | Title | Priority | Status | Subtasks | Prompt |
 |----|-------|----------|--------|----------|--------|
-| WP01 | Django App Setup & Configuration | P0 | Planned | 7 | [WP01-django-app-setup.md](tasks/planned/WP01-django-app-setup.md) |
+| WP01 | Django App Setup & Configuration | P0 | Done | 7/7 ✅ | [WP01-django-app-setup.md](tasks/done/WP01-django-app-setup.md) |
 | WP02 | Database Models & Migrations | P0 | Planned | 8 | [WP02-database-models-migrations.md](tasks/planned/WP02-database-models-migrations.md) |
 | WP03 | Python Query API & Cache Layer | P1 | Planned | 10 | [WP03-python-query-api-cache.md](tasks/planned/WP03-python-query-api-cache.md) |
 | WP04 | REST API Endpoints | P1 | Planned | 9 | [WP04-rest-api-endpoints.md](tasks/planned/WP04-rest-api-endpoints.md) |
