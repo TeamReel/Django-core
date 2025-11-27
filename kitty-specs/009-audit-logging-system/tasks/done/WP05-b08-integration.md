@@ -6,6 +6,15 @@ shell_pid: "45896"
 review_status: "approved_without_changes"
 reviewed_by: "claude"
 reviewed_at: "2025-01-21"
+history:
+  - date: "2025-11-27"
+    action: "created"
+    author: "AI Agent"
+  - date: "2025-01-21"
+    action: "moved_to_done"
+    author: "claude"
+    shell_pid: "45896"
+    note: "Approved and moved to done lane"
 ---
 # WP05: B08 Permission System Integration
 

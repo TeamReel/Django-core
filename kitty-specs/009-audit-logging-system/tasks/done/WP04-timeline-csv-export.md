@@ -3,6 +3,15 @@ lane: "done"
 agent: "claude-reviewer"
 assignee: "claude"
 shell_pid: "45896"
+history:
+  - date: "2025-11-27"
+    action: "created"
+    author: "AI Agent"
+  - date: "2025-11-27T16:10:00Z"
+    action: "moved_to_done"
+    author: "claude-reviewer"
+    shell_pid: "45896"
+    note: "Approved and moved to done lane"
 ---
 # WP04: Timeline & CSV Export
 

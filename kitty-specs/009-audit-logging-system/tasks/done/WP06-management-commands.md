@@ -6,6 +6,15 @@ shell_pid: "45896"
 review_status: "approved_without_changes"
 reviewed_by: "claude"
 reviewed_at: "2025-11-27T16:35:00Z"
+history:
+  - date: "2025-11-27"
+    action: "created"
+    author: "AI Agent"
+  - date: "2025-11-27T16:35:00Z"
+    action: "moved_to_done"
+    author: "claude"
+    shell_pid: "45896"
+    note: "Approved and moved to done lane"
 ---
 # WP06: Management Commands
 

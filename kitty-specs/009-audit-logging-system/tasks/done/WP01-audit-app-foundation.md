@@ -7,6 +7,15 @@ review_status: "approved without changes"
 reviewed_by: "claude-sonnet-4.5-reviewer"
 reviewer_shell_pid: "45896"
 reviewed_at: "2025-11-27T15:09:00Z"
+history:
+  - date: "2025-11-27"
+    action: "created"
+    author: "AI Agent"
+  - date: "2025-11-27T15:09:00Z"
+    action: "moved_to_done"
+    author: "claude-sonnet-4.5-reviewer"
+    shell_pid: "45896"
+    note: "Approved and moved to done lane"
 ---
 # WP01: Audit App Foundation & Core API
 
