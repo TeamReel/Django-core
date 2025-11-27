@@ -99,11 +99,11 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 **Independent Test**: Unit test that attempts to record event with 15KB metadata raises ValueError with clear message. Unit test that records event without request context succeeds without IP/user agent.
 
 **Subtasks**:
-- [ ] T011: Add comprehensive type hints to audit/api.py, audit/registry.py, audit/models.py using Python 3.12+ syntax
-- [ ] T012: Implement metadata size validation in audit_log.record() - serialize to JSON, check size, raise ValueError if >10KB
-- [ ] T013: Implement automatic IP/user agent capture from request context in audit_log.record() - add request parameter, extract REMOTE_ADDR and HTTP_USER_AGENT
-- [ ] T014 [P]: Write unit tests for audit_log.record() success cases (with/without user, with/without request, all field combinations)
-- [ ] T015 [P]: Write unit tests for audit_log.record() validation errors (unregistered event type, metadata too large) and graceful failure (database unavailable)
+- [X] T011: Add comprehensive type hints to audit/api.py, audit/registry.py, audit/models.py using Python 3.12+ syntax
+- [X] T012: Implement metadata size validation in audit_log.record() - serialize to JSON, check size, raise ValueError if >10KB
+- [X] T013: Implement automatic IP/user agent capture from request context in audit_log.record() - add request parameter, extract REMOTE_ADDR and HTTP_USER_AGENT
+- [X] T014 [P]: Write unit tests for audit_log.record() success cases (with/without user, with/without request, all field combinations)
+- [X] T015 [P]: Write unit tests for audit_log.record() validation errors (unregistered event type, metadata too large) and graceful failure (database unavailable)
 
 **Implementation Sketch**:
 1. Add type annotations using `from typing import Optional, Dict, Any` and django-stubs types
@@ -140,13 +140,13 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 **Independent Test**: Open /admin/audit/auditevent/, filter by user and date range, verify only matching events displayed, verify pagination works, attempt to edit event and verify blocked.
 
 **Subtasks**:
-- [ ] T016: Create read-only AuditEventAdmin in admin.py with list_display=[created_at, event_type, user, organization, project]
-- [ ] T017: Implement admin filters (list_filter) for user, event_type, created_at, organization, project - use Django's built-in filter classes
-- [ ] T018: Configure admin pagination (list_per_page=100) and enable search (search_fields=[user__email, event_type, metadata])
-- [ ] T019: Override admin permissions (has_add_permission, has_change_permission, has_delete_permission all return False), remove delete_selected action
-- [ ] T020: Add select_related('user', 'organization', 'project') optimization in get_queryset() to avoid N+1 queries
-- [ ] T021 [P]: Write admin tests (read-only enforcement, filter functionality, pagination, search)
-- [ ] T022: Create management command audit_seed for generating 100+ test events with varied event types, users, dates
+- [X] T016: Create read-only AuditEventAdmin in admin.py with list_display=[created_at, event_type, user, organization, project]
+- [X] T017: Implement admin filters (list_filter) for user, event_type, created_at, organization, project - use Django's built-in filter classes
+- [X] T018: Configure admin pagination (list_per_page=100) and enable search (search_fields=[user__email, event_type, metadata])
+- [X] T019: Override admin permissions (has_add_permission, has_change_permission, has_delete_permission all return False), remove delete_selected action
+- [X] T020: Add select_related('user', 'organization', 'project') optimization in get_queryset() to avoid N+1 queries
+- [X] T021 [P]: Write admin tests (read-only enforcement, filter functionality, pagination, search)
+- [X] T022: Create management command audit_seed for generating 100+ test events with varied event types, users, dates
 
 **Implementation Sketch**:
 1. Create AuditEventAdmin class with readonly_fields for all fields
@@ -185,12 +185,12 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 **Independent Test**: Export 50 events to CSV and verify file contains all events with columns: timestamp, user, event_type, organization, project, metadata (as JSON string).
 
 **Subtasks**:
-- [ ] T023: Configure admin date_hierarchy='created_at' for drill-down by year/month/day
-- [ ] T024: Add admin fieldsets to organize detail view (Event Info, Context, Metadata sections)
-- [ ] T025 [P]: Write integration test for chronological event retrieval with date range filter
-- [ ] T026: Implement CSV export admin action (export_as_csv) handling queryset serialization
-- [ ] T027: Handle metadata JSON serialization in CSV export - flatten or serialize as JSON string column
-- [ ] T028 [P]: Write tests for CSV export (small dataset, large dataset >1000 events, metadata with special characters)
+- [X] T023: Configure admin date_hierarchy='created_at' for drill-down by year/month/day
+- [X] T024: Add admin fieldsets to organize detail view (Event Info, Context, Metadata sections)
+- [X] T025 [P]: Write integration test for chronological event retrieval with date range filter
+- [X] T026: Implement CSV export admin action (export_as_csv) handling queryset serialization
+- [X] T027: Handle metadata JSON serialization in CSV export - flatten or serialize as JSON string column
+- [X] T028 [P]: Write tests for CSV export (small dataset, large dataset >1000 events, metadata with special characters)
 
 **Implementation Sketch**:
 1. Add date_hierarchy to AuditEventAdmin
@@ -227,13 +227,13 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 **Independent Test**: Call `evaluator.check_permission(user, 'projects.create', organization)` and verify audit event created with event_type='permission.checked', metadata contains permission name and result.
 
 **Subtasks**:
-- [ ] T029: Add audit_log.record() call in permissions/evaluator.py check_permission() method - capture permission, resource, result (allowed/denied)
-- [ ] T030: Add audit_log.record() call in permissions/models.py RoleAssignment.save() - capture role.assigned event on creation
-- [ ] T031: Add audit_log.record() call in permissions/models.py RoleAssignment.delete() or custom delete method - capture role.revoked event
-- [ ] T032: Handle B08 graceful degradation - wrap audit imports in try/except, audit works even if B08 not installed
-- [ ] T033 [P]: Write B08 integration tests (permission.checked events created for allow and deny cases)
-- [ ] T034 [P]: Write B08 integration tests (role.assigned/revoked events created for CRUD operations)
-- [ ] T035: Update B08 documentation (permissions/README.md) with audit integration details and event types
+- [X] T029: Add audit_log.record() call in permissions/evaluator.py check_permission() method - capture permission, resource, result (allowed/denied)
+- [X] T030: Add audit_log.record() call in permissions/models.py RoleAssignment.save() - capture role.assigned event on creation
+- [X] T031: Add audit_log.record() call in permissions/models.py RoleAssignment.delete() or custom delete method - capture role.revoked event
+- [X] T032: Handle B08 graceful degradation - wrap audit imports in try/except, audit works even if B08 not installed
+- [X] T033 [P]: Write B08 integration tests (permission.checked events created for allow and deny cases)
+- [X] T034 [P]: Write B08 integration tests (role.assigned/revoked events created for CRUD operations)
+- [X] T035: Update B08 documentation (permissions/README.md) with audit integration details and event types
 
 **Implementation Sketch**:
 1. In evaluator.py, add `from audit.api import audit_log` at top
@@ -273,10 +273,10 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 **Independent Test**: Run `python manage.py audit_list_event_types` and verify all registered event types displayed with descriptions.
 
 **Subtasks**:
-- [ ] T036 [P]: Create audit_list_event_types command in management/commands/ - display all registered event types with descriptions in table format
-- [ ] T037 [P]: Create audit_export command with --output, --days, --event-types options for CSV export from CLI
-- [ ] T038 [P]: Create audit_cleanup command with --days option to delete events older than retention period, --dry-run flag
-- [ ] T039 [P]: Write tests for management commands using call_command() and asserting stdout/database changes
+- [X] T036 [P]: Create audit_list_event_types command in management/commands/ - display all registered event types with descriptions in table format
+- [X] T037 [P]: Create audit_export command with --output, --days, --event-types options for CSV export from CLI
+- [X] T038 [P]: Create audit_cleanup command with --days option to delete events older than retention period, --dry-run flag
+- [X] T039 [P]: Write tests for management commands using call_command() and asserting stdout/database changes
 
 **Implementation Sketch**:
 1. Create BaseCommand subclasses in management/commands/
