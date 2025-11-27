@@ -16,7 +16,7 @@ from audit.models import AuditEvent
 
 
 @admin.register(AuditEvent)
-class AuditEventAdmin(admin.ModelAdmin):
+class AuditEventAdmin(admin.ModelAdmin):  # type: ignore[type-arg]  # Django admin generics not fully typed
     """
     Read-only admin interface for audit events.
 
@@ -176,7 +176,7 @@ class AuditEventAdmin(admin.ModelAdmin):
 
         return response
 
-    export_as_csv.short_description = "Export selected events to CSV"
+    export_as_csv.short_description = "Export selected events to CSV"  # type: ignore[attr-defined]  # Django admin pattern
 
     # Custom display methods (T016)
     def user_display(self, obj):
@@ -185,22 +185,22 @@ class AuditEventAdmin(admin.ModelAdmin):
             return obj.user.email
         return format_html("<em>Anonymous</em>")
 
-    user_display.short_description = "User"
+    user_display.short_description = "User"  # type: ignore[attr-defined]  # Django admin pattern
 
     def organization_display(self, obj):
         """Display organization name or '-'."""
         return obj.organization.name if obj.organization else "-"
 
-    organization_display.short_description = "Organization"
+    organization_display.short_description = "Organization"  # type: ignore[attr-defined]  # Django admin pattern
 
     def project_display(self, obj):
         """Display project name or '-'."""
         return obj.project.name if obj.project else "-"
 
-    project_display.short_description = "Project"
+    project_display.short_description = "Project"  # type: ignore[attr-defined]  # Django admin pattern
 
     def metadata_display(self, obj):
         """Display metadata as formatted JSON."""
         return format_html("<pre>{}</pre>", json.dumps(obj.metadata, indent=2, ensure_ascii=False))
 
-    metadata_display.short_description = "Metadata"
+    metadata_display.short_description = "Metadata"  # type: ignore[attr-defined]  # Django admin pattern

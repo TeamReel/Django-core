@@ -7,7 +7,7 @@ the application. All audit recording should go through this module.
 
 import json
 import logging
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -17,7 +17,12 @@ from audit.models import AuditEvent
 from audit.registry import is_event_type_registered
 from audit.signals import audit_record_failed
 
-User = get_user_model()
+if TYPE_CHECKING:
+    from accounts.models import User as UserType
+else:
+    User = get_user_model()
+    UserType = User  # type: ignore[misc,assignment]
+
 logger = logging.getLogger(__name__)
 
 
@@ -38,7 +43,7 @@ class AuditLog:
     def record(
         self,
         event_type: str,
-        user: Optional[User] = None,
+        user: Optional[UserType] = None,
         organization: Optional[Any] = None,
         project: Optional[Any] = None,
         metadata: Optional[Dict[str, Any]] = None,

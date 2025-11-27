@@ -1,8 +1,10 @@
 """Management command to list all registered audit event types."""
 
+from typing import Dict, List
+
 from django.core.management.base import BaseCommand
 
-from audit.registry import list_event_types
+from audit.registry import EventTypeMetadata, list_event_types
 
 
 class Command(BaseCommand):
@@ -23,7 +25,7 @@ class Command(BaseCommand):
         self.stdout.write("-" * 80)
 
         # Group by category
-        by_category = {}
+        by_category: Dict[str, List[EventTypeMetadata]] = {}
         for et in event_types:
             by_category.setdefault(et.category, []).append(et)
 

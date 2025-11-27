@@ -117,6 +117,17 @@ module = "config.settings.*"
 module = "tests.*"
 disallow_untyped_defs = false
 
+[[tool.mypy.overrides]]
+# Management commands are operational tools - relax strict typing
+module = "*.management.commands.*"
+disallow_untyped_defs = false
+disallow_untyped_calls = false
+
+[[tool.mypy.overrides]]
+# Django admin has many untyped patterns - relax strict typing
+module = "*.admin"
+disallow_untyped_defs = false
+
 [tool.django-stubs]
 django_settings_module = "config.settings.local"
 strict_settings = true

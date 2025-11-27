@@ -40,9 +40,13 @@ class EventTypeRegistry:
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
-                    cls._instance._registry: Dict[str, EventTypeMetadata] = {}
-                    cls._instance._registry_lock = Lock()
         return cls._instance
+
+    def __init__(self) -> None:
+        # Initialize instance attributes only once
+        if not hasattr(self, "_registry"):
+            self._registry: Dict[str, EventTypeMetadata] = {}
+            self._registry_lock = Lock()
 
     def register(self, event_type: EventTypeMetadata) -> None:
         """Register a new event type."""
