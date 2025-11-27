@@ -1,6 +1,5 @@
 """Tests for permission evaluation engine."""
 
-
 import pytest
 from django.core.cache import cache
 from permissions.evaluator import check_permission, check_permissions_batch
