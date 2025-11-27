@@ -1,3 +1,10 @@
+---
+lane: done
+assignee: claude
+agent: claude
+shell_pid: 45896
+---
+
 # WP08: Testing & Quality Gates
 
 ```yaml
