@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "008",
+    "slug":  "008-hierarchical-access-control",
+    "friendly_name":  "Hierarchical Access Control System",
+    "source_description":  "Define hierarchical access control across users, organisations and projects, enabling fine-grained, inheritance-based permission logic with audit visibility.",
+    "created_at":  "2025-11-25T16:32:31Z"
+}
