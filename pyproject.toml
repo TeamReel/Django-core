@@ -88,6 +88,10 @@ select = [
     "S106",  # Allow hardcoded password arguments in tests
     "S311",  # Allow pseudo-random generators in tests
 ]
+"**/management/commands/*.py" = [
+    "S106",  # Allow hardcoded passwords in seed/test data commands
+    "S311",  # Allow pseudo-random generators in seed/test data commands
+]
 
 [tool.mypy]
 python_version = "3.12"
