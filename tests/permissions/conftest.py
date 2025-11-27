@@ -24,15 +24,15 @@ def admin_user(db):
 
 
 @pytest.fixture
-def organisation(db):
+def organisation(db, user):
     """Create a test organisation."""
-    return Organisation.objects.create(name="Test Org", slug="test-org")
+    return Organisation.objects.create(name="Test Org", slug="test-org", creator=user)
 
 
 @pytest.fixture
-def project(db, organisation):
+def project(db, organisation, user):
     """Create a test project."""
-    return Project.objects.create(name="Test Project", organisation=organisation)
+    return Project.objects.create(name="Test Project", organisation=organisation, creator=user)
 
 
 @pytest.fixture
