@@ -541,3 +541,195 @@ PERMISSIONS_CACHE_ENABLED = False  # Disables Redis requirement
 - ✅ All tests still pass (cache gracefully degrades)
 - ❌ Permission checks slower (hits database every time)
 - ❌ Can't test cache warming or batch performance
+
+---
+
+## Audit Logging Integration
+
+The permissions system automatically logs all permission checks and role changes to the audit system (B09).
+
+### Logged Events
+
+#### permission.checked
+
+**Logged by**: `check_permission()` function in `permissions/evaluator.py`
+
+**When**: Every permission check (allowed or denied)
+
+**Metadata**:
+- `permission` (str): Permission name (e.g., 'projects.create')
+- `result` (str): 'allowed' or 'denied'
+- `resource_type` (str): Type of resource checked ('project', 'organisation', 'generic')
+- `resource_id` (str, optional): UUID of resource checked
+
+**Example**:
+```python
+from permissions.evaluator import check_permission
+
+# Check permission
+check_permission(
+    user.id,
+    'projects.create',
+    resource_id=org.id,
+    resource_type='organisation'
+)
+
+# Audit event automatically created:
+# {
+#   "event_type": "permission.checked",
+#   "user": User(email="user@example.com"),
+#   "organization": Organisation(name="Acme Corp"),
+#   "project": None,
+#   "metadata": {
+#     "permission": "projects.create",
+#     "result": "allowed",  # or "denied"
+#     "resource_type": "organisation",
+#     "resource_id": "uuid-here"
+#   }
+# }
+```
+
+#### role.assigned
+
+**Logged by**: `RoleAssignment.save()` method (on creation only)
+
+**When**: New role assignment created
+
+**Metadata**:
+- `role_name` (str): Name of role assigned (e.g., 'Admin')
+- `role_id` (str): UUID of role
+- `target_user_id` (str): UUID of user receiving role
+- `target_user_email` (str): Email of user receiving role
+- `scope` (str): Assignment scope ('global', 'organization', 'project')
+
+**Example**:
+```python
+from permissions.models import RoleAssignment
+
+# Assign role
+RoleAssignment.objects.create(
+    role=admin_role,
+    user=target_user,
+    scope='organization',
+    target_organization=org,
+    assigned_by=current_admin
+)
+
+# Audit event automatically created:
+# {
+#   "event_type": "role.assigned",
+#   "user": User(current_admin),  # Who assigned the role
+#   "organization": Organisation(org),
+#   "project": None,
+#   "metadata": {
+#     "role_name": "Admin",
+#     "role_id": "uuid-here",
+#     "target_user_id": "uuid-here",
+#     "target_user_email": "user@example.com",
+#     "scope": "organization"
+#   }
+# }
+```
+
+**Note**: Updates to existing role assignments (re-saving) do NOT log duplicate events.
+
+#### role.revoked
+
+**Logged by**: `RoleAssignment.delete()` method
+
+**When**: Role assignment deleted
+
+**Metadata**:
+- `role_name` (str): Name of role revoked
+- `role_id` (str): UUID of role
+- `target_user_id` (str): UUID of user losing role
+- `target_user_email` (str): Email of user losing role
+- `reason` (str): Reason for revocation (default: 'Not specified')
+
+**Example**:
+```python
+# Revoke role with reason
+assignment = RoleAssignment.objects.get(...)
+assignment.delete(
+    revoked_by=admin_user,
+    reason='User left organization'
+)
+
+# Audit event automatically created:
+# {
+#   "event_type": "role.revoked",
+#   "user": User(admin_user),  # Who revoked the role
+#   "organization": Organisation(org),
+#   "project": None,
+#   "metadata": {
+#     "role_name": "Admin",
+#     "role_id": "uuid-here",
+#     "target_user_id": "uuid-here",
+#     "target_user_email": "user@example.com",
+#     "reason": "User left organization"
+#   }
+# }
+```
+
+### Graceful Degradation
+
+Audit logging failures **never break** permission checks or role operations:
+
+- If audit system is unavailable (not installed or import fails), B08 operations proceed normally
+- If audit event recording fails (database error, validation error), exception is caught and logged as warning
+- Permission checks and role changes are never blocked by audit failures
+
+**Example**: Running without audit system installed
+```python
+# Audit system not installed - no problem!
+check_permission(user.id, 'projects.create')  # ✅ Works
+RoleAssignment.objects.create(...)  # ✅ Works
+
+# Warnings logged for ops team, but functionality unaffected
+```
+
+### Querying Audit Events
+
+See permission check history in Django admin:
+
+1. Navigate to **Audit** → **Audit Events**
+2. Filter by event type: `permission.checked`, `role.assigned`, `role.revoked`
+3. Search by user email, organization name, or permission string
+4. View metadata JSON for full context
+
+**Programmatic queries**:
+```python
+from audit.models import AuditEvent
+
+# Get all permission checks for user
+events = AuditEvent.objects.filter(
+    user=user,
+    event_type='permission.checked'
+).order_by('-created_at')
+
+# Get all denied permissions
+denied = AuditEvent.objects.filter(
+    event_type='permission.checked',
+    metadata__result='denied'
+)
+
+# Get recent role changes
+role_changes = AuditEvent.objects.filter(
+    event_type__in=['role.assigned', 'role.revoked']
+).order_by('-created_at')[:100]
+```
+
+### Testing
+
+See `tests/audit/test_b08_integration.py` for comprehensive integration test examples.
+
+**Run B08 integration tests**:
+```bash
+pytest tests/audit/test_b08_integration.py -v
+```
+
+**Test coverage**:
+- Permission check logging (allowed/denied)
+- Role assignment logging (create only, not updates)
+- Role revocation logging (with/without reason)
+- Graceful degradation (audit unavailable, failures handled)
