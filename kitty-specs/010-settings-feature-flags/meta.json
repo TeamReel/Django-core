@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "010",
+    "slug":  "010-settings-feature-flags",
+    "friendly_name":  "Settings \u0026 Feature Flags",
+    "source_description":  "Implement a flexible, cache-friendly settings and feature flags subsystem that supports configuration at global, organisation, and project scope without code redeploys, including safe rollout patterns and fallbacks.",
+    "created_at":  "2025-11-27T20:18:33Z"
+}
