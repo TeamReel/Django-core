@@ -54,7 +54,7 @@ jobs:
         SECRET_KEY: test-secret-key-for-ci-minimum-50-characters-long
         DJANGO_SETTINGS_MODULE: config.settings.local
       run: |
-        python manage.py migrate --noinput 2>&1 | grep -v "Error executing rule" || true
+        python manage.py migrate --noinput
 
     - name: Run tests with coverage
       env:
