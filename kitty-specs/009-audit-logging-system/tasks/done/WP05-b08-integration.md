@@ -1,7 +1,10 @@
 ---
-lane: "doing"
+lane: "done"
 agent: "claude"
 shell_pid: "45896"
+review_status: "approved_without_changes"
+reviewed_by: "claude"
+reviewed_at: "2025-01-21"
 ---
 # WP05: B08 Permission System Integration
 
