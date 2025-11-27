@@ -31,7 +31,7 @@ This document breaks down the Audit Logging System implementation into 8 work pa
 | WP04 | Timeline & CSV Export | P2 | Done ✅ | 6 | [WP04-timeline-csv-export.md](tasks/done/WP04-timeline-csv-export.md) |
 | WP05 | B08 Permission Integration | P1 | Done ✅ | 7 | [WP05-b08-integration.md](tasks/done/WP05-b08-integration.md) |
 | WP06 | Management Commands | P2 | Done ✅ | 4 | [WP06-management-commands.md](tasks/done/WP06-management-commands.md) |
-| WP07 | Documentation & ADR | P2 | Done ✅ | 3 | [WP07-documentation-adr.md](tasks/for_review/WP07-documentation-adr.md) |
+| WP07 | Documentation & ADR | P2 | Done ✅ | 3 | [WP07-documentation-adr.md](tasks/done/WP07-documentation-adr.md) |
 | WP08 | Testing & Quality Gates | P1 | Done ✅ | 3 | [WP08-testing-quality-gates.md](tasks/done/WP08-testing-quality-gates.md) |
 
 ---
