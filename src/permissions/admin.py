@@ -55,7 +55,13 @@ class RoleAdmin(admin.ModelAdmin):
 class PermissionAdmin(admin.ModelAdmin):
     """Admin interface for Permission model."""
 
-    list_display = ["permission", "resource_type", "is_sensitive_badge", "created_at"]
+    list_display = [
+        "permission",
+        "resource_type",
+        "is_sensitive",
+        "is_sensitive_badge",
+        "created_at",
+    ]
     list_filter = ["resource_type", "is_sensitive", "created_at"]
     search_fields = ["permission", "description"]
     readonly_fields = ["id", "created_at"]

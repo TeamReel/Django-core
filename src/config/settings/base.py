@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "organisations.apps.OrganisationsConfig",
     "projects.apps.ProjectsConfig",
     "permissions.apps.PermissionsConfig",  # Hierarchical RBAC system
+    "audit.apps.AuditConfig",  # Audit logging system
 ]
 
 MIDDLEWARE = [
