@@ -42,7 +42,10 @@ def project(db, organization, user):
 @pytest.fixture(autouse=True)
 def register_test_event_type():
     """Register test event type for all tests."""
-    register_event_type("test.event", "test", "Test event")
+    from audit.registry import is_event_type_registered
+
+    if not is_event_type_registered("test.event"):
+        register_event_type("test.event", "test", "Test event")
 
 
 class TestAuditLogRecordSuccess:
