@@ -12,4 +12,4 @@ class TransactionsConfig(AppConfig):
 
     def ready(self) -> None:
         """Import signal handlers when app is ready."""
-        # Signals will be imported here in WP04
+        import transactions.signals  # noqa: F401

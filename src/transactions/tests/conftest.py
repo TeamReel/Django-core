@@ -23,7 +23,7 @@ def organization(db, user):
 @pytest.fixture
 def project(db, organization, user):
     """Create a test project."""
-    return Project.objects.create(name="Test Project", organization=organization, creator=user)
+    return Project.objects.create(name="Test Project", organisation=organization, creator=user)
 
 
 @pytest.fixture
