@@ -80,7 +80,7 @@ class TestUsageEventAPI:
         # Create another org
         from organisations.models import Organisation
 
-        other_org = Organisation.objects.create(name="Other Org")
+        other_org = Organisation.objects.create(name="Other Org", creator=user)
 
         client = APIClient()
         url = reverse("transactions:usage-event-list")
@@ -124,7 +124,7 @@ class TestUsageEventAPI:
         # Create usage events for different orgs
         from organisations.models import Organisation
 
-        other_org = Organisation.objects.create(name="Other Org")
+        other_org = Organisation.objects.create(name="Other Org", creator=user)
 
         UsageEvent.objects.create(event_type="api_call", user=user, organization=organisation)
         UsageEvent.objects.create(event_type="api_call", user=user, organization=other_org)
@@ -523,7 +523,7 @@ class TestMultiTenantIsolation:
         """Test that project must belong to organization."""
         from organisations.models import Organisation
 
-        other_org = Organisation.objects.create(name="Other Org")
+        other_org = Organisation.objects.create(name="Other Org", creator=user)
 
         client = APIClient()
         url = reverse("transactions:transaction-list")

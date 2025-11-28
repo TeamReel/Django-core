@@ -6,6 +6,7 @@ from io import StringIO
 from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -30,6 +31,7 @@ class UsageEventViewSet(viewsets.ModelViewSet):
     serializer_class = UsageEventSerializer
     filterset_class = UsageEventFilter
     http_method_names = ["get", "post"]
+    permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
 
     def get_queryset(self):
         """Filter queryset based on user permissions.
@@ -72,6 +74,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
     filterset_class = TransactionFilter
     http_method_names = ["get", "post"]
+    permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
 
     def get_queryset(self):
         """Filter queryset based on user permissions.
@@ -188,6 +191,8 @@ class OrganizationBalanceView(APIView):
     Endpoint: GET /organizations/{organization_id}/balance/
     """
 
+    permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
+
     def get(self, request: Request, organization_id: str) -> Response:
         """Get organization balance with aggregate stats."""
         from organisations.models import Organisation
@@ -214,6 +219,8 @@ class ProjectBalanceView(APIView):
 
     Endpoint: GET /projects/{project_id}/balance/
     """
+
+    permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
 
     def get(self, request: Request, project_id: str) -> Response:
         """Get project balance with aggregate stats."""
@@ -248,6 +255,7 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
     queryset = BalancePolicy.objects.select_related("organization", "project")
     serializer_class = BalancePolicySerializer
     http_method_names = ["get", "patch"]
+    permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
 
     def get_queryset(self):
         """Filter queryset based on user permissions.
@@ -292,7 +300,7 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
                 )
 
             # Get policy via service layer (returns org-level or default if not found)
-            policy = get_policy(project=project)
+            policy = get_policy(organization=project.organisation, project=project)
 
             serializer = self.get_serializer(policy)
             return Response(serializer.data)
