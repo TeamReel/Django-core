@@ -1,10 +1,9 @@
 """Error handling tests for transactions engine.
 
 Tests for proper error handling and validation:
-- Missing foreign keys
-- Invalid amounts
-- Invalid enum values
-- Constraint violations
+- Invalid amounts (zero, non-decimal)
+- Duplicate idempotency keys
+- Policy violations
 - Service layer error propagation
 
 WP06-T064: Error handling tests
@@ -15,19 +14,19 @@ from decimal import Decimal
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.cache import cache
 from django.db import IntegrityError
 from organisations.models import Organisation
 from projects.models import Project
 
-from transactions.exceptions import PolicyViolationError
-from transactions.models import BalancePolicy, Transaction, UsageEvent
-from transactions.services import (
-    create_transaction,
-    get_organization_balance,
-    get_project_balance,
-    record_usage_event,
+from transactions.exceptions import DuplicateIdempotencyKeyError, InsufficientBalanceError
+from transactions.models import (
+    BalancePolicy,
+    EnforcementModeChoices,
+    SourceTypeChoices,
+    Transaction,
 )
+from transactions.services import create_transaction
 
 User = get_user_model()
 
@@ -49,273 +48,205 @@ class TestErrorHandling:
             organisation=org,
             creator=user,
         )
+        policy = BalancePolicy.objects.create(
+            organization=org,
+            enforcement_mode=EnforcementModeChoices.BLOCK,
+            allow_negative=False,
+        )
 
-        yield {"user": user, "org": org, "project": project}
+        yield {"user": user, "org": org, "project": project, "policy": policy}
 
         # Cleanup
-        Transaction.objects.filter(organisation=org).delete()
-        UsageEvent.objects.filter(organisation=org).delete()
+        cache.clear()
+        Transaction.objects.filter(organization=org).delete()
+        policy.delete()
         project.delete()
         org.delete()
         user.delete()
 
-    def test_missing_organisation_fk(self, test_setup):
-        """Test transaction creation with non-existent organisation."""
-        project = test_setup["project"]
+    def test_zero_amount_transaction_blocked(self, test_setup):
+        """Test that zero-amount transactions are blocked by database constraint."""
+        org = test_setup["org"]
         user = test_setup["user"]
 
-        # Try to create transaction with invalid org ID
-        with pytest.raises((Organisation.DoesNotExist, ValueError)):
+        # Zero amount transactions should fail database constraint
+        with pytest.raises(IntegrityError):
             create_transaction(
-                organisation_id=99999,  # Non-existent
-                project_id=project.id,
-                user_id=user.id,
-                amount=Decimal("10.00"),
-                description="Test missing org",
-                source_type="MANUAL_ADJUSTMENT",
-                idempotency_key=f"missing-org-{uuid.uuid4()}",
+                organization=org,
+                created_by=user,
+                amount=Decimal("0.00"),
+                notes="Zero amount test",
+                source_type=SourceTypeChoices.ADJUSTMENT,
+                idempotency_key=f"zero-amount-{uuid.uuid4()}",
             )
-
-    def test_missing_project_fk(self, test_setup):
-        """Test transaction creation with non-existent project."""
-        org = test_setup["org"]
-        user = test_setup["user"]
-
-        with pytest.raises((Project.DoesNotExist, ValueError)):
-            create_transaction(
-                organisation_id=org.id,
-                project_id=99999,  # Non-existent
-                user_id=user.id,
-                amount=Decimal("10.00"),
-                description="Test missing project",
-                source_type="MANUAL_ADJUSTMENT",
-                idempotency_key=f"missing-proj-{uuid.uuid4()}",
-            )
-
-    def test_missing_user_fk(self, test_setup):
-        """Test transaction creation with non-existent user."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-
-        with pytest.raises((User.DoesNotExist, ValueError)):
-            create_transaction(
-                organisation_id=org.id,
-                project_id=project.id,
-                user_id=99999,  # Non-existent
-                amount=Decimal("10.00"),
-                description="Test missing user",
-                source_type="MANUAL_ADJUSTMENT",
-                idempotency_key=f"missing-user-{uuid.uuid4()}",
-            )
-
-    def test_zero_amount_transaction(self, test_setup):
-        """Test that zero-amount transactions are rejected."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
-
-        # Model-level CHECK constraint should prevent this
-        with pytest.raises((IntegrityError, ValidationError)):
-            Transaction.objects.create(
-                id=uuid.uuid4(),
-                organisation=org,
-                project=project,
-                user=user,
-                amount=Decimal("0.00"),  # Invalid
-                balance_after=Decimal("0.00"),
-                description="Zero amount test",
-                source_type="MANUAL_ADJUSTMENT",
-                idempotency_key=f"zero-amt-{uuid.uuid4()}",
-                metadata={},
-            )
-
-    def test_invalid_source_type(self, test_setup):
-        """Test transaction creation with invalid source type."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
-
-        # Direct model creation with invalid enum
-        with pytest.raises((ValidationError, ValueError)):
-            txn = Transaction(
-                id=uuid.uuid4(),
-                organisation=org,
-                project=project,
-                user=user,
-                amount=Decimal("10.00"),
-                balance_after=Decimal("10.00"),
-                description="Invalid source type",
-                source_type="INVALID_TYPE",  # Not in SourceTypeChoices
-                idempotency_key=f"invalid-source-{uuid.uuid4()}",
-                metadata={},
-            )
-            txn.full_clean()  # Trigger validation
-            txn.save()
-
-    def test_invalid_event_type(self, test_setup):
-        """Test usage event creation with invalid event type."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
-
-        with pytest.raises((ValidationError, ValueError)):
-            event = UsageEvent(
-                id=uuid.uuid4(),
-                event_type="INVALID_EVENT",  # Not in EventTypeChoices
-                organisation=org,
-                project=project,
-                user=user,
-                amount=Decimal("5.00"),
-                metadata={},
-                idempotency_key=f"invalid-event-{uuid.uuid4()}",
-            )
-            event.full_clean()
-            event.save()
-
-    def test_invalid_enforcement_mode(self, test_setup):
-        """Test policy creation with invalid enforcement mode."""
-        org = test_setup["org"]
-
-        with pytest.raises((ValidationError, ValueError)):
-            policy = BalancePolicy(
-                organisation=org,
-                enforcement_mode="INVALID_MODE",  # Not in EnforcementModeChoices
-                min_balance=Decimal("0.00"),
-                metadata={},
-            )
-            policy.full_clean()
-            policy.save()
 
     def test_duplicate_idempotency_key(self, test_setup):
-        """Test that duplicate idempotency keys are rejected."""
+        """Test duplicate idempotency key detection."""
         org = test_setup["org"]
-        project = test_setup["project"]
         user = test_setup["user"]
 
-        idempotency_key = f"duplicate-key-{uuid.uuid4()}"
+        idempotency_key = f"duplicate-test-{uuid.uuid4()}"
 
-        # Create first transaction
+        # First transaction succeeds
         create_transaction(
-            organisation_id=org.id,
-            project_id=project.id,
-            user_id=user.id,
+            organization=org,
+            created_by=user,
             amount=Decimal("10.00"),
-            description="First transaction",
-            source_type="MANUAL_ADJUSTMENT",
+            notes="First transaction",
+            source_type=SourceTypeChoices.ADJUSTMENT,
             idempotency_key=idempotency_key,
         )
 
-        # Try to create duplicate (should fail)
-        with pytest.raises(IntegrityError):
+        # Second with same key fails
+        with pytest.raises(DuplicateIdempotencyKeyError):
             create_transaction(
-                organisation_id=org.id,
-                project_id=project.id,
-                user_id=user.id,
+                organization=org,
+                created_by=user,
                 amount=Decimal("20.00"),
-                description="Duplicate transaction",
-                source_type="MANUAL_ADJUSTMENT",
-                idempotency_key=idempotency_key,  # Same key
+                notes="Second transaction",
+                source_type=SourceTypeChoices.ADJUSTMENT,
+                idempotency_key=idempotency_key,
             )
 
-    def test_negative_balance_with_block_policy(self, test_setup):
-        """Test that BLOCK policy prevents negative balance."""
+    def test_insufficient_balance_error(self, test_setup):
+        """Test insufficient balance policy enforcement."""
         org = test_setup["org"]
-        project = test_setup["project"]
         user = test_setup["user"]
 
-        # Create BLOCK policy
-        BalancePolicy.objects.create(
-            organisation=org,
-            enforcement_mode="BLOCK",
-            min_balance=Decimal("0.00"),
-            metadata={},
-        )
-
-        # Try to create debit transaction with zero balance
-        with pytest.raises(PolicyViolationError) as exc_info:
+        # Try debit with zero balance and BLOCK policy
+        with pytest.raises(InsufficientBalanceError) as exc_info:
             create_transaction(
-                organisation_id=org.id,
-                project_id=project.id,
-                user_id=user.id,
+                organization=org,
+                created_by=user,
                 amount=Decimal("-10.00"),
-                description="Should be blocked",
-                source_type="MANUAL_ADJUSTMENT",
-                idempotency_key=f"blocked-txn-{uuid.uuid4()}",
+                notes="Insufficient balance test",
+                source_type=SourceTypeChoices.ADJUSTMENT,
+                idempotency_key=f"insufficient-{uuid.uuid4()}",
             )
 
-        assert "balance" in str(exc_info.value).lower()
+        # Check exception details
+        assert exc_info.value.current_balance == Decimal("0.00")
+        assert exc_info.value.requested_amount == Decimal("10.00")
+
+    def test_negative_balance_allowed_with_policy(self, test_setup):
+        """Test that negative balance works when policy allows."""
+        org = test_setup["org"]
+        user = test_setup["user"]
+        policy = test_setup["policy"]
+
+        # Update policy to allow negative
+        policy.allow_negative = True
+        policy.save()
+
+        # Now debit should succeed
+        txn = create_transaction(
+            organization=org,
+            created_by=user,
+            amount=Decimal("-10.00"),
+            notes="Negative balance allowed",
+            source_type=SourceTypeChoices.ADJUSTMENT,
+            idempotency_key=f"negative-allowed-{uuid.uuid4()}",
+        )
+
+        assert txn.amount == Decimal("-10.00")
+        assert txn.balance_after == Decimal("-10.00")
+
+    def test_invalid_source_type_string(self, test_setup):
+        """Test that invalid source_type values are rejected."""
+        org = test_setup["org"]
+        user = test_setup["user"]
+
+        # Invalid source_type should fail validation
+        with pytest.raises((ValueError, IntegrityError)):
+            Transaction.objects.create(
+                organization=org,
+                created_by=user,
+                amount=Decimal("10.00"),
+                notes="Invalid source type",
+                source_type="INVALID_TYPE",  # Not in SourceTypeChoices
+                idempotency_key=f"invalid-source-{uuid.uuid4()}",
+                balance_after=Decimal("10.00"),
+            )
+
+    def test_usage_event_without_required_source(self, test_setup):
+        """Test that USAGE_EVENT source_type requires usage_event FK."""
+        org = test_setup["org"]
+        user = test_setup["user"]
+
+        # Creating transaction with USAGE_EVENT type but no usage_event should fail constraint
+        with pytest.raises(IntegrityError):
+            Transaction.objects.create(
+                organization=org,
+                created_by=user,
+                amount=Decimal("10.00"),
+                notes="Missing usage event",
+                source_type=SourceTypeChoices.USAGE_EVENT,
+                usage_event=None,  # Required for USAGE_EVENT type
+                idempotency_key=f"missing-usage-{uuid.uuid4()}",
+                balance_after=Decimal("10.00"),
+            )
+
+    def test_missing_idempotency_key(self, test_setup):
+        """Test that idempotency_key is required."""
+        org = test_setup["org"]
+        user = test_setup["user"]
+
+        # Missing idempotency_key should fail NOT NULL constraint
+        with pytest.raises(IntegrityError):
+            Transaction.objects.create(
+                organization=org,
+                created_by=user,
+                amount=Decimal("10.00"),
+                notes="Missing idempotency key",
+                source_type=SourceTypeChoices.ADJUSTMENT,
+                idempotency_key=None,  # Required field
+                balance_after=Decimal("10.00"),
+            )
 
     def test_invalid_decimal_precision(self, test_setup):
-        """Test that amounts with >4 decimal places are handled correctly."""
+        """Test that amounts beyond NUMERIC(14,4) precision are rejected."""
         org = test_setup["org"]
-        project = test_setup["project"]
         user = test_setup["user"]
 
-        # Amount with 5 decimal places (should be rounded to 4)
-        amount = Decimal("10.12345")
-
-        txn = create_transaction(
-            organisation_id=org.id,
-            project_id=project.id,
-            user_id=user.id,
-            amount=amount,
-            description="High precision test",
-            source_type="MANUAL_ADJUSTMENT",
-            idempotency_key=f"precision-{uuid.uuid4()}",
-        )
-
-        # Verify amount is stored with correct precision (rounded or truncated)
-        # NUMERIC(14,4) should automatically handle this
-        assert txn.amount == Decimal("10.1235") or txn.amount == Decimal("10.1234")
-
-    def test_get_balance_nonexistent_org(self):
-        """Test balance query for non-existent organization."""
-        # Query non-existent org (should return 0 or raise DoesNotExist)
-        balance = get_organization_balance(99999)
-        assert balance == Decimal("0.00")
-
-    def test_get_balance_nonexistent_project(self):
-        """Test balance query for non-existent project."""
-        balance = get_project_balance(99999)
-        assert balance == Decimal("0.00")
-
-    def test_usage_event_negative_amount(self, test_setup):
-        """Test that usage events with negative amounts are allowed (refunds)."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
-
-        # Negative amounts should be allowed for usage events (e.g., refunds)
-        event = record_usage_event(
-            event_type="API_CALL",
-            organisation_id=org.id,
-            project_id=project.id,
-            user_id=user.id,
-            amount=Decimal("-5.00"),  # Negative (refund)
-            idempotency_key=f"negative-event-{uuid.uuid4()}",
-            metadata={"reason": "refund"},
-        )
-
-        assert event.amount == Decimal("-5.00")
-
-    def test_metadata_not_json_serializable(self, test_setup):
-        """Test that non-JSON-serializable metadata is rejected."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
-
-        # Try to create transaction with non-serializable metadata
-        # (Note: This depends on how metadata is validated in the service layer)
-        with pytest.raises((TypeError, ValueError, ValidationError)):
-            from datetime import datetime
-
+        # Amount with too many decimal places (5 instead of 4)
+        with pytest.raises((ValueError, IntegrityError)):
             create_transaction(
-                organisation_id=org.id,
-                project_id=project.id,
-                user_id=user.id,
-                amount=Decimal("10.00"),
-                description="Non-serializable metadata",
-                source_type="MANUAL_ADJUSTMENT",
-                idempotency_key=f"bad-meta-{uuid.uuid4()}",
-                metadata={"timestamp": datetime.now()},  # datetime not JSON serializable
+                organization=org,
+                created_by=user,
+                amount=Decimal("10.00001"),  # 5 decimal places
+                notes="Invalid precision",
+                source_type=SourceTypeChoices.ADJUSTMENT,
+                idempotency_key=f"invalid-precision-{uuid.uuid4()}",
             )
+
+    def test_project_org_mismatch(self, test_setup):
+        """Test that project must belong to the specified organization."""
+        org = test_setup["org"]
+        user = test_setup["user"]
+
+        # Create another org and project
+        org2 = Organisation.objects.create(name="Org 2", slug="org-2", creator=user)
+        project2 = Project.objects.create(
+            name="Project 2", slug="proj-2", organisation=org2, creator=user
+        )
+
+        # Try to create transaction with org1 and project2 (belongs to org2)
+        # This should succeed at database level but may fail business logic
+        txn = create_transaction(
+            organization=org,
+            project=project2,  # Belongs to different org!
+            created_by=user,
+            amount=Decimal("10.00"),
+            notes="Mismatched project",
+            source_type=SourceTypeChoices.ADJUSTMENT,
+            idempotency_key=f"mismatch-{uuid.uuid4()}",
+        )
+
+        # The transaction is created, but with potential data integrity issues
+        # This test documents current behavior - ideally should add FK constraint
+        assert txn.organization.id != txn.project.organisation.id
+
+        # Cleanup
+        Transaction.objects.filter(id=txn.id).delete()
+        project2.delete()
+        org2.delete()

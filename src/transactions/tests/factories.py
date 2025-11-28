@@ -7,7 +7,6 @@ WP06-T058: factory_boy fixtures for tests
 """
 
 import uuid
-from datetime import datetime, timezone
 from decimal import Decimal
 
 import factory
@@ -20,7 +19,6 @@ from projects.models import Project
 from transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,
-    EventTypeChoices,
     SourceTypeChoices,
     Transaction,
     UsageEvent,
@@ -52,7 +50,7 @@ class OrganisationFactory(DjangoModelFactory):
     slug = factory.Sequence(lambda n: f"test-org-{n}")
     description = factory.Faker("text", max_nb_chars=200)
     is_active = True
-    created_by = factory.SubFactory(UserFactory)
+    creator = factory.SubFactory(UserFactory)
 
 
 class ProjectFactory(DjangoModelFactory):
@@ -66,7 +64,7 @@ class ProjectFactory(DjangoModelFactory):
     slug = factory.Sequence(lambda n: f"test-project-{n}")
     description = factory.Faker("text", max_nb_chars=200)
     organisation = factory.SubFactory(OrganisationFactory)
-    created_by = factory.SubFactory(UserFactory)
+    creator = factory.SubFactory(UserFactory)
     is_active = True
 
 
@@ -75,13 +73,13 @@ class BalancePolicyFactory(DjangoModelFactory):
 
     class Meta:
         model = BalancePolicy
-        django_get_or_create = ("organisation",)
+        django_get_or_create = ("organization",)
 
-    organisation = factory.SubFactory(OrganisationFactory)
+    organization = factory.SubFactory(OrganisationFactory)
     project = None  # Can be set for project-specific policies
     enforcement_mode = EnforcementModeChoices.BLOCK
-    min_balance = Decimal("0.00")
-    metadata = {}
+    allow_negative = False
+    warn_threshold = Decimal("100.00")
 
 
 class UsageEventFactory(DjangoModelFactory):
@@ -91,13 +89,12 @@ class UsageEventFactory(DjangoModelFactory):
         model = UsageEvent
 
     id = factory.LazyFunction(uuid.uuid4)
-    event_type = fuzzy.FuzzyChoice(EventTypeChoices.choices, getter=lambda c: c[0])
-    organisation = factory.SubFactory(OrganisationFactory)
+    event_type = factory.Sequence(lambda n: f"test_event_type_{n}")
+    organization = factory.SubFactory(OrganisationFactory)
     project = factory.SubFactory(
-        ProjectFactory, organisation=factory.SelfAttribute("..organisation")
+        ProjectFactory, organisation=factory.SelfAttribute("..organization")
     )
     user = factory.SubFactory(UserFactory)
-    amount = fuzzy.FuzzyDecimal(low=0.01, high=999.99, precision=4)
     metadata = factory.LazyFunction(
         lambda: {
             "source": "test_factory",
@@ -106,7 +103,6 @@ class UsageEventFactory(DjangoModelFactory):
         }
     )
     idempotency_key = factory.LazyFunction(lambda: f"test-{uuid.uuid4()}")
-    occurred_at = factory.LazyFunction(lambda: datetime.now(timezone.utc))
 
 
 class TransactionFactory(DjangoModelFactory):
@@ -116,23 +112,18 @@ class TransactionFactory(DjangoModelFactory):
         model = Transaction
 
     id = factory.LazyFunction(uuid.uuid4)
-    organisation = factory.SubFactory(OrganisationFactory)
+    organization = factory.SubFactory(OrganisationFactory)
     project = factory.SubFactory(
-        ProjectFactory, organisation=factory.SelfAttribute("..organisation")
+        ProjectFactory, organisation=factory.SelfAttribute("..organization")
     )
-    user = factory.SubFactory(UserFactory)
+    created_by = factory.SubFactory(UserFactory)
     amount = fuzzy.FuzzyDecimal(low=-999.99, high=999.99, precision=4)
     balance_after = Decimal("0.00")  # Should be computed in service layer
-    description = factory.Faker("sentence", nb_words=6)
     source_type = fuzzy.FuzzyChoice(SourceTypeChoices.choices, getter=lambda c: c[0])
-    source_id = factory.LazyFunction(uuid.uuid4)
     idempotency_key = factory.LazyFunction(lambda: f"txn-{uuid.uuid4()}")
-    metadata = factory.LazyFunction(
-        lambda: {
-            "source": "test_factory",
-            "created_via": "factory_boy",
-        }
-    )
+    notes = factory.Faker("sentence", nb_words=6)
+    external_reference_id = None
+    usage_event = None
 
 
 class CreditTransactionFactory(TransactionFactory):
@@ -156,21 +147,11 @@ class UsageEventWithTransactionFactory(UsageEventFactory):
         if not create:
             return
 
-        if extracted:
-            # Use provided transaction details
-            transaction_amount = kwargs.get("amount", self.amount)
-            transaction_desc = kwargs.get("description", f"Transaction for {self.event_type}")
-        else:
-            transaction_amount = self.amount
-            transaction_desc = f"Automated transaction for event {self.id}"
-
         TransactionFactory.create(
-            organisation=self.organisation,
+            organization=self.organization,
             project=self.project,
-            user=self.user,
-            amount=transaction_amount,
+            created_by=self.user,
             source_type=SourceTypeChoices.USAGE_EVENT,
-            source_id=self.id,
-            description=transaction_desc,
+            usage_event=self,
             **kwargs,
         )
