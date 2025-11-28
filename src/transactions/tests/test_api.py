@@ -29,6 +29,10 @@ class TestUsageEventAPI:
 
         response = client.post(url, data, format="json")
 
+        # Debug output
+        if response.status_code != status.HTTP_201_CREATED:
+            print(f"\nDEBUG: Status={response.status_code}, Data={response.data}")
+
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["event_type"] == "api_call"
         assert response.data["idempotency_key"] == "test-usage-001"
@@ -370,7 +374,7 @@ class TestBalanceAPI:
 
         response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        assert Decimal(response.data["balance"]) == Decimal("75.0000")
+        assert Decimal(response.data["current_balance"]) == Decimal("75.0000")
         assert response.data["transaction_count"] == 2
 
     def test_get_organization_balance_not_found(self):
@@ -410,7 +414,7 @@ class TestBalanceAPI:
 
         response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        assert Decimal(response.data["balance"]) == Decimal("35.0000")
+        assert Decimal(response.data["current_balance"]) == Decimal("35.0000")
         assert response.data["transaction_count"] == 2
 
     def test_get_project_balance_not_found(self):

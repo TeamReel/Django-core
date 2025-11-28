@@ -208,7 +208,8 @@ class OrganizationBalanceView(APIView):
         # TODO: Check user has access to this organization (B08 permissions)
 
         # Compute balance via service layer (uses cache)
-        balance_data = get_organization_balance(organization)
+        balance_data = get_organization_balance(organization.id)
+        balance_data["organization_id"] = organization.id  # Add org ID for serializer
 
         serializer = BalanceSerializer(balance_data)
         return Response(serializer.data)
@@ -237,7 +238,8 @@ class ProjectBalanceView(APIView):
         # TODO: Check user has access to this project (B08 permissions)
 
         # Compute balance via service layer (uses cache)
-        balance_data = get_project_balance(project)
+        balance_data = get_project_balance(project.id)
+        balance_data["project_id"] = project.id  # Add project ID for serializer
 
         serializer = BalanceSerializer(balance_data)
         return Response(serializer.data)

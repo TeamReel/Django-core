@@ -11,8 +11,8 @@ class UsageEventSerializer(serializers.ModelSerializer):
     """Serializer for UsageEvent model."""
 
     organization_id = serializers.UUIDField(write_only=True, required=True)
-    project_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
-    user_id = serializers.UUIDField(write_only=True, required=True)
+    project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)  # Project uses integer PK
+    user_id = serializers.IntegerField(write_only=True, required=True)  # User uses integer PK
 
     class Meta:
         """Serializer metadata."""
@@ -110,8 +110,8 @@ class TransactionSerializer(serializers.ModelSerializer):
     """Serializer for Transaction model."""
 
     organization_id = serializers.UUIDField(write_only=True, required=True)
-    project_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
-    created_by_id = serializers.UUIDField(write_only=True, required=True)
+    project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)  # Project uses integer PK
+    created_by_id = serializers.IntegerField(write_only=True, required=True)  # User uses integer PK
     usage_event_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
 
     # Read-only display fields
@@ -273,10 +273,11 @@ class BalanceSerializer(serializers.Serializer):
     """Read-only serializer for computed balance data."""
 
     organization_id = serializers.UUIDField(required=False, allow_null=True)
-    project_id = serializers.UUIDField(required=False, allow_null=True)
-    balance = serializers.DecimalField(max_digits=14, decimal_places=4)
+    project_id = serializers.IntegerField(required=False, allow_null=True)  # Project uses integer PK
+    current_balance = serializers.DecimalField(max_digits=14, decimal_places=4)
     transaction_count = serializers.IntegerField()
-    last_transaction_timestamp = serializers.DateTimeField(allow_null=True)
+    total_positive_amounts = serializers.DecimalField(max_digits=14, decimal_places=4, required=False)
+    total_negative_amounts = serializers.DecimalField(max_digits=14, decimal_places=4, required=False)
 
     def to_representation(self, instance):
         """Convert dict to representation."""
@@ -284,9 +285,10 @@ class BalanceSerializer(serializers.Serializer):
         return {
             "organization_id": instance.get("organization_id"),
             "project_id": instance.get("project_id"),
-            "balance": instance["balance"],
+            "current_balance": instance["current_balance"],
             "transaction_count": instance["transaction_count"],
-            "last_transaction_timestamp": instance.get("last_transaction_timestamp"),
+            "total_positive_amounts": instance.get("total_positive_amounts", Decimal("0")),
+            "total_negative_amounts": instance.get("total_negative_amounts", Decimal("0")),
         }
 
 
