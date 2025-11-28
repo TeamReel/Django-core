@@ -108,8 +108,8 @@
 
 **Goal**: Implement DRF API for usage events, transactions, balances, and policies.
 **Independent Test**: All 8 endpoints return correct responses; permissions enforced; CSV export works.
-**Prompt**: `tasks/for_review/WP03-rest-api-endpoints.md`
-**Status**: 🔍 FOR REVIEW (66 tests passing, 3 skipped - awaiting code review)
+**Prompt**: `tasks/done/WP03-rest-api-endpoints.md`
+**Status**: ✅ COMPLETE (23/23 API tests passing - code review approved)
 
 ### Included Subtasks
 - [x] T024 Create src/transactions/api/ module structure
