@@ -23,7 +23,7 @@ class TestFeatureFlagAPIEndpoints(APITestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123"
         )
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
@@ -184,7 +184,7 @@ class TestSettingAPIEndpoints(APITestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123"
         )
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
@@ -272,7 +272,7 @@ class TestResolveAPIEndpoints(APITestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123"
         )
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
@@ -363,7 +363,7 @@ class TestAPIValidation(APITestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123"
         )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
@@ -416,13 +416,13 @@ class TestAPIPermissions(APITestCase):
     def setUp(self):
         """Set up test users and organisations."""
         self.owner = User.objects.create_user(
-            username="owner", email="owner@example.com", password="ownerpass123"
+            email="owner@example.com", password="ownerpass123"
         )
         self.member = User.objects.create_user(
-            username="member", email="member@example.com", password="memberpass123"
+            email="member@example.com", password="memberpass123"
         )
         self.outsider = User.objects.create_user(
-            username="outsider", email="outsider@example.com", password="outsiderpass123"
+            email="outsider@example.com", password="outsiderpass123"
         )
 
         self.organisation = Organisation.objects.create(

@@ -34,13 +34,13 @@ class UserStory1IntegrationTest(TransactionTestCase):
         """Set up complete user story test environment."""
         # Create users with different roles
         self.product_manager = User.objects.create_user(
-            username="product_manager", email="pm@example.com", password="pmpass123"
+            email="pm@example.com", password="pmpass123"
         )
         self.developer = User.objects.create_user(
-            username="developer", email="dev@example.com", password="devpass123"
+            email="dev@example.com", password="devpass123"
         )
         self.end_user = User.objects.create_user(
-            username="end_user", email="user@example.com", password="userpass123"
+            email="user@example.com", password="userpass123"
         )
 
         # Create organisational structure
@@ -326,7 +326,7 @@ class UserStory2IntegrationTest(TransactionTestCase):
         """Set up complete settings test environment."""
         # Create admin user
         self.admin = User.objects.create_user(
-            username="admin", email="admin@example.com", password="adminpass123"
+            email="admin@example.com", password="adminpass123"
         )
 
         # Create organisation and projects

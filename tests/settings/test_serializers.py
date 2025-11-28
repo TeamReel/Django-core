@@ -7,9 +7,12 @@ Tests Django REST Framework serializers validation and data handling.
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from organisations.models import Organisation
+from projects.models import Project
 
 from src.settings.models import FeatureFlag, ScopeType, Setting
 from src.settings.serializers import (
+    FeatureFlagResolveSerializer,
     FeatureFlagSerializer,
     SettingSerializer,
 )
@@ -23,7 +26,7 @@ class TestFeatureFlagSerializer(TestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123"
         )
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
@@ -208,7 +211,7 @@ class TestSettingSerializer(TestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123"
         )
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
@@ -373,7 +376,7 @@ class TestResolveRequestSerializer(TestCase):
         """Test valid flag resolve request."""
         data = {"key": "test_flag", "organisation_id": 123, "project_id": 456}
 
-        serializer = ResolveRequestSerializer(data=data)
+        serializer = FeatureFlagResolveSerializer(data=data)
         assert serializer.is_valid()
 
         validated_data = serializer.validated_data
@@ -385,7 +388,7 @@ class TestResolveRequestSerializer(TestCase):
         """Test minimal resolve request with only key."""
         data = {"key": "global_flag"}
 
-        serializer = ResolveRequestSerializer(data=data)
+        serializer = FeatureFlagResolveSerializer(data=data)
         assert serializer.is_valid()
 
         validated_data = serializer.validated_data
@@ -397,7 +400,7 @@ class TestResolveRequestSerializer(TestCase):
         """Test validation when key is missing."""
         data = {"organisation_id": 123}
 
-        serializer = ResolveRequestSerializer(data=data)
+        serializer = FeatureFlagResolveSerializer(data=data)
         assert not serializer.is_valid()
         assert "key" in serializer.errors
 
@@ -405,7 +408,7 @@ class TestResolveRequestSerializer(TestCase):
         """Test validation when key is empty."""
         data = {"key": ""}
 
-        serializer = ResolveRequestSerializer(data=data)
+        serializer = FeatureFlagResolveSerializer(data=data)
         assert not serializer.is_valid()
         assert "key" in serializer.errors
 
@@ -460,7 +463,7 @@ class TestSerializerEdgeCases(TestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123"
         )
 
     def test_partial_update_serialization(self):

@@ -24,16 +24,16 @@ class TestScopeAwarePermissions(TestCase):
     def setUp(self):
         """Set up test users, organisations, and projects."""
         self.admin_user = User.objects.create_user(
-            username="admin", email="admin@example.com", password="adminpass123"
+            email="admin@example.com", password="adminpass123"
         )
         self.org_owner = User.objects.create_user(
-            username="owner", email="owner@example.com", password="ownerpass123"
+            email="owner@example.com", password="ownerpass123"
         )
         self.project_member = User.objects.create_user(
-            username="member", email="member@example.com", password="memberpass123"
+            email="member@example.com", password="memberpass123"
         )
         self.outsider = User.objects.create_user(
-            username="outsider", email="outsider@example.com", password="outsiderpass123"
+            email="outsider@example.com", password="outsiderpass123"
         )
 
         self.organisation = Organisation.objects.create(
@@ -237,7 +237,7 @@ class TestPermissionInheritance(TestCase):
     def setUp(self):
         """Set up hierarchy of permissions."""
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123"
         )
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
@@ -346,10 +346,10 @@ class TestAPIPermissionIntegration(TestCase):
         self.client = APIClient()
 
         self.admin = User.objects.create_user(
-            username="admin", email="admin@example.com", password="adminpass123"
+            email="admin@example.com", password="adminpass123"
         )
         self.user = User.objects.create_user(
-            username="user", email="user@example.com", password="userpass123"
+            email="user@example.com", password="userpass123"
         )
 
         self.organisation = Organisation.objects.create(
@@ -453,7 +453,7 @@ class TestPermissionCaching(TestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123"
         )
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
@@ -521,7 +521,7 @@ class TestCustomPermissionLogic(TestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123"
         )
 
     def test_permission_with_inactive_flag(self):
@@ -593,7 +593,6 @@ class TestCustomPermissionLogic(TestCase):
     def test_superuser_permissions(self):
         """Test superuser bypass of normal permissions."""
         superuser = User.objects.create_user(
-            username="superuser",
             email="super@example.com",
             password="superpass123",
             is_superuser=True,
