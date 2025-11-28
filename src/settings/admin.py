@@ -2,8 +2,9 @@
 
 from django.contrib import admin
 from django.utils.html import format_html
+from permissions.evaluator import check_permission
 
-from .models import FeatureFlag, Setting
+from .models import FeatureFlag, ScopeType, Setting
 
 
 @admin.register(FeatureFlag)
@@ -88,6 +89,54 @@ class FeatureFlagAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+    def has_change_permission(self, request, obj=None):
+        """Check if user can modify this feature flag."""
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if request.user.is_superuser:
+            return True
+
+        if obj is None:
+            # For list view, allow if user has any settings permissions
+            return check_permission(request.user.id, "org.manage_settings") or check_permission(
+                request.user.id, "projects.update"
+            )
+
+        # Check specific object permission
+        if obj.scope_type == ScopeType.GLOBAL:
+            # Global settings require superuser status
+            return request.user.is_superuser
+        elif obj.scope_type == ScopeType.ORGANISATION:
+            return check_permission(
+                request.user.id, "org.manage_settings", obj.organisation_id, "organisation"
+            )
+        else:  # PROJECT
+            # Check both project permissions and org permissions
+            has_project_perm = check_permission(
+                request.user.id, "projects.update", obj.project_id, "project"
+            )
+
+            # Also allow org admins to manage project settings
+            if not has_project_perm and obj.project:
+                has_org_perm = check_permission(
+                    request.user.id,
+                    "org.manage_settings",
+                    obj.project.organisation.id,
+                    "organisation",
+                )
+                return has_org_perm
+
+            return has_project_perm
+
+    def has_add_permission(self, request):
+        """Check if user can add feature flags."""
+        return self.has_change_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        """Check if user can delete feature flags."""
+        return self.has_change_permission(request, obj)
+
 
 @admin.register(Setting)
 class SettingAdmin(admin.ModelAdmin):
@@ -138,3 +187,51 @@ class SettingAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+    def has_change_permission(self, request, obj=None):
+        """Check if user can modify this setting."""
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if request.user.is_superuser:
+            return True
+
+        if obj is None:
+            # For list view, allow if user has any settings permissions
+            return check_permission(request.user.id, "org.manage_settings") or check_permission(
+                request.user.id, "projects.update"
+            )
+
+        # Check specific object permission
+        if obj.scope_type == ScopeType.GLOBAL:
+            # Global settings require superuser status
+            return request.user.is_superuser
+        elif obj.scope_type == ScopeType.ORGANISATION:
+            return check_permission(
+                request.user.id, "org.manage_settings", obj.organisation_id, "organisation"
+            )
+        else:  # PROJECT
+            # Check both project permissions and org permissions
+            has_project_perm = check_permission(
+                request.user.id, "projects.update", obj.project_id, "project"
+            )
+
+            # Also allow org admins to manage project settings
+            if not has_project_perm and obj.project:
+                has_org_perm = check_permission(
+                    request.user.id,
+                    "org.manage_settings",
+                    obj.project.organisation.id,
+                    "organisation",
+                )
+                return has_org_perm
+
+            return has_project_perm
+
+    def has_add_permission(self, request):
+        """Check if user can add settings."""
+        return self.has_change_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        """Check if user can delete settings."""
+        return self.has_change_permission(request, obj)

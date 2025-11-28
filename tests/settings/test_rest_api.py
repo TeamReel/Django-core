@@ -5,16 +5,14 @@ Tests all REST API endpoints for CRUD operations, validation,
 permissions, and error handling.
 """
 
-import json
-import pytest
-from django.urls import reverse
 from django.contrib.auth import get_user_model
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
-from src.settings.models import FeatureFlag, Setting, ScopeType
+from django.urls import reverse
 from organisations.models import Organisation
 from projects.models import Project
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
+
+from src.settings.models import FeatureFlag, ScopeType, Setting
 
 User = get_user_model()
 

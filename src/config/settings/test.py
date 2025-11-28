@@ -1,10 +1,11 @@
 # Test settings for settings app - uses dummy cache backend
 from .base import *
 
-# Use dummy cache backend for testing
+# Use in-memory cache backend for testing cache functionality
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "test-cache",
     }
 }
 
@@ -17,16 +18,9 @@ DATABASES = {
 }
 
 
-# Disable migrations for faster test setup
-class DisableMigrations:
-    def __contains__(self, item):
-        return True
-
-    def __getitem__(self, item):
-        return None
-
-
-MIGRATION_MODULES = DisableMigrations()
+# Enable migrations for test database setup
+# This ensures all required tables are created properly
+# MIGRATION_MODULES = {}  # Enable all migrations
 
 # Disable logging during tests
 LOGGING = {

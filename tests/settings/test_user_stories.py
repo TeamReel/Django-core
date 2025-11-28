@@ -6,19 +6,18 @@ Tests complete user story scenarios end-to-end including:
 - User Story 2: Setting configuration and retrieval
 """
 
-import json
-from django.contrib.auth import get_user_model
-from django.test import TestCase, TransactionTestCase
-from django.urls import reverse
-from rest_framework.test import APIClient
-from rest_framework import status
-
-from src.settings.models import FeatureFlag, Setting, ScopeType
-from src.settings.api import get_flag, get_setting
-from organisations.models import Organisation
-from projects.models import Project
 from audit.models import AuditEvent
-from permissions.models import Role, Permission, RoleAssignment
+from django.contrib.auth import get_user_model
+from django.test import TransactionTestCase
+from django.urls import reverse
+from organisations.models import Organisation
+from permissions.models import Permission, Role, RoleAssignment
+from projects.models import Project
+from rest_framework import status
+from rest_framework.test import APIClient
+
+from src.settings.api import get_flag, get_setting
+from src.settings.models import FeatureFlag, ScopeType, Setting
 
 User = get_user_model()
 

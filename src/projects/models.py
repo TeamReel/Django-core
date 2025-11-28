@@ -62,6 +62,7 @@ class Project(models.Model):
     all_objects = AllProjectManager()
 
     class Meta:
+        app_label = "projects"
         db_table = "projects_project"
         ordering = ["-created_at"]
         constraints = [

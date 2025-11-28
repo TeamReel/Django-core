@@ -12,7 +12,7 @@ subtasks:
 title: "Database Models & Migrations"
 phase: "Phase 0 - Foundation"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "copilot-reviewer"
 shell_pid: "17920"
 review_status: "approved without changes"

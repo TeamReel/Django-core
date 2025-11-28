@@ -53,6 +53,7 @@ class AuditEvent(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
 
     class Meta:
+        app_label = "audit"
         db_table = "audit_events"
         ordering = ["-created_at"]
         verbose_name = "Audit Event"

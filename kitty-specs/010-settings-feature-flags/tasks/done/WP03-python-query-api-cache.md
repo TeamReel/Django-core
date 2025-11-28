@@ -1,5 +1,6 @@
 ---
 lane: "done"
+assignee: "claude"
 agent: "claude"
 shell_pid: "29000"
 review_status: "approved without changes"

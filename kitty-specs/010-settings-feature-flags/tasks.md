@@ -35,7 +35,7 @@ This feature implements a centralised configuration management system with featu
 | WP03 | Python Query API & Cache Layer | P1 | Planned | 10 | [WP03-python-query-api-cache.md](tasks/planned/WP03-python-query-api-cache.md) |
 | WP04 | REST API Endpoints | P1 | Planned | 9 | [WP04-rest-api-endpoints.md](tasks/planned/WP04-rest-api-endpoints.md) |
 | WP05 | Django Admin Interface | P2 | Planned | 6 | [WP05-django-admin-interface.md](tasks/planned/WP05-django-admin-interface.md) |
-| WP06 | Scope-Aware Permissions | P1 | Planned | 7 | [WP06-scope-aware-permissions.md](tasks/planned/WP06-scope-aware-permissions.md) |
+| WP06 | Scope-Aware Permissions | P1 | Done | 7/7 ✅ | [WP06-scope-aware-permissions.md](tasks/done/WP06-scope-aware-permissions.md) |
 | WP07 | Audit Integration & Signals | P2 | Planned | 5 | [WP07-audit-integration-signals.md](tasks/planned/WP07-audit-integration-signals.md) |
 | WP08 | Testing Suite | P0 | Planned | 12 | [WP08-testing-suite.md](tasks/planned/WP08-testing-suite.md) |
 
@@ -254,7 +254,7 @@ Implement DRF permission classes that enforce scope-aware access control: org ad
 - Superusers can modify all scopes
 - Permission checks work in both REST API and Django Admin
 
-**Prompt**: [tasks/planned/WP06-scope-aware-permissions.md](tasks/planned/WP06-scope-aware-permissions.md)
+**Prompt**: [tasks/done/WP06-scope-aware-permissions.md](tasks/done/WP06-scope-aware-permissions.md)
 
 ---
 

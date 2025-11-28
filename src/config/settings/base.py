@@ -35,10 +35,10 @@ INSTALLED_APPS = [
     # Core-App modules
     "constitution_engine",
     "security_baseline",
-    "organisations.apps.OrganisationsConfig",
-    "projects.apps.ProjectsConfig",
+    "src.organisations.apps.OrganisationsConfig",
+    "src.projects.apps.ProjectsConfig",
     "permissions.apps.PermissionsConfig",  # Hierarchical RBAC system
-    "audit.apps.AuditConfig",  # Audit logging system
+    "src.audit.apps.AuditConfig",  # Audit logging system
     "src.settings.apps.SettingsConfig",  # Settings & Feature Flags (B10)
 ]
 

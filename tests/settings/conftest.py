@@ -5,16 +5,16 @@ Provides shared fixtures for database factories, mock Redis client,
 permission system setup, and test client configurations.
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
-from django.contrib.auth import get_user_model
-from django.test import Client
-from rest_framework.test import APIClient
-from organisations.models import Organisation
-from projects.models import Project
-from permissions.models import Role, Permission, RoleAssignment, ScopeChoices
 
-from src.settings.models import FeatureFlag, Setting, ScopeType, SettingType
+import pytest
+from django.contrib.auth import get_user_model
+from organisations.models import Organisation
+from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
+from projects.models import Project
+from rest_framework.test import APIClient
+
+from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
 

@@ -1,4 +1,19 @@
+---
+lane: "done"
+agent: "claude"
+shell_pid: "29000"
+assignee: "claude"
+review_status: "approved with minor notes"
+reviewed_by: "claude-reviewer"
+---
+
 # Work Package Prompt: WP06 – Scope-Aware Permissions
+
+## Activity Log
+
+- 2025-11-28T10:00:00Z – claude – shell_pid=29000 – lane=doing – Started implementation
+- 2025-11-28T11:00:00Z – claude – shell_pid=29000 – lane=for_review – Completed implementation, moved to review
+- 2025-11-28T11:30:00Z – claude-reviewer – shell_pid=29000 – lane=done – Approved with minor notes
 
 ## Review Feedback
 
