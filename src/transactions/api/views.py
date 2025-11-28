@@ -97,11 +97,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     def create(self, request: Request, *args, **kwargs) -> Response:
         """Create transaction via service layer with policy enforcement."""
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        # Check for duplicate idempotency key before attempting to create
-        idempotency_key = serializer.validated_data.get("idempotency_key")
+        # Check for duplicate idempotency key BEFORE validation
+        idempotency_key = request.data.get("idempotency_key")
         if idempotency_key:
             existing_txn = Transaction.objects.filter(idempotency_key=idempotency_key).first()
             if existing_txn:
@@ -109,10 +106,16 @@ class TransactionViewSet(viewsets.ModelViewSet):
                     {
                         "error": "duplicate_idempotency_key",
                         "existing_transaction_id": str(existing_txn.id),
-                        "message": f"Transaction with idempotency key '{idempotency_key}' already exists",
+                        "message": (
+                            f"Transaction with idempotency key "
+                            f"'{idempotency_key}' already exists"
+                        ),
                     },
                     status=status.HTTP_409_CONFLICT,
                 )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
         try:
             transaction = serializer.save()
