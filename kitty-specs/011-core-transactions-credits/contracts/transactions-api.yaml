@@ -1,0 +1,655 @@
+openapi: 3.0.3
+info:
+  title: Transactions & Credits API
+  description: |
+    Generic transaction and credits engine for tracking usage events, balances, and billable activities.
+
+    **Key Concepts:**
+    - **Credits**: Unit of account (like USD or points). Transaction amounts are signed decimals.
+    - **UsageEvent**: Immutable record of billable action (idempotency optional)
+    - **Transaction**: Financial ledger entry (idempotency required)
+    - **Balance**: Computed sum of transactions (cached for performance)
+    - **BalancePolicy**: Rules for prepaid/postpaid enforcement
+
+  version: 1.0.0
+  contact:
+    name: Django Core Team
+servers:
+  - url: https://api.example.com/api/v1
+    description: Production
+  - url: http://localhost:8000/api/v1
+    description: Local development
+
+tags:
+  - name: usage-events
+    description: Record billable actions
+  - name: transactions
+    description: Financial ledger operations
+  - name: balances
+    description: Query current balances
+  - name: policies
+    description: Configure billing policies
+
+paths:
+  /usage-events/:
+    post:
+      summary: Record a usage event
+      tags: [usage-events]
+      operationId: createUsageEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsageEventCreate'
+      responses:
+        '201':
+          description: Usage event created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageEvent'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Duplicate idempotency key (returns existing event)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageEvent'
+
+    get:
+      summary: List usage events
+      tags: [usage-events]
+      operationId: listUsageEvents
+      parameters:
+        - $ref: '#/components/parameters/organizationId'
+        - $ref: '#/components/parameters/projectId'
+        - name: event_type
+          in: query
+          schema:
+            type: string
+        - name: unbilled
+          in: query
+          description: Filter for events not linked to transactions
+          schema:
+            type: boolean
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Paginated list of usage events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageEventList'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /transactions/:
+    post:
+      summary: Create a transaction
+      tags: [transactions]
+      operationId: createTransaction
+      description: |
+        Creates a financial transaction. **Negative amounts** deduct from balance, **positive amounts** add to balance.
+
+        **Idempotency**: Required for financial safety. Include unique `idempotency_key`.
+
+        **Policy Enforcement**: If organization has prepaid policy and balance would go negative, returns 403.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionCreate'
+      responses:
+        '201':
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          description: Policy violation (insufficient balance)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyViolationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Duplicate idempotency key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: duplicate_idempotency_key
+                  existing_transaction_id:
+                    type: string
+                    format: uuid
+                  message:
+                    type: string
+
+    get:
+      summary: List transactions
+      tags: [transactions]
+      operationId: listTransactions
+      parameters:
+        - $ref: '#/components/parameters/organizationId'
+        - $ref: '#/components/parameters/projectId'
+        - name: source_type
+          in: query
+          schema:
+            $ref: '#/components/schemas/SourceType'
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: format
+          in: query
+          description: Export format
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Paginated list or CSV export
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionList'
+            text/csv:
+              schema:
+                type: string
+                example: |
+                  transaction_id,organization_id,project_id,amount,source_type,timestamp,created_by_email,notes
+                  880e8400-...,550e8400-...,,100.0000,external_billing,2025-11-28T10:00:00Z,admin@example.com,"Purchase"
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /organizations/{organization_id}/balance/:
+    get:
+      summary: Get organization balance
+      tags: [balances]
+      operationId: getOrganizationBalance
+      parameters:
+        - name: organization_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Current balance and aggregate stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balance'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /projects/{project_id}/balance/:
+    get:
+      summary: Get project balance
+      tags: [balances]
+      operationId: getProjectBalance
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Current balance and aggregate stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balance'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /balance-policies/{scope_type}/{scope_id}/:
+    get:
+      summary: Get balance policy
+      tags: [policies]
+      operationId: getBalancePolicy
+      parameters:
+        - name: scope_type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [org, project]
+        - name: scope_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Current policy configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePolicy'
+        '404':
+          description: No policy configured (using defaults)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePolicy'
+
+    put:
+      summary: Update balance policy
+      tags: [policies]
+      operationId: updateBalancePolicy
+      description: Admin-only operation to configure billing rules
+      parameters:
+        - name: scope_type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [org, project]
+        - name: scope_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BalancePolicyUpdate'
+      responses:
+        '200':
+          description: Policy updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancePolicy'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    UsageEventCreate:
+      type: object
+      required:
+        - event_type
+        - organization_id
+      properties:
+        event_type:
+          type: string
+          maxLength: 100
+          example: ai_inference
+          description: Category of billable action
+        organization_id:
+          type: string
+          format: uuid
+        project_id:
+          type: string
+          format: uuid
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+          example:
+            model: gpt-4
+            tokens: 1500
+            duration_seconds: 2.3
+          description: Arbitrary event details (product-specific)
+        idempotency_key:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: inference-abc123
+          description: Optional deduplication key (client-managed)
+
+    UsageEvent:
+      allOf:
+        - $ref: '#/components/schemas/UsageEventCreate'
+        - type: object
+          required:
+            - id
+            - timestamp
+            - created_at
+          properties:
+            id:
+              type: string
+              format: uuid
+            timestamp:
+              type: string
+              format: date-time
+            created_at:
+              type: string
+              format: date-time
+
+    UsageEventList:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UsageEvent'
+
+    TransactionCreate:
+      type: object
+      required:
+        - amount
+        - organization_id
+        - source_type
+        - idempotency_key
+      properties:
+        amount:
+          type: string
+          pattern: '^-?\d{1,10}\.\d{4}$'
+          example: "-0.1500"
+          description: Signed decimal (positive=add, negative=subtract). Max 14 digits, 4 decimals.
+        organization_id:
+          type: string
+          format: uuid
+        project_id:
+          type: string
+          format: uuid
+          nullable: true
+        source_type:
+          $ref: '#/components/schemas/SourceType'
+        usage_event_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Required if source_type=usage_event
+        external_reference_id:
+          type: string
+          maxLength: 255
+          nullable: true
+          description: External system ID (e.g., Stripe charge ID)
+        idempotency_key:
+          type: string
+          maxLength: 255
+          example: charge-770e8400-...
+          description: Unique key for financial safety (required)
+        notes:
+          type: string
+          nullable: true
+          example: AI inference charge for 1500 tokens
+
+    Transaction:
+      allOf:
+        - $ref: '#/components/schemas/TransactionCreate'
+        - type: object
+          required:
+            - id
+            - timestamp
+            - created_by_id
+            - created_at
+            - current_balance
+          properties:
+            id:
+              type: string
+              format: uuid
+            timestamp:
+              type: string
+              format: date-time
+            created_by_id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
+            current_balance:
+              type: string
+              description: Balance after this transaction
+              example: "99.8500"
+
+    TransactionList:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+
+    Balance:
+      type: object
+      required:
+        - current_balance
+        - total_positive_amounts
+        - total_negative_amounts
+        - transaction_count
+        - last_updated
+      properties:
+        current_balance:
+          type: string
+          example: "99.8500"
+          description: Sum of all transaction amounts
+        total_positive_amounts:
+          type: string
+          example: "100.0000"
+          description: Sum of positive transactions (credits added)
+        total_negative_amounts:
+          type: string
+          example: "-0.1500"
+          description: Sum of negative transactions (credits used)
+        transaction_count:
+          type: integer
+          example: 2
+        last_updated:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp of most recent transaction
+
+    BalancePolicy:
+      type: object
+      required:
+        - allow_negative
+        - enforcement_mode
+      properties:
+        allow_negative:
+          type: boolean
+          example: false
+          description: Can balance go negative? (prepaid=false, postpaid=true)
+        warn_threshold:
+          type: string
+          nullable: true
+          example: "10.0000"
+          description: Balance level to trigger warnings
+        enforcement_mode:
+          type: string
+          enum: [block, warn, allow]
+          example: block
+          description: |
+            Action when policy violated:
+            - `block`: Reject transaction with 403
+            - `warn`: Allow but log warning
+            - `allow`: No restrictions
+
+    BalancePolicyUpdate:
+      type: object
+      properties:
+        allow_negative:
+          type: boolean
+        warn_threshold:
+          type: string
+          nullable: true
+        enforcement_mode:
+          type: string
+          enum: [block, warn, allow]
+
+    PolicyViolationError:
+      type: object
+      required:
+        - error
+        - current_balance
+        - requested_amount
+      properties:
+        error:
+          type: string
+          example: insufficient_balance
+        current_balance:
+          type: string
+          example: "5.0000"
+        requested_amount:
+          type: string
+          example: "10.0000"
+          description: Absolute value of transaction amount
+        policy:
+          type: string
+          example: prepaid_only
+
+    SourceType:
+      type: string
+      enum:
+        - usage_event
+        - adjustment
+        - external_billing
+      description: |
+        Origin of transaction:
+        - `usage_event`: Linked to UsageEvent record
+        - `adjustment`: Manual adjustment by admin
+        - `external_billing`: Imported from external system
+
+  parameters:
+    organizationId:
+      name: organization_id
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+      description: Filter by organization
+
+    projectId:
+      name: project_id
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uuid
+      description: Filter by project
+
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    pageSize:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: string
+            example:
+              amount: ["Ensure this value has at most 4 decimal places."]
+              idempotency_key: ["This field is required."]
+
+    Forbidden:
+      description: User lacks permission to access resource
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Organization not found
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

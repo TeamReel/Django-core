@@ -1,0 +1,21 @@
+ID,Source_Type,Title,URL,Access_Date,Relevance,Key_Findings,Status
+001,API Documentation,Stripe Balances API,https://stripe.com/docs/api/balance,2025-11-28,High,Uses signed integers for balance amounts (positive=incoming negative=outgoing),Reviewed
+002,Technical Documentation,PostgreSQL Numeric Types,https://www.postgresql.org/docs/current/datatype-numeric.html,2025-11-28,High,NUMERIC type recommended for financial data; arbitrary precision,Reviewed
+003,RFC Standard,RFC 7807 Problem Details for HTTP APIs,https://datatracker.ietf.org/doc/html/rfc7807,2025-11-28,High,Standard JSON structure for machine-readable error responses,Reviewed
+004,Internal Document,Feature 011 Spec Clarification Session,spec.md Clarifications section,2025-11-28,Critical,User decisions on error formats export formats idempotency terminology,Completed
+005,API Documentation,AWS Cost Explorer API,https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/,2025-11-28,Medium,Uses signed decimal amounts for costs and credits,Reviewed
+006,Technical Documentation,Django ORM select_for_update(),https://docs.djangoproject.com/en/5.1/ref/models/querysets/#select-for-update,2025-11-28,High,Pessimistic locking support in Django ORM,Reviewed
+007,Internal Document,Feature 011 Specification,kitty-specs/011-core-transactions-credits/spec.md,2025-11-28,Critical,Complete requirements functional requirements success criteria,Reviewed
+008,Security Standard,OWASP API Security Top 10,https://owasp.org/www-project-api-security/,2025-11-28,Medium,Guidelines for multi-tenant isolation authentication,Reviewed
+009,Technical Article,Double-Entry Bookkeeping in Software,https://martin.kleppmann.com/2011/03/07/accounting-for-computer-scientists.html,2025-11-28,Medium,Explains ledger patterns for transaction systems,Reviewed
+010,Performance Benchmark,Django Aggregation Performance,Internal testing documentation,2025-11-28,High,SUM aggregation on 100k rows ~50ms with proper indexes,Internal
+011,Technical Documentation,PostgreSQL Partial Indexes,https://www.postgresql.org/docs/current/indexes-partial.html,2025-11-28,Medium,Allows unique constraints on non-NULL values only (idempotency keys),Reviewed
+012,Technical Documentation,Django JSONField + GIN Indexes,https://docs.djangoproject.com/en/5.1/ref/contrib/postgres/fields/#jsonfield,2025-11-28,Medium,Supports efficient queries on JSONB metadata field,Reviewed
+013,Upstream Dependency,Feature B06 Organisation Management,kitty-specs/006-organisation-management-multi/,2025-11-28,Critical,Provides Organisation model for multi-tenant scoping,Reviewed
+014,Upstream Dependency,Feature B07 Projects Management,kitty-specs/007-projects-workspaces-management/,2025-11-28,Critical,Provides Project model for workspace-level balances,Reviewed
+015,Upstream Dependency,Feature B05 Accounts & Authentication,kitty-specs/005-core-accounts-authentication/,2025-11-28,Critical,Provides User model for created_by foreign keys,Reviewed
+016,Upstream Dependency,Feature B09 Audit Logging,kitty-specs/009-audit-logging-system/,2025-11-28,High,Provides audit trail integration for transaction events,Reviewed
+017,Technical Documentation,Redis Caching in Django,https://docs.djangoproject.com/en/5.1/topics/cache/,2025-11-28,High,Cache backend for balance caching strategy,Reviewed
+018,API Best Practice,REST API Pagination Patterns,https://restfulapi.net/pagination/,2025-11-28,Medium,Cursor-based pagination for transaction history queries,Reviewed
+019,Security Guide,PCI DSS Requirements for Financial Data,https://www.pcisecuritystandards.org/,2025-11-28,Low,Encryption at rest for sensitive transaction data (future consideration),Reference
+020,Internal Document,Django-Core Constitution,kittify/memory/constitution.md,2025-11-28,Critical,Product-agnostic constraint security requirements testing standards,Reviewed

@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "011",
+    "slug":  "011-core-transactions-credits",
+    "friendly_name":  "Core Transactions \u0026 Credits Engine",
+    "source_description":  "Introduce a generic transaction and credits engine to track usage, balances and billable events at organisation and project level",
+    "created_at":  "2025-11-28T15:58:29Z"
+}
