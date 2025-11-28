@@ -61,8 +61,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         Applies select_related for organisation and creator to minimize queries.
         """
-        # Base queryset with select_related for performance
-        queryset = Project.objects.select_related("organisation", "creator")
+        # For archive/restore actions, include archived projects
+        if self.action in ["restore", "archive"]:
+            base_queryset = Project.all_objects.select_related("organisation", "creator")
+        else:
+            base_queryset = Project.objects.select_related("organisation", "creator")
+
+        queryset = base_queryset
 
         # Check if this is a nested route (organisation_id in URL)
         organisation_id = self.kwargs.get("organisation_id")
