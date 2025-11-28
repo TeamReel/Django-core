@@ -65,6 +65,7 @@ class Organisation(models.Model):
     objects = OrganisationManager()
 
     class Meta:
+        app_label = "organisations"
         ordering = ["name"]
         verbose_name = "Organisation"
         verbose_name_plural = "Organisations"
@@ -191,6 +192,7 @@ class Membership(models.Model):
     is_active = models.BooleanField(default=True, db_index=True)
 
     class Meta:
+        app_label = "organisations"
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "organisation"], name="unique_user_organisation"

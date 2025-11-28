@@ -1,0 +1,825 @@
+openapi: 3.0.3
+info:
+  title: Settings & Feature Flags API
+  version: 1.0.0
+  description: |
+    REST API for managing feature flags and typed configuration settings with scope support (global, organisation, project).
+
+    ## Authentication
+    All endpoints require authentication via Django session or DRF token authentication.
+
+    ## Scopes
+    - **Global**: System-wide configuration (requires superuser)
+    - **Organisation**: Organisation-specific configuration (requires org admin)
+    - **Project**: Project-specific configuration (requires project admin)
+
+    ## Permissions
+    Access control enforced via B08 RBAC integration with scope-aware object-level permissions.
+
+servers:
+  - url: http://localhost:8000/api/v1/settings
+    description: Local development server
+  - url: https://api.example.com/api/v1/settings
+    description: Production server
+
+tags:
+  - name: Feature Flags
+    description: Boolean toggles for enabling/disabling features
+  - name: Settings
+    description: Typed configuration values (string, integer, boolean, JSON)
+
+paths:
+  /flags/:
+    get:
+      tags:
+        - Feature Flags
+      summary: List all feature flags
+      description: Retrieve paginated list of feature flags with optional filtering by scope
+      operationId: listFeatureFlags
+      parameters:
+        - $ref: '#/components/parameters/ScopeTypeFilter'
+        - $ref: '#/components/parameters/OrganisationIdFilter'
+        - $ref: '#/components/parameters/ProjectIdFilter'
+        - name: enabled
+          in: query
+          description: Filter by enabled status
+          schema:
+            type: boolean
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFeatureFlagList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+    post:
+      tags:
+        - Feature Flags
+      summary: Create a new feature flag
+      description: Create a feature flag at specified scope (requires appropriate permissions)
+      operationId: createFeatureFlag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureFlagCreate'
+      responses:
+        '201':
+          description: Flag created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlag'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+  /flags/{id}/:
+    get:
+      tags:
+        - Feature Flags
+      summary: Retrieve a specific feature flag
+      description: Get details of a single feature flag by ID
+      operationId: retrieveFeatureFlag
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlag'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+    patch:
+      tags:
+        - Feature Flags
+      summary: Update a feature flag
+      description: Partially update a feature flag (requires appropriate scope permissions)
+      operationId: updateFeatureFlag
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureFlagUpdate'
+      responses:
+        '200':
+          description: Flag updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlag'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+    delete:
+      tags:
+        - Feature Flags
+      summary: Delete a feature flag
+      description: Remove a feature flag (requires appropriate scope permissions)
+      operationId: deleteFeatureFlag
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Flag deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+  /flags/{key}/resolve/:
+    get:
+      tags:
+        - Feature Flags
+      summary: Resolve flag value with scope hierarchy
+      description: |
+        Resolve a feature flag value following scope hierarchy: project → organisation → global.
+        Returns the most specific value found, or default (false) if not found at any scope.
+      operationId: resolveFeatureFlag
+      parameters:
+        - name: key
+          in: path
+          required: true
+          description: Flag key to resolve
+          schema:
+            type: string
+            example: maintenance_mode
+        - name: organisation_id
+          in: query
+          description: Organisation context for scope resolution
+          schema:
+            type: string
+            format: uuid
+        - name: project_id
+          in: query
+          description: Project context for scope resolution
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Flag resolved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    example: maintenance_mode
+                  enabled:
+                    type: boolean
+                    example: false
+                  resolved_scope:
+                    type: string
+                    enum: [global, organisation, project, default]
+                    example: global
+                  resolved_from:
+                    type: string
+                    format: uuid
+                    nullable: true
+                    description: ID of the scope entity where value was found (null for global/default)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+  /config/:
+    get:
+      tags:
+        - Settings
+      summary: List all settings
+      description: Retrieve paginated list of settings with optional filtering by scope and type
+      operationId: listSettings
+      parameters:
+        - $ref: '#/components/parameters/ScopeTypeFilter'
+        - $ref: '#/components/parameters/OrganisationIdFilter'
+        - $ref: '#/components/parameters/ProjectIdFilter'
+        - name: value_type
+          in: query
+          description: Filter by value type
+          schema:
+            $ref: '#/components/schemas/SettingType'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSettingList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+    post:
+      tags:
+        - Settings
+      summary: Create a new setting
+      description: Create a typed setting at specified scope (requires appropriate permissions)
+      operationId: createSetting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingCreate'
+      responses:
+        '201':
+          description: Setting created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setting'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+  /config/{id}/:
+    get:
+      tags:
+        - Settings
+      summary: Retrieve a specific setting
+      description: Get details of a single setting by ID
+      operationId: retrieveSetting
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setting'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+    patch:
+      tags:
+        - Settings
+      summary: Update a setting
+      description: Partially update a setting (requires appropriate scope permissions)
+      operationId: updateSetting
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingUpdate'
+      responses:
+        '200':
+          description: Setting updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setting'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+    delete:
+      tags:
+        - Settings
+      summary: Delete a setting
+      description: Remove a setting (requires appropriate scope permissions)
+      operationId: deleteSetting
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Setting deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+  /config/{key}/resolve/:
+    get:
+      tags:
+        - Settings
+      summary: Resolve setting value with scope hierarchy
+      description: |
+        Resolve a setting value following scope hierarchy: project → organisation → global.
+        Returns the most specific value found, or default_value if not found at any scope.
+      operationId: resolveSetting
+      parameters:
+        - name: key
+          in: path
+          required: true
+          description: Setting key to resolve
+          schema:
+            type: string
+            example: max_upload_size
+        - name: organisation_id
+          in: query
+          description: Organisation context for scope resolution
+          schema:
+            type: string
+            format: uuid
+        - name: project_id
+          in: query
+          description: Project context for scope resolution
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Setting resolved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    example: max_upload_size
+                  value:
+                    description: Resolved value (type depends on value_type)
+                    oneOf:
+                      - type: string
+                      - type: integer
+                      - type: boolean
+                      - type: object
+                    example: 10485760
+                  value_type:
+                    $ref: '#/components/schemas/SettingType'
+                  resolved_scope:
+                    type: string
+                    enum: [global, organisation, project, default]
+                    example: organisation
+                  resolved_from:
+                    type: string
+                    format: uuid
+                    nullable: true
+                    description: ID of the scope entity where value was found (null for global/default)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Setting not found and no default value available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - sessionAuth: []
+        - tokenAuth: []
+
+components:
+  schemas:
+    ScopeType:
+      type: string
+      enum: [global, organisation, project]
+      description: Configuration scope level
+
+    SettingType:
+      type: string
+      enum: [string, integer, boolean, json]
+      description: Setting value data type
+
+    FeatureFlag:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        key:
+          type: string
+          maxLength: 255
+          pattern: '^[a-z][a-z0-9_]*$'
+          description: Flag key (lowercase, alphanumeric, underscores)
+          example: maintenance_mode
+        enabled:
+          type: boolean
+          default: false
+          description: Flag state (deny-by-default)
+        description:
+          type: string
+          nullable: true
+          description: Human-readable description
+        scope_type:
+          $ref: '#/components/schemas/ScopeType'
+        organisation_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Organisation scope (required for organisation/project scope_type)
+        project_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Project scope (required for project scope_type)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by_id:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+        updated_by_id:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+      required:
+        - key
+        - scope_type
+
+    FeatureFlagCreate:
+      type: object
+      properties:
+        key:
+          type: string
+          maxLength: 255
+          pattern: '^[a-z][a-z0-9_]*$'
+          example: beta_features
+        enabled:
+          type: boolean
+          default: false
+        description:
+          type: string
+          nullable: true
+        scope_type:
+          $ref: '#/components/schemas/ScopeType'
+        organisation_id:
+          type: string
+          format: uuid
+          nullable: true
+        project_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+        - key
+        - scope_type
+
+    FeatureFlagUpdate:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        description:
+          type: string
+          nullable: true
+
+    Setting:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        key:
+          type: string
+          maxLength: 255
+          pattern: '^[a-z][a-z0-9_]*$'
+          description: Setting key (lowercase, alphanumeric, underscores)
+          example: max_upload_size
+        value:
+          description: Current setting value (type depends on value_type)
+          oneOf:
+            - type: string
+            - type: integer
+            - type: boolean
+            - type: object
+          example: 10485760
+        value_type:
+          $ref: '#/components/schemas/SettingType'
+        default_value:
+          description: Default value (required, explicit defaults principle)
+          oneOf:
+            - type: string
+            - type: integer
+            - type: boolean
+            - type: object
+          example: 5242880
+        description:
+          type: string
+          nullable: true
+          description: Human-readable description
+        scope_type:
+          $ref: '#/components/schemas/ScopeType'
+        organisation_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Organisation scope (required for organisation/project scope_type)
+        project_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Project scope (required for project scope_type)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by_id:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+        updated_by_id:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+      required:
+        - key
+        - value
+        - value_type
+        - default_value
+        - scope_type
+
+    SettingCreate:
+      type: object
+      properties:
+        key:
+          type: string
+          maxLength: 255
+          pattern: '^[a-z][a-z0-9_]*$'
+          example: api_timeout
+        value:
+          oneOf:
+            - type: string
+            - type: integer
+            - type: boolean
+            - type: object
+          example: 30
+        value_type:
+          $ref: '#/components/schemas/SettingType'
+        default_value:
+          oneOf:
+            - type: string
+            - type: integer
+            - type: boolean
+            - type: object
+          example: 10
+        description:
+          type: string
+          nullable: true
+        scope_type:
+          $ref: '#/components/schemas/ScopeType'
+        organisation_id:
+          type: string
+          format: uuid
+          nullable: true
+        project_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+        - key
+        - value
+        - value_type
+        - default_value
+        - scope_type
+
+    SettingUpdate:
+      type: object
+      properties:
+        value:
+          oneOf:
+            - type: string
+            - type: integer
+            - type: boolean
+            - type: object
+        description:
+          type: string
+          nullable: true
+
+    PaginatedFeatureFlagList:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Total number of flags
+        next:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to next page
+        previous:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to previous page
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureFlag'
+
+    PaginatedSettingList:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Total number of settings
+        next:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to next page
+        previous:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to previous page
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Setting'
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message
+          example: Permission denied
+
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      description: Object UUID
+      schema:
+        type: string
+        format: uuid
+
+    ScopeTypeFilter:
+      name: scope_type
+      in: query
+      description: Filter by scope type
+      schema:
+        $ref: '#/components/schemas/ScopeType'
+
+    OrganisationIdFilter:
+      name: organisation_id
+      in: query
+      description: Filter by organisation
+      schema:
+        type: string
+        format: uuid
+
+    ProjectIdFilter:
+      name: project_id
+      in: query
+      description: Filter by project
+      schema:
+        type: string
+        format: uuid
+
+    PageParam:
+      name: page
+      in: query
+      description: Page number
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    PageSizeParam:
+      name: page_size
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    BadRequest:
+      description: Validation error or malformed request
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: string
+          example:
+            key: ["This field is required"]
+            value: ["Value type mismatch: expected integer, got string"]
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: Authentication credentials were not provided
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: You do not have permission to perform this action
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: Not found
+
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+      description: Django session authentication
+
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: DRF token authentication (format - "Token <token>")
