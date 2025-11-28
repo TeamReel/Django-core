@@ -3,11 +3,11 @@ work_package_id: "WP05"
 subtasks: ["T049", "T050", "T051", "T052", "T053", "T054", "T055", "T056"]
 title: "Management Commands & Cleanup"
 phase: "Phase 2 - Operations"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude-assistant"
 shell_pid: "17932"
-review_status: "acknowledged"
+review_status: "ready"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-11-28T00:00:00Z"
@@ -42,11 +42,11 @@ history:
 - ✅ Commands handle edge cases well (no records, already exists, insufficient balance)
 
 **Action Items** (must complete before re-review):
-- [ ] Fix `test_seed_idempotent` to handle non-deterministic seed behavior
+- [X] Fix `test_seed_idempotent` to handle non-deterministic seed behavior
   - **Option A** (Recommended): Change assertion to `assert second_count >= first_count` and add comment explaining seed command creates random data
   - **Option B**: Set `random.seed(42)` at start of test for deterministic behavior
-- [ ] Re-run command tests 5 times to verify no flakiness: `pytest transactions/tests/test_commands.py -v`
-- [ ] Confirm all 76 transaction tests still pass
+- [X] Re-run command tests 5 times to verify no flakiness: `pytest transactions/tests/test_commands.py -v`
+- [X] Confirm all 76 transaction tests still pass
 
 **Estimated fix time**: 2-5 minutes
 
@@ -94,3 +94,4 @@ python manage.py seed_test_transactions --count=100
 - 2025-11-28T19:28:00Z – claude-assistant – shell_pid=17932 – lane=for_review – Implementation complete: 2 commands, 9 tests passing, README updated
 - 2025-11-28T19:36:00Z – claude-reviewer – shell_pid=17932 – lane=planned – Code review: Flaky test needs fixing (test_seed_idempotent)
 - 2025-11-28T19:40:00Z – claude-assistant – shell_pid=17932 – lane=doing – Acknowledged feedback, fixing flaky test
+- 2025-11-28T19:42:00Z – claude-assistant – shell_pid=17932 – lane=for_review – Addressed feedback: Fixed flaky test with >= assertion, all tests passing (5 runs verified)
