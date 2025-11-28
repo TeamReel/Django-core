@@ -3,7 +3,7 @@ work_package_id: "WP08"
 subtasks: ["T077", "T078", "T079", "T080", "T081", "T082", "T083", "T084", "T085", "T086", "T087"]
 title: "Metrics & Observability"
 phase: "Phase 2 - Observability"
-lane: "doing"
+lane: "for_review"
 assignee: "claude-assistant"
 agent: "claude-assistant"
 shell_pid: "17932"
@@ -66,3 +66,4 @@ Use JSON format in production settings.
 
 - 2025-11-28 – system – lane=planned – Prompt created
 - 2025-11-28T21:19:42Z – system – shell_pid= – lane=doing – Started implementation: Metrics & Observability
+- 2025-11-28T21:32:00Z – claude-assistant – shell_pid=17932 – lane=for_review – Moved to for_review
