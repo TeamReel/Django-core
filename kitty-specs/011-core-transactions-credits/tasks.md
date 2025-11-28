@@ -63,21 +63,22 @@
 
 **Goal**: Implement service layer with transaction creation, balance calculation, policy enforcement, and cache invalidation.
 **Independent Test**: Service functions pass unit tests; policy enforcement blocks negative balances; Redis caching works.
-**Prompt**: `tasks/planned/WP02-service-layer-business-logic.md`
+**Prompt**: `tasks/done/WP02-service-layer-business-logic.md`
+**Status**: ✅ COMPLETE (Reviewed 2025-11-28 by claude-reviewer)
 
 ### Included Subtasks
-- [ ] T012 Create src/transactions/services.py module structure
-- [ ] T013 Implement `record_usage_event()` with idempotency handling
-- [ ] T014 Implement `create_transaction()` with locking (SELECT FOR UPDATE)
-- [ ] T015 Implement `get_organization_balance()` with Redis caching
-- [ ] T016 Implement `get_project_balance()` with Redis caching
-- [ ] T017 Implement `get_policy()` with defaults fallback
-- [ ] T018 Implement `check_policy_violation()` with enforcement logic
-- [ ] T019 Implement `invalidate_balance_cache()` for Redis keys
-- [ ] T020 Create src/transactions/exceptions.py (InsufficientBalanceError, PolicyViolationError)
-- [ ] T021 [P] Write service layer unit tests (all functions)
-- [ ] T022 [P] Write integration tests (usage event → transaction flow)
-- [ ] T023 Add Django signals for post_save Transaction → cache invalidation
+- [x] T012 Create src/transactions/services.py module structure
+- [x] T013 Implement `record_usage_event()` with idempotency handling
+- [x] T014 Implement `create_transaction()` with locking (SELECT FOR UPDATE)
+- [x] T015 Implement `get_organization_balance()` with Redis caching
+- [x] T016 Implement `get_project_balance()` with Redis caching
+- [x] T017 Implement `get_policy()` with defaults fallback
+- [x] T018 Implement `check_policy_violation()` with enforcement logic
+- [x] T019 Implement `invalidate_balance_cache()` for Redis keys
+- [x] T020 Create src/transactions/exceptions.py (InsufficientBalanceError, PolicyViolationError)
+- [x] T021 [P] Write service layer unit tests (all functions)
+- [x] T022 [P] Write integration tests (usage event → transaction flow)
+- [x] T023 Add Django signals for post_save Transaction → cache invalidation
 
 ### Constitutional Alignment
 - Principle II (Architecture): Service layer pattern separates business logic
