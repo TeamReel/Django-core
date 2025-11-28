@@ -159,8 +159,8 @@
 
 **Goal**: Configure Redis caching backend and implement cache invalidation signals.
 **Independent Test**: Balance queries hit cache; cache invalidates on transaction write; cache misses compute correctly.
-**Prompt**: `tasks/for_review/WP04-redis-caching-signals.md`
-**Status**: 🔍 FOR REVIEW (67 tests passing - all cache and concurrency tests complete)
+**Prompt**: `tasks/done/WP04-redis-caching-signals.md`
+**Status**: ✅ COMPLETE (Code review approved - 67 tests passing, all cache features working)
 
 ### Included Subtasks
 - [x] T040 Configure django-redis in config/settings/base.py
