@@ -3,7 +3,7 @@ work_package_id: "WP07"
 subtasks: ["T068", "T069", "T070", "T071", "T072", "T073", "T074", "T075", "T076"]
 title: "Documentation & ADRs"
 phase: "Phase 2 - Documentation"
-lane: "doing"
+lane: "for_review"
 assignee: "claude-assistant"
 agent: "claude-assistant"
 shell_pid: "17932"
@@ -77,3 +77,4 @@ Use drf-spectacular to auto-generate API docs from serializers.
 
 - 2025-11-28 – system – lane=planned – Prompt created
 - 2025-11-28T20:58:48Z – system – shell_pid= – lane=doing – Moved to doing
+- 2025-11-28T21:06:40Z – claude-assistant – shell_pid=17932 – lane=for_review – Moved to for_review
