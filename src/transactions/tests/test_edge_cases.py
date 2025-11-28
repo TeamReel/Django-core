@@ -86,7 +86,7 @@ class TestEdgeCases:
         balance_data = get_organization_balance(org.id)
         assert balance_data["current_balance"] == Decimal("0.01")
 
-    def test_very_large_amounts(self, test_setup):
+    def test_very_large_amounts(self, edge_setup):
         """Test transactions with amounts near decimal precision limits."""
         org = edge_setup["org"]
         project = edge_setup["project"]
@@ -129,7 +129,7 @@ class TestEdgeCases:
         balance_data = get_organization_balance(org.id)
         assert balance_data["current_balance"] == Decimal("0.00")
 
-    def test_precise_decimal_arithmetic(self, test_setup):
+    def test_precise_decimal_arithmetic(self, edge_setup):
         """Test that decimal precision is maintained correctly."""
         org = edge_setup["org"]
         project = edge_setup["project"]
@@ -163,7 +163,7 @@ class TestEdgeCases:
         balance_data = get_organization_balance(org.id)
         assert balance_data["current_balance"] == Decimal("0.0004")
 
-    def test_empty_metadata(self, test_setup):
+    def test_empty_metadata(self, edge_setup):
         """Test usage events with empty metadata."""
         org = edge_setup["org"]
         project = edge_setup["project"]
@@ -181,7 +181,7 @@ class TestEdgeCases:
 
         assert event.metadata == {}
 
-    def test_null_optional_fields(self, test_setup):
+    def test_null_optional_fields(self, edge_setup):
         """Test transactions with null optional fields."""
         org = edge_setup["org"]
         user = edge_setup["user"]
@@ -201,7 +201,7 @@ class TestEdgeCases:
         assert txn.project is None
         assert txn.external_reference_id is None
 
-    def test_concurrent_idempotency_enforcement(self, test_setup):
+    def test_concurrent_idempotency_enforcement(self, edge_setup):
         """Test idempotency when same key used concurrently."""
         org = edge_setup["org"]
         project = edge_setup["project"]
@@ -237,7 +237,7 @@ class TestEdgeCases:
         assert txns.count() == 1
         assert txns.first().amount == Decimal("10.00")
 
-    def test_balance_policy_edge_at_zero(self, test_setup):
+    def test_balance_policy_edge_at_zero(self, edge_setup):
         """Test policy enforcement when balance would go negative."""
         org = edge_setup["org"]
         project = edge_setup["project"]
