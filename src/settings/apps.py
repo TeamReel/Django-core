@@ -7,10 +7,20 @@ class SettingsConfig(AppConfig):
     """Configuration for the settings app."""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "settings"
+    name = "src.settings"
     verbose_name = "Settings & Feature Flags"
 
     def ready(self):
-        """Import signal handlers when app is ready."""
-        # Signal handlers will be connected here in WP07
-        pass
+        """
+        Import signal handlers when app is ready.
+
+        Registers audit event types and connects signal handlers for
+        FeatureFlag and Setting CRUD operations.
+        """
+        # Import signals module to connect handlers (T052)
+        import src.settings.signals  # noqa: F401
+
+        # Register audit event types with B09 audit system (T051)
+        from src.settings.signals import register_audit_events
+
+        register_audit_events()
