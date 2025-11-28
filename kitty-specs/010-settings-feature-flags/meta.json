@@ -1,7 +1,25 @@
 {
-    "feature_number":  "010",
-    "slug":  "010-settings-feature-flags",
-    "friendly_name":  "Settings \u0026 Feature Flags",
-    "source_description":  "Implement a flexible, cache-friendly settings and feature flags subsystem that supports configuration at global, organisation, and project scope without code redeploys, including safe rollout patterns and fallbacks.",
-    "created_at":  "2025-11-27T20:18:33Z"
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-11-28T13:15:13Z",
+      "accepted_by": "brian",
+      "accepted_from_commit": "5fc9f4f39081fec6b010847d8701c834dee17118",
+      "branch": "010-settings-feature-flags",
+      "mode": "pr",
+      "validation_commands": [
+        "pytest tests/settings/ -v",
+        "python manage.py check"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-11-28T13:15:13Z",
+  "accepted_by": "brian",
+  "accepted_from_commit": "5fc9f4f39081fec6b010847d8701c834dee17118",
+  "created_at": "2025-11-27T20:18:33Z",
+  "feature_number": "010",
+  "friendly_name": "Settings & Feature Flags",
+  "slug": "010-settings-feature-flags",
+  "source_description": "Implement a flexible, cache-friendly settings and feature flags subsystem that supports configuration at global, organisation, and project scope without code redeploys, including safe rollout patterns and fallbacks."
 }
