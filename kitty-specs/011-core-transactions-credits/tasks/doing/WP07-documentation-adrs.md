@@ -3,14 +3,20 @@ work_package_id: "WP07"
 subtasks: ["T068", "T069", "T070", "T071", "T072", "T073", "T074", "T075", "T076"]
 title: "Documentation & ADRs"
 phase: "Phase 2 - Documentation"
-lane: "planned"
-assignee: ""
-agent: ""
+lane: "doing"
+assignee: "claude-assistant"
+agent: "claude-assistant"
+shell_pid: "17932"
 history:
   - timestamp: "2025-11-28T00:00:00Z"
     lane: "planned"
     agent: "system"
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-11-28T21:00:00Z"
+    lane: "doing"
+    agent: "claude-assistant"
+    shell_pid: "17932"
+    action: "Started implementation: Documentation & ADRs"
 ---
 
 # Work Package: WP07 – Documentation & ADRs
@@ -65,3 +71,4 @@ Use drf-spectacular to auto-generate API docs from serializers.
 ## Activity Log
 
 - 2025-11-28 – system – lane=planned – Prompt created
+- 2025-11-28T20:58:48Z – system – shell_pid= – lane=doing – Moved to doing
