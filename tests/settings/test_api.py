@@ -8,25 +8,21 @@ Tests cover all requirements from review feedback:
 - Pub/sub invalidation
 """
 
-import pytest
-import uuid
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from django.test import TestCase, override_settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.test import TestCase, override_settings
+from organisations.models import Organisation
+from projects.models import Project
 
 from src.settings.api import get_flag, get_setting, set_flag, set_setting
-from src.settings.models import FeatureFlag, Setting, ScopeType, SettingType
 from src.settings.cache import (
     generate_cache_key,
     get_cached_value,
-    set_cached_value,
-    invalidate_cache,
     publish_invalidation,
 )
-from organisations.models import Organisation
-from projects.models import Project
+from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
 

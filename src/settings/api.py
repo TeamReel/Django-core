@@ -168,8 +168,8 @@ def get_setting(
         >>> get_setting('api_endpoint', default='https://api.example.com')  # Returns string
         'https://api.production.com'
     """
-    from .models import SettingType
     from .cache import generate_cache_key, get_cached_value, set_cached_value
+    from .models import SettingType
 
     # Try to resolve from cache first, checking all possible scopes
     scopes_to_check = []

@@ -61,7 +61,7 @@ python manage.py test tests.settings --settings=src.config.settings.test
 - Automatic organisation inference from project relationships
 - Graceful fallback when scopes don't exist
 
-### Cache Strategy  
+### Cache Strategy
 - Cache-first querying with database fallback
 - Scope-aware cache keys for proper invalidation
 - 5-minute TTL with Redis pub/sub invalidation

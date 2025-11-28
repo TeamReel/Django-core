@@ -4,16 +4,15 @@ Basic test suite for WP03: Python Query API & Cache Layer
 Simplified version to demonstrate core functionality and address review feedback.
 """
 
-import pytest
-from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-
-from src.settings.api import get_flag, get_setting, set_flag, set_setting
-from src.settings.models import FeatureFlag, Setting, ScopeType, SettingType
-from src.settings.cache import generate_cache_key, get_cached_value
+from django.test import TestCase
 from organisations.models import Organisation
 from projects.models import Project
+
+from src.settings.api import get_flag, get_setting, set_flag, set_setting
+from src.settings.cache import generate_cache_key, get_cached_value
+from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
 
