@@ -63,7 +63,6 @@ class FeatureFlag(models.Model):
     )
 
     class Meta:
-        app_label = "src.settings"
         db_table = "settings_feature_flag"
         verbose_name = "Feature Flag"
         verbose_name_plural = "Feature Flags"
@@ -121,7 +120,6 @@ class Setting(models.Model):
     )
 
     class Meta:
-        app_label = "src.settings"
         db_table = "settings_setting"
         verbose_name = "Setting"
         verbose_name_plural = "Settings"

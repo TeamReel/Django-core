@@ -13,7 +13,7 @@ from audit.registry import register_event_type
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
-from src.settings.models import FeatureFlag, Setting
+from .models import FeatureFlag, Setting
 
 # Thread-local storage for capturing old values in pre_save
 _thread_locals = threading.local()
