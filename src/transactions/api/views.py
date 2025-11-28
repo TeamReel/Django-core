@@ -3,6 +3,7 @@
 import csv
 from io import StringIO
 
+from django_filters.rest_framework import DjangoFilterBackend
 from django.http import StreamingHttpResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -38,6 +39,7 @@ class UsageEventViewSet(viewsets.ModelViewSet):
 
     queryset = UsageEvent.objects.all()
     serializer_class = UsageEventSerializer
+    filter_backends = [DjangoFilterBackend]
     filterset_class = UsageEventFilter
     http_method_names = ["get", "post"]
     permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
@@ -83,6 +85,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
         "organization", "project", "created_by", "usage_event"
     )
     serializer_class = TransactionSerializer
+    filter_backends = [DjangoFilterBackend]
     filterset_class = TransactionFilter
     http_method_names = ["get", "post"]
     permission_classes = [AllowAny]  # TODO: Replace with B08 permissions

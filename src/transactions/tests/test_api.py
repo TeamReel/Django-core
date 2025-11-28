@@ -337,7 +337,7 @@ class TestTransactionAPI:
         assert str(txn_external.id) in result_ids
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
-        assert response.data["results"][0]["source_type"] == SourceTypeChoices.ADJUSTMENT
+        assert response.data["results"][0]["source_type"] == SourceTypeChoices.EXTERNAL_BILLING
 
     @pytest.mark.skip(reason="DRF format suffix routing issue - needs investigation")
     def test_export_transactions_csv(self, user, organisation):
