@@ -15,10 +15,10 @@ subtasks:
   - "T023"
 title: "Service Layer & Business Logic"
 phase: "Phase 1 - Core Logic"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "17932"
 review_status: ""
 reviewed_by: ""
 history:
@@ -311,3 +311,4 @@ pytest transactions/tests/test_integration.py -v
 ## Activity Log
 
 - 2025-11-28T00:00:00Z – system – lane=planned – Prompt created
+- 2025-11-28T17:55:49Z – claude – shell_pid=17932 – lane=doing – Started WP02 implementation
