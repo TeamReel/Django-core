@@ -5,6 +5,7 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     BalancePolicyViewSet,
+    HealthCheckView,
     OrganizationBalanceView,
     ProjectBalanceView,
     TransactionViewSet,
@@ -28,5 +29,10 @@ urlpatterns = [
         "projects/<int:project_id>/balance/",  # Project uses integer PK
         ProjectBalanceView.as_view(),
         name="project-balance",
+    ),
+    path(
+        "health/",
+        HealthCheckView.as_view(),
+        name="health-check",
     ),
 ] + router.urls

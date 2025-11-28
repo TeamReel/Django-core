@@ -350,3 +350,92 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
             {"error": "Invalid scope_type. Must be 'organization' or 'project'."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+class HealthCheckView(APIView):
+    """Health check endpoint for transactions service.
+
+    Validates:
+    - Database connection (query count)
+    - Redis cache connection (get/set test)
+    - Balance calculation (sample org)
+
+    Returns:
+    - 200 OK if all checks pass
+    - 503 Service Unavailable if any check fails
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request: Request) -> Response:
+        """Run health checks."""
+        from django.core.cache import cache
+        from django.db import connection
+
+        checks = {
+            "database": False,
+            "cache": False,
+            "balance_calculation": False,
+        }
+        errors = []
+
+        # Check 1: Database connection
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                result = cursor.fetchone()
+                if result and result[0] == 1:
+                    checks["database"] = True
+                else:
+                    errors.append("Database query returned unexpected result")
+        except Exception as e:
+            errors.append(f"Database connection failed: {str(e)}")
+
+        # Check 2: Redis cache connection
+        try:
+            test_key = "health_check:transactions:test"
+            test_value = "ok"
+            cache.set(test_key, test_value, timeout=10)
+            retrieved = cache.get(test_key)
+            if retrieved == test_value:
+                checks["cache"] = True
+                cache.delete(test_key)
+            else:
+                errors.append("Cache get/set test failed: value mismatch")
+        except Exception as e:
+            errors.append(f"Cache connection failed: {str(e)}")
+
+        # Check 3: Balance calculation (sample org)
+        # This is optional - only run if database is healthy
+        if checks["database"]:
+            try:
+                from organisations.models import Organisation
+
+                # Get first org (if any exist)
+                sample_org = Organisation.objects.first()
+                if sample_org:
+                    balance = get_organization_balance(sample_org.id, use_cache=False)
+                    if "current_balance" in balance:
+                        checks["balance_calculation"] = True
+                    else:
+                        errors.append("Balance calculation returned invalid data")
+                else:
+                    # No orgs exist yet - mark as passed
+                    checks["balance_calculation"] = True
+            except Exception as e:
+                errors.append(f"Balance calculation failed: {str(e)}")
+
+        # Determine overall health
+        all_healthy = all(checks.values())
+
+        response_data = {
+            "status": "healthy" if all_healthy else "unhealthy",
+            "checks": checks,
+        }
+
+        if errors:
+            response_data["errors"] = errors
+
+        response_status = status.HTTP_200_OK if all_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
+
+        return Response(response_data, status=response_status)

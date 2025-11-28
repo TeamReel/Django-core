@@ -17,6 +17,8 @@ Cache Strategy:
 - Invalidation: Only on Transaction.save() success (NOT on UsageEvent)
 """
 
+import logging
+import time
 from decimal import Decimal
 from typing import Optional
 
@@ -24,6 +26,15 @@ from django.core.cache import cache
 from django.db import transaction as db_transaction
 
 from .exceptions import DuplicateIdempotencyKeyError, InsufficientBalanceError
+from .metrics import (
+    balance_queries_total,
+    balance_query_latency_seconds,
+    cache_hits_total,
+    cache_misses_total,
+    policy_violations_total,
+    transaction_write_latency_seconds,
+    transaction_writes_total,
+)
 from .models import (
     BalancePolicy,
     EnforcementModeChoices,
@@ -31,6 +42,8 @@ from .models import (
     Transaction,
     UsageEvent,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def record_usage_event(
@@ -140,6 +153,8 @@ def create_transaction(
     if existing:
         raise DuplicateIdempotencyKeyError(idempotency_key=idempotency_key)
 
+    start_time = time.time()
+
     with db_transaction.atomic():
         # Acquire pessimistic lock on organization or project
         # This prevents concurrent transactions from causing race conditions
@@ -165,6 +180,22 @@ def create_transaction(
         )
 
         if is_violation and violation_type == "block":
+            # Record policy violation metric
+            policy_violations_total.labels(
+                enforcement_mode="block", violation_type="insufficient_balance"
+            ).inc()
+
+            logger.warning(
+                "transaction.policy_violation",
+                extra={
+                    "organization_id": str(organization.id),
+                    "project_id": str(project.id) if project else None,
+                    "current_balance": str(current_balance),
+                    "requested_amount": str(amount),
+                    "enforcement_mode": "block",
+                },
+            )
+
             raise InsufficientBalanceError(
                 current_balance=current_balance,
                 requested_amount=abs(amount),
@@ -186,6 +217,26 @@ def create_transaction(
 
         # Invalidate balance cache
         invalidate_balance_cache(organization.id, project.id if project else None)
+
+        # Record metrics
+        latency = time.time() - start_time
+        transaction_writes_total.labels(
+            organization_id=str(organization.id), source_type=source_type
+        ).inc()
+        transaction_write_latency_seconds.labels(source_type=source_type).observe(latency)
+
+        # Structured logging
+        logger.info(
+            "transaction.created",
+            extra={
+                "transaction_id": str(txn.id),
+                "organization_id": str(organization.id),
+                "project_id": str(project.id) if project else None,
+                "amount": str(txn.amount),
+                "source_type": source_type,
+                "latency_seconds": latency,
+            },
+        )
 
         return txn
 
@@ -211,12 +262,35 @@ def get_organization_balance(organization_id: int, use_cache: bool = True) -> di
         Decimal('450.75')
     """
     cache_key = f"balance:org:{organization_id}"
+    start_time = time.time()
+    cache_hit = False
 
     # Try to get from cache
     if use_cache:
         cached = cache.get(cache_key)
         if cached:
+            cache_hit = True
+            cache_hits_total.labels(cache_key_prefix="balance:org").inc()
+
+            latency = time.time() - start_time
+            balance_queries_total.labels(scope="organization").inc()
+            balance_query_latency_seconds.labels(scope="organization", cache_hit="true").observe(
+                latency
+            )
+
+            logger.debug(
+                "balance.query.cache_hit",
+                extra={
+                    "organization_id": str(organization_id),
+                    "scope": "organization",
+                    "latency_seconds": latency,
+                },
+            )
+
             return cached
+
+    # Cache miss - compute from database
+    cache_misses_total.labels(cache_key_prefix="balance:org").inc()
 
     # Compute balance from database
     balance_data = Transaction.objects.for_organization(organization_id).compute_balance()
@@ -224,6 +298,20 @@ def get_organization_balance(organization_id: int, use_cache: bool = True) -> di
     # Store in cache with 60s TTL
     if use_cache:
         cache.set(cache_key, balance_data, timeout=60)
+
+    latency = time.time() - start_time
+    balance_queries_total.labels(scope="organization").inc()
+    balance_query_latency_seconds.labels(scope="organization", cache_hit="false").observe(latency)
+
+    logger.debug(
+        "balance.query.computed",
+        extra={
+            "organization_id": str(organization_id),
+            "scope": "organization",
+            "current_balance": str(balance_data["current_balance"]),
+            "latency_seconds": latency,
+        },
+    )
 
     return balance_data
 
@@ -249,12 +337,31 @@ def get_project_balance(project_id: int, use_cache: bool = True) -> dict:
         Decimal('100.00')
     """
     cache_key = f"balance:proj:{project_id}"
+    start_time = time.time()
 
     # Try to get from cache
     if use_cache:
         cached = cache.get(cache_key)
         if cached:
+            cache_hits_total.labels(cache_key_prefix="balance:proj").inc()
+
+            latency = time.time() - start_time
+            balance_queries_total.labels(scope="project").inc()
+            balance_query_latency_seconds.labels(scope="project", cache_hit="true").observe(latency)
+
+            logger.debug(
+                "balance.query.cache_hit",
+                extra={
+                    "project_id": str(project_id),
+                    "scope": "project",
+                    "latency_seconds": latency,
+                },
+            )
+
             return cached
+
+    # Cache miss - compute from database
+    cache_misses_total.labels(cache_key_prefix="balance:proj").inc()
 
     # Compute balance from database
     balance_data = Transaction.objects.for_project(project_id).compute_balance()
@@ -262,6 +369,20 @@ def get_project_balance(project_id: int, use_cache: bool = True) -> dict:
     # Store in cache with 60s TTL
     if use_cache:
         cache.set(cache_key, balance_data, timeout=60)
+
+    latency = time.time() - start_time
+    balance_queries_total.labels(scope="project").inc()
+    balance_query_latency_seconds.labels(scope="project", cache_hit="false").observe(latency)
+
+    logger.debug(
+        "balance.query.computed",
+        extra={
+            "project_id": str(project_id),
+            "scope": "project",
+            "current_balance": str(balance_data["current_balance"]),
+            "latency_seconds": latency,
+        },
+    )
 
     return balance_data
 
