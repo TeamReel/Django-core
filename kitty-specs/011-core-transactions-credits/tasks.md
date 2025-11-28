@@ -19,20 +19,21 @@
 
 **Goal**: Create transactions Django app with data models (UsageEvent, Transaction, BalancePolicy), migrations, and admin configuration.
 **Independent Test**: Migrations run successfully; models pass unit tests; admin interface accessible.
-**Prompt**: `tasks/planned/WP01-django-app-setup-models.md`
+**Prompt**: `tasks/done/WP01-django-app-setup-models.md`
+**Status**: ✅ COMPLETE (Reviewed 2025-11-28 by claude-reviewer)
 
 ### Included Subtasks
-- [ ] T001 Create transactions Django app structure (`src/transactions/`)
-- [ ] T002 Define UsageEvent model with UUID PK, JSONB metadata, partial indexes
-- [ ] T003 Define Transaction model with NUMERIC(14,4) amount, idempotency enforcement
-- [ ] T004 Define BalancePolicy model with enforcement modes enum
-- [ ] T005 Add model Meta classes (indexes, constraints, ordering)
-- [ ] T006 Create custom model managers (TransactionManager, UsageEventManager)
-- [ ] T007 Create migration 0001_initial.py with all tables, indexes, constraints
-- [ ] T008 Configure Django admin for all three models
-- [ ] T009 [P] Write unit tests for model creation, validation, constraints
-- [ ] T010 Add transactions app to INSTALLED_APPS in config/settings/base.py
-- [ ] T011 Create src/transactions/README.md with architecture overview
+- [x] T001 Create transactions Django app structure (`src/transactions/`)
+- [x] T002 Define UsageEvent model with UUID PK, JSONB metadata, partial indexes
+- [x] T003 Define Transaction model with NUMERIC(14,4) amount, idempotency enforcement
+- [x] T004 Define BalancePolicy model with enforcement modes enum
+- [x] T005 Add model Meta classes (indexes, constraints, ordering)
+- [x] T006 Create custom model managers (TransactionManager, UsageEventManager)
+- [x] T007 Create migration 0001_initial.py with all tables, indexes, constraints
+- [x] T008 Configure Django admin for all three models
+- [x] T009 [P] Write unit tests for model creation, validation, constraints
+- [x] T010 Add transactions app to INSTALLED_APPS in config/settings/base.py
+- [x] T011 Create src/transactions/README.md with architecture overview
 
 ### Constitutional Alignment
 - Principle II (Architecture): Single Responsibility - new app for billing
