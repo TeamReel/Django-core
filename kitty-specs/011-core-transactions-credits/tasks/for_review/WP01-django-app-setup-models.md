@@ -14,7 +14,7 @@ subtasks:
   - "T011"
 title: "Django App Setup & Models"
 phase: "Phase 0 - Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "17932"
@@ -825,3 +825,4 @@ pytest transactions/tests/test_models.py -v
 
 - 2025-11-28T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-11-28T17:32:04Z – claude – shell_pid=17932 – lane=doing – Started implementation - Django app setup and models
+- 2025-11-28T17:46:40Z – claude – shell_pid=17932 – lane=for_review – All subtasks complete
