@@ -17,6 +17,11 @@ history:
     agent: "claude-assistant"
     shell_pid: "17932"
     action: "Started implementation: Documentation & ADRs"
+  - timestamp: "2025-11-28T21:30:00Z"
+    lane: "doing"
+    agent: "claude-assistant"
+    shell_pid: "17932"
+    action: "Completed: 4 ADRs, billing integration guide, main README update, quickstart verification. T075 (API docs) deferred - requires drf-spectacular."
 ---
 
 # Work Package: WP07 – Documentation & ADRs
