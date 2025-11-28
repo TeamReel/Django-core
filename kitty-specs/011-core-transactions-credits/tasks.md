@@ -108,25 +108,26 @@
 
 **Goal**: Implement DRF API for usage events, transactions, balances, and policies.
 **Independent Test**: All 8 endpoints return correct responses; permissions enforced; CSV export works.
-**Prompt**: `tasks/planned/WP03-rest-api-endpoints.md`
+**Prompt**: `tasks/done/WP03-rest-api-endpoints.md`
+**Status**: ✅ COMPLETE (66 tests passing, 3 skipped)
 
 ### Included Subtasks
-- [ ] T024 Create src/transactions/api/ module structure
-- [ ] T025 Implement UsageEventSerializer with validation
-- [ ] T026 Implement TransactionSerializer with decimal validation
-- [ ] T027 Implement BalanceSerializer (read-only, computed fields)
-- [ ] T028 Implement BalancePolicySerializer
-- [ ] T029 Create UsageEventViewSet (list, create)
-- [ ] T030 Create TransactionViewSet (list, create) with CSV export
-- [ ] T031 Create OrganizationBalanceView (retrieve)
-- [ ] T032 Create ProjectBalanceView (retrieve)
-- [ ] T033 Create BalancePolicyViewSet (retrieve, update)
-- [ ] T034 Create src/transactions/api/filters.py (django-filter classes)
-- [ ] T035 Create src/transactions/api/urls.py with router configuration
-- [ ] T036 Include transactions.api.urls in config/urls.py
-- [ ] T037 [P] Write API tests for all endpoints (success, validation, errors)
-- [ ] T038 [P] Test policy enforcement (403 responses)
-- [ ] T039 [P] Test CSV export functionality
+- [x] T024 Create src/transactions/api/ module structure
+- [x] T025 Implement UsageEventSerializer with validation
+- [x] T026 Implement TransactionSerializer with decimal validation
+- [x] T027 Implement BalanceSerializer (read-only, computed fields)
+- [x] T028 Implement BalancePolicySerializer
+- [x] T029 Create UsageEventViewSet (list, create)
+- [x] T030 Create TransactionViewSet (list, create) with CSV export
+- [x] T031 Create OrganizationBalanceView (retrieve)
+- [x] T032 Create ProjectBalanceView (retrieve)
+- [x] T033 Create BalancePolicyViewSet (retrieve, update)
+- [x] T034 Create src/transactions/api/filters.py (django-filter classes)
+- [x] T035 Create src/transactions/api/urls.py with router configuration
+- [x] T036 Include transactions.api.urls in config/urls.py
+- [x] T037 [P] Write API tests for all endpoints (success, validation, errors)
+- [x] T038 [P] Test policy enforcement (403 responses)
+- [x] T039 [P] Test CSV export functionality
 
 ### Constitutional Alignment
 - Principle II (Stable APIs): DRF serializers/viewsets
