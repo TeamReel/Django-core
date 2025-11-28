@@ -239,19 +239,20 @@
 
 **Goal**: Achieve 90% test coverage; configure pytest-cov; write performance tests.
 **Independent Test**: `pytest --cov` passes with ≥90%; performance tests meet SLAs.
-**Prompt**: `tasks/planned/WP06-testing-quality-gates.md`
+**Prompt**: `tasks/done/WP06-testing-quality-gates.md`
+**Status**: ✅ COMPLETE (Reviewed 2025-11-28 by claude-reviewer)
 
 ### Included Subtasks
-- [ ] T057 Configure pytest-cov in pyproject.toml (--cov-fail-under=90)
-- [ ] T058 Create tests/transactions/factories.py (factory_boy fixtures)
-- [ ] T059 Create tests/transactions/fixtures/ (JSON fixtures)
-- [ ] T060 Write performance test: balance query with 100k transactions (<500ms)
-- [ ] T061 Write performance test: 100 concurrent transaction writes
-- [ ] T062 Write performance test: bulk export 1M transactions (<5s)
-- [ ] T063 [P] Write edge case tests (exactly zero balance, large amounts)
-- [ ] T064 [P] Write error handling tests (missing FK, invalid amounts)
-- [ ] T065 [P] Write multi-tenant isolation tests (cross-org data leakage)
-- [ ] T066 Run full test suite and achieve 90% coverage
+- [x] T057 Configure pytest-cov in pyproject.toml (--cov-fail-under=90)
+- [x] T058 Create tests/transactions/factories.py (factory_boy fixtures)
+- [x] T059 Create tests/transactions/fixtures/ (JSON fixtures)
+- [x] T060 Write performance test: balance query with 100k transactions (<500ms)
+- [x] T061 Write performance test: 100 concurrent transaction writes
+- [x] T062 Write performance test: bulk export 1M transactions (<5s)
+- [x] T063 [P] Write edge case tests (exactly zero balance, large amounts)
+- [x] T064 [P] Write error handling tests (missing FK, invalid amounts)
+- [x] T065 [P] Write multi-tenant isolation tests (cross-org data leakage)
+- [x] T066 Run full test suite and achieve 90% coverage
 - [ ] T067 Update GitHub Actions CI to run transaction tests
 
 ### Constitutional Alignment
