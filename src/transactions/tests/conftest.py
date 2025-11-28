@@ -21,6 +21,12 @@ def organization(db, user):
 
 
 @pytest.fixture
+def organisation(organization):
+    """Alias for organization fixture (British spelling)."""
+    return organization
+
+
+@pytest.fixture
 def project(db, organization, user):
     """Create a test project."""
     return Project.objects.create(name="Test Project", organisation=organization, creator=user)

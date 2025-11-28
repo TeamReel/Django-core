@@ -3,9 +3,9 @@ work_package_id: "WP03"
 subtasks: ["T024", "T025", "T026", "T027", "T028", "T029", "T030", "T031", "T032", "T033", "T034", "T035", "T036", "T037", "T038", "T039"]
 title: "REST API Endpoints"
 phase: "Phase 1 - API Layer"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
+agent: "system"
 history:
   - timestamp: "2025-11-28T00:00:00Z"
     lane: "planned"
@@ -66,3 +66,4 @@ pytest transactions/tests/test_api.py -v
 ## Activity Log
 
 - 2025-11-28 – system – lane=planned – Prompt created
+- 2025-11-28T18:15:52Z – system – shell_pid= – lane=doing – Moved to doing
