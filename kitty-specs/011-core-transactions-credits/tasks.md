@@ -287,15 +287,15 @@
 **Prompt**: `tasks/planned/WP07-documentation-adrs.md`
 
 ### Included Subtasks
-- [ ] T068 Write src/transactions/README.md (architecture, usage, models)
-- [ ] T069 Write docs/billing-integration.md (external developer guide)
-- [ ] T070 Update main README.md with transactions engine overview
-- [ ] T071 Write ADR-011-001: Single-Ledger vs Double-Entry
-- [ ] T072 Write ADR-011-002: Computed Balance vs Stored Balance
-- [ ] T073 Write ADR-011-003: Idempotency Key Retention Policy
-- [ ] T074 Write ADR-011-004: Redis Cache Invalidation Strategy
+System.Func`2[System.Text.RegularExpressions.Match,System.String]
+System.Func`2[System.Text.RegularExpressions.Match,System.String]
+System.Func`2[System.Text.RegularExpressions.Match,System.String]
+System.Func`2[System.Text.RegularExpressions.Match,System.String]
+System.Func`2[System.Text.RegularExpressions.Match,System.String]
+System.Func`2[System.Text.RegularExpressions.Match,System.String]
+System.Func`2[System.Text.RegularExpressions.Match,System.String]
 - [ ] T075 [P] Generate API docs with drf-spectacular
-- [ ] T076 Verify quickstart.md examples work end-to-end
+System.Func`2[System.Text.RegularExpressions.Match,System.String]
 
 ### Constitutional Alignment
 - Principle XI (Documentation): In-repo docs, getting started guide, extension guide, ADRs
