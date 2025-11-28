@@ -3,7 +3,7 @@ work_package_id: "WP05"
 subtasks: ["T049", "T050", "T051", "T052", "T053", "T054", "T055", "T056"]
 title: "Management Commands & Cleanup"
 phase: "Phase 2 - Operations"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude-assistant"
 shell_pid: "17932"
@@ -53,3 +53,4 @@ python manage.py seed_test_transactions --count=100
 
 - 2025-11-28 – system – lane=planned – Prompt created
 - 2025-11-28T19:20:24Z – claude-assistant – shell_pid=17932 – lane=doing – Started implementation: Management commands for cleanup and testing
+- 2025-11-28T19:28:00Z – claude-assistant – shell_pid=17932 – lane=for_review – Implementation complete: 2 commands, 9 tests passing, README updated

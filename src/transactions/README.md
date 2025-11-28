@@ -251,6 +251,79 @@ python manage.py migrate transactions
 python manage.py showmigrations transactions
 ```
 
+## Management Commands
+
+### cleanup_idempotency_keys
+
+Removes old idempotency keys from UsageEvent records to free up storage. Transaction idempotency keys are preserved (required for uniqueness constraint).
+
+**Usage**:
+```bash
+# Dry-run (preview without making changes)
+python manage.py cleanup_idempotency_keys --dry-run
+
+# Clean up keys older than 7 days (default)
+python manage.py cleanup_idempotency_keys
+
+# Custom retention period
+python manage.py cleanup_idempotency_keys --retention-days=30
+
+# Combine options
+python manage.py cleanup_idempotency_keys --retention-days=14 --dry-run
+```
+
+**Arguments**:
+- `--retention-days`: Number of days to retain keys (default: 7)
+- `--dry-run`: Preview changes without executing (recommended first time)
+
+**When to use**:
+- Run periodically (weekly/monthly) to reduce database bloat
+- After high-volume imports with idempotency keys
+- When UsageEvent table grows large
+
+**Note**: Only cleans UsageEvent idempotency keys. Transaction keys are never removed (required for deduplication).
+
+---
+
+### seed_test_transactions
+
+Creates realistic test data for development and testing environments.
+
+**Usage**:
+```bash
+# Create 10 transactions per org, 3 orgs
+python manage.py seed_test_transactions
+
+# Create 50 transactions per org, 5 orgs
+python manage.py seed_test_transactions --count=50 --orgs=5
+
+# Minimal test data
+python manage.py seed_test_transactions --count=5 --orgs=1
+```
+
+**Arguments**:
+- `--count`: Number of transactions per organization (default: 10)
+- `--orgs`: Number of organizations to create (default: 3)
+
+**What it creates**:
+- Organizations: Named "Test Organization 1", "Test Organization 2", etc.
+- Users: Admin users for each organization (admin1@testorg.example.com, etc.)
+- Projects: One project per organization
+- UsageEvents: Random event types (api_call, storage_write, compute_job, etc.)
+- Transactions: Mix of credits (66%) and debits (33%), amounts $5-$500
+
+**Idempotency**: Safe to run multiple times. Uses idempotency keys (`seed-usage-*`, `seed-txn-*`) to prevent duplicate data creation.
+
+**When to use**:
+- Setting up development environment
+- Testing API endpoints with realistic data
+- Load testing with known data set
+- Demonstrating features to stakeholders
+
+**Warning**: Creates permanent data. Use only in development/test environments. Do not run in production.
+
+---
+
 ## Testing
 
 ### Running Tests
