@@ -163,8 +163,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     def list(self, request: Request, *args, **kwargs) -> Response:
         """List transactions with optional CSV export."""
-        # Check for CSV export format
-        export_format = request.query_params.get("format", "json")
+        # Check for CSV export (use 'export' param to avoid DRF format suffix conflict)
+        export_format = request.query_params.get("export")
 
         if export_format == "csv":
             return self._export_csv(request)

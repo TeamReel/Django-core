@@ -339,7 +339,6 @@ class TestTransactionAPI:
         assert response.data["count"] == 1
         assert response.data["results"][0]["source_type"] == SourceTypeChoices.EXTERNAL_BILLING
 
-    @pytest.mark.skip(reason="DRF format suffix routing issue - needs investigation")
     def test_export_transactions_csv(self, user, organisation):
         """Test CSV export of transactions."""
         Transaction.objects.create(
@@ -354,16 +353,8 @@ class TestTransactionAPI:
         client = APIClient()
         url = reverse("transactions:transaction-list")
 
-        # Test regular list first
-        response_list = client.get(url)
-        print(f"DEBUG: Regular list response status={response_list.status_code}")
-
-        # Now test with format parameter using query_params dict
-        response = client.get(url, {"format": "csv"})
-        print(
-            f"DEBUG CSV final: status={response.status_code}, content_type={response.get('Content-Type', 'N/A')}"
-        )
-        print(f"DEBUG CSV keys: {list(response.__dict__.keys())}")
+        # Use 'export=csv' param (not 'format' which DRF intercepts)
+        response = client.get(url, {"export": "csv"})
         assert response.status_code == status.HTTP_200_OK
         assert response["Content-Type"] == "text/csv"
         assert "attachment" in response["Content-Disposition"]
