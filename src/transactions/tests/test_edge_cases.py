@@ -39,37 +39,22 @@ class TestEdgeCases:
     """Edge case tests for transactions."""
 
     @pytest.fixture
-    def test_setup(self):
-        """Create test entities."""
-        user = User.objects.create(email="edge@example.com")
-        org = Organisation.objects.create(name="Edge Test Org", slug="edge-test-org", creator=user)
-        project = Project.objects.create(
-            name="Edge Test Project",
-            slug="edge-test-proj",
-            organisation=org,
-            creator=user,
-        )
+    def edge_setup(self, user, organization, project):
+        """Create test entities using conftest fixtures."""
         policy = BalancePolicy.objects.create(
-            organization=org,
+            organization=organization,
             enforcement_mode=EnforcementModeChoices.BLOCK,
             allow_negative=False,
         )
-
-        yield {"user": user, "org": org, "project": project, "policy": policy}
-
-        # Cleanup
+        yield {"user": user, "org": organization, "project": project, "policy": policy}
+        # Cleanup handled automatically by Django test transactions
         cache.clear()
-        Transaction.objects.filter(organization=org).delete()
-        policy.delete()
-        project.delete()
-        org.delete()
-        user.delete()
 
-    def test_exactly_zero_balance(self, test_setup):
+    def test_exactly_zero_balance(self, edge_setup):
         """Test operations when balance is exactly 0."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
+        org = edge_setup["org"]
+        project = edge_setup["project"]
+        user = edge_setup["user"]
 
         # Create initial balance of exactly 0
         balance_data = get_organization_balance(org.id)
@@ -103,12 +88,12 @@ class TestEdgeCases:
 
     def test_very_large_amounts(self, test_setup):
         """Test transactions with amounts near decimal precision limits."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
+        org = edge_setup["org"]
+        project = edge_setup["project"]
+        user = edge_setup["user"]
 
         # Update policy to allow negative
-        policy = test_setup["policy"]
+        policy = edge_setup["policy"]
         policy.allow_negative = True
         policy.save()
 
@@ -146,12 +131,12 @@ class TestEdgeCases:
 
     def test_precise_decimal_arithmetic(self, test_setup):
         """Test that decimal precision is maintained correctly."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
+        org = edge_setup["org"]
+        project = edge_setup["project"]
+        user = edge_setup["user"]
 
         # Update policy to allow negative
-        policy = test_setup["policy"]
+        policy = edge_setup["policy"]
         policy.allow_negative = True
         policy.save()
 
@@ -180,9 +165,9 @@ class TestEdgeCases:
 
     def test_empty_metadata(self, test_setup):
         """Test usage events with empty metadata."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
+        org = edge_setup["org"]
+        project = edge_setup["project"]
+        user = edge_setup["user"]
 
         # UsageEvent with empty metadata
         event = record_usage_event(
@@ -198,8 +183,8 @@ class TestEdgeCases:
 
     def test_null_optional_fields(self, test_setup):
         """Test transactions with null optional fields."""
-        org = test_setup["org"]
-        user = test_setup["user"]
+        org = edge_setup["org"]
+        user = edge_setup["user"]
 
         # Transaction without project (optional field)
         txn = create_transaction(
@@ -218,9 +203,9 @@ class TestEdgeCases:
 
     def test_concurrent_idempotency_enforcement(self, test_setup):
         """Test idempotency when same key used concurrently."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
+        org = edge_setup["org"]
+        project = edge_setup["project"]
+        user = edge_setup["user"]
 
         idempotency_key = f"concurrent-idem-{uuid.uuid4()}"
 
@@ -254,9 +239,9 @@ class TestEdgeCases:
 
     def test_balance_policy_edge_at_zero(self, test_setup):
         """Test policy enforcement when balance would go negative."""
-        org = test_setup["org"]
-        project = test_setup["project"]
-        user = test_setup["user"]
+        org = edge_setup["org"]
+        project = edge_setup["project"]
+        user = edge_setup["user"]
 
         # Create balance of exactly 10.00
         create_transaction(
