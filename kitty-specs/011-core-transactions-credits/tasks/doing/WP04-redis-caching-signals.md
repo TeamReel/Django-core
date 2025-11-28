@@ -3,9 +3,10 @@ work_package_id: "WP04"
 subtasks: ["T040", "T041", "T042", "T043", "T044", "T045", "T046", "T047", "T048"]
 title: "Redis Caching & Signals"
 phase: "Phase 1 - Performance"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
+agent: "claude-assistant"
+shell_pid: "17932"
 history:
   - timestamp: "2025-11-28T00:00:00Z"
     lane: "planned"
@@ -68,3 +69,4 @@ pytest transactions/tests/ -k concurrent -v
 ## Activity Log
 
 - 2025-11-28 – system – lane=planned – Prompt created
+- 2025-11-28T19:10:15Z – claude-assistant – shell_pid=17932 – lane=doing – Started implementation: Redis caching and signal-based cache invalidation
