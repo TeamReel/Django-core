@@ -139,3 +139,218 @@ class ScopeAwarePermission(BasePermission):
                     pass
 
             return has_project_perm
+
+
+# Helper functions for permission checks used in tests and application code
+
+
+def can_access_flag(user, flag):
+    """
+    Check if a user can access (read) a feature flag.
+
+    Args:
+        user: The user to check permissions for
+        flag: The FeatureFlag instance to check access for
+
+    Returns:
+        bool: True if user can access the flag, False otherwise
+    """
+    if not user or not user.is_authenticated:
+        return False
+
+    # Superusers can access everything
+    if user.is_superuser:
+        return True
+
+    # Check based on scope
+    if flag.scope_type == ScopeType.GLOBAL:
+        # Only superusers can access global flags
+        return False
+
+    elif flag.scope_type == ScopeType.ORGANISATION:
+        # Check org-level access
+        if flag.organisation_id:
+            return check_permission(
+                user.id, "settings.read", flag.organisation_id, "organisation"
+            ) or check_permission(
+                user.id, "org.manage_settings", flag.organisation_id, "organisation"
+            )
+        return False
+
+    else:  # PROJECT scope
+        # Check project-level access, or org-level access (org admins can access project flags)
+        if flag.project_id:
+            has_project_access = check_permission(
+                user.id, "settings.read", flag.project_id, "project"
+            ) or check_permission(user.id, "projects.update", flag.project_id, "project")
+
+            if has_project_access:
+                return True
+
+            # Check if user has org-level access
+            if flag.organisation_id:
+                return check_permission(
+                    user.id, "org.manage_settings", flag.organisation_id, "organisation"
+                )
+        return False
+
+
+def can_modify_setting(user, setting):
+    """
+    Check if a user can modify a setting.
+
+    Args:
+        user: The user to check permissions for
+        setting: The Setting instance to check access for (can be None for general check)
+
+    Returns:
+        bool: True if user can modify the setting, False otherwise
+    """
+    if not user or not user.is_authenticated:
+        return False
+
+    # Superusers can modify everything
+    if user.is_superuser:
+        return True
+
+    # If no specific setting, check general write permission
+    if setting is None:
+        return False
+
+    # Check based on scope
+    if setting.scope_type == ScopeType.GLOBAL:
+        # Only superusers can modify global settings
+        return False
+
+    elif setting.scope_type == ScopeType.ORGANISATION:
+        # Check org-level write access
+        if setting.organisation_id:
+            return check_permission(
+                user.id, "settings.write", setting.organisation_id, "organisation"
+            ) or check_permission(
+                user.id, "org.manage_settings", setting.organisation_id, "organisation"
+            )
+        return False
+
+    else:  # PROJECT scope
+        # Check project-level write access or org-level admin access
+        if setting.project_id:
+            has_project_write = check_permission(
+                user.id, "settings.write", setting.project_id, "project"
+            ) or check_permission(user.id, "projects.update", setting.project_id, "project")
+
+            if has_project_write:
+                return True
+
+            # Check if user has org-level admin access
+            if setting.organisation_id:
+                return check_permission(
+                    user.id, "org.manage_settings", setting.organisation_id, "organisation"
+                )
+        return False
+
+
+def can_create_flag(user, scope_type, organisation=None, project=None):
+    """
+    Check if a user can create a flag with the given scope.
+
+    Args:
+        user: The user to check permissions for
+        scope_type: The ScopeType for the new flag
+        organisation: The Organisation instance (optional)
+        project: The Project instance (optional)
+
+    Returns:
+        bool: True if user can create the flag, False otherwise
+    """
+    if not user or not user.is_authenticated:
+        return False
+
+    # Superusers can create everything
+    if user.is_superuser:
+        return True
+
+    if scope_type == ScopeType.GLOBAL:
+        # Only superusers can create global flags
+        return False
+
+    elif scope_type == ScopeType.ORGANISATION:
+        # Check org-level create access
+        if organisation:
+            org_id = organisation.id if hasattr(organisation, "id") else organisation
+            return check_permission(
+                user.id, "settings.write", org_id, "organisation"
+            ) or check_permission(user.id, "org.manage_settings", org_id, "organisation")
+        return False
+
+    else:  # PROJECT scope
+        # Check project-level create access or org-level admin access
+        if project:
+            project_id = project.id if hasattr(project, "id") else project
+            has_project_create = check_permission(
+                user.id, "settings.write", project_id, "project"
+            ) or check_permission(user.id, "projects.update", project_id, "project")
+
+            if has_project_create:
+                return True
+
+            # Check if user has org-level admin access
+            if organisation:
+                org_id = organisation.id if hasattr(organisation, "id") else organisation
+                return check_permission(user.id, "org.manage_settings", org_id, "organisation")
+        return False
+
+
+def can_delete_setting(user, setting):
+    """
+    Check if a user can delete a setting.
+
+    Args:
+        user: The user to check permissions for
+        setting: The Setting instance to check access for (can be None for general check)
+
+    Returns:
+        bool: True if user can delete the setting, False otherwise
+    """
+    if not user or not user.is_authenticated:
+        return False
+
+    # Superusers can delete everything
+    if user.is_superuser:
+        return True
+
+    # If no specific setting, check general admin permission
+    if setting is None:
+        return False
+
+    # Check based on scope
+    if setting.scope_type == ScopeType.GLOBAL:
+        # Only superusers can delete global settings
+        return False
+
+    elif setting.scope_type == ScopeType.ORGANISATION:
+        # Check org-level admin access
+        if setting.organisation_id:
+            return check_permission(
+                user.id, "settings.admin", setting.organisation_id, "organisation"
+            ) or check_permission(
+                user.id, "org.manage_settings", setting.organisation_id, "organisation"
+            )
+        return False
+
+    else:  # PROJECT scope
+        # Check project-level admin access or org-level admin access
+        if setting.project_id:
+            has_project_admin = check_permission(
+                user.id, "settings.admin", setting.project_id, "project"
+            ) or check_permission(user.id, "projects.update", setting.project_id, "project")
+
+            if has_project_admin:
+                return True
+
+            # Check if user has org-level admin access
+            if setting.organisation_id:
+                return check_permission(
+                    user.id, "org.manage_settings", setting.organisation_id, "organisation"
+                )
+        return False

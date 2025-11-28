@@ -5,6 +5,8 @@ Tests scope-aware permission checking, role-based access control,
 and integration with B08 permission system.
 """
 
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from organisations.models import Organisation
@@ -14,6 +16,12 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from src.settings.models import FeatureFlag, ScopeType, Setting
+from src.settings.permissions import (
+    can_access_flag,
+    can_create_flag,
+    can_delete_setting,
+    can_modify_setting,
+)
 
 User = get_user_model()
 
@@ -236,9 +244,7 @@ class TestPermissionInheritance(TestCase):
 
     def setUp(self):
         """Set up hierarchy of permissions."""
-        self.user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
-        )
+        self.user = User.objects.create_user(email="test@example.com", password="testpass123")
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
         )
@@ -345,12 +351,8 @@ class TestAPIPermissionIntegration(TestCase):
         """Set up API test environment."""
         self.client = APIClient()
 
-        self.admin = User.objects.create_user(
-            email="admin@example.com", password="adminpass123"
-        )
-        self.user = User.objects.create_user(
-            email="user@example.com", password="userpass123"
-        )
+        self.admin = User.objects.create_user(email="admin@example.com", password="adminpass123")
+        self.user = User.objects.create_user(email="user@example.com", password="userpass123")
 
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.admin
@@ -452,9 +454,7 @@ class TestPermissionCaching(TestCase):
 
     def setUp(self):
         """Set up test data."""
-        self.user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
-        )
+        self.user = User.objects.create_user(email="test@example.com", password="testpass123")
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
         )
@@ -520,9 +520,7 @@ class TestCustomPermissionLogic(TestCase):
 
     def setUp(self):
         """Set up test data."""
-        self.user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
-        )
+        self.user = User.objects.create_user(email="test@example.com", password="testpass123")
 
     def test_permission_with_inactive_flag(self):
         """Test permission checks with inactive flags."""

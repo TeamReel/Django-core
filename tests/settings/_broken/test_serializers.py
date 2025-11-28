@@ -4,7 +4,6 @@ Serializer tests for Settings & Feature Flags system.
 Tests Django REST Framework serializers validation and data handling.
 """
 
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from organisations.models import Organisation
@@ -25,9 +24,7 @@ class TestFeatureFlagSerializer(TestCase):
 
     def setUp(self):
         """Set up test data."""
-        self.user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
-        )
+        self.user = User.objects.create_user(email="test@example.com", password="testpass123")
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
         )
@@ -210,9 +207,7 @@ class TestSettingSerializer(TestCase):
 
     def setUp(self):
         """Set up test data."""
-        self.user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
-        )
+        self.user = User.objects.create_user(email="test@example.com", password="testpass123")
         self.organisation = Organisation.objects.create(
             name="Test Org", slug="test-org", creator=self.user
         )
@@ -462,9 +457,7 @@ class TestSerializerEdgeCases(TestCase):
 
     def setUp(self):
         """Set up test data."""
-        self.user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
-        )
+        self.user = User.objects.create_user(email="test@example.com", password="testpass123")
 
     def test_partial_update_serialization(self):
         """Test partial update with serializer."""

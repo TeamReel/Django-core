@@ -99,9 +99,11 @@ cognitive load, improve maintainability, and make onboarding faster.
 - Tests MUST be deterministic and fast
 - Coverage thresholds MUST be enforced and increased over time
 - Integration tests MUST cover key flows
+- Existing tests affected by a change MUST be updated to reflect the new expected behaviour before the feature can be accepted
 
 **Rationale**: Comprehensive testing prevents regressions, enables confident
 refactoring, and serves as living documentation of expected behavior.
+
 
 ---
 
