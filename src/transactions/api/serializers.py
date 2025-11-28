@@ -11,7 +11,9 @@ class UsageEventSerializer(serializers.ModelSerializer):
     """Serializer for UsageEvent model."""
 
     organization_id = serializers.UUIDField(write_only=True, required=True)
-    project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)  # Project uses integer PK
+    project_id = serializers.IntegerField(
+        write_only=True, required=False, allow_null=True
+    )  # Project uses integer PK
     user_id = serializers.IntegerField(write_only=True, required=True)  # User uses integer PK
 
     class Meta:
@@ -82,7 +84,9 @@ class UsageEventSerializer(serializers.ModelSerializer):
                         }
                     )
             except Project.DoesNotExist:
-                raise serializers.ValidationError({"project_id": f"Project {project_id} does not exist"})
+                raise serializers.ValidationError(
+                    {"project_id": f"Project {project_id} does not exist"}
+                )
 
         return attrs
 
@@ -110,7 +114,9 @@ class TransactionSerializer(serializers.ModelSerializer):
     """Serializer for Transaction model."""
 
     organization_id = serializers.UUIDField(write_only=True, required=True)
-    project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)  # Project uses integer PK
+    project_id = serializers.IntegerField(
+        write_only=True, required=False, allow_null=True
+    )  # Project uses integer PK
     created_by_id = serializers.IntegerField(write_only=True, required=True)  # User uses integer PK
     usage_event_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
 
@@ -140,7 +146,14 @@ class TransactionSerializer(serializers.ModelSerializer):
             "notes",
             "created_at",
         ]
-        read_only_fields = ["id", "timestamp", "created_at", "created_by_email", "organization_name", "project_name"]
+        read_only_fields = [
+            "id",
+            "timestamp",
+            "created_at",
+            "created_by_email",
+            "organization_name",
+            "project_name",
+        ]
 
     def validate_amount(self, value: Decimal) -> Decimal:
         """Validate amount is non-zero and within precision limits."""
@@ -220,7 +233,9 @@ class TransactionSerializer(serializers.ModelSerializer):
                         }
                     )
             except Project.DoesNotExist:
-                raise serializers.ValidationError({"project_id": f"Project {project_id} does not exist"})
+                raise serializers.ValidationError(
+                    {"project_id": f"Project {project_id} does not exist"}
+                )
 
         # If source_type is USAGE_EVENT, usage_event_id is required
         if source_type == SourceTypeChoices.USAGE_EVENT and not usage_event_id:
@@ -273,11 +288,17 @@ class BalanceSerializer(serializers.Serializer):
     """Read-only serializer for computed balance data."""
 
     organization_id = serializers.UUIDField(required=False, allow_null=True)
-    project_id = serializers.IntegerField(required=False, allow_null=True)  # Project uses integer PK
+    project_id = serializers.IntegerField(
+        required=False, allow_null=True
+    )  # Project uses integer PK
     current_balance = serializers.DecimalField(max_digits=14, decimal_places=4)
     transaction_count = serializers.IntegerField()
-    total_positive_amounts = serializers.DecimalField(max_digits=14, decimal_places=4, required=False)
-    total_negative_amounts = serializers.DecimalField(max_digits=14, decimal_places=4, required=False)
+    total_positive_amounts = serializers.DecimalField(
+        max_digits=14, decimal_places=4, required=False
+    )
+    total_negative_amounts = serializers.DecimalField(
+        max_digits=14, decimal_places=4, required=False
+    )
 
     def to_representation(self, instance):
         """Convert dict to representation."""

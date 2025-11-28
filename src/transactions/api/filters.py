@@ -19,7 +19,14 @@ class UsageEventFilter(django_filters.FilterSet):
         """Filter metadata."""
 
         model = UsageEvent
-        fields = ["organization_id", "project_id", "event_type", "unbilled", "start_date", "end_date"]
+        fields = [
+            "organization_id",
+            "project_id",
+            "event_type",
+            "unbilled",
+            "start_date",
+            "end_date",
+        ]
 
     def filter_unbilled(self, queryset, name, value):  # noqa: ARG002
         """Filter for usage events not linked to transactions."""

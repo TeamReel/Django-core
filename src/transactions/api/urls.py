@@ -25,7 +25,7 @@ urlpatterns = [
         name="organization-balance",
     ),
     path(
-        "projects/<uuid:project_id>/balance/",
+        "projects/<int:project_id>/balance/",  # Project uses integer PK
         ProjectBalanceView.as_view(),
         name="project-balance",
     ),

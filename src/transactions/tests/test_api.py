@@ -6,7 +6,13 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from transactions.models import BalancePolicy, EnforcementModeChoices, SourceTypeChoices, Transaction, UsageEvent
+from transactions.models import (
+    BalancePolicy,
+    EnforcementModeChoices,
+    SourceTypeChoices,
+    Transaction,
+    UsageEvent,
+)
 
 
 @pytest.mark.django_db
@@ -125,6 +131,9 @@ class TestUsageEventAPI:
 
     def test_filter_usage_events_by_organization(self, user, organisation):
         """Test filtering usage events by organization_id."""
+        # Clear existing events
+        UsageEvent.objects.all().delete()
+        
         # Create usage events for different orgs
         from organisations.models import Organisation
 
@@ -142,6 +151,10 @@ class TestUsageEventAPI:
 
     def test_filter_usage_events_by_unbilled(self, user, organisation):
         """Test filtering usage events by unbilled status."""
+        # Clear existing data
+        UsageEvent.objects.all().delete()
+        Transaction.objects.all().delete()
+        
         # Create usage event without transaction (unbilled)
         unbilled_event = UsageEvent.objects.create(
             event_type="api_call",
@@ -298,6 +311,9 @@ class TestTransactionAPI:
 
     def test_filter_transactions_by_source_type(self, user, organisation):
         """Test filtering transactions by source_type."""
+        # Clear existing transactions
+        Transaction.objects.all().delete()
+        
         Transaction.objects.create(
             amount=Decimal("100.0000"),
             organization=organisation,
@@ -370,7 +386,9 @@ class TestBalanceAPI:
         )
 
         client = APIClient()
-        url = reverse("transactions:organization-balance", kwargs={"organization_id": str(organisation.id)})
+        url = reverse(
+            "transactions:organization-balance", kwargs={"organization_id": str(organisation.id)}
+        )
 
         response = client.get(url)
         assert response.status_code == status.HTTP_200_OK

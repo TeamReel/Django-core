@@ -11,12 +11,21 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from transactions.exceptions import DuplicateIdempotencyKeyError, InsufficientBalanceError, PolicyViolationError
+from transactions.exceptions import (
+    DuplicateIdempotencyKeyError,
+    InsufficientBalanceError,
+    PolicyViolationError,
+)
 from transactions.models import BalancePolicy, Transaction, UsageEvent
 from transactions.services import get_organization_balance, get_policy, get_project_balance
 
 from .filters import TransactionFilter, UsageEventFilter
-from .serializers import BalancePolicySerializer, BalanceSerializer, TransactionSerializer, UsageEventSerializer
+from .serializers import (
+    BalancePolicySerializer,
+    BalanceSerializer,
+    TransactionSerializer,
+    UsageEventSerializer,
+)
 
 
 class UsageEventViewSet(viewsets.ModelViewSet):
@@ -70,7 +79,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
     - GET /transactions/ - List transactions (filterable, CSV export)
     """
 
-    queryset = Transaction.objects.select_related("organization", "project", "created_by", "usage_event")
+    queryset = Transaction.objects.select_related(
+        "organization", "project", "created_by", "usage_event"
+    )
     serializer_class = TransactionSerializer
     filterset_class = TransactionFilter
     http_method_names = ["get", "post"]
@@ -89,6 +100,20 @@ class TransactionViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        # Check for duplicate idempotency key before attempting to create
+        idempotency_key = serializer.validated_data.get("idempotency_key")
+        if idempotency_key:
+            existing_txn = Transaction.objects.filter(idempotency_key=idempotency_key).first()
+            if existing_txn:
+                return Response(
+                    {
+                        "error": "duplicate_idempotency_key",
+                        "existing_transaction_id": str(existing_txn.id),
+                        "message": f"Transaction with idempotency key '{idempotency_key}' already exists",
+                    },
+                    status=status.HTTP_409_CONFLICT,
+                )
+
         try:
             transaction = serializer.save()
             return Response(
@@ -96,7 +121,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED,
             )
         except DuplicateIdempotencyKeyError as e:
-            # Return existing transaction ID
+            # Fallback if race condition occurs
             return Response(
                 {
                     "error": "duplicate_idempotency_key",
@@ -150,32 +175,36 @@ class TransactionViewSet(viewsets.ModelViewSet):
             writer = csv.writer(output)
 
             # Write header
-            writer.writerow([
-                "transaction_id",
-                "organization_id",
-                "project_id",
-                "amount",
-                "source_type",
-                "timestamp",
-                "created_by_email",
-                "notes",
-            ])
+            writer.writerow(
+                [
+                    "transaction_id",
+                    "organization_id",
+                    "project_id",
+                    "amount",
+                    "source_type",
+                    "timestamp",
+                    "created_by_email",
+                    "notes",
+                ]
+            )
             yield output.getvalue()
             output.truncate(0)
             output.seek(0)
 
             # Write data rows
             for txn in queryset.iterator(chunk_size=500):
-                writer.writerow([
-                    str(txn.id),
-                    str(txn.organization_id),
-                    str(txn.project_id) if txn.project_id else "",
-                    str(txn.amount),
-                    txn.source_type,
-                    txn.timestamp.isoformat(),
-                    txn.created_by.email,
-                    txn.notes,
-                ])
+                writer.writerow(
+                    [
+                        str(txn.id),
+                        str(txn.organization_id),
+                        str(txn.project_id) if txn.project_id else "",
+                        str(txn.amount),
+                        txn.source_type,
+                        txn.timestamp.isoformat(),
+                        txn.created_by.email,
+                        txn.notes,
+                    ]
+                )
                 yield output.getvalue()
                 output.truncate(0)
                 output.seek(0)
@@ -223,7 +252,7 @@ class ProjectBalanceView(APIView):
 
     permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
 
-    def get(self, request: Request, project_id: str) -> Response:
+    def get(self, request: Request, project_id: int) -> Response:  # project_id is integer
         """Get project balance with aggregate stats."""
         from projects.models import Project
 
@@ -267,7 +296,11 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
         """
         return super().get_queryset()
 
-    @action(detail=False, methods=["get"], url_path=r"(?P<scope_type>organization|project)/(?P<scope_id>[^/.]+)")
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path=r"(?P<scope_type>organization|project)/(?P<scope_id>[^/.]+)",
+    )
     def get_by_scope(self, request: Request, scope_type: str, scope_id: str) -> Response:
         """Get policy by scope type and ID.
 
