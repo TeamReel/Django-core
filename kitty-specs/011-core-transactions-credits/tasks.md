@@ -327,17 +327,17 @@ System.Func`2[System.Text.RegularExpressions.Match,System.String]
 **Prompt**: `tasks/planned/WP08-metrics-observability.md`
 
 ### Included Subtasks
-- [ ] T077 Add django-prometheus integration for transactions app
-- [ ] T078 Create metrics: transaction_writes_total (counter)
-- [ ] T079 Create metrics: transaction_write_latency_seconds (histogram)
-- [ ] T080 Create metrics: balance_queries_total (counter)
-- [ ] T081 Create metrics: balance_query_latency_seconds (histogram)
-- [ ] T082 Create metrics: policy_violations_total (counter by mode)
-- [ ] T083 Create metrics: cache_hits_total / cache_misses_total (counters)
-- [ ] T084 Add structured logging with transaction_id, org_id context
-- [ ] T085 Create health check endpoint (/api/v1/health/transactions/)
-- [ ] T086 [P] Write observability tests (metrics increment, logs emit)
-- [ ] T087 Document metrics in docs/observability.md
+- [x] T077 Add django-prometheus integration for transactions app
+- [x] T078 Create metrics: transaction_writes_total (counter)
+- [x] T079 Create metrics: transaction_write_latency_seconds (histogram)
+- [x] T080 Create metrics: balance_queries_total (counter)
+- [x] T081 Create metrics: balance_query_latency_seconds (histogram)
+- [x] T082 Create metrics: policy_violations_total (counter by mode)
+- [x] T083 Create metrics: cache_hits_total / cache_misses_total (counters)
+- [x] T084 Add structured logging with transaction_id, org_id context
+- [x] T085 Create health check endpoint (/api/v1/health/transactions/)
+- [x] T086 [P] Write observability tests (metrics increment, logs emit)
+- [x] T087 Document metrics in docs/observability.md
 
 ### Constitutional Alignment
 - Principle VI (Performance): Metrics hooks, structured logging, health checks
