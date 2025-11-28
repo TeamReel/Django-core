@@ -72,7 +72,7 @@ def get_flag(
     default: bool = False,
 ) -> bool:
     """
-    Get a feature flag value with scope hierarchy resolution.
+    Get a feature flag value with scope hierarchy resolution and caching.
 
     Args:
         key: Feature flag key
@@ -91,8 +91,55 @@ def get_flag(
         >>> get_flag('dark_mode', project_id=proj_id)  # Project → org → global fallback
         False
     """
+    from .cache import generate_cache_key, get_cached_value, set_cached_value
+
+    # Try to resolve from cache first, checking all possible scopes
+    scopes_to_check = []
+
+    # Build scope hierarchy to check
+    if project_id:
+        scopes_to_check.append(("project", project_id))
+        # Infer organisation_id from project if not provided
+        if not organisation_id:
+            from projects.models import Project
+
+            try:
+                project = Project.objects.filter(id=project_id).first()
+                if project:
+                    organisation_id = project.organisation_id
+            except (ImportError, AttributeError):
+                pass  # Graceful degradation if projects app not available
+
+    if organisation_id:
+        scopes_to_check.append(("organisation", organisation_id))
+
+    scopes_to_check.append(("global", None))
+
+    # Check cache for each scope in hierarchy order
+    for scope_name, scope_id in scopes_to_check:
+        cache_key = generate_cache_key("flag", key, scope_name, scope_id)
+        cached_value = get_cached_value(cache_key)
+        if cached_value is not None:
+            return cached_value
+
+    # Cache miss - query database using hierarchy resolution
     flag = _resolve_scope_hierarchy(key, FeatureFlag, project_id, organisation_id)
-    return flag.enabled if flag else default
+    result = flag.enabled if flag else default
+
+    # Cache the result at the appropriate scope
+    if flag:
+        # Determine the scope that was actually used
+        if flag.scope_type == "PROJECT":
+            cache_scope, cache_id = "project", flag.project_id
+        elif flag.scope_type == "ORGANISATION":
+            cache_scope, cache_id = "organisation", flag.organisation_id
+        else:
+            cache_scope, cache_id = "global", None
+
+        cache_key = generate_cache_key("flag", key, cache_scope, cache_id)
+        set_cached_value(cache_key, result)
+
+    return result
 
 
 def get_setting(
@@ -102,7 +149,7 @@ def get_setting(
     default: Any = None,
 ) -> Any:
     """
-    Get a setting value with scope hierarchy resolution and type coercion.
+    Get a setting value with scope hierarchy resolution, caching, and type coercion.
 
     Args:
         key: Setting key
@@ -122,24 +169,71 @@ def get_setting(
         'https://api.production.com'
     """
     from .models import SettingType
+    from .cache import generate_cache_key, get_cached_value, set_cached_value
 
+    # Try to resolve from cache first, checking all possible scopes
+    scopes_to_check = []
+
+    # Build scope hierarchy to check
+    if project_id:
+        scopes_to_check.append(("project", project_id))
+        # Infer organisation_id from project if not provided
+        if not organisation_id:
+            from projects.models import Project
+
+            try:
+                project = Project.objects.filter(id=project_id).first()
+                if project:
+                    organisation_id = project.organisation_id
+            except (ImportError, AttributeError):
+                pass  # Graceful degradation if projects app not available
+
+    if organisation_id:
+        scopes_to_check.append(("organisation", organisation_id))
+
+    scopes_to_check.append(("global", None))
+
+    # Check cache for each scope in hierarchy order
+    for scope_name, scope_id in scopes_to_check:
+        cache_key = generate_cache_key("setting", key, scope_name, scope_id)
+        cached_value = get_cached_value(cache_key)
+        if cached_value is not None:
+            return cached_value
+
+    # Cache miss - query database using hierarchy resolution
     setting = _resolve_scope_hierarchy(key, Setting, project_id, organisation_id)
     if not setting:
         return default
 
     # Return value with type coercion based on value_type
     value = setting.value
+    result = default
 
     if setting.value_type == SettingType.STRING:
-        return str(value) if value is not None else default
+        result = str(value) if value is not None else default
     elif setting.value_type == SettingType.INTEGER:
-        return int(value) if value is not None else default
+        result = int(value) if value is not None else default
     elif setting.value_type == SettingType.BOOLEAN:
-        return bool(value) if value is not None else default
+        result = bool(value) if value is not None else default
     elif setting.value_type == SettingType.JSON:
-        return value if value is not None else default
+        result = value if value is not None else default
+    else:
+        result = value
 
-    return value
+    # Cache the result at the appropriate scope
+    if setting and result != default:
+        # Determine the scope that was actually used
+        if setting.scope_type == "PROJECT":
+            cache_scope, cache_id = "project", setting.project_id
+        elif setting.scope_type == "ORGANISATION":
+            cache_scope, cache_id = "organisation", setting.organisation_id
+        else:
+            cache_scope, cache_id = "global", None
+
+        cache_key = generate_cache_key("setting", key, cache_scope, cache_id)
+        set_cached_value(cache_key, result)
+
+    return result
 
 
 def set_flag(

@@ -7,7 +7,7 @@ class SettingsConfig(AppConfig):
     """Configuration for the settings app."""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "settings"
+    name = "src.settings"
     verbose_name = "Settings & Feature Flags"
 
     def ready(self):
