@@ -3,14 +3,20 @@ work_package_id: "WP08"
 subtasks: ["T077", "T078", "T079", "T080", "T081", "T082", "T083", "T084", "T085", "T086", "T087"]
 title: "Metrics & Observability"
 phase: "Phase 2 - Observability"
-lane: "planned"
-assignee: ""
-agent: ""
+lane: "doing"
+assignee: "claude-assistant"
+agent: "claude-assistant"
+shell_pid: "17932"
 history:
   - timestamp: "2025-11-28T00:00:00Z"
     lane: "planned"
     agent: "system"
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-11-28T21:19:42Z"
+    lane: "doing"
+    agent: "claude-assistant"
+    shell_pid: "17932"
+    action: "Started implementation: Metrics & Observability"
 ---
 
 # Work Package: WP08 – Metrics & Observability
@@ -59,3 +65,4 @@ Use JSON format in production settings.
 ## Activity Log
 
 - 2025-11-28 – system – lane=planned – Prompt created
+- 2025-11-28T21:19:42Z – system – shell_pid= – lane=doing – Started implementation: Metrics & Observability
