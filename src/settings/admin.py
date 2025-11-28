@@ -11,48 +11,49 @@ class FeatureFlagAdmin(admin.ModelAdmin):
     """Admin interface for FeatureFlag model."""
 
     list_display = [
-        'key',
-        'enabled_badge',
-        'scope_type',
-        'organisation',
-        'project',
-        'updated_at',
-        'updated_by'
+        "key",
+        "enabled_badge",
+        "scope_type",
+        "organisation",
+        "project",
+        "updated_at",
+        "updated_by",
     ]
-    list_filter = ['scope_type', 'enabled', 'updated_at', 'organisation']
-    search_fields = ['key', 'description']
-    list_select_related = ['organisation', 'project', 'created_by', 'updated_by']
-    readonly_fields = ['id', 'created_at', 'updated_at', 'created_by', 'updated_by']
-    ordering = ['-updated_at']
+    list_filter = ["scope_type", "enabled", "updated_at", "organisation"]
+    search_fields = ["key", "description"]
+    list_select_related = ["organisation", "project", "created_by", "updated_by"]
+    readonly_fields = ["id", "created_at", "updated_at", "created_by", "updated_by"]
+    ordering = ["-updated_at"]
     list_per_page = 25
-    date_hierarchy = 'updated_at'
-    actions = ['enable_flags', 'disable_flags']
+    date_hierarchy = "updated_at"
+    actions = ["enable_flags", "disable_flags"]
 
     fieldsets = (
-        ('Basic Information', {
-            'fields': ('id', 'key', 'description', 'enabled')
-        }),
-        ('Scope Configuration', {
-            'fields': ('scope_type', 'organisation', 'project'),
-            'description': 'Define where this feature flag applies'
-        }),
-        ('Audit Information', {
-            'fields': ('created_at', 'updated_at', 'created_by', 'updated_by'),
-            'classes': ('collapse',)
-        }),
+        ("Basic Information", {"fields": ("id", "key", "description", "enabled")}),
+        (
+            "Scope Configuration",
+            {
+                "fields": ("scope_type", "organisation", "project"),
+                "description": "Define where this feature flag applies",
+            },
+        ),
+        (
+            "Audit Information",
+            {
+                "fields": ("created_at", "updated_at", "created_by", "updated_by"),
+                "classes": ("collapse",),
+            },
+        ),
     )
 
     def enabled_badge(self, obj):
         """Display enabled status with visual indicator."""
         if obj.enabled:
-            return format_html(
-                '<span style="color: green; font-weight: bold;">✓ Enabled</span>'
-            )
-        return format_html(
-            '<span style="color: red; font-weight: bold;">✗ Disabled</span>'
-        )
-    enabled_badge.short_description = 'Status'
-    enabled_badge.admin_order_field = 'enabled'
+            return format_html('<span style="color: green; font-weight: bold;">✓ Enabled</span>')
+        return format_html('<span style="color: red; font-weight: bold;">✗ Disabled</span>')
+
+    enabled_badge.short_description = "Status"
+    enabled_badge.admin_order_field = "enabled"
 
     def enable_flags(self, request, queryset):
         """Bulk action to enable selected feature flags."""
@@ -62,11 +63,9 @@ class FeatureFlagAdmin(admin.ModelAdmin):
             flag.updated_by = request.user
             flag.save()
             updated_count += 1
-        
-        self.message_user(
-            request, 
-            f'{updated_count} feature flag(s) enabled successfully.'
-        )
+
+        self.message_user(request, f"{updated_count} feature flag(s) enabled successfully.")
+
     enable_flags.short_description = "Enable selected feature flags"
 
     def disable_flags(self, request, queryset):
@@ -77,11 +76,9 @@ class FeatureFlagAdmin(admin.ModelAdmin):
             flag.updated_by = request.user
             flag.save()
             updated_count += 1
-            
-        self.message_user(
-            request, 
-            f'{updated_count} feature flag(s) disabled successfully.'
-        )
+
+        self.message_user(request, f"{updated_count} feature flag(s) disabled successfully.")
+
     disable_flags.short_description = "Disable selected feature flags"
 
     def save_model(self, request, obj, form, change):
@@ -97,38 +94,42 @@ class SettingAdmin(admin.ModelAdmin):
     """Admin interface for Setting model."""
 
     list_display = [
-        'key',
-        'value_type',
-        'scope_type', 
-        'organisation',
-        'project',
-        'updated_at',
-        'updated_by'
+        "key",
+        "value_type",
+        "scope_type",
+        "organisation",
+        "project",
+        "updated_at",
+        "updated_by",
     ]
-    list_filter = ['value_type', 'scope_type', 'updated_at', 'organisation']
-    search_fields = ['key', 'description']
-    list_select_related = ['organisation', 'project', 'created_by', 'updated_by']
-    readonly_fields = ['id', 'created_at', 'updated_at', 'created_by', 'updated_by']
-    ordering = ['-updated_at']
+    list_filter = ["value_type", "scope_type", "updated_at", "organisation"]
+    search_fields = ["key", "description"]
+    list_select_related = ["organisation", "project", "created_by", "updated_by"]
+    readonly_fields = ["id", "created_at", "updated_at", "created_by", "updated_by"]
+    ordering = ["-updated_at"]
     list_per_page = 25
-    date_hierarchy = 'updated_at'
+    date_hierarchy = "updated_at"
 
     fieldsets = (
-        ('Basic Information', {
-            'fields': ('id', 'key', 'description', 'value', 'default_value')
-        }),
-        ('Type Configuration', {
-            'fields': ('value_type',),
-            'description': 'Data type for this setting value'
-        }),
-        ('Scope Configuration', {
-            'fields': ('scope_type', 'organisation', 'project'),
-            'description': 'Define where this setting applies'
-        }),
-        ('Audit Information', {
-            'fields': ('created_at', 'updated_at', 'created_by', 'updated_by'),
-            'classes': ('collapse',)
-        }),
+        ("Basic Information", {"fields": ("id", "key", "description", "value", "default_value")}),
+        (
+            "Type Configuration",
+            {"fields": ("value_type",), "description": "Data type for this setting value"},
+        ),
+        (
+            "Scope Configuration",
+            {
+                "fields": ("scope_type", "organisation", "project"),
+                "description": "Define where this setting applies",
+            },
+        ),
+        (
+            "Audit Information",
+            {
+                "fields": ("created_at", "updated_at", "created_by", "updated_by"),
+                "classes": ("collapse",),
+            },
+        ),
     )
 
     def save_model(self, request, obj, form, change):
