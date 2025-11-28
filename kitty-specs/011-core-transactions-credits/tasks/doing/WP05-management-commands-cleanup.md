@@ -3,11 +3,11 @@ work_package_id: "WP05"
 subtasks: ["T049", "T050", "T051", "T052", "T053", "T054", "T055", "T056"]
 title: "Management Commands & Cleanup"
 phase: "Phase 2 - Operations"
-lane: "planned"
+lane: "doing"
 assignee: ""
 agent: "claude-assistant"
 shell_pid: "17932"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-11-28T00:00:00Z"
@@ -93,3 +93,4 @@ python manage.py seed_test_transactions --count=100
 - 2025-11-28T19:20:24Z – claude-assistant – shell_pid=17932 – lane=doing – Started implementation: Management commands for cleanup and testing
 - 2025-11-28T19:28:00Z – claude-assistant – shell_pid=17932 – lane=for_review – Implementation complete: 2 commands, 9 tests passing, README updated
 - 2025-11-28T19:36:00Z – claude-reviewer – shell_pid=17932 – lane=planned – Code review: Flaky test needs fixing (test_seed_idempotent)
+- 2025-11-28T19:40:00Z – claude-assistant – shell_pid=17932 – lane=doing – Acknowledged feedback, fixing flaky test
