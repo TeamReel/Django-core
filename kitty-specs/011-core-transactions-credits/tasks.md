@@ -159,18 +159,19 @@
 
 **Goal**: Configure Redis caching backend and implement cache invalidation signals.
 **Independent Test**: Balance queries hit cache; cache invalidates on transaction write; cache misses compute correctly.
-**Prompt**: `tasks/planned/WP04-redis-caching-signals.md`
+**Prompt**: `tasks/for_review/WP04-redis-caching-signals.md`
+**Status**: 🔍 FOR REVIEW (67 tests passing - all cache and concurrency tests complete)
 
 ### Included Subtasks
-- [ ] T040 Configure django-redis in config/settings/base.py
-- [ ] T041 Add Redis connection to environment variables (.env.example)
-- [ ] T042 Create src/transactions/signals.py with post_save handler
-- [ ] T043 Connect signals to Transaction model in apps.py ready() method
-- [ ] T044 Implement cache_balance() helper function
-- [ ] T045 Implement get_cached_balance() with fallback to DB
-- [ ] T046 [P] Write cache hit/miss tests
-- [ ] T047 [P] Write cache invalidation tests
-- [ ] T048 [P] Write concurrent write tests (10 threads)
+- [x] T040 Configure django-redis in config/settings/base.py
+- [x] T041 Add Redis connection to environment variables (.env.example)
+- [x] T042 Create src/transactions/signals.py with post_save handler
+- [x] T043 Connect signals to Transaction model in apps.py ready() method
+- [x] T044 Implement cache_balance() helper function
+- [x] T045 Implement get_cached_balance() with fallback to DB
+- [x] T046 [P] Write cache hit/miss tests
+- [x] T047 [P] Write cache invalidation tests
+- [x] T048 [P] Write concurrent write tests (10 threads)
 
 ### Constitutional Alignment
 - Principle III (Dependencies): django-redis added to requirements
