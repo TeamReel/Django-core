@@ -148,8 +148,8 @@ omit = [
 branch = true
 
 [tool.coverage.report]
-# WP14-T127: Coverage threshold set to 80% per SC-008 requirement
-fail_under = 80
+# WP06-T057: Coverage threshold raised to 90% for transactions engine quality gates
+fail_under = 90
 show_missing = true
 skip_covered = false
 exclude_lines = [

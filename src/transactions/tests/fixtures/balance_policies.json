@@ -1,0 +1,50 @@
+[
+  {
+    "model": "transactions.balancepolicy",
+    "pk": 1,
+    "fields": {
+      "organisation_id": 1,
+      "project_id": null,
+      "enforcement_mode": "BLOCK",
+      "min_balance": "0.0000",
+      "metadata": {
+        "policy_version": "1.0",
+        "applied_date": "2025-11-01"
+      },
+      "created_at": "2025-11-01T00:00:00Z",
+      "updated_at": "2025-11-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "transactions.balancepolicy",
+    "pk": 2,
+    "fields": {
+      "organisation_id": 2,
+      "project_id": null,
+      "enforcement_mode": "WARN",
+      "min_balance": "-100.0000",
+      "metadata": {
+        "policy_version": "1.0",
+        "warning_threshold": "-50.00"
+      },
+      "created_at": "2025-11-01T00:00:00Z",
+      "updated_at": "2025-11-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "transactions.balancepolicy",
+    "pk": 3,
+    "fields": {
+      "organisation_id": 1,
+      "project_id": 1,
+      "enforcement_mode": "BLOCK",
+      "min_balance": "10.0000",
+      "metadata": {
+        "policy_version": "1.0",
+        "project_specific": true
+      },
+      "created_at": "2025-11-01T00:00:00Z",
+      "updated_at": "2025-11-01T00:00:00Z"
+    }
+  }
+]
