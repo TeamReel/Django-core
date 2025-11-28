@@ -5,10 +5,10 @@ Provides validation for CRUD operations and proper type checking for settings va
 """
 
 import re
-from rest_framework import serializers
-from django.core.exceptions import ValidationError
 
-from .models import FeatureFlag, Setting, ScopeType, SettingType
+from rest_framework import serializers
+
+from .models import FeatureFlag, ScopeType, Setting, SettingType
 
 
 class FeatureFlagSerializer(serializers.ModelSerializer):

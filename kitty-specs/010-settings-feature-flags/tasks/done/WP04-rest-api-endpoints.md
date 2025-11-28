@@ -90,7 +90,7 @@ This work package delivers the REST API endpoints that allow external clients to
 ## Definition of Done
 
 - [x] FeatureFlagSerializer created with comprehensive validation (T026 ✅)
-- [x] SettingSerializer created with type checking and validation (T027 ✅)  
+- [x] SettingSerializer created with type checking and validation (T027 ✅)
 - [x] FeatureFlagViewSet implemented with all CRUD operations (T028 ✅)
 - [x] SettingViewSet implemented with all CRUD operations (T029 ✅)
 - [x] Django-filter integration added for scope-based filtering (T030 ✅)

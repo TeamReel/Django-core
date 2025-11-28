@@ -4,22 +4,20 @@ Django REST Framework ViewSets for Settings and Feature Flags.
 Provides full CRUD operations and custom resolve actions for hierarchy queries.
 """
 
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
-from django.http import Http404
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
+from .api import get_flag, get_setting
 from .models import FeatureFlag, Setting
 from .serializers import (
-    FeatureFlagSerializer,
-    SettingSerializer,
     FeatureFlagResolveSerializer,
+    FeatureFlagSerializer,
     SettingResolveSerializer,
+    SettingSerializer,
 )
-from .api import get_flag, get_setting
 
 
 class SettingsPagination(PageNumberPagination):
