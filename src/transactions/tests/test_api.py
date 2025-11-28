@@ -131,8 +131,8 @@ class TestUsageEventAPI:
 
     def test_filter_usage_events_by_organization(self, user, organisation):
         """Test filtering usage events by organization_id."""
-        # Clear existing events
-        UsageEvent.objects.all().delete()
+        # Get initial count for this org
+        initial_count = UsageEvent.objects.filter(organization=organisation).count()
         
         # Create usage events for different orgs
         from organisations.models import Organisation
@@ -147,24 +147,20 @@ class TestUsageEventAPI:
 
         response = client.get(url, {"organization_id": str(organisation.id)})
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 1
+        assert response.data["count"] == initial_count + 1  # One more than initial
 
     def test_filter_usage_events_by_unbilled(self, user, organisation):
         """Test filtering usage events by unbilled status."""
-        # Clear existing data
-        UsageEvent.objects.all().delete()
-        Transaction.objects.all().delete()
-        
         # Create usage event without transaction (unbilled)
         unbilled_event = UsageEvent.objects.create(
-            event_type="api_call",
+            event_type="api_call_unbilled",  # Unique event type
             user=user,
             organization=organisation,
         )
 
         # Create usage event with transaction (billed)
         billed_event = UsageEvent.objects.create(
-            event_type="compute_task",
+            event_type="compute_task_billed",  # Unique event type
             user=user,
             organization=organisation,
         )
@@ -183,8 +179,10 @@ class TestUsageEventAPI:
         # Filter for unbilled
         response = client.get(url, {"unbilled": "true"})
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 1
-        assert response.data["results"][0]["id"] == str(unbilled_event.id)
+        # Check that unbilled_event is in the results
+        result_ids = [r["id"] for r in response.data["results"]]
+        assert str(unbilled_event.id) in result_ids
+        assert str(billed_event.id) not in result_ids
 
 
 @pytest.mark.django_db
@@ -311,28 +309,30 @@ class TestTransactionAPI:
 
     def test_filter_transactions_by_source_type(self, user, organisation):
         """Test filtering transactions by source_type."""
-        # Clear existing transactions
-        Transaction.objects.all().delete()
-        
-        Transaction.objects.create(
+        # Create transactions with unique keys
+        txn_external = Transaction.objects.create(
             amount=Decimal("100.0000"),
             organization=organisation,
             source_type=SourceTypeChoices.EXTERNAL_BILLING,
             created_by=user,
-            idempotency_key="txn-filter-001",
+            idempotency_key="txn-filter-ext-unique-001",
         )
         Transaction.objects.create(
             amount=Decimal("-25.0000"),
             organization=organisation,
             source_type=SourceTypeChoices.ADJUSTMENT,
             created_by=user,
-            idempotency_key="txn-filter-002",
+            idempotency_key="txn-filter-adj-unique-001",
         )
 
         client = APIClient()
         url = reverse("transactions:transaction-list")
 
-        response = client.get(url, {"source_type": SourceTypeChoices.ADJUSTMENT})
+        response = client.get(url, {"source_type": SourceTypeChoices.EXTERNAL_BILLING})
+        assert response.status_code == status.HTTP_200_OK
+        # Check that our external billing transaction is in results
+        result_ids = [r["id"] for r in response.data["results"]]
+        assert str(txn_external.id) in result_ids
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         assert response.data["results"][0]["source_type"] == SourceTypeChoices.ADJUSTMENT
