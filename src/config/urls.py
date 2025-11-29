@@ -33,5 +33,7 @@ urlpatterns = [
     path("api/v1/", include("transactions.api.urls")),
     # Settings & Feature Flags API
     path("api/v1/settings/", include("src.settings.urls")),
+    # i18n Preferences API (B12)
+    path("api/v1/preferences/", include("i18n_preferences.urls")),
     path("", include("django_prometheus.urls")),  # Exposes /metrics endpoint
 ]
