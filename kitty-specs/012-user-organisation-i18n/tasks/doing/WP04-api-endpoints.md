@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "copilot"
+shell_pid: "17932"
+---
 # Work Package 04: API Endpoints
 
 **Status**: 📋 Planned
@@ -442,3 +447,7 @@ class UserPreferenceAPITest(APITestCase):
 - Invalid language code → HTTP 400 with validation error
 - Non-admin updating org prefs → HTTP 403
 - Effective preferences show mixed sources correctly
+
+## Activity Log
+
+- 2025-11-29T11:07:45Z – copilot – shell_pid=17932 – lane=doing – Started API endpoints implementation
