@@ -14,7 +14,7 @@ from django.utils import timezone, translation
 
 from src.organisations.models import Organisation
 from src.settings.models import Setting, SettingType, ScopeType
-from i18n_preferences.middleware import PreferenceLocaleMiddleware, PreferenceTimezoneMiddleware
+from src.i18n_preferences.middleware import PreferenceLocaleMiddleware, PreferenceTimezoneMiddleware
 
 User = get_user_model()
 

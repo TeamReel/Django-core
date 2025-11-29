@@ -4,7 +4,7 @@ import pytest
 import pytz
 from django.contrib.auth import get_user_model
 from django.utils import timezone, translation
-from i18n_preferences.helpers import (
+from src.i18n_preferences.helpers import (
     activate_org_locale,
     activate_org_locale_safe,
     activate_user_locale,
