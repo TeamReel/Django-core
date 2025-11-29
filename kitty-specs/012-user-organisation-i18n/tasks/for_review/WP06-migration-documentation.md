@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "copilot"
 shell_pid: "17932"
 ---
@@ -384,3 +384,4 @@ Extend B10 with USER scope support.
 ## Activity Log
 
 - 2025-11-29T11:58:59Z – copilot – shell_pid=17932 – lane=doing – Started implementation: Final work package - migration and documentation
+- 2025-11-29T12:06:03Z – copilot – shell_pid=17932 – lane=for_review – Ready for review: Migration command, admin integration, comprehensive documentation (User guide, Developer guide, ADR)
