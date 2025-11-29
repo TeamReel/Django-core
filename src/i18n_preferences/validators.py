@@ -1,4 +1,5 @@
 """Validation functions for i18n preferences."""
+
 import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError

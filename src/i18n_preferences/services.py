@@ -1,4 +1,5 @@
 """Preference resolution service for i18n preferences."""
+
 from dataclasses import dataclass
 from typing import Literal, Optional
 

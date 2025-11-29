@@ -1,4 +1,5 @@
 """Comprehensive tests for PreferenceResolutionService."""
+
 import pytest
 from django.contrib.auth import get_user_model
 

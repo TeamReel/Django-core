@@ -1,4 +1,5 @@
 """App configuration for i18n_preferences."""
+
 from django.apps import AppConfig
 
 

@@ -1,4 +1,5 @@
 """Tests for validation functions."""
+
 import pytest
 from django.core.exceptions import ValidationError
 from django.test import override_settings, SimpleTestCase
