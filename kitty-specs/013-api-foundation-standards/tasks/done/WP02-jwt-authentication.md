@@ -3,6 +3,7 @@ work_package_id: WP02
 title: JWT Authentication Implementation
 lane: "done"
 subtasks: [T010, T011, T012, T013, T014, T015, T016, T017]
+assignee: "copilot"
 agent: "copilot-reviewer"
 shell_pid: "11588"
 review_status: "approved without changes"

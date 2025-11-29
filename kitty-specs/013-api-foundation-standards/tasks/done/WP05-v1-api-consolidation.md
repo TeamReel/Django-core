@@ -3,6 +3,7 @@ work_package_id: WP05
 title: v1 API Consolidation and Routing
 lane: "done"
 subtasks: [T033, T034, T035, T036, T037, T038, T039, T040, T041, T042]
+assignee: "copilot"
 agent: "copilot"
 shell_pid: "11588"
 history:

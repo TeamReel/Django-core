@@ -3,6 +3,7 @@ work_package_id: WP06
 title: OpenAPI Documentation and Developer Guide
 lane: "done"
 subtasks: [T043, T044, T045, T046, T047, T048, T049, T050, T051, T052]
+assignee: "copilot"
 agent: "copilot"
 shell_pid: "11588"
 history:

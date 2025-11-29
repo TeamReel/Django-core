@@ -4,6 +4,7 @@ title: API Infrastructure Setup
 lane: "done"
 review_status: "approved without changes"
 reviewed_by: "copilot-reviewer"
+assignee: "copilot"
 subtasks:
   - T001
   - T002

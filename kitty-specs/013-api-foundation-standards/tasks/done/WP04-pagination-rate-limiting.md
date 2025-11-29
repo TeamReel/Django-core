@@ -3,6 +3,7 @@ work_package_id: WP04
 title: Pagination and Rate Limiting
 lane: "done"
 subtasks: [T026, T027, T028, T029, T030, T031, T032]
+assignee: "copilot"
 agent: "copilot-reviewer"
 shell_pid: "11588"
 review_status: "approved without changes"

@@ -3,6 +3,7 @@ work_package_id: WP03
 title: Response Envelope System
 lane: "done"
 subtasks: [T018, T019, T020, T021, T022, T023, T024, T025]
+assignee: "copilot"
 agent: "copilot-reviewer"
 shell_pid: "11588"
 review_status: "approved without changes"
