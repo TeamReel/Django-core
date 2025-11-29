@@ -1,8 +1,10 @@
 ---
 work_package_id: WP06
 title: OpenAPI Documentation and Developer Guide
-lane: planned
+lane: "doing"
 subtasks: [T043, T044, T045, T046, T047, T048, T049, T050, T051, T052]
+agent: "copilot"
+shell_pid: "11588"
 history:
   - date: 2025-11-29
     action: created
@@ -69,3 +71,7 @@ Create:
 - [ ] ADRs explain key decisions
 
 **Estimated Effort**: 4-6 hours
+
+## Activity Log
+
+- 2025-11-29T18:52:24Z – copilot – shell_pid=11588 – lane=doing – Starting WP06: Documentation & OpenAPI implementation
