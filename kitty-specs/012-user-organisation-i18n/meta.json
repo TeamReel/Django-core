@@ -1,0 +1,24 @@
+{
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-11-29T15:45:51Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "38bc75a125acb09e726f30eada3fe9eefc1d8e1d",
+      "branch": "012-user-organisation-i18n",
+      "mode": "pr",
+      "validation_commands": [
+        "python -m pytest"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-11-29T15:45:51Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "38bc75a125acb09e726f30eada3fe9eefc1d8e1d",
+  "created_at": "2025-11-29T07:27:41Z",
+  "feature_number": "012",
+  "friendly_name": "User & Organisation i18n Preferences",
+  "slug": "012-user-organisation-i18n",
+  "source_description": "Extend the base i18n layer to support user and organisation-specific language, locale and time zone preferences integrated with the settings system."
+}

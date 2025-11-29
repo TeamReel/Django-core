@@ -16,7 +16,7 @@ class AuditConfig(AppConfig):
 
         This runs once per process during Django startup.
         """
-        from audit.registry import register_event_type
+        from .registry import register_event_type
 
         # Authentication Events
         register_event_type(

@@ -12,7 +12,7 @@ from projects.models import Project
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
+from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
 

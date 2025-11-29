@@ -9,7 +9,7 @@ import pytest
 from audit.models import AuditEvent
 from django.contrib.auth import get_user_model
 
-from src.settings.models import FeatureFlag, Setting
+from settings.models import FeatureFlag, Setting
 
 User = get_user_model()
 

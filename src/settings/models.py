@@ -12,6 +12,7 @@ class ScopeType(models.TextChoices):
     GLOBAL = "GLOBAL", "Global"
     ORGANISATION = "ORGANISATION", "Organisation"
     PROJECT = "PROJECT", "Project"
+    USER = "USER", "User"
 
 
 class SettingType(models.TextChoices):
@@ -31,6 +32,14 @@ class FeatureFlag(models.Model):
     enabled = models.BooleanField(default=False)  # Deny-by-default
     description = models.TextField(blank=True)
     scope_type = models.CharField(max_length=20, choices=ScopeType.choices)
+    user = models.ForeignKey(
+        django_settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="feature_flags",
+        help_text="User for USER-scoped flags (null for other scopes)",
+    )
     organisation = models.ForeignKey(
         "organisations.Organisation",
         null=True,
@@ -69,9 +78,13 @@ class FeatureFlag(models.Model):
         ordering = ["key"]
         constraints = [
             models.UniqueConstraint(
-                fields=["key", "scope_type", "organisation", "project"],
-                name="unique_flag_scope",
+                fields=["key", "scope_type", "user", "organisation", "project"],
+                name="unique_flag_scope_with_user",
             ),
+        ]
+        indexes = [
+            models.Index(fields=["key", "scope_type", "user"], name="idx_flag_user_key"),
+            models.Index(fields=["user", "key"], name="idx_flag_user_lookup"),
         ]
 
     def __str__(self):
@@ -88,6 +101,14 @@ class Setting(models.Model):
     default_value = models.JSONField()
     description = models.TextField(blank=True)
     scope_type = models.CharField(max_length=20, choices=ScopeType.choices)
+    user = models.ForeignKey(
+        django_settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="settings",
+        help_text="User for USER-scoped settings (null for other scopes)",
+    )
     organisation = models.ForeignKey(
         "organisations.Organisation",
         null=True,
@@ -126,9 +147,13 @@ class Setting(models.Model):
         ordering = ["key"]
         constraints = [
             models.UniqueConstraint(
-                fields=["key", "scope_type", "organisation", "project"],
-                name="unique_setting_scope",
+                fields=["key", "scope_type", "user", "organisation", "project"],
+                name="unique_setting_scope_with_user",
             ),
+        ]
+        indexes = [
+            models.Index(fields=["key", "scope_type", "user"], name="idx_setting_user_key"),
+            models.Index(fields=["user", "key"], name="idx_setting_user_lookup"),
         ]
 
     def __str__(self):

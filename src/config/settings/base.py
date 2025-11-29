@@ -35,12 +35,13 @@ INSTALLED_APPS = [
     # Core-App modules
     "constitution_engine",
     "security_baseline",
-    "src.organisations.apps.OrganisationsConfig",
-    "src.projects.apps.ProjectsConfig",
+    "organisations.apps.OrganisationsConfig",
+    "projects.apps.ProjectsConfig",
     "permissions.apps.PermissionsConfig",  # Hierarchical RBAC system
-    "src.audit.apps.AuditConfig",  # Audit logging system
-    "src.settings.apps.SettingsConfig",  # Settings & Feature Flags (B10)
-    "src.transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
+    "audit.apps.AuditConfig",  # Audit logging system
+    "settings.apps.SettingsConfig",  # Settings & Feature Flags (B10)
+    "transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
+    "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "i18n_preferences.middleware.PreferenceLocaleMiddleware",  # B12: User/org language activation
+    "i18n_preferences.middleware.PreferenceTimezoneMiddleware",  # B12: User/org timezone activation
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",  # Must be last

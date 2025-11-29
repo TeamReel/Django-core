@@ -9,7 +9,7 @@ from django.test import TestCase
 from organisations.models import Organisation
 from projects.models import Project
 
-from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
+from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
 

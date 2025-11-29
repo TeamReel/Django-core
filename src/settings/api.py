@@ -9,15 +9,17 @@ from .models import FeatureFlag, ScopeType, Setting
 def _resolve_scope_hierarchy(
     key: str,
     model_class: type[FeatureFlag] | type[Setting],
+    user_id: Optional[Union[UUID, str]] = None,
     project_id: Optional[Union[UUID, str]] = None,
     organisation_id: Optional[Union[UUID, str]] = None,
 ) -> Optional[FeatureFlag | Setting]:
     """
-    Resolve a setting/flag following scope hierarchy: project → organisation → global.
+    Resolve a setting/flag following scope hierarchy: user → project → organisation → global.
 
     Args:
         key: Setting/flag key to look up
         model_class: Model class (FeatureFlag or Setting)
+        user_id: Optional user UUID for user-scoped lookup
         project_id: Optional project UUID for project-scoped lookup
         organisation_id: Optional organisation UUID for org-scoped lookup
 
@@ -25,11 +27,20 @@ def _resolve_scope_hierarchy(
         Model instance if found, None otherwise
 
     Hierarchy logic:
-        1. If project_id provided: check PROJECT scope first
-        2. If organisation_id provided (or inferred from project): check ORGANISATION scope
-        3. Always check GLOBAL scope as fallback
+        1. If user_id provided: check USER scope first (highest priority)
+        2. If project_id provided: check PROJECT scope
+        3. If organisation_id provided (or inferred from project): check ORGANISATION scope
+        4. Always check GLOBAL scope as fallback
     """
-    # Try project scope first
+    # Try user scope first (highest priority)
+    if user_id:
+        result = model_class.objects.filter(
+            key=key, scope_type=ScopeType.USER, user_id=user_id
+        ).first()
+        if result:
+            return result
+
+    # Try project scope
     if project_id:
         result = model_class.objects.filter(
             key=key, scope_type=ScopeType.PROJECT, project_id=project_id
@@ -60,6 +71,7 @@ def _resolve_scope_hierarchy(
     return model_class.objects.filter(
         key=key,
         scope_type=ScopeType.GLOBAL,
+        user_id=None,
         organisation_id=None,
         project_id=None,
     ).first()
@@ -67,6 +79,7 @@ def _resolve_scope_hierarchy(
 
 def get_flag(
     key: str,
+    user_id: Optional[Union[UUID, str]] = None,
     project_id: Optional[Union[UUID, str]] = None,
     organisation_id: Optional[Union[UUID, str]] = None,
     default: bool = False,
@@ -76,6 +89,7 @@ def get_flag(
 
     Args:
         key: Feature flag key
+        user_id: Optional user UUID for user-scoped lookup
         project_id: Optional project UUID for project-scoped lookup
         organisation_id: Optional organisation UUID for org-scoped lookup
         default: Default value if flag not found (default: False)
@@ -86,6 +100,8 @@ def get_flag(
     Examples:
         >>> get_flag('maintenance_mode')  # Global scope
         False
+        >>> get_flag('beta_features', user_id=user_id)  # User scope with fallback
+        True
         >>> get_flag('beta_features', organisation_id=org_id)  # Org scope with global fallback
         True
         >>> get_flag('dark_mode', project_id=proj_id)  # Project → org → global fallback
@@ -96,7 +112,10 @@ def get_flag(
     # Try to resolve from cache first, checking all possible scopes
     scopes_to_check = []
 
-    # Build scope hierarchy to check
+    # Build scope hierarchy to check (user → project → org → global)
+    if user_id:
+        scopes_to_check.append(("user", user_id))
+
     if project_id:
         scopes_to_check.append(("project", project_id))
         # Infer organisation_id from project if not provided
@@ -123,13 +142,15 @@ def get_flag(
             return cached_value
 
     # Cache miss - query database using hierarchy resolution
-    flag = _resolve_scope_hierarchy(key, FeatureFlag, project_id, organisation_id)
+    flag = _resolve_scope_hierarchy(key, FeatureFlag, user_id, project_id, organisation_id)
     result = flag.enabled if flag else default
 
     # Cache the result at the appropriate scope
     if flag:
         # Determine the scope that was actually used
-        if flag.scope_type == "PROJECT":
+        if flag.scope_type == "USER":
+            cache_scope, cache_id = "user", flag.user_id
+        elif flag.scope_type == "PROJECT":
             cache_scope, cache_id = "project", flag.project_id
         elif flag.scope_type == "ORGANISATION":
             cache_scope, cache_id = "organisation", flag.organisation_id
@@ -144,6 +165,7 @@ def get_flag(
 
 def get_setting(
     key: str,
+    user_id: Optional[Union[UUID, str]] = None,
     project_id: Optional[Union[UUID, str]] = None,
     organisation_id: Optional[Union[UUID, str]] = None,
     default: Any = None,
@@ -153,6 +175,7 @@ def get_setting(
 
     Args:
         key: Setting key
+        user_id: Optional user UUID for user-scoped lookup
         project_id: Optional project UUID for project-scoped lookup
         organisation_id: Optional organisation UUID for org-scoped lookup
         default: Default value if setting not found
@@ -163,6 +186,8 @@ def get_setting(
     Examples:
         >>> get_setting('max_upload_size', organisation_id=org_id)  # Returns integer
         10485760
+        >>> get_setting('feature_config', user_id=user_id)  # Returns dict from user prefs
+        {'enabled': True, 'threshold': 100}
         >>> get_setting('feature_config', project_id=proj_id)  # Returns dict
         {'enabled': True, 'threshold': 100}
         >>> get_setting('api_endpoint', default='https://api.example.com')  # Returns string
@@ -174,7 +199,10 @@ def get_setting(
     # Try to resolve from cache first, checking all possible scopes
     scopes_to_check = []
 
-    # Build scope hierarchy to check
+    # Build scope hierarchy to check (user → project → org → global)
+    if user_id:
+        scopes_to_check.append(("user", user_id))
+
     if project_id:
         scopes_to_check.append(("project", project_id))
         # Infer organisation_id from project if not provided
@@ -201,7 +229,7 @@ def get_setting(
             return cached_value
 
     # Cache miss - query database using hierarchy resolution
-    setting = _resolve_scope_hierarchy(key, Setting, project_id, organisation_id)
+    setting = _resolve_scope_hierarchy(key, Setting, user_id, project_id, organisation_id)
     if not setting:
         return default
 
@@ -223,7 +251,9 @@ def get_setting(
     # Cache the result at the appropriate scope
     if setting and result != default:
         # Determine the scope that was actually used
-        if setting.scope_type == "PROJECT":
+        if setting.scope_type == "USER":
+            cache_scope, cache_id = "user", setting.user_id
+        elif setting.scope_type == "PROJECT":
             cache_scope, cache_id = "project", setting.project_id
         elif setting.scope_type == "ORGANISATION":
             cache_scope, cache_id = "organisation", setting.organisation_id

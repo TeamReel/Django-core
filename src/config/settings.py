@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "projects.apps.ProjectsConfig",
     "permissions.apps.PermissionsConfig",
     # Feature apps
-    "src.settings.apps.SettingsConfig",
+    "settings.apps.SettingsConfig",
 ]
 
 MIDDLEWARE = [

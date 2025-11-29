@@ -12,10 +12,10 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from audit.metrics import audit_events_recorded_total, audit_failures_total
-from audit.models import AuditEvent
-from audit.registry import is_event_type_registered
-from audit.signals import audit_record_failed
+from .metrics import audit_events_recorded_total, audit_failures_total
+from .models import AuditEvent
+from .registry import is_event_type_registered
+from .signals import audit_record_failed
 
 if TYPE_CHECKING:
     from accounts.models import User as UserType

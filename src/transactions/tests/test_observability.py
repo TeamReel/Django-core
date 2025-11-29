@@ -11,7 +11,11 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from transactions.models import SourceTypeChoices
-from transactions.services import create_transaction, get_organization_balance, get_project_balance
+from transactions.services import (
+    create_transaction,
+    get_organization_balance,
+    get_project_balance,
+)
 
 
 @pytest.mark.django_db

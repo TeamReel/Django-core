@@ -1,0 +1,458 @@
+openapi: 3.0.3
+info:
+  title: User & Organisation i18n Preferences API
+  description: |
+    API for managing user and organisation-level internationalization preferences
+    (language, locale, timezone) with precedence-based resolution.
+
+    **Precedence**: user > organisation > global
+
+    **Authentication**: All endpoints require authentication (session/token/API key)
+  version: 1.0.0
+  contact:
+    name: Django Core-App Team
+
+servers:
+  - url: /api/v1
+    description: API v1 base path
+
+tags:
+  - name: User Preferences
+    description: Manage authenticated user's personal i18n preferences
+  - name: Organisation Preferences
+    description: Manage organisation-wide i18n defaults (admin only)
+  - name: Resolution
+    description: Query effective preferences after precedence resolution
+
+paths:
+  /preferences/me/:
+    get:
+      summary: Get current user's i18n preferences
+      description: Returns the authenticated user's stored preferences (or empty if not set)
+      tags: [User Preferences]
+      security:
+        - SessionAuth: []
+        - TokenAuth: []
+      responses:
+        '200':
+          description: User preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferenceResponse'
+              examples:
+                withAllPreferences:
+                  summary: User with all preferences set
+                  value:
+                    language: "nl"
+                    locale: "nl-NL"
+                    timezone: "Europe/Amsterdam"
+                partialPreferences:
+                  summary: User with only language set
+                  value:
+                    language: "de"
+                    locale: null
+                    timezone: null
+                noPreferences:
+                  summary: User with no preferences set
+                  value:
+                    language: null
+                    locale: null
+                    timezone: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      summary: Update current user's i18n preferences
+      description: |
+        Update one or more i18n preferences for the authenticated user.
+        Supports partial updates (e.g., set language only).
+
+        **Validation**:
+        - `language`: Must exist in `settings.LANGUAGES`
+        - `locale`: Must be a valid Django locale
+        - `timezone`: Must be a valid IANA time zone name
+
+        Returns HTTP 400 if any value is invalid.
+      tags: [User Preferences]
+      security:
+        - SessionAuth: []
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferenceUpdateRequest'
+            examples:
+              updateAll:
+                summary: Update all preferences
+                value:
+                  language: "fr"
+                  locale: "fr-FR"
+                  timezone: "Europe/Paris"
+              partialUpdate:
+                summary: Update only language
+                value:
+                  language: "es"
+      responses:
+        '200':
+          description: Preferences updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferenceResponse'
+              example:
+                language: "fr"
+                locale: "fr-FR"
+                timezone: "Europe/Paris"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      summary: Reset current user's preferences to defaults
+      description: Deletes all user preferences, falling back to organisation/global defaults
+      tags: [User Preferences]
+      security:
+        - SessionAuth: []
+        - TokenAuth: []
+      responses:
+        '204':
+          description: Preferences deleted successfully (no content)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /preferences/effective/:
+    get:
+      summary: Get effective i18n preferences for current user
+      description: |
+        Returns resolved preferences after applying precedence rules (user > org > global).
+        Includes source attribution for debugging.
+
+        **Use case**: API clients and background jobs use this to determine active locale
+        without implementing precedence logic themselves.
+      tags: [Resolution]
+      security:
+        - SessionAuth: []
+        - TokenAuth: []
+      responses:
+        '200':
+          description: Effective preferences resolved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EffectivePreferenceResponse'
+              examples:
+                allFromUser:
+                  summary: All preferences from user
+                  value:
+                    language: "nl"
+                    locale: "nl-NL"
+                    timezone: "Europe/Amsterdam"
+                    language_source: "user"
+                    locale_source: "user"
+                    timezone_source: "user"
+                mixedSources:
+                  summary: Mixed sources (user language, org timezone)
+                  value:
+                    language: "de"
+                    locale: "de-DE"
+                    timezone: "Europe/Berlin"
+                    language_source: "user"
+                    locale_source: "organisation"
+                    timezone_source: "organisation"
+                fallbackToGlobal:
+                  summary: User/org not set, using global defaults
+                  value:
+                    language: "en"
+                    locale: "en-US"
+                    timezone: "UTC"
+                    language_source: "global"
+                    locale_source: "global"
+                    timezone_source: "global"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /organisations/{org_id}/preferences/:
+    get:
+      summary: Get organisation's i18n default preferences
+      description: Returns organisation-wide default preferences (requires org membership or admin role)
+      tags: [Organisation Preferences]
+      security:
+        - SessionAuth: []
+        - TokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgIdPath'
+      responses:
+        '200':
+          description: Organisation preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationPreferenceResponse'
+              example:
+                language: "de"
+                locale: "de-DE"
+                timezone: "Europe/Berlin"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update organisation's i18n default preferences
+      description: |
+        Update organisation-wide default preferences (requires org admin role).
+
+        **Effects**:
+        - Users without custom preferences immediately see new defaults
+        - Users with custom preferences are unaffected
+        - Cache invalidated for all org members
+      tags: [Organisation Preferences]
+      security:
+        - SessionAuth: []
+        - TokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferenceUpdateRequest'
+            example:
+              language: "ja"
+              locale: "ja-JP"
+              timezone: "Asia/Tokyo"
+      responses:
+        '200':
+          description: Organisation preferences updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationPreferenceResponse'
+              example:
+                language: "ja"
+                locale: "ja-JP"
+                timezone: "Asia/Tokyo"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Reset organisation defaults to global
+      description: Deletes organisation defaults, falling back to global (requires org admin role)
+      tags: [Organisation Preferences]
+      security:
+        - SessionAuth: []
+        - TokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgIdPath'
+      responses:
+        '204':
+          description: Organisation preferences deleted successfully (no content)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+      description: Django session authentication
+    TokenAuth:
+      type: http
+      scheme: bearer
+      description: JWT or API key token
+
+  parameters:
+    OrgIdPath:
+      name: org_id
+      in: path
+      required: true
+      description: Organisation UUID
+      schema:
+        type: string
+        format: uuid
+      example: "123e4567-e89b-12d3-a456-426614174000"
+
+  schemas:
+    UserPreferenceResponse:
+      type: object
+      description: User's stored preferences (may be null if not set)
+      properties:
+        language:
+          type: string
+          nullable: true
+          description: ISO 639-1 language code
+          example: "nl"
+        locale:
+          type: string
+          nullable: true
+          description: BCP 47 locale code
+          example: "nl-NL"
+        timezone:
+          type: string
+          nullable: true
+          description: IANA time zone name
+          example: "Europe/Amsterdam"
+
+    OrganisationPreferenceResponse:
+      type: object
+      description: Organisation's default preferences (may be null if not set)
+      properties:
+        language:
+          type: string
+          nullable: true
+          description: ISO 639-1 language code
+          example: "de"
+        locale:
+          type: string
+          nullable: true
+          description: BCP 47 locale code
+          example: "de-DE"
+        timezone:
+          type: string
+          nullable: true
+          description: IANA time zone name
+          example: "Europe/Berlin"
+
+    EffectivePreferenceResponse:
+      type: object
+      description: Resolved preferences with source attribution
+      required:
+        - language
+        - locale
+        - timezone
+        - language_source
+        - locale_source
+        - timezone_source
+      properties:
+        language:
+          type: string
+          description: Resolved ISO 639-1 language code
+          example: "nl"
+        locale:
+          type: string
+          description: Resolved BCP 47 locale code
+          example: "nl-NL"
+        timezone:
+          type: string
+          description: Resolved IANA time zone name
+          example: "Europe/Amsterdam"
+        language_source:
+          type: string
+          enum: [user, organisation, global]
+          description: Source of language preference
+          example: "user"
+        locale_source:
+          type: string
+          enum: [user, organisation, global]
+          description: Source of locale preference
+          example: "user"
+        timezone_source:
+          type: string
+          enum: [user, organisation, global]
+          description: Source of timezone preference
+          example: "organisation"
+
+    PreferenceUpdateRequest:
+      type: object
+      description: Partial update request for preferences
+      properties:
+        language:
+          type: string
+          description: ISO 639-1 language code (must be in settings.LANGUAGES)
+          example: "fr"
+        locale:
+          type: string
+          description: BCP 47 locale code (must be valid Django locale)
+          example: "fr-FR"
+        timezone:
+          type: string
+          description: IANA time zone name (must be in pytz.all_timezones)
+          example: "Europe/Paris"
+      minProperties: 1
+      additionalProperties: false
+
+    ValidationErrorDetail:
+      type: object
+      properties:
+        field:
+          type: string
+          description: Field name with error
+          example: "language"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Unsupported language: xx. Allowed: ['en', 'nl', 'de', 'fr']"
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: "Authentication credentials were not provided."
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Authentication credentials were not provided."
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "You do not have permission to perform this action."
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Organisation not found."
+
+    ValidationError:
+      description: Validation error (invalid preference values)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              language:
+                type: array
+                items:
+                  type: string
+                example: ["Unsupported language: xx. Allowed: ['en', 'nl', 'de']"]
+              timezone:
+                type: array
+                items:
+                  type: string
+                example: ["Unsupported timezone: Invalid/Zone"]
+          example:
+            language: ["Unsupported language: xx. Allowed: ['en', 'nl', 'de', 'fr']"]

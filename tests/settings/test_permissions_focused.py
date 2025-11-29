@@ -10,8 +10,8 @@ from unittest.mock import Mock, patch
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 
-from src.settings.models import FeatureFlag, ScopeType
-from src.settings.permissions import ScopeAwarePermission
+from settings.models import FeatureFlag, ScopeType
+from settings.permissions import ScopeAwarePermission
 
 User = get_user_model()
 
@@ -61,7 +61,7 @@ class TestScopeAwarePermissionFocused(TestCase):
         result = self.permission.has_object_permission(request, view, self.global_flag)
         self.assertFalse(result)
 
-    @patch("src.settings.permissions.check_permission")
+    @patch("settings.permissions.check_permission")
     def test_superuser_global_permission_granted(self, mock_check):
         """Test superuser is granted global permission."""
         request = self.factory.get("/")
@@ -76,7 +76,7 @@ class TestScopeAwarePermissionFocused(TestCase):
         # Should not check permissions for superuser
         mock_check.assert_not_called()
 
-    @patch("src.settings.permissions.check_permission")
+    @patch("settings.permissions.check_permission")
     def test_regular_user_global_permission_denied(self, mock_check):
         """Test regular user is denied global permission."""
         request = self.factory.get("/")
@@ -91,7 +91,7 @@ class TestScopeAwarePermissionFocused(TestCase):
         # Should not check permissions for global scope (always denied for non-superuser)
         mock_check.assert_not_called()
 
-    @patch("src.settings.permissions.check_permission")
+    @patch("settings.permissions.check_permission")
     def test_organisation_scope_permission_check(self, mock_check):
         """Test organisation scope permission uses correct permission check."""
         mock_check.return_value = True
@@ -112,7 +112,7 @@ class TestScopeAwarePermissionFocused(TestCase):
             "organisation",
         )
 
-    @patch("src.settings.permissions.check_permission")
+    @patch("settings.permissions.check_permission")
     def test_organisation_scope_permission_denied(self, mock_check):
         """Test organisation scope permission denied when user lacks permission."""
         mock_check.return_value = False
@@ -126,7 +126,7 @@ class TestScopeAwarePermissionFocused(TestCase):
         result = self.permission.has_permission(request, view)
         self.assertFalse(result)
 
-    @patch("src.settings.permissions.check_permission")
+    @patch("settings.permissions.check_permission")
     def test_project_scope_permission_check(self, mock_check):
         """Test project scope permission uses correct permission check."""
         mock_check.return_value = True
@@ -251,7 +251,7 @@ class TestScopeAwarePermissionFocused(TestCase):
         result = self.permission.has_object_permission(request, view, self.global_flag)
         self.assertFalse(result)
 
-    @patch("src.settings.permissions.check_permission")
+    @patch("settings.permissions.check_permission")
     def test_has_object_permission_organisation_object(self, mock_check):
         """Test object permission for organisation object."""
         mock_check.return_value = True
@@ -277,7 +277,7 @@ class TestScopeAwarePermissionFocused(TestCase):
             "organisation",
         )
 
-    @patch("src.settings.permissions.check_permission")
+    @patch("settings.permissions.check_permission")
     def test_has_object_permission_project_object(self, mock_check):
         """Test object permission for project object."""
         mock_check.return_value = True
@@ -322,7 +322,7 @@ class TestScopeAwarePermissionFocused(TestCase):
         )
         self.assertFalse(result)
 
-    @patch("src.settings.permissions.check_permission")
+    @patch("settings.permissions.check_permission")
     def test_check_scope_permission_organisation(self, mock_check):
         """Test _check_scope_permission for organisation scope."""
         mock_check.return_value = True
@@ -339,7 +339,7 @@ class TestScopeAwarePermissionFocused(TestCase):
             "organisation",
         )
 
-    @patch("src.settings.permissions.check_permission")
+    @patch("settings.permissions.check_permission")
     def test_check_scope_permission_project_import_error_fallback(self, mock_check):
         """Test _check_scope_permission handles import errors gracefully."""
         mock_check.return_value = False  # Project permission denied
