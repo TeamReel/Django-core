@@ -29,7 +29,7 @@ This feature extends Django's i18n layer to support user and organisation-specif
 | WP03 | Middleware Integration | P1 (High) | WP02 | T016-T021 | 📋 Planned |
 | WP04 | API Endpoints | P1 (High) | WP02 | T022-T030 | ✅ Done |
 | WP05 | Explicit Activation Helpers | P2 (Medium) | WP02 | T031-T035 | ✅ Done |
-| WP06 | Migration & Documentation | P2 (Medium) | WP02-WP04 | T036-T041 | 📋 Planned |
+| WP06 | Migration & Documentation | P2 (Medium) | WP02-WP04 | T036-T041 | ✅ Done |
 
 **MVP Scope**: WP01 + WP02 + WP03 (Settings extension, resolution service, middleware) enables basic user preference functionality
 
@@ -265,22 +265,28 @@ This feature extends Django's i18n layer to support user and organisation-specif
 
 ## Phase 3: Migration & Polish
 
-### WP06: Migration & Documentation
+### WP06: Migration & Documentation ✅ COMPLETE
 **Owner**: Feature developer
 **Priority**: P2 (Medium - enables smooth adoption + knowledge transfer)
 **Location**: `src/i18n_preferences/management/commands/`, `docs/`
 **Dependencies**: WP02, WP04 (requires core functionality + API)
-**Prompt**: [`tasks/planned/WP06-migration-documentation.md`](tasks/planned/WP06-migration-documentation.md)
+**Prompt**: [`tasks/done/WP06-migration-documentation.md`](tasks/done/WP06-migration-documentation.md)
 
 **Objective**: Provide data migration command for existing User model fields, comprehensive documentation, and Django admin integration.
 
 **Included Subtasks**:
-- [ ] T036: Create management command `migrate_user_i18n_preferences` (read User fields, write to B10)
-- [ ] T037: Add dry-run mode + progress reporting to migration command
-- [ ] T038: Create Django admin inline for viewing user/org preferences
-- [ ] T039: Write user guide (`docs/i18n-preferences.md`: setting preferences, understanding precedence)
-- [ ] T040: Write developer guide (`docs/i18n-integration.md`: API usage, background jobs, extending preferences)
-- [ ] T041: Write ADR (`docs/adr/012-b10-preference-storage.md`: justification for B10 integration)
+- [x] T036: Create management command `migrate_user_i18n_preferences` (read User fields, write to B10)
+- [x] T037: Add dry-run mode + progress reporting to migration command
+- [x] T038: Create Django admin inline for viewing user/org preferences
+- [x] T039: Write user guide (`docs/i18n-preferences.md`: setting preferences, understanding precedence)
+- [x] T040: Write developer guide (`docs/i18n-integration.md`: API usage, background jobs, extending preferences)
+- [x] T041: Write ADR (`docs/adr/012-b10-preference-storage.md`: justification for B10 integration)
+
+**Review Status**: ✅ Approved (2025-11-29, commit 9e60494)
+**Implementation**:
+- Migration command: 221 lines with dry-run, validation, progress reporting
+- Admin integration: 75 lines with effective preference display
+- Documentation: User guide (209 lines), Developer guide (485 lines), ADR (311 lines)
 
 **Implementation Sketch**:
 1. Implement management command that queries User model, transforms to B10 settings format
