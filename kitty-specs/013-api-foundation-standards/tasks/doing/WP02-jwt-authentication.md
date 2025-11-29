@@ -1,8 +1,10 @@
 ---
 work_package_id: WP02
 title: JWT Authentication Implementation
-lane: planned
+lane: "doing"
 subtasks: [T010, T011, T012, T013, T014, T015, T016, T017]
+agent: "copilot"
+shell_pid: "11588"
 history:
   - date: 2025-11-29
     action: created
@@ -91,3 +93,7 @@ Update settings to use CustomJWTAuthentication instead.
 - [ ] JWT takes precedence over session when both present
 
 **Estimated Effort**: 6-8 hours
+
+## Activity Log
+
+- 2025-11-29T18:01:28Z – copilot – shell_pid=11588 – lane=doing – Started WP02: JWT Authentication implementation
