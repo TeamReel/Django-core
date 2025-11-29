@@ -154,17 +154,18 @@ tasks/
 
 ### WP04: Pagination and Rate Limiting
 **Priority**: P1 (User Stories 3 & 5)
-**Prompt**: [tasks/planned/WP04-pagination-rate-limiting.md](tasks/planned/WP04-pagination-rate-limiting.md)
+**Prompt**: [tasks/done/WP04-pagination-rate-limiting.md](tasks/done/WP04-pagination-rate-limiting.md)
 **Goal**: Implement pagination with metadata and Redis-backed rate limiting
+**Status**: ✅ **COMPLETE** (Reviewed and approved 2025-11-29)
 
 **Subtasks**:
-- [ ] T026: Enhance BaseAPIPagination with metadata (count, next, previous URLs)
-- [ ] T027: Configure DEFAULT_PAGINATION_CLASS in settings
-- [ ] T028: Create AuthenticatedUserThrottle in api/throttling.py (100/min per user)
-- [ ] T029: Create AnonymousUserThrottle in api/throttling.py (10/min per IP)
-- [ ] T030: Inject rate limit headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
-- [ ] T031: Configure throttle classes globally in REST_FRAMEWORK settings
-- [ ] T032: Test rate limit enforcement returns 429 with Retry-After header
+- [x] T026: Enhance BaseAPIPagination with metadata (count, next, previous URLs)
+- [x] T027: Configure DEFAULT_PAGINATION_CLASS in settings
+- [x] T028: Create AuthenticatedUserThrottle in api/throttling.py (100/min per user)
+- [x] T029: Create AnonymousUserThrottle in api/throttling.py (10/min per IP)
+- [x] T030: Inject rate limit headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
+- [x] T031: Configure throttle classes globally in REST_FRAMEWORK settings
+- [x] T032: Test rate limit enforcement returns 429 with Retry-After header
 
 **Implementation Sketch**:
 1. Extend BaseAPIPagination from WP01 to add pagination metadata to envelope.meta
