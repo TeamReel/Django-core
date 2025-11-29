@@ -240,20 +240,21 @@ tasks/
 
 ### WP06: OpenAPI Documentation and Developer Guide
 **Priority**: P3 (User Story 6)
-**Prompt**: [tasks/planned/WP06-documentation-openapi.md](tasks/planned/WP06-documentation-openapi.md)
+**Prompt**: [tasks/done/WP06-documentation-openapi.md](tasks/done/WP06-documentation-openapi.md)
 **Goal**: Generate interactive API documentation and create developer guides
+**Status**: ✅ **COMPLETE** (Reviewed and approved 2025-11-29)
 
 **Subtasks**:
-- [ ] T043: Configure SPECTACULAR_SETTINGS in settings/base.py
-- [ ] T044: Create OpenAPI schema generation endpoint (GET /api/schema/)
-- [ ] T045: Create Swagger UI endpoint (GET /api/docs/)
-- [ ] T046: Add docstrings to all viewsets and serializers for schema generation
-- [ ] T047: Configure authentication in Swagger UI (JWT bearer token input)
-- [ ] T048: Test schema accuracy (all endpoints, request/response examples)
-- [ ] T049: Create src/api/README.md documenting architecture and extension patterns
-- [ ] T050: Document base class usage (BaseAPIViewSet, BaseSerializer, BaseAPIPagination)
-- [ ] T051: Create ADR for JWT authentication strategy
-- [ ] T052: Create ADR for URL-based versioning approach
+- [x] T043: Configure SPECTACULAR_SETTINGS in settings/base.py
+- [x] T044: Create OpenAPI schema generation endpoint (GET /api/schema/)
+- [x] T045: Create Swagger UI endpoint (GET /api/docs/)
+- [x] T046: Add docstrings to all viewsets and serializers for schema generation
+- [x] T047: Configure authentication in Swagger UI (JWT bearer token input)
+- [x] T048: Test schema accuracy (all endpoints, request/response examples)
+- [x] T049: Create src/api/README.md documenting architecture and extension patterns
+- [x] T050: Document base class usage (BaseAPIViewSet, BaseSerializer, BaseAPIPagination)
+- [x] T051: Create ADR for JWT authentication strategy
+- [x] T052: Create ADR for URL-based versioning approach
 
 **Implementation Sketch**:
 1. Configure drf-spectacular settings with API title, version, description
