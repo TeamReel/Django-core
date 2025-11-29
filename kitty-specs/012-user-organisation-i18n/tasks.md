@@ -25,7 +25,7 @@ This feature extends Django's i18n layer to support user and organisation-specif
 | ID | Title | Priority | Dependencies | Subtasks | Status |
 |----|-------|----------|--------------|----------|--------|
 | WP01 | Extend B10 with USER Scope | P0 (Critical) | None | T001-T008 | ✅ Done |
-| WP02 | Core Preference Resolution | P0 (Critical) | WP01 | T009-T015 | 📋 Planned |
+| WP02 | Core Preference Resolution | P0 (Critical) | WP01 | T009-T015 | ✅ Done |
 | WP03 | Middleware Integration | P1 (High) | WP02 | T016-T021 | 📋 Planned |
 | WP04 | API Endpoints | P1 (High) | WP02 | T022-T030 | 📋 Planned |
 | WP05 | Explicit Activation Helpers | P2 (Medium) | WP02 | T031-T035 | 📋 Planned |
@@ -90,23 +90,23 @@ This feature extends Django's i18n layer to support user and organisation-specif
 
 ## Phase 1: Core Functionality
 
-### WP02: Core Preference Resolution
+### WP02: Core Preference Resolution ✅ COMPLETE
 **Owner**: Feature developer
 **Priority**: P0 (Critical - enables all preference features)
 **Location**: `src/i18n_preferences/`
 **Dependencies**: WP01 (requires USER scope in B10)
-**Prompt**: [`tasks/planned/WP02-preference-resolution-service.md`](tasks/planned/WP02-preference-resolution-service.md)
+**Prompt**: [`tasks/done/WP02-preference-resolution-service.md`](tasks/done/WP02-preference-resolution-service.md)
 
 **Objective**: Create `i18n_preferences` Django app with preference resolution service that implements precedence logic (user > org > global) and integrates with B10's caching layer.
 
 **Included Subtasks**:
-- [ ] T009: Create Django app scaffolding (`python manage.py startapp i18n_preferences`)
-- [ ] T010: Implement `PreferenceResolutionService` with `get_effective_preferences(user, org)` method
-- [ ] T011: Implement independent fallback logic (per-field precedence: language, locale, timezone)
-- [ ] T012: Add validation functions for language/locale/timezone codes
-- [ ] T013: Create `EffectivePreferences` dataclass with source attribution
-- [ ] T014: Integrate with B10 cache layer (Redis keys: `i18n:user:{id}`, `i18n:org:{id}`)
-- [ ] T015: Write unit tests for resolution logic (15 test cases covering all precedence scenarios)
+- [x] T009: Create Django app scaffolding (`python manage.py startapp i18n_preferences`)
+- [x] T010: Implement `PreferenceResolutionService` with `get_effective_preferences(user, org)` method
+- [x] T011: Implement independent fallback logic (per-field precedence: language, locale, timezone)
+- [x] T012: Add validation functions for language/locale/timezone codes
+- [x] T013: Create `EffectivePreferences` dataclass with source attribution
+- [x] T014: Integrate with B10 cache layer (Redis keys: `i18n:user:{id}`, `i18n:org:{id}`)
+- [x] T015: Write unit tests for resolution logic (21 test cases covering all precedence scenarios)
 
 **Implementation Sketch**:
 1. Create app structure, register in `INSTALLED_APPS`
