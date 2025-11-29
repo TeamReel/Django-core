@@ -1,0 +1,72 @@
+---
+work_package_id: WP04
+title: Pagination and Rate Limiting
+lane: planned
+subtasks: [T026, T027, T028, T029, T030, T031, T032]
+history:
+  - date: 2025-11-29
+    action: created
+    author: spec-kitty
+---
+
+# WP04: Pagination and Rate Limiting
+
+## Objective
+Implement pagination with metadata and Redis-backed rate limiting with proper headers.
+
+## Context
+**Priority**: P1 (User Stories 3 & 5)
+**Dependencies**: WP01 (BaseAPIPagination), WP03 (envelope for meta), B06 (Redis)
+
+## Subtasks
+
+### T026-T027: Enhance Pagination
+Update `api/pagination.py` from WP01 (already includes meta.pagination).
+
+Configure in settings:
+```python
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "api.pagination.BaseAPIPagination",
+}
+```
+
+### T028-T029: Create Throttle Classes
+Create `api/throttling.py`:
+```python
+from rest_framework.throttling import SimpleRateThrottle
+
+class AuthenticatedUserThrottle(SimpleRateThrottle):
+    scope = "authenticated"
+    rate = "100/min"
+
+    def get_cache_key(self, request, view):
+        if request.user and request.user.is_authenticated:
+            return f"throttle:auth:{request.user.id}"
+        return None
+
+class AnonymousUserThrottle(SimpleRateThrottle):
+    scope = "anonymous"
+    rate = "10/min"
+
+    def get_cache_key(self, request, view):
+        return f"throttle:anon:{self.get_ident(request)}"
+```
+
+### T031: Configure Globally
+```python
+REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_CLASSES": [
+        "api.throttling.AuthenticatedUserThrottle",
+        "api.throttling.AnonymousUserThrottle",
+    ],
+}
+```
+
+## Definition of Done
+- [ ] List endpoints return meta.pagination
+- [ ] Rate limit headers in all responses
+- [ ] 101st auth request returns 429
+- [ ] 11th anon request returns 429
+- [ ] Redis keys: throttle:auth:{user_id}, throttle:anon:{ip}
+
+**Estimated Effort**: 6-8 hours

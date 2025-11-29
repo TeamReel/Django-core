@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "013",
+    "slug":  "013-api-foundation-standards",
+    "friendly_name":  "API Foundation \u0026 Standards",
+    "source_description":  "Define a DRF-based API baseline with consistent authentication, pagination, error handling and versioning, exposing core entities in a stable way.",
+    "created_at":  "2025-11-29T16:38:44Z"
+}
