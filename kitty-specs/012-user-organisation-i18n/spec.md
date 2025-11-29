@@ -5,6 +5,14 @@
 **Status**: Draft
 **Input**: User description: "Extend the base i18n layer to support user and organisation-specific language, locale and time zone preferences integrated with the settings system."
 
+## Terminology
+
+- **Language**: ISO 639-1 code (e.g., `en`, `nl`) for content translation. Activated via `translation.activate()`.
+- **Locale**: BCP-47 code (e.g., `en-US`, `nl-BE`) for number/date formatting conventions. Configured via Django's `LANGUAGE_CODE` and `FORMAT_LOCALIZATION` settings.
+- **Timezone**: IANA timezone identifier (e.g., `Europe/Amsterdam`, `UTC`). Activated via `timezone.activate()`.
+
+**Note**: Django's `LocaleMiddleware` is misleadingly named - it activates **language** (translation), not formatting locale. This feature extends that middleware to use user/org preferences for language activation.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Personal Language & Time Zone Preferences (Priority: P1)
