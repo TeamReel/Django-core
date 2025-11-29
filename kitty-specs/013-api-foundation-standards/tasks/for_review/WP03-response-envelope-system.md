@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 title: Response Envelope System
-lane: "doing"
+lane: "for_review"
 subtasks: [T018, T019, T020, T021, T022, T023, T024, T025]
 agent: "copilot"
 shell_pid: "11588"
@@ -93,3 +93,4 @@ REST_FRAMEWORK = {
 
 - 2025-11-29T18:16:16Z – copilot – shell_pid=11588 – lane=doing – Started WP03: Response Envelope System implementation
 - 2025-11-29T19:30:00Z – copilot – shell_pid=11588 – lane=doing – Completed all 8 subtasks: EnvelopeJSONRenderer with success/error envelopes, envelope_exception_handler with error code mapping and sanitization, REST_FRAMEWORK configuration updated, timestamp meta field added. Commit 12a47d6.
+- 2025-11-29T18:18:56Z – copilot – shell_pid=11588 – lane=for_review – Ready for review: Response envelope with consistent success/error formatting, error sanitization, timestamps
