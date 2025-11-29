@@ -94,11 +94,7 @@ class LogoutView(APIView):
         responses={
             200: {
                 "description": "Token successfully blacklisted",
-                "content": {
-                    "application/json": {
-                        "example": {"status": "success", "data": None}
-                    }
-                },
+                "content": {"application/json": {"example": {"status": "success", "data": None}}},
             },
             400: {
                 "description": "Invalid or missing token",
