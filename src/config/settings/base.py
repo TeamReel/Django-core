@@ -53,6 +53,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "i18n_preferences.middleware.PreferenceLocaleMiddleware",  # B12: User/org language activation
+    "i18n_preferences.middleware.PreferenceTimezoneMiddleware",  # B12: User/org timezone activation
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",  # Must be last
