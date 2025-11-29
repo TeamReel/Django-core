@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "copilot"
+shell_pid: "17932"
+---
 # Work Package 02: Core Preference Resolution
 
 **Status**: 📋 Planned
@@ -458,3 +463,7 @@ def test_preference_cache_hit():
 - User with language only, org with timezone only → mixed sources
 - Anonymous user → no user scope queries
 - Invalid stored timezone → logged warning, fallback to next level
+
+## Activity Log
+
+- 2025-11-29T10:26:08Z – copilot – shell_pid=17932 – lane=doing – Started implementation of preference resolution service
