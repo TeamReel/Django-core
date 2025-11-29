@@ -195,20 +195,21 @@ tasks/
 
 ### WP05: v1 API Consolidation and Routing
 **Priority**: P2 (User Story 4)
-**Prompt**: [tasks/planned/WP05-v1-api-consolidation.md](tasks/planned/WP05-v1-api-consolidation.md)
+**Prompt**: [tasks/done/WP05-v1-api-consolidation.md](tasks/done/WP05-v1-api-consolidation.md)
 **Goal**: Consolidate existing domain APIs under /api/v1/ with version routing
+**Status**: ✅ **COMPLETE** (Reviewed and approved 2025-11-29)
 
 **Subtasks**:
-- [ ] T033: Create api/v1/__init__.py and api/v1/urls.py
-- [ ] T034: Create DRF DefaultRouter in api/v1/urls.py
-- [ ] T035: Register accounts.api.views.UserViewSet at /api/v1/users/
-- [ ] T036: Register organisations.api.views.OrganisationViewSet at /api/v1/organisations/
-- [ ] T037: Register projects.api.views.ProjectViewSet at /api/v1/projects/
-- [ ] T038: Register permissions.api.views.RoleViewSet at /api/v1/permissions/roles/
-- [ ] T039: Create API root view in api/v1/views.py (GET /api/v1/)
-- [ ] T040: Update config/urls.py to route /api/v1/ to api.v1.urls
-- [ ] T041: Remove legacy non-versioned URL patterns (/api/organisations/, /api/projects/)
-- [ ] T042: Update existing viewsets to use BaseAPIViewSet and BaseAPIPagination from WP01
+- [x] T033: Create api/v1/__init__.py and api/v1/urls.py
+- [x] T034: Create DRF DefaultRouter in api/v1/urls.py
+- [x] T035: Register accounts.api.views.UserViewSet at /api/v1/users/
+- [x] T036: Register organisations.api.views.OrganisationViewSet at /api/v1/organisations/
+- [x] T037: Register projects.api.views.ProjectViewSet at /api/v1/projects/
+- [x] T038: Register permissions.api.views.RoleViewSet at /api/v1/permissions/roles/
+- [x] T039: Create API root view in api/v1/views.py (GET /api/v1/)
+- [x] T040: Update config/urls.py to route /api/v1/ to api.v1.urls
+- [x] T041: Remove legacy non-versioned URL patterns (/api/organisations/, /api/projects/)
+- [x] T042: Update existing viewsets to use BaseAPIViewSet and BaseAPIPagination from WP01
 
 **Implementation Sketch**:
 1. Create v1 subdirectory under api app
