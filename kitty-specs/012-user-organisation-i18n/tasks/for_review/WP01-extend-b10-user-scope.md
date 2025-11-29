@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "copilot"
 shell_pid: "17932"
 ---
@@ -426,3 +426,4 @@ def test_resolve_user_over_org(self):
 ## Activity Log
 
 - 2025-11-29T08:58:40Z – copilot – shell_pid=17932 – lane=doing – Started implementation
+- 2025-11-29T10:16:32Z – copilot – shell_pid=17932 – lane=for_review – Completed all 8 subtasks: USER scope, user field, constraints, indexes, API resolution, permissions, migration, tests
