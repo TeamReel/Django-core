@@ -1,0 +1,57 @@
+[
+  {
+    "model": "transactions.usageevent",
+    "pk": "11111111-1111-1111-1111-111111111111",
+    "fields": {
+      "event_type": "API_CALL",
+      "organisation_id": 1,
+      "project_id": 1,
+      "user_id": 1,
+      "amount": "10.5000",
+      "metadata": {
+        "endpoint": "/api/v1/data",
+        "method": "GET",
+        "status_code": 200
+      },
+      "idempotency_key": "fixture-usage-001",
+      "occurred_at": "2025-11-01T10:00:00Z",
+      "created_at": "2025-11-01T10:00:01Z"
+    }
+  },
+  {
+    "model": "transactions.usageevent",
+    "pk": "22222222-2222-2222-2222-222222222222",
+    "fields": {
+      "event_type": "STORAGE",
+      "organisation_id": 1,
+      "project_id": 1,
+      "user_id": 1,
+      "amount": "25.0000",
+      "metadata": {
+        "bytes": 1073741824,
+        "duration_hours": 720
+      },
+      "idempotency_key": "fixture-usage-002",
+      "occurred_at": "2025-11-01T11:00:00Z",
+      "created_at": "2025-11-01T11:00:01Z"
+    }
+  },
+  {
+    "model": "transactions.usageevent",
+    "pk": "33333333-3333-3333-3333-333333333333",
+    "fields": {
+      "event_type": "COMPUTE",
+      "organisation_id": 2,
+      "project_id": 2,
+      "user_id": 2,
+      "amount": "50.7500",
+      "metadata": {
+        "cpu_hours": 10.5,
+        "instance_type": "standard-4"
+      },
+      "idempotency_key": "fixture-usage-003",
+      "occurred_at": "2025-11-01T12:00:00Z",
+      "created_at": "2025-11-01T12:00:01Z"
+    }
+  }
+]

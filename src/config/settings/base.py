@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "permissions.apps.PermissionsConfig",  # Hierarchical RBAC system
     "src.audit.apps.AuditConfig",  # Audit logging system
     "src.settings.apps.SettingsConfig",  # Settings & Feature Flags (B10)
+    "src.transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
 ]
 
 MIDDLEWARE = [

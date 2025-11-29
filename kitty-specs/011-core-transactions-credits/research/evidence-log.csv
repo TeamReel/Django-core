@@ -1,0 +1,21 @@
+ID,Date,Source,Finding,Category,Confidence,Researcher,Notes
+001,2025-11-28,Stripe API Documentation,Stripe Balances API uses signed integers for amounts (positive/negative),Industry Best Practice,High,Agent,Confirms single-ledger approach with signed amounts is industry standard
+002,2025-11-28,PostgreSQL Best Practices,Recommend NUMERIC type for financial data (not float) to avoid precision loss,Technical Constraint,High,Agent,Supports decision to use Decimal(14 4) for transaction amounts
+003,2025-11-28,RFC 7807 Problem Details,Standard format for machine-readable HTTP error responses,API Design,High,Agent,Informs 403 error response structure for policy violations
+004,2025-11-28,User Clarification Session,User selected 403 Forbidden with structured error for policy violations,User Decision,High,Agent,Q1: Error response format - Option A selected
+005,2025-11-28,User Clarification Session,User selected both CSV and JSON export formats with query parameter,User Decision,High,Agent,Q2: Export formats - Option C selected
+006,2025-11-28,User Clarification Session,User confirmed idempotency_key optional for usage events (NULL allowed),User Decision,High,Agent,Q3: Idempotency behavior - Option C selected
+007,2025-11-28,User Clarification Session,User confirmed credits is unit name (like USD) not transaction type,User Decision,High,Agent,Q4: Terminology clarification - Option A selected
+008,2025-11-28,Django ORM Performance Benchmarks,Aggregation (SUM) on 100k rows takes ~50ms with proper indexing,Performance Data,Medium,Agent,Supports computed balance approach with caching
+009,2025-11-28,Spec Assumption FR-020,System must use Decimal not float for financial calculations,Requirements,High,Agent,Core requirement for precision
+010,2025-11-28,Spec Success Criteria SC-001,Balance queries must complete in <500ms for 100k transactions,Performance Requirement,High,Agent,Drives index design and caching strategy
+011,2025-11-28,Spec Success Criteria SC-002,System must handle 100 concurrent writes without data loss,Concurrency Requirement,High,Agent,Requires pessimistic locking (SELECT FOR UPDATE)
+012,2025-11-28,Spec Success Criteria SC-006,Zero cross-org data leakage in security audit,Security Requirement,Critical,Agent,Drives multi-tenant isolation design
+013,2025-11-28,Spec Assumption,Idempotency keys retained for 7 days (configurable),Configuration,Medium,Agent,Informs cleanup job design
+014,2025-11-28,Spec Risk #1,Concurrent transaction race conditions (High impact Medium likelihood),Risk Assessment,High,Agent,Mitigated by pessimistic locking
+015,2025-11-28,Spec Risk #3,Balance calculation performance degradation as transactions grow,Risk Assessment,High,Agent,Mitigated by caching strategy
+016,2025-11-28,AWS Cost Explorer UX,Uses signed amounts for costs (+charges -credits),Industry Best Practice,Medium,Agent,Additional validation for single-ledger approach
+017,2025-11-28,Django select_for_update(),Native ORM support for row-level pessimistic locking,Technical Capability,High,Agent,Enables concurrency control without custom SQL
+018,2025-11-28,PostgreSQL NUMERIC Type,Supports up to 131072 digits before decimal 16383 after,Technical Capability,High,Agent,NUMERIC(14 4) well within PostgreSQL limits
+019,2025-11-28,Spec Edge Case,Orphaned usage events (recorded but never billed) need to be queryable,Functional Requirement,Medium,Agent,Informs API design for unbilled events query
+020,2025-11-28,Spec Out of Scope,Pricing models tiered pricing proration explicitly out of scope,Scope Boundary,High,Agent,Confirms product-agnostic design - no pricing logic in core
