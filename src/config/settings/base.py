@@ -201,6 +201,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "api.renderers.EnvelopeJSONRenderer",  # B13 WP03: Consistent response envelope
+    ],
+    "EXCEPTION_HANDLER": "api.exceptions.envelope_exception_handler",  # B13 WP03: Consistent error handling
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
 }
