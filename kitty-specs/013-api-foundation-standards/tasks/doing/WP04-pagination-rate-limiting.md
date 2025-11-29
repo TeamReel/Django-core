@@ -1,8 +1,10 @@
 ---
 work_package_id: WP04
 title: Pagination and Rate Limiting
-lane: planned
+lane: "doing"
 subtasks: [T026, T027, T028, T029, T030, T031, T032]
+agent: "copilot"
+shell_pid: "11588"
 history:
   - date: 2025-11-29
     action: created
@@ -70,3 +72,7 @@ REST_FRAMEWORK = {
 - [ ] Redis keys: throttle:auth:{user_id}, throttle:anon:{ip}
 
 **Estimated Effort**: 6-8 hours
+
+## Activity Log
+
+- 2025-11-29T18:22:09Z – copilot – shell_pid=11588 – lane=doing – Started WP04: Pagination and Rate Limiting implementation
