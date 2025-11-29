@@ -73,7 +73,8 @@ As a system administrator, I want to inspect and temporarily override user/org p
 ### Edge Cases
 
 - **Partial preferences**: User sets language but not time zone → language applies, time zone falls back to org > global
-- **Invalid preferences**: User or org stored preference references non-existent language/time zone → system logs warning and falls back to next level in precedence
+- **Invalid preferences at submission**: User or org admin submits non-existent language/time zone via API → system returns HTTP 400 with validation errors (standard DRF behavior, no silent correction)
+- **Invalid preferences in storage**: Previously valid preference becomes invalid (e.g., time zone removed from `pytz.all_timezones` after Django upgrade) → system logs warning during resolution and falls back to next level in precedence
 - **Deleted organisation**: User's org is soft-deleted or archived → preferences resolve as if org has no defaults (fall back to global)
 - **Middleware ordering**: Locale middleware must run after authentication but before view processing → documented requirement
 - **API vs Web UI**: API requests without session may not have user context → preferences resolve from token/auth headers or default to global
@@ -90,7 +91,7 @@ As a system administrator, I want to inspect and temporarily override user/org p
 - **FR-002**: System MUST store locale preference (BCP 47 locale code, e.g., "en-US", "nl-NL", "de-DE") per user and per organisation for regional formatting (dates, numbers, currency)
 - **FR-003**: System MUST store time zone preference (IANA time zone database name, e.g., "Europe/Amsterdam", "UTC") per user and per organisation
 - **FR-004**: System MUST allow partial preferences (e.g., user sets language only, not time zone)
-- **FR-005**: System MUST validate language codes against `settings.LANGUAGES`, locale codes against available Django locales, and time zone names against `pytz.all_timezones`
+- **FR-005**: System MUST validate language codes against `settings.LANGUAGES`, locale codes against available Django locales, and time zone names against `pytz.all_timezones`, returning HTTP 400 with DRF serializer validation errors for invalid values (no silent correction)
 
 **Preference Resolution**
 
@@ -102,8 +103,8 @@ As a system administrator, I want to inspect and temporarily override user/org p
 
 **Runtime Activation**
 
-- **FR-011**: System MUST integrate with Django's `LocaleMiddleware` to automatically activate resolved language for authenticated web requests
-- **FR-012**: System MUST integrate with Django's `TimezoneMiddleware` to automatically activate resolved time zone for authenticated web requests
+- **FR-011**: System MUST provide custom middleware classes that extend Django's `LocaleMiddleware` and `TimezoneMiddleware` to automatically activate resolved language for authenticated web requests (preference resolution first, then Django's standard fallback chain)
+- **FR-012**: System MUST ensure custom middleware maintains full compatibility with Django's built-in locale resolution (cookies, session, Accept-Language headers) as fallback when no user/org preferences are set
 - **FR-013**: System MUST provide explicit activation helper for API requests and background jobs: `activate_user_locale(user_id)` and `activate_org_locale(org_id)`
 - **FR-014**: System MUST document that API clients and background tasks require explicit activation (no implicit magic)
 - **FR-015**: System MUST log locale activation events at DEBUG level for troubleshooting
@@ -120,12 +121,12 @@ As a system administrator, I want to inspect and temporarily override user/org p
 
 - **FR-021**: System MUST store user preferences in the unified settings system (B10) with scope `user` and category `i18n`
 - **FR-022**: System MUST store organisation defaults in the unified settings system (B10) with scope `organisation` and category `i18n`
-- **FR-023**: System MUST leverage B10's caching layer for preference lookups (avoid DB hit per request)
+- **FR-023**: System MUST leverage B10's caching layer for preference lookups (avoid DB hit per request) and MUST subscribe to B10's existing cache invalidation signals (not implement custom invalidation logic)
 - **FR-024**: System MUST use B10's validation framework for preference values (reuse existing validators)
 
 **Data Migration & Compatibility**
 
-- **FR-025**: System MUST provide migration path for existing user profile data (if language/time zone already stored elsewhere)
+- **FR-025**: System MUST provide management command to migrate from custom User model fields (e.g., `user.language`, `user.timezone`) to B10 settings storage, with documentation for adapting the pattern to UserProfile-like tables in downstream projects
 - **FR-026**: System MUST maintain backward compatibility with Django's built-in `settings.LANGUAGE_CODE` and `settings.TIME_ZONE` as global defaults
 - **FR-027**: System MUST document how to extend preference types (e.g., adding "date format preference" in downstream products)
 
@@ -202,8 +203,9 @@ As a system administrator, I want to inspect and temporarily override user/org p
 - Preferences cached via B10's Redis cache layer (cache key: `i18n:user:{id}`, `i18n:org:{id}`)
 - Single DB query per request (middleware fetches cached preferences)
 - Cache invalidation on preference update (via B10 signals)
-- Fallback behavior if cache unavailable: query DB, log warning, continue
-- Metrics: `i18n_preference_cache_hit_rate`, `i18n_preference_resolution_duration_ms`
+- Performance targets: < 10ms (95th percentile) with warm cache, < 50ms with cold cache or Redis unavailable
+- Graceful degradation: if Redis unavailable, query DB directly, log warning as health signal, continue normal operation (no HTTP 503)
+- Metrics: `i18n_preference_cache_hit_rate`, `i18n_preference_resolution_duration_ms`, `i18n_cache_degradation_events`
 
 ### API Design (Principle VII)
 - [x] DRF standards followed
@@ -230,13 +232,23 @@ As a system administrator, I want to inspect and temporarily override user/org p
 
 **Violations Requiring Justification**: None
 
+## Clarifications
+
+### Session 2025-11-29
+
+- Q: How should cache invalidation be triggered when preferences are updated? → A: B10 already provides automatic cache invalidation signals - just hook into existing mechanism. B10 is the central layer for settings and caching including lifecycle. B12 subscribes to existing "settings changed/preferences updated" signals from B10, keeping cache invalidation as an infrastructure responsibility (B10) while B12 remains a thin, agnostic preference layer.
+- Q: What middleware implementation approach should B12 take? → A: Extend Django's built-in LocaleMiddleware and TimezoneMiddleware classes with preference resolution logic. This allows: (1) determining effective user/org preference first, (2) letting normal Django resolution (cookies, session, Accept-Language) run as fallback, (3) remaining compatible with existing Django knowledge, docs, and future updates. B12 stays "infrastructure on top of Django" rather than a custom i18n/timezone stack.
+- Q: How should the API respond when users submit invalid preference values (e.g., unsupported language code)? → A: Return HTTP 400 with detailed validation error message (standard DRF serializer validation). Invalid preference values are hard validation errors, not silently corrected. This maintains predictable behavior, data consistency, and debuggability. Logging warnings may supplement but never replace explicit validation errors.
+- Q: What existing data migration scenario should B12 support? → A: Migrate from custom User model fields (e.g., user.language, user.timezone) to B10 settings. This is the most realistic scenario for projects with existing User models. B12 provides reference migration for User fields; other projects can adapt this pattern for their own UserProfile-like tables.
+- Q: What is the acceptable performance degradation when Redis cache is cold or unavailable? → A: < 50ms with cold cache (DB query), graceful degradation with warning logs if Redis unavailable. B12 is "nice to have fast" but not dependent on Redis for correctness. Warm cache achieves < 10ms target. Redis issues are logged as warnings/health signals, not reasons for HTTP 503 - preferences must be correctly applied regardless of cache availability.
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
 - **SC-001**: Users can set personal language and time zone preferences in under 30 seconds via profile page
 - **SC-002**: Organisation admins can configure org-wide defaults in under 1 minute via admin interface
-- **SC-003**: Preference resolution completes in under 10ms per request (95th percentile) with Redis cache warm
+- **SC-003**: Preference resolution completes in under 10ms per request (95th percentile) with Redis cache warm, and under 50ms with cold cache or Redis unavailable (graceful degradation to DB query)
 - **SC-004**: System handles 10,000 concurrent users with personalized locales without performance degradation (< 200ms p95 latency)
 - **SC-005**: 100% of locale-related support tickets include effective preference debugging info (source attribution in logs/admin)
 - **SC-006**: Zero data loss during preference updates (atomic transactions + cache invalidation)
