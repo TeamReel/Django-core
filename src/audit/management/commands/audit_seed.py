@@ -16,8 +16,8 @@ from django.core.management.base import BaseCommand
 from src.organisations.models import Organisation
 from src.projects.models import Project
 
-from audit.api import audit_log
-from audit.registry import is_event_type_registered, register_event_type
+from src.audit.api import audit_log
+from src.audit.registry import is_event_type_registered, register_event_type
 
 User = get_user_model()
 
