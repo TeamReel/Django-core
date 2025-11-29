@@ -7,7 +7,7 @@ class AuditConfig(AppConfig):
     """Configuration for audit logging app."""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "audit"
+    name = "src.audit"
     verbose_name = "Audit Logging"
 
     def ready(self) -> None:
