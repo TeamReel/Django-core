@@ -492,3 +492,4 @@ After WP01 completion:
 ## Activity Log
 
 - 2025-11-29T17:42:36Z – copilot – shell_pid=11588 – lane=doing – Started WP01 implementation
+- 2025-11-29T18:57:00Z – copilot – shell_pid=11588 – lane=doing – Completed all 9 subtasks: created api app, installed dependencies (simplejwt 5.3.1, drf-spectacular 0.27.0), configured settings, ran migrations (JWT blacklist tables created), implemented all base classes (BaseAPIViewSet, BaseSerializer, BaseAPIPagination). Django check passes, all classes importable.
