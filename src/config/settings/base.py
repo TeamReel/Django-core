@@ -205,7 +205,11 @@ REST_FRAMEWORK = {
         "api.renderers.EnvelopeJSONRenderer",  # B13 WP03: Consistent response envelope
     ],
     "EXCEPTION_HANDLER": "api.exceptions.envelope_exception_handler",  # B13 WP03: Consistent error handling
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_PAGINATION_CLASS": "api.pagination.BaseAPIPagination",  # B13 WP04: Pagination with metadata
+    "DEFAULT_THROTTLE_CLASSES": [  # B13 WP04: Rate limiting (FR-020, FR-021)
+        "api.throttling.AuthenticatedUserThrottle",  # 100/min for authenticated
+        "api.throttling.AnonymousUserThrottle",  # 10/min for anonymous
+    ],
     "PAGE_SIZE": 50,
 }
 
