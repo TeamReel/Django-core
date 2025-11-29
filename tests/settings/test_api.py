@@ -342,7 +342,7 @@ class TestCacheIntegration(SettingsAPITestCase):
 class TestGracefulDegradation(SettingsAPITestCase):
     """Test graceful degradation when Redis is unavailable."""
 
-    @patch("src.settings.cache.cache")
+    @patch("settings.cache.cache")
     def test_database_fallback_when_cache_fails(self, mock_cache):
         """Test fallback to database when cache operations fail."""
         # Make cache operations raise exceptions

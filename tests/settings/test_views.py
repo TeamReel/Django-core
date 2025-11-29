@@ -104,7 +104,7 @@ class TestFeatureFlagViewSet(TestCase):
 
         serializer.save.assert_called_once_with(updated_by=None)
 
-    @patch("src.settings.views.get_flag")
+    @patch("settings.views.get_flag")
     def test_resolve_action_valid_key(self, mock_get_flag):
         """Test resolve action with valid flag key."""
         mock_get_flag.return_value = True
@@ -121,7 +121,7 @@ class TestFeatureFlagViewSet(TestCase):
             "test_flag", project_id=None, organisation_id=None, default=None
         )
 
-    @patch("src.settings.views.get_flag")
+    @patch("settings.views.get_flag")
     def test_resolve_action_not_found(self, mock_get_flag):
         """Test resolve action with non-existent flag."""
         mock_get_flag.return_value = None
@@ -160,7 +160,7 @@ class TestFeatureFlagViewSet(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("organisation_id must be an integer", response.data["error"])
 
-    @patch("src.settings.views.get_flag")
+    @patch("settings.views.get_flag")
     def test_resolve_action_with_valid_ids(self, mock_get_flag):
         """Test resolve action with valid project and organisation IDs."""
         mock_get_flag.return_value = True
@@ -177,8 +177,8 @@ class TestFeatureFlagViewSet(TestCase):
             "test_flag", project_id=1, organisation_id=2, default=None
         )
 
-    @patch("src.settings.views.FeatureFlag.objects")
-    @patch("src.settings.views.get_flag")
+    @patch("settings.views.FeatureFlag.objects")
+    @patch("settings.views.get_flag")
     def test_resolve_action_scope_detection_project(self, mock_get_flag, mock_objects):
         """Test resolve action correctly detects project scope."""
         mock_get_flag.return_value = True
@@ -254,7 +254,7 @@ class TestSettingViewSet(TestCase):
 
         serializer.save.assert_called_once_with(updated_by=self.user)
 
-    @patch("src.settings.views.get_setting")
+    @patch("settings.views.get_setting")
     def test_resolve_action_valid_key(self, mock_get_setting):
         """Test resolve action with valid setting key."""
         mock_get_setting.return_value = "test_value"
@@ -271,7 +271,7 @@ class TestSettingViewSet(TestCase):
             "test_setting", project_id=None, organisation_id=None, default=None
         )
 
-    @patch("src.settings.views.get_setting")
+    @patch("settings.views.get_setting")
     def test_resolve_action_not_found(self, mock_get_setting):
         """Test resolve action with non-existent setting."""
         mock_get_setting.return_value = None
@@ -310,7 +310,7 @@ class TestSettingViewSet(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("organisation_id must be an integer", response.data["error"])
 
-    @patch("src.settings.views.get_setting")
+    @patch("settings.views.get_setting")
     def test_resolve_action_with_valid_ids(self, mock_get_setting):
         """Test resolve action with valid project and organisation IDs."""
         mock_get_setting.return_value = "resolved_value"
@@ -327,8 +327,8 @@ class TestSettingViewSet(TestCase):
             "test_setting", project_id=1, organisation_id=2, default=None
         )
 
-    @patch("src.settings.views.Setting.objects")
-    @patch("src.settings.views.get_setting")
+    @patch("settings.views.Setting.objects")
+    @patch("settings.views.get_setting")
     def test_resolve_action_scope_detection_organisation(self, mock_get_setting, mock_objects):
         """Test resolve action correctly detects organisation scope."""
         mock_get_setting.return_value = "org_value"
@@ -350,8 +350,8 @@ class TestSettingViewSet(TestCase):
         # Should check organisation scope after project scope fails
         self.assertEqual(mock_objects.filter.call_count, 2)
 
-    @patch("src.settings.views.Setting.objects")
-    @patch("src.settings.views.get_setting")
+    @patch("settings.views.Setting.objects")
+    @patch("settings.views.get_setting")
     def test_resolve_action_scope_detection_global(self, mock_get_setting, mock_objects):
         """Test resolve action falls back to global scope."""
         mock_get_setting.return_value = "global_value"
@@ -383,8 +383,8 @@ class TestViewSetIntegration(APITestCase):
         self.user = User.objects.create_user(email="test@example.com", password="testpass123")
         self.client.force_authenticate(user=self.user)
 
-    @patch("src.settings.views.ScopeAwarePermission.has_permission", return_value=True)
-    @patch("src.settings.views.ScopeAwarePermission.has_object_permission", return_value=True)
+    @patch("settings.views.ScopeAwarePermission.has_permission", return_value=True)
+    @patch("settings.views.ScopeAwarePermission.has_object_permission", return_value=True)
     def test_feature_flag_viewset_class_attributes(self, mock_obj_perm, mock_perm):
         """Test FeatureFlagViewSet class attributes are properly configured."""
         viewset = FeatureFlagViewSet()
@@ -394,8 +394,8 @@ class TestViewSetIntegration(APITestCase):
         self.assertIn("key", viewset.search_fields)
         self.assertIn("scope_type", viewset.filterset_fields)
 
-    @patch("src.settings.views.ScopeAwarePermission.has_permission", return_value=True)
-    @patch("src.settings.views.ScopeAwarePermission.has_object_permission", return_value=True)
+    @patch("settings.views.ScopeAwarePermission.has_permission", return_value=True)
+    @patch("settings.views.ScopeAwarePermission.has_object_permission", return_value=True)
     def test_setting_viewset_class_attributes(self, mock_obj_perm, mock_perm):
         """Test SettingViewSet class attributes are properly configured."""
         viewset = SettingViewSet()

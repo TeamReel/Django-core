@@ -147,19 +147,19 @@ class TestCacheInvalidation(TestCase):
 class TestCacheDisabled(TestCase):
     """Test behavior when cache is disabled."""
 
-    @patch("src.settings.cache.CACHE_ENABLED", False)
+    @patch("settings.cache.CACHE_ENABLED", False)
     def test_get_cached_value_returns_none(self):
         """Test get returns None when cache disabled."""
         result = get_cached_value("any_key")
         self.assertIsNone(result)
 
-    @patch("src.settings.cache.CACHE_ENABLED", False)
+    @patch("settings.cache.CACHE_ENABLED", False)
     def test_set_cached_value_returns_false(self):
         """Test set returns False when cache disabled."""
         result = set_cached_value("any_key", {"value": True})
         self.assertFalse(result)
 
-    @patch("src.settings.cache.CACHE_ENABLED", False)
+    @patch("settings.cache.CACHE_ENABLED", False)
     def test_invalidate_returns_false(self):
         """Test invalidate returns False when cache disabled."""
         result = invalidate_cache("any_key")

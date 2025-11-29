@@ -22,7 +22,7 @@ User = get_user_model()
 @pytest.fixture
 def mock_redis():
     """Mock Redis client for cache testing."""
-    with patch("src.settings.cache.redis_client") as mock_client:
+    with patch("settings.cache.redis_client") as mock_client:
         mock_redis = MagicMock()
         mock_client.return_value = mock_redis
 

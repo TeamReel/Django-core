@@ -140,7 +140,7 @@ class TestFeatureFlagAdmin(TestCase):
         self.assertEqual(self.feature_flag.created_by, original_created_by)  # Unchanged
         self.assertEqual(self.feature_flag.updated_by, self.regular_user)
 
-    @patch("src.settings.admin.check_permission")
+    @patch("settings.admin.check_permission")
     def test_has_change_permission_superuser(self, mock_check):
         """Test change permission for superuser."""
         request = self.factory.get("/")
@@ -152,7 +152,7 @@ class TestFeatureFlagAdmin(TestCase):
         # Should not need to check permissions for superuser
         mock_check.assert_not_called()
 
-    @patch("src.settings.admin.check_permission")
+    @patch("settings.admin.check_permission")
     def test_has_change_permission_unauthenticated(self, mock_check):
         """Test change permission for unauthenticated user."""
         request = self.factory.get("/")
@@ -161,7 +161,7 @@ class TestFeatureFlagAdmin(TestCase):
         result = self.admin.has_change_permission(request, self.feature_flag)
         self.assertFalse(result)
 
-    @patch("src.settings.admin.check_permission")
+    @patch("settings.admin.check_permission")
     def test_has_change_permission_global_flag_regular_user(self, mock_check):
         """Test change permission for global flag requires superuser."""
         request = self.factory.get("/")
@@ -170,7 +170,7 @@ class TestFeatureFlagAdmin(TestCase):
         result = self.admin.has_change_permission(request, self.feature_flag)
         self.assertFalse(result)
 
-    @patch("src.settings.admin.check_permission")
+    @patch("settings.admin.check_permission")
     def test_has_change_permission_list_view(self, mock_check):
         """Test change permission for list view (obj=None)."""
         mock_check.return_value = True
@@ -297,7 +297,7 @@ class TestSettingAdmin(TestCase):
         self.assertEqual(self.setting.created_by, original_created_by)  # Unchanged
         self.assertEqual(self.setting.updated_by, self.regular_user)
 
-    @patch("src.settings.admin.check_permission")
+    @patch("settings.admin.check_permission")
     def test_has_change_permission_superuser(self, mock_check):
         """Test change permission for superuser."""
         request = self.factory.get("/")
@@ -309,7 +309,7 @@ class TestSettingAdmin(TestCase):
         # Should not need to check permissions for superuser
         mock_check.assert_not_called()
 
-    @patch("src.settings.admin.check_permission")
+    @patch("settings.admin.check_permission")
     def test_has_change_permission_global_setting_regular_user(self, mock_check):
         """Test change permission for global setting requires superuser."""
         request = self.factory.get("/")
