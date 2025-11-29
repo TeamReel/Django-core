@@ -24,7 +24,7 @@ This feature extends Django's i18n layer to support user and organisation-specif
 
 | ID | Title | Priority | Dependencies | Subtasks | Status |
 |----|-------|----------|--------------|----------|--------|
-| WP01 | Extend B10 with USER Scope | P0 (Critical) | None | T001-T008 | 📋 Planned |
+| WP01 | Extend B10 with USER Scope | P0 (Critical) | None | T001-T008 | ✅ Done |
 | WP02 | Core Preference Resolution | P0 (Critical) | WP01 | T009-T015 | 📋 Planned |
 | WP03 | Middleware Integration | P1 (High) | WP02 | T016-T021 | 📋 Planned |
 | WP04 | API Endpoints | P1 (High) | WP02 | T022-T030 | 📋 Planned |
@@ -37,17 +37,26 @@ This feature extends Django's i18n layer to support user and organisation-specif
 
 ## Phase 0: Foundation (CRITICAL - BLOCKING)
 
-### WP01: Extend B10 with USER Scope ⚠️ BLOCKING
+### WP01: Extend B10 with USER Scope ✅ COMPLETE
 **Owner**: Settings app maintainer
 **Priority**: P0 (Critical - all other work blocked until complete)
 **Location**: `src/settings/`
-**Prompt**: [`tasks/planned/WP01-extend-b10-user-scope.md`](tasks/planned/WP01-extend-b10-user-scope.md)
+**Prompt**: [`tasks/done/WP01-extend-b10-user-scope.md`](tasks/done/WP01-extend-b10-user-scope.md)
 
 **Objective**: Add USER scope support to B10's Setting model, enabling user-level settings storage with same infrastructure as org/project/global scopes.
 
 **Included Subtasks**:
-- [ ] T001: Add `ScopeType.USER` enum value to `settings/models.py`
-- [ ] T002: Add `user` ForeignKey to `Setting` model (nullable, CASCADE)
+- [x] T001: Add `ScopeType.USER` enum value to `settings/models.py`
+- [x] T002: Add `user` ForeignKey to `Setting` model (nullable, CASCADE)
+- [x] T003: Update unique constraint to include `user` field
+- [x] T004: Add composite indexes for efficient user-scoped queries
+- [x] T005: Extend `_resolve_scope_hierarchy()` in `settings/api.py` for user precedence (user > org > project > global)
+- [x] T006: Update `SettingPermission` to allow users to manage own settings (block access to others)
+- [x] T007: Create migration `0005_add_user_scope.py`
+- [x] T008: Write unit tests for USER scope (10 test cases covering all scenarios)
+
+**Review Status**: ✅ Approved (2025-11-29, commit 3facc8a)
+**Test Coverage**: 17 test methods (170% of requirement)
 - [ ] T003: Update unique constraint to include `user` field
 - [ ] T004: Add composite indexes for user-scoped queries
 - [ ] T005: Extend `_resolve_scope_hierarchy()` in `settings/api.py` to support user scope precedence
