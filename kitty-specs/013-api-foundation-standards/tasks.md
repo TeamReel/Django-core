@@ -76,18 +76,19 @@ tasks/
 
 ### WP02: JWT Authentication Implementation
 **Priority**: P1 (User Story 1)
-**Prompt**: [tasks/planned/WP02-jwt-authentication.md](tasks/planned/WP02-jwt-authentication.md)
+**Prompt**: [tasks/done/WP02-jwt-authentication.md](tasks/done/WP02-jwt-authentication.md)
 **Goal**: Implement JWT token obtain/refresh/verify/logout endpoints with dual auth support
+**Status**: ✅ **COMPLETE** (Reviewed and approved 2025-11-29)
 
 **Subtasks**:
-- [ ] T010: Configure REST_FRAMEWORK authentication classes (JWTAuthentication, SessionAuthentication)
-- [ ] T011: Create token obtain endpoint (POST /api/v1/auth/token/)
-- [ ] T012: Create token refresh endpoint (POST /api/v1/auth/token/refresh/)
-- [ ] T013: Create token verify endpoint (POST /api/v1/auth/token/verify/)
-- [ ] T014: Create logout endpoint (POST /api/v1/auth/logout/) with blacklist integration
-- [ ] T015: Implement JWT precedence logic (JWT over session when both present)
-- [ ] T016: Implement inactive user check (return 403 for deactivated accounts per FR-005a)
-- [ ] T017: Create auth URL routing in api/v1/urls.py
+- [x] T010: Configure REST_FRAMEWORK authentication classes (JWTAuthentication, SessionAuthentication)
+- [x] T011: Create token obtain endpoint (POST /api/v1/auth/token/)
+- [x] T012: Create token refresh endpoint (POST /api/v1/auth/token/refresh/)
+- [x] T013: Create token verify endpoint (POST /api/v1/auth/token/verify/)
+- [x] T014: Create logout endpoint (POST /api/v1/auth/logout/) with blacklist integration
+- [x] T015: Implement JWT precedence logic (JWT over session when both present)
+- [x] T016: Implement inactive user check (return 403 for deactivated accounts per FR-005a)
+- [x] T017: Create auth URL routing in api/v1/urls.py
 
 **Implementation Sketch**:
 1. Configure authentication_classes in REST_FRAMEWORK settings
