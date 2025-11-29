@@ -8,5 +8,3 @@ This app provides role-based access control with three scope levels:
 Additive inheritance model: project-level roles grant additional permissions
 beyond organization-level roles (most permissive wins).
 """
-
-default_app_config = "permissions.apps.PermissionsConfig"
