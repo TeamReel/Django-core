@@ -97,3 +97,4 @@ Update settings to use CustomJWTAuthentication instead.
 ## Activity Log
 
 - 2025-11-29T18:01:28Z – copilot – shell_pid=11588 – lane=doing – Started WP02: JWT Authentication implementation
+- 2025-11-29T19:15:00Z – copilot – shell_pid=11588 – lane=doing – Completed all 8 subtasks: CustomJWTAuthentication with is_active check, LogoutView with token blacklisting, token obtain/refresh/verify endpoints, URL routing at /api/v1/auth/*, authentication precedence configured. Django check passes with 0 issues. Commit 73595cb.
