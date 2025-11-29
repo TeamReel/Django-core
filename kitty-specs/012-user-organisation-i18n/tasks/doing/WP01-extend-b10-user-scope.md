@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "copilot"
+shell_pid: "17932"
+---
 # Work Package 01: Extend B10 with USER Scope
 
 **Status**: 📋 Planned
@@ -417,3 +422,7 @@ def test_resolve_user_over_org(self):
 - Does the migration strategy feel safe for production?
 - Are there other B10 components that need updating for USER scope?
 - Should we add migration notes to B10 CHANGELOG?
+
+## Activity Log
+
+- 2025-11-29T08:58:40Z – copilot – shell_pid=17932 – lane=doing – Started implementation
