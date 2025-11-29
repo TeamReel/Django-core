@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: v1 API Consolidation and Routing
-lane: "doing"
+lane: "for_review"
 subtasks: [T033, T034, T035, T036, T037, T038, T039, T040, T041, T042]
 agent: "copilot"
 shell_pid: "11588"
@@ -84,3 +84,4 @@ Ensure all viewsets extend BaseAPIViewSet from WP01.
 
 - 2025-11-29T18:26:48Z – copilot – shell_pid=11588 – lane=doing – Started WP05: v1 API Consolidation implementation
 - 2025-11-29T20:00:00Z – copilot – shell_pid=11588 – lane=doing – Completed all 10 subtasks: Created v1 router with domain API routes (accounts, organisations, projects, permissions), created api_root view with endpoint discovery, consolidated all APIs under /api/v1/, updated config/urls.py. Domain viewsets inherit global REST_FRAMEWORK config. Commit b94674b.
+- 2025-11-29T18:48:08Z – copilot – shell_pid=11588 – lane=for_review – Ready for review: v1 API consolidation complete, all domain APIs under /api/v1/, api_root discovery endpoint
