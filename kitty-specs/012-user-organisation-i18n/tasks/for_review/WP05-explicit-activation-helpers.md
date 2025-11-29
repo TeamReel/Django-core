@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "copilot"
 shell_pid: "17932"
 ---
@@ -372,3 +372,4 @@ def generate_user_pdf(request, user_id):
 ## Activity Log
 
 - 2025-11-29T11:45:00Z – copilot – shell_pid=17932 – lane=doing – Started implementation: Explicit activation helpers for background jobs/API
+- 2025-11-29T11:50:15Z – copilot – shell_pid=17932 – lane=for_review – Ready for review: 13/13 tests passing, all helpers implemented
