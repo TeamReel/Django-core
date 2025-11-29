@@ -1,7 +1,10 @@
 from typing import Any
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class BaseAPIViewSet(ModelViewSet):
@@ -52,3 +55,52 @@ class BaseAPIViewSet(ModelViewSet):
         Override in subclasses to prevent N+1 queries.
         """
         return {}
+
+
+class LogoutView(APIView):
+    """
+    JWT logout endpoint that blacklists refresh tokens.
+
+    Requires authentication via JWT or Session.
+    Expects {"refresh": "<refresh_token>"} in request body.
+
+    Returns:
+        200: {"status": "success", "data": null}
+        400: {"status": "error", "error": {"code": "invalid_token"}}
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request) -> Response:
+        """
+        Blacklist the provided refresh token to prevent future use.
+        """
+        try:
+            refresh_token = request.data.get("refresh")
+            if not refresh_token:
+                return Response(
+                    {
+                        "status": "error",
+                        "error": {
+                            "code": "missing_token",
+                            "message": "Refresh token required",
+                        },
+                    },
+                    status=400,
+                )
+
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Adds to token_blacklist_blacklistedtoken table
+
+            return Response({"status": "success", "data": None})
+        except Exception:
+            return Response(
+                {
+                    "status": "error",
+                    "error": {
+                        "code": "invalid_token",
+                        "message": "Invalid or expired refresh token",
+                    },
+                },
+                status=400,
+            )

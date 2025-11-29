@@ -195,7 +195,8 @@ ENVIRONMENT = os.getenv("DJANGO_ENV", "local")
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
+        "api.authentication.CustomJWTAuthentication",  # B13: JWT with inactive user check (FR-005a)
+        "rest_framework.authentication.SessionAuthentication",  # B13: Fallback for web clients
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
