@@ -39,7 +39,11 @@ class ScopeAwarePermission(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
-        # Get scope from object
+        # USER scope: users can only manage their own settings
+        if obj.scope_type == ScopeType.USER:
+            return obj.user_id == request.user.id
+
+        # Get scope from object for other scopes
         if obj.scope_type == ScopeType.GLOBAL:
             scope_info = {
                 "scope_type": ScopeType.GLOBAL,
@@ -102,7 +106,10 @@ class ScopeAwarePermission(BasePermission):
         # Use appropriate permissions based on the existing B08 system
         # For settings, we'll use a general 'settings.manage' permission
         # and rely on B08's hierarchical scoping to handle org/project restrictions
-        if scope_type == ScopeType.GLOBAL:
+        if scope_type == ScopeType.USER:
+            # USER scope: not applicable here (handled in has_object_permission)
+            return True  # Allow creation of user settings (ownership checked later)
+        elif scope_type == ScopeType.GLOBAL:
             # Global settings require superuser status
             return user.is_superuser
         elif scope_type == ScopeType.ORGANISATION:
