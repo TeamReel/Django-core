@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from transactions.models import BalancePolicy, SourceTypeChoices, Transaction, UsageEvent
+from src.transactions.models import BalancePolicy, SourceTypeChoices, Transaction, UsageEvent
 
 
 class UsageEventSerializer(serializers.ModelSerializer):

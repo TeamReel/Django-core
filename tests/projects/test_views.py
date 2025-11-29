@@ -2,8 +2,8 @@
 
 import pytest
 from django.urls import reverse
-from organisations.models import Membership
-from projects.models import Project
+from src.organisations.models import Membership
+from src.projects.models import Project
 from rest_framework import status
 
 

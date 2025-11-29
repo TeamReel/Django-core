@@ -7,7 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from transactions.models import (
+from src.transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,
     SourceTypeChoices,

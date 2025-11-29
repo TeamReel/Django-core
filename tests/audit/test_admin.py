@@ -5,7 +5,7 @@ Tests read-only enforcement, filters, search, and pagination.
 """
 
 import pytest
-from audit.api import audit_log
+from src.audit.api import audit_log
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse

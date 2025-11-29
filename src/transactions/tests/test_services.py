@@ -14,16 +14,16 @@ from decimal import Decimal
 import pytest
 from django.core.cache import cache
 
-from transactions.exceptions import (
+from src.transactions.exceptions import (
     DuplicateIdempotencyKeyError,
     InsufficientBalanceError,
 )
-from transactions.models import (
+from src.transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,
     SourceTypeChoices,
 )
-from transactions.services import (
+from src.transactions.services import (
     check_policy_violation,
     create_transaction,
     get_organization_balance,

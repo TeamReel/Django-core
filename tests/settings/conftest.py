@@ -9,9 +9,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from django.contrib.auth import get_user_model
-from organisations.models import Organisation
+from src.organisations.models import Organisation
 from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
-from projects.models import Project
+from src.projects.models import Project
 from rest_framework.test import APIClient
 
 from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType

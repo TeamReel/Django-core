@@ -2,10 +2,10 @@
 
 import pytest
 from accounts.models import User
-from organisations.models import Organisation
-from projects.models import Project
+from src.organisations.models import Organisation
+from src.projects.models import Project
 
-from transactions.models import UsageEvent
+from src.transactions.models import UsageEvent
 
 
 @pytest.fixture

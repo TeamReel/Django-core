@@ -13,8 +13,8 @@ from unittest.mock import MagicMock, patch
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import TestCase, override_settings
-from organisations.models import Organisation
-from projects.models import Project
+from src.organisations.models import Organisation
+from src.projects.models import Project
 
 from src.settings.api import get_flag, get_setting, set_flag, set_setting
 from src.settings.cache import (

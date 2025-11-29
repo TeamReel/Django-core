@@ -13,8 +13,8 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
-from organisations.models import Organisation
-from projects.models import Project
+from src.organisations.models import Organisation
+from src.projects.models import Project
 from settings.api import get_flag, get_setting
 from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 from settings.permissions import ScopeAwarePermission

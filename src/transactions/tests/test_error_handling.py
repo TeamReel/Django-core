@@ -15,14 +15,14 @@ from decimal import Decimal
 import pytest
 from django.db import IntegrityError
 
-from transactions.exceptions import DuplicateIdempotencyKeyError, InsufficientBalanceError
-from transactions.models import (
+from src.transactions.exceptions import DuplicateIdempotencyKeyError, InsufficientBalanceError
+from src.transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,
     SourceTypeChoices,
     Transaction,
 )
-from transactions.services import create_transaction
+from src.transactions.services import create_transaction
 
 
 @pytest.mark.django_db

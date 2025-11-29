@@ -6,13 +6,13 @@ Verifies that permission checks and role operations automatically create audit e
 """
 
 import pytest
-from audit.models import AuditEvent
-from audit.registry import is_event_type_registered, register_event_type
+from src.audit.models import AuditEvent
+from src.audit.registry import is_event_type_registered, register_event_type
 from django.contrib.auth import get_user_model
-from organisations.models import Organisation
+from src.organisations.models import Organisation
 from permissions.evaluator import check_permission
 from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
-from projects.models import Project
+from src.projects.models import Project
 
 User = get_user_model()
 

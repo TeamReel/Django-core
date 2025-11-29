@@ -2,8 +2,8 @@
 
 import pytest
 from django.contrib.auth import get_user_model
-from organisations.models import Membership, Organisation
-from projects.models import Project
+from src.organisations.models import Membership, Organisation
+from src.projects.models import Project
 from rest_framework.test import APIClient
 
 User = get_user_model()

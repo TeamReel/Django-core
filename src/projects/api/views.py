@@ -6,7 +6,7 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from projects.models import Project
+from src.projects.models import Project
 
 from .permissions import IsOrganisationMemberOrAdmin
 from .serializers import (

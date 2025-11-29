@@ -6,7 +6,7 @@ emit appropriate audit events to B09 audit system.
 """
 
 import pytest
-from audit.models import AuditEvent
+from src.audit.models import AuditEvent
 from django.contrib.auth import get_user_model
 
 from src.settings.models import FeatureFlag, Setting

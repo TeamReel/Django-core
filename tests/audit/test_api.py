@@ -8,9 +8,9 @@ Tests cover:
 """
 
 import pytest
-from audit.api import audit_log
-from audit.models import AuditEvent
-from audit.registry import register_event_type
+from src.audit.api import audit_log
+from src.audit.models import AuditEvent
+from src.audit.registry import register_event_type
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory
 

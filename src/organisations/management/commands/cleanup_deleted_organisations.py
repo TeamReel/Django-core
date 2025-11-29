@@ -15,7 +15,7 @@ from datetime import timedelta
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from organisations.models import Organisation
+from src.organisations.models import Organisation
 
 
 class Command(BaseCommand):

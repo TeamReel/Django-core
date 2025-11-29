@@ -4,10 +4,10 @@ from decimal import Decimal
 
 import pytest
 from django.db import IntegrityError
-from organisations.models import Organisation
-from projects.models import Project
+from src.organisations.models import Organisation
+from src.projects.models import Project
 
-from transactions.models import (
+from src.transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,
     SourceTypeChoices,

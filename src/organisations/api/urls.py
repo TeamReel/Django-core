@@ -3,7 +3,7 @@ URL configuration for organisations API.
 """
 
 from django.urls import path
-from projects.api.views import ProjectViewSet
+from src.projects.api.views import ProjectViewSet
 from rest_framework.routers import DefaultRouter
 
 from .views import MembershipViewSet, OrganisationViewSet

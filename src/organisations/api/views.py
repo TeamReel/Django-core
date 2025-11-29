@@ -11,9 +11,9 @@ from rest_framework import permissions, viewsets
 from rest_framework.exceptions import Throttled
 from rest_framework.pagination import PageNumberPagination
 
-from organisations.metrics import rate_limit_hits
-from organisations.models import Membership, Organisation
-from organisations.ratelimit import check_rate_limit
+from src.organisations.metrics import rate_limit_hits
+from src.organisations.models import Membership, Organisation
+from src.organisations.ratelimit import check_rate_limit
 
 from .serializers import (
     OrganisationCreateSerializer,

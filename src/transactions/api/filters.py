@@ -2,7 +2,7 @@
 
 import django_filters
 
-from transactions.models import SourceTypeChoices, Transaction, UsageEvent
+from src.transactions.models import SourceTypeChoices, Transaction, UsageEvent
 
 
 class UsageEventFilter(django_filters.FilterSet):
