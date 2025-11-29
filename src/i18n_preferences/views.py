@@ -3,8 +3,8 @@
 from rest_framework import views, status, generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from src.settings.models import Setting, ScopeType
-from src.organisations.models import Organisation
+from settings.models import Setting, ScopeType
+from organisations.models import Organisation
 from .serializers import PreferenceSerializer, EffectivePreferenceSerializer
 from .services import PreferenceResolutionService
 from .permissions import IsOrganisationAdmin

@@ -5,8 +5,8 @@ from decimal import Decimal
 
 from accounts.models import User
 from django.db import models
-from src.organisations.models import Organisation
-from src.projects.models import Project
+from organisations.models import Organisation
+from projects.models import Project
 
 from .managers import TransactionManager, UsageEventManager
 

@@ -12,7 +12,7 @@ Comprehensive test suite covering:
 
 import pytest
 from accounts.models import User
-from src.organisations.models import Organisation
+from organisations.models import Organisation
 from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
 from rest_framework.test import APIClient, APIRequestFactory
 

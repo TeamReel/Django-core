@@ -7,7 +7,7 @@ Provides:
 
 from rest_framework import permissions
 
-from src.organisations.models import Membership
+from organisations.models import Membership
 
 
 class IsOrganisationAdmin(permissions.BasePermission):

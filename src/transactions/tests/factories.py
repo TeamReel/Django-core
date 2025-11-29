@@ -13,10 +13,10 @@ import factory
 from accounts.models import User
 from factory import fuzzy
 from factory.django import DjangoModelFactory
-from src.organisations.models import Organisation
-from src.projects.models import Project
+from organisations.models import Organisation
+from projects.models import Project
 
-from src.transactions.models import (
+from transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,
     SourceTypeChoices,

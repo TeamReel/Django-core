@@ -4,7 +4,7 @@ Simple import test to verify models work correctly.
 
 from django.test import TestCase
 
-from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
+from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 
 class SimpleImportTest(TestCase):

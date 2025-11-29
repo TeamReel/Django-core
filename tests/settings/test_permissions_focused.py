@@ -10,8 +10,8 @@ from unittest.mock import Mock, patch
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 
-from src.settings.models import FeatureFlag, ScopeType
-from src.settings.permissions import ScopeAwarePermission
+from settings.models import FeatureFlag, ScopeType
+from settings.permissions import ScopeAwarePermission
 
 User = get_user_model()
 

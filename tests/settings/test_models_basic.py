@@ -7,7 +7,7 @@ Tests core model functionality, constraints, and validation.
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
+from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
 

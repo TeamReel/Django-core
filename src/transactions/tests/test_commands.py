@@ -7,10 +7,10 @@ import pytest
 from accounts.models import User
 from django.core.management import call_command
 from django.utils import timezone
-from src.organisations.models import Organisation
-from src.projects.models import Project
+from organisations.models import Organisation
+from projects.models import Project
 
-from src.transactions.models import Transaction, UsageEvent
+from transactions.models import Transaction, UsageEvent
 
 
 @pytest.mark.django_db

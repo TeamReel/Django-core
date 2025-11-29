@@ -13,16 +13,16 @@ from unittest.mock import MagicMock, patch
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import TestCase, override_settings
-from src.organisations.models import Organisation
-from src.projects.models import Project
+from organisations.models import Organisation
+from projects.models import Project
 
-from src.settings.api import get_flag, get_setting, set_flag, set_setting
-from src.settings.cache import (
+from settings.api import get_flag, get_setting, set_flag, set_setting
+from settings.cache import (
     generate_cache_key,
     get_cached_value,
     publish_invalidation,
 )
-from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
+from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
 

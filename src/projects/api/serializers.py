@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from src.projects.models import Project
+from projects.models import Project
 
 
 class OrganisationNestedSerializer(serializers.Serializer):

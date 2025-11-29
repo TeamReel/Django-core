@@ -1,7 +1,7 @@
 """Tests for Project managers."""
 
 import pytest
-from src.projects.models import Project
+from projects.models import Project
 
 
 @pytest.mark.django_db

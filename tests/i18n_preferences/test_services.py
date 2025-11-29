@@ -3,12 +3,12 @@
 import pytest
 from django.contrib.auth import get_user_model
 
-from src.organisations.models import Organisation
-from src.i18n_preferences.services import (
+from organisations.models import Organisation
+from i18n_preferences.services import (
     EffectivePreferences,
     PreferenceResolutionService,
 )
-from src.settings.models import ScopeType, Setting, SettingType
+from settings.models import ScopeType, Setting, SettingType
 
 User = get_user_model()
 

@@ -12,8 +12,8 @@ Tests cover:
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from src.organisations.models import Membership, Organisation
-from src.projects.models import Project
+from organisations.models import Membership, Organisation
+from projects.models import Project
 from rest_framework import status
 from rest_framework.test import APIClient
 

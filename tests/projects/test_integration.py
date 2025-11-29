@@ -8,8 +8,8 @@ resources can integrate with the projects app via foreign keys.
 import pytest
 from django.contrib.auth import get_user_model
 from django.db import models
-from src.organisations.models import Membership, Organisation
-from src.projects.models import Project
+from organisations.models import Membership, Organisation
+from projects.models import Project
 
 User = get_user_model()
 

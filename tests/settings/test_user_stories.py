@@ -9,11 +9,11 @@ Tests complete user story scenarios end-to-end including:
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from src.organisations.models import Organisation
-from src.projects.models import Project
+from organisations.models import Organisation
+from projects.models import Project
 
-from src.settings.api import get_flag, get_setting
-from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
+from settings.api import get_flag, get_setting
+from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
 

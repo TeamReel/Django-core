@@ -9,9 +9,9 @@ from datetime import timedelta
 from io import StringIO
 
 import pytest
-from src.audit.api import audit_log
-from src.audit.models import AuditEvent
-from src.audit.registry import is_event_type_registered
+from audit.api import audit_log
+from audit.models import AuditEvent
+from audit.registry import is_event_type_registered
 from django.core.management import call_command
 from django.utils import timezone
 

@@ -7,12 +7,12 @@ permissions, and error handling.
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from src.organisations.models import Organisation
-from src.projects.models import Project
+from organisations.models import Organisation
+from projects.models import Project
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
+from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
 

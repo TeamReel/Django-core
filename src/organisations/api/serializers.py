@@ -9,7 +9,7 @@ Provides:
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from src.organisations.models import Membership, Organisation
+from organisations.models import Membership, Organisation
 
 User = get_user_model()
 

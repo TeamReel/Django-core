@@ -13,11 +13,11 @@ from datetime import datetime, timedelta, timezone
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
-from src.organisations.models import Organisation
-from src.projects.models import Project
+from organisations.models import Organisation
+from projects.models import Project
 
-from src.audit.api import audit_log
-from src.audit.registry import is_event_type_registered, register_event_type
+from audit.api import audit_log
+from audit.registry import is_event_type_registered, register_event_type
 
 User = get_user_model()
 

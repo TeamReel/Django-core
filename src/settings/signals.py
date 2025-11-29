@@ -8,8 +8,8 @@ FeatureFlag and Setting models, including old/new values and actor context.
 import threading
 from typing import Any, Dict, Optional
 
-from src.audit.api import audit_log
-from src.audit.registry import register_event_type
+from audit.api import audit_log
+from audit.registry import register_event_type
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 

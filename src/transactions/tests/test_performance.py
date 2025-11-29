@@ -17,12 +17,12 @@ from decimal import Decimal
 
 import pytest
 
-from src.transactions.models import (
+from transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,
     SourceTypeChoices,
 )
-from src.transactions.services import (
+from transactions.services import (
     create_transaction,
     get_organization_balance,
 )

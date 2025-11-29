@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 
-from src.audit.models import AuditEvent
+from audit.models import AuditEvent
 
 
 class Command(BaseCommand):

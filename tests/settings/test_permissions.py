@@ -8,11 +8,11 @@ from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from src.organisations.models import Organisation
-from src.projects.models import Project
+from organisations.models import Organisation
+from projects.models import Project
 
-from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
-from src.settings.permissions import (
+from settings.models import FeatureFlag, ScopeType, Setting, SettingType
+from settings.permissions import (
     ScopeAwarePermission,
     can_access_flag,
     can_create_flag,

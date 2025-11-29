@@ -10,8 +10,8 @@ from django.contrib.admin import site
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 
-from src.settings.admin import FeatureFlagAdmin, SettingAdmin
-from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
+from settings.admin import FeatureFlagAdmin, SettingAdmin
+from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
 

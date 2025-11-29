@@ -2,8 +2,8 @@
 
 import pytest
 from django.urls import reverse
-from src.organisations.models import Membership
-from src.projects.api.permissions import IsOrganisationMemberOrAdmin
+from organisations.models import Membership
+from projects.api.permissions import IsOrganisationMemberOrAdmin
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
 

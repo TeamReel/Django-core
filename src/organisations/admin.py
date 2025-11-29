@@ -7,7 +7,7 @@ Provides:
 """
 
 from django.contrib import admin
-from src.projects.admin import ProjectInline
+from projects.admin import ProjectInline
 
 from .models import Membership, Organisation
 

@@ -7,7 +7,7 @@ class SettingsConfig(AppConfig):
     """Configuration for the settings app."""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "src.settings"
+    name = "settings"
     verbose_name = "Settings & Feature Flags"
 
     def ready(self):
@@ -18,9 +18,9 @@ class SettingsConfig(AppConfig):
         FeatureFlag and Setting CRUD operations.
         """
         # Import signals module to connect handlers (T052)
-        import src.settings.signals  # noqa: F401
+        import settings.signals  # noqa: F401
 
         # Register audit event types with B09 audit system (T051)
-        from src.settings.signals import register_audit_events
+        from settings.signals import register_audit_events
 
         register_audit_events()

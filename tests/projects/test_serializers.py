@@ -2,12 +2,12 @@
 
 import pytest
 from django.contrib.auth import get_user_model
-from src.projects.api.serializers import (
+from projects.api.serializers import (
     ProjectDetailSerializer,
     ProjectListSerializer,
     ProjectUpdateSerializer,
 )
-from src.projects.models import Project
+from projects.models import Project
 from rest_framework.test import APIRequestFactory
 
 User = get_user_model()

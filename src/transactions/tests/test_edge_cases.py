@@ -15,17 +15,17 @@ from decimal import Decimal
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from src.organisations.models import Organisation
-from src.projects.models import Project
+from organisations.models import Organisation
+from projects.models import Project
 
-from src.transactions.exceptions import DuplicateIdempotencyKeyError, InsufficientBalanceError
-from src.transactions.models import (
+from transactions.exceptions import DuplicateIdempotencyKeyError, InsufficientBalanceError
+from transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,
     SourceTypeChoices,
     Transaction,
 )
-from src.transactions.services import (
+from transactions.services import (
     create_transaction,
     get_organization_balance,
     record_usage_event,

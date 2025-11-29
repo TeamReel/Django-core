@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from django.core.management.base import BaseCommand
 
-from src.audit.registry import EventTypeMetadata, list_event_types
+from audit.registry import EventTypeMetadata, list_event_types
 
 
 class Command(BaseCommand):

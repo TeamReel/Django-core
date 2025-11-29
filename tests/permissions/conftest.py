@@ -2,9 +2,9 @@
 
 import pytest
 from django.contrib.auth import get_user_model
-from src.organisations.models import Organisation
+from organisations.models import Organisation
 from permissions.models import Permission, Role
-from src.projects.models import Project
+from projects.models import Project
 
 User = get_user_model()
 

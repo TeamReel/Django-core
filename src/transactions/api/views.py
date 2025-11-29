@@ -12,13 +12,13 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from src.transactions.exceptions import (
+from transactions.exceptions import (
     DuplicateIdempotencyKeyError,
     InsufficientBalanceError,
     PolicyViolationError,
 )
-from src.transactions.models import BalancePolicy, Transaction, UsageEvent
-from src.transactions.services import get_organization_balance, get_policy, get_project_balance
+from transactions.models import BalancePolicy, Transaction, UsageEvent
+from transactions.services import get_organization_balance, get_policy, get_project_balance
 
 from .filters import TransactionFilter, UsageEventFilter
 from .serializers import (

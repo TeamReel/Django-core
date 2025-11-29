@@ -6,11 +6,11 @@ Tests Django REST Framework serializers validation and data handling.
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from src.organisations.models import Organisation
-from src.projects.models import Project
+from organisations.models import Organisation
+from projects.models import Project
 
-from src.settings.models import FeatureFlag, ScopeType, Setting, SettingType
-from src.settings.serializers import (
+from settings.models import FeatureFlag, ScopeType, Setting, SettingType
+from settings.serializers import (
     FeatureFlagResolveSerializer,
     FeatureFlagSerializer,
     SettingResolveSerializer,

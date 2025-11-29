@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from src.settings.models import Setting, ScopeType
+from settings.models import Setting, ScopeType
 from ...validators import validate_language_code, validate_timezone
 
 User = get_user_model()

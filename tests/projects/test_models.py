@@ -4,7 +4,7 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.utils import timezone
-from src.projects.models import Project
+from projects.models import Project
 
 
 @pytest.mark.django_db

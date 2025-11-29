@@ -7,7 +7,7 @@ from datetime import timedelta
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
-from src.audit.models import AuditEvent
+from audit.models import AuditEvent
 
 
 class Command(BaseCommand):
