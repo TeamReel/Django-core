@@ -92,3 +92,4 @@ REST_FRAMEWORK = {
 ## Activity Log
 
 - 2025-11-29T18:16:16Z – copilot – shell_pid=11588 – lane=doing – Started WP03: Response Envelope System implementation
+- 2025-11-29T19:30:00Z – copilot – shell_pid=11588 – lane=doing – Completed all 8 subtasks: EnvelopeJSONRenderer with success/error envelopes, envelope_exception_handler with error code mapping and sanitization, REST_FRAMEWORK configuration updated, timestamp meta field added. Commit 12a47d6.
