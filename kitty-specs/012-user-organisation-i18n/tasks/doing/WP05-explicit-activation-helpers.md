@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "copilot"
+shell_pid: "17932"
+---
 # Work Package 05: Explicit Activation Helpers
 
 **Status**: 📋 Planned
@@ -363,3 +368,7 @@ def generate_user_pdf(request, user_id):
 - Context manager restores locale after exception
 - Nested context managers work correctly
 - Background job using helper renders correct locale
+
+## Activity Log
+
+- 2025-11-29T11:45:00Z – copilot – shell_pid=17932 – lane=doing – Started implementation: Explicit activation helpers for background jobs/API
