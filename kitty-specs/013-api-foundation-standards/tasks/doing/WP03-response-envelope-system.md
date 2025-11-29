@@ -1,8 +1,10 @@
 ---
 work_package_id: WP03
 title: Response Envelope System
-lane: planned
+lane: "doing"
 subtasks: [T018, T019, T020, T021, T022, T023, T024, T025]
+agent: "copilot"
+shell_pid: "11588"
 history:
   - date: 2025-11-29
     action: created
@@ -86,3 +88,7 @@ REST_FRAMEWORK = {
 - [ ] Validation errors include field-level details
 
 **Estimated Effort**: 4-6 hours
+
+## Activity Log
+
+- 2025-11-29T18:16:16Z – copilot – shell_pid=11588 – lane=doing – Started WP03: Response Envelope System implementation
