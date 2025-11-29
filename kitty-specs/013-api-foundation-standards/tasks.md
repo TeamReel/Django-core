@@ -36,19 +36,20 @@ tasks/
 
 ### WP01: API Infrastructure Setup
 **Priority**: P1 (Critical Path)
-**Prompt**: [tasks/planned/WP01-api-infrastructure-setup.md](tasks/planned/WP01-api-infrastructure-setup.md)
+**Prompt**: [tasks/done/WP01-api-infrastructure-setup.md](tasks/done/WP01-api-infrastructure-setup.md)
 **Goal**: Create `src/api/` Django app with base classes and global configuration
+**Status**: ✅ **COMPLETE** (Reviewed and approved 2025-11-29)
 
 **Subtasks**:
-- [ ] T001: Create `src/api/` Django app structure (apps.py, __init__.py)
-- [ ] T002: Add djangorestframework-simplejwt==5.3.1 to requirements/base.txt
-- [ ] T003: Add drf-spectacular==0.27.0 to requirements/base.txt
-- [ ] T004: Update INSTALLED_APPS in settings/base.py (api, rest_framework_simplejwt.token_blacklist, drf_spectacular)
-- [ ] T005: Configure SIMPLE_JWT settings (15min access, 7 day refresh, rotation, blacklist)
-- [ ] T006: Run migrations for simplejwt blacklist tables
-- [ ] T007: Create BaseAPIViewSet in api/views.py with permission integration hooks
-- [ ] T008: Create BaseSerializer in api/serializers.py with timestamp/meta field patterns
-- [ ] T009: Create BaseAPIPagination in api/pagination.py (offset-based, default 20, max 100)
+- [x] T001: Create `src/api/` Django app structure (apps.py, __init__.py)
+- [x] T002: Add djangorestframework-simplejwt==5.3.1 to requirements/base.txt
+- [x] T003: Add drf-spectacular==0.27.0 to requirements/base.txt
+- [x] T004: Update INSTALLED_APPS in settings/base.py (api, rest_framework_simplejwt.token_blacklist, drf_spectacular)
+- [x] T005: Configure SIMPLE_JWT settings (15min access, 7 day refresh, rotation, blacklist)
+- [x] T006: Run migrations for simplejwt blacklist tables
+- [x] T007: Create BaseAPIViewSet in api/views.py with permission integration hooks
+- [x] T008: Create BaseSerializer in api/serializers.py with timestamp/meta field patterns
+- [x] T009: Create BaseAPIPagination in api/pagination.py (offset-based, default 20, max 100)
 
 **Implementation Sketch**:
 1. Create Django app: `python manage.py startapp api src/api`
