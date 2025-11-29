@@ -114,18 +114,19 @@ tasks/
 
 ### WP03: Response Envelope System
 **Priority**: P1 (User Story 2)
-**Prompt**: [tasks/planned/WP03-response-envelope-system.md](tasks/planned/WP03-response-envelope-system.md)
-**Goal**: Implement global response envelope with consistent error handling
+**Prompt**: [tasks/done/WP03-response-envelope-system.md](tasks/done/WP03-response-envelope-system.md)
+**Goal**: Implement global response envelope with consistent success/error formatting and sanitized error handling
+**Status**: ✅ **COMPLETE** (Reviewed and approved 2025-11-29)
 
 **Subtasks**:
-- [ ] T018: Create EnvelopeJSONRenderer in api/renderers.py
-- [ ] T019: Implement success envelope format ({"status": "success", "data": ..., "meta": ...})
-- [ ] T020: Create envelope_exception_handler in api/exceptions.py
-- [ ] T021: Implement error envelope format ({"status": "error", "error": {...}})
-- [ ] T022: Map HTTP status codes to error codes (401→not_authenticated, 403→permission_denied, etc.)
-- [ ] T023: Sanitize error responses (remove stack traces, database errors per FR-010)
-- [ ] T024: Configure DEFAULT_RENDERER_CLASSES and EXCEPTION_HANDLER in settings
-- [ ] T025: Add timestamp to meta field for all responses
+- [x] T018: Create EnvelopeJSONRenderer in api/renderers.py
+- [x] T019: Implement success envelope format ({"status": "success", "data": ..., "meta": ...})
+- [x] T020: Create envelope_exception_handler in api/exceptions.py
+- [x] T021: Implement error envelope format ({"status": "error", "error": {...}})
+- [x] T022: Map HTTP status codes to error codes (401→not_authenticated, 403→permission_denied, etc.)
+- [x] T023: Sanitize error responses (remove stack traces, database errors per FR-010)
+- [x] T024: Configure DEFAULT_RENDERER_CLASSES and EXCEPTION_HANDLER in settings
+- [x] T025: Add timestamp to meta field for all responses
 
 **Implementation Sketch**:
 1. Create EnvelopeJSONRenderer extending DRF's JSONRenderer
