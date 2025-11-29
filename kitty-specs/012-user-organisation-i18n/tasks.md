@@ -27,7 +27,7 @@ This feature extends Django's i18n layer to support user and organisation-specif
 | WP01 | Extend B10 with USER Scope | P0 (Critical) | None | T001-T008 | ✅ Done |
 | WP02 | Core Preference Resolution | P0 (Critical) | WP01 | T009-T015 | ✅ Done |
 | WP03 | Middleware Integration | P1 (High) | WP02 | T016-T021 | 📋 Planned |
-| WP04 | API Endpoints | P1 (High) | WP02 | T022-T030 | 📋 Planned |
+| WP04 | API Endpoints | P1 (High) | WP02 | T022-T030 | ✅ Done |
 | WP05 | Explicit Activation Helpers | P2 (Medium) | WP02 | T031-T035 | 📋 Planned |
 | WP06 | Migration & Documentation | P2 (Medium) | WP02-WP04 | T036-T041 | 📋 Planned |
 
@@ -177,25 +177,25 @@ This feature extends Django's i18n layer to support user and organisation-specif
 
 ## Phase 2: API & User Interface
 
-### WP04: API Endpoints
+### WP04: API Endpoints ✅ COMPLETE
 **Owner**: Feature developer
 **Priority**: P1 (High - enables preference management via API)
 **Location**: `src/i18n_preferences/views.py`, `serializers.py`, `urls.py`
 **Dependencies**: WP02 (requires preference resolution service)
-**Prompt**: [`tasks/planned/WP04-api-endpoints.md`](tasks/planned/WP04-api-endpoints.md)
+**Prompt**: [`tasks/done/WP04-api-endpoints.md`](tasks/done/WP04-api-endpoints.md)
 
 **Objective**: Implement DRF API endpoints for viewing/updating user/org preferences and querying effective preferences with source attribution.
 
 **Included Subtasks**:
-- [ ] T022: Create `PreferenceSerializer` with validation for language/locale/timezone codes
-- [ ] T023: Implement `GET /api/v1/preferences/me/` (get current user's preferences)
-- [ ] T024: Implement `PATCH /api/v1/preferences/me/` (update current user's preferences)
-- [ ] T025: Implement `GET /api/v1/preferences/effective/` (get resolved effective preferences)
-- [ ] T026: Implement `GET /api/v1/organisations/{id}/preferences/` (get org defaults, admin only)
-- [ ] T027: Implement `PATCH /api/v1/organisations/{id}/preferences/` (update org defaults, admin only)
-- [ ] T028: Add permission classes (self for `/me/`, org admin for org endpoints via B08)
-- [ ] T029: Register URLs in `i18n_preferences/urls.py`, include in main `urls.py`
-- [ ] T030: Write API integration tests (12 test cases: CRUD operations, permissions, validation errors)
+- [x] T022: Create `PreferenceSerializer` with validation for language/locale/timezone codes
+- [x] T023: Implement `GET /api/v1/preferences/me/` (get current user's preferences)
+- [x] T024: Implement `PATCH /api/v1/preferences/me/` (update current user's preferences)
+- [x] T025: Implement `GET /api/v1/preferences/effective/` (get resolved effective preferences)
+- [x] T026: Implement `GET /api/v1/organisations/{id}/preferences/` (get org defaults, admin only)
+- [x] T027: Implement `PATCH /api/v1/organisations/{id}/preferences/` (update org defaults, admin only)
+- [x] T028: Add permission classes (self for `/me/`, org admin for org endpoints via B08)
+- [x] T029: Register URLs in `i18n_preferences/urls.py`, include in main `urls.py`
+- [x] T030: Write API integration tests (12 test cases: CRUD operations, permissions, validation errors)
 
 **Implementation Sketch**:
 1. Create DRF serializers with field-level validation (language in `settings.LANGUAGES`, timezone in `pytz.all_timezones`)
