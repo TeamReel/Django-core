@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "copilot"
 shell_pid: "17932"
 ---
@@ -362,3 +362,4 @@ LOGGING = {
 ## Activity Log
 
 - 2025-11-29T10:53:56Z – copilot – shell_pid=17932 – lane=doing – Started middleware implementation
+- 2025-11-29T10:59:45Z – copilot – shell_pid=17932 – lane=for_review – Ready for review: 11/11 tests passing
