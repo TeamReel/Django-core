@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "copilot"
 shell_pid: "17932"
 ---
@@ -451,3 +451,4 @@ class UserPreferenceAPITest(APITestCase):
 ## Activity Log
 
 - 2025-11-29T11:07:45Z – copilot – shell_pid=17932 – lane=doing – Started API endpoints implementation
+- 2025-11-29T11:39:36Z – copilot – shell_pid=17932 – lane=for_review – Ready for review: 12/12 tests passing, all endpoints implemented
