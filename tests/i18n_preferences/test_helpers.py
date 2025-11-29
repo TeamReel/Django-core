@@ -3,17 +3,18 @@
 import pytest
 import pytz
 from django.contrib.auth import get_user_model
-from django.utils import translation, timezone
-from organisations.models import Organisation
-from src.settings.models import Setting, ScopeType
+from django.utils import timezone, translation
 from i18n_preferences.helpers import (
-    activate_user_locale,
     activate_org_locale,
-    user_locale_context,
-    org_locale_context,
-    activate_user_locale_safe,
     activate_org_locale_safe,
+    activate_user_locale,
+    activate_user_locale_safe,
+    org_locale_context,
+    user_locale_context,
 )
+from organisations.models import Organisation
+
+from src.settings.models import ScopeType, Setting
 
 User = get_user_model()
 

@@ -2,11 +2,13 @@
 
 import logging
 from contextlib import contextmanager
+
+import pytz
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.utils import translation, timezone
-import pytz
+from django.utils import timezone, translation
 from organisations.models import Organisation
+
 from .services import PreferenceResolutionService
 
 logger = logging.getLogger(__name__)
