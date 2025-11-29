@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "src.audit.apps.AuditConfig",  # Audit logging system
     "src.settings.apps.SettingsConfig",  # Settings & Feature Flags (B10)
     "src.transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
+    "src.i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
 ]
 
 MIDDLEWARE = [
