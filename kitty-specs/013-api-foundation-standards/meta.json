@@ -1,7 +1,21 @@
 {
-    "feature_number":  "013",
-    "slug":  "013-api-foundation-standards",
-    "friendly_name":  "API Foundation \u0026 Standards",
-    "source_description":  "Define a DRF-based API baseline with consistent authentication, pagination, error handling and versioning, exposing core entities in a stable way.",
-    "created_at":  "2025-11-29T16:38:44Z"
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-11-29T19:06:45Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "c53ed5f6b6b50da57312789b7865e179a49af895",
+      "branch": "013-api-foundation-standards",
+      "mode": "pr"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-11-29T19:06:45Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "c53ed5f6b6b50da57312789b7865e179a49af895",
+  "created_at": "2025-11-29T16:38:44Z",
+  "feature_number": "013",
+  "friendly_name": "API Foundation & Standards",
+  "slug": "013-api-foundation-standards",
+  "source_description": "Define a DRF-based API baseline with consistent authentication, pagination, error handling and versioning, exposing core entities in a stable way."
 }
