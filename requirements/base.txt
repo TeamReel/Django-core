@@ -7,6 +7,12 @@ Django==5.1.4
 # Django REST Framework for API development
 djangorestframework==3.14.0
 
+# JWT authentication for API (Feature 013)
+djangorestframework-simplejwt==5.3.1
+
+# OpenAPI documentation generation (Feature 013)
+drf-spectacular==0.27.0
+
 # Django Redis for caching and rate limiting
 django-redis==5.4.0
 

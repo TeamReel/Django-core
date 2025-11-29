@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
@@ -32,6 +33,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party apps
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",  # B13: JWT token blacklist
+    "drf_spectacular",  # B13: OpenAPI documentation
     # Core-App modules
     "constitution_engine",
     "security_baseline",
@@ -42,6 +45,7 @@ INSTALLED_APPS = [
     "settings.apps.SettingsConfig",  # Settings & Feature Flags (B10)
     "transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
+    "api",  # B13: API Foundation & Standards
 ]
 
 MIDDLEWARE = [
@@ -191,13 +195,61 @@ ENVIRONMENT = os.getenv("DJANGO_ENV", "local")
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
+        "api.authentication.CustomJWTAuthentication",  # B13: JWT with inactive user check (FR-005a)
+        "rest_framework.authentication.SessionAuthentication",  # B13: Fallback for web clients
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_RENDERER_CLASSES": [
+        "api.renderers.EnvelopeJSONRenderer",  # B13 WP03: Consistent response envelope
+    ],
+    "EXCEPTION_HANDLER": "api.exceptions.envelope_exception_handler",  # B13 WP03: Consistent error handling
+    "DEFAULT_PAGINATION_CLASS": "api.pagination.BaseAPIPagination",  # B13 WP04: Pagination with metadata
+    "DEFAULT_THROTTLE_CLASSES": [  # B13 WP04: Rate limiting (FR-020, FR-021)
+        "api.throttling.AuthenticatedUserThrottle",  # 100/min for authenticated
+        "api.throttling.AnonymousUserThrottle",  # 10/min for anonymous
+    ],
     "PAGE_SIZE": 50,
+}
+
+# B13: JWT Authentication Configuration (djangorestframework-simplejwt)
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # Short-lived for security
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Allow persistent sessions
+    "ROTATE_REFRESH_TOKENS": True,  # Generate new refresh on each refresh
+    "BLACKLIST_AFTER_ROTATION": True,  # Invalidate old refresh tokens
+    "ALGORITHM": "HS256",  # Standard HMAC SHA-256
+    "SIGNING_KEY": SECRET_KEY,  # Use Django's secret key
+    "AUTH_HEADER_TYPES": ("Bearer",),  # Authorization: Bearer <token>
+    "USER_ID_FIELD": "id",  # B05 User model uses 'id'
+    "USER_ID_CLAIM": "user_id",  # JWT payload field name
+}
+
+# B13 WP06: OpenAPI Documentation Configuration (drf-spectacular)
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Django Core API",
+    "DESCRIPTION": "Product-agnostic Django core application API",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,  # Don't serve schema at /api/schema/ unless explicitly requested
+    "SCHEMA_PATH_PREFIX": r"/api/v1",  # Only document versioned APIs
+    "COMPONENT_SPLIT_REQUEST": True,  # Separate request/response schemas
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,  # Enable deep linking for operations and tags
+        "persistAuthorization": True,  # Persist authorization data in localStorage
+        "displayOperationId": False,  # Hide operation IDs for cleaner UI
+    },
+    "AUTHENTICATION_WHITELIST": [],  # Disable auto-detection, use manual SecurityScheme
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+        }
+    },
+    "SECURITY": [{"BearerAuth": []}],  # Apply JWT auth globally
 }
 
 # Email Configuration

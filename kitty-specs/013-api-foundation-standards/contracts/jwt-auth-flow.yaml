@@ -1,0 +1,400 @@
+openapi: 3.0.3
+info:
+  title: JWT Authentication API
+  description: |
+    JWT (JSON Web Token) authentication endpoints for obtaining, refreshing, and verifying access tokens.
+
+    **Token Lifecycle**:
+    1. Obtain access + refresh tokens via `/token/` (login)
+    2. Use access token in `Authorization: Bearer <token>` header for API requests
+    3. Refresh access token via `/token/refresh/` before it expires (15min lifetime)
+    4. Blacklist refresh token via `/logout/` (logout)
+
+    **Token Lifetimes**:
+    - Access token: 15 minutes
+    - Refresh token: 7 days
+
+    **Refresh Token Rotation**:
+    - Each refresh operation invalidates the old refresh token and issues a new one
+    - This prevents refresh token reuse after compromise
+  version: 1.0.0
+
+servers:
+  - url: https://api.example.com/api/v1
+    description: Production API
+  - url: http://localhost:8000/api/v1
+    description: Local development
+
+paths:
+  /auth/token/:
+    post:
+      operationId: obtainJWTToken
+      summary: Obtain JWT tokens (Login)
+      description: |
+        Authenticate with username/password and receive access + refresh tokens.
+        Both tokens are returned in the response envelope under `data`.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: User's username or email
+                  example: john.doe
+                password:
+                  type: string
+                  format: password
+                  description: User's password
+                  example: SecureP@ssw0rd
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  data:
+                    type: object
+                    required:
+                      - access
+                      - refresh
+                    properties:
+                      access:
+                        type: string
+                        description: JWT access token (15min lifetime)
+                        example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzMyODkyNDAwLCJpYXQiOjE3MzI4OTE1MDAsImp0aSI6ImExYjJjM2Q0IiwidXNlcl9pZCI6MTIzfQ.signature
+                      refresh:
+                        type: string
+                        description: JWT refresh token (7 day lifetime)
+                        example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTczMzQ5NjMwMCwiaWF0IjoxNzMyODkxNTAwLCJqdGkiOiJlNWY2Nzg5MCIsInVzZXJfaWQiOjEyM30.signature
+              examples:
+                successful_login:
+                  summary: Successful login
+                  value:
+                    status: success
+                    data:
+                      access: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+                      refresh: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_credentials:
+                  summary: Invalid credentials
+                  value:
+                    status: error
+                    error:
+                      code: authentication_failed
+                      message: Invalid username or password
+        '403':
+          description: User account inactive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                inactive_user:
+                  summary: Inactive user account
+                  value:
+                    status: error
+                    error:
+                      code: user_inactive
+                      message: Your account is inactive. Please contact support.
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /auth/token/refresh/:
+    post:
+      operationId: refreshJWTToken
+      summary: Refresh JWT access token
+      description: |
+        Use a valid refresh token to obtain a new access token.
+        With token rotation enabled, this also returns a new refresh token and blacklists the old one.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh
+              properties:
+                refresh:
+                  type: string
+                  description: Current refresh token
+                  example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+      responses:
+        '200':
+          description: Successfully refreshed token
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  data:
+                    type: object
+                    required:
+                      - access
+                    properties:
+                      access:
+                        type: string
+                        description: New JWT access token
+                      refresh:
+                        type: string
+                        description: New refresh token (only if rotation enabled)
+              examples:
+                with_rotation:
+                  summary: Token refresh with rotation
+                  value:
+                    status: success
+                    data:
+                      access: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.new_access...
+                      refresh: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.new_refresh...
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                expired_token:
+                  summary: Expired refresh token
+                  value:
+                    status: error
+                    error:
+                      code: token_expired
+                      message: Refresh token has expired. Please log in again.
+                blacklisted_token:
+                  summary: Blacklisted refresh token
+                  value:
+                    status: error
+                    error:
+                      code: token_blacklisted
+                      message: This token has been revoked.
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /auth/token/verify/:
+    post:
+      operationId: verifyJWTToken
+      summary: Verify JWT token validity
+      description: |
+        Check if a JWT token is valid (not expired, not blacklisted).
+        Useful for debugging or pre-flight checks.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+              properties:
+                token:
+                  type: string
+                  description: JWT token to verify (access or refresh)
+                  example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  data:
+                    type: object
+                    nullable: true
+              examples:
+                valid_token:
+                  summary: Valid token
+                  value:
+                    status: success
+                    data: null
+        '401':
+          description: Token is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_token:
+                  summary: Invalid or expired token
+                  value:
+                    status: error
+                    error:
+                      code: token_expired
+                      message: Token is invalid or has expired
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /auth/logout/:
+    post:
+      operationId: logoutUser
+      summary: Logout (Blacklist refresh token)
+      description: |
+        Blacklist the provided refresh token to prevent further use.
+        The access token will remain valid until it expires (15min).
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh
+              properties:
+                refresh:
+                  type: string
+                  description: Refresh token to blacklist
+                  example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  data:
+                    type: object
+                    nullable: true
+              examples:
+                successful_logout:
+                  summary: Successful logout
+                  value:
+                    status: success
+                    data: null
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT access token obtained via `/auth/token/` endpoint.
+        Include in requests as: `Authorization: Bearer <access_token>`
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - status
+        - error
+      properties:
+        status:
+          type: string
+          enum: [error]
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+            message:
+              type: string
+              description: Human-readable error message
+            details:
+              description: Additional error context
+              oneOf:
+                - type: object
+                - type: array
+                - type: string
+
+  responses:
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Total requests allowed in window
+          example: 100
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Requests remaining in current window
+          example: 0
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when rate limit resets
+          example: 1732892460
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until client can retry
+          example: 23
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            error:
+              code: rate_limit_exceeded
+              message: Request limit exceeded. Please try again later.
+              details:
+                limit: 100
+                window: 1 minute
+                retry_after: 23
+
+tags:
+  - name: Authentication
+    description: JWT token management (login, refresh, verify, logout)

@@ -1,0 +1,74 @@
+from rest_framework.throttling import SimpleRateThrottle
+
+
+class AuthenticatedUserThrottle(SimpleRateThrottle):
+    """
+    Rate limiter for authenticated users: 100 requests per minute.
+
+    Uses Redis key: throttle:auth:{user_id}
+    Returns 429 Too Many Requests when limit exceeded.
+
+    Headers injected:
+    - X-RateLimit-Limit: 100
+    - X-RateLimit-Remaining: (count)
+    - X-RateLimit-Reset: (timestamp)
+
+    Usage:
+        Configure globally in REST_FRAMEWORK settings:
+        "DEFAULT_THROTTLE_CLASSES": ["api.throttling.AuthenticatedUserThrottle"]
+    """
+
+    scope = "authenticated"
+
+    def get_cache_key(self, request, view):
+        """
+        Generate cache key for authenticated users.
+        Returns None for unauthenticated (skips this throttle).
+        """
+        if request.user and request.user.is_authenticated:
+            return f"throttle_auth_{request.user.id}"
+        return None  # Skip throttle for unauthenticated
+
+    def get_rate(self):
+        """
+        Return rate limit for authenticated users.
+        """
+        return "100/min"  # FR-020: 100 requests per minute
+
+
+class AnonymousUserThrottle(SimpleRateThrottle):
+    """
+    Rate limiter for anonymous users: 10 requests per minute per IP.
+
+    Uses Redis key: throttle:anon:{ip_address}
+    Returns 429 Too Many Requests when limit exceeded.
+
+    Headers injected:
+    - X-RateLimit-Limit: 10
+    - X-RateLimit-Remaining: (count)
+    - X-RateLimit-Reset: (timestamp)
+
+    Usage:
+        Configure globally in REST_FRAMEWORK settings:
+        "DEFAULT_THROTTLE_CLASSES": ["api.throttling.AnonymousUserThrottle"]
+    """
+
+    scope = "anonymous"
+
+    def get_cache_key(self, request, view):
+        """
+        Generate cache key for anonymous users using IP address.
+        Returns None for authenticated users (skips this throttle).
+        """
+        if request.user and request.user.is_authenticated:
+            return None  # Skip throttle for authenticated users
+
+        # Use IP address for anonymous rate limiting
+        ident = self.get_ident(request)
+        return f"throttle_anon_{ident}"
+
+    def get_rate(self):
+        """
+        Return rate limit for anonymous users.
+        """
+        return "10/min"  # FR-021: 10 requests per minute

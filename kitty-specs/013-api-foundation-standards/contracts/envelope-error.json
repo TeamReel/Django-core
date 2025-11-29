@@ -1,0 +1,146 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Error Response Envelope",
+  "description": "Standard error response format for all API endpoints",
+  "type": "object",
+  "required": ["status", "error"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["error"],
+      "description": "Response status indicator"
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Machine-readable error code",
+          "enum": [
+            "validation_error",
+            "authentication_failed",
+            "not_authenticated",
+            "permission_denied",
+            "not_found",
+            "method_not_allowed",
+            "rate_limit_exceeded",
+            "server_error",
+            "token_expired",
+            "token_blacklisted",
+            "user_inactive"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "details": {
+          "description": "Additional error context (field-level validation errors, etc.)",
+          "oneOf": [
+            {"type": "object"},
+            {"type": "array"},
+            {"type": "string"}
+          ]
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Optional error trace ID for support/logging correlation"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "description": "Validation error (400)",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "validation_error",
+          "message": "Invalid input data",
+          "details": {
+            "name": ["This field is required."],
+            "email": ["Enter a valid email address."]
+          }
+        }
+      }
+    },
+    {
+      "description": "Authentication failed (401)",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "authentication_failed",
+          "message": "Invalid credentials provided"
+        }
+      }
+    },
+    {
+      "description": "Token expired (401)",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "token_expired",
+          "message": "Access token has expired. Please refresh."
+        }
+      }
+    },
+    {
+      "description": "Permission denied (403)",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "permission_denied",
+          "message": "You do not have permission to perform this action."
+        }
+      }
+    },
+    {
+      "description": "Inactive user (403)",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "user_inactive",
+          "message": "Your account is inactive. Please contact support."
+        }
+      }
+    },
+    {
+      "description": "Not found (404)",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "not_found",
+          "message": "The requested resource was not found."
+        }
+      }
+    },
+    {
+      "description": "Rate limit exceeded (429)",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "rate_limit_exceeded",
+          "message": "Request limit exceeded. Please try again later.",
+          "details": {
+            "limit": 100,
+            "window": "1 minute",
+            "retry_after": 23
+          }
+        }
+      }
+    },
+    {
+      "description": "Server error (500)",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "server_error",
+          "message": "An unexpected error occurred. Please try again later.",
+          "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        }
+      }
+    }
+  ]
+}

@@ -18,17 +18,24 @@ Including another URLconf
 from common.health import health_check
 from django.contrib import admin
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
     path("health/", health_check, name="health_check"),
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
-    path("api/v1/", include("accounts.api.urls")),
-    path("api/organisations/", include("organisations.api.urls")),
-    # Projects API - top-level routes
-    path("api/", include("projects.api.urls")),
-    # Permissions API
-    path("api/permissions/", include("permissions.api.urls")),
+    # B13 WP06: OpenAPI Documentation
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    # B13: API Foundation & Standards - v1 API (consolidated)
+    path(
+        "api/v1/", include("api.v1.urls")
+    ),  # All v1 APIs: auth, users, orgs, projects, permissions
+    # Legacy non-versioned URLs removed (WP05) - all APIs now under /api/v1/
     # Transactions API
     path("api/v1/", include("transactions.api.urls")),
     # Settings & Feature Flags API
