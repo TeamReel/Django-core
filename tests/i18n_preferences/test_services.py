@@ -3,7 +3,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 
-from organisations.models import Organisation
+from src.organisations.models import Organisation
 from src.i18n_preferences.services import (
     EffectivePreferences,
     PreferenceResolutionService,

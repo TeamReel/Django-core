@@ -12,7 +12,7 @@ from i18n_preferences.helpers import (
     org_locale_context,
     user_locale_context,
 )
-from organisations.models import Organisation
+from src.organisations.models import Organisation
 
 from src.settings.models import ScopeType, Setting
 

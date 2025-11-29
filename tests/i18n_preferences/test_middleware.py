@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone, translation
 
-from organisations.models import Organisation
+from src.organisations.models import Organisation
 from src.settings.models import Setting, SettingType, ScopeType
 from i18n_preferences.middleware import PreferenceLocaleMiddleware, PreferenceTimezoneMiddleware
 

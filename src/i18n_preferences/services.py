@@ -6,7 +6,7 @@ from typing import Literal, Optional
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
-from organisations.models import Organisation
+from src.organisations.models import Organisation
 from src.settings.models import ScopeType, Setting
 
 User = get_user_model()
