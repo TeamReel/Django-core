@@ -1,5 +1,6 @@
 from typing import Any
 
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -71,6 +72,51 @@ class LogoutView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        operation_id="auth_logout",
+        summary="Logout and blacklist refresh token",
+        description=(
+            "Blacklists the provided JWT refresh token to prevent future use. "
+            "The access token will remain valid until it expires (15 minutes)."
+        ),
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "refresh": {
+                        "type": "string",
+                        "description": "JWT refresh token to blacklist",
+                    }
+                },
+                "required": ["refresh"],
+            }
+        },
+        responses={
+            200: {
+                "description": "Token successfully blacklisted",
+                "content": {
+                    "application/json": {
+                        "example": {"status": "success", "data": None}
+                    }
+                },
+            },
+            400: {
+                "description": "Invalid or missing token",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "status": "error",
+                            "error": {
+                                "code": "invalid_token",
+                                "message": "Invalid or expired refresh token",
+                            },
+                        }
+                    }
+                },
+            },
+        },
+        tags=["Authentication"],
+    )
     def post(self, request) -> Response:
         """
         Blacklist the provided refresh token to prevent future use.

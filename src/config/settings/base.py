@@ -226,6 +226,32 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",  # JWT payload field name
 }
 
+# B13 WP06: OpenAPI Documentation Configuration (drf-spectacular)
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Django Core API",
+    "DESCRIPTION": "Product-agnostic Django core application API",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,  # Don't serve schema at /api/schema/ unless explicitly requested
+    "SCHEMA_PATH_PREFIX": r"/api/v1",  # Only document versioned APIs
+    "COMPONENT_SPLIT_REQUEST": True,  # Separate request/response schemas
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,  # Enable deep linking for operations and tags
+        "persistAuthorization": True,  # Persist authorization data in localStorage
+        "displayOperationId": False,  # Hide operation IDs for cleaner UI
+    },
+    "AUTHENTICATION_WHITELIST": [],  # Disable auto-detection, use manual SecurityScheme
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+        }
+    },
+    "SECURITY": [{"BearerAuth": []}],  # Apply JWT auth globally
+}
+
 # Email Configuration
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Development default
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@example.com")

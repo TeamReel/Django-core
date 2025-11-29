@@ -18,11 +18,19 @@ Including another URLconf
 from common.health import health_check
 from django.contrib import admin
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
     path("health/", health_check, name="health_check"),
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
+    # B13 WP06: OpenAPI Documentation
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
     # B13: API Foundation & Standards - v1 API (consolidated)
     path(
         "api/v1/", include("api.v1.urls")
