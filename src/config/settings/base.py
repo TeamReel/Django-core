@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
@@ -32,6 +33,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party apps
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",  # B13: JWT token blacklist
+    "drf_spectacular",  # B13: OpenAPI documentation
     # Core-App modules
     "constitution_engine",
     "security_baseline",
@@ -42,6 +45,7 @@ INSTALLED_APPS = [
     "settings.apps.SettingsConfig",  # Settings & Feature Flags (B10)
     "transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
+    "api",  # B13: API Foundation & Standards
 ]
 
 MIDDLEWARE = [
@@ -198,6 +202,19 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
+}
+
+# B13: JWT Authentication Configuration (djangorestframework-simplejwt)
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # Short-lived for security
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Allow persistent sessions
+    "ROTATE_REFRESH_TOKENS": True,  # Generate new refresh on each refresh
+    "BLACKLIST_AFTER_ROTATION": True,  # Invalidate old refresh tokens
+    "ALGORITHM": "HS256",  # Standard HMAC SHA-256
+    "SIGNING_KEY": SECRET_KEY,  # Use Django's secret key
+    "AUTH_HEADER_TYPES": ("Bearer",),  # Authorization: Bearer <token>
+    "USER_ID_FIELD": "id",  # B05 User model uses 'id'
+    "USER_ID_CLAIM": "user_id",  # JWT payload field name
 }
 
 # Email Configuration
