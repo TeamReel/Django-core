@@ -28,7 +28,7 @@ This feature extends Django's i18n layer to support user and organisation-specif
 | WP02 | Core Preference Resolution | P0 (Critical) | WP01 | T009-T015 | ✅ Done |
 | WP03 | Middleware Integration | P1 (High) | WP02 | T016-T021 | 📋 Planned |
 | WP04 | API Endpoints | P1 (High) | WP02 | T022-T030 | ✅ Done |
-| WP05 | Explicit Activation Helpers | P2 (Medium) | WP02 | T031-T035 | 📋 Planned |
+| WP05 | Explicit Activation Helpers | P2 (Medium) | WP02 | T031-T035 | ✅ Done |
 | WP06 | Migration & Documentation | P2 (Medium) | WP02-WP04 | T036-T041 | 📋 Planned |
 
 **MVP Scope**: WP01 + WP02 + WP03 (Settings extension, resolution service, middleware) enables basic user preference functionality
@@ -223,21 +223,21 @@ This feature extends Django's i18n layer to support user and organisation-specif
 
 ---
 
-### WP05: Explicit Activation Helpers
+### WP05: Explicit Activation Helpers ✅ COMPLETE
 **Owner**: Feature developer
 **Priority**: P2 (Medium - enables correct locale handling in API/background jobs)
 **Location**: `src/i18n_preferences/helpers.py`
 **Dependencies**: WP02 (requires preference resolution service)
-**Prompt**: [`tasks/planned/WP05-explicit-activation-helpers.md`](tasks/planned/WP05-explicit-activation-helpers.md)
+**Prompt**: [`tasks/done/WP05-explicit-activation-helpers.md`](tasks/done/WP05-explicit-activation-helpers.md)
 
 **Objective**: Provide utility functions and context managers for explicitly activating user/org locale in API requests and background jobs where middleware doesn't apply.
 
 **Included Subtasks**:
-- [ ] T031: Implement `activate_user_locale(user_id)` function
-- [ ] T032: Implement `activate_org_locale(org_id)` function
-- [ ] T033: Create `user_locale_context(user_id)` context manager for Celery tasks
-- [ ] T034: Add error handling for non-existent users/orgs (graceful fallback to global)
-- [ ] T035: Write unit tests for activation helpers (5 test cases: valid user, missing user, context manager, error handling)
+- [x] T031: Implement `activate_user_locale(user_id)` function
+- [x] T032: Implement `activate_org_locale(org_id)` function
+- [x] T033: Create `user_locale_context(user_id)` context manager for Celery tasks
+- [x] T034: Add error handling for non-existent users/orgs (graceful fallback to global)
+- [x] T035: Write unit tests for activation helpers (5 test cases: valid user, missing user, context manager, error handling)
 
 **Implementation Sketch**:
 1. Create helper functions that resolve effective preferences and activate via Django APIs
