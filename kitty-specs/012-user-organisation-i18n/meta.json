@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "012",
+    "slug":  "012-user-organisation-i18n",
+    "friendly_name":  "User \u0026 Organisation i18n Preferences",
+    "source_description":  "Extend the base i18n layer to support user and organisation-specific language, locale and time zone preferences integrated with the settings system.",
+    "created_at":  "2025-11-29T07:27:41Z"
+}
