@@ -15,7 +15,7 @@ subtasks:
 title: "Django App Setup & Models"
 phase: "Phase 0 - Foundation"
 lane: "done"
-assignee: ""
+assignee: "claude-assistant"
 agent: "claude-reviewer"
 shell_pid: "17932"
 review_status: "approved with minor notes"

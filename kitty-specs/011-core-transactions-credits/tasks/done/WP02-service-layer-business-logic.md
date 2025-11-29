@@ -16,7 +16,7 @@ subtasks:
 title: "Service Layer & Business Logic"
 phase: "Phase 1 - Core Logic"
 lane: "done"
-assignee: ""
+assignee: "claude-assistant"
 agent: "claude-reviewer"
 shell_pid: "17932"
 review_status: "approved"

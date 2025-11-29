@@ -4,7 +4,7 @@ subtasks: ["T049", "T050", "T051", "T052", "T053", "T054", "T055", "T056"]
 title: "Management Commands & Cleanup"
 phase: "Phase 2 - Operations"
 lane: "done"
-assignee: ""
+assignee: "claude-assistant"
 agent: "claude-reviewer"
 shell_pid: "17932"
 review_status: "approved"

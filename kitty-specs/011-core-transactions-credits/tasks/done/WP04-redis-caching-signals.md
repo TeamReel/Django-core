@@ -4,7 +4,7 @@ subtasks: ["T040", "T041", "T042", "T043", "T044", "T045", "T046", "T047", "T048
 title: "Redis Caching & Signals"
 phase: "Phase 1 - Performance"
 lane: "done"
-assignee: ""
+assignee: "claude-assistant"
 agent: "claude-assistant"
 reviewed_by: "claude-assistant"
 shell_pid: "17932"

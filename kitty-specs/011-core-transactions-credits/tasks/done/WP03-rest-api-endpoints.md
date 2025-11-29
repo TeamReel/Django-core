@@ -4,8 +4,9 @@ subtasks: ["T024", "T025", "T026", "T027", "T028", "T029", "T030", "T031", "T032
 title: "REST API Endpoints"
 phase: "Phase 1 - API Layer"
 lane: "done"
-assignee: ""
+assignee: "claude-assistant"
 agent: "claude-assistant"
+shell_pid: "17932"
 reviewed_by: "claude-assistant"
 history:
   - timestamp: "2025-11-28T00:00:00Z"
@@ -23,6 +24,7 @@ history:
   - timestamp: "2025-11-28T20:15:00Z"
     lane: "done"
     agent: "claude-assistant"
+    shell_pid: "17932"
     action: "Code review complete - APPROVED. All requirements met, 23/23 API tests passing."
 review_status: "approved without changes"
 test_results:
