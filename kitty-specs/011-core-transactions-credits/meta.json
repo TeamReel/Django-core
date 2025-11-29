@@ -1,7 +1,24 @@
 {
-    "feature_number":  "011",
-    "slug":  "011-core-transactions-credits",
-    "friendly_name":  "Core Transactions \u0026 Credits Engine",
-    "source_description":  "Introduce a generic transaction and credits engine to track usage, balances and billable events at organisation and project level",
-    "created_at":  "2025-11-28T15:58:29Z"
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-11-29T07:18:11Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "14686bcd119bbc8b3a5ad3ad73d93aa71e28404a",
+      "branch": "011-core-transactions-credits",
+      "mode": "pr",
+      "validation_commands": [
+        "python -m pytest"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-11-29T07:18:11Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "14686bcd119bbc8b3a5ad3ad73d93aa71e28404a",
+  "created_at": "2025-11-28T15:58:29Z",
+  "feature_number": "011",
+  "friendly_name": "Core Transactions & Credits Engine",
+  "slug": "011-core-transactions-credits",
+  "source_description": "Introduce a generic transaction and credits engine to track usage, balances and billable events at organisation and project level"
 }
