@@ -57,12 +57,12 @@ This feature extends Django's i18n layer to support user and organisation-specif
 
 **Review Status**: ✅ Approved (2025-11-29, commit 3facc8a)
 **Test Coverage**: 17 test methods (170% of requirement)
-- [ ] T003: Update unique constraint to include `user` field
-- [ ] T004: Add composite indexes for user-scoped queries
-- [ ] T005: Extend `_resolve_scope_hierarchy()` in `settings/api.py` to support user scope precedence
-- [ ] T006: Update `SettingPermission` to allow users to manage own settings
-- [ ] T007: Create migration `0005_add_user_scope.py`
-- [ ] T008: Add unit tests for USER scope resolution (10 test cases)
+- [x] T003: Update unique constraint to include `user` field
+- [x] T004: Add composite indexes for user-scoped queries
+- [x] T005: Extend `_resolve_scope_hierarchy()` in `settings/api.py` to support user scope precedence
+- [x] T006: Update `SettingPermission` to allow users to manage own settings
+- [x] T007: Create migration `0005_add_user_scope.py`
+- [x] T008: Add unit tests for USER scope resolution (10 test cases)
 
 **Implementation Sketch**:
 1. Modify `ScopeType` enum, add `user` field with proper constraints
@@ -143,12 +143,12 @@ This feature extends Django's i18n layer to support user and organisation-specif
 **Objective**: Create custom middleware classes that extend Django's `LocaleMiddleware` and `TimezoneMiddleware` to automatically activate user/org preferences for authenticated web requests.
 
 **Included Subtasks**:
-- [ ] T016: Create `PreferenceLocaleMiddleware` extending Django's `LocaleMiddleware` (note: Django's LocaleMiddleware activates **language**, not formatting locale, despite the name)
-- [ ] T017: Create `PreferenceTimezoneMiddleware` extending Django's `TimezoneMiddleware`
-- [ ] T018: Override `process_request()` to inject preference resolution before Django's fallback chain
-- [ ] T019: Add graceful degradation for anonymous users (fall back to Django's standard resolution)
-- [ ] T020: Add DEBUG-level logging for locale activation events
-- [ ] T021: Write integration tests for middleware (10 test cases: authenticated/anonymous, full/partial preferences, fallback scenarios)
+- [x] T016: Create `PreferenceLocaleMiddleware` extending Django's `LocaleMiddleware` (note: Django's LocaleMiddleware activates **language**, not formatting locale, despite the name)
+- [x] T017: Create `PreferenceTimezoneMiddleware` extending Django's `TimezoneMiddleware`
+- [x] T018: Override `process_request()` to inject preference resolution before Django's fallback chain
+- [x] T019: Add graceful degradation for anonymous users (fall back to Django's standard resolution)
+- [x] T020: Add DEBUG-level logging for locale activation events
+- [x] T021: Write integration tests for middleware (10 test cases: authenticated/anonymous, full/partial preferences, fallback scenarios)
 
 **Implementation Sketch**:
 1. Subclass Django's built-in middleware, override `process_request()`
