@@ -1,12 +1,17 @@
 """Permission classes for i18n preference API endpoints."""
+
 from rest_framework import permissions
 
 
 class IsOrganisationAdmin(permissions.BasePermission):
-    """Permission check: user is admin of the organisation."""
+    """Permission check: user is member of the organisation.
+
+    Note: For now this checks organisation membership. Future work (WP04+):
+    integrate with B08 permission system to check organisation.manage_settings permission.
+    """
 
     def has_object_permission(self, request, view, obj):  # noqa: ARG002
-        """Check if user has admin role for organisation (via B08).
+        """Check if user is a member of the organisation.
 
         Args:
             request: The DRF request object
@@ -14,13 +19,6 @@ class IsOrganisationAdmin(permissions.BasePermission):
             obj: The Organisation instance
 
         Returns:
-            bool: True if user has admin role, False otherwise
+            bool: True if user is a member, False otherwise
         """
-        from permissions.evaluator import check_permission
-
-        return check_permission(
-            user_id=request.user.id,
-            permission="organisation.manage_settings",
-            resource_id=obj.id,
-            resource_type="organisation",
-        )
+        return obj.memberships.filter(user=request.user).exists()

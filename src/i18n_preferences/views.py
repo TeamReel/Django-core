@@ -1,4 +1,5 @@
 """API views for i18n preference management."""
+
 from rest_framework import views, status, generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -40,7 +41,7 @@ class UserPreferenceView(views.APIView):
             key="i18n.preferences",
             scope_type=ScopeType.USER,
             user=request.user,
-            defaults={"value": {}, "value_type": "JSON"},
+            defaults={"value": {}, "value_type": "JSON", "default_value": {}},
         )
 
         # Merge with existing values (partial update)
@@ -107,7 +108,7 @@ class OrganisationPreferenceView(views.APIView):
             key="i18n.preferences",
             scope_type=ScopeType.ORGANISATION,
             organisation=org,
-            defaults={"value": {}, "value_type": "JSON"},
+            defaults={"value": {}, "value_type": "JSON", "default_value": {}},
         )
 
         # Merge with existing values

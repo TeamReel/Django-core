@@ -1,4 +1,5 @@
 """URL routing for i18n preference API endpoints."""
+
 from django.urls import path
 from . import views
 
