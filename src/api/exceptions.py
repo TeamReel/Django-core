@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 
 from rest_framework import status
 from rest_framework.exceptions import (
-    APIException,
     AuthenticationFailed,
     NotAuthenticated,
     NotFound,
@@ -17,7 +16,8 @@ def envelope_exception_handler(exc, context):
     """
     Custom exception handler that wraps all errors in consistent envelope format.
 
-    Error envelope: {"status": "error", "error": {"code": "...", "message": "...", "details": {...}}}
+    Error envelope:
+    {"status": "error", "error": {"code": "...", "message": "...", "details": {...}}}
 
     Features:
     - Maps exception types to error codes
@@ -41,14 +41,19 @@ def envelope_exception_handler(exc, context):
             "status": "error",
             "error": {
                 "code": "server_error",
-                "message": "An internal server error occurred. Please contact support with error ID.",
+                "message": (
+                    "An internal server error occurred. " "Please contact support with error ID."
+                ),
                 "id": error_id,
             },
             "meta": {"timestamp": datetime.now(timezone.utc).isoformat()},
         }
 
         # Log the actual error for debugging (would be picked up by B09 audit logging)
-        # logger.error(f"Unhandled exception {error_id}: {exc}", exc_info=True)
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(f"Unhandled exception {error_id}: {exc}", exc_info=True)
 
         from rest_framework.response import Response
 

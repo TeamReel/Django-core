@@ -22,6 +22,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
     path("health/", health_check, name="health_check"),
+    path("health/tasks/", include("tasks.urls")),  # B15: Task health check
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     # B13 WP06: OpenAPI Documentation

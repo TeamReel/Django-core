@@ -1,0 +1,100 @@
+# Task Health Check API
+# Feature: B15 Tasks & Scheduling Foundation
+# Date: 2025-11-30
+
+openapi: 3.0.3
+info:
+  title: Task Health Check API
+  description: Health check endpoint for task infrastructure monitoring
+  version: 1.0.0
+
+servers:
+  - url: /health
+    description: Health check endpoints
+
+paths:
+  /tasks/:
+    get:
+      summary: Check task infrastructure health
+      description: |
+        Lightweight health check for load balancers. Verifies broker connectivity
+        and optionally counts active workers.
+      operationId: checkTaskHealth
+      tags:
+        - Health
+      security: []  # No authentication required
+      responses:
+        '200':
+          description: Task infrastructure is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - broker
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                    description: Overall health status
+                  broker:
+                    type: string
+                    enum: [connected]
+                    description: Broker connectivity status
+                  workers:
+                    type: integer
+                    description: Number of active workers (optional)
+                    example: 3
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: Health check timestamp
+              examples:
+                healthy:
+                  summary: Healthy infrastructure
+                  value:
+                    status: healthy
+                    broker: connected
+                    workers: 3
+                    timestamp: "2025-11-30T10:30:00Z"
+                healthy_no_workers:
+                  summary: Healthy but no worker count
+                  value:
+                    status: healthy
+                    broker: connected
+                    timestamp: "2025-11-30T10:30:00Z"
+
+        '503':
+          description: Task infrastructure is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - broker
+                properties:
+                  status:
+                    type: string
+                    enum: [unhealthy]
+                  broker:
+                    type: string
+                    enum: [disconnected, error]
+                  error:
+                    type: string
+                    description: Error details
+                  timestamp:
+                    type: string
+                    format: date-time
+              examples:
+                broker_down:
+                  summary: Broker unreachable
+                  value:
+                    status: unhealthy
+                    broker: disconnected
+                    error: "Connection refused to redis://localhost:6379/0"
+                    timestamp: "2025-11-30T10:30:00Z"
+
+components:
+  schemas: {}

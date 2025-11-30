@@ -12,6 +12,10 @@ pytest-xdist==3.5.0
 coverage==7.3.3
 factory-boy==3.3.0
 
+# Testing (B15 - Tasks & Scheduling)
+pytest-celery>=1.0.0
+fakeredis[lua]>=2.20.0
+
 # Code quality
 black==23.12.1
 ruff==0.1.8

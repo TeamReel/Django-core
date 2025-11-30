@@ -1,0 +1,37 @@
+[Unit]
+Description=Celery Worker for Django Core-App
+After=network.target redis.service
+
+[Service]
+Type=forking
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/django-core/src
+
+# Environment variables
+Environment=DJANGO_SETTINGS_MODULE=config.settings.production
+Environment=CELERY_BROKER_URL=redis://localhost:6379/0
+Environment=CELERY_RESULT_BACKEND=redis://localhost:6379/0
+
+# Celery worker command
+ExecStart=/var/www/django-core/venv/bin/celery -A config worker \
+    --loglevel=info \
+    --concurrency=4 \
+    --pidfile=/var/run/celery/worker.pid \
+    --logfile=/var/log/celery/worker.log
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Graceful shutdown
+TimeoutStopSec=300
+KillMode=mixed
+KillSignal=SIGTERM
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

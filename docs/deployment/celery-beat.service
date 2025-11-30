@@ -1,0 +1,41 @@
+[Unit]
+Description=Celery Beat Scheduler for Django Core-App
+After=network.target redis.service postgresql.service
+
+[Service]
+Type=simple
+User=django
+Group=django
+WorkingDirectory=/opt/django-core-app
+
+# Environment variables
+Environment="DJANGO_SETTINGS_MODULE=config.settings.production"
+Environment="CELERY_BROKER_URL=redis://localhost:6379/0"
+Environment="PYTHONPATH=/opt/django-core-app"
+
+# Beat scheduler command
+ExecStart=/opt/django-core-app/venv/bin/celery -A config beat -l info --pidfile=/var/run/celery/beat.pid
+
+# Graceful shutdown
+ExecStop=/bin/kill -s TERM $MAINPID
+TimeoutStopSec=30
+
+# Restart policy
+Restart=always
+RestartSec=10s
+
+# Ensure only one beat scheduler runs
+PIDFile=/var/run/celery/beat.pid
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/django-core-app /var/run/celery /var/log/celery
+
+# Resource limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
