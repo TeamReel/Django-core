@@ -1,0 +1,21 @@
+{% extends "web_ui/base/base.html" %}
+
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+<article class="ui-content">
+    <header class="ui-content__header">
+        <h1 class="ui-heading ui-heading--large">Projects</h1>
+        <p class="ui-text">Projects in your organisations.</p>
+    </header>
+
+    {% if projects %}
+        {% load web_ui_filters %}
+        {% include "web_ui/components/list_table.html" with items=projects columns="name,organisation.name,owner.email,created_at" actions="view" %}
+    {% else %}
+        <div class="ui-empty-state">
+            <p class="ui-text">No projects found in your organisations.</p>
+        </div>
+    {% endif %}
+</article>
+{% endblock %}

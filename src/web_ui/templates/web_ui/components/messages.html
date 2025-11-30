@@ -1,0 +1,17 @@
+{% comment %}
+============================================================
+Messages Component
+Displays Django messages (success, error, warning, info).
+Uses Django messages framework: django.contrib.messages
+============================================================
+{% endcomment %}
+
+{% if messages %}
+<div class="ui-messages">
+    {% for message in messages %}
+    <div class="ui-message ui-message--{{ message.tags }}" role="alert">
+        <p class="ui-message__text">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

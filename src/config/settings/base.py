@@ -24,6 +24,8 @@ AUTH_USER_MODEL = "accounts.User"
 
 INSTALLED_APPS = [
     "django_prometheus",  # Must be first for middleware instrumentation
+    # B14: Web UI - Must be before accounts for template override
+    "web_ui.apps.WebUIConfig",
     "accounts.apps.AccountsConfig",  # Must be before admin
     "django.contrib.admin",
     "django.contrib.auth",
@@ -77,6 +79,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # B14: Web UI navigation context
+                "web_ui.context_processors.navigation.navigation_context",
             ],
         },
     },
@@ -202,11 +206,15 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_RENDERER_CLASSES": [
-        "api.renderers.EnvelopeJSONRenderer",  # B13 WP03: Consistent response envelope
+        # B13 WP03: Consistent response envelope
+        "api.renderers.EnvelopeJSONRenderer",
     ],
-    "EXCEPTION_HANDLER": "api.exceptions.envelope_exception_handler",  # B13 WP03: Consistent error handling
-    "DEFAULT_PAGINATION_CLASS": "api.pagination.BaseAPIPagination",  # B13 WP04: Pagination with metadata
-    "DEFAULT_THROTTLE_CLASSES": [  # B13 WP04: Rate limiting (FR-020, FR-021)
+    # B13 WP03: Consistent error handling
+    "EXCEPTION_HANDLER": "api.exceptions.envelope_exception_handler",
+    # B13 WP04: Pagination with metadata
+    "DEFAULT_PAGINATION_CLASS": "api.pagination.BaseAPIPagination",
+    # B13 WP04: Rate limiting (FR-020, FR-021)
+    "DEFAULT_THROTTLE_CLASSES": [
         "api.throttling.AuthenticatedUserThrottle",  # 100/min for authenticated
         "api.throttling.AnonymousUserThrottle",  # 10/min for anonymous
     ],
@@ -319,3 +327,9 @@ LOGGING = {
         },
     },
 }
+
+# ==============================================================================
+# Web UI Configuration (B14)
+# ==============================================================================
+
+SITE_NAME = "Django Core"  # Used in page titles (<title> tag) and branding (header)

@@ -1,0 +1,47 @@
+{% extends "web_ui/base/base.html" %}
+
+{% block title %}Account Profile{% endblock %}
+
+{% block content %}
+<article class="ui-content ui-content--narrow">
+    <header class="ui-content__header">
+        <h1 class="ui-heading ui-heading--large">Account Profile</h1>
+        <p class="ui-text">View your account information.</p>
+    </header>
+
+    <section class="ui-section">
+        <h2 class="ui-heading ui-heading--medium">Personal Information</h2>
+        <dl class="ui-definition-list">
+            <dt class="ui-definition-term">Email</dt>
+            <dd class="ui-definition-value">{{ user.email }}</dd>
+
+            <dt class="ui-definition-term">Name</dt>
+            <dd class="ui-definition-value">
+                {% if user.first_name or user.last_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                    <span class="ui-text--muted">Not set</span>
+                {% endif %}
+            </dd>
+
+            <dt class="ui-definition-term">Date Joined</dt>
+            <dd class="ui-definition-value">{{ user.date_joined|date:"F j, Y" }}</dd>
+
+            <dt class="ui-definition-term">Email Verified</dt>
+            <dd class="ui-definition-value">
+                {% if user.is_email_verified %}
+                    <span class="ui-badge ui-badge--success">Verified</span>
+                {% else %}
+                    <span class="ui-badge ui-badge--warning">Not Verified</span>
+                {% endif %}
+            </dd>
+        </dl>
+    </section>
+
+    <footer class="ui-content__footer">
+        <p class="ui-text ui-text--muted">
+            <em>Note: This is a stub view. Profile editing functionality will be added in future releases.</em>
+        </p>
+    </footer>
+</article>
+{% endblock %}

@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "014",
+    "slug":  "014-web-ui-baseline",
+    "friendly_name":  "Web UI Baseline",
+    "source_description":  "Provide a backend-driven web UI baseline with templates, layout structure, and navigation stubs that integrate cleanly with the existing B01B13 backend foundation and can be used standalone or alongside a future SPA.",
+    "created_at":  "2025-11-29T21:20:08Z"
+}

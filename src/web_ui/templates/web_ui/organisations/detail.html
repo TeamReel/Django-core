@@ -1,0 +1,39 @@
+{% extends "web_ui/base/base.html" %}
+
+{% block title %}{{ organisation.name }}{% endblock %}
+
+{% block content %}
+<article class="ui-content">
+    <header class="ui-content__header">
+        <h1 class="ui-heading ui-heading--large">{{ organisation.name }}</h1>
+        {% if organisation.description %}
+            <p class="ui-text">{{ organisation.description }}</p>
+        {% endif %}
+    </header>
+
+    <section class="ui-section">
+        <h2 class="ui-heading ui-heading--medium">Organisation Details</h2>
+        <dl class="ui-definition-list">
+            <dt class="ui-definition-term">Name</dt>
+            <dd class="ui-definition-value">{{ organisation.name }}</dd>
+
+            <dt class="ui-definition-term">Created</dt>
+            <dd class="ui-definition-value">{{ organisation.created_at|date:"F j, Y" }}</dd>
+
+            <dt class="ui-definition-term">Status</dt>
+            <dd class="ui-definition-value">
+                <span class="ui-badge">Active</span>
+            </dd>
+        </dl>
+    </section>
+
+    <footer class="ui-content__footer">
+        <p class="ui-text ui-text--muted">
+            <em>Note: This is a stub view. Full organisation management functionality will be added in future releases.</em>
+        </p>
+        <p class="ui-text">
+            <a href="{% url 'ui_organisations_list' %}" class="ui-link">← Back to Organisations</a>
+        </p>
+    </footer>
+</article>
+{% endblock %}

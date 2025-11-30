@@ -1,0 +1,21 @@
+{% extends "web_ui/base/base.html" %}
+
+{% block title %}Organisations{% endblock %}
+
+{% block content %}
+<article class="ui-content">
+    <header class="ui-content__header">
+        <h1 class="ui-heading ui-heading--large">Organisations</h1>
+        <p class="ui-text">Organisations you are a member of.</p>
+    </header>
+
+    {% if organisations %}
+        {% load web_ui_filters %}
+        {% include "web_ui/components/list_table.html" with items=organisations columns="name,description,created_at" actions="view" %}
+    {% else %}
+        <div class="ui-empty-state">
+            <p class="ui-text">You are not a member of any organisations yet.</p>
+        </div>
+    {% endif %}
+</article>
+{% endblock %}
