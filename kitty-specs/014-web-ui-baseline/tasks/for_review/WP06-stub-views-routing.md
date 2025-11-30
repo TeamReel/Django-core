@@ -3,7 +3,7 @@
 ## Metadata
 - **Work Package ID**: WP06
 - **Title**: Stub Views & URL Routing
-- **Lane**: doing
+- **Lane**: for_review
 - **Priority**: P2 (Medium)
 - **Estimated Effort**: 3 hours
 - **Subtasks**: T023, T024, T025, T026, T027, T028
@@ -11,6 +11,7 @@
 ## History
 - 2025-11-30: Created from plan.md
 - 2025-11-30: Started by claude (shell_pid=11588) - lane=doing
+- 2025-11-30: Completed by claude (shell_pid=11588) - lane=for_review - commit 0faaab0
 
 ---
 
