@@ -27,7 +27,7 @@ Implement async task execution and periodic scheduling infrastructure for Django
 | WP ID | Title | Priority | Status | Subtasks | Prompt |
 |-------|-------|----------|--------|----------|--------|
 | WP01 | Django App Setup & Celery Configuration | P1 | ✅ done | 8 | [WP01-django-app-setup.md](tasks/done/WP01-django-app-setup.md) |
-| WP02 | AuditedTask Base Class & B09 Integration | P2 | planned | 6 | [WP02-audited-task-integration.md](tasks/planned/WP02-audited-task-integration.md) |
+| WP02 | AuditedTask Base Class & B09 Integration | P2 | ✅ done | 6 | [WP02-audited-task-integration.md](tasks/done/WP02-audited-task-integration.md) |
 | WP03 | Health Check Infrastructure | P2 | planned | 5 | [WP03-health-check-infrastructure.md](tasks/planned/WP03-health-check-infrastructure.md) |
 | WP04 | Example Tasks & Patterns | P2 | planned | 5 | [WP04-example-tasks-patterns.md](tasks/planned/WP04-example-tasks-patterns.md) |
 | WP05 | Periodic Scheduling Configuration | P2 | planned | 6 | [WP05-periodic-scheduling-config.md](tasks/planned/WP05-periodic-scheduling-config.md) |
@@ -82,18 +82,18 @@ CELERY_ENABLE_UTC = True
 ---
 
 ## WP02: AuditedTask Base Class & B09 Integration
-**Priority**: P2 | **Depends On**: WP01 | **Status**: planned
+**Priority**: P2 | **Depends On**: WP01 | **Status**: ✅ done
 
 ### Summary
 Implement `AuditedTask` base class that automatically creates B09 audit events for task execution. Developers opt-in via inheritance to enable audit logging for sensitive operations.
 
 ### Subtasks
-- **T009**: Create `src/tasks/base.py` with `AuditedTask` base class inheriting from `celery.Task`
-- **T010**: Implement `before_start` signal handler to create "task.started" audit event with task name, args, kwargs
-- **T011**: Implement `on_success` signal handler to create "task.completed" audit event with result metadata
-- **T012**: Implement `on_failure` signal handler to create "task.failed" audit event with exception details
-- **T013**: Add context extraction helpers to parse `user_id`, `org_id`, `request_id` from task kwargs
-- **T014**: Document AuditedTask usage pattern in `docs/tasks/auditing.md` with examples
+- [x] **T009**: Create `src/tasks/base.py` with `AuditedTask` base class inheriting from `celery.Task`
+- [x] **T010**: Implement `before_start` signal handler to create "task.started" audit event with task name, args, kwargs
+- [x] **T011**: Implement `on_success` signal handler to create "task.completed" audit event with result metadata
+- [x] **T012**: Implement `on_failure` signal handler to create "task.failed" audit event with exception details
+- [x] **T013**: Add context extraction helpers to parse `user_id`, `org_id`, `request_id` from task kwargs
+- [x] **T014**: Document AuditedTask usage pattern in `docs/tasks/auditing.md` with examples
 
 **Implementation Sketch**:
 ```python
