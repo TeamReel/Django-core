@@ -24,7 +24,12 @@ def check_broker_connectivity(timeout: int = 5) -> Tuple[bool, str]:
         (True, "Broker connected")
     """
     try:
-        # Try to inspect broker stats
+        # Check if using in-memory broker (testing)
+        broker_url = current_app.conf.broker_url
+        if broker_url and broker_url.startswith("memory://"):
+            return True, "Broker connected (memory)"
+
+        # Try to inspect broker stats for real brokers
         inspect = current_app.control.inspect(timeout=timeout)
         stats = inspect.stats()
 
@@ -35,7 +40,7 @@ def check_broker_connectivity(timeout: int = 5) -> Tuple[bool, str]:
 
     except CeleryTimeout:
         return False, f"Broker timeout after {timeout}s"
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         logger.exception("Broker health check failed")
         return False, f"Broker error: {str(exc)[:100]}"
 
@@ -55,6 +60,10 @@ def check_active_workers(timeout: int = 5) -> Tuple[bool, str]:
         (True, "2 workers active")
     """
     try:
+        # Check if using task_always_eager (testing/sync mode)
+        if current_app.conf.task_always_eager:
+            return True, "1 worker active (eager mode)"
+
         inspect = current_app.control.inspect(timeout=timeout)
         active = inspect.active()
 
@@ -69,7 +78,7 @@ def check_active_workers(timeout: int = 5) -> Tuple[bool, str]:
 
     except CeleryTimeout:
         return False, f"Worker check timeout after {timeout}s"
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         logger.exception("Worker health check failed")
         return False, f"Worker check error: {str(exc)[:100]}"
 

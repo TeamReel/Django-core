@@ -49,8 +49,9 @@ class Command(BaseCommand):
             workers_style(f"Workers: {workers['status'].upper()} - {workers['message']}")
         )
 
-        # Exit with appropriate code if requested
-        if use_exit_code and health_status["status"] != "healthy":
-            sys.exit(1)
+        # Exit with appropriate code if requested or in non-interactive mode
+        if use_exit_code:
+            sys.exit(0 if health_status["status"] == "healthy" else 1)
 
-        sys.exit(0)
+        # For Django management commands, return without sys.exit() to allow tests
+        # Exit code can be checked via CommandError exception if needed

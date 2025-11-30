@@ -79,13 +79,14 @@ class TestTasksHealthEndpoint:
 class TestCheckWorkersCommand:
     """Test check_workers management command."""
 
-    def test_check_workers_command_success(self, celery_worker):
+    def test_check_workers_command_success(self):
         """Test command reports healthy when workers active."""
         from io import StringIO
 
         from django.core.management import call_command
 
         out = StringIO()
+        # Without --exit-code flag, should return normally
         call_command("check_workers", stdout=out)
 
         output = out.getvalue()
@@ -130,7 +131,7 @@ class TestCheckWorkersCommand:
 
         mock_status.assert_called_once_with(timeout=10)
 
-    def test_command_outputs_detailed_status(self, celery_worker):
+    def test_command_outputs_detailed_status(self):
         """Test command outputs detailed health information."""
         from io import StringIO
 

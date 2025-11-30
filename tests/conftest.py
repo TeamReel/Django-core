@@ -23,7 +23,7 @@ def celery_config():
     Override Celery configuration for testing.
 
     Uses memory:// broker and cache+memory:// backend for fast tests.
-    task_always_eager=True executes tasks synchronously.
+    task_always_eager=True executes tasks synchronously with full hooks.
     """
     return {
         "broker_url": "memory://",
@@ -31,6 +31,8 @@ def celery_config():
         "task_always_eager": True,  # Execute tasks synchronously
         "task_eager_propagates": True,  # Propagate exceptions
         "task_store_eager_result": True,  # Store results even in eager mode
+        "task_send_sent_event": True,  # Enable task sent events
+        "worker_send_task_events": True,  # Enable worker task events
     }
 
 

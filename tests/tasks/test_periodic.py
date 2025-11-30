@@ -70,15 +70,31 @@ class TestPeriodicTaskConfiguration:
 class TestBeatScheduler:
     """Integration tests for beat scheduler (requires beat running)."""
 
-    @patch("tasks.examples.cleanup_expired_sessions.Session.objects.filter")
-    def test_periodic_task_executes_on_schedule(self, mock_filter):
+    @pytest.mark.django_db
+    @patch("tasks.examples.cleanup_expired_sessions.Session")
+    def test_periodic_task_executes_on_schedule(self, mock_session):
         """Test beat scheduler triggers periodic task."""
-        # This test requires actual beat scheduler running
-        # Mock the session query to avoid DB dependencies
+        # Mock the Session model to control query results
         mock_queryset = MagicMock()
         mock_queryset.count.return_value = 5
+        mock_queryset.values_list.return_value = mock_queryset  # For chunk query
+        mock_queryset.__getitem__.return_value = [
+            "key1",
+            "key2",
+            "key3",
+            "key4",
+            "key5",
+        ]  # First chunk
         mock_queryset.delete.return_value = (5, {})
-        mock_filter.return_value = mock_queryset
+
+        # Configure mock_session.objects.filter to return our queryset
+        mock_session.objects.filter.return_value = mock_queryset
+
+        # After first chunk, return empty list to break loop
+        mock_queryset.__getitem__.side_effect = [
+            ["key1", "key2", "key3", "key4", "key5"],  # First chunk
+            [],  # Second iteration - empty, breaks loop
+        ]
 
         from tasks.examples.cleanup_expired_sessions import cleanup_expired_sessions
 

@@ -5,6 +5,7 @@ Provides AuditedTask for automatic audit logging integration with B09.
 """
 
 import logging
+import uuid
 from typing import Any, Optional
 
 from celery import Task
@@ -33,6 +34,33 @@ class AuditedTask(Task):
         - task.failed: Created when task fails after all retries
     """
 
+    def __call__(self, *args, **kwargs):
+        """
+        Override __call__ to ensure audit hooks work in eager mode.
+
+        This method is called in both eager and async mode, unlike
+        before_start/on_success/on_failure which are skipped in eager mode.
+        """
+        # Generate task_id if not present (eager mode scenario)
+        task_id = self.request.id if self.request.id else str(uuid.uuid4())
+
+        # Call before_start hook
+        self.before_start(task_id, args, kwargs)
+
+        try:
+            # Execute the actual task
+            result = super().__call__(*args, **kwargs)
+
+            # Call on_success hook
+            self.on_success(result, task_id, args, kwargs)
+
+            return result
+        except Exception as exc:
+            # Call on_failure hook
+            einfo = None  # Would normally contain traceback info
+            self.on_failure(exc, task_id, args, kwargs, einfo)
+            raise
+
     def before_start(self, task_id: str, args: tuple, kwargs: dict) -> None:
         """
         Log task start to B09 audit system.
@@ -56,7 +84,7 @@ class AuditedTask(Task):
             AuditEvent.objects.create(
                 event_type="task.started",
                 user_id=user_id,
-                organisation_id=org_id,
+                organization_id=org_id,
                 metadata={
                     "task_id": task_id,
                     "task_name": self.name,
@@ -70,7 +98,7 @@ class AuditedTask(Task):
                 f"(task_id={task_id}, user_id={user_id})"
             )
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             # Log error but don't block task execution
             logger.error(
                 f"Failed to create audit event for task start: {exc}",
@@ -98,7 +126,7 @@ class AuditedTask(Task):
             AuditEvent.objects.create(
                 event_type="task.completed",
                 user_id=user_id,
-                organisation_id=org_id,
+                organization_id=org_id,
                 metadata={
                     "task_id": task_id,
                     "task_name": self.name,
@@ -111,7 +139,7 @@ class AuditedTask(Task):
                 f"(task_id={task_id}, user_id={user_id})"
             )
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             # Log error but don't block task
             logger.error(
                 f"Failed to create audit event for task success: {exc}",
@@ -144,7 +172,7 @@ class AuditedTask(Task):
             AuditEvent.objects.create(
                 event_type="task.failed",
                 user_id=user_id,
-                organisation_id=org_id,
+                organization_id=org_id,
                 metadata={
                     "task_id": task_id,
                     "task_name": self.name,
@@ -159,7 +187,7 @@ class AuditedTask(Task):
                 f"(task_id={task_id}, user_id={user_id}, error={error_msg})"
             )
 
-        except Exception as audit_exc:
+        except Exception as audit_exc:  # noqa: BLE001
             # Log error but don't interfere with task failure handling
             logger.error(
                 f"Failed to create audit event for task failure: {audit_exc}",
