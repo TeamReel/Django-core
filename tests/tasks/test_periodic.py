@@ -67,10 +67,6 @@ class TestPeriodicTaskConfiguration:
 
 
 @pytest.mark.integration
-@pytest.mark.skipif(
-    not pytest.config.getoption("--integration", default=False),
-    reason="Integration tests disabled",
-)
 class TestBeatScheduler:
     """Integration tests for beat scheduler (requires beat running)."""
 

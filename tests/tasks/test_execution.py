@@ -6,10 +6,6 @@ import pytest
 
 
 @pytest.mark.integration
-@pytest.mark.skipif(
-    not pytest.config.getoption("--integration", default=False),
-    reason="Integration tests disabled by default",
-)
 class TestTaskExecution:
     """Test actual task execution with Redis broker."""
 
