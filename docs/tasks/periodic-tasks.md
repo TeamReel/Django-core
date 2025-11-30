@@ -1,5 +1,18 @@
 # Periodic Task Scheduling
 
+## Comparison: Settings vs Database-Backed
+
+| Feature | Settings-Based | Database-Backed |
+|---------|----------------|-----------------|
+| Runtime changes | ❌ No | ✅ Yes |
+| Version controlled | ✅ Yes | ❌ No |
+| Setup complexity | ⭐ Low | ⭐⭐ Medium |
+| Admin UI | ❌ No | ✅ Yes |
+| Per-tenant schedules | ❌ No | ✅ Yes |
+| Additional dependencies | None | django-celery-beat |
+| Execution history | ❌ No | ✅ Yes |
+| **Recommended for** | Most use cases | Advanced scenarios |
+
 ## Settings-Based Schedules (Baseline)
 
 **Recommended for**: Most use cases where schedules are known at deployment time.
@@ -334,6 +347,75 @@ def my_periodic_task():
         periodic_task_executions.labels(task_name='my_task', status='error').inc()
         raise
 ```
+
+## Testing Periodic Tasks
+
+### Unit Testing
+
+Test periodic tasks synchronously using `.apply()`:
+
+```python
+from tasks.examples.cleanup_expired_sessions import cleanup_expired_sessions
+
+def test_cleanup_task():
+    # Execute synchronously (blocks until complete)
+    result = cleanup_expired_sessions.apply()
+
+    assert result.successful()
+    assert result.result['status'] == 'success'
+```
+
+### Integration Testing
+
+Test with actual Celery broker:
+
+```python
+import pytest
+from tasks.examples.cleanup_expired_sessions import cleanup_expired_sessions
+
+@pytest.mark.integration
+def test_cleanup_task_async():
+    # Execute asynchronously
+    result = cleanup_expired_sessions.delay()
+
+    # Wait for completion (with timeout)
+    output = result.get(timeout=10)
+
+    assert output['status'] == 'success'
+    assert output['deleted'] >= 0
+```
+
+### Testing Schedule Configuration
+
+Verify beat schedule loads correctly:
+
+```python
+from django.conf import settings
+
+def test_beat_schedule_configured():
+    assert 'cleanup-expired-sessions' in settings.CELERY_BEAT_SCHEDULE
+
+    schedule = settings.CELERY_BEAT_SCHEDULE['cleanup-expired-sessions']
+    assert schedule['task'] == 'tasks.examples.cleanup_expired_sessions'
+    assert 'schedule' in schedule
+```
+
+### Manual Testing
+
+Test with short intervals:
+
+```python
+# Temporarily in settings
+CELERY_BEAT_SCHEDULE = {
+    'test-task': {
+        'task': 'tasks.examples.hello_world',
+        'schedule': 30.0,  # Every 30 seconds
+        'kwargs': {'name': 'Test'},
+    },
+}
+```
+
+Start beat and worker, observe logs for 2-3 minutes, then remove test schedule.
 
 ## Best Practices
 
