@@ -24,6 +24,8 @@ AUTH_USER_MODEL = "accounts.User"
 
 INSTALLED_APPS = [
     "django_prometheus",  # Must be first for middleware instrumentation
+    # B14: Web UI - Must be before accounts for template override
+    "web_ui.apps.WebUIConfig",
     "accounts.apps.AccountsConfig",  # Must be before admin
     "django.contrib.admin",
     "django.contrib.auth",
@@ -46,7 +48,6 @@ INSTALLED_APPS = [
     "transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
     "api",  # B13: API Foundation & Standards
-    "web_ui.apps.WebUIConfig",  # B14: Web UI Baseline
 ]
 
 MIDDLEWARE = [
