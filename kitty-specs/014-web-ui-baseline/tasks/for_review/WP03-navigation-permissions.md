@@ -3,7 +3,7 @@
 ## Metadata
 - **Work Package ID**: WP03
 - **Title**: Navigation & Permissions
-- **Lane**: doing
+- **Lane**: for_review
 - **Priority**: P1 (Critical)
 - **Estimated Effort**: 4 hours
 - **Subtasks**: T009, T010, T011
@@ -11,6 +11,7 @@
 ## History
 - 2025-11-30: Created from plan.md
 - 2025-11-30: Started by claude (shell_pid=11588) - lane=doing
+- 2025-11-30: Completed by claude (shell_pid=11588) - lane=for_review
 
 ---
 
