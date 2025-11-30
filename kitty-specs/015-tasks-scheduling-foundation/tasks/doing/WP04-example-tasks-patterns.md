@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "copilot"
+shell_pid: "38532"
+---
 # Work Package 04: Example Tasks & Patterns
 
 ```yaml
@@ -403,3 +408,7 @@ def send_bulk_notifications(user_ids: list[int], org_id: int, template_id: int, 
 - Check docstrings include usage patterns from view/service layer
 - Confirm AuditedTask example shows proper context propagation
 - Validate retry example demonstrates exponential backoff clearly
+
+## Activity Log
+
+- 2025-11-30T18:26:38Z – copilot – shell_pid=38532 – lane=doing – Started WP04 implementation - Example tasks and patterns
