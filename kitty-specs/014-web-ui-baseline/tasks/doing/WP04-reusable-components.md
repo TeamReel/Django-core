@@ -3,13 +3,14 @@
 ## Metadata
 - **Work Package ID**: WP04
 - **Title**: Reusable Components
-- **Lane**: planned
+- **Lane**: doing
 - **Priority**: P2 (Medium)
 - **Estimated Effort**: 5 hours
 - **Subtasks**: T012, T013, T014, T015, T016, T017
 
 ## History
 - 2025-11-30: Created from plan.md
+- 2025-11-30: Started by claude (shell_pid=11588) - lane=doing
 
 ---
 
