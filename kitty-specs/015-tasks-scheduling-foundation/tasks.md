@@ -26,7 +26,7 @@ Implement async task execution and periodic scheduling infrastructure for Django
 
 | WP ID | Title | Priority | Status | Subtasks | Prompt |
 |-------|-------|----------|--------|----------|--------|
-| WP01 | Django App Setup & Celery Configuration | P1 | planned | 8 | [WP01-django-app-setup.md](tasks/planned/WP01-django-app-setup.md) |
+| WP01 | Django App Setup & Celery Configuration | P1 | ✅ done | 8 | [WP01-django-app-setup.md](tasks/done/WP01-django-app-setup.md) |
 | WP02 | AuditedTask Base Class & B09 Integration | P2 | planned | 6 | [WP02-audited-task-integration.md](tasks/planned/WP02-audited-task-integration.md) |
 | WP03 | Health Check Infrastructure | P2 | planned | 5 | [WP03-health-check-infrastructure.md](tasks/planned/WP03-health-check-infrastructure.md) |
 | WP04 | Example Tasks & Patterns | P2 | planned | 5 | [WP04-example-tasks-patterns.md](tasks/planned/WP04-example-tasks-patterns.md) |
@@ -39,20 +39,20 @@ Implement async task execution and periodic scheduling infrastructure for Django
 ---
 
 ## WP01: Django App Setup & Celery Configuration
-**Priority**: P1 | **Depends On**: None | **Status**: planned
+**Priority**: P1 | **Depends On**: None | **Status**: ✅ done
 
 ### Summary
 Create `tasks` Django app with Celery configuration, broker settings, and worker startup infrastructure. Establishes foundation for all async task execution.
 
 ### Subtasks
-- [P] **T001**: Create Django app structure: `src/tasks/__init__.py`, `apps.py`, `urls.py` (if needed)
-- [P] **T002**: Create Celery app configuration: `src/tasks/celery.py` with `@app` decorator and autodiscovery
-- [P] **T003**: Configure Celery in Django settings: `config/settings/celery.py` with broker URL, result backend, timezone
-- **T004**: Add Celery imports to `config/__init__.py` for Django startup integration
-- [P] **T005**: Add dependencies to `requirements/base.txt`: `celery[redis]>=5.3.0`, `redis>=5.0.0`
-- [P] **T006**: Create worker startup documentation: `docs/tasks/running-workers.md` with local/production commands
-- **T007**: Add Celery health check to existing B03 security health endpoint (if B03 exists)
-- **T008**: Verify worker startup with test task (`celery -A config worker -l info`)
+- [x] **T001**: Create Django app structure: `src/tasks/__init__.py`, `apps.py`, `urls.py` (if needed)
+- [x] **T002**: Create Celery app configuration: `src/tasks/celery.py` with `@app` decorator and autodiscovery
+- [x] **T003**: Configure Celery in Django settings: `config/settings/celery.py` with broker URL, result backend, timezone
+- [x] **T004**: Add Celery imports to `config/__init__.py` for Django startup integration
+- [x] **T005**: Add dependencies to `requirements/base.txt`: `celery[redis]>=5.3.0`, `redis>=5.0.0`
+- [x] **T006**: Create worker startup documentation: `docs/tasks/running-workers.md` with local/production commands
+- [x] **T007**: Add Celery health check to existing B03 security health endpoint (deferred to WP03)
+- [x] **T008**: Verify worker startup with test task (`celery -A config worker -l info`)
 
 **Implementation Sketch**:
 ```python
