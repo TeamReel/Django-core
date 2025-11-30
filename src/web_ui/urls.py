@@ -1,7 +1,24 @@
 """URL configuration for Web UI Baseline."""
 
+from django.urls import path
+
+from web_ui import views
+
 app_name = "web_ui"
 
 urlpatterns = [
-    # URL patterns will be added in subsequent work packages
+    # Home
+    path("", views.home, name="ui_home"),
+    # Organisations
+    path("organisations/", views.organisations_list, name="ui_organisations_list"),
+    path(
+        "organisations/<int:pk>/",
+        views.organisations_detail,
+        name="ui_organisations_detail",
+    ),
+    # Projects
+    path("projects/", views.projects_list, name="ui_projects_list"),
+    path("projects/<int:pk>/", views.projects_detail, name="ui_projects_detail"),
+    # Account
+    path("account/profile/", views.account_profile, name="ui_account_profile"),
 ]

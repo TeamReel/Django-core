@@ -1,0 +1,49 @@
+{% extends "web_ui/base/base.html" %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<article class="ui-content">
+    <header class="ui-content__header">
+        <h1 class="ui-heading ui-heading--large">{{ project.name }}</h1>
+        {% if project.description %}
+            <p class="ui-text">{{ project.description }}</p>
+        {% endif %}
+    </header>
+
+    <section class="ui-section">
+        <h2 class="ui-heading ui-heading--medium">Project Details</h2>
+        <dl class="ui-definition-list">
+            <dt class="ui-definition-term">Name</dt>
+            <dd class="ui-definition-value">{{ project.name }}</dd>
+
+            <dt class="ui-definition-term">Organisation</dt>
+            <dd class="ui-definition-value">
+                <a href="{% url 'ui_organisations_detail' project.organisation.pk %}" class="ui-link">
+                    {{ project.organisation.name }}
+                </a>
+            </dd>
+
+            <dt class="ui-definition-term">Owner</dt>
+            <dd class="ui-definition-value">{{ project.owner.email }}</dd>
+
+            <dt class="ui-definition-term">Created</dt>
+            <dd class="ui-definition-value">{{ project.created_at|date:"F j, Y" }}</dd>
+
+            <dt class="ui-definition-term">Status</dt>
+            <dd class="ui-definition-value">
+                <span class="ui-badge">Active</span>
+            </dd>
+        </dl>
+    </section>
+
+    <footer class="ui-content__footer">
+        <p class="ui-text ui-text--muted">
+            <em>Note: This is a stub view. Full project management functionality will be added in future releases.</em>
+        </p>
+        <p class="ui-text">
+            <a href="{% url 'ui_projects_list' %}" class="ui-link">← Back to Projects</a>
+        </p>
+    </footer>
+</article>
+{% endblock %}
