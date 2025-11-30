@@ -16,10 +16,10 @@
 ## WP01: Django App Setup & Configuration (P0)
 **Goal**: Create `web_ui` Django app with proper structure and registration.
 **Estimated Effort**: 2 hours
-**Status**: Not Started
-**Prompt**: [WP01-django-app-setup.md](tasks/planned/WP01-django-app-setup.md)
+**Status**: ✅ Complete
+**Prompt**: [WP01-django-app-setup.md](tasks/done/WP01-django-app-setup.md)
 
-### [ ] T001: Create Django app directory structure
+### [x] T001: Create Django app directory structure
 **Description**: Create `src/web_ui/` app with standard Django structure.
 
 **Checklist**:
@@ -45,7 +45,7 @@
 
 ---
 
-### [ ] T002: Create AppConfig class
+### [x] T002: Create AppConfig class
 **Description**: Define `WebUIConfig` app configuration.
 
 **Checklist**:
@@ -82,7 +82,7 @@ class WebUIConfig(AppConfig):
 
 ---
 
-### [ ] T003: Add web_ui to INSTALLED_APPS
+### [x] T003: Add web_ui to INSTALLED_APPS
 **Description**: Register app in Django settings.
 
 **Checklist**:
@@ -107,7 +107,7 @@ INSTALLED_APPS = [
 
 ---
 
-### [ ] T004: Create app README
+### [x] T004: Create app README
 **Description**: Document purpose, structure, and extension guide.
 
 **Checklist**:

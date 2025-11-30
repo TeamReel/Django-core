@@ -1,4 +1,5 @@
 """Django app configuration for Web UI Baseline."""
+
 from django.apps import AppConfig
 
 
