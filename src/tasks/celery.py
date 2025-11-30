@@ -4,6 +4,7 @@ Celery application configuration for Django Core-App.
 This module initializes the Celery app with Django settings and autodiscovery.
 All task modules are automatically discovered from INSTALLED_APPS.
 """
+
 import os
 
 from celery import Celery

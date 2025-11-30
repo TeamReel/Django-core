@@ -1,4 +1,5 @@
 """Django app configuration for tasks infrastructure."""
+
 from django.apps import AppConfig
 
 

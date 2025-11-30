@@ -4,6 +4,7 @@ Celery configuration for async task execution.
 Settings loaded via CELERY_ namespace from Django settings.
 Supports environment-specific broker URLs via environment variables.
 """
+
 import environ
 
 env = environ.Env()

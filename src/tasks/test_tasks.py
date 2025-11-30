@@ -1,4 +1,5 @@
 """Test tasks for verifying Celery setup."""
+
 from celery import shared_task
 
 
