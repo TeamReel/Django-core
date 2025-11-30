@@ -1,5 +1,7 @@
 """Integration tests for task health checks."""
 
+from unittest.mock import patch
+
 import pytest
 from django.urls import reverse
 from rest_framework import status
@@ -43,6 +45,35 @@ class TestTasksHealthEndpoint:
         # Should not return 401/403
         assert response.status_code in [200, 503]
 
+    @patch("tasks.health.check_broker_connectivity")
+    @patch("tasks.health.check_active_workers")
+    def test_health_returns_503_when_no_workers(self, mock_workers, mock_broker, client):
+        """Test health endpoint returns 503 when no workers active."""
+        mock_broker.return_value = (True, "Broker connected")
+        mock_workers.return_value = (False, "No active workers")
+
+        url = reverse("tasks:health")
+        response = client.get(url)
+
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+        data = response.json()
+        assert data["status"] == "unhealthy"
+        assert data["workers"]["status"] == "error"
+
+    def test_health_response_structure(self, client):
+        """Test health response has expected structure."""
+        url = reverse("tasks:health")
+        response = client.get(url)
+
+        data = response.json()
+        assert "status" in data
+        assert "broker" in data
+        assert "workers" in data
+        assert "status" in data["broker"]
+        assert "message" in data["broker"]
+        assert "status" in data["workers"]
+        assert "message" in data["workers"]
+
 
 @pytest.mark.django_db
 class TestCheckWorkersCommand:
@@ -80,3 +111,35 @@ class TestCheckWorkersCommand:
             call_command("check_workers", exit_code=True)
 
         assert exc_info.value.code == 1
+
+    @patch("tasks.health.get_celery_health_status")
+    def test_command_respects_timeout_argument(self, mock_status):
+        """Test command passes timeout to health checks."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        mock_status.return_value = {
+            "status": "healthy",
+            "broker": {"status": "ok", "message": "Connected"},
+            "workers": {"status": "ok", "message": "1 worker"},
+        }
+
+        out = StringIO()
+        call_command("check_workers", timeout=10, stdout=out)
+
+        mock_status.assert_called_once_with(timeout=10)
+
+    def test_command_outputs_detailed_status(self, celery_worker):
+        """Test command outputs detailed health information."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        out = StringIO()
+        call_command("check_workers", stdout=out)
+
+        output = out.getvalue()
+        # Verify detailed status information included
+        assert "Broker" in output or "broker" in output
+        assert "Workers" in output or "workers" in output

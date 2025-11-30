@@ -41,6 +41,7 @@ markers = [
     "api: API endpoint tests",
     "slow: Tests that take a long time to run",
     "security: Security-related tests",
+    "celery: Tests requiring Celery worker",
 ]
 
 [tool.black]
