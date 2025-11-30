@@ -12,7 +12,7 @@ urlpatterns = [
     # Organisations
     path("organisations/", views.organisations_list, name="ui_organisations_list"),
     path(
-        "organisations/<int:pk>/",
+        "organisations/<uuid:pk>/",
         views.organisations_detail,
         name="ui_organisations_detail",
     ),

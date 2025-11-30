@@ -3,10 +3,11 @@
 import time
 
 import pytest
-from accounts.models import User
+from django.contrib.auth.models import Permission
 from django.test import Client, RequestFactory
-from django.urls import reverse
-from organisations.models import Organisation
+
+from accounts.models import User
+from organisations.models import Membership, Organisation
 from projects.models import Project
 from web_ui.context_processors.navigation import navigation_context
 
@@ -26,8 +27,6 @@ def client():
 @pytest.fixture
 def authenticated_user(db):
     """Create authenticated user with permissions."""
-    from django.contrib.auth.models import Permission
-
     user = User.objects.create_user(email="test@example.com", password="testpass123")
     perms = Permission.objects.filter(codename__in=["view_organisation", "view_project"])
     user.user_permissions.set(perms)
@@ -40,7 +39,7 @@ def organisation(db, authenticated_user):
     org = Organisation.objects.create(
         name="Test Org", description="Test Description", creator=authenticated_user
     )
-    org.members.add(authenticated_user)
+    Membership.objects.create(user=authenticated_user, organisation=org, role="member")
     return org
 
 
@@ -51,7 +50,7 @@ def project(db, organisation, authenticated_user):
         name="Test Project",
         description="Test Description",
         organisation=organisation,
-        owner=authenticated_user,
+        creator=authenticated_user,
     )
 
 
@@ -76,7 +75,9 @@ class TestContextProcessorPerformance:
         avg_time_ms = ((end - start) / 100) * 1000
 
         # Should be under 5ms average
-        assert avg_time_ms < 5.0, f"Context processor took {avg_time_ms:.2f}ms (target: <5ms)"
+        assert (
+            avg_time_ms < 5.0
+        ), f"Context processor took {avg_time_ms:.2f}ms (target: <5ms)"
 
 
 @pytest.mark.django_db
@@ -88,11 +89,11 @@ class TestViewPerformance:
         client.force_login(authenticated_user)
 
         # Warm up
-        client.get(reverse("web_ui:ui_home"))
+        client.get("/ui/")
 
         # Measure
         start = time.perf_counter()
-        response = client.get(reverse("web_ui:ui_home"))
+        response = client.get("/ui/")
         end = time.perf_counter()
 
         elapsed_ms = (end - start) * 1000
@@ -105,31 +106,35 @@ class TestViewPerformance:
         client.force_login(authenticated_user)
 
         # Warm up
-        client.get(reverse("web_ui:ui_organisations_list"))
+        client.get("/ui/organisations/")
 
         # Measure
         start = time.perf_counter()
-        response = client.get(reverse("web_ui:ui_organisations_list"))
+        response = client.get("/ui/organisations/")
         end = time.perf_counter()
 
         elapsed_ms = (end - start) * 1000
 
         assert response.status_code == 200
-        assert elapsed_ms < 100.0, f"Organisations list took {elapsed_ms:.2f}ms (target: <100ms)"
+        assert (
+            elapsed_ms < 100.0
+        ), f"Organisations list took {elapsed_ms:.2f}ms (target: <100ms)"
 
     def test_projects_list_performance(self, client, authenticated_user, project):
         """Test projects list renders in under 100ms."""
         client.force_login(authenticated_user)
 
         # Warm up
-        client.get(reverse("web_ui:ui_projects_list"))
+        client.get("/ui/projects/")
 
         # Measure
         start = time.perf_counter()
-        response = client.get(reverse("web_ui:ui_projects_list"))
+        response = client.get("/ui/projects/")
         end = time.perf_counter()
 
         elapsed_ms = (end - start) * 1000
 
         assert response.status_code == 200
-        assert elapsed_ms < 100.0, f"Projects list took {elapsed_ms:.2f}ms (target: <100ms)"
+        assert (
+            elapsed_ms < 100.0
+        ), f"Projects list took {elapsed_ms:.2f}ms (target: <100ms)"
