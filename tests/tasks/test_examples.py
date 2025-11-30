@@ -82,9 +82,9 @@ class TestExportUserDataTask:
         assert result.result["request_id"] == "req-123"
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 class TestSyncExternalApiTask:
-    """Test retry logic task."""
+    """Test retry logic task (requires Redis for actual retries)."""
 
     @patch("tasks.examples.sync_external_api.requests.get")
     def test_sync_success_on_first_attempt(self, mock_get):
@@ -224,9 +224,9 @@ class TestSendNotificationTask:
             pytest.skip("send_notification task not implemented yet")
 
 
-@pytest.mark.unit
+@pytest.mark.integration
 class TestRetryLogic:
-    """Test task retry behavior."""
+    """Test task retry behavior (requires Redis for actual retries)."""
 
     @patch("tasks.examples.sync_external_api.requests.get")
     def test_task_retries_with_exponential_backoff(self, mock_get):

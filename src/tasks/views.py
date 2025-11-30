@@ -19,6 +19,7 @@ class TasksHealthView(APIView):
 
     permission_classes = []  # Public endpoint
     authentication_classes = []  # No auth required
+    throttle_classes = []  # No throttling on health checks
 
     def get(self, request):
         """
@@ -35,12 +36,21 @@ class TasksHealthView(APIView):
                 "workers": {"status": "ok" | "error", "message": "..."}
             }
         """
-        health_status = get_celery_health_status(timeout=5)
+        try:
+            health_status = get_celery_health_status(timeout=5)
 
-        http_status = (
-            status.HTTP_200_OK
-            if health_status["status"] == "healthy"
-            else status.HTTP_503_SERVICE_UNAVAILABLE
-        )
+            http_status = (
+                status.HTTP_200_OK
+                if health_status["status"] == "healthy"
+                else status.HTTP_503_SERVICE_UNAVAILABLE
+            )
 
-        return Response(health_status, status=http_status)
+            return Response(health_status, status=http_status)
+        except Exception:
+            # Log the exception for debugging
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.exception("Health check failed with exception")
+            # Re-raise to let Django's exception handling deal with it
+            raise

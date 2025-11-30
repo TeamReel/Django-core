@@ -17,25 +17,27 @@ class TestTasksHealthEndpoint:
         response = client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.json()["status"] == "healthy"
-        assert response.json()["broker"]["status"] == "ok"
-        assert response.json()["workers"]["status"] == "ok"
+        data = response.json()["data"]  # Health check wrapped in API envelope
+        assert data["status"] == "healthy"
+        assert data["broker"]["status"] == "ok"
+        assert data["workers"]["status"] == "ok"
 
-    def test_health_check_returns_503_when_unhealthy(self, client, monkeypatch):
+    @patch("tasks.health.check_active_workers")
+    @patch("tasks.health.check_broker_connectivity")
+    def test_health_check_returns_503_when_unhealthy(self, mock_broker, mock_workers, client):
         """Test health endpoint returns 503 when broker unavailable."""
         # Mock broker check to return unhealthy
-        from tasks import health
-
-        monkeypatch.setattr(
-            health, "check_broker_connectivity", lambda timeout: (False, "Broker unreachable")
-        )
+        mock_broker.return_value = (False, "Broker unreachable")
+        mock_workers.return_value = (True, "Workers active")
 
         url = reverse("tasks:health")
         response = client.get(url)
 
         assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
-        assert response.json()["status"] == "unhealthy"
-        assert response.json()["broker"]["status"] == "error"
+        # 503 responses don't get wrapped in envelope
+        data = response.json()
+        assert data["status"] == "unhealthy"
+        assert data["broker"]["status"] == "error"
 
     def test_health_check_no_authentication_required(self, client):
         """Test health endpoint is public (no auth required)."""
@@ -65,7 +67,12 @@ class TestTasksHealthEndpoint:
         url = reverse("tasks:health")
         response = client.get(url)
 
-        data = response.json()
+        # Response wrapped in API envelope
+        envelope = response.json()
+        assert "status" in envelope
+        assert "data" in envelope
+
+        data = envelope["data"]
         assert "status" in data
         assert "broker" in data
         assert "workers" in data
@@ -93,27 +100,23 @@ class TestCheckWorkersCommand:
         assert "HEALTHY" in output
         assert "Broker: OK" in output
 
-    def test_check_workers_command_exit_code(self, monkeypatch):
+    @patch("tasks.management.commands.check_workers.get_celery_health_status")
+    def test_check_workers_command_exit_code(self, mock_status):
         """Test command exits with code 1 when unhealthy."""
         from django.core.management import call_command
-        from tasks import health
 
-        monkeypatch.setattr(
-            health,
-            "get_celery_health_status",
-            lambda timeout: {
-                "status": "unhealthy",
-                "broker": {"status": "error", "message": "Down"},
-                "workers": {"status": "error", "message": "None"},
-            },
-        )
+        mock_status.return_value = {
+            "status": "unhealthy",
+            "broker": {"status": "error", "message": "Down"},
+            "workers": {"status": "error", "message": "None"},
+        }
 
         with pytest.raises(SystemExit) as exc_info:
             call_command("check_workers", exit_code=True)
 
         assert exc_info.value.code == 1
 
-    @patch("tasks.health.get_celery_health_status")
+    @patch("tasks.management.commands.check_workers.get_celery_health_status")
     def test_command_respects_timeout_argument(self, mock_status):
         """Test command passes timeout to health checks."""
         from io import StringIO
