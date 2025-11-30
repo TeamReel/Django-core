@@ -599,7 +599,7 @@ def getattribute(obj, attr_path: str):
 
 ---
 
-### [ ] T020: Override B05 password reset request template
+### [x] T020: Override B05 password reset request template
 **Description**: Create web_ui version of password reset request.
 
 **Checklist**:
@@ -619,7 +619,7 @@ def getattribute(obj, attr_path: str):
 
 ---
 
-### [ ] T021: Override B05 password reset confirm template
+### [x] T021: Override B05 password reset confirm template
 **Description**: Create web_ui version of password reset confirmation.
 
 **Checklist**:
@@ -638,7 +638,7 @@ def getattribute(obj, attr_path: str):
 
 ---
 
-### [ ] T022: Configure template directories in settings
+### [x] T022: Configure template directories in settings
 **Description**: Ensure web_ui templates override B05 templates.
 
 **Checklist**:
