@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
     "api",  # B13: API Foundation & Standards
+    "web_ui.apps.WebUIConfig",  # B14: Web UI Baseline
 ]
 
 MIDDLEWARE = [
@@ -202,11 +203,15 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_RENDERER_CLASSES": [
-        "api.renderers.EnvelopeJSONRenderer",  # B13 WP03: Consistent response envelope
+        # B13 WP03: Consistent response envelope
+        "api.renderers.EnvelopeJSONRenderer",
     ],
-    "EXCEPTION_HANDLER": "api.exceptions.envelope_exception_handler",  # B13 WP03: Consistent error handling
-    "DEFAULT_PAGINATION_CLASS": "api.pagination.BaseAPIPagination",  # B13 WP04: Pagination with metadata
-    "DEFAULT_THROTTLE_CLASSES": [  # B13 WP04: Rate limiting (FR-020, FR-021)
+    # B13 WP03: Consistent error handling
+    "EXCEPTION_HANDLER": "api.exceptions.envelope_exception_handler",
+    # B13 WP04: Pagination with metadata
+    "DEFAULT_PAGINATION_CLASS": "api.pagination.BaseAPIPagination",
+    # B13 WP04: Rate limiting (FR-020, FR-021)
+    "DEFAULT_THROTTLE_CLASSES": [
         "api.throttling.AuthenticatedUserThrottle",  # 100/min for authenticated
         "api.throttling.AnonymousUserThrottle",  # 10/min for anonymous
     ],
