@@ -1,6 +1,11 @@
 """URL configuration for tasks app."""
 
+from django.urls import path
+
+from .views import TasksHealthView
+
 app_name = "tasks"
 
-# Health check endpoint will be added in WP03
-urlpatterns = []
+urlpatterns = [
+    path("health/", TasksHealthView.as_view(), name="health"),
+]
