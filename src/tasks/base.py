@@ -3,6 +3,7 @@ Custom Celery task base classes for Django Core-App.
 
 Provides AuditedTask for automatic audit logging integration with B09.
 """
+
 import logging
 from typing import Any, Optional
 

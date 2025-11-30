@@ -3,6 +3,7 @@ Example: Audited task for user data export.
 
 Demonstrates proper use of AuditedTask base class with B09 audit integration.
 """
+
 from celery import shared_task
 
 from tasks.base import AuditedTask
