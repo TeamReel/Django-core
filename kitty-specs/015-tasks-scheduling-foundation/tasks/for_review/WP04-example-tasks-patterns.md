@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "copilot"
 shell_pid: "38532"
 ---
@@ -412,3 +412,4 @@ def send_bulk_notifications(user_ids: list[int], org_id: int, template_id: int, 
 ## Activity Log
 
 - 2025-11-30T18:26:38Z – copilot – shell_pid=38532 – lane=doing – Started WP04 implementation - Example tasks and patterns
+- 2025-11-30T18:29:33Z – copilot – shell_pid=38532 – lane=for_review – WP04 complete: Example tasks with basic, audited, and retry patterns
