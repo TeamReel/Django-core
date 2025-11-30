@@ -384,10 +384,10 @@ SITE_NAME = "Django Core"  # Used in page titles and branding
 ## WP04: Reusable Template Components (P2)
 **Goal**: Create template includes for messages, form fields, lists, and pagination.
 **Estimated Effort**: 5 hours
-**Status**: Not Started
-**Prompt**: [WP04-reusable-components.md](tasks/planned/WP04-reusable-components.md)
+**Status**: ✅ Complete
+**Prompt**: [WP04-reusable-components.md](tasks/done/WP04-reusable-components.md)
 
-### [ ] T012: Create messages component
+### [x] T012: Create messages component
 **Description**: Build reusable message display component.
 
 **Checklist**:
@@ -407,7 +407,7 @@ SITE_NAME = "Django Core"  # Used in page titles and branding
 
 ---
 
-### [ ] T013: Create form_field component
+### [x] T013: Create form_field component
 **Description**: Reusable template for rendering individual form fields.
 
 **Checklist**:
@@ -431,7 +431,7 @@ SITE_NAME = "Django Core"  # Used in page titles and branding
 
 ---
 
-### [ ] T014: Create form_layout component
+### [x] T014: Create form_layout component
 **Description**: Wrapper for complete forms with CSRF and submit button.
 
 **Checklist**:
@@ -454,7 +454,7 @@ SITE_NAME = "Django Core"  # Used in page titles and branding
 
 ---
 
-### [ ] T015: Create list_table component
+### [x] T015: Create list_table component
 **Description**: Reusable table for displaying querysets.
 
 **Checklist**:
@@ -479,7 +479,7 @@ SITE_NAME = "Django Core"  # Used in page titles and branding
 
 ---
 
-### [ ] T016: Create pagination component
+### [x] T016: Create pagination component
 **Description**: Reusable pagination controls.
 
 **Checklist**:
@@ -502,7 +502,7 @@ SITE_NAME = "Django Core"  # Used in page titles and branding
 
 ---
 
-### [ ] T017: Create custom template filter for dynamic attributes
+### [x] T017: Create custom template filter for dynamic attributes
 **Description**: Build `getattribute` filter for list_table component.
 
 **Checklist**:
