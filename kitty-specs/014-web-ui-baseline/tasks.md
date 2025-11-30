@@ -143,10 +143,10 @@ INSTALLED_APPS = [
 ## WP02: Base Templates & Context Processor (P0)
 **Goal**: Create foundational base.html template and context processor with permission flags.
 **Estimated Effort**: 6 hours
-**Status**: Not Started
-**Prompt**: [WP02-base-templates-context.md](tasks/planned/WP02-base-templates-context.md)
+**Status**: ✅ Complete
+**Prompt**: [WP02-base-templates-context.md](tasks/done/WP02-base-templates-context.md)
 
-### [ ] T005: Create context processor with permission flags
+### [x] T005: Create context processor with permission flags
 **Description**: Build context processor that exposes user, auth state, and precomputed permission booleans.
 
 **Checklist**:
@@ -211,7 +211,7 @@ def navigation_context(request: HttpRequest) -> Dict[str, Any]:
 
 ---
 
-### [ ] T006: Register context processor in settings
+### [x] T006: Register context processor in settings
 **Description**: Add context processor to TEMPLATES configuration.
 
 **Checklist**:
@@ -249,7 +249,7 @@ TEMPLATES = [
 
 ---
 
-### [ ] T007: Create base.html template with block structure
+### [x] T007: Create base.html template with block structure
 **Description**: Implement base template with semantic HTML5 and two-tier block system.
 
 **Checklist**:
@@ -281,7 +281,7 @@ TEMPLATES = [
 
 ---
 
-### [ ] T008: Create site configuration in settings
+### [x] T008: Create site configuration in settings
 **Description**: Add `SITE_NAME` setting for page titles.
 
 **Checklist**:

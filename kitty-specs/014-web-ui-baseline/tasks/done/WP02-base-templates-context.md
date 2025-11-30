@@ -1,7 +1,9 @@
 ---
-lane: "for_review"
-agent: "claude"
+lane: "done"
+agent: "claude-reviewer"
 shell_pid: "11588"
+review_status: "approved without changes"
+reviewed_by: "claude-reviewer"
 ---
 # Work Package: WP02 – Base Templates & Context Processor
 
