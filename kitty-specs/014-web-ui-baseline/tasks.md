@@ -307,10 +307,10 @@ SITE_NAME = "Django Core"  # Used in page titles and branding
 ## WP03: Navigation & Permission-Based Visibility (P1)
 **Goal**: Build navigation component with authentication and permission-aware visibility.
 **Estimated Effort**: 4 hours
-**Status**: Not Started
-**Prompt**: [WP03-navigation-permissions.md](tasks/planned/WP03-navigation-permissions.md)
+**Status**: ✅ Complete
+**Prompt**: [WP03-navigation-permissions.md](tasks/done/WP03-navigation-permissions.md)
 
-### [ ] T009: Create navigation component template
+### [x] T009: Create navigation component template
 **Description**: Build reusable navigation template with conditional visibility.
 
 **Checklist**:
@@ -339,7 +339,7 @@ SITE_NAME = "Django Core"  # Used in page titles and branding
 
 ---
 
-### [ ] T010: Handle empty navigation state edge case
+### [x] T010: Handle empty navigation state edge case
 **Description**: Test and verify navigation behavior when user has no permissions.
 
 **Checklist**:
@@ -356,7 +356,7 @@ SITE_NAME = "Django Core"  # Used in page titles and branding
 
 ---
 
-### [ ] T011: Handle long entity names edge case
+### [x] T011: Handle long entity names edge case
 **Description**: Add title attribute for full name display on hover.
 
 **Checklist**:
