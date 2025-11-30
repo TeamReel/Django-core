@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "copilot"
 shell_pid: "38532"
 ---
@@ -602,3 +602,4 @@ next_minute = (current_minute + 1) % 60
 ## Activity Log
 
 - 2025-11-30T18:36:20Z – copilot – shell_pid=38532 – lane=doing – Started periodic scheduling implementation
+- 2025-11-30T18:41:35Z – copilot – shell_pid=38532 – lane=for_review – WP05 complete: Periodic scheduling with beat configuration, examples, and deployment templates
