@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title|default:"Dashboard" }}{% endblock %} | {{ site_name|default:"Django Core" }}</title>
+
+    {% comment %}
+    ============================================================
+    SAFE BLOCK: extra_head
+    Downstream templates can override to add custom meta tags, CSS links, etc.
+    ============================================================
+    {% endcomment %}
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="ui-layout">
+    <header class="ui-header">
+        {% comment %}
+        ============================================================
+        INTERNAL BLOCK: header_structure
+        RESERVED for baseline layout - DO NOT override in downstream templates.
+        This ensures consistent header structure across all pages.
+        ============================================================
+        {% endcomment %}
+        {% block header_structure %}
+        <div class="ui-header__inner">
+            <div class="ui-header__brand">
+                <a href="{% url 'ui_home' %}" class="ui-brand-link">{{ site_name|default:"Django Core" }}</a>
+            </div>
+            <nav class="ui-nav">
+                {% comment %}
+                ============================================================
+                INTERNAL BLOCK: navigation_inner
+                RESERVED for baseline navigation structure - DO NOT override.
+                Use extra_nav_items in navigation.html for additions.
+                ============================================================
+                {% endcomment %}
+                {% block navigation_inner %}
+                {% include "web_ui/components/navigation.html" %}
+                {% endblock %}
+            </nav>
+        </div>
+        {% endblock %}
+    </header>
+
+    <main class="ui-main">
+        {% comment %}
+        ============================================================
+        SAFE BLOCK: messages
+        Override to customize message display (but default should work for most cases).
+        ============================================================
+        {% endcomment %}
+        {% block messages %}
+        {% include "web_ui/components/messages.html" %}
+        {% endblock %}
+
+        {% comment %}
+        ============================================================
+        SAFE BLOCK: content
+        PRIMARY block for page content - ALWAYS override in child templates.
+        ============================================================
+        {% endcomment %}
+        {% block content %}
+        <article class="ui-content">
+            <p class="ui-placeholder">Base template content block - override in child templates</p>
+        </article>
+        {% endblock %}
+    </main>
+
+    <footer class="ui-footer">
+        {% comment %}
+        ============================================================
+        SAFE BLOCK: footer
+        Override to customize footer content.
+        ============================================================
+        {% endcomment %}
+        {% block footer %}
+        <div class="ui-footer__inner">
+            <p class="ui-footer__text">&copy; 2025 {{ site_name|default:"Django Core" }}. All rights reserved.</p>
+        </div>
+        {% endblock %}
+    </footer>
+
+    {% comment %}
+    ============================================================
+    SAFE BLOCK: extra_scripts
+    Override to add page-specific JavaScript (if needed in future).
+    ============================================================
+    {% endcomment %}
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

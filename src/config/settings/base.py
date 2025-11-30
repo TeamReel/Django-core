@@ -78,6 +78,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # B14: Web UI navigation context
+                "web_ui.context_processors.navigation.navigation_context",
             ],
         },
     },
@@ -324,3 +326,9 @@ LOGGING = {
         },
     },
 }
+
+# ==============================================================================
+# Web UI Configuration (B14)
+# ==============================================================================
+
+SITE_NAME = "Django Core"  # Used in page titles (<title> tag) and branding (header)

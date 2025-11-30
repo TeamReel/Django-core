@@ -1,0 +1,12 @@
+{% comment %}
+Messages component - Will be implemented in WP04
+{% endcomment %}
+{% if messages %}
+<div class="ui-messages">
+    {% for message in messages %}
+    <div class="ui-message ui-message--{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
