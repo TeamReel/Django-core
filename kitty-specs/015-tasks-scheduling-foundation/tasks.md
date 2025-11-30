@@ -31,7 +31,7 @@ Implement async task execution and periodic scheduling infrastructure for Django
 | WP03 | Health Check Infrastructure | P2 | ✅ done | 5 | [WP03-health-check-infrastructure.md](tasks/done/WP03-health-check-infrastructure.md) |
 | WP04 | Example Tasks & Patterns | P2 | ✅ done | 5 | [WP04-example-tasks-patterns.md](tasks/done/WP04-example-tasks-patterns.md) |
 | WP05 | Periodic Scheduling Configuration | P2 | ✅ done | 6 | [WP05-periodic-scheduling-config.md](tasks/done/WP05-periodic-scheduling-config.md) |
-| WP06 | Documentation & Developer Guides | P2 | planned | 5 | [WP06-documentation-guides.md](tasks/planned/WP06-documentation-guides.md) |
+| WP06 | Documentation & Developer Guides | P2 | ✅ done | 5 | [WP06-documentation-guides.md](tasks/done/WP06-documentation-guides.md) |
 | WP07 | Testing Suite | P1 | planned | 9 | [WP07-testing-suite.md](tasks/planned/WP07-testing-suite.md) |
 
 **Total**: 7 work packages, 44 subtasks
