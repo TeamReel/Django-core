@@ -108,7 +108,7 @@ class TestAuditedTask:
         result = export_user_data.apply(
             kwargs={
                 "org_id": 123,
-                "export_format": "csv"
+                "export_format": "csv",
                 # Missing user_id
             }
         )
