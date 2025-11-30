@@ -3,13 +3,14 @@
 ## Metadata
 - **Work Package ID**: WP05
 - **Title**: Authentication Views
-- **Lane**: planned
+- **Lane**: doing
 - **Priority**: P1 (Critical)
 - **Estimated Effort**: 4 hours
 - **Subtasks**: T018, T019, T020, T021, T022
 
 ## History
 - 2025-11-30: Created from plan.md
+- 2025-11-30: Started by claude (shell_pid=11588) - lane=doing
 
 ---
 
