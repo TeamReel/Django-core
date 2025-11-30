@@ -27,25 +27,11 @@ A developer needs to offload a slow operation (e.g., sending bulk notifications,
 
 ### User Story 2 - Schedule Recurring Jobs (Priority: P2)
 
-An operator needs to run periodic maintenance tasks (e.g., cleanup old sessions, sync external data) on a fixed schedule (every hour, daily at 3am, etc.). They configure a periodic task via settings or database, and the system's beat scheduler ensures it runs at the specified intervals.
+An operator needs to run periodic maintenance tasks (e.g., cleanup old sessions, sync external data) on a fixed schedule (every hour, daily at 3am, etc.). They configure a periodic task via Django settings (baseline) or optionally via database (advanced), and the system's beat scheduler ensures it runs at the specified intervals.
 
 **Why this priority**: Critical for operational automation - enables housekeeping, data syncs, and maintenance without manual intervention.
 
-**Independent Test**: Operator configures a periodic task (e.g., `cleanup_sessions` every 24 hours), starts beat scheduler, and verifies task executes automatically at scheduled time with audit logs.
-
-**Acceptance Scenarios**:
-
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-
----
-
-### User Story 3 - [Brief Title] (Priority: P3)
-
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Operator configures a periodic task in Django settings (e.g., `cleanup_sessions` every 24 hours), starts beat scheduler, and verifies task executes automatically at scheduled time with audit logs.
 
 **Acceptance Scenarios**:
 
@@ -105,7 +91,7 @@ A platform maintainer needs to swap task broker/backend (e.g., from Redis to Rab
 
 - **FR-001**: System MUST provide decorator-based API for defining asynchronous tasks that can be triggered via `.delay()` or `.apply_async()`
 - **FR-002**: System MUST automatically retry failed tasks up to 3 times with exponential backoff (default: 2s, 4s, 8s between retries)
-- **FR-003**: System MUST support periodic task scheduling with both interval-based (every N seconds/minutes/hours) and cron-based (cron expression) schedules
+- **FR-003**: System MUST support periodic task scheduling with both interval-based (every N seconds/minutes/hours) and cron-based (cron expression) schedules configured via Django settings by default. System SHOULD provide clear extension point for optional database-backed scheduling (django-celery-beat style) to enable runtime schedule modifications.
 - **FR-004**: System MUST integrate with existing B09 audit logging to record task execution events (start, success, failure) with task metadata
 - **FR-005**: System MUST support pluggable broker configuration (Redis, RabbitMQ, or others) via Django settings without code changes
 - **FR-006**: System MUST provide basic task status queries (task ID lookup returns pending/started/success/failure/retry state)
@@ -133,7 +119,7 @@ A platform maintainer needs to swap task broker/backend (e.g., from Redis to Rab
 - **Periodic Task**: A scheduled task that runs automatically on a recurring basis. Has schedule definition (interval or cron), task reference, enabled/disabled state, and execution history.
 - **Task Execution**: A specific run of a task, tracked by unique task ID. Has status (pending/started/success/failure/retry), start/end timestamps, arguments, result or error details, and retry count.
 - **Worker**: A process that consumes tasks from the queue and executes them. Has configuration (concurrency level, queue subscriptions), health status, and execution metrics.
-- **Beat Scheduler**: A singleton process that triggers periodic tasks according to their schedule definitions. Has configuration (schedule source - settings or database) and last-run tracking.
+- **Beat Scheduler**: A singleton process that triggers periodic tasks according to their schedule definitions. Has configuration (schedule source - settings by default, optional database backend for runtime changes) and last-run tracking.
 
 ## Constitution Alignment
 
@@ -218,11 +204,17 @@ A platform maintainer needs to swap task broker/backend (e.g., from Redis to Rab
 - **Assumption 1**: Celery is selected as the task framework based on its maturity, Django integration, and widespread adoption in Python ecosystem. Alternative frameworks (RQ, Dramatiq) were considered but Celery provides best balance of features and stability.
 - **Assumption 2**: Default broker will be Redis for development and RabbitMQ for production deployments. System supports both via configuration.
 - **Assumption 3**: Task result persistence is optional and disabled by default to reduce infrastructure complexity. Can be enabled per-environment via settings.
-- **Assumption 4**: Only one beat scheduler process should run per deployment. Multi-scheduler coordination is out of scope (use database scheduler or leader election if needed).
+- **Assumption 4**: Only one beat scheduler process should run per deployment. Multi-scheduler coordination is out of scope. Baseline implementation uses settings-driven periodic task schedules; database-backed scheduling (django-celery-beat) is documented as optional extension point but not implemented in first iteration.
 - **Assumption 5**: Task idempotency is responsibility of task implementation, not infrastructure. Infrastructure provides tools (task ID, execution tracking) to support idempotency patterns.
 - **Assumption 6**: Basic task monitoring (status queries, logs) is sufficient for initial release. Advanced monitoring (metrics, tracing, dashboards) will integrate with B18-observability in future work.
 - **Assumption 7**: Task priority and rate limiting are configured at task definition level, not dynamically per execution. Dynamic priority requires queue design changes beyond MVP scope.
 - **Assumption 8**: Task execution context (user ID, org ID) is propagated via task arguments or custom context middleware. Request context is not automatically available in async tasks.
+
+## Clarifications
+
+### Session 2025-11-30
+
+- Q: Where should periodic task schedules be stored by default (settings vs database)? → A: Both supported, settings as default. Baseline implementation uses settings-driven schedules (static, deployment-driven). Database-backed scheduling (django-celery-beat style) should be defined as clear extension point but marked optional/advanced - no full implementation required in first iteration.
 
 ## Open Questions
 
