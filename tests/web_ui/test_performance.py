@@ -3,10 +3,9 @@
 import time
 
 import pytest
+from accounts.models import User
 from django.contrib.auth.models import Permission
 from django.test import Client, RequestFactory
-
-from accounts.models import User
 from organisations.models import Membership, Organisation
 from projects.models import Project
 from web_ui.context_processors.navigation import navigation_context
@@ -75,9 +74,7 @@ class TestContextProcessorPerformance:
         avg_time_ms = ((end - start) / 100) * 1000
 
         # Should be under 5ms average
-        assert (
-            avg_time_ms < 5.0
-        ), f"Context processor took {avg_time_ms:.2f}ms (target: <5ms)"
+        assert avg_time_ms < 5.0, f"Context processor took {avg_time_ms:.2f}ms (target: <5ms)"
 
 
 @pytest.mark.django_db
@@ -116,9 +113,7 @@ class TestViewPerformance:
         elapsed_ms = (end - start) * 1000
 
         assert response.status_code == 200
-        assert (
-            elapsed_ms < 100.0
-        ), f"Organisations list took {elapsed_ms:.2f}ms (target: <100ms)"
+        assert elapsed_ms < 100.0, f"Organisations list took {elapsed_ms:.2f}ms (target: <100ms)"
 
     def test_projects_list_performance(self, client, authenticated_user, project):
         """Test projects list renders in under 100ms."""
@@ -135,6 +130,4 @@ class TestViewPerformance:
         elapsed_ms = (end - start) * 1000
 
         assert response.status_code == 200
-        assert (
-            elapsed_ms < 100.0
-        ), f"Projects list took {elapsed_ms:.2f}ms (target: <100ms)"
+        assert elapsed_ms < 100.0, f"Projects list took {elapsed_ms:.2f}ms (target: <100ms)"
