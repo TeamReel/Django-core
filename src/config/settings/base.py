@@ -220,6 +220,8 @@ REST_FRAMEWORK = {
         "api.throttling.AnonymousUserThrottle",  # 10/min for anonymous
     ],
     "PAGE_SIZE": 50,
+    # B13 WP06: OpenAPI schema generation
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # B13: JWT Authentication Configuration (djangorestframework-simplejwt)

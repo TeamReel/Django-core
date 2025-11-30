@@ -11,7 +11,6 @@ from organisations.models import Organisation
 from projects.models import Project
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-
 from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
@@ -216,7 +215,8 @@ class TestFeatureFlagAPIEndpoints(APITestCase):
         url = reverse("featureflag-list")
         response = self.client.get(url)
 
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # B13: Unauthenticated access returns 401, not 403
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class TestSettingAPIEndpoints(APITestCase):
@@ -455,7 +455,7 @@ class TestAPIValidation(APITestCase):
         """Test invalid key format rejected."""
         url = reverse("featureflag-list")
         data = {
-            "key": "invalid-key!",  # Contains invalid characters
+            "key": "invalid-key!",  # Invalid format
             "scope_type": ScopeType.GLOBAL.value,
             "enabled": True,
         }
@@ -463,7 +463,9 @@ class TestAPIValidation(APITestCase):
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("key", response.data)
+        # B13: Error envelope structure
+        self.assertEqual(response.data["status"], "error")
+        self.assertIn("key", response.data["error"]["details"])
 
     def test_key_too_short(self):
         """Test key too short rejected."""
@@ -477,7 +479,9 @@ class TestAPIValidation(APITestCase):
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("key", response.data)
+        # B13: Error envelope structure
+        self.assertEqual(response.data["status"], "error")
+        self.assertIn("key", response.data["error"]["details"])
 
     def test_missing_organisation_for_org_scope(self):
         """Test organisation required for organisation scope."""
@@ -507,4 +511,6 @@ class TestAPIValidation(APITestCase):
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("default_value", response.data)
+        # B13: Error envelope structure
+        self.assertEqual(response.data["status"], "error")
+        self.assertIn("default_value", response.data["error"]["details"])
