@@ -1,0 +1,40 @@
+{% comment %}
+============================================================
+Form Layout Component
+Renders a complete Django form with fieldset wrapper.
+
+Usage: {% include "web_ui/components/form_layout.html" with form=my_form submit_text="Save" %}
+
+Parameters:
+- form: Django form object (required)
+- submit_text: Submit button text (default: "Submit")
+- form_id: HTML form id attribute (optional)
+- form_class: Additional CSS classes (optional)
+============================================================
+{% endcomment %}
+
+<form method="post"
+      {% if form_id %}id="{{ form_id }}"{% endif %}
+      class="ui-form {% if form_class %}{{ form_class }}{% endif %}">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <ul class="form-errors form-errors--global">
+        {% for error in form.non_field_errors %}
+        <li class="form-error">{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <fieldset class="form-fieldset">
+        {% for field in form %}
+            {% include "web_ui/components/form_field.html" with field=field %}
+        {% endfor %}
+    </fieldset>
+
+    <div class="form-actions">
+        <button type="submit" class="ui-button ui-button--primary">
+            {{ submit_text|default:"Submit" }}
+        </button>
+    </div>
+</form>

@@ -1,0 +1,34 @@
+{% comment %}
+============================================================
+Form Field Component
+Renders a Django form field with label, input, and errors.
+
+Usage: {% include "web_ui/components/form_field.html" with field=form.email %}
+
+Parameters:
+- field: Django form field object (required)
+============================================================
+{% endcomment %}
+
+<div class="form-field {% if field.errors %}form-field--error{% endif %}">
+    <label for="{{ field.id_for_label }}" class="form-label">
+        {{ field.label }}
+        {% if field.field.required %}
+            <span class="form-required" aria-label="required">*</span>
+        {% endif %}
+    </label>
+
+    {{ field }}
+
+    {% if field.help_text %}
+    <small class="form-help-text">{{ field.help_text }}</small>
+    {% endif %}
+
+    {% if field.errors %}
+    <ul class="form-errors">
+        {% for error in field.errors %}
+        <li class="form-error">{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>

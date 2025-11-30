@@ -1,0 +1,55 @@
+{% comment %}
+============================================================
+List Table Component
+Renders a list of objects as an HTML table with columns and actions.
+
+Usage: {% include "web_ui/components/list_table.html" with items=organisations columns=columns actions=actions %}
+
+Parameters:
+- items: QuerySet or list of objects (required)
+- columns: List of dicts with 'field' and 'label' keys (required)
+  Example: [{'field': 'name', 'label': 'Name'}, {'field': 'created_at', 'label': 'Created'}]
+- actions: List of dicts with 'url_name', 'label', 'url_field' keys (optional)
+  Example: [{'url_name': 'ui_organisations_detail', 'label': 'View', 'url_field': 'id'}]
+- empty_message: Message when no items (default: "No items found.")
+============================================================
+{% endcomment %}
+
+{% load web_ui_filters %}
+
+{% if items %}
+<table class="ui-table">
+    <thead class="ui-table__head">
+        <tr class="ui-table__row">
+            {% for column in columns %}
+            <th class="ui-table__header">{{ column.label }}</th>
+            {% endfor %}
+            {% if actions %}
+            <th class="ui-table__header ui-table__header--actions">Actions</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody class="ui-table__body">
+        {% for item in items %}
+        <tr class="ui-table__row">
+            {% for column in columns %}
+            <td class="ui-table__cell">
+                {{ item|getattribute:column.field|truncatechars:50 }}
+            </td>
+            {% endfor %}
+            {% if actions %}
+            <td class="ui-table__cell ui-table__cell--actions">
+                {% for action in actions %}
+                <a href="{% url action.url_name item|getattribute:action.url_field %}"
+                   class="ui-link ui-link--action">{{ action.label }}</a>
+                {% if not forloop.last %} | {% endif %}
+                {% endfor %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="ui-empty-state">{{ empty_message|default:"No items found." }}</p>
+{% endif %}

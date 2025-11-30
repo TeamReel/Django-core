@@ -1,0 +1,55 @@
+{% comment %}
+============================================================
+Pagination Component
+Renders pagination controls for Django Paginator.
+
+Usage: {% include "web_ui/components/pagination.html" with page_obj=page_obj %}
+
+Parameters:
+- page_obj: Django Page object from Paginator (required)
+============================================================
+{% endcomment %}
+
+{% if page_obj.has_other_pages %}
+<nav class="ui-pagination" aria-label="Pagination">
+    <ul class="pagination-list">
+        {% if page_obj.has_previous %}
+        <li class="pagination-item">
+            <a href="?page=1" class="pagination-link" aria-label="First page">First</a>
+        </li>
+        <li class="pagination-item">
+            <a href="?page={{ page_obj.previous_page_number }}" class="pagination-link" aria-label="Previous page">Previous</a>
+        </li>
+        {% else %}
+        <li class="pagination-item pagination-item--disabled">
+            <span class="pagination-link">First</span>
+        </li>
+        <li class="pagination-item pagination-item--disabled">
+            <span class="pagination-link">Previous</span>
+        </li>
+        {% endif %}
+
+        <li class="pagination-item pagination-item--current">
+            <span class="pagination-link" aria-current="page">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if page_obj.has_next %}
+        <li class="pagination-item">
+            <a href="?page={{ page_obj.next_page_number }}" class="pagination-link" aria-label="Next page">Next</a>
+        </li>
+        <li class="pagination-item">
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-link" aria-label="Last page">Last</a>
+        </li>
+        {% else %}
+        <li class="pagination-item pagination-item--disabled">
+            <span class="pagination-link">Next</span>
+        </li>
+        <li class="pagination-item pagination-item--disabled">
+            <span class="pagination-link">Last</span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
