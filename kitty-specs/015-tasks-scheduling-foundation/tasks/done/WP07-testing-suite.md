@@ -1,6 +1,7 @@
 ---
 lane: "done"
 agent: "copilot-reviewer"
+assignee: "copilot"
 shell_pid: "38532"
 review_status: "approved with minor notes"
 reviewed_by: "copilot-reviewer"
