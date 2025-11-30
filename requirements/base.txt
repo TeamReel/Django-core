@@ -34,3 +34,7 @@ pybloom-live>=3.1.0
 
 # Filtering support
 django-filter==24.2
+
+# Async Task Execution (B15)
+celery[redis]>=5.3.0,<6.0
+redis>=5.0.0,<6.0

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
     "api",  # B13: API Foundation & Standards
+    "tasks.apps.TasksConfig",  # B15: Tasks & Scheduling Foundation
 ]
 
 MIDDLEWARE = [
@@ -327,6 +328,12 @@ LOGGING = {
         },
     },
 }
+
+# ==============================================================================
+# Celery Configuration (B15)
+# ==============================================================================
+# Import Celery settings after TIME_ZONE is defined
+from .celery import *  # noqa
 
 # ==============================================================================
 # Web UI Configuration (B14)
