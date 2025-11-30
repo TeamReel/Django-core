@@ -139,3 +139,83 @@ pkill -TERM -f "celery worker"
 **Memory leaks**:
 - Workers automatically restart after 1000 tasks (see `CELERY_WORKER_MAX_TASKS_PER_CHILD`)
 - Monitor with: `celery -A config inspect stats | grep "pool-process"`
+
+## Running Beat Scheduler
+
+The beat scheduler triggers periodic tasks according to `CELERY_BEAT_SCHEDULE` configuration.
+
+### Local Development
+
+Start beat scheduler in a separate terminal:
+```bash
+celery -A config beat -l info
+```
+
+**Important**: Only ONE beat scheduler should run per deployment. Running multiple schedulers will cause duplicate task executions.
+
+### Production Deployment
+
+#### Systemd Service
+
+See `docs/deployment/celery-beat.service` for systemd template.
+
+**Install**:
+```bash
+sudo cp docs/deployment/celery-beat.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable celery-beat
+sudo systemctl start celery-beat
+```
+
+**Monitor**:
+```bash
+sudo systemctl status celery-beat
+sudo journalctl -u celery-beat -f
+```
+
+#### Docker
+
+```dockerfile
+# Separate container for beat scheduler
+CMD ["celery", "-A", "config", "beat", "-l", "info"]
+```
+
+**Docker Compose**:
+```yaml
+services:
+  celery-beat:
+    build: .
+    command: celery -A config beat -l info
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+```
+
+**Note**: Ensure only one beat container runs (use `replicas: 1` in production).
+
+### Beat Scheduler State
+
+Beat scheduler maintains state in `celerybeat-schedule` file (default) to track last run times.
+
+**Behavior**:
+- If beat crashes and restarts, it resumes from last known state
+- Some scheduled executions may be delayed but system continues normally
+- Delete `celerybeat-schedule` to reset all timers (use with caution)
+
+**File Location**: Project root by default. Add to `.gitignore`.
+
+### Troubleshooting Beat Scheduler
+
+**Tasks not executing on schedule**:
+- Check beat scheduler is running: `ps aux | grep "celery.*beat"`
+- Verify task name in schedule matches actual task
+- Check beat logs for errors: `celery -A config beat -l debug`
+
+**Duplicate executions**:
+- Confirm only ONE beat scheduler running
+- Check for multiple beat processes: `ps aux | grep "celery.*beat"`
+
+**Schedule drift**:
+- Beat scheduler has ±10 second accuracy (acceptable per specification)
+- For exact timing requirements, consider external cron + task triggering
