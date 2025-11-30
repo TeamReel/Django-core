@@ -28,7 +28,7 @@ Implement async task execution and periodic scheduling infrastructure for Django
 |-------|-------|----------|--------|----------|--------|
 | WP01 | Django App Setup & Celery Configuration | P1 | ✅ done | 8 | [WP01-django-app-setup.md](tasks/done/WP01-django-app-setup.md) |
 | WP02 | AuditedTask Base Class & B09 Integration | P2 | ✅ done | 6 | [WP02-audited-task-integration.md](tasks/done/WP02-audited-task-integration.md) |
-| WP03 | Health Check Infrastructure | P2 | planned | 5 | [WP03-health-check-infrastructure.md](tasks/planned/WP03-health-check-infrastructure.md) |
+| WP03 | Health Check Infrastructure | P2 | ✅ done | 5 | [WP03-health-check-infrastructure.md](tasks/done/WP03-health-check-infrastructure.md) |
 | WP04 | Example Tasks & Patterns | P2 | planned | 5 | [WP04-example-tasks-patterns.md](tasks/planned/WP04-example-tasks-patterns.md) |
 | WP05 | Periodic Scheduling Configuration | P2 | planned | 6 | [WP05-periodic-scheduling-config.md](tasks/planned/WP05-periodic-scheduling-config.md) |
 | WP06 | Documentation & Developer Guides | P2 | planned | 5 | [WP06-documentation-guides.md](tasks/planned/WP06-documentation-guides.md) |
@@ -147,17 +147,17 @@ class AuditedTask(Task):
 ---
 
 ## WP03: Health Check Infrastructure
-**Priority**: P2 | **Depends On**: WP01 | **Status**: planned
+**Priority**: P2 | **Depends On**: WP01 | **Status**: ✅ done
 
 ### Summary
 Implement health check endpoint at `/health/tasks/` and management command `check_workers` for monitoring worker availability and broker connectivity.
 
 ### Subtasks
-- [P] **T015**: Create `src/tasks/health.py` with broker connectivity check function
-- [P] **T016**: Create `src/tasks/views.py` with `TasksHealthView` returning 200/503 status
-- **T017**: Add URL routing in `src/tasks/urls.py` or main `config/urls.py`
-- [P] **T018**: Create management command: `src/tasks/management/commands/check_workers.py`
-- **T019**: Write health check integration test verifying 200 when broker available, 503 when unavailable
+- [x] **T015**: Create `src/tasks/health.py` with broker connectivity check function
+- [x] **T016**: Create `src/tasks/views.py` with `TasksHealthView` returning 200/503 status
+- [x] **T017**: Add URL routing in `src/tasks/urls.py` or main `config/urls.py`
+- [x] **T018**: Create management command: `src/tasks/management/commands/check_workers.py`
+- [x] **T019**: Write health check integration test verifying 200 when broker available, 503 when unavailable
 
 **Implementation Sketch**:
 ```python
