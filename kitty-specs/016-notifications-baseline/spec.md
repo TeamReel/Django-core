@@ -6,6 +6,14 @@
 **Status**: Draft
 **Input**: User description: "Implement a generic notifications framework for sending and storing notifications across channels (email, in-app, webhooks) with delivery state tracking, configurable retry policies per notification type, 90-day retention, and integration with B15 task scheduling."
 
+## Clarifications
+
+### Session 2025-12-01
+
+- Q: Who configures SMTP servers and webhook endpoints? → A: System administrators via Django admin interface (global config per deployment). SMTP servers and webhook endpoints are managed as global deployment-level configuration (backed by settings/env), editable by system administrators via Django admin. Per-org overrides can be added in future product-specific features, but are out of scope for B16.
+- Q: How should retry attempts be distributed within the retry window? → A: Exponential backoff. Within the retry_window, retries should use a simple exponential backoff (e.g. short initial delay, then increasing intervals) with a sensible default multiplier. Exact timings don't need to be per-policy configurable in B16; a single standard exponential strategy is fine as the baseline.
+- Q: Does B16 ship with pre-configured notification types, or must all types be created by administrators? → A: Ship with one generic "default" type only. B16 should create a single generic default notification type (e.g. "default") for simple usage and tests. All other notification types (password_reset, account_verification, etc.) are product-specific and must be created/configured by administrators or downstream products.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Send Email Notification with Status Tracking (Priority: P1)
@@ -43,7 +51,7 @@ An operator defines notification types (e.g., "password_reset" as critical, "new
 
 ---
 
-### User Story 3 - Notification History and Audit Trail (Priority: P2)
+### User Story 3 - Notification History & Audit API (Priority: P2)
 
 An operator or developer queries notification history to debug delivery issues, verify compliance, or analyze notification patterns. The system provides a queryable API that shows all notifications, their delivery status, retry attempts, and timestamps. Critical notification events (creation, delivery, failure) are logged to B09 audit system.
 
@@ -115,21 +123,21 @@ A product configures webhook endpoints to receive notifications about events (e.
 
 - **FR-001**: System MUST store notifications with: unique ID, notification type, channel (email/in-app/webhook), recipient identifier, message payload (subject/body/data), status (pending/sent/failed), created/updated timestamps, and optional metadata JSON
 - **FR-002**: System MUST support three notification channels: email (SMTP delivery), in-app (stored in database, queryable by user), and webhook (HTTP POST to configured URL)
-- **FR-003**: System MUST provide a REST API to create notifications with validation for required fields (type, channel, recipient, payload)
+- **FR-003**: System MUST provide a REST API to create notifications with validation for required fields (type, channel, recipient, payload). System ships with one generic "default" notification type; additional types must be created by administrators.
 - **FR-004**: System MUST validate recipient format during notification creation: email addresses must be RFC 5322 compliant, webhook URLs must be valid HTTP/HTTPS URLs
 
 #### Async Delivery & Retry
 
 - **FR-005**: System MUST integrate with B15 task scheduling to deliver notifications asynchronously (email and webhook channels only; in-app notifications are synchronous)
 - **FR-006**: System MUST support configurable retry policies per notification type with parameters: max_attempts (default 3), retry_window (default 1 hour), backoff_strategy (linear/exponential)
-- **FR-007**: System MUST provide a default "best-effort" retry policy (3 attempts over 1 hour with exponential backoff) for notification types without custom policies
-- **FR-008**: System MUST distinguish permanent failures (SMTP 5xx permanent, HTTP 4xx client errors) from transient failures (SMTP temp failure, HTTP 5xx server errors) and skip retries for permanent failures
+- **FR-007**: System MUST provide a default "best-effort" retry policy (3 attempts over 1 hour with exponential backoff) for notification types without custom policies. Retry attempts use exponential backoff with a standard multiplier (e.g., delays of 1min, 5min, 25min).
+- **FR-008**: System MUST distinguish permanent failures (SMTP 5xx codes like 550 mailbox unavailable, HTTP 4xx client errors) from transient failures (SMTP 4xx temporary failures, HTTP 5xx server errors) and skip retries for permanent failures. Note: SMTP uses 5xx for permanent errors (opposite of HTTP where 5xx indicates transient server errors)
 - **FR-009**: System MUST record delivery attempt details: attempt number, timestamp, outcome (success/transient_failure/permanent_failure), error message, HTTP status code (if applicable)
 - **FR-010**: System MUST ensure atomic status transitions during delivery attempts using database row-level locking to prevent race conditions
 
 #### Email Channel
 
-- **FR-011**: System MUST send email notifications via configured SMTP server with TLS support
+- **FR-011**: System MUST send email notifications via configured SMTP server with TLS support (SMTP server configured globally per deployment via Django admin or environment variables)
 - **FR-012**: System MUST support HTML and plain-text email templates with variable substitution
 - **FR-013**: System MUST validate email addresses using standard email validation (regex + DNS MX lookup optional)
 - **FR-014**: System MUST record SMTP response codes and delivery errors in delivery attempt history
@@ -144,7 +152,7 @@ A product configures webhook endpoints to receive notifications about events (e.
 
 #### Webhook Channel
 
-- **FR-020**: System MUST send webhook notifications as HTTP POST requests with JSON payload containing: notification_id, type, timestamp, data (custom payload from notification creation)
+- **FR-020**: System MUST send webhook notifications as HTTP POST requests with JSON payload containing: notification_id, type, timestamp, data (custom payload from notification creation). Webhook endpoints configured globally per deployment via Django admin or environment variables.
 - **FR-021**: System MUST record HTTP response code, response body (truncated to reasonable size, e.g., 1KB), and delivery timestamp in delivery attempt history
 - **FR-022**: System MUST follow HTTP redirects (3xx) up to a configured limit (default 3 redirects) and treat redirect loops as failed delivery
 - **FR-023**: System MUST enforce HTTP request timeout (default 30 seconds) and treat timeouts as transient failures eligible for retry
@@ -172,9 +180,9 @@ A product configures webhook endpoints to receive notifications about events (e.
 ### Key Entities
 
 - **Notification**: Represents a single notification with: id, type (FK to NotificationType), channel (email/in-app/webhook), recipient, payload (JSON), status (pending/sent/failed), created_at, updated_at, read_at (in-app only), metadata (JSON). Relationships: 1-to-many with DeliveryAttempt.
-- **NotificationType**: Defines notification categories with: code (unique slug, e.g., "password_reset"), name, description, default_channel, retry_policy (FK to RetryPolicy). Allows grouping and policy assignment.
+- **NotificationType**: Defines notification categories with: code (unique slug, e.g., "password_reset"), name, description, default_channel, retry_policy (FK to RetryPolicy). Allows grouping and policy assignment. B16 ships with one "default" notification type; product-specific types (password_reset, account_verification, etc.) must be created by administrators.
 - **DeliveryAttempt**: Tracks each delivery attempt with: id, notification (FK), attempt_number, attempted_at, outcome (success/transient_failure/permanent_failure), error_message, http_status_code, response_body_snippet. Enables delivery debugging and retry tracking.
-- **RetryPolicy**: Configures retry behavior with: id, name, max_attempts, retry_window_seconds, backoff_strategy (linear/exponential), backoff_multiplier. Decouples retry logic from notification types for reusability.
+- **RetryPolicy**: Configures retry behavior with: id, name, max_attempts, retry_window_seconds, backoff_strategy (linear/exponential), backoff_multiplier. Decouples retry logic from notification types for reusability. B16 baseline uses exponential backoff with a standard multiplier; custom timing strategies can be added via FR-034 extensibility hooks.
 - **NotificationChannel** (plugin interface): Abstract base class for channel implementations (EmailChannel, InAppChannel, WebhookChannel). Defines deliver() method signature and validation contract for custom channels.
 
 ## Constitution Alignment *(mandatory)*
