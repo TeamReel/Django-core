@@ -82,6 +82,10 @@ class EmailChannel(NotificationChannel):
                 "duration_ms": duration_ms,
             }
 
+        except (PermanentChannelError, TransientChannelError):
+            # Re-raise our own exceptions without wrapping
+            raise
+
         except SMTPException as e:
             duration_ms = int((time.time() - start_time) * 1000)
             error_msg = str(e)
