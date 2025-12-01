@@ -39,31 +39,42 @@ def retry_policy_factory(db: Any) -> Callable[..., Any]:
 
 
 @pytest.fixture
-def notification_type_factory(db: Any) -> Callable[..., Any]:
+def notification_type_factory(
+    db: Any, retry_policy_factory: Callable[..., Any]
+) -> Callable[..., Any]:
     """Factory for creating NotificationType test instances.
 
     Args:
         db: pytest-django database fixture
+        retry_policy_factory: Factory for RetryPolicy instances
 
     Returns:
         Factory function that creates NotificationType with customizable fields
 
     Example:
         def test_notification_type(notification_type_factory):
-            ntype = notification_type_factory(name='alert', channel='email')
-            assert ntype.channel == 'email'
+            ntype = notification_type_factory(code='alert', default_channel='email')
+            assert ntype.default_channel == 'email'
     """
 
     def make_notification_type(**kwargs: Any) -> Any:
         from notifications.models import NotificationType
 
+        # Create retry policy if not provided
+        if "retry_policy" not in kwargs:
+            kwargs["retry_policy"] = retry_policy_factory()
+
+        # Generate unique code if not provided
+        import uuid
+
+        if "code" not in kwargs:
+            kwargs["code"] = f"test_type_{uuid.uuid4().hex[:8]}"
+
         defaults = {
-            "name": "test-type",
+            "name": "Test Notification Type",
             "description": "Test notification type",
-            "channel": "email",
-            "template_subject": "Test Subject",
-            "template_body": "Test Body: {{ message }}",
-            "default_from_address": "noreply@example.com",
+            "default_channel": "email",
+            "is_active": True,
         }
         defaults.update(kwargs)
         return NotificationType.objects.create(**defaults)
@@ -94,10 +105,11 @@ def notification_factory(
         from notifications.models import Notification
 
         # Create a notification type if not provided
-        if "notification_type" not in kwargs:
-            kwargs["notification_type"] = notification_type_factory()
+        if "type" not in kwargs:
+            kwargs["type"] = notification_type_factory()
 
         defaults = {
+            "channel": "email",
             "recipient": "test@example.com",
             "status": "pending",
             "payload": {"message": "Test notification"},
@@ -124,8 +136,8 @@ def delivery_attempt_factory(
 
     Example:
         def test_delivery_attempt(delivery_attempt_factory):
-            attempt = delivery_attempt_factory(attempt_number=1, status='success')
-            assert attempt.status == 'success'
+            attempt = delivery_attempt_factory(attempt_number=1, outcome='success')
+            assert attempt.outcome == 'success'
     """
 
     def make_delivery_attempt(**kwargs: Any) -> Any:
@@ -137,10 +149,7 @@ def delivery_attempt_factory(
 
         defaults = {
             "attempt_number": 1,
-            "status": "pending",
-            "response_code": None,
-            "response_body": None,
-            "error_message": None,
+            "outcome": "success",
         }
         defaults.update(kwargs)
         return DeliveryAttempt.objects.create(**defaults)
