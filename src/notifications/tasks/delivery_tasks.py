@@ -8,7 +8,14 @@ from django.utils import timezone
 
 from notifications.channels.email import EmailChannel
 from notifications.channels.exceptions import PermanentChannelError, TransientChannelError
+from notifications.metrics import (
+    notification_deliveries_total,
+    notification_failures_total,
+    notification_retries_total,
+    notification_retry_delay_seconds,
+)
 from notifications.models import DeliveryAttempt, Notification
+from notifications.services.retry_service import RetryService
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +64,13 @@ def deliver_email_notification(self, notification_id: str):
         attempt.duration_ms = result.get("duration_ms")
         attempt.save()
 
+        # Track delivery success metric
+        notification_deliveries_total.labels(
+            notification_type=notification.type.code,
+            channel="email",
+            outcome="success",
+        ).inc()
+
         # Update notification status atomically
         with transaction.atomic():
             notification.status = "sent"
@@ -87,6 +101,13 @@ def deliver_email_notification(self, notification_id: str):
         attempt.error_message = str(e)
         attempt.save()
 
+        # Track permanent failure metric
+        notification_failures_total.labels(
+            notification_type=notification.type.code,
+            channel="email",
+            failure_type="permanent",
+        ).inc()
+
         with transaction.atomic():
             notification.status = "failed"
             notification.updated_at = timezone.now()
@@ -107,42 +128,55 @@ def deliver_email_notification(self, notification_id: str):
         attempt.error_message = str(e)
         attempt.save()
 
-        # Check retry window (time elapsed since notification creation)
-        elapsed_seconds = (timezone.now() - notification.created_at).total_seconds()
-        if elapsed_seconds > policy.retry_window_seconds:
-            # Outside retry window - mark as failed
+        # Track retry attempt metric
+        notification_retries_total.labels(
+            notification_type=notification.type.code,
+            channel="email",
+            outcome="transient_failure",
+        ).inc()
+
+        # Check if should retry using RetryService
+        current_attempts = self.request.retries + 1
+        if not RetryService.should_retry(notification, policy, current_attempts):
+            # Outside retry window or max attempts reached - mark as failed
+            reason = (
+                "retry window expired"
+                if not RetryService.is_within_window(notification, policy)
+                else "max retry attempts reached"
+            )
+
             logger.error(
-                "Retry window expired",
+                f"Retry limit reached: {reason}",
                 extra={
                     "notification_id": str(notification.id),
-                    "elapsed_seconds": elapsed_seconds,
+                    "current_attempts": current_attempts,
+                    "max_attempts": policy.max_attempts,
+                    "elapsed_seconds": (timezone.now() - notification.created_at).total_seconds(),
                     "retry_window_seconds": policy.retry_window_seconds,
                 },
             )
+
+            # Track failure metric
+            notification_failures_total.labels(
+                notification_type=notification.type.code,
+                channel="email",
+                failure_type="transient_exhausted",
+            ).inc()
+
             with transaction.atomic():
                 notification.status = "failed"
                 notification.updated_at = timezone.now()
                 notification.save()
-
-        elif self.request.retries >= policy.max_attempts - 1:
-            # Max attempts reached - mark as failed
-            logger.error(
-                "Max retry attempts reached",
-                extra={
-                    "notification_id": str(notification.id),
-                    "retries": self.request.retries,
-                    "max_attempts": policy.max_attempts,
-                },
-            )
-            with transaction.atomic():
-                notification.status = "failed"
-                notification.updated_at = timezone.now()
-                notification.save()
-
         else:
-            # Calculate retry delay using RetryPolicy logic
+            # Calculate retry delay using RetryService
             next_attempt = self.request.retries + 2  # Next attempt number (1-indexed)
-            delay = policy.calculate_retry_delay(next_attempt)
+            delay = RetryService.calculate_delay(policy, next_attempt)
+
+            # Track retry delay metric
+            notification_retry_delay_seconds.labels(
+                notification_type=notification.type.code,
+                backoff_strategy=policy.backoff_strategy,
+            ).observe(delay)
 
             logger.info(
                 "Scheduling retry",
