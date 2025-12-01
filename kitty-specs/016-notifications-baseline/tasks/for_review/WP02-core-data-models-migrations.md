@@ -16,18 +16,101 @@ subtasks:
   - "T021"
 title: "Core Data Models & Migrations"
 phase: "Phase 0 - Foundation"
-lane: "for_review"
+lane: "planned"
 assignee: ""
 agent: "claude"
 shell_pid: "11372"
-review_status: ""
-reviewed_by: ""
+review_status: "has_feedback"
+reviewed_by: "claude"
 history:
   - timestamp: "2025-12-01T00:00:00Z"
     lane: "planned"
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-01T20:45:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "11372"
+    action: "Review completed - rejected with required changes"
+---
+
+## Review Feedback
+
+**Review Date**: 2025-12-01
+**Reviewer**: claude
+**Status**: REJECTED - Required Changes
+
+### Critical Issue: Test Fixture Incompatibility
+
+**Problem**: 59 of 70 test methods fail due to incompatible test framework usage.
+
+**Root Cause**:
+- Test classes inherit from `unittest.TestCase` (via `NotificationTestCase` base class in `tests/notifications/base.py`)
+- Test methods use pytest fixtures as parameters (`retry_policy_factory`, `notification_type_factory`, etc.)
+- Pytest cannot inject fixtures into unittest-style test methods
+
+**Example Failure**:
+```
+TypeError: TestNotificationType.test_create_notification_type() missing 1 required
+positional argument: 'retry_policy_factory'
+```
+
+**Affected Files**:
+- `tests/notifications/models/test_retry_policy.py` (1 of 12 tests failed due to seeded data FK protection)
+- `tests/notifications/models/test_notification_type.py` (15 of 15 tests failed)
+- `tests/notifications/models/test_notification.py` (32 of 32 tests failed)
+- `tests/notifications/models/test_delivery_attempt.py` (11 of 11 tests failed)
+
+**Test Results**: 11 passed, 59 failed, 4 warnings
+
+### Required Changes
+
+1. **Refactor Test Base Class** (`tests/notifications/base.py`):
+   - Remove `unittest.TestCase` inheritance from `NotificationTestCase`
+   - Convert to pure pytest style (plain class without TestCase)
+   - Replace `self.assertEqual()` with `assert` statements
+   - Replace `self.assertRaises()` with `pytest.raises()`
+   - Keep utility methods but adapt to pytest style
+
+2. **Update All Test Classes**:
+   - Remove `NotificationTestCase` inheritance OR refactor to not use unittest.TestCase
+   - Keep pytest fixtures as method parameters (this is correct)
+   - Update all assertion style from unittest to pytest (`assert` instead of `self.assertEqual()`)
+   - Mark tests with `@pytest.mark.django_db` decorator if not already present
+
+3. **Verify Test Execution**:
+   - Run `pytest tests/notifications/models/ -v` to confirm all 70 tests pass
+   - Ensure fixture injection works correctly after refactoring
+   - Maintain 90%+ test coverage requirement per Definition of Done
+
+### What's Working Well
+
+✅ **Models**: All 4 models implemented with proper type hints, validation, field constraints
+✅ **Migrations**: Both migrations applied successfully (0001_initial, 0002_seed_baseline_data)
+✅ **Seeded Data**: best-effort RetryPolicy and default NotificationType queryable via ORM
+✅ **Query Optimization**: NotificationManager with select_related/prefetch_related prevents N+1
+✅ **Django Configuration**: `python manage.py check` passes with no issues
+✅ **Test Structure**: Comprehensive coverage (78 test methods), proper fixtures in conftest.py
+✅ **Code Quality**: Type hints throughout, clean architecture, proper validation patterns
+
+### Validation Results
+
+| Check | Status | Details |
+|-------|--------|---------|
+| Django Configuration | ✅ PASS | No issues found |
+| Migrations Applied | ✅ PASS | 0001_initial, 0002_seed_baseline_data |
+| Seeded Data Queryable | ✅ PASS | RetryPolicy.objects.get(name='best-effort') works |
+| Unit Tests Execute | ❌ FAIL | 59/70 tests fail due to fixture incompatibility |
+| Code Quality | ✅ PASS | Type hints, validation, indexes all correct |
+
+### Next Steps
+
+1. Fix test framework incompatibility (primary blocker)
+2. Run full test suite to verify 90%+ coverage
+3. Move WP02 back to for_review lane
+4. Re-submit for approval
+
 ---
 
 # Work Package Prompt: WP02 – Core Data Models & Migrations
