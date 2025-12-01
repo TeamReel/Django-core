@@ -1,10 +1,10 @@
 """Integration tests for email notification delivery."""
 
-import pytest
 from unittest.mock import patch
 
+import pytest
+from celery.exceptions import Retry
 from django.utils import timezone
-
 from notifications.channels.exceptions import TransientChannelError
 from notifications.models import DeliveryAttempt, Notification
 from notifications.tasks.delivery_tasks import deliver_email_notification
@@ -106,7 +106,8 @@ class TestEmailDeliveryIntegration:
         )
 
         # First attempt - should raise TransientChannelError for retry
-        with pytest.raises(Exception):  # Celery retry exception
+        # Celery wraps retries, so we expect any exception during retry
+        with pytest.raises((Retry, TransientChannelError)):
             deliver_email_notification.apply(args=[str(notification.id)]).get()
 
         # Verify notification still pending (not failed)
@@ -144,13 +145,14 @@ class TestEmailDeliveryIntegration:
 
         # Simulate task execution with retries
         task = deliver_email_notification
-        
+
         # First attempt (retries=0)
         task.request.retries = 0
         try:
             task(str(notification.id))
-        except Exception:
-            pass
+        except Exception as e:
+            # Expected: TransientChannelError triggers retry
+            assert isinstance(e, TransientChannelError)
 
         # Second attempt (retries=1, should mark as failed)
         task.request.retries = 1
@@ -169,8 +171,8 @@ class TestEmailDeliveryIntegration:
         self, mock_send_mail, notification_factory, notification_type_factory, retry_policy_factory
     ):
         """Notification marked failed if retry window expires."""
-        from smtplib import SMTPException
         from datetime import timedelta
+        from smtplib import SMTPException
 
         mock_send_mail.side_effect = SMTPException("Connection timeout")
 
@@ -179,9 +181,7 @@ class TestEmailDeliveryIntegration:
             initial_delay_seconds=1,
             retry_window_seconds=60,  # 1 minute window
         )
-        notification_type = notification_type_factory(
-            code="test-window", retry_policy=retry_policy
-        )
+        notification_type = notification_type_factory(code="test-window", retry_policy=retry_policy)
 
         # Create notification with old timestamp (outside retry window)
         old_timestamp = timezone.now() - timedelta(seconds=120)  # 2 minutes ago
