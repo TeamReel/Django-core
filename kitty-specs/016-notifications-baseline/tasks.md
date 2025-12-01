@@ -167,24 +167,25 @@
 
 ---
 
-## Work Package WP04: Retry Policies & Delivery Tracking (Priority: P2)
+## Work Package WP04: Retry Policies & Delivery Tracking (Priority: P2) 🔄 IN REVIEW
 
 **Goal**: Implement configurable retry policies with exponential backoff, respect retry windows, track all delivery attempts (User Story 2).
 **Independent Test**: Can configure custom RetryPolicy → notifications respect max_attempts and retry_window → exponential backoff calculated correctly → attempt history queryable.
-**Prompt**: `kitty-specs/016-notifications-baseline/tasks/planned/WP04-retry-policies-delivery-tracking.md`
+**Prompt**: `kitty-specs/016-notifications-baseline/tasks/for_review/WP04-retry-policies-delivery-tracking.md`
+**Status**: 🔄 **IN REVIEW** - All 11 subtasks complete, 14/14 tests passing (100%)
 
 ### Included Subtasks
-- [ ] T037 Implement retry delay calculation (exponential backoff) in `src/notifications/services/retry_service.py`
-- [ ] T038 Add retry window enforcement (skip retry if outside window)
-- [ ] T039 Implement retry policy loader in Celery task (load from NotificationType → RetryPolicy)
-- [ ] T040 Add Celery task countdown calculation based on policy parameters
-- [ ] T041 Create DeliveryAttempt record before each retry attempt
-- [ ] T042 Update Notification status to "failed" when max_attempts exhausted
-- [ ] T043 Add metrics for retry attempts (prometheus counters)
-- [ ] T044 [P] Write unit tests for RetryService in `tests/notifications/services/test_retry_service.py`
-- [ ] T045 [P] Write integration tests for retry behavior in `tests/notifications/integration/test_retry_policies.py`
-- [ ] T046 Create example "critical" retry policy in migration (for documentation)
-- [ ] T047 Add Django admin interface for RetryPolicy management
+- [X] T037 Implement retry delay calculation (exponential backoff) in `src/notifications/services/retry_service.py`
+- [X] T038 Add retry window enforcement (skip retry if outside window)
+- [X] T039 Implement retry policy loader in Celery task (load from NotificationType → RetryPolicy)
+- [X] T040 Add Celery task countdown calculation based on policy parameters
+- [X] T041 Create DeliveryAttempt record before each retry attempt
+- [X] T042 Update Notification status to "failed" when max_attempts exhausted
+- [X] T043 Add metrics for retry attempts (prometheus counters)
+- [X] T044 [P] Write unit tests for RetryService in `tests/notifications/services/test_retry_service.py`
+- [X] T045 [P] Write integration tests for retry behavior in `tests/notifications/integration/test_retry_policies.py`
+- [X] T046 Create example "critical" retry policy in migration (for documentation)
+- [X] T047 Add Django admin interface for RetryPolicy management
 
 ### Constitutional Alignment
 - Principle II (Architecture): RetryService encapsulates retry logic (single responsibility)
