@@ -23,17 +23,17 @@
 
 **Goal**: Create notifications Django app structure, configure tooling, and establish quality gates per Constitution Principles III, VIII, X.
 **Independent Test**: App loads in Django without errors; linting, formatting, type checking pass; tests run successfully.
-**Prompt**: `kitty-specs/016-notifications-baseline/tasks/planned/WP01-setup-django-app-foundation.md`
+**Prompt**: `kitty-specs/016-notifications-baseline/tasks/done/WP01-setup-django-app-foundation.md`
 
 ### Included Subtasks
-- [ ] T001 Create notifications Django app in `src/notifications/`
-- [ ] T002 Add app to INSTALLED_APPS in Django settings
-- [ ] T003 [P] Create app directory structure: models/, serializers/, views/, services/, tasks/
-- [ ] T004 [P] Configure mypy for type checking on notifications module
-- [ ] T005 [P] Setup pytest-django fixtures for notifications tests in `tests/notifications/conftest.py`
-- [ ] T006 Create base test classes for notifications in `tests/notifications/base.py`
-- [ ] T007 Add notifications app to CI pipeline (ensure linting/formatting/tests run)
-- [ ] T008 Create `src/notifications/__init__.py` with app metadata
+- [X] T001 Create notifications Django app in `src/notifications/`
+- [X] T002 Add app to INSTALLED_APPS in Django settings
+- [X] T003 [P] Create app directory structure: models/, serializers/, views/, services/, tasks/
+- [X] T004 [P] Configure mypy for type checking on notifications module
+- [X] T005 [P] Setup pytest-django fixtures for notifications tests in `tests/notifications/conftest.py`
+- [X] T006 Create base test classes for notifications in `tests/notifications/base.py`
+- [X] T007 Add notifications app to CI pipeline (ensure linting/formatting/tests run)
+- [X] T008 Create `src/notifications/__init__.py` with app metadata
 
 ### Constitutional Alignment
 - Principle II (Architecture): Single-responsibility Django app, clear structure
