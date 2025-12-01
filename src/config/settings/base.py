@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
     "api",  # B13: API Foundation & Standards
     "tasks.apps.TasksConfig",  # B15: Tasks & Scheduling Foundation
+    "notifications.apps.NotificationsConfig",  # B16: Notifications Baseline
 ]
 
 MIDDLEWARE = [
