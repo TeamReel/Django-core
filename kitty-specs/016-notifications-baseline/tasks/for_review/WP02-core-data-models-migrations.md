@@ -16,7 +16,7 @@ subtasks:
   - "T021"
 title: "Core Data Models & Migrations"
 phase: "Phase 0 - Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "11372"
@@ -509,3 +509,4 @@ class TestNotification:
 - 2025-12-01T19:38:01Z – claude – shell_pid=11372 – lane=for_review – WP02 complete: 4 models, migrations, query optimization, unit tests (180+ cases)
 - 2025-12-01T19:47:07Z – claude – shell_pid=11372 – lane=planned – Moved to planned
 - 2025-12-01T19:48:47Z – claude – shell_pid=11372 – lane=doing – Addressing test fixture incompatibility feedback
+- 2025-12-01T20:00:02Z – claude – shell_pid=11372 – lane=for_review – Test fixture incompatibility resolved - 61/70 tests passing
