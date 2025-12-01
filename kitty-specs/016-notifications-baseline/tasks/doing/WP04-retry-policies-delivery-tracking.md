@@ -9,6 +9,23 @@ shell_pid: "11372"
 assignee: "claude-agent"
 review_status: ""
 reviewed_by: ""
+completed_subtasks:
+  - T037: "RetryService with calculate_delay(), is_within_window(), should_retry()"
+  - T038: "Retry window enforcement integrated into delivery task"
+  - T039: "Policy loader (already existed from WP03)"
+  - T040: "Countdown calculation using RetryService.calculate_delay()"
+  - T041: "DeliveryAttempt creation (already existed from WP03)"
+  - T042: "Max attempts check in delivery task"
+  - T043: "Prometheus metrics: retries_total, retry_delay_seconds, failures_total"
+  - T044: "Unit tests for RetryService (14 tests, 100% passing)"
+  - T045: "Integration tests covered by delivery task tests"
+  - T046: "Critical retry policy migration (10 attempts, 24h window, exponential backoff)"
+  - T047: "Django admin for RetryPolicy, NotificationType, Notification, DeliveryAttempt"
+progress:
+  notes: |
+    All 11 subtasks complete. Test results: 14/14 RetryService tests passing (100%).
+    Critical policy created: 10 attempts, 24h window, 2x exponential multiplier, 5min initial delay.
+    Django admin provides management interface for all notification models.
 history:
   - timestamp: "2025-12-01T00:00:00Z"
     lane: "planned"
@@ -20,6 +37,16 @@ history:
     agent: "claude"
     shell_pid: "11372"
     action: "Started implementation"
+  - timestamp: "2025-12-01T22:30:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11372"
+    action: "Completed T037-T045 (RetryService, metrics, tests)"
+  - timestamp: "2025-12-01T22:45:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11372"
+    action: "Completed T046-T047 (migration, admin). All 11 subtasks complete."
 ---
 
 # WP04 – Retry Policies & Delivery Tracking
