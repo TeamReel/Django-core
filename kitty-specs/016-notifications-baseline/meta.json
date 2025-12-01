@@ -1,0 +1,7 @@
+{
+    "feature_number":  "016",
+    "slug":  "016-notifications-baseline",
+    "friendly_name":  "Notifications Baseline",
+    "source_description":  "Implement a generic notifications framework for sending and storing notifications across channels (email, in-app, webhooks) with delivery state tracking, configurable retry policies per notification type, 90-day retention, and integration with B15 task scheduling.",
+    "created_at":  "2025-12-01T17:12:51Z"
+}
