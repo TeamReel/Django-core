@@ -16,7 +16,7 @@ subtasks:
   - "T021"
 title: "Core Data Models & Migrations"
 phase: "Phase 0 - Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "11372"
@@ -423,3 +423,4 @@ class TestNotification:
 
 - 2025-12-01T00:00:00Z – system – lane=planned – Prompt created
 - 2025-12-01T19:06:46Z – claude – shell_pid=11372 – lane=doing – Started WP02 implementation: Core Data Models & Migrations
+- 2025-12-01T19:38:01Z – claude – shell_pid=11372 – lane=for_review – WP02 complete: 4 models, migrations, query optimization, unit tests (180+ cases)

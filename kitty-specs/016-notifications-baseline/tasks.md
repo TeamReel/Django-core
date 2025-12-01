@@ -67,19 +67,19 @@
 **Prompt**: `kitty-specs/016-notifications-baseline/tasks/planned/WP02-core-data-models-migrations.md`
 
 ### Included Subtasks
-- [ ] T009 [P] Create RetryPolicy model in `src/notifications/models/retry_policy.py` with type hints
-- [ ] T010 [P] Create NotificationType model in `src/notifications/models/notification_type.py` with type hints
-- [ ] T011 [P] Create Notification model in `src/notifications/models/notification.py` with type hints
-- [ ] T012 [P] Create DeliveryAttempt model in `src/notifications/models/delivery_attempt.py` with type hints
-- [ ] T013 Create model manager with query optimization helpers (select_related, prefetch_related)
-- [ ] T014 Add model validation methods (clean() for recipient format, payload size)
-- [ ] T015 Create initial migration (0001_initial.py) with all models, indexes
-- [ ] T016 Create data migration (0002_seed_baseline_data.py) for default RetryPolicy and NotificationType
-- [ ] T017 [P] Write unit tests for RetryPolicy model in `tests/notifications/models/test_retry_policy.py`
-- [ ] T018 [P] Write unit tests for NotificationType model in `tests/notifications/models/test_notification_type.py`
-- [ ] T019 [P] Write unit tests for Notification model in `tests/notifications/models/test_notification.py`
-- [ ] T020 [P] Write unit tests for DeliveryAttempt model in `tests/notifications/models/test_delivery_attempt.py`
-- [ ] T021 Test migration rollback scenarios
+- [X] T009 [P] Create RetryPolicy model in `src/notifications/models/retry_policy.py` with type hints
+- [X] T010 [P] Create NotificationType model in `src/notifications/models/notification_type.py` with type hints
+- [X] T011 [P] Create Notification model in `src/notifications/models/notification.py` with type hints
+- [X] T012 [P] Create DeliveryAttempt model in `src/notifications/models/delivery_attempt.py` with type hints
+- [X] T013 Create model manager with query optimization helpers (select_related, prefetch_related)
+- [X] T014 Add model validation methods (clean() for recipient format, payload size)
+- [X] T015 Create initial migration (0001_initial.py) with all models, indexes
+- [X] T016 Create data migration (0002_seed_baseline_data.py) for default RetryPolicy and NotificationType
+- [X] T017 [P] Write unit tests for RetryPolicy model in `tests/notifications/models/test_retry_policy.py`
+- [X] T018 [P] Write unit tests for NotificationType model in `tests/notifications/models/test_notification_type.py`
+- [X] T019 [P] Write unit tests for Notification model in `tests/notifications/models/test_notification.py`
+- [X] T020 [P] Write unit tests for DeliveryAttempt model in `tests/notifications/models/test_delivery_attempt.py`
+- [X] T021 Test migration rollback scenarios
 
 ### Constitutional Alignment
 - Principle II (Architecture): Clear model separation, FKs define relationships
