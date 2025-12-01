@@ -11,10 +11,10 @@ subtasks:
   - "T008"
 title: "Setup & Django App Foundation"
 phase: "Phase 0 - Setup"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "11372"
 review_status: ""
 reviewed_by: ""
 history:
@@ -376,3 +376,4 @@ Once WP01 is complete and reviewed:
 1. Move to WP02 (Core Data Models & Migrations)
 2. Begin implementing models using test fixtures from T005
 3. Write model tests using base classes from T006
+- 2025-12-01T18:55:39Z – claude – shell_pid=11372 – lane=doing – Started WP01 implementation
