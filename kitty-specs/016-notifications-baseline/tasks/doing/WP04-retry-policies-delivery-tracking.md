@@ -3,12 +3,23 @@ work_package_id: "WP04"
 subtasks: ["T037", "T038", "T039", "T040", "T041", "T042", "T043", "T044", "T045", "T046", "T047"]
 title: "Retry Policies & Delivery Tracking"
 phase: "Phase 1 - Core Delivery (P2)"
-lane: "planned"
+lane: "doing"
+agent: "claude"
+shell_pid: "11372"
+assignee: "claude-agent"
+review_status: ""
+reviewed_by: ""
 history:
   - timestamp: "2025-12-01T00:00:00Z"
     lane: "planned"
     agent: "system"
+    shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-01T22:00:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11372"
+    action: "Started implementation"
 ---
 
 # WP04 – Retry Policies & Delivery Tracking
