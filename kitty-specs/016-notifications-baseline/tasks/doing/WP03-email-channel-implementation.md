@@ -18,9 +18,9 @@ subtasks:
   - "T036"
 title: "Email Channel Implementation (MVP)"
 phase: "Phase 1 - Core Delivery (P1)"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
+agent: "system"
 shell_pid: ""
 review_status: ""
 reviewed_by: ""
@@ -614,3 +614,4 @@ DEFAULT_FROM_EMAIL=noreply@example.com
 ## Activity Log
 
 - 2025-12-01T00:00:00Z – system – lane=planned – Prompt created
+- 2025-12-01T20:07:59Z – system – shell_pid= – lane=doing – Starting email channel implementation
