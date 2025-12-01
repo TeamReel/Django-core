@@ -3,11 +3,11 @@ work_package_id: "WP04"
 subtasks: ["T037", "T038", "T039", "T040", "T041", "T042", "T043", "T044", "T045", "T046", "T047"]
 title: "Retry Policies & Delivery Tracking"
 phase: "Phase 1 - Core Delivery (P2)"
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "11372"
 assignee: "claude-agent"
-review_status: ""
+review_status: "ready_for_review"
 reviewed_by: ""
 completed_subtasks:
   - T037: "RetryService with calculate_delay(), is_within_window(), should_retry()"
@@ -47,6 +47,11 @@ history:
     agent: "claude"
     shell_pid: "11372"
     action: "Completed T046-T047 (migration, admin). All 11 subtasks complete."
+  - timestamp: "2025-12-01T22:50:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "11372"
+    action: "Ready for review - all subtasks complete, tests passing"
 ---
 
 # WP04 – Retry Policies & Delivery Tracking
