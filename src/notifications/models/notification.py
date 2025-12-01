@@ -56,7 +56,7 @@ class Notification(models.Model):
         related_name="notifications",
         help_text="Link to User model (for in-app)",
     )
-    payload = models.JSONField(help_text="Channel-specific data (subject/body/data)")
+    payload = models.JSONField(blank=True, help_text="Channel-specific data (subject/body/data)")
     metadata = models.JSONField(
         default=dict,
         blank=True,

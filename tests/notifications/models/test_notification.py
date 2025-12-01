@@ -8,12 +8,11 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from notifications.models import Notification, NotificationType
 
-from tests.notifications.base import NotificationTestCase
-
 User = get_user_model()
 
 
-class TestNotification(NotificationTestCase):
+@pytest.mark.django_db
+class TestNotification:
     """Tests for Notification model."""
 
     def test_create_notification(self, notification_type_factory: NotificationType) -> None:

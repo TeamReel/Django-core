@@ -5,10 +5,9 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from notifications.models import NotificationType, RetryPolicy
 
-from tests.notifications.base import NotificationTestCase
 
-
-class TestNotificationType(NotificationTestCase):
+@pytest.mark.django_db
+class TestNotificationType:
     """Tests for NotificationType model."""
 
     def test_create_notification_type(self, retry_policy_factory: RetryPolicy) -> None:
@@ -36,10 +35,18 @@ class TestNotificationType(NotificationTestCase):
         """Test that notification type codes must be unique."""
         retry_policy = retry_policy_factory()
 
-        NotificationType.objects.create(code="duplicate_code", retry_policy=retry_policy)
+        NotificationType.objects.create(
+            code="duplicate_code", name="Test", default_channel="email", retry_policy=retry_policy
+        )
 
-        with pytest.raises(IntegrityError):
-            NotificationType.objects.create(code="duplicate_code", retry_policy=retry_policy)
+        # Can raise either ValidationError (from full_clean) or IntegrityError (from DB)
+        with pytest.raises((IntegrityError, ValidationError)):
+            NotificationType.objects.create(
+                code="duplicate_code",
+                name="Test2",
+                default_channel="email",
+                retry_policy=retry_policy,
+            )
 
     def test_code_validation_lowercase(self, retry_policy_factory: RetryPolicy) -> None:
         """Test that code must be lowercase."""
@@ -48,6 +55,7 @@ class TestNotificationType(NotificationTestCase):
         notification_type = NotificationType(
             code="UPPERCASE_CODE",
             name="Test",
+            default_channel="email",
             retry_policy=retry_policy,
         )
 
@@ -63,6 +71,7 @@ class TestNotificationType(NotificationTestCase):
         notification_type = NotificationType(
             code="invalid@code!",
             name="Test",
+            default_channel="email",
             retry_policy=retry_policy,
         )
 
@@ -79,6 +88,7 @@ class TestNotificationType(NotificationTestCase):
         type1 = NotificationType(
             code="validcode123",
             name="Test",
+            default_channel="email",
             retry_policy=retry_policy,
         )
         type1.full_clean()
@@ -88,6 +98,7 @@ class TestNotificationType(NotificationTestCase):
         type2 = NotificationType(
             code="valid_code_with_underscores",
             name="Test 2",
+            default_channel="email",
             retry_policy=retry_policy,
         )
         type2.full_clean()
@@ -97,6 +108,7 @@ class TestNotificationType(NotificationTestCase):
         type3 = NotificationType(
             code="valid-code-with-hyphens",
             name="Test 3",
+            default_channel="email",
             retry_policy=retry_policy,
         )
         type3.full_clean()
@@ -106,6 +118,7 @@ class TestNotificationType(NotificationTestCase):
         type4 = NotificationType(
             code="valid_code-123",
             name="Test 4",
+            default_channel="email",
             retry_policy=retry_policy,
         )
         type4.full_clean()
@@ -165,6 +178,7 @@ class TestNotificationType(NotificationTestCase):
         NotificationType.objects.create(
             code="test_type",
             name="Test Type",
+            default_channel="email",
             retry_policy=retry_policy,
         )
 
@@ -180,6 +194,7 @@ class TestNotificationType(NotificationTestCase):
         notification_type = NotificationType.objects.create(
             code="test_type",
             name="Test Type",
+            default_channel="email",
             retry_policy=retry_policy,
         )
 
@@ -192,6 +207,7 @@ class TestNotificationType(NotificationTestCase):
         active_type = NotificationType.objects.create(
             code="active_type",
             name="Active Type",
+            default_channel="email",
             retry_policy=retry_policy,
             is_active=True,
         )
@@ -199,6 +215,7 @@ class TestNotificationType(NotificationTestCase):
         inactive_type = NotificationType.objects.create(
             code="inactive_type",
             name="Inactive Type",
+            default_channel="email",
             retry_policy=retry_policy,
             is_active=False,
         )
@@ -226,6 +243,7 @@ class TestNotificationType(NotificationTestCase):
             NotificationType.objects.create(
                 code=f"type_{i}",
                 name=f"Type {i}",
+                default_channel="email",
                 retry_policy=retry_policy,
                 is_active=i % 2 == 0,  # Alternate active/inactive
             )
@@ -242,6 +260,7 @@ class TestNotificationType(NotificationTestCase):
         notification_type = NotificationType(
             code="test_type",
             name="Test Notification Type",
+            default_channel="email",
             retry_policy=retry_policy,
         )
 
@@ -249,11 +268,20 @@ class TestNotificationType(NotificationTestCase):
 
     def test_ordering(self, retry_policy_factory: RetryPolicy) -> None:
         """Test queryset ordering by code."""
+        # Clear seeded data first
+        NotificationType.objects.all().delete()
+
         retry_policy = retry_policy_factory()
 
-        NotificationType.objects.create(code="zebra", name="Zebra", retry_policy=retry_policy)
-        NotificationType.objects.create(code="alpha", name="Alpha", retry_policy=retry_policy)
-        NotificationType.objects.create(code="beta", name="Beta", retry_policy=retry_policy)
+        NotificationType.objects.create(
+            code="zebra", name="Zebra", default_channel="email", retry_policy=retry_policy
+        )
+        NotificationType.objects.create(
+            code="alpha", name="Alpha", default_channel="email", retry_policy=retry_policy
+        )
+        NotificationType.objects.create(
+            code="beta", name="Beta", default_channel="email", retry_policy=retry_policy
+        )
 
         types = list(NotificationType.objects.all())
         assert types[0].code == "alpha"
@@ -267,6 +295,7 @@ class TestNotificationType(NotificationTestCase):
         notification_type = NotificationType.objects.create(
             code="no_desc",
             name="No Description",
+            default_channel="email",
             retry_policy=retry_policy,
         )
 

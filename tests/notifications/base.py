@@ -4,13 +4,16 @@ from contextlib import contextmanager
 from typing import Any, Iterator
 from unittest.mock import MagicMock, patch
 
-from django.test import TestCase
 
+class NotificationTestCase:
+    """Base test class for notifications tests with common utilities.
 
-class NotificationTestCase(TestCase):
-    """Base test class for notifications tests with common utilities."""
+    Note: This class does NOT inherit from unittest.TestCase to maintain
+    compatibility with pytest fixtures. Use plain pytest assertions.
+    """
 
-    def assert_notification_status(self, notification: Any, expected_status: str) -> None:
+    @staticmethod
+    def assert_notification_status(notification: Any, expected_status: str) -> None:
         """Assert notification has expected status.
 
         Args:
@@ -21,13 +24,12 @@ class NotificationTestCase(TestCase):
             AssertionError: If status doesn't match expected value
         """
         notification.refresh_from_db()
-        self.assertEqual(
-            notification.status,
-            expected_status,
-            f"Expected status '{expected_status}', got '{notification.status}'",
-        )
+        assert (
+            notification.status == expected_status
+        ), f"Expected status '{expected_status}', got '{notification.status}'"
 
-    def create_test_notification(self, **kwargs: Any) -> Any:
+    @staticmethod
+    def create_test_notification(**kwargs: Any) -> Any:
         """Create notification with sensible defaults for testing.
 
         Args:
@@ -37,7 +39,7 @@ class NotificationTestCase(TestCase):
             Notification instance
 
         Example:
-            notif = self.create_test_notification(recipient='user@example.com')
+            notif = NotificationTestCase.create_test_notification(recipient='user@example.com')
         """
         from notifications.models import Notification, NotificationType
 
@@ -64,15 +66,16 @@ class NotificationTestCase(TestCase):
         defaults.update(kwargs)
         return Notification.objects.create(**defaults)
 
+    @staticmethod
     @contextmanager
-    def mock_smtp_server(self) -> Iterator[MagicMock]:
+    def mock_smtp_server() -> Iterator[MagicMock]:
         """Mock SMTP server for email tests.
 
         Yields:
             Mock object for SMTP backend
 
         Example:
-            with self.mock_smtp_server() as mock_smtp:
+            with NotificationTestCase.mock_smtp_server() as mock_smtp:
                 send_email_notification(notification)
                 mock_smtp.send_messages.assert_called_once()
         """
@@ -80,8 +83,9 @@ class NotificationTestCase(TestCase):
             mock_send.return_value = 1  # Success: 1 email sent
             yield mock_send
 
+    @staticmethod
     @contextmanager
-    def mock_celery_task(self, task_path: str) -> Iterator[MagicMock]:
+    def mock_celery_task(task_path: str) -> Iterator[MagicMock]:
         """Mock Celery task for testing async behavior.
 
         Args:
@@ -91,7 +95,9 @@ class NotificationTestCase(TestCase):
             Mock object for the task
 
         Example:
-            with self.mock_celery_task('notifications.tasks.send_email') as mock_task:
+            with NotificationTestCase.mock_celery_task(
+                'notifications.tasks.send_email'
+            ) as mock_task:
                 trigger_notification()
                 mock_task.delay.assert_called_once()
         """
@@ -99,7 +105,8 @@ class NotificationTestCase(TestCase):
             mock_task.delay.return_value = MagicMock(id="test-task-id")
             yield mock_task
 
-    def assert_delivery_attempts_count(self, notification: Any, expected_count: int) -> None:
+    @staticmethod
+    def assert_delivery_attempts_count(notification: Any, expected_count: int) -> None:
         """Assert notification has expected number of delivery attempts.
 
         Args:
@@ -110,13 +117,12 @@ class NotificationTestCase(TestCase):
             AssertionError: If attempt count doesn't match expected value
         """
         actual_count = notification.delivery_attempts.count()
-        self.assertEqual(
-            actual_count,
-            expected_count,
-            f"Expected {expected_count} delivery attempts, got {actual_count}",
-        )
+        assert (
+            actual_count == expected_count
+        ), f"Expected {expected_count} delivery attempts, got {actual_count}"
 
-    def get_latest_delivery_attempt(self, notification: Any) -> Any:
+    @staticmethod
+    def get_latest_delivery_attempt(notification: Any) -> Any:
         """Get the most recent delivery attempt for a notification.
 
         Args:

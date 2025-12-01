@@ -4,10 +4,9 @@ import pytest
 from django.db import IntegrityError
 from notifications.models import DeliveryAttempt, Notification
 
-from tests.notifications.base import NotificationTestCase
 
-
-class TestDeliveryAttempt(NotificationTestCase):
+@pytest.mark.django_db
+class TestDeliveryAttempt:
     """Tests for DeliveryAttempt model."""
 
     def test_create_delivery_attempt(self, notification_factory: Notification) -> None:

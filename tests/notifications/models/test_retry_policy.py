@@ -5,10 +5,9 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from notifications.models import RetryPolicy
 
-from tests.notifications.base import NotificationTestCase
 
-
-class TestRetryPolicy(NotificationTestCase):
+@pytest.mark.django_db
+class TestRetryPolicy:
     """Tests for RetryPolicy model."""
 
     def test_create_retry_policy(self) -> None:
@@ -172,7 +171,10 @@ class TestRetryPolicy(NotificationTestCase):
 
     def test_ordering(self) -> None:
         """Test queryset ordering by name."""
-        # Clear any seeded data first
+        # Clear any seeded data first (delete NotificationTypes to avoid FK constraint)
+        from notifications.models import NotificationType
+
+        NotificationType.objects.all().delete()
         RetryPolicy.objects.all().delete()
 
         RetryPolicy.objects.create(name="zebra")
