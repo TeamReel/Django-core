@@ -3,12 +3,19 @@ work_package_id: "WP08"
 subtasks: ["T084", "T085", "T086", "T087", "T088", "T089", "T090", "T091", "T092", "T093", "T094", "T095", "T096"]
 title: "Observability, Metrics & Cleanup"
 phase: "Phase 2 - Production Ready (P2)"
-lane: "planned"
+lane: "doing"
+agent: "claude"
+shell_pid: "11372"
 history:
   - timestamp: "2025-12-01T00:00:00Z"
     lane: "planned"
     agent: "system"
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-02T15:15:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11372"
+    action: "Started implementation"
 ---
 
 # WP08 – Observability, Metrics & Cleanup
