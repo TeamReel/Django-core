@@ -3,12 +3,20 @@ work_package_id: "WP06"
 subtasks: ["T060", "T061", "T062", "T063", "T064", "T065", "T066", "T067", "T068", "T069", "T070"]
 title: "In-App Notification Channel"
 phase: "Phase 3 - Extended Channels (P3)"
-lane: "planned"
+lane: "doing"
+agent: "claude"
+shell_pid: "$$PID"
+assignee: "claude-agent"
 history:
   - timestamp: "2025-12-01T00:00:00Z"
     lane: "planned"
     agent: "system"
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-02T11:15:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "$$PID"
+    action: "Started WP06 implementation"
 ---
 
 # WP06 – In-App Notification Channel
