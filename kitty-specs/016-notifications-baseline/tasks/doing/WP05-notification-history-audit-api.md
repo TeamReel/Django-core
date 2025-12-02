@@ -3,12 +3,23 @@ work_package_id: "WP05"
 subtasks: ["T048", "T049", "T050", "T051", "T052", "T053", "T054", "T055", "T056", "T057", "T058", "T059"]
 title: "Notification History & Audit API"
 phase: "Phase 1 - Core Delivery (P2)"
-lane: "planned"
+lane: "doing"
+agent: "claude"
+shell_pid: "11372"
+assignee: "claude-agent"
+review_status: ""
+reviewed_by: ""
 history:
   - timestamp: "2025-12-01T00:00:00Z"
     lane: "planned"
     agent: "system"
+    shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-02T09:00:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "11372"
+    action: "Started implementation"
 ---
 
 # WP05 – Notification History & Audit API
