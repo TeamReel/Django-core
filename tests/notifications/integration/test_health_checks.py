@@ -26,10 +26,7 @@ class TestHealthCheckIntegration:
         url = reverse("notifications:health-check")
         response = api_client.get(url)
 
-        assert response.status_code in [
-            status.HTTP_200_OK,
-            status.HTTP_503_SERVICE_UNAVAILABLE,
-        ]
+        assert response.status_code == status.HTTP_200_OK
 
     @patch("rest_framework.views.APIView.check_throttles")
     @patch("notifications.views.health_views.HealthCheckView._check_smtp")
@@ -66,14 +63,17 @@ class TestHealthCheckIntegration:
     @patch("notifications.views.health_views.HealthCheckView._check_smtp")
     @patch("notifications.views.health_views.HealthCheckView._check_celery_queue")
     def test_health_check_down(self, mock_celery, mock_smtp, mock_throttle, api_client):
-        """Test health check returns down when service is down."""
+        """Test health check returns down when service is down.
+
+        Note: Always returns HTTP 200 OK. Health status is in response body.
+        """
         mock_smtp.return_value = {"status": "down", "details": "SMTP unreachable"}
         mock_celery.return_value = {"status": "ok", "details": "0 tasks pending"}
 
         url = reverse("notifications:health-check")
         response = api_client.get(url)
 
-        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+        assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "down"
 
     @patch("rest_framework.views.APIView.check_throttles")
@@ -101,6 +101,7 @@ class TestHealthCheckIntegration:
         url = reverse("notifications:health-check")
         response = api_client.get(url)
 
+        assert response.status_code == status.HTTP_200_OK
         assert response.data["checks"]["smtp"]["status"] == "down"
 
     @patch("rest_framework.views.APIView.check_throttles")

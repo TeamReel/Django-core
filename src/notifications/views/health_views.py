@@ -36,7 +36,12 @@ class HealthCheckView(APIView):
     throttle_classes = []  # No throttling for health checks
 
     def get(self, request, *args, **kwargs):
-        """Perform health checks and return status."""
+        """Perform health checks and return status.
+
+        Always returns HTTP 200 OK. Health status is indicated in the
+        response body's 'status' field. This prevents middleware from
+        transforming the response into a generic error page.
+        """
         checks = {
             "smtp": self._check_smtp(),
             "celery_queue": self._check_celery_queue(),
@@ -53,14 +58,9 @@ class HealthCheckView(APIView):
 
         response_data = {"status": overall_status, "checks": checks}
 
-        # Return appropriate HTTP status code
-        http_status = status.HTTP_200_OK
-        if overall_status == "down":
-            http_status = status.HTTP_503_SERVICE_UNAVAILABLE
-        elif overall_status == "degraded":
-            http_status = status.HTTP_200_OK  # Still return 200 for degraded
-
-        return Response(response_data, status=http_status)
+        # Always return 200 OK to prevent middleware transformation
+        # Health status is indicated by the 'status' field in response body
+        return Response(response_data, status=status.HTTP_200_OK)
 
     def _check_smtp(self) -> Dict[str, Any]:
         """Check SMTP server connectivity (T091).
@@ -121,7 +121,18 @@ class HealthCheckView(APIView):
             Dict with status and details about pending tasks
         """
         try:
-            from config.celery import app
+            # Import Celery here to avoid import errors in test environments
+            try:
+                from config.celery import app
+            except ImportError as import_err:
+                logger.warning(
+                    "Celery configuration not available",
+                    extra={"error": str(import_err)},
+                )
+                return {
+                    "status": "down",
+                    "details": "Celery not configured",
+                }
 
             # Get Celery inspector
             inspector = Inspect(app=app)

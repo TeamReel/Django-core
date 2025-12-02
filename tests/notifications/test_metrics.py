@@ -115,11 +115,15 @@ class TestPrometheusMetrics:
 
     def test_histogram_buckets(self):
         """Test delivery duration histogram has correct buckets."""
-        # Verify histogram has expected attributes
-        assert hasattr(notification_delivery_duration_seconds, "_buckets")
+        # Verify histogram has expected attributes and type
+        assert notification_delivery_duration_seconds._type == "histogram"
+
         # Observe a value to create samples
         notification_delivery_duration_seconds.labels(
             notification_type="test", channel="email"
         ).observe(1.0)
-        # Verify it's a histogram type
-        assert notification_delivery_duration_seconds._type == "histogram"
+
+        # Verify the histogram has the expected structure
+        # Prometheus histograms track observations in buckets
+        assert hasattr(notification_delivery_duration_seconds, "_metrics")
+        assert len(notification_delivery_duration_seconds._metrics) > 0
