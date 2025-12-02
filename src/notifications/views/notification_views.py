@@ -1,15 +1,18 @@
 """API views for notifications."""
 
 from django.db.models import Count
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
-from rest_framework import filters, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from notifications.filters import NotificationFilter
 from notifications.models import Notification
 from notifications.pagination import NotificationPagination
+from notifications.permissions import IsOwnerOrAdmin
 from notifications.serializers import (
     NotificationListSerializer,
     NotificationSerializer,
@@ -92,6 +95,7 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Notification.objects.all()
     pagination_class = NotificationPagination
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = NotificationFilter
     ordering_fields = ["created_at", "updated_at", "status"]
@@ -110,18 +114,24 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         - select_related: type, type.retry_policy (1 JOIN)
         - prefetch_related: delivery_attempts (detail view only)
         - annotate: attempts_count (list view)
+        - Filter by user: Only show user's own in-app notifications unless admin
         """
         queryset = super().get_queryset()
+
+        # Filter by user ownership (for in-app notifications)
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            # Non-admin users only see their own in-app notifications
+            queryset = queryset.filter(channel="in_app", recipient_user=self.request.user)
 
         # Always optimize type relationship
         queryset = queryset.select_related("type", "type__retry_policy")
 
         # List view: annotate attempt count
         if self.action == "list":
-            queryset = queryset.annotate(attempts_count=Count("deliveryattempt"))
+            queryset = queryset.annotate(attempts_count=Count("delivery_attempts"))
         # Detail view: prefetch delivery attempts
         else:
-            queryset = queryset.prefetch_related("deliveryattempt_set")
+            queryset = queryset.prefetch_related("delivery_attempts")
 
         return queryset
 
@@ -160,3 +170,69 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
             stats["by_channel"][channel_data["channel"]] = channel_data["count"]
 
         return Response(stats)
+
+    @extend_schema(
+        summary="Mark notification as read",
+        description="Mark a single in-app notification as read by setting read_at timestamp.",
+        responses={200: {"type": "object"}},
+    )
+    @action(detail=True, methods=["put", "patch"])
+    def mark_read(self, request, pk=None):
+        """
+        Mark notification as read.
+
+        Updates read_at timestamp for in-app notifications.
+        Only works for in-app channel.
+        """
+        notification = self.get_object()
+
+        # Validate channel
+        if notification.channel != "in_app":
+            return Response(
+                {"error": "Only in-app notifications can be marked as read"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Mark as read (idempotent)
+        if not notification.read_at:
+            notification.read_at = timezone.now()
+            notification.save(update_fields=["read_at"])
+
+        return Response(
+            {
+                "id": str(notification.id),
+                "status": "read",
+                "read_at": notification.read_at,
+            }
+        )
+
+    @extend_schema(
+        summary="Mark all notifications as read",
+        description="Bulk mark all unread in-app notifications as read for current user.",
+        responses={200: {"type": "object"}},
+    )
+    @action(detail=False, methods=["post"])
+    def mark_all_read(self, request):
+        """
+        Mark all unread notifications as read.
+
+        Bulk operation for current user's in-app notifications.
+        Returns count of notifications marked as read.
+        """
+        # Get unread in-app notifications for user
+        unread_notifications = Notification.objects.filter(
+            channel="in_app",
+            recipient_user=request.user,
+            read_at__isnull=True,
+        )
+
+        # Bulk update read_at
+        count = unread_notifications.update(read_at=timezone.now())
+
+        return Response(
+            {
+                "status": "success",
+                "marked_read": count,
+                "timestamp": timezone.now(),
+            }
+        )

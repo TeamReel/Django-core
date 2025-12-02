@@ -52,11 +52,31 @@ class NotificationFilter(django_filters.FilterSet):
         field_name="created_at",
         lookup_expr="lte",
     )
+    unread = django_filters.BooleanFilter(
+        field_name="read_at",
+        lookup_expr="isnull",
+        label="Show only unread notifications",
+    )
+    read = django_filters.BooleanFilter(
+        field_name="read_at",
+        lookup_expr="isnull",
+        exclude=True,
+        label="Show only read notifications",
+    )
     search = django_filters.CharFilter(method="filter_search")
 
     class Meta:
         model = Notification
-        fields = ["status", "type", "channel", "recipient", "date_from", "date_to"]
+        fields = [
+            "status",
+            "type",
+            "channel",
+            "recipient",
+            "date_from",
+            "date_to",
+            "unread",
+            "read",
+        ]
 
     def filter_search(self, queryset, name, value):  # noqa: ARG002
         """
