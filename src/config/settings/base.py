@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "api",  # B13: API Foundation & Standards
     "tasks.apps.TasksConfig",  # B15: Tasks & Scheduling Foundation
     "notifications.apps.NotificationsConfig",  # B16: Notifications Baseline
+    "contextual_notifications.apps.ContextualNotificationsConfig",  # B17: Contextual Notification Service
 ]
 
 MIDDLEWARE = [
