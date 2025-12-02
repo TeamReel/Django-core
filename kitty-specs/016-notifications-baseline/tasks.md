@@ -268,24 +268,27 @@
 
 ---
 
-## Work Package WP06: In-App Notification Channel (Priority: P3)
+## Work Package WP06: In-App Notification Channel (Priority: P3) ✅ COMPLETE
 
 **Goal**: Implement in-app notifications with read/unread status and user-specific queries (User Story 4).
 **Independent Test**: Can create in-app notification for user → stored in database → user queries unread notifications → marks as read → status updated.
-**Prompt**: `kitty-specs/016-notifications-baseline/tasks/planned/WP06-in-app-notification-channel.md`
+**Prompt**: `kitty-specs/016-notifications-baseline/tasks/done/WP06-in-app-notification-channel.md`
+**Status**: ✅ Approved (27/27 tests passing)
+**Reviewer**: claude-reviewer
+**Completion Commit**: 86602bf
 
 ### Included Subtasks
-- [ ] T060 Implement InAppChannel in `src/notifications/channels/in_app.py`
-- [ ] T061 Add read_at field handling to Notification model (already exists, add logic)
-- [ ] T062 Create InAppNotificationViewSet in `src/notifications/views/in_app_views.py`
-- [ ] T063 Add user-specific filtering (recipient_user FK, requires B05 User model)
-- [ ] T064 Implement mark-as-read endpoint (PUT /notifications/{id}/mark-read/)
-- [ ] T065 Implement bulk mark-as-read endpoint (POST /notifications/mark-all-read/)
-- [ ] T066 Add unread_only, read_only filters to viewset
-- [ ] T067 Add permission checks (users can only query their own notifications)
-- [ ] T068 [P] Write unit tests for InAppChannel in `tests/notifications/channels/test_in_app.py`
-- [ ] T069 [P] Write API tests for in-app endpoints in `tests/notifications/views/test_in_app_views.py`
-- [ ] T070 Add optional expiration TTL for in-app notifications (cleanup task)
+- [X] T060 Implement InAppChannel in `src/notifications/channels/in_app.py`
+- [X] T061 Add read_at field handling to Notification model (already exists, add logic)
+- [X] T062 Create InAppNotificationViewSet in `src/notifications/views/in_app_views.py`
+- [X] T063 Add user-specific filtering (recipient_user FK, requires B05 User model)
+- [X] T064 Implement mark-as-read endpoint (PUT /notifications/{id}/mark-read/)
+- [X] T065 Implement bulk mark-as-read endpoint (POST /notifications/mark-all-read/)
+- [X] T066 Add unread_only, read_only filters to viewset
+- [X] T067 Add permission checks (users can only query their own notifications)
+- [X] T068 [P] Write unit tests for InAppChannel in `tests/notifications/channels/test_in_app.py`
+- [X] T069 [P] Write API tests for in-app endpoints in `tests/notifications/views/test_in_app_views.py`
+- [ ] T070 Add optional expiration TTL for in-app notifications (cleanup task) - DEFERRED
 
 ### Constitutional Alignment
 - Principle I (Product-Agnostic): Generic in-app channel, products define notification content
