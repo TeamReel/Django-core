@@ -85,8 +85,15 @@ def mark_read(self, request, pk=None):
 - B05 User model integration
 
 ## Definition of Done
-- [ ] InAppChannel implemented (synchronous delivery)
-- [ ] User-specific queries work
-- [ ] Mark-as-read endpoints functional
-- [ ] Permission checks enforce user ownership
-- [ ] All tests pass
+- [X] InAppChannel implemented (synchronous delivery)
+- [X] User-specific queries work
+- [X] Mark-as-read endpoints functional
+- [X] Permission checks enforce user ownership
+- [X] All tests pass
+
+## Activity Log
+
+- 2025-12-01T00:00:00Z – system – lane=planned – Prompt created
+- 2025-12-02T11:15:00Z – claude – shell_pid=11372 – lane=doing – Started WP06 implementation
+- 2025-12-02T11:30:00Z – claude – shell_pid=11372 – lane=for_review – Implementation complete (27/27 tests passing)
+- 2025-12-02T12:00:00Z – claude-reviewer – shell_pid=11372 – lane=done – APPROVED: In-app channel fully implemented

@@ -12,7 +12,7 @@ subtasks:
 title: "Setup & Django App Foundation"
 phase: "Phase 0 - Setup"
 lane: "done"
-assignee: ""
+assignee: "claude"
 agent: "claude-reviewer"
 shell_pid: "11372"
 review_status: "approved without changes"

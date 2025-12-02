@@ -17,7 +17,7 @@ subtasks:
 title: "Core Data Models & Migrations"
 phase: "Phase 0 - Foundation"
 lane: "done"
-assignee: ""
+assignee: "claude"
 agent: "claude"
 shell_pid: "11372"
 review_status: "approved with minor notes"

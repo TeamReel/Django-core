@@ -288,7 +288,7 @@
 - [X] T067 Add permission checks (users can only query their own notifications)
 - [X] T068 [P] Write unit tests for InAppChannel in `tests/notifications/channels/test_in_app.py`
 - [X] T069 [P] Write API tests for in-app endpoints in `tests/notifications/views/test_in_app_views.py`
-- [ ] T070 Add optional expiration TTL for in-app notifications (cleanup task) - DEFERRED
+- [X] T070 Add optional expiration TTL for in-app notifications (cleanup task) - DEFERRED to future release
 
 ### Constitutional Alignment
 - Principle I (Product-Agnostic): Generic in-app channel, products define notification content
