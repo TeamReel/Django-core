@@ -376,26 +376,26 @@
 
 ---
 
-## Work Package WP08: Observability, Metrics & Cleanup (Priority: P2)
+## Work Package WP08: Observability, Metrics & Cleanup (Priority: P2) ✅ DONE
 
 **Goal**: Add Prometheus metrics, retention cleanup task, and operational health checks per Constitution Principle VI.
 **Independent Test**: Metrics exposed at /metrics → cleanup task deletes old notifications → health checks pass.
-**Prompt**: `kitty-specs/016-notifications-baseline/tasks/planned/WP08-observability-metrics-cleanup.md`
+**Prompt**: `kitty-specs/016-notifications-baseline/tasks/done/WP08-observability-metrics-cleanup.md`
 
 ### Included Subtasks
-- [ ] T084 Add Prometheus metrics in `src/notifications/metrics.py`
-- [ ] T085 Implement notification counters: created_total, sent_total, failed_total (by type, channel)
-- [ ] T086 Implement delivery duration histogram (notification_delivery_duration_seconds)
-- [ ] T087 Create retention cleanup Celery task in `src/notifications/tasks/cleanup_tasks.py`
-- [ ] T088 Schedule cleanup task with celery-beat (daily, off-peak hours)
-- [ ] T089 Add optional archival to cleanup task (export to S3/cold storage before delete)
-- [ ] T090 Create health check endpoint in `src/notifications/views/health_views.py`
-- [ ] T091 Add SMTP connectivity check to health endpoint
-- [ ] T092 Add Celery queue depth metric to health endpoint
-- [ ] T093 [P] Write unit tests for metrics in `tests/notifications/test_metrics.py`
-- [ ] T094 [P] Write unit tests for cleanup task in `tests/notifications/tasks/test_cleanup_tasks.py`
-- [ ] T095 [P] Write integration tests for health checks in `tests/notifications/integration/test_health_checks.py`
-- [ ] T096 Add structured logging for cleanup operations (number deleted, errors)
+- [X] T084 Add Prometheus metrics in `src/notifications/metrics.py`
+- [X] T085 Implement notification counters: created_total, sent_total, failed_total (by type, channel)
+- [X] T086 Implement delivery duration histogram (notification_delivery_duration_seconds)
+- [X] T087 Create retention cleanup Celery task in `src/notifications/tasks/cleanup_tasks.py`
+- [X] T088 Schedule cleanup task with celery-beat (daily, off-peak hours)
+- [X] T089 Add optional archival to cleanup task (export to S3/cold storage before delete)
+- [X] T090 Create health check endpoint in `src/notifications/views/health_views.py`
+- [X] T091 Add SMTP connectivity check to health endpoint
+- [X] T092 Add Celery queue depth metric to health endpoint
+- [X] T093 [P] Write unit tests for metrics in `tests/notifications/test_metrics.py`
+- [X] T094 [P] Write unit tests for cleanup task in `tests/notifications/tasks/test_cleanup_tasks.py`
+- [X] T095 [P] Write integration tests for health checks in `tests/notifications/integration/test_health_checks.py`
+- [X] T096 Add structured logging for cleanup operations (number deleted, errors)
 
 ### Constitutional Alignment
 - Principle VI (Performance & Reliability): Metrics (T084-T086), health checks (T090-T092)

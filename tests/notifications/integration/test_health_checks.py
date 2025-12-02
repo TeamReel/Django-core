@@ -33,9 +33,10 @@ class TestHealthCheckIntegration:
 
     def test_health_check_endpoint_exists(self, api_client):
         """Test health check endpoint is accessible."""
-        with patch.object(HealthCheckView, "_check_smtp") as mock_smtp, patch.object(
-            HealthCheckView, "_check_celery_queue"
-        ) as mock_celery:
+        with (
+            patch.object(HealthCheckView, "_check_smtp") as mock_smtp,
+            patch.object(HealthCheckView, "_check_celery_queue") as mock_celery,
+        ):
             mock_smtp.return_value = {"status": "ok", "details": "SMTP connected"}
             mock_celery.return_value = {"status": "ok", "details": "0 tasks pending"}
 
@@ -46,9 +47,10 @@ class TestHealthCheckIntegration:
 
     def test_health_check_all_ok(self, api_client):
         """Test health check returns OK when all checks pass."""
-        with patch.object(HealthCheckView, "_check_smtp") as mock_smtp, patch.object(
-            HealthCheckView, "_check_celery_queue"
-        ) as mock_celery:
+        with (
+            patch.object(HealthCheckView, "_check_smtp") as mock_smtp,
+            patch.object(HealthCheckView, "_check_celery_queue") as mock_celery,
+        ):
             mock_smtp.return_value = {"status": "ok", "details": "SMTP connected"}
             mock_celery.return_value = {"status": "ok", "details": "0 tasks pending"}
 
@@ -63,9 +65,10 @@ class TestHealthCheckIntegration:
 
     def test_health_check_degraded(self, api_client):
         """Test health check returns degraded when one service is degraded."""
-        with patch.object(HealthCheckView, "_check_smtp") as mock_smtp, patch.object(
-            HealthCheckView, "_check_celery_queue"
-        ) as mock_celery:
+        with (
+            patch.object(HealthCheckView, "_check_smtp") as mock_smtp,
+            patch.object(HealthCheckView, "_check_celery_queue") as mock_celery,
+        ):
             mock_smtp.return_value = {"status": "degraded", "details": "SMTP slow"}
             mock_celery.return_value = {"status": "ok", "details": "0 tasks pending"}
 
@@ -80,9 +83,10 @@ class TestHealthCheckIntegration:
 
         Note: Always returns HTTP 200 OK. Health status is in response body.
         """
-        with patch.object(HealthCheckView, "_check_smtp") as mock_smtp, patch.object(
-            HealthCheckView, "_check_celery_queue"
-        ) as mock_celery:
+        with (
+            patch.object(HealthCheckView, "_check_smtp") as mock_smtp,
+            patch.object(HealthCheckView, "_check_celery_queue") as mock_celery,
+        ):
             mock_smtp.return_value = {"status": "down", "details": "SMTP unreachable"}
             mock_celery.return_value = {"status": "ok", "details": "0 tasks pending"}
 
@@ -94,9 +98,10 @@ class TestHealthCheckIntegration:
 
     def test_smtp_check_success(self, api_client):
         """Test SMTP check returns OK when SMTP is reachable."""
-        with patch.object(HealthCheckView, "_check_smtp") as mock_smtp, patch.object(
-            HealthCheckView, "_check_celery_queue"
-        ) as mock_celery:
+        with (
+            patch.object(HealthCheckView, "_check_smtp") as mock_smtp,
+            patch.object(HealthCheckView, "_check_celery_queue") as mock_celery,
+        ):
             mock_smtp.return_value = {"status": "ok", "details": "SMTP connected"}
             mock_celery.return_value = {"status": "ok", "details": "0 tasks pending"}
 
@@ -108,9 +113,10 @@ class TestHealthCheckIntegration:
 
     def test_smtp_check_failure(self, api_client):
         """Test SMTP check returns down when SMTP is unreachable."""
-        with patch.object(HealthCheckView, "_check_smtp") as mock_smtp, patch.object(
-            HealthCheckView, "_check_celery_queue"
-        ) as mock_celery:
+        with (
+            patch.object(HealthCheckView, "_check_smtp") as mock_smtp,
+            patch.object(HealthCheckView, "_check_celery_queue") as mock_celery,
+        ):
             mock_smtp.return_value = {"status": "down", "details": "Connection refused"}
             mock_celery.return_value = {"status": "ok", "details": "0 tasks pending"}
 
@@ -122,9 +128,10 @@ class TestHealthCheckIntegration:
 
     def test_celery_queue_check_structure(self, api_client):
         """Test Celery queue check returns expected structure."""
-        with patch.object(HealthCheckView, "_check_smtp") as mock_smtp, patch.object(
-            HealthCheckView, "_check_celery_queue"
-        ) as mock_celery:
+        with (
+            patch.object(HealthCheckView, "_check_smtp") as mock_smtp,
+            patch.object(HealthCheckView, "_check_celery_queue") as mock_celery,
+        ):
             mock_smtp.return_value = {"status": "ok", "details": "SMTP connected"}
             mock_celery.return_value = {
                 "status": "ok",
@@ -141,9 +148,10 @@ class TestHealthCheckIntegration:
 
     def test_health_check_no_authentication_required(self, api_client):
         """Test health check endpoint doesn't require authentication."""
-        with patch.object(HealthCheckView, "_check_smtp") as mock_smtp, patch.object(
-            HealthCheckView, "_check_celery_queue"
-        ) as mock_celery:
+        with (
+            patch.object(HealthCheckView, "_check_smtp") as mock_smtp,
+            patch.object(HealthCheckView, "_check_celery_queue") as mock_celery,
+        ):
             mock_smtp.return_value = {"status": "ok", "details": "SMTP connected"}
             mock_celery.return_value = {"status": "ok", "details": "0 tasks pending"}
 
@@ -156,9 +164,10 @@ class TestHealthCheckIntegration:
 
     def test_celery_queue_depth_metrics(self, api_client):
         """Test Celery queue depth metrics are included when available."""
-        with patch.object(HealthCheckView, "_check_smtp") as mock_smtp, patch.object(
-            HealthCheckView, "_check_celery_queue"
-        ) as mock_celery:
+        with (
+            patch.object(HealthCheckView, "_check_smtp") as mock_smtp,
+            patch.object(HealthCheckView, "_check_celery_queue") as mock_celery,
+        ):
             mock_smtp.return_value = {"status": "ok", "details": "SMTP connected"}
             mock_celery.return_value = {
                 "status": "ok",
@@ -175,9 +184,10 @@ class TestHealthCheckIntegration:
 
     def test_health_check_response_format(self, api_client):
         """Test health check response has required format."""
-        with patch.object(HealthCheckView, "_check_smtp") as mock_smtp, patch.object(
-            HealthCheckView, "_check_celery_queue"
-        ) as mock_celery:
+        with (
+            patch.object(HealthCheckView, "_check_smtp") as mock_smtp,
+            patch.object(HealthCheckView, "_check_celery_queue") as mock_celery,
+        ):
             mock_smtp.return_value = {"status": "ok", "details": "SMTP connected"}
             mock_celery.return_value = {"status": "ok", "details": "0 tasks pending"}
 
