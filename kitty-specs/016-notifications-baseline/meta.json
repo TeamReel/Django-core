@@ -1,0 +1,24 @@
+{
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-12-02T17:48:16Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "50d31fe6ca0ae0bea1b9934f82bfe2d027eee409",
+      "branch": "016-notifications-baseline",
+      "mode": "pr",
+      "validation_commands": [
+        "pytest ../tests/notifications"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-12-02T17:48:16Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "50d31fe6ca0ae0bea1b9934f82bfe2d027eee409",
+  "created_at": "2025-12-01T17:12:51Z",
+  "feature_number": "016",
+  "friendly_name": "Notifications Baseline",
+  "slug": "016-notifications-baseline",
+  "source_description": "Implement a generic notifications framework for sending and storing notifications across channels (email, in-app, webhooks) with delivery state tracking, configurable retry policies per notification type, 90-day retention, and integration with B15 task scheduling."
+}

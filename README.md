@@ -182,6 +182,57 @@ print(f"Current balance: ${balance['current_balance']}")
 
 ---
 
+### Notifications Baseline (Feature 016 - B16)
+
+Multi-channel notification system with email, in-app, and webhook delivery.
+
+**Key Capabilities**:
+- **Multi-Channel Delivery**: Email (SMTP), in-app (database), webhook (HTTP POST)
+- **Configurable Retry Policies**: Per-type retry with exponential backoff
+- **Secure Webhooks**: HMAC-SHA256 signature verification
+- **Audit Integration**: Full delivery tracking via B09 audit logging
+- **Celery Integration**: Async delivery via B15 task scheduling
+- **Observability**: Prometheus metrics, health checks
+
+**Quick Start**:
+```python
+from notifications.models import Notification, NotificationType
+
+# Send email notification
+notification = Notification.objects.create(
+    type=NotificationType.objects.get(code='default'),
+    channel='email',
+    recipient='user@example.com',
+    payload={
+        'subject': 'Welcome!',
+        'body': 'Thanks for signing up.',
+    }
+)
+# Celery task delivers asynchronously
+
+# Query in-app notifications
+unread = Notification.objects.filter(
+    recipient_user=user,
+    channel='in_app',
+    read_at__isnull=True
+)
+```
+
+**Built-in Retry Policies**:
+| Policy | Attempts | Window | Use Case |
+|--------|----------|--------|----------|
+| `best-effort` | 3 | 1 hour | Default, non-critical |
+| `critical` | 10 | 24 hours | Password resets, security |
+
+**Documentation**:
+- [Architecture Overview](docs/notifications-baseline.md)
+- [Extension Guide](docs/notifications-extension-guide.md)
+- [Troubleshooting](docs/notifications-troubleshooting.md)
+- [Webhook Verification](docs/webhook-signature-verification.md)
+- [ADR-016: Retry Policies](docs/adr/016-notification-retry-policies.md)
+
+---
+
 ### Security Baseline
 
 Constitutional enforcement engine with security rule validation and ASVS compliance reporting.
@@ -202,6 +253,7 @@ Constitutional enforcement engine with security rule validation and ASVS complia
 - **Django**: 5.1+
 - **Database**: PostgreSQL 13+ (JSONB, GIN indexes)
 - **Cache**: Redis 6+ (django-redis)
+- **Task Queue**: Celery 5.3+ with Redis broker
 - **API**: Django REST Framework 3.14+
 - **Observability**: django-prometheus, Prometheus metrics
 - **Testing**: pytest 8.0+, pytest-django, pytest-cov
