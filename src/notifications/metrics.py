@@ -2,6 +2,25 @@
 
 from prometheus_client import Counter, Histogram
 
+# T085: Notification lifecycle counters
+notifications_created_total = Counter(
+    "notifications_created_total",
+    "Total notifications created",
+    ["notification_type", "channel"],
+)
+
+notifications_sent_total = Counter(
+    "notifications_sent_total",
+    "Total notifications sent successfully",
+    ["notification_type", "channel"],
+)
+
+notifications_failed_total = Counter(
+    "notifications_failed_total",
+    "Total notifications failed",
+    ["notification_type", "channel", "failure_reason"],
+)
+
 # Notification delivery metrics
 notification_deliveries_total = Counter(
     "notification_deliveries_total",
@@ -23,12 +42,12 @@ notification_retry_delay_seconds = Histogram(
     buckets=[5, 15, 30, 60, 120, 300, 600, 1800, 3600],
 )
 
-# Delivery performance metrics
+# T086: Delivery performance metrics
 notification_delivery_duration_seconds = Histogram(
     "notification_delivery_duration_seconds",
     "Time taken to deliver notification",
     ["notification_type", "channel"],
-    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0],
+    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0, 60.0],
 )
 
 # Failure metrics

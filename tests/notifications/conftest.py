@@ -3,6 +3,13 @@
 from typing import Any, Callable
 
 import pytest
+from rest_framework.test import APIClient
+
+
+@pytest.fixture
+def api_client():
+    """API client for testing."""
+    return APIClient()
 
 
 @pytest.fixture

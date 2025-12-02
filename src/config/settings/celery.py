@@ -43,6 +43,18 @@ CELERY_WORKER_HIJACK_ROOT_LOGGER = False  # Use Django logging
 
 # Periodic Task Scheduling (celery-beat)
 CELERY_BEAT_SCHEDULE = {
+    # T088: Cleanup old notifications daily at 2 AM UTC
+    "cleanup-old-notifications": {
+        "task": "notifications.tasks.cleanup_tasks.cleanup_old_notifications",
+        "schedule": crontab(hour=2, minute=0),  # Daily at 2 AM UTC
+        "kwargs": {
+            "retention_days": 90,  # Delete notifications older than 90 days
+            "dry_run": False,
+        },
+        "options": {
+            "expires": 3600,  # Task expires if not run within 1 hour
+        },
+    },
     # Example: Cleanup expired sessions daily at 3:00 AM
     "cleanup-expired-sessions": {
         "task": "tasks.examples.cleanup_expired_sessions",
