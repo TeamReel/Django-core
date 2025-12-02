@@ -11,12 +11,12 @@ subtasks:
   - "T008"
 title: "Django App Scaffolding & Configuration"
 phase: "Phase 0 - Setup & Foundation"
-lane: "for_review"
-assignee: "GitHub Copilot"
+lane: "planned"
+assignee: ""
 agent: "claude"
 shell_pid: "13508"
-review_status: ""
-reviewed_by: ""
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-02T19:45:00Z"
     lane: "planned"
@@ -38,6 +38,11 @@ history:
     agent: "claude"
     shell_pid: "13508"
     action: "Ready for review - WP01 implementation complete"
+  - timestamp: "2025-12-02T22:00:00Z"
+    lane: "planned"
+    agent: "claude-reviewer"
+    shell_pid: "13508"
+    action: "Code review complete: Missing db_index on NotificationPreference.event_type field. Otherwise excellent implementation."
 ---
 
 # Work Package Prompt: WP01 – Django App Scaffolding & Configuration
@@ -55,7 +60,32 @@ history:
 
 ## Review Feedback
 
-*[This section is empty initially. Reviewers will populate it if the work is returned from review. If you see feedback here, treat each item as a must-do before completion.]*
+**Status**: ❌ **Needs Minor Fix**
+
+**Reviewer**: claude-reviewer (2025-12-02T22:00:00Z)
+
+**Key Issues**:
+1. **Missing index on NotificationPreference.event_type** - The data-model.md specification states "Single: `user_id`, `event_type`" but the current implementation only has `db_index=True` on the `user` field. The `event_type` field needs `db_index=True` added.
+
+**What Was Done Well**:
+- ✅ All three models correctly implement the data-model.md specification
+- ✅ Check constraints are properly implemented for scope consistency
+- ✅ Unique constraints are correct on all models
+- ✅ Composite indexes are correctly defined
+- ✅ Type hints present on all field definitions
+- ✅ Django admin configuration is excellent with proper filters, search, and bulk actions
+- ✅ Custom managers implement query optimization correctly
+- ✅ ForeignKey on_delete behavior matches specifications
+- ✅ __str__ methods are user-friendly and informative
+- ✅ App structure follows Django conventions perfectly
+
+**Minor Notes (not blocking)**:
+- Priority default is set to `PRIORITY_NORMAL` (1) instead of 0 as stated in data-model.md. This is a reasonable choice but deviates from spec. Consider if intentional.
+
+**Action Items** (must complete before approval):
+- [ ] Add `db_index=True` to `event_type` field in NotificationPreference model (line ~39 in notification_preference.py)
+
+**Migration Impact**: This fix will require regenerating the initial migration to include the missing index.
 
 ---
 
