@@ -6,6 +6,7 @@ phase: "Phase 2 - Production Ready (P2)"
 lane: "done"
 agent: "claude-reviewer"
 shell_pid: "wp09-review"
+assignee: "claude"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
 history:
