@@ -216,25 +216,26 @@
 
 ---
 
-## Work Package WP05: Notification History & Audit API (Priority: P2)
+## Work Package WP05: Notification History & Audit API (Priority: P2) ✅ IN REVIEW
 
 **Goal**: Provide queryable API for notification history, delivery attempts, and B09 audit logging integration (User Story 3).
 **Independent Test**: Can query notifications by status/type/date → results paginated → delivery attempts included → B09 audit events logged for critical transitions.
-**Prompt**: `kitty-specs/016-notifications-baseline/tasks/planned/WP05-notification-history-audit-api.md`
+**Prompt**: `kitty-specs/016-notifications-baseline/tasks/for_review/WP05-notification-history-audit-api.md`
+**Status**: IN REVIEW (completed 2025-12-02, 17/17 tests passing)
 
 ### Included Subtasks
-- [ ] T048 Create NotificationSerializer in `src/notifications/serializers/notification_serializer.py`
-- [ ] T049 Create DeliveryAttemptSerializer in `src/notifications/serializers/delivery_attempt_serializer.py`
-- [ ] T050 Create NotificationViewSet in `src/notifications/views/notification_views.py` with list/retrieve
-- [ ] T051 Add query filters: status, type, date_range, recipient (using django-filter)
-- [ ] T052 Implement pagination (DRF PageNumberPagination, default 50, max 100)
-- [ ] T053 Optimize queries: select_related(notification_type), prefetch_related(delivery_attempts)
-- [ ] T054 Add B09 audit logging for: notification_created, notification_sent, notification_failed
-- [ ] T055 Hash recipient identifiers before logging to B09 (privacy protection)
-- [ ] T056 [P] Write unit tests for serializers in `tests/notifications/serializers/`
-- [ ] T057 [P] Write API tests for NotificationViewSet in `tests/notifications/views/test_notification_views.py`
-- [ ] T058 [P] Write integration tests for audit logging in `tests/notifications/integration/test_audit_logging.py`
-- [ ] T059 Add API documentation (drf-spectacular schema)
+- [X] T048 Create NotificationSerializer in `src/notifications/serializers/notification_serializer.py`
+- [X] T049 Create DeliveryAttemptSerializer in `src/notifications/serializers/delivery_attempt_serializer.py`
+- [X] T050 Create NotificationViewSet in `src/notifications/views/notification_views.py` with list/retrieve
+- [X] T051 Add query filters: status, type, date_range, recipient (using django-filter)
+- [X] T052 Implement pagination (DRF PageNumberPagination, default 50, max 100)
+- [X] T053 Optimize queries: select_related(notification_type), prefetch_related(delivery_attempts)
+- [X] T054 Add B09 audit logging for: notification_created, notification_sent, notification_failed
+- [X] T055 Hash recipient identifiers before logging to B09 (privacy protection)
+- [X] T056 [P] Write unit tests for serializers in `tests/notifications/serializers/`
+- [X] T057 [P] Write API tests for NotificationViewSet in `tests/notifications/views/test_notification_views.py`
+- [X] T058 [P] Write integration tests for audit logging in `tests/notifications/integration/test_audit_logging.py`
+- [X] T059 Add API documentation (drf-spectacular schema)
 
 ### Constitutional Alignment
 - Principle II (Architecture): DRF viewsets, serializers at boundary
