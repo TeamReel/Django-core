@@ -3,7 +3,9 @@ work_package_id: "WP09"
 subtasks: ["T097", "T098", "T099", "T100", "T101", "T102", "T103", "T104", "T105", "T106", "T107", "T108"]
 title: "Documentation & Quickstart Validation"
 phase: "Phase 2 - Production Ready (P2)"
-lane: "planned"
+lane: "doing"
+agent: "claude"
+shell_pid: "wp09-impl"
 history:
   - timestamp: "2025-12-01T00:00:00Z"
     lane: "planned"
@@ -109,3 +111,4 @@ def verify_signature(payload, signature_header, secret):
 
 ## Activity Log
 - 2025-12-01T00:00:00Z – system – lane=planned – Prompt created
+- 2025-12-02T15:05:39Z – claude – shell_pid=wp09-impl – lane=doing – Started implementation
