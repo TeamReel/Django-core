@@ -167,12 +167,12 @@
 
 ---
 
-## Work Package WP04: Retry Policies & Delivery Tracking (Priority: P2) 🔄 IN REVIEW
+## Work Package WP04: Retry Policies & Delivery Tracking (Priority: P2) ✅ APPROVED
 
 **Goal**: Implement configurable retry policies with exponential backoff, respect retry windows, track all delivery attempts (User Story 2).
 **Independent Test**: Can configure custom RetryPolicy → notifications respect max_attempts and retry_window → exponential backoff calculated correctly → attempt history queryable.
-**Prompt**: `kitty-specs/016-notifications-baseline/tasks/for_review/WP04-retry-policies-delivery-tracking.md`
-**Status**: 🔄 **IN REVIEW** - All 11 subtasks complete, 14/14 tests passing (100%)
+**Prompt**: `kitty-specs/016-notifications-baseline/tasks/done/WP04-retry-policies-delivery-tracking.md`
+**Status**: ✅ **APPROVED** - All 11 subtasks complete, 14/14 tests passing (100%), reviewed 2025-12-02
 
 ### Included Subtasks
 - [X] T037 Implement retry delay calculation (exponential backoff) in `src/notifications/services/retry_service.py`
