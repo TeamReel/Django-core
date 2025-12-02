@@ -35,6 +35,21 @@ class HealthCheckView(APIView):
     authentication_classes = []
     throttle_classes = []  # No throttling for health checks
 
+    def get_throttles(self):
+        """Explicitly disable throttling for health checks.
+
+        Override to ensure no global throttle classes are applied,
+        which would require Redis access that may not be available.
+        """
+        return []
+
+    def check_throttles(self, request):
+        """Skip throttle checking entirely for health checks.
+
+        Health checks must work without Redis, which throttles require.
+        """
+        pass
+
     def get(self, request, *args, **kwargs):
         """Perform health checks and return status.
 

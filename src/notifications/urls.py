@@ -12,5 +12,7 @@ router = DefaultRouter()
 router.register(r"notifications", NotificationViewSet, basename="notification")
 
 urlpatterns = [
-    path("health/", HealthCheckView.as_view(), name="health-check"),
+    # Note: notifications health check is at /api/v1/notifications/health/
+    # There's also a transactions health check at /api/v1/health/
+    path("notifications/health/", HealthCheckView.as_view(), name="health-check"),
 ] + router.urls
