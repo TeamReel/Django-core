@@ -6,6 +6,16 @@
 **Status**: Draft
 **Input**: User description: "Add a higher-level contextual notification service that routes, filters and targets notifications based on user, organisation, project and event type."
 
+## Clarifications
+
+### Session 2025-12-02
+
+- Q: How is event priority determined for routing decisions? → A: Routing rules define priority per event type during configuration
+- Q: What is the scope for detecting duplicate events to suppress? → A: Per user + event type + resource ID (user gets 1 notification per project, but multiple projects = multiple notifications)
+- Q: Does B12 User Preferences feature currently exist? → A: Yes, B12 exists as i18n_preferences app (language/locale/timezone only). B17 will implement its own notification preferences storage with adapter interface for future integration.
+- Q: How should queued notifications be sent after quiet hours end? → A: Rate-limited delivery (e.g., 10/minute to avoid spam) - no burst at 8am
+- Q: Who can configure routing rules? → A: Both - superadmins for global rules, org admins for org-specific overrides
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Domain Event Triggers Targeted Notifications (Priority: P1)
@@ -54,7 +64,7 @@ An organisation admin configures organisation-level notification policies (e.g.,
 
 1. **Given** Organisation X has disabled webhook notifications, **When** any event occurs, **Then** no users in Organisation X receive webhook notifications regardless of personal preferences
 2. **Given** Organisation Y requires email for all "security.*" events, **When** a security event occurs, **Then** all relevant users receive email even if they disabled email notifications
-3. **Given** Organisation Z has set a global "quiet hours" policy (8pm-8am), **When** a non-urgent event occurs during quiet hours, **Then** notifications are queued and sent at 8am
+3. **Given** Organisation Z has set a global "quiet hours" policy (8pm-8am), **When** a non-urgent event occurs during quiet hours, **Then** notifications are queued and sent after 8am with rate-limiting (e.g., 10/minute) to avoid spam burst
 4. **Given** an admin attempts to set conflicting policies, **When** saving the configuration, **Then** the system validates and rejects the conflicting rules with a clear error message
 
 ---
@@ -119,17 +129,17 @@ A developer or support agent needs to understand why a user did or did not recei
 - **FR-010**: System MUST validate event schema and reject malformed events with clear error messages
 - **FR-011**: System MUST handle routing for at least these event types: project.created, project.updated, project.member_added, org.member_invited, org.settings_changed
 - **FR-012**: System MUST support default routing rules for each event type that apply when no custom rules are configured
-- **FR-013**: System MUST allow configuration of routing rules via admin interface or management command
+- **FR-013**: System MUST allow configuration of routing rules via admin interface or management command; platform superadmins configure global rules, organisation admins configure org-specific overrides
 - **FR-014**: System MUST check feature flags from B10 to enable/disable specific notification features at org or user level
 - **FR-015**: System MUST process events asynchronously to avoid blocking domain code execution
 
 ### Key Entities *(include if feature involves data)*
 
 - **Event**: Represents a domain event (type, timestamp, context including user/org/project IDs, payload); used for routing decisions
-- **RoutingRule**: Defines conditions (event type + context filters) and actions (notify which users via which channels); supports basic conditional logic
-- **NotificationPreference**: User-level preferences for notification channels and event types; imported from B12 preferences or extended here
+- **RoutingRule**: Defines conditions (event type + context filters) and actions (notify which users via which channels); supports basic conditional logic; includes priority level for the event type; can be global (platform-wide) or org-specific
+- **NotificationPreference**: User-level preferences for notification channels and event types; stored in B17 with adapter interface for future integration
 - **OrganisationNotificationPolicy**: Org-level policies that override or supplement user preferences; includes quiet hours, required channels, disabled channels
-- **SuppressionWindow**: Tracks recent notifications per user/event type to detect and suppress duplicates; includes aggregation logic
+- **SuppressionWindow**: Tracks recent notifications per user/event type/resource ID combination to detect and suppress duplicates within configurable time window; includes aggregation logic
 - **RoutingDecisionLog**: Audit record of routing decisions (event, evaluated rules, target users, selected channels, outcome); linked to B09 audit events
 
 ## Constitution Alignment *(mandatory)*
@@ -209,7 +219,7 @@ A developer or support agent needs to understand why a user did or did not recei
 ## Assumptions *(include if relevant)*
 
 - **A-001**: B16 notifications baseline is fully functional and provides reliable email, in-app, and webhook delivery
-- **A-002**: B12 preferences framework exists and can be extended for notification preferences, or we create minimal preference storage within this feature
+- **A-002**: B12 i18n_preferences exists for language/locale/timezone but does not handle notification preferences; B17 will implement dedicated NotificationPreference model with adapter interface for potential future B10 settings integration
 - **A-003**: B10 settings/feature flags is available for enabling/disabling notification features at org/user level
 - **A-004**: B08 permissions framework is available for protecting org-level notification policy configuration
 - **A-005**: Domain events follow a consistent schema (type, context, payload) and include sufficient context (user_id, org_id, project_id where applicable)
@@ -223,7 +233,7 @@ A developer or support agent needs to understand why a user did or did not recei
 
 - **B16 Notifications Baseline**: Required for dispatching notifications via email, in-app, webhook channels
 - **B10 Settings & Feature Flags**: Required for enabling/disabling notification features at org/user level
-- **B12 User Preferences**: Required for storing and respecting user notification preferences (or minimal preference storage implemented here if B12 doesn't exist)
+- **B12 i18n Preferences**: Not a direct dependency (handles only language/locale/timezone); B17 implements its own notification preferences
 - **B08 Hierarchical Access Control**: Required for protecting org-level notification policy configuration
 - **B09 Audit Logging System**: Required for storing routing decision logs and audit trail
 - **B06 Organisation Management**: Required for organisation-level policy scope and multi-tenancy
