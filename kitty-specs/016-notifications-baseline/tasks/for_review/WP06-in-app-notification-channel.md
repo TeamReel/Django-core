@@ -3,10 +3,13 @@ work_package_id: "WP06"
 subtasks: ["T060", "T061", "T062", "T063", "T064", "T065", "T066", "T067", "T068", "T069", "T070"]
 title: "In-App Notification Channel"
 phase: "Phase 3 - Extended Channels (P3)"
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "$$PID"
 assignee: "claude-agent"
+review_status: "ready_for_review"
+completion_commit: "86602bf"
+tests_passing: "27/27 (100%)"
 history:
   - timestamp: "2025-12-01T00:00:00Z"
     lane: "planned"
@@ -17,6 +20,11 @@ history:
     agent: "claude"
     shell_pid: "$$PID"
     action: "Started WP06 implementation"
+  - timestamp: "2025-12-02T11:30:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "$$PID"
+    action: "Implementation complete, ready for review"
 ---
 
 # WP06 – In-App Notification Channel
