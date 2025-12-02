@@ -216,12 +216,13 @@
 
 ---
 
-## Work Package WP05: Notification History & Audit API (Priority: P2) ✅ IN REVIEW
+## Work Package WP05: Notification History & Audit API (Priority: P2) ✅ DONE
 
 **Goal**: Provide queryable API for notification history, delivery attempts, and B09 audit logging integration (User Story 3).
 **Independent Test**: Can query notifications by status/type/date → results paginated → delivery attempts included → B09 audit events logged for critical transitions.
-**Prompt**: `kitty-specs/016-notifications-baseline/tasks/for_review/WP05-notification-history-audit-api.md`
-**Status**: IN REVIEW (completed 2025-12-02, 17/17 tests passing)
+**Prompt**: `kitty-specs/016-notifications-baseline/tasks/done/WP05-notification-history-audit-api.md`
+**Status**: ✅ APPROVED (reviewed 2025-12-02, 17/17 tests passing)
+**Reviewed By**: claude-reviewer
 
 ### Included Subtasks
 - [X] T048 Create NotificationSerializer in `src/notifications/serializers/notification_serializer.py`
