@@ -431,21 +431,21 @@
 
 **Goal**: Create comprehensive documentation, validate quickstart guide, create ADR for retry policies per Constitution Principle XI.
 **Independent Test**: Quickstart guide works end-to-end → documentation covers all channels → ADR explains retry design.
-**Prompt**: `kitty-specs/016-notifications-baseline/tasks/planned/WP09-documentation-quickstart-validation.md`
+**Prompt**: `kitty-specs/016-notifications-baseline/tasks/done/WP09-documentation-quickstart-validation.md`
 
 ### Included Subtasks
-- [ ] T097 Create `docs/notifications-baseline.md` with architecture overview
-- [ ] T098 Add channel configuration guide (email SMTP, webhook endpoints)
-- [ ] T099 Add retry policy examples (best-effort, critical)
-- [ ] T100 Add API reference (auto-generated from drf-spectacular)
-- [ ] T101 Create troubleshooting guide (common errors, solutions)
-- [ ] T102 Create `docs/notifications-extension-guide.md` for custom channels
-- [ ] T103 Add custom notification type creation guide
-- [ ] T104 Add webhook signature verification examples (Python, Node.js, PHP)
-- [ ] T105 Create ADR-016-notification-retry-policies.md in `docs/adr/`
-- [ ] T106 Validate quickstart.md end-to-end (create notification, check status, query history)
-- [ ] T107 Update README.md with notifications section
-- [ ] T108 Add inline code comments and docstrings (Google style)
+- [X] T097 Create `docs/notifications-baseline.md` with architecture overview
+- [X] T098 Add channel configuration guide (email SMTP, webhook endpoints)
+- [X] T099 Add retry policy examples (best-effort, critical)
+- [X] T100 Add API reference (auto-generated from drf-spectacular)
+- [X] T101 Create troubleshooting guide (common errors, solutions)
+- [X] T102 Create `docs/notifications-extension-guide.md` for custom channels
+- [X] T103 Add custom notification type creation guide
+- [X] T104 Add webhook signature verification examples (Python, Node.js, PHP)
+- [X] T105 Create ADR-016-notification-retry-policies.md in `docs/adr/`
+- [X] T106 Validate quickstart.md end-to-end (create notification, check status, query history)
+- [X] T107 Update README.md with notifications section
+- [X] T108 Add inline code comments and docstrings (Google style)
 
 ### Constitutional Alignment
 - Principle XI (Documentation): Comprehensive docs (T097-T104), ADR (T105)
