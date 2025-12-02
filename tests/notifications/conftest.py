@@ -20,12 +20,16 @@ def retry_policy_factory(db: Any) -> Callable[..., Any]:
             policy = retry_policy_factory(name='urgent', max_attempts=10)
             assert policy.max_attempts == 10
     """
+    _counter = 0
 
     def make_policy(**kwargs: Any) -> Any:
         from notifications.models import RetryPolicy
 
+        nonlocal _counter
+        _counter += 1
+
         defaults = {
-            "name": "test-policy",
+            "name": f"test-policy-{_counter}",
             "max_attempts": 3,
             "retry_window_seconds": 3600,
             "backoff_strategy": "exponential",

@@ -2,6 +2,7 @@
 
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -15,6 +16,68 @@ from notifications.serializers import (
 )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List notifications",
+        description="List all notifications with pagination and filtering support.",
+        parameters=[
+            OpenApiParameter(
+                name="status",
+                description="Filter by notification status",
+                required=False,
+                type=str,
+                enum=["pending", "sent", "failed", "read"],
+            ),
+            OpenApiParameter(
+                name="channel",
+                description="Filter by delivery channel",
+                required=False,
+                type=str,
+                enum=["email", "in_app", "webhook"],
+            ),
+            OpenApiParameter(
+                name="type",
+                description="Filter by notification type code (case-insensitive)",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="recipient",
+                description="Search recipient (partial match)",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="date_from",
+                description="Filter notifications created after this date",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="date_to",
+                description="Filter notifications created before this date",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="search",
+                description="Search across recipient, type code, and type name",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="page_size",
+                description="Number of results per page (max 100)",
+                required=False,
+                type=int,
+            ),
+        ],
+    ),
+    retrieve=extend_schema(
+        summary="Get notification details",
+        description="Retrieve a single notification with full delivery attempt history.",
+    ),
+)
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API viewset for querying notification history.
@@ -62,6 +125,14 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
         return queryset
 
+    @extend_schema(
+        summary="Notification statistics",
+        description=(
+            "Get aggregated notification statistics by status and channel "
+            "with optional filtering."
+        ),
+        responses={200: {"type": "object"}},
+    )
     @action(detail=False, methods=["get"])
     def stats(self, request):
         """

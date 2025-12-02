@@ -22,7 +22,11 @@ class NotificationFilter(django_filters.FilterSet):
 
     status = django_filters.ChoiceFilter(
         field_name="status",
-        choices=Notification.STATUS_CHOICES,
+        choices=[
+            ("pending", "Pending"),
+            ("sent", "Sent"),
+            ("failed", "Failed"),
+        ],
     )
     type = django_filters.CharFilter(
         field_name="type__code",
@@ -30,7 +34,11 @@ class NotificationFilter(django_filters.FilterSet):
     )
     channel = django_filters.ChoiceFilter(
         field_name="channel",
-        choices=Notification.CHANNEL_CHOICES,
+        choices=[
+            ("email", "Email"),
+            ("in_app", "In-App"),
+            ("webhook", "Webhook"),
+        ],
     )
     recipient = django_filters.CharFilter(
         field_name="recipient",
@@ -50,7 +58,7 @@ class NotificationFilter(django_filters.FilterSet):
         model = Notification
         fields = ["status", "type", "channel", "recipient", "date_from", "date_to"]
 
-    def filter_search(self, queryset, name, value):
+    def filter_search(self, queryset, name, value):  # noqa: ARG002
         """
         Search across multiple fields.
 
