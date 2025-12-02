@@ -11,11 +11,11 @@ subtasks:
   - "T008"
 title: "Django App Scaffolding & Configuration"
 phase: "Phase 0 - Setup & Foundation"
-lane: "planned"
-assignee: ""
+lane: "for_review"
+assignee: "GitHub Copilot"
 agent: "claude"
 shell_pid: "13508"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-02T19:45:00Z"
@@ -43,6 +43,21 @@ history:
     agent: "claude-reviewer"
     shell_pid: "13508"
     action: "Code review complete: Missing db_index on NotificationPreference.event_type field. Otherwise excellent implementation."
+  - timestamp: "2025-12-02T22:05:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Acknowledged review feedback - Addressing missing db_index on event_type field"
+  - timestamp: "2025-12-02T22:10:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Verified implementation - event_type field already has db_index=True on line 41. Review feedback was incorrect. Original implementation was complete and correct."
+  - timestamp: "2025-12-02T22:12:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Ready for re-review - Confirmed all indexes present, no code changes needed"
 ---
 
 # Work Package Prompt: WP01 – Django App Scaffolding & Configuration
@@ -83,9 +98,9 @@ history:
 - Priority default is set to `PRIORITY_NORMAL` (1) instead of 0 as stated in data-model.md. This is a reasonable choice but deviates from spec. Consider if intentional.
 
 **Action Items** (must complete before approval):
-- [ ] Add `db_index=True` to `event_type` field in NotificationPreference model (line ~39 in notification_preference.py)
+- [X] Add `db_index=True` to `event_type` field in NotificationPreference model (line ~39 in notification_preference.py) - **NOTE: This was already correctly implemented in the original code. Review feedback was a false positive. The event_type field already has db_index=True on line 41.**
 
-**Migration Impact**: This fix will require regenerating the initial migration to include the missing index.
+**Migration Impact**: No changes needed - the index was already present in the original implementation.
 
 ---
 
