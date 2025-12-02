@@ -167,7 +167,7 @@ class TestNotification:
     ) -> None:
         """Test valid in-app notification with user."""
         notification_type = notification_type_factory()
-        user = User.objects.create_user(username="testuser", email="test@example.com")
+        user = User.objects.create_user(email="test@example.com", password="testpass123")
 
         notification = Notification(
             type=notification_type,
@@ -202,7 +202,7 @@ class TestNotification:
     def test_payload_size_in_app_limit(self, notification_type_factory: NotificationType) -> None:
         """Test in-app payload size limit (100KB)."""
         notification_type = notification_type_factory()
-        user = User.objects.create_user(username="testuser")
+        user = User.objects.create_user(email="testuser@example.com", password="testpass123")
 
         # Create 100KB + 1 byte payload
         large_payload = {"data": "x" * (100 * 1024 + 1)}
@@ -329,7 +329,7 @@ class TestNotification:
     def test_mark_as_read(self, notification_type_factory: NotificationType) -> None:
         """Test mark_as_read sets read_at for in-app notifications."""
         notification_type = notification_type_factory()
-        user = User.objects.create_user(username="testuser")
+        user = User.objects.create_user(email="testuser@example.com", password="testpass123")
 
         notification = Notification.objects.create(
             type=notification_type,
@@ -349,7 +349,7 @@ class TestNotification:
     def test_mark_as_read_idempotent(self, notification_type_factory: NotificationType) -> None:
         """Test mark_as_read can be called multiple times."""
         notification_type = notification_type_factory()
-        user = User.objects.create_user(username="testuser")
+        user = User.objects.create_user(email="testuser@example.com", password="testpass123")
 
         notification = Notification.objects.create(
             type=notification_type,
@@ -412,7 +412,7 @@ class TestNotification:
     def test_recipient_user_foreign_key(self, notification_type_factory: NotificationType) -> None:
         """Test recipient_user FK relationship."""
         notification_type = notification_type_factory()
-        user = User.objects.create_user(username="testuser")
+        user = User.objects.create_user(email="testuser@example.com", password="testpass123")
 
         notification = Notification.objects.create(
             type=notification_type,
@@ -428,7 +428,7 @@ class TestNotification:
     def test_cascade_delete_user(self, notification_type_factory: NotificationType) -> None:
         """Test deleting user cascades to notifications."""
         notification_type = notification_type_factory()
-        user = User.objects.create_user(username="testuser")
+        user = User.objects.create_user(email="testuser@example.com", password="testpass123")
 
         notification = Notification.objects.create(
             type=notification_type,
