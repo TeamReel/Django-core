@@ -32,6 +32,22 @@ Users receive notifications
 
 ## Quick Start
 
+### Step 0: Seed Default Routing Rules (Recommended)
+
+Before you start, seed the system with sensible default routing rules:
+
+```bash
+# Preview what would be created
+python manage.py configure_routing --dry-run
+
+# Create default routing rules
+python manage.py configure_routing
+```
+
+**This creates 8 default rules** for common events (project.created, task.assigned, etc.) with `global` scope, `in_app` channel, and appropriate priorities.
+
+You can skip this step and create rules manually, but using the command gives you a good starting point.
+
 ### Step 1: Emit Events from Domain Code
 
 When something happens in your domain (project updated, task assigned, etc.), emit an event:
