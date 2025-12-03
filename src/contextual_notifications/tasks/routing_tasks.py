@@ -91,12 +91,7 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
         # Measure task execution time
         with routing_task_duration_seconds.labels(event_type=event_type).time():
             # Step 1: Route event to determine target users
-            target_users = RoutingService.route_event(
-                event_type=event_type,
-                org_id=context.get("org_id"),
-                project_id=context.get("project_id"),
-                actor_user_id=context.get("actor_user_id"),
-            )
+            target_users = RoutingService.route_event(event_dict)
 
             if not target_users:
                 logger.info(
