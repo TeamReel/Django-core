@@ -19,11 +19,11 @@ subtasks:
   - "T043"
 title: "Metrics & B15 Task Observability"
 phase: "Phase 2 - Metrics Infrastructure"
-lane: "doing"
+lane: "for_review"
 assignee: "Claude Agent"
 agent: "claude"
 shell_pid: "39236"
-review_status: "acknowledged"
+review_status: "resubmitted"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-03T00:00:00Z"
@@ -51,6 +51,11 @@ history:
     agent: "claude"
     shell_pid: "39236"
     action: "Acknowledged review feedback - addressing 3 critical issues and 2 major issues"
+  - timestamp: "2025-12-03T19:30:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "39236"
+    action: "Addressed all review feedback (commit e0b3ccf): (1) Fixed registry to list-based with 1-parameter function, (2) Removed duplicate /metrics endpoint, (3) Added explicit REGISTRY parameter, (4) Added integration tests, (5) Documented HTTPMetricsMiddleware rationale"
 ---
 
 # Work Package Prompt: WP03 – Metrics & B15 Task Observability
