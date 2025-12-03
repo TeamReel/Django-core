@@ -49,12 +49,15 @@ INSTALLED_APPS = [
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
     "api",  # B13: API Foundation & Standards
     "tasks.apps.TasksConfig",  # B15: Tasks & Scheduling Foundation
+    "observability.apps.ObservabilityConfig",  # B18: Platform Observability Foundation
     "notifications.apps.NotificationsConfig",  # B16: Notifications Baseline
     "contextual_notifications.apps.ContextualNotificationsConfig",  # B17: Contextual Notification Service
 ]
 
 MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Must be first
+    "observability.middleware.CorrelationIDMiddleware",  # WP02: Correlation ID extraction/generation
+    "observability.middleware.HTTPMetricsMiddleware",  # WP03: HTTP request metrics (T038)
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "accounts.middleware.SessionInactivityMiddleware",  # Enforce inactivity timeout
@@ -344,3 +347,63 @@ from .celery import *  # noqa
 # ==============================================================================
 
 SITE_NAME = "Django Core"  # Used in page titles (<title> tag) and branding (header)
+
+# ==============================================================================
+# Observability Configuration (B18)
+# ==============================================================================
+
+# Health Checks
+OBSERVABILITY_HEALTH_CHECKS_ENABLED = True  # Enable /health/live and /health/ready endpoints
+
+# Structured Logging (WP02)
+OBSERVABILITY_LOGGING_JSON = os.getenv("OBSERVABILITY_LOGGING_JSON", "true").lower() == "true"
+OBSERVABILITY_PII_REDACTION_ENABLED = os.getenv("OBSERVABILITY_PII_REDACTION_ENABLED", "true").lower() == "true"
+
+# Metrics (WP03 - T043)
+OBSERVABILITY_METRICS_ENABLED = os.getenv("OBSERVABILITY_METRICS_ENABLED", "true").lower() == "true"
+OBSERVABILITY_METRICS_EXPORTER = os.getenv("OBSERVABILITY_METRICS_EXPORTER", "prometheus")  # Options: prometheus, statsd
+
+# Logging Configuration (T023-T025)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'json': {
+            '()': 'observability.logging.JSONFormatter',
+        },
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'filters': {
+        'correlation_id': {
+            '()': 'observability.logging.CorrelationIDFilter',
+        },
+        'pii_redaction': {
+            '()': 'observability.logging.PIIRedactionFilter',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'json' if OBSERVABILITY_LOGGING_JSON else 'standard',
+            'filters': ['correlation_id', 'pii_redaction'] if OBSERVABILITY_PII_REDACTION_ENABLED else ['correlation_id'],
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': os.getenv('LOG_LEVEL', 'INFO'),
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': os.getenv('SQL_LOG_LEVEL', 'WARNING'),
+            'propagate': False,
+        },
+    },
+}

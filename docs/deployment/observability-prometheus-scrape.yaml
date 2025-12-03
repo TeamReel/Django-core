@@ -1,0 +1,331 @@
+# Prometheus Scrape Configuration for Django Core
+
+This example shows how to configure Prometheus to scrape metrics from Django Core application with Platform Observability Foundation.
+
+---
+
+## Kubernetes Service Discovery
+
+### Service with Prometheus Annotations
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-core-app
+  namespace: production
+  labels:
+    app: django-core
+    component: web
+  annotations:
+    # Prometheus scrape annotations
+    prometheus.io/scrape: "true"   # Enable scraping
+    prometheus.io/port: "8000"     # Port to scrape
+    prometheus.io/path: "/metrics" # Metrics endpoint path
+spec:
+  selector:
+    app: django-core
+    component: web
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP
+```
+
+### Prometheus Configuration (prometheus.yml)
+
+```yaml
+global:
+  scrape_interval: 60s      # Scrape every 60 seconds (recommended)
+  scrape_timeout: 10s       # Allow 10 seconds for scrape to complete
+  evaluation_interval: 60s  # Evaluate rules every 60 seconds
+
+scrape_configs:
+  # Django Core application metrics
+  - job_name: 'django-core-app'
+    scrape_interval: 60s
+    scrape_timeout: 10s
+    
+    # Kubernetes service discovery
+    kubernetes_sd_configs:
+      - role: service
+        namespaces:
+          names:
+            - production
+    
+    # Relabeling rules to filter services with prometheus.io/scrape annotation
+    relabel_configs:
+      # Only scrape services with prometheus.io/scrape=true annotation
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      
+      # Use prometheus.io/path annotation for metrics path
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      
+      # Use prometheus.io/port annotation for scrape port
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      
+      # Add service name as label
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: service
+      
+      # Add namespace as label
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+```
+
+---
+
+## ServiceMonitor (Prometheus Operator)
+
+If using Prometheus Operator, use ServiceMonitor instead of relabel configs:
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: django-core-app
+  namespace: production
+  labels:
+    app: django-core
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: django-core
+      component: web
+  
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 60s
+    scrapeTimeout: 10s
+    
+    # Optional: TLS configuration
+    # tlsConfig:
+    #   insecureSkipVerify: true
+    
+    # Optional: Basic authentication
+    # basicAuth:
+    #   username:
+    #     name: django-metrics-auth
+    #     key: username
+    #   password:
+    #     name: django-metrics-auth
+    #     key: password
+```
+
+---
+
+## Direct Scrape (Non-Kubernetes)
+
+For standalone deployments without Kubernetes service discovery:
+
+```yaml
+scrape_configs:
+  - job_name: 'django-core-app'
+    scrape_interval: 60s
+    scrape_timeout: 10s
+    
+    static_configs:
+      - targets:
+          - 'django-app-1:8000'
+          - 'django-app-2:8000'
+          - 'django-app-3:8000'
+        labels:
+          environment: 'production'
+          component: 'web'
+    
+    metrics_path: '/metrics'
+    scheme: 'http'
+```
+
+---
+
+## Verifying Scrape Configuration
+
+### Check Prometheus Targets
+
+1. Open Prometheus UI: `http://prometheus:9090`
+2. Navigate to **Status > Targets**
+3. Find `django-core-app` job
+4. Verify:
+   - **State**: UP (green)
+   - **Last Scrape**: <60 seconds ago
+   - **Scrape Duration**: <1 second
+   - **Error**: (empty)
+
+### Test Metrics Endpoint
+
+```bash
+# From within cluster
+kubectl run curl --rm -it --image=curlimages/curl -- \
+  curl http://django-core-app.production.svc.cluster.local/metrics
+
+# Expected output (sample):
+# # HELP http_requests_total Total HTTP requests
+# # TYPE http_requests_total counter
+# http_requests_total{method="GET",status="2xx"} 1523
+# http_requests_total{method="POST",status="2xx"} 342
+# ...
+```
+
+### Query Metrics in Prometheus
+
+```promql
+# Check if metrics are being scraped
+up{job="django-core-app"}
+
+# Expected: 1 (UP) for each pod
+
+# Query HTTP request rate
+rate(http_requests_total[5m])
+
+# Query task metrics
+tasks_started_total
+```
+
+---
+
+## Scrape Interval Recommendations
+
+| Environment | Scrape Interval | Rationale |
+|-------------|----------------|-----------|
+| **Production** | 60s | Standard interval; balances granularity vs storage |
+| **Staging** | 30s | More frequent for testing alert rules |
+| **Development** | 15s | Rapid feedback for debugging metrics |
+
+**Storage impact**: 60s interval = 1,440 samples/day/metric. 15s interval = 5,760 samples/day/metric (4x storage).
+
+---
+
+## Alert Rules
+
+Create `django-core-alerts.yml`:
+
+```yaml
+groups:
+  - name: django_core_alerts
+    interval: 60s
+    rules:
+      # High HTTP error rate
+      - alert: DjangoCoreHighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5xx"}[5m])) 
+          / 
+          sum(rate(http_requests_total[5m])) 
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: web
+        annotations:
+          summary: "Django Core high HTTP 5xx error rate (>5%)"
+          description: "{{ $value | humanizePercentage }} of requests are failing"
+      
+      # Slow HTTP requests
+      - alert: DjangoCoreSlow HTTPRequests
+        expr: |
+          histogram_quantile(0.95, 
+            rate(http_request_duration_seconds_bucket[5m])
+          ) > 1.0
+        for: 10m
+        labels:
+          severity: warning
+          component: web
+        annotations:
+          summary: "Django Core 95th percentile HTTP latency >1s"
+          description: "P95 latency: {{ $value | humanizeDuration }}"
+      
+      # Task failure rate
+      - alert: DjangoCoreCeleryTaskFailures
+        expr: |
+          sum(rate(tasks_completed_total{status="failure"}[5m])) 
+          / 
+          sum(rate(tasks_completed_total[5m])) 
+          > 0.10
+        for: 5m
+        labels:
+          severity: critical
+          component: celery
+        annotations:
+          summary: "Django Core Celery task failure rate >10%"
+          description: "{{ $value | humanizePercentage }} of tasks are failing"
+      
+      # Metrics endpoint down
+      - alert: DjangoCoreMet ricsEndpointDown
+        expr: up{job="django-core-app"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: observability
+        annotations:
+          summary: "Django Core metrics endpoint unreachable"
+          description: "Prometheus cannot scrape /metrics for 2+ minutes"
+```
+
+Load alerts into Prometheus:
+
+```yaml
+# prometheus.yml
+rule_files:
+  - '/etc/prometheus/alerts/django-core-alerts.yml'
+```
+
+---
+
+## Troubleshooting
+
+### Metrics endpoint returns 404
+
+**Cause**: Django app not configured with `django-prometheus` URLs
+
+**Solution**:
+```python
+# src/config/urls.py
+urlpatterns = [
+    # ...
+    path('', include('django_prometheus.urls')),  # ← Add this
+]
+```
+
+### Scrape timeout errors
+
+**Symptoms**: Prometheus logs show `context deadline exceeded`
+
+**Cause**: `/metrics` endpoint takes >10 seconds to respond
+
+**Solution**:
+- Check metric cardinality (too many unique label combinations)
+- Increase `scrape_timeout` to 15s
+- Optimize slow metric collectors
+
+### Metrics not appearing in Prometheus
+
+**Diagnosis checklist**:
+1. ✓ Service has `prometheus.io/scrape: "true"` annotation
+2. ✓ Prometheus can reach pod network (check network policies)
+3. ✓ `/metrics` endpoint returns data (`curl http://pod-ip:8000/metrics`)
+4. ✓ Prometheus scrape config has correct relabel rules
+5. ✓ No authentication blocking scrape
+
+---
+
+## See Also
+
+- [Platform Observability Guide](../observability.md)
+- [Kubernetes Deployment Configuration](observability-k8s-probes.yaml)
+- [Prometheus Best Practices](https://prometheus.io/docs/practices/naming/)
+- [Prometheus Operator Documentation](https://prometheus-operator.dev/)

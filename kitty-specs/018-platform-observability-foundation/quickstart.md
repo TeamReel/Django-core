@@ -1,4 +1,5 @@
-﻿# Platform Observability Foundation
+# Quickstart: Platform Observability Foundation
+*Path: [kitty-specs/018-platform-observability-foundation/quickstart.md](kitty-specs/018-platform-observability-foundation/quickstart.md)*
 
 **Feature**: B18 Platform Observability Foundation  
 **Audience**: Platform engineers, DevOps engineers, downstream product developers
@@ -12,7 +13,7 @@ Platform Observability Foundation provides three core primitives:
 2. **Structured Logging**: JSON logs with correlation IDs and PII redaction
 3. **Metrics**: Prometheus-compatible `/metrics` endpoint with task observability
 
-This guide covers basic setup and usage. See [Extension Guide](observability-extension-guide.md) for advanced customization and [Troubleshooting Guide](observability-troubleshooting.md) for common issues.
+This guide covers basic setup and usage. See [Extension Guide](../../../docs/observability-extension-guide.md) for advanced customization.
 
 ---
 
@@ -69,7 +70,7 @@ python manage.py check
 ### Kubernetes Configuration
 
 ```yaml
-# deployment/k8s/deployment.yaml
+# k8s/deployment.yaml
 
 spec:
   containers:
@@ -97,8 +98,6 @@ spec:
       failureThreshold: 2
 ```
 
-See [deployment/observability-k8s-probes.yaml](deployment/observability-k8s-probes.yaml) for complete example.
-
 ### Manual Testing
 
 ```bash
@@ -117,7 +116,7 @@ curl http://localhost:8000/health/ready
 
 **Expected Behavior**:
 - If **any critical check** (database, queue, migrations) fails → `status: "unhealthy"`, HTTP 503
-- If **only cache** fails → `status: "healthy"`, HTTP 200 (cache is non-critical)
+- If **only cache** fails → `status: "healthy"`, HTTP 200 (cache is non-critical per clarification #4)
 
 ---
 
@@ -126,7 +125,7 @@ curl http://localhost:8000/health/ready
 **Step 1**: Add Prometheus annotations to Kubernetes service
 
 ```yaml
-# deployment/k8s/service.yaml
+# k8s/service.yaml
 
 apiVersion: v1
 kind: Service
@@ -161,7 +160,29 @@ curl http://localhost:8000/metrics
 
 **Step 3**: Configure Prometheus scrape interval (recommended: 60 seconds)
 
-See [deployment/observability-prometheus-scrape.yaml](deployment/observability-prometheus-scrape.yaml) for complete Prometheus configuration.
+```yaml
+# prometheus.yml
+
+scrape_configs:
+  - job_name: 'django-core-app'
+    scrape_interval: 60s  # Standard interval
+    scrape_timeout: 10s
+    kubernetes_sd_configs:
+      - role: service
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+```
 
 ---
 
@@ -183,7 +204,7 @@ See [deployment/observability-prometheus-scrape.yaml](deployment/observability-p
   "line": 87,
   "context": {
     "user_id": 42,
-    "email": "[REDACTED]",
+    "email": "[REDACTED]",  # ← Auto-redacted per FR-007
     "ip_address": "192.168.1.100"
   }
 }
@@ -259,29 +280,60 @@ histogram_quantile(0.95, rate(task_duration_seconds_bucket[5m])) > 30
 - [ ] **PII is redacted**: Search logs for `"password"` or `"email"` → should find `"[REDACTED]"`
 - [ ] **Task metrics emitted**: Query Prometheus for `tasks_started_total` → non-zero values
 
-For troubleshooting common issues, see [Troubleshooting Guide](observability-troubleshooting.md).
+### Troubleshooting Common Issues
+
+**Issue**: `/health/ready` always returns 503
+
+**Solution**: Check dependency connectivity:
+```bash
+# Test database
+python manage.py dbshell
+
+# Test Redis cache
+redis-cli -h <cache-host> PING
+
+# Test Redis queue
+redis-cli -h <queue-host> PING
+
+# Check migration status
+python manage.py showmigrations
+```
+
+**Issue**: Metrics endpoint returns 404
+
+**Solution**: Verify `observability` in `INSTALLED_APPS` and restart server:
+```bash
+python manage.py check observability
+# Should show: System check identified no issues
+```
+
+**Issue**: Correlation IDs missing from logs
+
+**Solution**: Verify middleware ordering in `settings.py`:
+```python
+MIDDLEWARE = [
+    'observability.middleware.CorrelationIDMiddleware',  # ← Must be early
+    # ... other middleware
+]
+```
 
 ---
 
 ## Next Steps
 
-- **Extend Health Checks**: Add custom checks for external APIs ([Extension Guide](observability-extension-guide.md#custom-health-checks))
-- **Add Custom Metrics**: Track business-specific metrics ([Extension Guide](observability-extension-guide.md#custom-metrics))
-- **Configure Alerts**: Set up Prometheus AlertManager rules ([Troubleshooting Guide](observability-troubleshooting.md))
+- **Extend Health Checks**: Add custom checks for external APIs ([Extension Guide](../../../docs/observability-extension-guide.md#custom-health-checks))
+- **Add Custom Metrics**: Track business-specific metrics ([Extension Guide](../../../docs/observability-extension-guide.md#custom-metrics))
+- **Configure Alerts**: Set up Prometheus AlertManager rules ([Troubleshooting Guide](../../../docs/observability-troubleshooting.md))
 
 ---
 
 ## Quick Reference
-
-### Endpoints
 
 | Endpoint | Purpose | Expected Response |
 |----------|---------|------------------|
 | `/health/live` | Kubernetes liveness probe | `{"status": "healthy"}` (200 OK) |
 | `/health/ready` | Kubernetes readiness probe | `{"status": "healthy", "checks": {...}}` (200 OK if all critical deps healthy) |
 | `/metrics` | Prometheus metrics scraping | Prometheus exposition format |
-
-### Settings
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -290,8 +342,6 @@ For troubleshooting common issues, see [Troubleshooting Guide](observability-tro
 | `OBSERVABILITY_METRICS_EXPORTER` | `'prometheus'` | Metric exporter backend (`'prometheus'`, `'statsd'`, `'openmetrics'`) |
 | `OBSERVABILITY_LOGGING_JSON` | `True` | Enable JSON log formatting |
 | `OBSERVABILITY_PII_REDACTION_ENABLED` | `True` | Enable automatic PII redaction |
-
-### Metrics
 
 | Metric | Type | Labels | Description |
 |--------|------|--------|-------------|
