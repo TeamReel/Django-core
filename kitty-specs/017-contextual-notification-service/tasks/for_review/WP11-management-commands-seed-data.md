@@ -3,8 +3,8 @@ work_package_id: "WP11"
 subtasks: ["T078", "T079", "T080", "T081", "T082", "T083", "T084"]
 title: "Management Commands & Seed Data"
 phase: "Phase 3 - Admin & Developer Experience"
-lane: "doing"
-assignee: "claude"
+lane: "for_review"
+assignee: "claude-reviewer"
 agent: "claude"
 shell_pid: "13508"
 history:
@@ -17,6 +17,11 @@ history:
     agent: "claude"
     shell_pid: "13508"
     action: "Started implementation of management commands and seed data"
+  - timestamp: "2025-12-03T13:50:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Completed implementation. Created configure_routing command with --dry-run/--force, seed data migration, README.md documentation, and updated quickstart.md"
 ---
 
 # WP11 – Management Commands & Seed Data
@@ -45,9 +50,9 @@ Provide management commands to seed default routing rules. Easy setup for develo
 
 ## Definition of Done
 
-- [ ] Command creates default rules
-- [ ] Dry-run shows preview
-- [ ] Migration seeds data
+- [x] Command creates default rules
+- [x] Dry-run shows preview
+- [x] Migration seeds data
 
 ## Dependencies
 
