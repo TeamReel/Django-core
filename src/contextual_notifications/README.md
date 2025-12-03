@@ -272,6 +272,152 @@ pytest tests/contextual_notifications/test_policy_service.py
 pytest --cov=contextual_notifications tests/contextual_notifications/
 ```
 
+## Troubleshooting
+
+### Why didn't user X receive a notification?
+
+**Common causes and solutions**:
+
+1. **No routing rules configured**
+   - **Check**: `RoutingRule.objects.filter(event_type="project.updated", enabled=True)`
+   - **Fix**: Run `python manage.py configure_routing` to seed default rules
+   - **Or**: Create rules manually in Django admin
+
+2. **User opted out via preferences**
+   - **Check**: `NotificationPreference.objects.filter(user=user, event_type="project.updated", enabled=False)`
+   - **Fix**: User can update preferences via `/api/v1/contextual-notifications/preferences/`
+
+3. **Notification was suppressed (duplicate within window)**
+   - **Check**: Redis key `suppression:{user_id}:{event_type}:{resource_id}`
+   - **Check**: Audit log for `suppressed_users` field in routing decision
+   - **Fix**: Wait for suppression window to expire (5 minutes default), or don't include `resource_id` in event if suppression not desired
+
+4. **Quiet hours rate limit reached**
+   - **Check**: `OrganisationNotificationPolicy.objects.filter(organisation=org, quiet_hours_enabled=True)`
+   - **Check**: Current time vs quiet hours window
+   - **Fix**: Increase `quiet_hours_rate_limit` or disable quiet hours
+
+5. **Redis connection failed**
+   - **Check**: Application logs for `RedisConnectionError`
+   - **Fix**: Verify Redis is running (`redis-cli ping`), check `REDIS_URL` setting
+
+6. **Event not emitted correctly**
+   - **Check**: Application logs for `EventService.emit_event()` errors
+   - **Check**: Audit log for `notification_routing` events
+   - **Fix**: Verify event structure matches schema (event_type, context, payload)
+
+7. **B16 integration failure**
+   - **Check**: Audit log for handoff errors
+   - **Check**: B16 NotificationService logs
+   - **Fix**: Verify B16 is running, check handoff service configuration
+
+### Why did user X receive too many notifications?
+
+**Common causes and solutions**:
+
+1. **No suppression key (resource_id missing)**
+   - **Check**: Event context includes `resource_id` field
+   - **Fix**: Always include `resource_id` in event context: `{"resource_id": f"project_{project.id}"}`
+
+2. **Duplicate routing rules**
+   - **Check**: Multiple rules matching same event/scope/channel
+   ```python
+   from django.db.models import Count
+   RoutingRule.objects.values('event_type', 'scope', 'channel').annotate(
+       count=Count('id')
+   ).filter(count__gt=1)
+   ```
+   - **Fix**: Disable or delete redundant rules
+
+3. **Multiple channels firing (not a bug)**
+   - **Check**: User has rules for both `email` and `in_app` channels
+   - **Note**: This is intentional - different channels are not deduplicated
+   - **Fix**: If undesired, disable one channel's rule or let user opt out via preferences
+
+4. **Quiet hours not configured**
+   - **Check**: `OrganisationNotificationPolicy.objects.filter(organisation=org, quiet_hours_enabled=True)`
+   - **Fix**: Create quiet hours policy with appropriate rate limits
+
+### How do I debug routing decisions?
+
+**Use the audit log** (`/admin/audit/auditevent/`):
+
+1. Filter by `category="notification_routing"` or `event_type="notification_routing_decision"`
+2. Find the event by timestamp or metadata
+3. Check key fields:
+   - `metadata.matched_rules`: Which rules triggered
+   - `metadata.target_users`: Who was targeted
+   - `metadata.selected_channels`: Which channels per user
+   - `metadata.suppressed_users`: Who was suppressed
+   - `metadata.preference_filtered_users`: Who opted out
+   - `metadata.quiet_hours_delayed`: Notifications delayed by quiet hours
+
+**Or use the Admin API**:
+
+```bash
+# Query routing logs for organization
+curl -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:8000/api/v1/contextual-notifications/routing-logs/?org_id=1&event_type=project.updated"
+```
+
+### How do I test notifications in development?
+
+**Option 1: Synchronous testing (unit tests)**
+
+```python
+from unittest.mock import patch
+from contextual_notifications.services import (
+    EventService,
+    RoutingService,
+    HandoffService
+)
+
+@patch.object(HandoffService, 'send_to_notification_system')
+def test_project_update_notification(mock_handoff):
+    """Test notification routing without Celery."""
+    # Create routing rule
+    RoutingRule.objects.create(
+        event_type="project.updated",
+        scope="global",
+        channel="in_app",
+        priority="normal",
+        enabled=True,
+        target_role="member"
+    )
+    
+    # Emit event
+    EventService.emit_event(
+        event_type="project.updated",
+        context={"org_id": 1, "project_id": 42, "user_id": 5},
+        payload={"title": "Project updated"}
+    )
+    
+    # Verify handoff called
+    assert mock_handoff.called
+```
+
+**Option 2: Celery testing (integration tests)**
+
+```bash
+# Start Celery worker in foreground
+celery -A config worker --loglevel=info
+
+# In another terminal, trigger event
+python manage.py shell
+>>> from contextual_notifications.services import EventService
+>>> EventService.emit_event(...)
+
+# Watch Celery worker logs for routing decision
+```
+
+**Option 3: Admin API**
+
+```bash
+# Query recent routing decisions
+curl -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:8000/api/v1/contextual-notifications/routing-logs/?ordering=-created_at&page_size=10"
+```
+
 ## Dependencies
 
 - **B09**: Audit logging system (AuditEvent model)
@@ -284,6 +430,8 @@ pytest --cov=contextual_notifications tests/contextual_notifications/
 ## Related Documentation
 
 - [Architecture Decision Records](../../docs/adr/)
+  - [ADR 005: Routing Evaluation Order](../../docs/adr/005-routing-evaluation-order.md)
+  - [ADR 006: Suppression Strategy](../../docs/adr/006-suppression-strategy.md)
 - [API Documentation](http://localhost:8000/api/docs/)
 - [Notification System (B16)](../notifications/README.md)
 - [Audit System (B09)](../audit/README.md)
