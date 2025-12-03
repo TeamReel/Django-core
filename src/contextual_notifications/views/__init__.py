@@ -1,3 +1,9 @@
-"""DRF views for contextual notifications."""
+"""Views for contextual notifications."""
 
-# Views will be added in WP10
+from .preference_views import NotificationPreferenceViewSet
+from .routing_logs_views import RoutingDecisionLogViewSet
+
+__all__ = [
+    "RoutingDecisionLogViewSet",
+    "NotificationPreferenceViewSet",
+]
