@@ -465,13 +465,13 @@
 **Priority**: P3 (Developer experience)
 
 #### Included Subtasks
-- [ ] T085 Create `src/contextual_notifications/README.md` with architecture overview
-- [ ] T086 Document event emission API with code examples
-- [ ] T087 Document routing rule configuration (admin + command)
-- [ ] T088 Create troubleshooting guide (why didn't I get notified?)
-- [ ] T089 [P] Update quickstart.md with working end-to-end examples
-- [ ] T090 [P] Add ADR for routing rule evaluation order (`docs/adr/005-routing-evaluation-order.md`)
-- [ ] T091 [P] Add ADR for suppression strategy (`docs/adr/006-suppression-strategy.md`)
+- [x] T085 Create `src/contextual_notifications/README.md` with architecture overview
+- [x] T086 Document event emission API with code examples
+- [x] T087 Document routing rule configuration (admin + command)
+- [x] T088 Create troubleshooting guide (why didn't I get notified?)
+- [x] T089 [P] Update quickstart.md with working end-to-end examples
+- [x] T090 [P] Add ADR for routing rule evaluation order (`docs/adr/005-routing-evaluation-order.md`)
+- [x] T091 [P] Add ADR for suppression strategy (`docs/adr/006-suppression-strategy.md`)
 
 #### Constitutional Alignment
 - Principle XI (Documentation): In-repo docs, app README, getting started, extension guide, ADRs
