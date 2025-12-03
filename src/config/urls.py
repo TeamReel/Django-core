@@ -45,6 +45,8 @@ urlpatterns = [
     path("api/v1/preferences/", include("i18n_preferences.urls")),
     # B16: Notifications API
     path("api/v1/", include("notifications.urls")),
+    # B17: Contextual Notifications API
+    path("api/v1/contextual-notifications/", include("contextual_notifications.urls")),
     path("", include("django_prometheus.urls")),  # Exposes /metrics endpoint
     # B14: Web UI Baseline - User-facing HTML pages
     path("ui/", include("web_ui.urls")),  # Web UI URLs under /ui/
