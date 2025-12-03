@@ -1,12 +1,14 @@
 """Celery tasks for event routing."""
 
 import logging
+import time
 from typing import Any
 
 from celery import shared_task
 from prometheus_client import Counter, Histogram
 
 from ..services import (
+    AuditService,
     NotificationHandoffService,
     PreferenceService,
     RoutingService,
@@ -76,6 +78,9 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
     context = event_dict.get("context", {})
     payload = event_dict.get("payload", {})
 
+    # Track routing time for audit
+    routing_start_time = time.time()
+
     logger.info(
         "Routing task started",
         extra={
@@ -87,13 +92,21 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
         },
     )
 
+    # Track audit context
+    matched_rules: list[int] = []
+    all_target_users: list[tuple[int, str]] = []
+    preference_filtered_user_ids: list[int] = []
+    suppressed_user_ids: list[int] = []
+
     try:
         # Measure task execution time
         with routing_task_duration_seconds.labels(event_type=event_type).time():
             # Step 1: Route event to determine target users
             target_users = RoutingService.route_event(event_dict)
+            all_target_users = target_users
 
             if not target_users:
+                routing_time_ms = (time.time() - routing_start_time) * 1000
                 logger.info(
                     "No target users found for event",
                     extra={"event_type": event_type, "task_id": self.request.id},
@@ -101,6 +114,19 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
                 routing_tasks_total.labels(
                     event_type=event_type, status="no_targets"
                 ).inc()
+
+                # Log audit for no targets
+                AuditService.log_routing_decision(
+                    event_type=event_type,
+                    event_context=context,
+                    matched_rules=matched_rules,
+                    target_users=[],
+                    preference_filtered_users=[],
+                    suppressed_users=[],
+                    routing_time_ms=routing_time_ms,
+                    success=True,
+                )
+
                 return {
                     "status": "no_targets",
                     "target_users": 0,
@@ -117,11 +143,12 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
             )
 
             # Step 2: Filter by user preferences (per channel)
-            filtered_users = _apply_preference_filtering(
+            filtered_users, preference_filtered_user_ids = _apply_preference_filtering(
                 target_users, event_type, self.request.id
             )
 
             if not filtered_users:
+                routing_time_ms = (time.time() - routing_start_time) * 1000
                 logger.info(
                     "All users opted out via preferences",
                     extra={"event_type": event_type, "task_id": self.request.id},
@@ -129,6 +156,19 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
                 routing_tasks_total.labels(
                     event_type=event_type, status="all_opted_out"
                 ).inc()
+
+                # Log audit for all opted out
+                AuditService.log_routing_decision(
+                    event_type=event_type,
+                    event_context=context,
+                    matched_rules=matched_rules,
+                    target_users=all_target_users,
+                    preference_filtered_users=preference_filtered_user_ids,
+                    suppressed_users=[],
+                    routing_time_ms=routing_time_ms,
+                    success=True,
+                )
+
                 return {
                     "status": "all_opted_out",
                     "target_users": len(target_users),
@@ -136,11 +176,12 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
                 }
 
             # Step 3: Check suppression (deduplicate)
-            unsuppressed_users = _apply_suppression(
+            unsuppressed_users, suppressed_user_ids = _apply_suppression(
                 filtered_users, event_type, payload, self.request.id
             )
 
             if not unsuppressed_users:
+                routing_time_ms = (time.time() - routing_start_time) * 1000
                 logger.info(
                     "All notifications suppressed (duplicates)",
                     extra={"event_type": event_type, "task_id": self.request.id},
@@ -148,6 +189,19 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
                 routing_tasks_total.labels(
                     event_type=event_type, status="all_suppressed"
                 ).inc()
+
+                # Log audit for all suppressed
+                AuditService.log_routing_decision(
+                    event_type=event_type,
+                    event_context=context,
+                    matched_rules=matched_rules,
+                    target_users=all_target_users,
+                    preference_filtered_users=preference_filtered_user_ids,
+                    suppressed_users=suppressed_user_ids,
+                    routing_time_ms=routing_time_ms,
+                    success=True,
+                )
+
                 return {
                     "status": "all_suppressed",
                     "target_users": len(target_users),
@@ -160,6 +214,8 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
                 event_payload=payload,
                 target_users=unsuppressed_users,
             )
+
+            routing_time_ms = (time.time() - routing_start_time) * 1000
 
             logger.info(
                 "Routing task completed",
@@ -176,6 +232,18 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
 
             routing_tasks_total.labels(event_type=event_type, status="success").inc()
 
+            # Log successful routing to audit
+            AuditService.log_routing_decision(
+                event_type=event_type,
+                event_context=context,
+                matched_rules=matched_rules,
+                target_users=unsuppressed_users,
+                preference_filtered_users=preference_filtered_user_ids,
+                suppressed_users=suppressed_user_ids,
+                routing_time_ms=routing_time_ms,
+                success=True,
+            )
+
             return {
                 "status": "success",
                 "target_users": len(target_users),
@@ -187,6 +255,7 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
             }
 
     except Exception as exc:
+        routing_time_ms = (time.time() - routing_start_time) * 1000
         logger.error(
             "Routing task failed",
             extra={
@@ -198,12 +267,21 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
             exc_info=True,
         )
         routing_tasks_total.labels(event_type=event_type, status="error").inc()
+
+        # Log error to audit
+        AuditService.log_routing_error(
+            event_type=event_type,
+            event_context=context,
+            error_message=str(exc),
+            routing_time_ms=routing_time_ms,
+        )
+
         raise  # Celery will retry
 
 
 def _apply_preference_filtering(
     target_users: list[tuple[int, str]], event_type: str, task_id: str
-) -> list[tuple[int, str]]:
+) -> tuple[list[tuple[int, str]], list[int]]:
     """
     Apply preference filtering per channel.
 
@@ -213,9 +291,12 @@ def _apply_preference_filtering(
         task_id: Celery task ID for logging
 
     Returns:
-        Filtered list of (user_id, channel) tuples
+        Tuple of (filtered_users, filtered_out_user_ids)
+        - filtered_users: List of (user_id, channel) tuples that passed filtering
+        - filtered_out_user_ids: List of user IDs that were filtered out
     """
     filtered_users = []
+    filtered_out_users: set[int] = set()
 
     # Group users by channel for batch filtering
     by_channel: dict[str, list[int]] = {}
@@ -232,6 +313,12 @@ def _apply_preference_filtering(
             channel=channel,
         )
 
+        # Track filtered out users
+        allowed_set = set(allowed_user_ids)
+        for user_id in user_ids:
+            if user_id not in allowed_set:
+                filtered_out_users.add(user_id)
+
         # Rebuild (user_id, channel) tuples
         for user_id in allowed_user_ids:
             filtered_users.append((user_id, channel))
@@ -243,11 +330,11 @@ def _apply_preference_filtering(
             "task_id": task_id,
             "before": len(target_users),
             "after": len(filtered_users),
-            "filtered_out": len(target_users) - len(filtered_users),
+            "filtered_out": len(filtered_out_users),
         },
     )
 
-    return filtered_users
+    return filtered_users, list(filtered_out_users)
 
 
 def _apply_suppression(
@@ -255,7 +342,7 @@ def _apply_suppression(
     event_type: str,
     payload: dict[str, Any],
     task_id: str,
-) -> list[tuple[int, str]]:
+) -> tuple[list[tuple[int, str]], list[int]]:
     """
     Apply suppression check (deduplicate within window).
 
@@ -266,9 +353,12 @@ def _apply_suppression(
         task_id: Celery task ID for logging
 
     Returns:
-        List of (user_id, channel) tuples that are not suppressed
+        Tuple of (unsuppressed_users, suppressed_user_ids)
+        - unsuppressed_users: List of (user_id, channel) tuples that are not suppressed
+        - suppressed_user_ids: List of user IDs that were suppressed
     """
     unsuppressed_users = []
+    suppressed_user_ids: list[int] = []
 
     # Extract resource_id from payload metadata
     metadata = payload.get("metadata", {})
@@ -288,7 +378,9 @@ def _apply_suppression(
             ttl=300,  # 5 minutes
         )
 
-        if not is_suppressed:
+        if is_suppressed:
+            suppressed_user_ids.append(user_id)
+        else:
             unsuppressed_users.append((user_id, channel))
 
     logger.debug(
@@ -299,9 +391,9 @@ def _apply_suppression(
             "resource_id": resource_id,
             "before": len(target_users),
             "after": len(unsuppressed_users),
-            "suppressed": len(target_users) - len(unsuppressed_users),
+            "suppressed": len(suppressed_user_ids),
         },
     )
 
-    return unsuppressed_users
+    return unsuppressed_users, suppressed_user_ids
 
