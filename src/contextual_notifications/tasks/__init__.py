@@ -1,3 +1,7 @@
 """Celery tasks for contextual notifications."""
 
-# Tasks will be added in WP02 and WP08
+from .routing_tasks import route_event_task
+
+__all__ = [
+    "route_event_task",
+]
