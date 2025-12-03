@@ -3,12 +3,20 @@ work_package_id: "WP04"
 subtasks: ["T026", "T027", "T028", "T029", "T030", "T031", "T032"]
 title: "User Preferences & Filtering"
 phase: "Phase 1 - Core Routing"
-lane: "planned"
+lane: "doing"
+assignee: "GitHub Copilot"
+agent: "claude"
+shell_pid: "13508"
 history:
   - timestamp: "2025-12-02T19:47:00Z"
     lane: "planned"
     agent: "system"
     action: "Prompt generated"
+  - timestamp: "2025-12-03T12:00:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Started implementation - User Preferences & Filtering"
 ---
 
 # WP04 – User Preferences & Filtering
