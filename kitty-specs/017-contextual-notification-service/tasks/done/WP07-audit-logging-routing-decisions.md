@@ -4,6 +4,7 @@ subtasks: ["T049", "T050", "T051", "T052", "T053", "T054", "T055"]
 title: "Audit Logging & Routing Decision Logs"
 phase: "Phase 1 - Core Routing"
 lane: "done"
+assignee: "claude"
 agent: "claude-reviewer"
 shell_pid: "13508"
 implementation_commit: "a596219"
