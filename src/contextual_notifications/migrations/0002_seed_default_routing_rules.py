@@ -7,69 +7,74 @@ def seed_default_routing_rules(apps, schema_editor):
     """Create default routing rules for common event types."""
     RoutingRule = apps.get_model("contextual_notifications", "RoutingRule")
 
+    # Priority constants (matching RoutingRule model)
+    PRIORITY_NORMAL = 1
+    PRIORITY_HIGH = 2
+    PRIORITY_URGENT = 3
+
     default_rules = [
         {
             "event_type": "project.created",
             "scope": "global",
             "channel": "in_app",
-            "priority": "normal",
-            "enabled": True,
+            "priority": PRIORITY_NORMAL,
+            "is_enabled": True,
             "target_role": "member",
         },
         {
             "event_type": "project.updated",
             "scope": "global",
             "channel": "in_app",
-            "priority": "normal",
-            "enabled": True,
+            "priority": PRIORITY_NORMAL,
+            "is_enabled": True,
             "target_role": "member",
         },
         {
             "event_type": "project.deleted",
             "scope": "global",
             "channel": "in_app",
-            "priority": "normal",
-            "enabled": True,
+            "priority": PRIORITY_NORMAL,
+            "is_enabled": True,
             "target_role": "member",
         },
         {
             "event_type": "project.member_added",
             "scope": "global",
             "channel": "in_app",
-            "priority": "normal",
-            "enabled": True,
+            "priority": PRIORITY_NORMAL,
+            "is_enabled": True,
             "target_role": "member",
         },
         {
             "event_type": "org.member_invited",
             "scope": "global",
             "channel": "in_app",
-            "priority": "normal",
-            "enabled": True,
+            "priority": PRIORITY_NORMAL,
+            "is_enabled": True,
             "target_role": "member",
         },
         {
             "event_type": "task.assigned",
             "scope": "global",
             "channel": "in_app",
-            "priority": "high",
-            "enabled": True,
+            "priority": PRIORITY_HIGH,
+            "is_enabled": True,
             "target_role": "assignee",
         },
         {
             "event_type": "task.completed",
             "scope": "global",
             "channel": "in_app",
-            "priority": "normal",
-            "enabled": True,
+            "priority": PRIORITY_NORMAL,
+            "is_enabled": True,
             "target_role": "creator",
         },
         {
             "event_type": "task.overdue",
             "scope": "global",
             "channel": "in_app",
-            "priority": "urgent",
-            "enabled": True,
+            "priority": PRIORITY_URGENT,
+            "is_enabled": True,
             "target_role": "assignee",
         },
     ]
@@ -84,7 +89,7 @@ def seed_default_routing_rules(apps, schema_editor):
             defaults={
                 "channel": rule_data["channel"],
                 "priority": rule_data["priority"],
-                "enabled": rule_data["enabled"],
+                "is_enabled": rule_data["is_enabled"],
                 "target_role": rule_data["target_role"],
             },
         )
