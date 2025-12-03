@@ -3,12 +3,20 @@ work_package_id: "WP03"
 subtasks: ["T017", "T018", "T019", "T020", "T021", "T022", "T023", "T024", "T025"]
 title: "Routing Service & Rule Evaluation"
 phase: "Phase 1 - Core Routing"
-lane: "planned"
+lane: "doing"
+assignee: "GitHub Copilot"
+agent: "claude"
+shell_pid: "13508"
 history:
   - timestamp: "2025-12-02T19:47:00Z"
     lane: "planned"
     agent: "system"
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-03T11:15:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Started implementation - Routing Service & Rule Evaluation"
 ---
 
 # WP03 – Routing Service & Rule Evaluation
