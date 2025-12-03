@@ -131,24 +131,38 @@ labels = validate_label_cardinality({
 
 # Enable metrics collection
 OBSERVABILITY_METRICS_ENABLED = os.getenv("OBSERVABILITY_METRICS_ENABLED", "true").lower() == "true"
-
-# Exporter backend (currently only 'prometheus')
-OBSERVABILITY_METRICS_EXPORTER = os.getenv("OBSERVABILITY_METRICS_EXPORTER", "prometheus")
 ```
 
 ### Metrics Endpoint
 
-Prometheus scrapes `/metrics` endpoint:
+Prometheus scrapes `/metrics` endpoint provided by `django-prometheus`:
 
 ```bash
 curl http://localhost:8000/metrics
 
-# Output:
-# HELP http_requests_total Total HTTP requests
+# Output includes both django-prometheus metrics AND custom metrics:
+# HELP http_requests_total Total HTTP requests (custom HTTPMetricsMiddleware)
 # TYPE http_requests_total counter
 http_requests_total{method="GET",status="2xx"} 142
 http_requests_total{method="POST",status="4xx"} 7
+
+# HELP django_http_requests_total Django HTTP requests (django-prometheus)
+# TYPE django_http_requests_total counter
+django_http_requests_total{method="GET",view="health_live"} 98
 ```
+
+### HTTPMetricsMiddleware vs django-prometheus
+
+**Why Both?**
+
+1. **django-prometheus**: Provides comprehensive Django integration including database, cache, and model metrics. HTTP metrics include `view` label with Django view names.
+
+2. **HTTPMetricsMiddleware**: Custom middleware provides simplified HTTP metrics with **controlled label cardinality** (FR-013):
+   - Groups HTTP status codes (2xx/3xx/4xx/5xx) instead of individual codes
+   - Restricts HTTP methods to allowlist (GET/POST/PUT/DELETE/PATCH/HEAD/OPTIONS)
+   - Prevents unbounded cardinality from dynamic view names
+
+**Recommendation**: Use both. django-prometheus for detailed debugging, HTTPMetricsMiddleware for production monitoring with bounded cardinality.
 
 ## Exception Isolation (FR-011a)
 

@@ -4,7 +4,7 @@ Observability application for Django Core-App.
 Provides:
 - Health checks (liveness & readiness probes)
 - Structured JSON logging with PII redaction
-- Metric collection with Prometheus exporter
+- Metric collection with Prometheus exporter (via django-prometheus /metrics endpoint)
 - HTTP request metrics middleware
 - B15 task observability (ObservableTask base class)
 

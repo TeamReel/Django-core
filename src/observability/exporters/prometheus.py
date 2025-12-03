@@ -1,6 +1,6 @@
 """Prometheus metric collector implementation."""
 
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Histogram, Gauge, REGISTRY
 
 
 # T033: PrometheusCollector
@@ -10,6 +10,9 @@ class PrometheusCollector:
     
     Wraps prometheus-client with lazy metric initialization.
     Per-pod metrics; Prometheus handles aggregation (FR-012a).
+    
+    All metrics are registered to the global prometheus_client.REGISTRY,
+    making them available at the /metrics endpoint (served by django-prometheus).
     """
     
     def __init__(self):
@@ -27,10 +30,12 @@ class PrometheusCollector:
         metric_key = (name, label_names)
         
         if metric_key not in self._counters:
+            # Explicitly register to global REGISTRY (though it's the default)
             self._counters[metric_key] = Counter(
                 name,
                 f'Counter: {name}',
-                labelnames=list(label_names)
+                labelnames=list(label_names),
+                registry=REGISTRY
             )
         
         self._counters[metric_key].labels(**labels).inc(value)
@@ -47,7 +52,8 @@ class PrometheusCollector:
             self._histograms[metric_key] = Histogram(
                 name,
                 f'Histogram: {name}',
-                labelnames=list(label_names)
+                labelnames=list(label_names),
+                registry=REGISTRY
             )
         
         self._histograms[metric_key].labels(**labels).observe(value)
@@ -64,7 +70,8 @@ class PrometheusCollector:
             self._gauges[metric_key] = Gauge(
                 name,
                 f'Gauge: {name}',
-                labelnames=list(label_names)
+                labelnames=list(label_names),
+                registry=REGISTRY
             )
         
         self._gauges[metric_key].labels(**labels).set(value)

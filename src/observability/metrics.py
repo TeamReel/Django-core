@@ -23,13 +23,13 @@ class MetricCollector(Protocol):
         ...
 
 
-# T030: Metric collector registry
-METRIC_COLLECTORS: dict[str, MetricCollector] = {}
+# T030: Metric collector registry (list-based, consistent with WP01 health checks)
+METRIC_COLLECTORS: list[MetricCollector] = []
 
 
-def register_metric_collector(name: str, collector: MetricCollector) -> None:
-    """Register a new metric collector."""
-    METRIC_COLLECTORS[name] = collector
+def register_metric_collector(collector: MetricCollector) -> None:
+    """Register a metric collector."""
+    METRIC_COLLECTORS.append(collector)
 
 
 def emit_metric(
@@ -52,21 +52,20 @@ def emit_metric(
         if not settings.OBSERVABILITY_METRICS_ENABLED:
             return  # Metrics disabled
         
-        exporter = settings.OBSERVABILITY_METRICS_EXPORTER
-        active_collector = METRIC_COLLECTORS.get(exporter)
-        
-        if not active_collector:
-            return  # Graceful degradation
+        if not METRIC_COLLECTORS:
+            return  # No collectors registered
         
         # Validate and sanitize labels (T037)
         sanitized_labels = validate_label_cardinality(labels)
         
-        if metric_type == "counter":
-            active_collector.increment(name, int(value), sanitized_labels)
-        elif metric_type == "histogram":
-            active_collector.observe(name, value, sanitized_labels)
-        elif metric_type == "gauge":
-            active_collector.set_gauge(name, value, sanitized_labels)
+        # Emit to all registered collectors
+        for collector in METRIC_COLLECTORS:
+            if metric_type == "counter":
+                collector.increment(name, int(value), sanitized_labels)
+            elif metric_type == "histogram":
+                collector.observe(name, value, sanitized_labels)
+            elif metric_type == "gauge":
+                collector.set_gauge(name, value, sanitized_labels)
     
     except Exception as e:
         # FR-011a: Never propagate exceptions from observability hooks
@@ -144,22 +143,4 @@ def validate_label_cardinality(labels: dict[str, str]) -> dict[str, str]:
             sanitized[key] = str(value)[:50]
     
     return sanitized
-
-
-# T035: /metrics Django view
-def metrics_view(request):
-    """
-    Django view to expose Prometheus metrics (FR-012).
-    
-    Returns:
-        HttpResponse with Prometheus text format metrics.
-    
-    Usage:
-        path('metrics', metrics_view, name='metrics')
-    """
-    from django.http import HttpResponse
-    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
-    
-    metrics_data = generate_latest()
-    return HttpResponse(metrics_data, content_type=CONTENT_TYPE_LATEST)
 

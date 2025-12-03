@@ -34,10 +34,7 @@ class ObservabilityConfig(AppConfig):
         
         # Register metric collector (T033)
         if getattr(settings, 'OBSERVABILITY_METRICS_ENABLED', False):
-            exporter = getattr(settings, 'OBSERVABILITY_METRICS_EXPORTER', 'prometheus')
+            from observability.metrics import register_metric_collector
+            from observability.exporters import PrometheusCollector
             
-            if exporter == 'prometheus':
-                from observability.metrics import register_metric_collector
-                from observability.exporters import PrometheusCollector
-                
-                register_metric_collector(PrometheusCollector())
+            register_metric_collector(PrometheusCollector())

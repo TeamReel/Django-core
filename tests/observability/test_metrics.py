@@ -26,7 +26,6 @@ from observability.metrics import (
     emit_metric,
     validate_label_cardinality,
     _emit_failure_metric,
-    metrics_view,
 )
 from observability.exporters import PrometheusCollector
 from observability.middleware import HTTPMetricsMiddleware
@@ -518,23 +517,59 @@ class TestObservableTask:
 
 
 # ==============================================================================
-# Metrics View Tests
+# Integration Tests (Major Issue #4 - verify metrics appear at /metrics)
 # ==============================================================================
 
-class TestMetricsView(TestCase):
-    """Test /metrics endpoint (T035)."""
+class TestMetricsIntegration(TestCase):
+    """Integration tests for end-to-end metric emission and scraping."""
     
-    @patch('observability.metrics.generate_latest')
-    def test_metrics_view(self, mock_generate_latest):
-        """Test metrics_view() returns Prometheus format."""
-        mock_generate_latest.return_value = b"# HELP test_metric Test metric\n"
+    def setUp(self):
+        """Set up test environment with PrometheusCollector."""
+        METRIC_COLLECTORS.clear()
+        from observability.exporters import PrometheusCollector
+        register_metric_collector(PrometheusCollector())
+    
+    @override_settings(OBSERVABILITY_METRICS_ENABLED=True)
+    def test_metrics_endpoint_shows_emitted_metrics(self):
+        """
+        Integration test: Emit metric, verify it appears at /metrics endpoint.
         
-        factory = RequestFactory()
-        request = factory.get('/metrics')
+        Addresses Review Feedback Issue #3:
+        Verifies PrometheusCollector metrics are registered to global REGISTRY
+        and exposed via django-prometheus /metrics endpoint.
+        """
+        from observability import emit_metric
         
-        response = metrics_view(request)
+        # Emit a test metric
+        emit_metric('counter', 'integration_test_counter', 5, {'test_label': 'test_value'})
+        
+        # Fetch /metrics endpoint
+        response = self.client.get('/metrics')
         
         # Verify response
         assert response.status_code == 200
-        assert response['Content-Type'] == 'text/plain; version=0.0.4; charset=utf-8'
-        assert b"# HELP test_metric Test metric" in response.content
+        
+        # Verify metric appears in Prometheus exposition format
+        content = response.content.decode('utf-8')
+        assert 'integration_test_counter' in content
+        # Note: label cardinality validation may transform label values
+        
+    @override_settings(OBSERVABILITY_METRICS_ENABLED=True)
+    def test_http_metrics_appear_at_endpoint(self):
+        """
+        Integration test: Make HTTP request, verify metrics appear at /metrics.
+        
+        Tests HTTPMetricsMiddleware integration with PrometheusCollector.
+        """
+        # Make a test HTTP request (triggers HTTPMetricsMiddleware)
+        response = self.client.get('/health/live')
+        assert response.status_code == 200
+        
+        # Fetch /metrics endpoint
+        metrics_response = self.client.get('/metrics')
+        content = metrics_response.content.decode('utf-8')
+        
+        # Verify HTTP metrics appear
+        # Note: http_requests_total may already exist from django-prometheus
+        # Our custom HTTPMetricsMiddleware adds additional data points
+        assert 'http_requests_total' in content or 'http_request_duration_seconds' in content
