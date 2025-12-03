@@ -1,13 +1,22 @@
 """DRF viewsets for routing decision logs (B09 audit events)."""
 
-from django.db.models import Q
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
+from rest_framework.filters import OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 
 from audit.models import AuditEvent
 
 from ..serializers.routing_serializers import RoutingDecisionLogSerializer
+
+
+class StandardResultsSetPagination(PageNumberPagination):
+    """Standard pagination for API results."""
+
+    page_size = 50
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class RoutingDecisionLogFilter(filters.FilterSet):
@@ -34,7 +43,9 @@ class RoutingDecisionLogViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = RoutingDecisionLogSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.DjangoFilterBackend, OrderingFilter]
     filterset_class = RoutingDecisionLogFilter
+    pagination_class = StandardResultsSetPagination
     ordering = ["-created_at"]
     ordering_fields = ["created_at", "event_type"]
 

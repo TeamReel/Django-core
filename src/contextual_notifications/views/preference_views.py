@@ -1,10 +1,21 @@
 """DRF viewsets for notification preferences."""
 
+from django_filters import rest_framework as filters
 from rest_framework import viewsets
+from rest_framework.filters import OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 
 from ..models import NotificationPreference
 from ..serializers.routing_serializers import NotificationPreferenceSerializer
+
+
+class StandardResultsSetPagination(PageNumberPagination):
+    """Standard pagination for API results."""
+
+    page_size = 50
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class NotificationPreferenceViewSet(viewsets.ModelViewSet):
@@ -17,7 +28,9 @@ class NotificationPreferenceViewSet(viewsets.ModelViewSet):
 
     serializer_class = NotificationPreferenceSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.DjangoFilterBackend, OrderingFilter]
     filterset_fields = ["event_type", "channel", "enabled"]
+    pagination_class = StandardResultsSetPagination
     ordering = ["-created_at"]
     ordering_fields = ["created_at", "event_type", "channel"]
 
@@ -38,16 +51,13 @@ class NotificationPreferenceViewSet(viewsets.ModelViewSet):
         # Org admins see preferences for users in their organization
         from organisations.models import OrganisationUser
 
-        admin_org_ids = OrganisationUser.objects.filter(
-            user=user, role__in=["admin", "owner"]
-        ).values_list("organisation_id", flat=True)
+        # Single optimized query: get user IDs from orgs where current user is admin
+        org_user_ids = OrganisationUser.objects.filter(
+            organisation__organisationuser__user=user,
+            organisation__organisationuser__role__in=["admin", "owner"],
+        ).values_list("user_id", flat=True)
 
-        if admin_org_ids:
-            # Get all users in these organizations
-            org_user_ids = OrganisationUser.objects.filter(
-                organisation_id__in=admin_org_ids
-            ).values_list("user_id", flat=True)
-
+        if org_user_ids:
             return NotificationPreference.objects.filter(
                 user_id__in=org_user_ids
             ).select_related("user")
