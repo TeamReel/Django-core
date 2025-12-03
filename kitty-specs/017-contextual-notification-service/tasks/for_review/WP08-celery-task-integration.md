@@ -3,11 +3,11 @@ work_package_id: "WP08"
 subtasks: ["T056", "T057", "T058", "T059", "T060", "T061", "T062"]
 title: "Celery Task Integration & Async Processing"
 phase: "Phase 1 - Core Routing"
-lane: "doing"
+lane: "for_review"
 assignee: "GitHub Copilot"
 agent: "claude"
 shell_pid: "13508"
-implementation_commit: "a7c9bc4"
+implementation_commit: "c9015fe"
 review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
@@ -36,6 +36,12 @@ history:
     agent: "claude"
     shell_pid: "13508"
     action: "Addressing review feedback - fixing RoutingService.route_event() signature mismatch"
+  - timestamp: "2025-12-03T16:20:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "13508"
+    commit: "c9015fe"
+    action: "Addressed feedback: Fixed RoutingService.route_event() signature mismatch (commit c9015fe). Changed from unpacked arguments to passing event_dict parameter."
 ---
 
 ## Review Feedback
@@ -74,8 +80,8 @@ history:
 - ✅ Channel-grouped preference filtering for efficiency
 
 **Action Items** (must complete before re-review):
-- [ ] Fix RoutingService.route_event() call to pass `event_dict` instead of individual arguments (line 94-98)
-- [ ] Verify the fix by checking that RoutingService.route_event() signature in routing_service.py matches the task call
+- [X] Fix RoutingService.route_event() call to pass `event_dict` instead of individual arguments (line 94-98) - **FIXED in commit c9015fe**
+- [X] Verify the fix by checking that RoutingService.route_event() signature in routing_service.py matches the task call - **VERIFIED: signatures match**
 - [ ] Consider adding a simple smoke test to validate the end-to-end flow (optional but recommended)
 
 # WP08 – Celery Task Integration & Async Processing
