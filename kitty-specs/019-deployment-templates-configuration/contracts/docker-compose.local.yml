@@ -1,0 +1,116 @@
+# Docker Compose - Local Development Environment
+# B19 Deployment Templates & Configuration
+#
+# Purpose: Fast local development with hot-reload, debug mode, local services
+# Usage: docker-compose -f docker-compose.local.yml up
+
+version: '3.9'
+
+services:
+  # PostgreSQL Database (local development)
+  db:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_DB: django_core_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Broker (local development)
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django Web Application (development mode with hot-reload)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder  # Use builder stage for development dependencies
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app  # Mount source code for hot-reload
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/django_core_dev
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_TASK_ALWAYS_EAGER=False
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - LOGGING_LEVEL=DEBUG
+      - PROMETHEUS_METRICS_ENABLED=True
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+
+  # Celery Worker (local development)
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: celery -A config worker --loglevel=info --concurrency=2
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/django_core_dev
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - LOGGING_LEVEL=DEBUG
+    depends_on:
+      - db
+      - redis
+
+  # Celery Beat Scheduler (local development)
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: celery -A config beat --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/django_core_dev
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - LOGGING_LEVEL=DEBUG
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data_local:
+
+# Development Notes:
+# - All services run with DEBUG=True for easier debugging
+# - Source code is mounted for hot-reload (no container rebuild needed)
+# - Local PostgreSQL and Redis instances (no external dependencies)
+# - Ports exposed for direct access (db:5432, redis:6379, web:8000)
+# - Use python:3.12 builder stage to include development tools
+# - Celery runs with lower concurrency for development workloads

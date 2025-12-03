@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "019",
+    "slug":  "019-deployment-templates-configuration",
+    "friendly_name":  "Deployment Templates \u0026 Configuration",
+    "source_description":  "Reference deployment templates (Docker, Docker Compose, minimal Kubernetes) and configuration documentation that enable teams to run Django Core-App in local, staging, and production environments with B03/B15/B18 integration",
+    "created_at":  "2025-12-03T19:48:59Z"
+}
