@@ -3,12 +3,20 @@ work_package_id: "WP06"
 subtasks: ["T041", "T042", "T043", "T044", "T045", "T046", "T047", "T048"]
 title: "B16 Integration & Notification Handoff"
 phase: "Phase 1 - Core Routing"
-lane: "planned"
+lane: "doing"
+assignee: "GitHub Copilot"
+agent: "claude"
+shell_pid: "13508"
 history:
   - timestamp: "2025-12-02T19:47:00Z"
     lane: "planned"
     agent: "system"
     action: "Prompt generated"
+  - timestamp: "2025-12-03T14:15:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Started implementation - B16 Integration & Notification Handoff"
 ---
 
 # WP06 – B16 Integration & Notification Handoff
