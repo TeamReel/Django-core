@@ -19,12 +19,12 @@ subtasks:
   - "T043"
 title: "Metrics & B15 Task Observability"
 phase: "Phase 2 - Metrics Infrastructure"
-lane: "for_review"
-assignee: "Claude Agent"
+lane: "planned"
+assignee: ""
 agent: "claude"
 shell_pid: "39236"
-review_status: ""
-reviewed_by: ""
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-03T00:00:00Z"
     lane: "planned"
@@ -41,6 +41,11 @@ history:
     agent: "claude"
     shell_pid: "39236"
     action: "Completed WP03 implementation (commit ac2b3f2): All 16 subtasks complete - metrics infrastructure, Prometheus exporter, HTTP metrics, ObservableTask, 580+ lines of tests"
+  - timestamp: "2025-12-03T19:00:00Z"
+    lane: "planned"
+    agent: "claude-reviewer"
+    shell_pid: "System"
+    action: "Code review complete - 3 critical issues identified: (1) Registry data structure mismatch (dict vs list), (2) Duplicate /metrics endpoint conflicts, (3) PrometheusCollector metrics not exposed. Requires fixes before approval."
 ---
 
 # Work Package Prompt: WP03 – Metrics & B15 Task Observability
@@ -53,6 +58,268 @@ history:
 - **You must address all feedback** before your work is complete.
 - **Mark as acknowledged**: When you understand the feedback and begin addressing it, update `review_status: acknowledged`.
 - **Report progress**: As you address each feedback item, update the Activity Log explaining what you changed.
+
+---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Reviewed By**: Claude Reviewer (Shell PID: System)
+**Review Date**: 2025-12-03T19:00:00Z
+
+### Critical Issues
+
+#### 1. Registry Data Structure Mismatch (CRITICAL - Blocks All Tests)
+
+**Problem**: The `METRIC_COLLECTORS` implementation uses a `dict[str, MetricCollector]`, but tests assume it's a `list`.
+
+**Evidence**:
+- [metrics.py](src/observability/metrics.py#L27): `METRIC_COLLECTORS: dict[str, MetricCollector] = {}`
+- [metrics.py](src/observability/metrics.py#L30): `def register_metric_collector(name: str, collector: MetricCollector)` - requires TWO parameters
+- [test_metrics.py](tests/observability/test_metrics.py#L84): `register_metric_collector(collector)` - passes ONE parameter
+- [test_metrics.py](tests/observability/test_metrics.py#L87): `assert METRIC_COLLECTORS[0] == collector` - assumes list indexing
+- [apps.py](src/observability/apps.py#L41): `register_metric_collector(PrometheusCollector())` - passes ONE parameter
+
+**Impact**: 
+- All tests will fail with `TypeError: register_metric_collector() missing 1 required positional argument: 'collector'`
+- Application startup will crash when registering PrometheusCollector
+- FR-012 (Prometheus exporter) **cannot function**
+
+**Required Fix**:
+Choose one of two approaches:
+
+**Option A** (Recommended - aligns with WP01 health check pattern):
+```python
+# Use list-based registry like health checks
+METRIC_COLLECTORS: list[MetricCollector] = []
+
+def register_metric_collector(collector: MetricCollector) -> None:
+    """Register a metric collector."""
+    METRIC_COLLECTORS.append(collector)
+
+def emit_metric(...):
+    # Emit to all registered collectors
+    for collector in METRIC_COLLECTORS:
+        if metric_type == "counter":
+            collector.increment(name, int(value), sanitized_labels)
+        # ...
+```
+
+**Option B** (Keep dict, fix all call sites):
+```python
+# Keep dict but fix all usages
+def register_metric_collector(name: str, collector: MetricCollector) -> None:
+    """Register a metric collector by name."""
+    METRIC_COLLECTORS[name] = collector
+
+# apps.py
+register_metric_collector('prometheus', PrometheusCollector())
+
+# Tests
+register_metric_collector('test', collector)
+assert 'test' in METRIC_COLLECTORS
+```
+
+**Recommendation**: Use **Option A** because:
+1. Consistent with WP01 health check registry pattern
+2. Simpler API (one parameter vs two)
+3. Allows multiple exporters without naming conflicts
+4. Tests already written for list behavior
+
+---
+
+#### 2. Duplicate `/metrics` Endpoint (BLOCKS PROMETHEUS SCRAPING)
+
+**Problem**: Two routes expose `/metrics`:
+- Line 30: `path("metrics", metrics_view, name="metrics")` (custom view)
+- Line 58: `path("", include("django_prometheus.urls"))` (django-prometheus)
+
+**Evidence**: [urls.py](src/config/urls.py#L30) and [urls.py](src/config/urls.py#L58)
+
+**Impact**:
+- Django URL resolution uses first match → custom `metrics_view` shadows django-prometheus
+- Custom view uses `generate_latest()` which generates metrics from DEFAULT registry
+- PrometheusCollector metrics stored in instance variables (`_counters`, `_histograms`) are **not exposed**
+- Prometheus scraping will see empty/incomplete metrics
+- FR-012 (Per-pod metrics) **fails** - no task/HTTP metrics visible
+
+**Required Fix**:
+Remove the custom `metrics_view` and rely on django-prometheus:
+
+```python
+# urls.py - REMOVE line 23 and line 30
+# from observability.metrics import metrics_view  # DELETE
+# path("metrics", metrics_view, name="metrics"),  # DELETE
+
+# Keep only:
+path("", include("django_prometheus.urls")),  # Prometheus /metrics at root
+```
+
+**OR** if custom view is required, use the SAME registry:
+```python
+# metrics.py
+from prometheus_client import generate_latest, REGISTRY
+
+def metrics_view(request):
+    """Expose metrics from shared Prometheus registry."""
+    from django.http import HttpResponse
+    from prometheus_client import CONTENT_TYPE_LATEST
+    
+    # Use REGISTRY, not generate_latest() which creates isolated metrics
+    metrics_data = generate_latest(REGISTRY)
+    return HttpResponse(metrics_data, content_type=CONTENT_TYPE_LATEST)
+```
+
+**Recommendation**: Remove custom view and use django-prometheus since it's already configured and tested.
+
+---
+
+### Major Issues
+
+#### 3. PrometheusCollector Metrics Not Registered to Global Registry
+
+**Problem**: PrometheusCollector creates Prometheus metrics (Counter, Histogram, Gauge) but they're stored in instance dictionaries (`self._counters`). These are NOT automatically added to the global Prometheus REGISTRY, so `generate_latest()` won't include them.
+
+**Evidence**: [prometheus.py](src/observability/exporters/prometheus.py#L17-L19)
+
+**Impact**:
+- All HTTP/task metrics emitted via `emit_metric()` will be collected but **not exposed** at `/metrics`
+- Prometheus scraping will show 0 custom metrics
+- FR-012, FR-014 **fail** - no task/HTTP metrics visible
+
+**Required Fix**:
+Prometheus metrics auto-register to REGISTRY by default. The current implementation should work, BUT verify with integration test. If metrics don't appear, explicitly pass `registry` parameter:
+
+```python
+# prometheus.py
+from prometheus_client import Counter, Histogram, Gauge, REGISTRY
+
+class PrometheusCollector:
+    def increment(self, name: str, value: int = 1, labels: dict[str, str] | None = None):
+        # ...
+        if metric_key not in self._counters:
+            self._counters[metric_key] = Counter(
+                name,
+                f'Counter: {name}',
+                labelnames=list(label_names),
+                registry=REGISTRY  # Explicitly register
+            )
+```
+
+**Validation Required**: Add integration test that calls `emit_metric()` then fetches `/metrics` to verify metrics appear.
+
+---
+
+#### 4. Type Hints Inconsistency (Constitution Principle III)
+
+**Problem**: Type hints use Python 3.10+ syntax (`dict[str, str]`) but codebase states "Python 3.12+ baseline".
+
+**Evidence**: [metrics.py](src/observability/metrics.py#L14) uses `dict[str, str] | None` (3.10+ syntax)
+
+**Impact**: Not critical, but inconsistent with Constitution. Python 3.12 adds new features (e.g., PEP 695 type parameter syntax).
+
+**Required Fix**: 
+Use `from __future__ import annotations` for forward compatibility, OR upgrade to Python 3.12-specific features if mandated.
+
+---
+
+### Minor Issues / Observations
+
+#### 5. HTTPMetricsMiddleware: Potential Double-Counting with django-prometheus
+
+**Problem**: `django-prometheus` middleware (`PrometheusBeforeMiddleware`, `PrometheusAfterMiddleware`) already collects HTTP metrics. Adding custom `HTTPMetricsMiddleware` may cause duplicate metrics with different names.
+
+**Evidence**: [settings/base.py](src/config/settings/base.py#L58-L59) shows django-prometheus middleware active.
+
+**Recommendation**: 
+- Check if django-prometheus metrics (`django_http_requests_total`, etc.) are sufficient
+- If custom metrics needed, document WHY (e.g., different labels, cardinality control)
+- Ensure metric names don't conflict: `http_requests_total` (custom) vs `django_http_requests_total` (django-prometheus)
+
+**Status**: Not blocking, but requires clarification in documentation.
+
+---
+
+#### 6. Test Coverage: Missing Integration Tests
+
+**Problem**: Tests are 100% unit tests with mocks. No integration tests verify:
+- `/metrics` endpoint actually returns emitted metrics
+- PrometheusCollector metrics appear in Prometheus exposition format
+- HTTPMetricsMiddleware metrics are scraped by Prometheus
+
+**Required Fix**: Add integration test:
+```python
+def test_metrics_endpoint_integration(client):
+    """Integration test: emit metric, verify in /metrics response."""
+    from observability import emit_metric
+    
+    emit_metric('counter', 'test_integration_counter', 5, {'label': 'value'})
+    
+    response = client.get('/metrics')
+    assert response.status_code == 200
+    assert b'test_integration_counter' in response.content
+    assert b'label="value"' in response.content
+```
+
+---
+
+### What Was Done Well ✅
+
+1. **Exception Isolation (FR-011a)**: All `emit_metric()`, `HTTPMetricsMiddleware`, and `ObservableTask` wrap observability hooks in try-except. Excellent adherence to fire-and-forget principle.
+
+2. **Label Cardinality Control (FR-013)**: `validate_label_cardinality()` implements HTTP status grouping (2xx/3xx/4xx/5xx) and method allowlists exactly as specified.
+
+3. **ObservableTask Design**: Clean `__call__()` override pattern, correlation_id extraction, proper status tracking (success/failure).
+
+4. **Test Coverage Breadth**: 580+ lines of tests cover Protocol compliance, lazy initialization, failure tracking. Strong foundation.
+
+5. **Documentation**: METRICS_README.md provides excellent usage guide, architecture explanation, and FR compliance matrix.
+
+6. **Protocol Pattern Reuse**: Consistent with WP01 health checks (Protocol + registry pattern).
+
+---
+
+### Action Items (Must Complete Before Re-Review)
+
+**CRITICAL (Blocks Approval)**:
+- [ ] **Issue #1**: Fix `METRIC_COLLECTORS` registry - use list-based approach to match tests and apps.py
+- [ ] **Issue #2**: Remove duplicate `/metrics` endpoint - either delete custom view OR fix registry usage
+- [ ] **Issue #3**: Verify PrometheusCollector metrics appear in `/metrics` output (add integration test)
+
+**MAJOR (Required for FR Compliance)**:
+- [ ] Add integration test for `/metrics` endpoint showing emitted metrics
+- [ ] Document HTTPMetricsMiddleware vs django-prometheus metrics (why both?)
+
+**MINOR (Nice to Have)**:
+- [ ] Add `from __future__ import annotations` for type hint consistency
+- [ ] Update METRICS_README.md to note django-prometheus coexistence
+
+---
+
+### Verification Steps for Implementer
+
+After fixing issues, verify:
+
+1. **Registry Fix**: Run `pytest tests/observability/test_metrics.py::TestMetricRegistry -v` - should pass
+2. **Application Startup**: Run `python manage.py runserver` - no errors loading PrometheusCollector
+3. **Metrics Endpoint**: 
+   ```bash
+   curl http://localhost:8000/metrics | grep http_requests_total
+   # Should see custom metrics, not just django-prometheus defaults
+   ```
+4. **Full Test Suite**: `pytest tests/observability/test_metrics.py -v --tb=short` - 100% pass rate
+
+---
+
+### Re-Review Checklist
+
+When re-submitting, confirm:
+- [ ] All 3 critical issues resolved with evidence (commit references)
+- [ ] Integration test added and passing
+- [ ] Application starts without errors
+- [ ] `/metrics` endpoint returns custom emitted metrics
+- [ ] Documentation updated (if needed)
 
 ---
 
