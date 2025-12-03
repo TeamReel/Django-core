@@ -19,11 +19,11 @@ subtasks:
   - "T043"
 title: "Metrics & B15 Task Observability"
 phase: "Phase 2 - Metrics Infrastructure"
-lane: "for_review"
+lane: "done"
 assignee: "Claude Agent"
-agent: "claude"
-shell_pid: "39236"
-review_status: "resubmitted"
+agent: "claude-reviewer"
+shell_pid: "System"
+review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-03T00:00:00Z"
@@ -56,6 +56,11 @@ history:
     agent: "claude"
     shell_pid: "39236"
     action: "Addressed all review feedback (commit e0b3ccf): (1) Fixed registry to list-based with 1-parameter function, (2) Removed duplicate /metrics endpoint, (3) Added explicit REGISTRY parameter, (4) Added integration tests, (5) Documented HTTPMetricsMiddleware rationale"
+  - timestamp: "2025-12-03T19:45:00Z"
+    lane: "done"
+    agent: "claude-reviewer"
+    shell_pid: "System"
+    action: "Approved WP03: All 5 feedback items resolved. Registry refactored to list-based pattern, duplicate /metrics removed, explicit REGISTRY registration, integration tests added, HTTPMetricsMiddleware documented. Specification compliance: FR-009 to FR-014 ✓, SC-005/006/009 ✓. Ready for production."
 ---
 
 # Work Package Prompt: WP03 – Metrics & B15 Task Observability
@@ -73,10 +78,66 @@ history:
 
 ## Review Feedback
 
-**Status**: ❌ **Needs Changes**
+**Status**: ✅ **APPROVED**
 
 **Reviewed By**: Claude Reviewer (Shell PID: System)
-**Review Date**: 2025-12-03T19:00:00Z
+**Initial Review Date**: 2025-12-03T19:00:00Z
+**Re-Review Date**: 2025-12-03T19:45:00Z
+
+### Re-Review Summary
+
+All critical and major issues from the initial review have been successfully addressed:
+
+✅ **Issue #1: Registry Data Structure Mismatch** - RESOLVED
+- Changed from `dict[str, MetricCollector]` to `list[MetricCollector]`
+- Updated `register_metric_collector()` to single-parameter function
+- Modified `emit_metric()` to iterate all collectors
+- Fixed `apps.py` call site
+- Verified in [metrics.py](src/observability/metrics.py#L27-L32)
+
+✅ **Issue #2: Duplicate /metrics Endpoint** - RESOLVED
+- Removed custom `metrics_view()` function
+- Removed duplicate URL route
+- Only django-prometheus endpoint remains
+- Verified in [urls.py](src/config/urls.py) and [metrics.py](src/observability/metrics.py)
+
+✅ **Issue #3: PrometheusCollector Metrics Registry** - RESOLVED
+- Added explicit `registry=REGISTRY` parameter to all metric types
+- Added docstring clarifying global REGISTRY usage
+- Verified in [prometheus.py](src/observability/exporters/prometheus.py#L38,L56,L74)
+
+✅ **Issue #4: Missing Integration Tests** - RESOLVED
+- Added `TestMetricsIntegration` class with 2 integration tests
+- Tests verify metrics appear at `/metrics` endpoint
+- Verified in [test_metrics.py](tests/observability/test_metrics.py#L523-L576)
+
+✅ **Issue #5: HTTPMetricsMiddleware Documentation** - RESOLVED
+- Added "HTTPMetricsMiddleware vs django-prometheus" section
+- Explains rationale for both middlewares
+- Documents cardinality control benefits
+- Verified in [METRICS_README.md](src/observability/METRICS_README.md#L154)
+
+### What Remains Excellent
+
+- Exception isolation (FR-011a) correctly implemented throughout
+- Label cardinality control (FR-013) with HTTP status grouping
+- ObservableTask design with proper `__call__()` override
+- Comprehensive test coverage (580+ lines)
+- METRICS_README.md documentation quality
+
+### Final Verification
+
+- ✅ All 3 critical issues resolved
+- ✅ Both major issues resolved
+- ✅ Implementation follows WP01/WP02 patterns
+- ✅ Git commits show proper fix implementation (e0b3ccf)
+- ✅ No new issues introduced
+
+---
+
+## Original Review Feedback (For Historical Reference)
+
+**Status**: ❌ **Needs Changes** (NOW RESOLVED)
 
 ### Critical Issues
 
