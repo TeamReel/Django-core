@@ -3,8 +3,8 @@ work_package_id: "WP12"
 subtasks: ["T085", "T086", "T087", "T088", "T089", "T090", "T091"]
 title: "Documentation & Quickstart Integration"
 phase: "Phase 3 - Admin & Developer Experience"
-lane: "doing"
-assignee: "claude"
+lane: "for_review"
+assignee: "claude-reviewer"
 agent: "claude"
 shell_pid: "13508"
 history:
@@ -17,6 +17,11 @@ history:
     agent: "claude"
     shell_pid: "13508"
     action: "Started documentation finalization. T085 already complete from WP11."
+  - timestamp: "2025-12-03T15:45:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Completed implementation. Created ADRs 005-006 (routing order, suppression strategy), added comprehensive troubleshooting section to README with 11 common scenarios and solutions"
 ---
 
 # WP12 – Documentation & Quickstart Integration
@@ -45,9 +50,9 @@ Update docs with integration examples, troubleshooting, quickstart scenarios.
 
 ## Definition of Done
 
-- [ ] README complete with examples
-- [ ] Troubleshooting guide covers common issues
-- [ ] ADRs document key decisions
+- [x] README complete with examples
+- [x] Troubleshooting guide covers common issues
+- [x] ADRs document key decisions
 
 ## Dependencies
 
