@@ -10,6 +10,7 @@ from prometheus_client import Counter, Histogram
 from ..services import (
     AuditService,
     NotificationHandoffService,
+    PolicyService,
     PreferenceService,
     RoutingService,
     SuppressionService,
@@ -175,9 +176,47 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
                     "notifications_created": 0,
                 }
 
+            # Step 2.5: Check organisation policies (quiet hours + rate limiting)
+            org_id = context.get("org_id")
+            policy_filtered_users, rate_limited_user_ids = _apply_policy_filtering(
+                filtered_users, org_id, event_type, self.request.id
+            )
+
+            if not policy_filtered_users:
+                routing_time_ms = (time.time() - routing_start_time) * 1000
+                logger.info(
+                    "All notifications rate limited during quiet hours",
+                    extra={"event_type": event_type, "org_id": org_id, "task_id": self.request.id},
+                )
+                routing_tasks_total.labels(
+                    event_type=event_type, status="rate_limited"
+                ).inc()
+
+                # TODO: Queue for post-quiet-hours delivery with Celery ETA
+                # For now, just log and skip
+
+                # Log audit for rate limited
+                AuditService.log_routing_decision(
+                    event_type=event_type,
+                    event_context=context,
+                    matched_rules=matched_rules,
+                    target_users=all_target_users,
+                    preference_filtered_users=preference_filtered_user_ids,
+                    suppressed_users=[],
+                    routing_time_ms=routing_time_ms,
+                    success=True,
+                )
+
+                return {
+                    "status": "rate_limited",
+                    "target_users": len(target_users),
+                    "notifications_created": 0,
+                    "queued_for_later": len(rate_limited_user_ids),
+                }
+
             # Step 3: Check suppression (deduplicate)
             unsuppressed_users, suppressed_user_ids = _apply_suppression(
-                filtered_users, event_type, payload, self.request.id
+                policy_filtered_users, event_type, payload, self.request.id
             )
 
             if not unsuppressed_users:
@@ -396,4 +435,59 @@ def _apply_suppression(
     )
 
     return unsuppressed_users, suppressed_user_ids
+
+
+def _apply_policy_filtering(
+    target_users: list[tuple[int, str]],
+    org_id: int | None,
+    event_type: str,
+    task_id: str,
+) -> tuple[list[tuple[int, str]], list[int]]:
+    """
+    Apply organisation policy checks (quiet hours + rate limiting).
+
+    Args:
+        target_users: List of (user_id, channel) tuples
+        org_id: Organisation ID (None if not org-scoped)
+        event_type: Event type identifier
+        task_id: Celery task ID for logging
+
+    Returns:
+        Tuple of (policy_filtered_users, rate_limited_user_ids)
+        - policy_filtered_users: List of (user_id, channel) tuples that passed policy checks
+        - rate_limited_user_ids: List of user IDs that were rate limited
+    """
+    # If no org context, skip policy checks
+    if not org_id:
+        logger.debug(
+            "No org context, skipping policy checks",
+            extra={"event_type": event_type, "task_id": task_id},
+        )
+        return target_users, []
+
+    # Check if should deliver now (combines quiet hours + rate limit check)
+    should_deliver = PolicyService.should_deliver_now(org_id)
+
+    if should_deliver:
+        logger.debug(
+            "Policy check passed - delivering immediately",
+            extra={"event_type": event_type, "org_id": org_id, "task_id": task_id},
+        )
+        return target_users, []
+
+    # Rate limited during quiet hours - extract user IDs for tracking
+    rate_limited_user_ids = list({user_id for user_id, _ in target_users})
+
+    logger.info(
+        "Notifications rate limited during quiet hours",
+        extra={
+            "event_type": event_type,
+            "org_id": org_id,
+            "task_id": task_id,
+            "rate_limited_count": len(rate_limited_user_ids),
+        },
+    )
+
+    # Return empty list (all rate limited) and IDs of affected users
+    return [], rate_limited_user_ids
 
