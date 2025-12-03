@@ -3,8 +3,8 @@ work_package_id: "WP10"
 subtasks: ["T070", "T071", "T072", "T073", "T074", "T075", "T076", "T077"]
 title: "DRF Admin APIs & Routing Log Queries"
 phase: "Phase 3 - Admin & Developer Experience"
-lane: "done"
-assignee: "claude"
+lane: "for_review"
+assignee: "claude-reviewer"
 agent: "claude"
 shell_pid: "13508"
 history:
@@ -22,6 +22,11 @@ history:
     agent: "claude"
     shell_pid: "13508"
     action: "Completed implementation. Created serializers, viewsets, filtering, pagination, permissions, URL routing, and API documentation"
+  - timestamp: "2025-12-03T13:20:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Moved to for_review for code review"
 ---
 
 # WP10 – DRF Admin APIs & Routing Log Queries
