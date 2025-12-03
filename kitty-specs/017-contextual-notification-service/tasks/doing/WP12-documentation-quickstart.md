@@ -3,12 +3,20 @@ work_package_id: "WP12"
 subtasks: ["T085", "T086", "T087", "T088", "T089", "T090", "T091"]
 title: "Documentation & Quickstart Integration"
 phase: "Phase 3 - Admin & Developer Experience"
-lane: "planned"
+lane: "doing"
+assignee: "claude"
+agent: "claude"
+shell_pid: "13508"
 history:
   - timestamp: "2025-12-02T19:47:00Z"
     lane: "planned"
     agent: "system"
     action: "Prompt generated"
+  - timestamp: "2025-12-03T14:05:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Started documentation finalization. T085 already complete from WP11."
 ---
 
 # WP12 – Documentation & Quickstart Integration
