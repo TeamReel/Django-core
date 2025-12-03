@@ -57,6 +57,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Must be first
     "observability.middleware.CorrelationIDMiddleware",  # WP02: Correlation ID extraction/generation
+    "observability.middleware.HTTPMetricsMiddleware",  # WP03: HTTP request metrics (T038)
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "accounts.middleware.SessionInactivityMiddleware",  # Enforce inactivity timeout
@@ -358,9 +359,9 @@ OBSERVABILITY_HEALTH_CHECKS_ENABLED = True  # Enable /health/live and /health/re
 OBSERVABILITY_LOGGING_JSON = os.getenv("OBSERVABILITY_LOGGING_JSON", "true").lower() == "true"
 OBSERVABILITY_PII_REDACTION_ENABLED = os.getenv("OBSERVABILITY_PII_REDACTION_ENABLED", "true").lower() == "true"
 
-# Metrics (WP03 - to be implemented)
-OBSERVABILITY_METRICS_ENABLED = False  # Enable metric collection (requires WP03)
-OBSERVABILITY_METRICS_EXPORTER = "prometheus"  # Options: prometheus, statsd
+# Metrics (WP03 - T043)
+OBSERVABILITY_METRICS_ENABLED = os.getenv("OBSERVABILITY_METRICS_ENABLED", "true").lower() == "true"
+OBSERVABILITY_METRICS_EXPORTER = os.getenv("OBSERVABILITY_METRICS_EXPORTER", "prometheus")  # Options: prometheus, statsd
 
 # Logging Configuration (T023-T025)
 LOGGING = {

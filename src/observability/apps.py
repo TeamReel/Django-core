@@ -12,10 +12,13 @@ class ObservabilityConfig(AppConfig):
 
     def ready(self) -> None:
         """
-        Auto-register default health checks when app is ready.
+        Auto-register default health checks and metric collectors when app is ready.
         
-        Implements T014: Register database, cache, queue, and migration checks.
+        Implements:
+        - T014: Register database, cache, queue, and migration checks
+        - T033: Register PrometheusCollector if metrics enabled
         """
+        from django.conf import settings
         from observability.health import register_health_check
         from observability.checks.database import DatabaseHealthCheck
         from observability.checks.cache import CacheHealthCheck
@@ -28,3 +31,13 @@ class ObservabilityConfig(AppConfig):
         register_health_check("cache", CacheHealthCheck(), critical=False)  # Non-critical per Clarification #4
         register_health_check("queue", QueueHealthCheck(), critical=True)
         register_health_check("migrations", MigrationHealthCheck(), critical=True)
+        
+        # Register metric collector (T033)
+        if getattr(settings, 'OBSERVABILITY_METRICS_ENABLED', False):
+            exporter = getattr(settings, 'OBSERVABILITY_METRICS_EXPORTER', 'prometheus')
+            
+            if exporter == 'prometheus':
+                from observability.metrics import register_metric_collector
+                from observability.exporters import PrometheusCollector
+                
+                register_metric_collector(PrometheusCollector())
