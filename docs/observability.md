@@ -1,536 +1,305 @@
-# Observability Guide: Transactions & Credits Engine
+﻿# Platform Observability Foundation
 
-**Feature**: 011-core-transactions-credits
-**Last Updated**: 2025-11-28
+**Feature**: B18 Platform Observability Foundation  
+**Audience**: Platform engineers, DevOps engineers, downstream product developers
+
+---
 
 ## Overview
 
-The transactions engine provides comprehensive observability through:
-- **Prometheus metrics** for performance monitoring
-- **Structured logging** with JSON format support
-- **Health check endpoint** for service validation
+Platform Observability Foundation provides three core primitives:
+1. **Health Checks**: Kubernetes liveness and readiness probes
+2. **Structured Logging**: JSON logs with correlation IDs and PII redaction
+3. **Metrics**: Prometheus-compatible `/metrics` endpoint with task observability
 
-This guide explains how to monitor, troubleshoot, and operate the transactions service in production.
+This guide covers basic setup and usage. See [Extension Guide](observability-extension-guide.md) for advanced customization and [Troubleshooting Guide](observability-troubleshooting.md) for common issues.
 
 ---
 
-## Prometheus Metrics
+## 1. Enable Observability App
 
-The transactions engine exposes 6 custom Prometheus metrics for monitoring transaction writes, balance queries, policy violations, and cache performance.
+**Step 1**: Add `observability` to `INSTALLED_APPS`
 
-### Transaction Write Metrics
+```python
+# src/config/settings/base.py
 
-#### `transaction_writes_total` (Counter)
-
-Total number of transaction writes.
-
-**Labels**:
-- `organization_id`: Organization UUID
-- `source_type`: Transaction source (usage_event, external_billing, adjustment, purchase, refund)
-
-**Example**:
-```promql
-# Total transactions per organization
-sum by (organization_id) (transaction_writes_total)
-
-# Transaction rate (last 5 minutes)
-rate(transaction_writes_total[5m])
-
-# Transactions by source type
-sum by (source_type) (transaction_writes_total)
+INSTALLED_APPS = [
+    # ... existing apps
+    'accounts',
+    'organisations',
+    'projects',
+    'audit',
+    'tasks',
+    'observability',  # ← Add this
+]
 ```
 
-#### `transaction_write_latency_seconds` (Histogram)
+**Step 2**: Configure observability settings (optional; defaults shown)
 
-Distribution of transaction write latency.
+```python
+# src/config/settings/base.py
 
-**Labels**:
-- `source_type`: Transaction source type
+# Health Checks
+OBSERVABILITY_HEALTH_CHECKS_ENABLED = True
 
-**Buckets**: `[0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0]`
+# Metrics
+OBSERVABILITY_METRICS_ENABLED = True
+OBSERVABILITY_METRICS_EXPORTER = 'prometheus'  # or 'statsd', 'openmetrics'
 
-**Example**:
-```promql
-# 95th percentile write latency
-histogram_quantile(0.95, sum(rate(transaction_write_latency_seconds_bucket[5m])) by (le))
+# Logging
+OBSERVABILITY_LOGGING_JSON = True  # Set False to disable JSON formatting
+OBSERVABILITY_PII_REDACTION_ENABLED = True
+```
 
-# Average write latency by source type
-rate(transaction_write_latency_seconds_sum[5m]) / rate(transaction_write_latency_seconds_count[5m])
+**Step 3**: Run app initialization (auto-registers default health checks)
 
-# Slow writes (>100ms)
-histogram_quantile(0.99, sum(rate(transaction_write_latency_seconds_bucket[5m])) by (le)) > 0.1
+```bash
+python manage.py check
+# Output: System check identified no issues (0 silenced).
 ```
 
 ---
 
-### Balance Query Metrics
+## 2. Configure Health Check Endpoints
 
-#### `balance_queries_total` (Counter)
+**Liveness Probe** (`/health/live`): Returns 200 if process is alive.
 
-Total number of balance queries.
+**Readiness Probe** (`/health/ready`): Returns 200 if all critical dependencies are healthy.
 
-**Labels**:
-- `scope`: Query scope (organization or project)
+### Kubernetes Configuration
 
-**Example**:
-```promql
-# Query rate by scope
-rate(balance_queries_total[5m])
+```yaml
+# deployment/k8s/deployment.yaml
 
-# Organization balance queries
-balance_queries_total{scope="organization"}
+spec:
+  containers:
+  - name: django-app
+    image: your-registry/django-core-app:latest
+    ports:
+    - containerPort: 8000
+    
+    livenessProbe:
+      httpGet:
+        path: /health/live
+        port: 8000
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    
+    readinessProbe:
+      httpGet:
+        path: /health/ready
+        port: 8000
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 2
 ```
 
-#### `balance_query_latency_seconds` (Histogram)
+See [deployment/observability-k8s-probes.yaml](deployment/observability-k8s-probes.yaml) for complete example.
 
-Distribution of balance query latency.
+### Manual Testing
 
-**Labels**:
-- `scope`: Query scope (organization or project)
-- `cache_hit`: Cache hit status (true or false)
+```bash
+# Test liveness (should always return 200 if server is running)
+curl http://localhost:8000/health/live
+# {"status": "healthy"}
 
-**Buckets**: `[0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0]`
+# Test readiness (returns 200 only if dependencies are healthy)
+curl http://localhost:8000/health/ready
+# {"status": "healthy", "checks": {"database": true, "cache": true, "queue": true, "migrations": true}}
 
-**Example**:
-```promql
-# 99th percentile query latency (cache misses only)
-histogram_quantile(0.99, sum(rate(balance_query_latency_seconds_bucket{cache_hit="false"}[5m])) by (le))
-
-# Average cache hit latency
-rate(balance_query_latency_seconds_sum{cache_hit="true"}[5m]) / rate(balance_query_latency_seconds_count{cache_hit="true"}[5m])
-
-# Compare cache hit vs miss latency
-histogram_quantile(0.50, sum(rate(balance_query_latency_seconds_bucket[5m])) by (le, cache_hit))
+# Simulate dependency failure (disconnect PostgreSQL)
+curl http://localhost:8000/health/ready
+# {"status": "unhealthy", "checks": {"database": false, "cache": true, "queue": true, "migrations": true}}
 ```
+
+**Expected Behavior**:
+- If **any critical check** (database, queue, migrations) fails → `status: "unhealthy"`, HTTP 503
+- If **only cache** fails → `status: "healthy"`, HTTP 200 (cache is non-critical)
 
 ---
 
-### Policy Enforcement Metrics
+## 3. Configure Prometheus Metrics Scraping
 
-#### `policy_violations_total` (Counter)
+**Step 1**: Add Prometheus annotations to Kubernetes service
 
-Total number of policy violations.
+```yaml
+# deployment/k8s/service.yaml
 
-**Labels**:
-- `enforcement_mode`: Policy mode (block, allow, warn)
-- `violation_type`: Type of violation (insufficient_balance)
-
-**Example**:
-```promql
-# Blocked transactions due to insufficient balance
-policy_violations_total{enforcement_mode="block", violation_type="insufficient_balance"}
-
-# Policy violation rate
-rate(policy_violations_total[5m])
-
-# Violations by enforcement mode
-sum by (enforcement_mode) (policy_violations_total)
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-app
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    app: django-app
+  ports:
+  - port: 8000
+    targetPort: 8000
 ```
+
+**Step 2**: Verify metrics endpoint
+
+```bash
+curl http://localhost:8000/metrics
+# # HELP http_requests_total Total HTTP requests
+# # TYPE http_requests_total counter
+# http_requests_total{method="GET",status="2xx"} 1523
+# http_requests_total{method="POST",status="2xx"} 342
+# ...
+# # HELP tasks_started_total Total tasks started
+# # TYPE tasks_started_total counter
+# tasks_started_total{task_name="send_email",queue="default"} 89
+# ...
+```
+
+**Step 3**: Configure Prometheus scrape interval (recommended: 60 seconds)
+
+See [deployment/observability-prometheus-scrape.yaml](deployment/observability-prometheus-scrape.yaml) for complete Prometheus configuration.
 
 ---
 
-### Cache Performance Metrics
+## 4. View Structured Logs with Correlation IDs
 
-#### `cache_hits_total` (Counter)
+**Automatic Correlation ID Injection**: Middleware adds `X-Correlation-ID` to every request.
 
-Total number of cache hits.
+**Example Log Output** (stdout):
 
-**Labels**:
-- `cache_key_prefix`: Cache key prefix (balance:org or balance:proj)
-
-**Example**:
-```promql
-# Total cache hits
-sum(cache_hits_total)
-
-# Cache hits by key prefix
-sum by (cache_key_prefix) (cache_hits_total)
-
-# Cache hit rate
-rate(cache_hits_total[5m])
-```
-
-#### `cache_misses_total` (Counter)
-
-Total number of cache misses.
-
-**Labels**:
-- `cache_key_prefix`: Cache key prefix (balance:org or balance:proj)
-
-**Example**:
-```promql
-# Total cache misses
-sum(cache_misses_total)
-
-# Cache miss rate
-rate(cache_misses_total[5m])
-
-# Cache hit ratio (percentage)
-100 * sum(rate(cache_hits_total[5m])) / (sum(rate(cache_hits_total[5m])) + sum(rate(cache_misses_total[5m])))
-```
-
----
-
-## Structured Logging
-
-The transactions engine uses Python's standard logging with structured context for easy parsing and filtering.
-
-### Log Format
-
-**Development**:
-```
-2025-11-28 12:00:00,123 INFO transactions.services: transaction.created {"transaction_id": "...", "organization_id": "...", "amount": "100.00"}
-```
-
-**Production** (JSON):
 ```json
 {
-  "timestamp": "2025-11-28T12:00:00.123Z",
-  "level": "INFO",
-  "logger": "transactions.services",
-  "message": "transaction.created",
-  "transaction_id": "uuid-here",
-  "organization_id": "uuid-here",
-  "project_id": "uuid-here",
-  "amount": "100.0000",
-  "source_type": "usage_event",
-  "latency_seconds": 0.052
-}
-```
-
-### Log Events
-
-#### `transaction.created`
-
-Emitted when a transaction is successfully created.
-
-**Context**:
-- `transaction_id`: Transaction UUID
-- `organization_id`: Organization UUID
-- `project_id`: Project ID (if applicable)
-- `amount`: Transaction amount (Decimal as string)
-- `source_type`: Source type
-- `latency_seconds`: Write latency
-
-**Example**:
-```python
-logger.info("transaction.created", extra={
-    "transaction_id": str(txn.id),
-    "organization_id": str(organization.id),
-    "amount": str(txn.amount),
-})
-```
-
-#### `transaction.policy_violation`
-
-Emitted when a transaction is blocked by policy enforcement.
-
-**Context**:
-- `organization_id`: Organization UUID
-- `project_id`: Project ID (if applicable)
-- `current_balance`: Current balance
-- `requested_amount`: Requested transaction amount
-- `enforcement_mode`: Policy enforcement mode
-
-**Level**: `WARNING`
-
-**Example**:
-```python
-logger.warning("transaction.policy_violation", extra={
-    "organization_id": str(organization.id),
-    "current_balance": str(current_balance),
-    "enforcement_mode": "block",
-})
-```
-
-#### `balance.query.cache_hit`
-
-Emitted when a balance query is served from Redis cache.
-
-**Context**:
-- `organization_id` or `project_id`: Scope identifier
-- `scope`: Query scope (organization or project)
-- `latency_seconds`: Query latency
-
-**Level**: `DEBUG`
-
-#### `balance.query.computed`
-
-Emitted when a balance is computed from the database (cache miss).
-
-**Context**:
-- `organization_id` or `project_id`: Scope identifier
-- `scope`: Query scope (organization or project)
-- `current_balance`: Computed balance
-- `latency_seconds`: Query latency
-
-**Level**: `DEBUG`
-
----
-
-## Health Check Endpoint
-
-**URL**: `/api/v1/transactions/health/`
-
-**Method**: `GET`
-
-**Authentication**: None (public endpoint)
-
-### Response Format
-
-**Healthy** (200 OK):
-```json
-{
-  "status": "healthy",
-  "checks": {
-    "database": true,
-    "cache": true,
-    "balance_calculation": true
+  "timestamp": "2025-12-03T14:23:45.123456Z",
+  "severity": "INFO",
+  "message": "User login successful",
+  "correlation_id": "a3f4e2b1-9876-5432-abcd-1234567890ab",
+  "logger_name": "accounts.views",
+  "module": "views",
+  "function": "login_view",
+  "line": 87,
+  "context": {
+    "user_id": 42,
+    "email": "[REDACTED]",
+    "ip_address": "192.168.1.100"
   }
 }
 ```
 
-**Unhealthy** (503 Service Unavailable):
-```json
-{
-  "status": "unhealthy",
-  "checks": {
-    "database": true,
-    "cache": false,
-    "balance_calculation": false
-  },
-  "errors": [
-    "Cache connection failed: Connection refused",
-    "Balance calculation failed: ..."
-  ]
-}
-```
+**Searching Logs by Correlation ID** (Elasticsearch/Kibana):
 
-### Health Checks
-
-1. **Database**: Executes `SELECT 1` query to verify PostgreSQL connection
-2. **Cache**: Performs Redis `get/set` test with a temporary key
-3. **Balance Calculation**: Computes balance for a sample organization (if any exist)
-
-### Usage
-
-**Kubernetes Liveness Probe**:
-```yaml
-livenessProbe:
-  httpGet:
-    path: /api/v1/transactions/health/
-    port: 8000
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
-```
-
-**Monitoring Script**:
 ```bash
-#!/bin/bash
-HEALTH_URL="https://api.example.com/api/v1/transactions/health/"
+# Kibana query
+correlation_id: "a3f4e2b1-9876-5432-abcd-1234567890ab"
 
-response=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
+# Elasticsearch API
+curl -X GET "localhost:9200/logs-*/_search?q=correlation_id:a3f4e2b1-9876-5432-abcd-1234567890ab"
+```
 
-if [ "$response" -eq 200 ]; then
-  echo "✓ Transactions service is healthy"
-  exit 0
-else
-  echo "✗ Transactions service is unhealthy (HTTP $response)"
-  exit 1
-fi
+**PII Redaction Rules** (auto-applied):
+- `password`, `secret`, `token`, `api_key` → `"[REDACTED]"`
+- `email`, `ssn`, `phone_number`, `credit_card` → `"[REDACTED]"`
+- SQL parameters: `WHERE user_id=123` → `WHERE user_id=?`
+
+---
+
+## 5. Monitor Task Execution (B15 Integration)
+
+**Automatic Instrumentation**: All Celery tasks using `ObservableTask` base class emit metrics.
+
+### Example Task
+
+```python
+# src/tasks/services/email_service.py
+
+from observability.tasks import ObservableTask
+
+@app.task(base=ObservableTask)
+def send_email(recipient_email: str, subject: str, body: str):
+    # Task logic here
+    ...
+```
+
+### Emitted Metrics
+
+1. **`tasks_started_total{task_name="send_email", queue="default"}`**: Incremented when task starts
+2. **`tasks_completed_total{task_name="send_email", status="success"}`**: Incremented on success
+3. **`task_duration_seconds{task_name="send_email"}`**: Histogram of task durations
+4. **`task_retries_total{task_name="send_email"}`**: Counter for retry attempts
+
+### Prometheus Queries (Example Alerts)
+
+```promql
+# Task failure rate > 5%
+sum(rate(tasks_completed_total{status="failure"}[5m])) 
+/ 
+sum(rate(tasks_completed_total[5m])) 
+> 0.05
+
+# Task queue depth > 1000
+tasks_queue_depth{queue="default"} > 1000
+
+# Task duration p95 > 30 seconds
+histogram_quantile(0.95, rate(task_duration_seconds_bucket[5m])) > 30
 ```
 
 ---
 
-## Monitoring Dashboard
+## 6. Verify Setup
 
-### Recommended Grafana Panels
+**Checklist**:
 
-#### 1. Transaction Throughput
+- [ ] **Health endpoints respond**: `curl /health/live` and `curl /health/ready` return 200
+- [ ] **Prometheus scrapes metrics**: Metrics visible in Prometheus UI (`http://prometheus:9090/targets`)
+- [ ] **Logs are JSON-formatted**: stdout logs parse with `jq` (e.g., `docker logs ... | jq`)
+- [ ] **Correlation IDs present**: All logs include `correlation_id` field
+- [ ] **PII is redacted**: Search logs for `"password"` or `"email"` → should find `"[REDACTED]"`
+- [ ] **Task metrics emitted**: Query Prometheus for `tasks_started_total` → non-zero values
 
-```promql
-# Transactions per second
-sum(rate(transaction_writes_total[5m]))
-
-# By source type
-sum by (source_type) (rate(transaction_writes_total[5m]))
-```
-
-#### 2. Write Latency Percentiles
-
-```promql
-# 50th, 95th, 99th percentiles
-histogram_quantile(0.50, sum(rate(transaction_write_latency_seconds_bucket[5m])) by (le))
-histogram_quantile(0.95, sum(rate(transaction_write_latency_seconds_bucket[5m])) by (le))
-histogram_quantile(0.99, sum(rate(transaction_write_latency_seconds_bucket[5m])) by (le))
-```
-
-#### 3. Cache Hit Ratio
-
-```promql
-# Cache hit percentage
-100 * sum(rate(cache_hits_total[5m])) / (sum(rate(cache_hits_total[5m])) + sum(rate(cache_misses_total[5m])))
-```
-
-#### 4. Policy Violations
-
-```promql
-# Violations per minute
-sum(rate(policy_violations_total[1m])) * 60
-```
-
-#### 5. Balance Query Latency
-
-```promql
-# Compare cache hit vs miss latency
-histogram_quantile(0.95, sum(rate(balance_query_latency_seconds_bucket[5m])) by (le, cache_hit))
-```
+For troubleshooting common issues, see [Troubleshooting Guide](observability-troubleshooting.md).
 
 ---
 
-## Alerting Rules
+## Next Steps
 
-### Critical Alerts
-
-**High Write Latency**:
-```yaml
-- alert: TransactionWriteLatencyHigh
-  expr: |
-    histogram_quantile(0.95, sum(rate(transaction_write_latency_seconds_bucket[5m])) by (le)) > 0.5
-  for: 5m
-  labels:
-    severity: warning
-  annotations:
-    summary: "95th percentile transaction write latency > 500ms"
-```
-
-**Low Cache Hit Rate**:
-```yaml
-- alert: TransactionCacheHitRateLow
-  expr: |
-    100 * sum(rate(cache_hits_total[5m])) / (sum(rate(cache_hits_total[5m])) + sum(rate(cache_misses_total[5m]))) < 80
-  for: 10m
-  labels:
-    severity: warning
-  annotations:
-    summary: "Balance cache hit rate below 80%"
-```
-
-**Health Check Failing**:
-```yaml
-- alert: TransactionsServiceUnhealthy
-  expr: |
-    probe_success{job="transactions_health"} == 0
-  for: 2m
-  labels:
-    severity: critical
-  annotations:
-    summary: "Transactions service health check failing"
-```
-
-**High Policy Violation Rate**:
-```yaml
-- alert: PolicyViolationRateHigh
-  expr: |
-    sum(rate(policy_violations_total[5m])) > 10
-  for: 5m
-  labels:
-    severity: info
-  annotations:
-    summary: "High rate of policy violations (>10/sec)"
-```
+- **Extend Health Checks**: Add custom checks for external APIs ([Extension Guide](observability-extension-guide.md#custom-health-checks))
+- **Add Custom Metrics**: Track business-specific metrics ([Extension Guide](observability-extension-guide.md#custom-metrics))
+- **Configure Alerts**: Set up Prometheus AlertManager rules ([Troubleshooting Guide](observability-troubleshooting.md))
 
 ---
 
-## Troubleshooting
+## Quick Reference
 
-### Problem: High Write Latency
+### Endpoints
 
-**Symptoms**:
-- `transaction_write_latency_seconds` p95 > 500ms
-- Slow API responses for transaction creation
+| Endpoint | Purpose | Expected Response |
+|----------|---------|------------------|
+| `/health/live` | Kubernetes liveness probe | `{"status": "healthy"}` (200 OK) |
+| `/health/ready` | Kubernetes readiness probe | `{"status": "healthy", "checks": {...}}` (200 OK if all critical deps healthy) |
+| `/metrics` | Prometheus metrics scraping | Prometheus exposition format |
 
-**Diagnosis**:
-```promql
-# Check latency by source type
-histogram_quantile(0.95, sum(rate(transaction_write_latency_seconds_bucket[5m])) by (le, source_type))
+### Settings
 
-# Check if specific organizations are slow
-sum by (organization_id) (rate(transaction_write_latency_seconds_sum[5m]))
-```
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `OBSERVABILITY_HEALTH_CHECKS_ENABLED` | `True` | Enable/disable health check endpoints |
+| `OBSERVABILITY_METRICS_ENABLED` | `True` | Enable/disable metrics collection |
+| `OBSERVABILITY_METRICS_EXPORTER` | `'prometheus'` | Metric exporter backend (`'prometheus'`, `'statsd'`, `'openmetrics'`) |
+| `OBSERVABILITY_LOGGING_JSON` | `True` | Enable JSON log formatting |
+| `OBSERVABILITY_PII_REDACTION_ENABLED` | `True` | Enable automatic PII redaction |
 
-**Common Causes**:
-1. Database lock contention (SELECT FOR UPDATE)
-2. Large transaction history (slow balance computation)
-3. Redis unavailable (cache invalidation timeout)
+### Metrics
 
-**Solutions**:
-- Add database indexes on `(organization_id, timestamp)`
-- Partition transactions table by timestamp
-- Increase Redis timeout or use async invalidation
-
----
-
-### Problem: Low Cache Hit Rate
-
-**Symptoms**:
-- Cache hit ratio < 80%
-- Balance queries taking 10-50ms instead of 1-2ms
-
-**Diagnosis**:
-```promql
-# Cache hit ratio
-100 * sum(rate(cache_hits_total[5m])) / (sum(rate(cache_hits_total[5m])) + sum(rate(cache_misses_total[5m])))
-
-# Cache misses by prefix
-sum by (cache_key_prefix) (rate(cache_misses_total[5m]))
-```
-
-**Common Causes**:
-1. High transaction write rate (frequent cache invalidation)
-2. Redis memory eviction (TTL + LRU eviction)
-3. Multiple app instances with separate Redis connections
-
-**Solutions**:
-- Increase cache TTL from 60s to 300s (if staleness acceptable)
-- Use Redis Cluster for high availability
-- Implement write-through caching for high-traffic orgs
-
----
-
-### Problem: Health Check Failures
-
-**Symptoms**:
-- `/api/v1/transactions/health/` returns 503
-- Kubernetes pod restarts frequently
-
-**Diagnosis**:
-```bash
-# Check health endpoint
-curl -v https://api.example.com/api/v1/transactions/health/
-
-# Check logs
-kubectl logs -n prod deployment/transactions-api --tail=100
-```
-
-**Common Causes**:
-1. PostgreSQL connection pool exhausted
-2. Redis connection timeout
-3. No sample organizations for balance calculation test
-
-**Solutions**:
-- Increase database connection pool size
-- Tune Redis connection timeout settings
-- Make balance calculation check optional
-
----
-
-## See Also
-
-- [Architecture Decision Records](../docs/adr/)
-- [Billing Integration Guide](../docs/billing-integration.md)
-- [API Documentation](../src/transactions/README.md)
-- [Prometheus Best Practices](https://prometheus.io/docs/practices/)
-- [Structured Logging with Django](https://django-structlog.readthedocs.io/)
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `http_requests_total` | Counter | `method`, `status` | Total HTTP requests |
+| `http_request_duration_seconds` | Histogram | `method`, `status` | HTTP request duration |
+| `tasks_started_total` | Counter | `task_name`, `queue` | Total tasks started |
+| `tasks_completed_total` | Counter | `task_name`, `status` | Total tasks completed (success/failure) |
+| `task_duration_seconds` | Histogram | `task_name` | Task execution duration |
+| `task_retries_total` | Counter | `task_name` | Task retry count |
+| `tasks_queue_depth` | Gauge | `queue` | Current task queue depth |
+| `observability_signal_failure_total` | Counter | `hook_type`, `failure_reason` | Observability hook failures |

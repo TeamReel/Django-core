@@ -9,6 +9,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Platform Observability Foundation (Feature 018 - B18)
+
+- **Health Check System**:
+  - Added `observability` Django app for foundational observability primitives
+  - Added `/health/live` endpoint for Kubernetes liveness probes (always returns 200 if process alive)
+  - Added `/health/ready` endpoint for Kubernetes readiness probes (checks database, cache, queue, migrations)
+  - Added Protocol-based health check registry for custom dependency checks
+  - Added automatic health check registration on Django app startup
+  - Added 500ms timeout per health check to prevent blocking
+  - Added structured JSON response format: `{"status": "healthy|unhealthy", "checks": {...}}`
+
+- **Structured Logging**:
+  - Added JSON log formatting with automatic field mapping (timestamp, severity, logger, message, correlation_id)
+  - Added correlation ID propagation across HTTP requests and Celery tasks via middleware
+  - Added automatic PII redaction for sensitive fields (password, email, ssn, token, api_key, credit_card, phone_number)
+  - Added SQL parameter redaction (e.g., `WHERE user_id=?` instead of `WHERE user_id=123`)
+  - Added configurable redaction rules via `PIIRedactionFilter` extension points
+
+- **Metrics System**:
+  - Added Prometheus-compatible `/metrics` endpoint via django-prometheus integration
+  - Added pluggable metric exporter architecture using Protocol pattern (ADR-019)
+  - Added `emit_metric()` API for counters, histograms, and gauges with label support
+  - Added HTTP request metrics: `http_requests_total`, `http_request_duration_seconds` with method/status labels
+  - Added cardinality control: status grouping (2xx/3xx/4xx/5xx), method allowlist (GET/POST/PUT/DELETE/PATCH/HEAD/OPTIONS)
+  - Added label cardinality validation to prevent metric explosion (<1,000 unique series)
+
+- **Celery Task Observability (B15 Integration)**:
+  - Added `ObservableTask` base class for automatic task lifecycle metrics
+  - Added task metrics: `tasks_started_total`, `tasks_completed_total`, `task_duration_seconds`, `task_retries_total`, `tasks_queue_depth`
+  - Added automatic correlation ID propagation from HTTP request → Celery task context
+  - Added task-level exception isolation (failed tasks don't break observability hooks)
+
+- **Exception Isolation & Reliability**:
+  - Added graceful failure handling for all observability hooks (never propagates exceptions)
+  - Added `observability_signal_failure_total` metric to track observability system failures
+  - Added Django signals for observability failures (monitoring + alerting)
+
+- **Configuration & Extension Points**:
+  - Added settings namespace: `OBSERVABILITY_HEALTH_CHECKS_ENABLED`, `OBSERVABILITY_METRICS_ENABLED`, `OBSERVABILITY_LOGGING_JSON`, `OBSERVABILITY_PII_REDACTION_ENABLED`
+  - Added extension APIs: `register_health_check()`, `register_metric_collector()`, custom PII filters
+  - Added Prometheus exporter (default), StatsD exporter (example), OpenMetrics support (via protocol)
+
+- **Documentation**:
+  - Added [Platform Observability Guide](docs/observability.md) with quickstart and configuration examples
+  - Added [Extension Guide](docs/observability-extension-guide.md) with custom health check, metric exporter, and PII redaction examples
+  - Added [Troubleshooting Guide](docs/observability-troubleshooting.md) covering 7 common issues and solutions
+  - Added [ADR-019: Metric Exporter Pluggability](docs/adr/019-metric-exporter-pluggability.md) documenting Protocol pattern decision
+  - Added [Kubernetes Deployment YAML](docs/deployment/observability-k8s-probes.yaml) with probe configuration examples
+  - Added [Prometheus Scrape Configuration](docs/deployment/observability-prometheus-scrape.yaml) with service discovery and alert rules
+
 #### Audit Logging System (Feature 009)
 
 - **Core Audit System**:

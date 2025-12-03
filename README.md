@@ -233,6 +233,59 @@ unread = Notification.objects.filter(
 
 ---
 
+### Platform Observability Foundation (Feature 018 - B18)
+
+Foundational observability primitives for health checks, structured logging, and metrics.
+
+**Key Capabilities**:
+- **Health Checks**: Kubernetes liveness (`/health/live`) and readiness (`/health/ready`) probes
+- **Structured Logging**: JSON logs with correlation IDs and PII redaction
+- **Metrics**: Prometheus-compatible `/metrics` endpoint with task observability
+- **Pluggable Exporters**: Protocol-based architecture for Prometheus, StatsD, OpenMetrics
+- **B15 Integration**: ObservableTask base class for Celery task metrics
+- **Exception Isolation**: All observability hooks never propagate exceptions
+
+**Quick Start**:
+```python
+# Enable observability in settings
+INSTALLED_APPS = [
+    # ...
+    'observability',
+]
+
+# Check health endpoints
+curl http://localhost:8000/health/live
+curl http://localhost:8000/health/ready
+
+# View metrics
+curl http://localhost:8000/metrics
+
+# Use observable tasks
+from observability.tasks import ObservableTask
+
+@app.task(base=ObservableTask)
+def send_email(recipient, subject, body):
+    # Automatic metrics: tasks_started_total, task_duration_seconds, etc.
+    ...
+```
+
+**Built-in Metrics**:
+| Metric | Type | Description |
+|--------|------|-------------|
+| `http_requests_total` | Counter | Total HTTP requests by method/status |
+| `http_request_duration_seconds` | Histogram | HTTP request latency |
+| `tasks_started_total` | Counter | Total Celery tasks started |
+| `tasks_completed_total` | Counter | Total tasks completed (success/failure) |
+| `task_duration_seconds` | Histogram | Task execution duration |
+
+**Documentation**:
+- [Quick Start](docs/observability.md)
+- [Extension Guide](docs/observability-extension-guide.md)
+- [Troubleshooting](docs/observability-troubleshooting.md)
+- [ADR-019: Metric Exporter Pluggability](docs/adr/019-metric-exporter-pluggability.md)
+
+---
+
 ### Security Baseline
 
 Constitutional enforcement engine with security rule validation and ASVS compliance reporting.
