@@ -3,12 +3,20 @@ work_package_id: "WP11"
 subtasks: ["T078", "T079", "T080", "T081", "T082", "T083", "T084"]
 title: "Management Commands & Seed Data"
 phase: "Phase 3 - Admin & Developer Experience"
-lane: "planned"
+lane: "doing"
+assignee: "claude"
+agent: "claude"
+shell_pid: "13508"
 history:
   - timestamp: "2025-12-02T19:47:00Z"
     lane: "planned"
     agent: "system"
     action: "Prompt generated"
+  - timestamp: "2025-12-03T13:40:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "13508"
+    action: "Started implementation of management commands and seed data"
 ---
 
 # WP11 – Management Commands & Seed Data
