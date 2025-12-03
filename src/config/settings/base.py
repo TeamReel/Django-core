@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
     "api",  # B13: API Foundation & Standards
     "tasks.apps.TasksConfig",  # B15: Tasks & Scheduling Foundation
+    "observability.apps.ObservabilityConfig",  # B18: Platform Observability Foundation
     "notifications.apps.NotificationsConfig",  # B16: Notifications Baseline
     "contextual_notifications.apps.ContextualNotificationsConfig",  # B17: Contextual Notification Service
 ]
@@ -344,3 +345,18 @@ from .celery import *  # noqa
 # ==============================================================================
 
 SITE_NAME = "Django Core"  # Used in page titles (<title> tag) and branding (header)
+
+# ==============================================================================
+# Observability Configuration (B18)
+# ==============================================================================
+
+# Health Checks
+OBSERVABILITY_HEALTH_CHECKS_ENABLED = True  # Enable /health/live and /health/ready endpoints
+
+# Structured Logging (WP02 - to be implemented)
+OBSERVABILITY_LOGGING_JSON = False  # Enable JSON-formatted logs (requires WP02)
+OBSERVABILITY_PII_REDACTION_ENABLED = True  # Enable PII redaction filter
+
+# Metrics (WP03 - to be implemented)
+OBSERVABILITY_METRICS_ENABLED = False  # Enable metric collection (requires WP03)
+OBSERVABILITY_METRICS_EXPORTER = "prometheus"  # Options: prometheus, statsd

@@ -19,8 +19,13 @@ from common.health import health_check
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from observability.health import liveness_view, readiness_view
 
 urlpatterns = [
+    # B18: Platform Observability Foundation - Health probes
+    path("health/live", liveness_view, name="health_live"),
+    path("health/ready", readiness_view, name="health_ready"),
+    # Legacy health check endpoint (pre-B18)
     path("health/", health_check, name="health_check"),
     path("health/tasks/", include("tasks.urls")),  # B15: Task health check
     path("admin/", admin.site.urls),
