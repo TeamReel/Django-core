@@ -504,18 +504,18 @@
 **Priority**: P3 (Quality gates)
 
 #### Included Subtasks
-- [ ] T092 Create test fixtures in `tests/contextual_notifications/conftest.py` (orgs, projects, users, rules, preferences)
-- [ ] T093 [P] Write model tests in `tests/contextual_notifications/models/`
-- [ ] T094 [P] Write EventService unit tests in `tests/contextual_notifications/services/test_event_service.py`
-- [ ] T095 [P] Write RoutingService unit tests in `tests/contextual_notifications/services/test_routing_service.py`
-- [ ] T096 [P] Write PreferenceService unit tests in `tests/contextual_notifications/services/test_preference_service.py`
-- [ ] T097 [P] Write SuppressionService unit tests in `tests/contextual_notifications/services/test_suppression_service.py`
-- [ ] T098 [P] Write PolicyService unit tests in `tests/contextual_notifications/services/test_policy_service.py`
-- [ ] T099 Write integration test: event emission → B16 notification in `tests/contextual_notifications/integration/test_event_to_notification_flow.py`
-- [ ] T100 Write integration test: preference override in `tests/contextual_notifications/integration/test_preference_override.py`
-- [ ] T101 Write integration test: quiet hours rate limiting in `tests/contextual_notifications/integration/test_quiet_hours.py`
-- [ ] T102 Write integration test: suppression window in `tests/contextual_notifications/integration/test_suppression_window.py`
-- [ ] T103 Configure pytest coverage thresholds (90% minimum) in `pyproject.toml`
+- [x] T092 Create test fixtures in `tests/contextual_notifications/conftest.py` (orgs, projects, users, rules, preferences)
+- [x] T093 [P] Write model tests in `tests/contextual_notifications/models/`
+- [x] T094 [P] Write EventService unit tests in `tests/contextual_notifications/services/test_event_service.py`
+- [x] T095 [P] Write RoutingService unit tests in `tests/contextual_notifications/services/test_routing_service.py`
+- [x] T096 [P] Write PreferenceService unit tests in `tests/contextual_notifications/services/test_preference_service.py`
+- [x] T097 [P] Write SuppressionService unit tests in `tests/contextual_notifications/services/test_suppression_service.py`
+- [x] T098 [P] Write PolicyService unit tests in `tests/contextual_notifications/services/test_policy_service.py`
+- [x] T099 Write integration test: event emission → B16 notification in `tests/contextual_notifications/integration/test_event_to_notification_flow.py`
+- [x] T100 Write integration test: preference override in `tests/contextual_notifications/integration/test_preference_override.py`
+- [x] T101 Write integration test: quiet hours rate limiting in `tests/contextual_notifications/integration/test_quiet_hours.py`
+- [x] T102 Write integration test: suppression window in `tests/contextual_notifications/integration/test_suppression_window.py`
+- [x] T103 Configure pytest coverage thresholds (90% minimum) in `pyproject.toml`
 
 #### Constitutional Alignment
 - Principle IV (Testing): pytest + pytest-django, 90%+ coverage, regression tests, integration tests
