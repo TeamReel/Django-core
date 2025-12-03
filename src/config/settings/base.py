@@ -56,6 +56,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Must be first
+    "observability.middleware.CorrelationIDMiddleware",  # WP02: Correlation ID extraction/generation
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "accounts.middleware.SessionInactivityMiddleware",  # Enforce inactivity timeout
@@ -353,10 +354,55 @@ SITE_NAME = "Django Core"  # Used in page titles (<title> tag) and branding (hea
 # Health Checks
 OBSERVABILITY_HEALTH_CHECKS_ENABLED = True  # Enable /health/live and /health/ready endpoints
 
-# Structured Logging (WP02 - to be implemented)
-OBSERVABILITY_LOGGING_JSON = False  # Enable JSON-formatted logs (requires WP02)
-OBSERVABILITY_PII_REDACTION_ENABLED = True  # Enable PII redaction filter
+# Structured Logging (WP02)
+OBSERVABILITY_LOGGING_JSON = os.getenv("OBSERVABILITY_LOGGING_JSON", "true").lower() == "true"
+OBSERVABILITY_PII_REDACTION_ENABLED = os.getenv("OBSERVABILITY_PII_REDACTION_ENABLED", "true").lower() == "true"
 
 # Metrics (WP03 - to be implemented)
 OBSERVABILITY_METRICS_ENABLED = False  # Enable metric collection (requires WP03)
 OBSERVABILITY_METRICS_EXPORTER = "prometheus"  # Options: prometheus, statsd
+
+# Logging Configuration (T023-T025)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'json': {
+            '()': 'observability.logging.JSONFormatter',
+        },
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'filters': {
+        'correlation_id': {
+            '()': 'observability.logging.CorrelationIDFilter',
+        },
+        'pii_redaction': {
+            '()': 'observability.logging.PIIRedactionFilter',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'json' if OBSERVABILITY_LOGGING_JSON else 'standard',
+            'filters': ['correlation_id', 'pii_redaction'] if OBSERVABILITY_PII_REDACTION_ENABLED else ['correlation_id'],
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': os.getenv('LOG_LEVEL', 'INFO'),
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': os.getenv('SQL_LOG_LEVEL', 'WARNING'),
+            'propagate': False,
+        },
+    },
+}
