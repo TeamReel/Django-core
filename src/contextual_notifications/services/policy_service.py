@@ -1,7 +1,7 @@
 """Policy service for organisation-level notification policies including quiet hours."""
 
 import logging
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from typing import Any, Optional
 
 import pytz
@@ -203,11 +203,25 @@ class PolicyService:
         redis_key = f"rate_limit:{policy.organisation_id}:{minute_bucket}"
 
         try:
-            # Increment counter and get current value
-            # Use Redis INCR for atomic increment
-            current_count = cache.get(redis_key, 0)
+            # Use atomic Redis INCR operation to avoid race conditions
+            current_count = cache.get(redis_key)
             
-            if current_count >= policy.quiet_hours_rate_limit:
+            if current_count is None:
+                # First notification in this minute bucket - initialize with 1
+                cache.set(redis_key, 1, timeout=60)
+                logger.debug(
+                    "Rate limit check passed (first in bucket)",
+                    extra={
+                        "org_id": policy.organisation_id,
+                        "current_count": 1,
+                        "rate_limit": policy.quiet_hours_rate_limit,
+                        "minute_bucket": minute_bucket,
+                    },
+                )
+                return True
+            
+            elif current_count >= policy.quiet_hours_rate_limit:
+                # Already at or over limit - reject immediately
                 rate_limited_total.labels(org_id=policy.organisation_id).inc()
                 logger.warning(
                     "Rate limit exceeded during quiet hours",
@@ -219,22 +233,51 @@ class PolicyService:
                     },
                 )
                 return False
-
-            # Increment counter
-            new_count = cache.get(redis_key, 0) + 1
-            cache.set(redis_key, new_count, timeout=60)  # TTL 60 seconds
-
-            logger.debug(
-                "Rate limit check passed",
-                extra={
-                    "org_id": policy.organisation_id,
-                    "current_count": new_count,
-                    "rate_limit": policy.quiet_hours_rate_limit,
-                    "minute_bucket": minute_bucket,
-                },
-            )
-
-            return True
+            
+            else:
+                # Increment atomically and check result
+                try:
+                    new_count = cache.incr(redis_key)
+                    
+                    if new_count > policy.quiet_hours_rate_limit:
+                        # Raced past limit - decrement back but still reject this notification
+                        cache.decr(redis_key)
+                        rate_limited_total.labels(org_id=policy.organisation_id).inc()
+                        logger.warning(
+                            "Rate limit exceeded during quiet hours (race detected)",
+                            extra={
+                                "org_id": policy.organisation_id,
+                                "current_count": new_count,
+                                "rate_limit": policy.quiet_hours_rate_limit,
+                                "minute_bucket": minute_bucket,
+                            },
+                        )
+                        return False
+                    
+                    logger.debug(
+                        "Rate limit check passed",
+                        extra={
+                            "org_id": policy.organisation_id,
+                            "current_count": new_count,
+                            "rate_limit": policy.quiet_hours_rate_limit,
+                            "minute_bucket": minute_bucket,
+                        },
+                    )
+                    return True
+                    
+                except ValueError:
+                    # Key doesn't exist (deleted between get and incr) - initialize
+                    cache.set(redis_key, 1, timeout=60)
+                    logger.debug(
+                        "Rate limit check passed (key expired, reinitializing)",
+                        extra={
+                            "org_id": policy.organisation_id,
+                            "current_count": 1,
+                            "rate_limit": policy.quiet_hours_rate_limit,
+                            "minute_bucket": minute_bucket,
+                        },
+                    )
+                    return True
 
         except Exception as e:
             logger.error(
@@ -338,7 +381,7 @@ class PolicyService:
 
         # If end time is before current time, it's tomorrow
         if end_datetime <= local_time:
-            end_datetime = end_datetime.replace(day=end_datetime.day + 1)
+            end_datetime = end_datetime + timedelta(days=1)
 
         # Convert back to UTC
         delivery_time = end_datetime.astimezone(pytz.UTC)
