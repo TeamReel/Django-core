@@ -221,3 +221,20 @@ class TestMigrationHealthCheck:
         assert result.status is False
         assert "currently running" in result.details["error"]
         assert result.details["lock_count"] == 1
+
+    def test_migrations_lock_check_postgresql_only(self, mock_migration_executor, mock_database_connection):
+        """Test that lock check is skipped on non-PostgreSQL databases."""
+        # Mock no pending migrations
+        mock_migration_executor.return_value.migration_plan.return_value = []
+        
+        # Simulate non-PostgreSQL database (e.g., SQLite)
+        mock_database_connection.vendor = 'sqlite'
+        
+        check = MigrationHealthCheck()
+        result = check.check()
+        
+        # Should pass without attempting pg_locks query
+        assert result.name == "migrations"
+        assert result.status is True
+        assert result.details["pending_count"] == 0
+        assert "lock_count" not in result.details

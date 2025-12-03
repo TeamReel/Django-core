@@ -43,30 +43,30 @@ class MigrationHealthCheck:
                     }
                 )
             
-            # Check for running migrations by querying django_migrations table locks
-            # Note: This is a simplified check; production may need table-level lock detection
-            with connection.cursor() as cursor:
-                # Query for any exclusive locks on django_migrations table
-                # PostgreSQL-specific query for table locks
-                cursor.execute("""
-                    SELECT COUNT(*)
-                    FROM pg_locks
-                    WHERE relation = 'django_migrations'::regclass
-                    AND mode = 'AccessExclusiveLock'
-                """)
-                lock_count = cursor.fetchone()[0]
-                
-                if lock_count > 0:
-                    latency_ms = (time.time() - start_time) * 1000
-                    return HealthCheckResult(
-                        name="migrations",
-                        status=False,
-                        latency_ms=latency_ms,
-                        details={
-                            "error": "Migrations are currently running",
-                            "lock_count": lock_count
-                        }
-                    )
+            # Check for running migrations (PostgreSQL only)
+            # SQLite and other databases don't support pg_locks query
+            if connection.vendor == 'postgresql':
+                with connection.cursor() as cursor:
+                    # Query for any exclusive locks on django_migrations table
+                    cursor.execute("""
+                        SELECT COUNT(*)
+                        FROM pg_locks
+                        WHERE relation = 'django_migrations'::regclass
+                        AND mode = 'AccessExclusiveLock'
+                    """)
+                    lock_count = cursor.fetchone()[0]
+                    
+                    if lock_count > 0:
+                        latency_ms = (time.time() - start_time) * 1000
+                        return HealthCheckResult(
+                            name="migrations",
+                            status=False,
+                            latency_ms=latency_ms,
+                            details={
+                                "error": "Migrations are currently running",
+                                "lock_count": lock_count
+                            }
+                        )
             
             # All checks passed
             latency_ms = (time.time() - start_time) * 1000

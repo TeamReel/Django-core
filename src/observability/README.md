@@ -67,6 +67,8 @@ readinessProbe:
   failureThreshold: 2
 ```
 
+**Note**: Health endpoints use no trailing slash (`/health/live`, `/health/ready`) to match Kubernetes probe conventions. Configure K8s probes to use these exact paths without trailing slashes to avoid 307 redirects from Django's `APPEND_SLASH` middleware.
+
 ## Extension
 
 See [docs/observability-extension-guide.md](../../docs/observability-extension-guide.md) for:
