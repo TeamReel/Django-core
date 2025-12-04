@@ -616,3 +616,6 @@ def test_validate_app_name_invalid(tmp_path):
 ## Activity Log
 
 - 2025-12-04 – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-04T14:00:00Z – claude – shell_pid=46272 – lane=doing – Started WP04 implementation
+- 2025-12-04T14:45:00Z – claude – shell_pid=46272 – lane=for_review – Completed WP04: Code generation with 11 subtasks (T026-T034, T026a-T026b)
+- 2025-12-04T15:00:00Z – claude – shell_pid=46272 – lane=done – APPROVED: Code generation complete with atomic operations and rollback

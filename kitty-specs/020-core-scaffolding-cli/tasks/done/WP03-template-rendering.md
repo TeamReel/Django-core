@@ -623,3 +623,6 @@ def test_jinja2_syntax_error(tmp_path):
 ## Activity Log
 
 - 2025-12-04 – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-04T14:00:00Z – claude – shell_pid=46272 – lane=doing – Started WP03 implementation
+- 2025-12-04T14:45:00Z – claude – shell_pid=46272 – lane=for_review – Completed WP03: Template rendering with 8 subtasks (T018-T025)
+- 2025-12-04T15:00:00Z – claude – shell_pid=46272 – lane=done – APPROVED: Template rendering complete, Jinja2 integration working

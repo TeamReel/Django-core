@@ -368,17 +368,17 @@ class TemplateRenderer:
 - **Principle VII (API Design)**: Validation at boundary (pre-generation checks for name collisions, invalid names).
 
 **Subtasks**:
-- [ ] T026: Implement staging directory creation (mkdtemp for isolation, cleaned up after success or failure, ADR-022)
-- [ ] T027: Implement file builder (writes rendered templates to staging directory, preserves structure)
-- [ ] T028: Implement atomic move operation (staging → target with shutil.move, all-or-nothing, ADR-022)
-- [ ] T029: Implement rollback mechanism (cleanup staging on failure, log reason, ADR-022)
-- [ ] T030: [P] Implement file permission preservation (chmod, owner/group metadata on Unix)
-- [ ] T031: [P] Implement pre-generation conflict detection (check if target directory exists, abort with error, FR-008, edge case)
-- [ ] T032: [P] Implement app name validation (Django naming conventions: snake_case, no hyphens, no starting with numbers, FR-008)
-- [ ] T033: [P] Implement project name validation and sanitization (slugify for directory name, preserve display name separately, FR-032)
-- [ ] T034: [P] Add integration tests for code generation with rollback scenarios (success path, validation failure, name collision, partial rendering failure)
-- [ ] T026a: Create project bootstrap template with B01 skeleton + stable foundational apps (accounts, audit, organisations, permissions, projects, settings, security_baseline) following FR-027 (minimal scope: standard skeleton + stable apps only, no advanced composition or domain presets)
-- [ ] T026b: [P] Integrate B19 deployment templates (Dockerfile, docker-compose.yml, k8s/, nginx/, .env.example) into project bootstrap template following FR-028
+- [X] T026: Implement staging directory creation (mkdtemp for isolation, cleaned up after success or failure, ADR-022)
+- [X] T027: Implement file builder (writes rendered templates to staging directory, preserves structure)
+- [X] T028: Implement atomic move operation (staging → target with shutil.move, all-or-nothing, ADR-022)
+- [X] T029: Implement rollback mechanism (cleanup staging on failure, log reason, ADR-022)
+- [X] T030: [P] Implement file permission preservation (chmod, owner/group metadata on Unix)
+- [X] T031: [P] Implement pre-generation conflict detection (check if target directory exists, abort with error, FR-008, edge case)
+- [X] T032: [P] Implement app name validation (Django naming conventions: snake_case, no hyphens, no starting with numbers, FR-008)
+- [X] T033: [P] Implement project name validation and sanitization (slugify for directory name, preserve display name separately, FR-032)
+- [X] T034: [P] Add integration tests for code generation with rollback scenarios (success path, validation failure, name collision, partial rendering failure)
+- [X] T026a: Create project bootstrap template with B01 skeleton + stable foundational apps (accounts, audit, organisations, permissions, projects, settings, security_baseline) following FR-027 (minimal scope: standard skeleton + stable apps only, no advanced composition or domain presets)
+- [X] T026b: [P] Integrate B19 deployment templates (Dockerfile, docker-compose.yml, k8s/, nginx/, .env.example) into project bootstrap template following FR-028
 
 **Implementation Sketch**:
 ```python
@@ -454,13 +454,13 @@ class CodeGenerator:
 - **Principle VII (API Design)**: Validation at boundary, clear error messages with actionable guidance.
 
 **Subtasks**:
-- [ ] T035: Implement check_policy.py subprocess runner (subprocess.run with timeout, capture stdout/stderr, FR-033)
-- [ ] T036: [P] Implement validation report parser (parse JSON output from check_policy.py, extract violations/warnings/passed checks, FR-039)
-- [ ] T037: [P] Implement validation error formatter (user-friendly display with file paths, line numbers, specific violations, FR-039)
-- [ ] T038: [P] Implement --validate / --no-validate flag behavior (default=validate, skip validation if --no-validate, FR-007)
-- [ ] T039: [P] Implement --force flag (bypass validation failures, log warning, proceed with generation, ADR-022)
-- [ ] T040: [P] Implement exit code mapping: validation failure → exit 3 (CLI contract, FR-040)
-- [ ] T041: [P] Add unit tests for validation integration with mock check_policy.py (test success, failure, timeout, parsing errors)
+- [X] T035: Implement check_policy.py subprocess runner (subprocess.run with timeout, capture stdout/stderr, FR-033)
+- [X] T036: [P] Implement validation report parser (parse JSON output from check_policy.py, extract violations/warnings/passed checks, FR-039)
+- [X] T037: [P] Implement validation error formatter (user-friendly display with file paths, line numbers, specific violations, FR-039)
+- [X] T038: [P] Implement --validate / --no-validate flag behavior (default=validate, skip validation if --no-validate, FR-007)
+- [X] T039: [P] Implement --force flag (bypass validation failures, log warning, proceed with generation, ADR-022)
+- [X] T040: [P] Implement exit code mapping: validation failure → exit 3 (CLI contract, FR-040)
+- [X] T041: [P] Add unit tests for validation integration with mock check_policy.py (test success, failure, timeout, parsing errors)
 
 **Implementation Sketch**:
 ```python

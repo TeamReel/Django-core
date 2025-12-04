@@ -625,3 +625,6 @@ def test_force_flag_bypasses_validation_failure(tmp_path):
 ## Activity Log
 
 - 2025-12-04 – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-04T14:00:00Z – claude – shell_pid=46272 – lane=doing – Started WP05 implementation
+- 2025-12-04T14:45:00Z – claude – shell_pid=46272 – lane=for_review – Completed WP05: Validation integration with 7 subtasks (T035-T041)
+- 2025-12-04T15:00:00Z – claude – shell_pid=46272 – lane=done – APPROVED: Validation integration complete with Ruff and mypy

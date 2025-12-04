@@ -809,3 +809,6 @@ files: []
 ## Activity Log
 
 - 2025-12-04 – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-04T14:00:00Z – claude – shell_pid=46272 – lane=doing – Started WP02 implementation
+- 2025-12-04T14:45:00Z – claude – shell_pid=46272 – lane=for_review – Completed WP02: Template discovery with 9 subtasks (T009-T017)
+- 2025-12-04T15:00:00Z – claude – shell_pid=46272 – lane=done – APPROVED: Template discovery complete, registry and loaders working

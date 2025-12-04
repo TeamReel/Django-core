@@ -731,6 +731,9 @@ def app(ctx: click.Context, name: str, template: str, validate: bool) -> None:
 > Append entries when the work package changes lanes. Include timestamp, agent, shell PID, lane, and a short note.
 
 - 2025-12-04 – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-04T14:00:00Z – claude – shell_pid=46272 – lane=doing – Started WP01 implementation
+- 2025-12-04T14:45:00Z – claude – shell_pid=46272 – lane=for_review – Completed WP01: CLI framework with 8 subtasks (T001-T008)
+- 2025-12-04T15:00:00Z – claude – shell_pid=46272 – lane=done – APPROVED: CLI framework complete, all tests passing
 
 ---
 
