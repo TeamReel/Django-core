@@ -689,17 +689,17 @@ class ExampleModel(models.Model):
 - **Principle XI (Documentation)**: User guide, template authoring guide, extension guide (SC-008).
 
 **Subtasks**:
-- [ ] T055: [P] Write unit tests for CLI framework (WP01 coverage: command parsing, exit codes, error handling)
-- [ ] T056: [P] Write unit tests for template discovery (WP02 coverage: registry, loaders, inheritance, conflicts)
-- [ ] T057: [P] Write unit tests for template rendering (WP03 coverage: Jinja2, variables, file processing)
-- [ ] T058: [P] Write integration tests for end-to-end generation (US1 acceptance: scaffold app → validate → tests pass)
-- [ ] T059: [P] Write integration tests for project bootstrap (US2 acceptance: scaffold init → docker-compose up → tests pass)
-- [ ] T060: [P] Write integration tests for custom template override (US3 acceptance: custom template → custom patterns present)
-- [ ] T061: [P] Write CI/CD automation tests (US7 acceptance: non-interactive mode → success rate 100%)
-- [ ] T062: [P] Write user documentation (CLI usage guide: all subcommands, flags, examples; template authoring guide: manifest schema, Jinja2 patterns)
-- [ ] T063: [P] Write developer documentation (architecture overview: components, data flow; extension guide: custom templates, plugin packages)
-- [ ] T064: [P] Update Core-App README with scaffolding CLI section (quickstart, link to docs)
-- [ ] T065: [P] Create quickstart tutorial with examples (scaffold first app, bootstrap project, customize template)
+- [X] T055: [P] Write unit tests for CLI framework (WP01 coverage: command parsing, exit codes, error handling)
+- [X] T056: [P] Write unit tests for template discovery (WP02 coverage: registry, loaders, inheritance, conflicts)
+- [X] T057: [P] Write unit tests for template rendering (WP03 coverage: Jinja2, variables, file processing)
+- [X] T058: [P] Write integration tests for end-to-end generation (US1 acceptance: scaffold app → validate → tests pass)
+- [X] T059: [P] Write integration tests for project bootstrap (US2 acceptance: scaffold init → docker-compose up → tests pass)
+- [X] T060: [P] Write integration tests for custom template override (US3 acceptance: custom template → custom patterns present)
+- [X] T061: [P] Write CI/CD automation tests (US7 acceptance: non-interactive mode → success rate 100%)
+- [X] T062: [P] Write user documentation (CLI usage guide: all subcommands, flags, examples; template authoring guide: manifest schema, Jinja2 patterns)
+- [X] T063: [P] Write developer documentation (architecture overview: components, data flow; extension guide: custom templates, plugin packages)
+- [X] T064: [P] Update Core-App README with scaffolding CLI section (quickstart, link to docs)
+- [X] T065: [P] Create quickstart tutorial with examples (scaffold first app, bootstrap project, customize template)
 
 **Implementation Sketch**:
 ```python
