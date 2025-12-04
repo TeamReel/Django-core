@@ -170,3 +170,4 @@ For detailed configuration, see [Configuration Reference](docs/deployment/config
 
 - 2025-12-03T00:00:00Z – copilot – lane=planned – Prompt created
 - 2025-12-04T11:00:00Z – GitHub Copilot – lane=doing – Started WP04 implementation (comprehensive deployment documentation)
+- 2025-12-04T11:30:00Z – GitHub Copilot – lane=done – Completed WP04: All 6 docs created (quickstart, config-ref, troubleshooting, cloud-providers, alternatives) + ADR-020 + README updated (T025-T032)
