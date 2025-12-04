@@ -10,10 +10,10 @@ subtasks:
   - "T054"
 title: "Core Built-in Templates"
 phase: "Phase 3 - Content"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "GitHub Copilot (Claude Sonnet 4.5)"
+agent: "claude"
+shell_pid: "46272"
 review_status: ""
 reviewed_by: ""
 history:
@@ -22,6 +22,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-04T22:35:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "46272"
+    action: "Started WP07 implementation: Core Built-in Templates (4 template sets, 7 subtasks)"
 ---
 
 # Work Package Prompt: WP07 – Core Built-in Templates
