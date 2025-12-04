@@ -11,11 +11,11 @@ subtasks:
   - "T008"
 title: "Docker Build & Compose Templates"
 phase: "Phase 1 - Foundational Infrastructure"
-lane: "planned"
-assignee: ""
+lane: "doing"
+assignee: "GitHub Copilot"
 agent: "copilot"
 shell_pid: "39236"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "copilot-reviewer"
 history:
   - timestamp: "2025-12-03T00:00:00Z"
@@ -519,5 +519,8 @@ docker-compose -f docker-compose.local.yml down
 - 2025-12-03T10:30:00Z – copilot – shell_pid=39236 – lane=doing – Started implementation
 - 2025-12-03T11:00:00Z – copilot – shell_pid=39236 – lane=doing – Completed T001-T006: All Docker and Compose files created at repository root
 - 2025-12-03T11:00:00Z – copilot – shell_pid=39236 – lane=doing – NOTE: T007-T008 (verification) require Docker Desktop to be running - cannot complete without Docker engine
+- 2025-12-03T11:15:00Z – copilot – shell_pid=39236 – lane=for_review – Implementation complete, ready for review (T001-T006 complete, T007-T008 pending Docker availability)
+- 2025-12-04T09:00:00Z – copilot-reviewer – shell_pid=39236 – lane=planned – Code review complete: Critical issue found - Python path missing for src/ directory. Container won't start without PYTHONPATH=/app/src. Minor: collectstatic runs as root. See Review Feedback section for details.
+- 2025-12-04T09:30:00Z – copilot – shell_pid=39236 – lane=doing – Acknowledged review feedback, starting fixes for Python path and collectstatic ownership
 - 2025-12-03T11:15:00Z – copilot – shell_pid=39236 – lane=for_review – Implementation complete, ready for review (T001-T006 complete, T007-T008 pending Docker availability)
 - 2025-12-04T09:00:00Z – copilot-reviewer – shell_pid=39236 – lane=planned – Code review complete: Critical issue found - Python path missing for src/ directory. Container won't start without PYTHONPATH=/app/src. Minor: collectstatic runs as root. See Review Feedback section for details.
