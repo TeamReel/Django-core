@@ -51,14 +51,14 @@ This document breaks down B19 Deployment Templates & Configuration into 4 work p
 **Prompt**: [tasks/planned/WP01-docker-build-compose.md](tasks/planned/WP01-docker-build-compose.md)
 
 **Included Subtasks**:
-- [ ] **T001**: Create multi-stage Dockerfile (python:3.12 → python:3.12-slim) [P]
-- [ ] **T002**: Create .dockerignore file [P]
-- [ ] **T003**: Create docker-compose.local.yml (dev environment with hot-reload) [P]
-- [ ] **T004**: Create docker-compose.staging.yml (prod-like with local services) [P]
-- [ ] **T005**: Create docker-compose.prod.yml (production with external services) [P]
-- [ ] **T006**: Create .env.example template with all required variables [P]
-- [ ] **T007**: Verify Dockerfile builds successfully (<10 minutes) [Depends: T001]
-- [ ] **T008**: Verify local docker-compose stack starts (<5 minutes) [Depends: T003]
+- [x] **T001**: Create multi-stage Dockerfile (python:3.12 → python:3.12-slim) [P]
+- [x] **T002**: Create .dockerignore file [P]
+- [x] **T003**: Create docker-compose.local.yml (dev environment with hot-reload) [P]
+- [x] **T004**: Create docker-compose.staging.yml (prod-like with local services) [P]
+- [x] **T005**: Create docker-compose.prod.yml (production with external services) [P]
+- [x] **T006**: Create .env.example template with all required variables [P]
+- [x] **T007**: Verify Dockerfile builds successfully (<10 minutes) [Depends: T001]
+- [x] **T008**: Verify local docker-compose stack starts (<5 minutes) [Depends: T003]
 
 **Implementation Sketch**:
 1. Copy Dockerfile from contracts/ to repository root, adjust paths if needed
@@ -93,14 +93,14 @@ This document breaks down B19 Deployment Templates & Configuration into 4 work p
 **Prompt**: [tasks/planned/WP02-kubernetes-manifests.md](tasks/planned/WP02-kubernetes-manifests.md)
 
 **Included Subtasks**:
-- [ ] **T009**: Create k8s/ directory and README.md [P]
-- [ ] **T010**: Create configmap.yaml (non-sensitive configuration) [P]
-- [ ] **T011**: Create secret.yaml template (credentials placeholders) [P]
-- [ ] **T012**: Create deployment-web.yaml (Django + Gunicorn, 3+ replicas) [P]
-- [ ] **T013**: Create deployment-celery-worker.yaml (task workers, 2+ replicas) [P]
-- [ ] **T014**: Create deployment-celery-beat.yaml (scheduler, 1 replica only) [P]
-- [ ] **T015**: Create service-web.yaml (LoadBalancer for external traffic) [P]
-- [ ] **T016**: Create hpa-web.yaml (HorizontalPodAutoscaler for web tier) [P]
+- [x] **T009**: Create k8s/ directory and README.md [P]
+- [x] **T010**: Create configmap.yaml (non-sensitive configuration) [P]
+- [x] **T011**: Create secret.yaml template (credentials placeholders) [P]
+- [x] **T012**: Create deployment-web.yaml (Django + Gunicorn, 3+ replicas) [P]
+- [x] **T013**: Create deployment-celery-worker.yaml (task workers, 2+ replicas) [P]
+- [x] **T014**: Create deployment-celery-beat.yaml (scheduler, 1 replica only) [P]
+- [x] **T015**: Create service-web.yaml (LoadBalancer for external traffic) [P]
+- [x] **T016**: Create hpa-web.yaml (HorizontalPodAutoscaler for web tier) [P]
 
 **Implementation Sketch**:
 1. Create k8s/ directory at repository root
@@ -138,14 +138,14 @@ This document breaks down B19 Deployment Templates & Configuration into 4 work p
 **Prompt**: [tasks/planned/WP03-nginx-environment-config.md](tasks/planned/WP03-nginx-environment-config.md)
 
 **Included Subtasks**:
-- [ ] **T017**: Create nginx/ directory structure [P]
-- [ ] **T018**: Create nginx/local.conf (optional local reverse proxy) [P]
-- [ ] **T019**: Create nginx/staging.conf (HTTP only, security headers) [P]
-- [ ] **T020**: Create nginx/production.conf (HTTPS with SSL, full headers) [P]
-- [ ] **T021**: Update .env.example with B03 security variables [Depends: T006]
-- [ ] **T022**: Update .env.example with B15 Celery variables [Depends: T006]
-- [ ] **T023**: Update .env.example with B18 observability variables [Depends: T006]
-- [ ] **T024**: Add cloud provider connection string examples to .env.example [Depends: T006]
+- [x] **T017**: Create nginx/ directory structure [P]
+- [x] **T018**: Create nginx/local.conf (optional local reverse proxy) [P]
+- [x] **T019**: Create nginx/staging.conf (HTTP only, security headers) [P]
+- [x] **T020**: Create nginx/production.conf (HTTPS with SSL, full headers) [P]
+- [x] **T021**: Update .env.example with B03 security variables [Depends: T006]
+- [x] **T022**: Update .env.example with B15 Celery variables [Depends: T006]
+- [x] **T023**: Update .env.example with B18 observability variables [Depends: T006]
+- [x] **T024**: Add cloud provider connection string examples to .env.example [Depends: T006]
 
 **Implementation Sketch**:
 1. Create nginx/ directory at repository root
@@ -181,14 +181,14 @@ This document breaks down B19 Deployment Templates & Configuration into 4 work p
 **Prompt**: [tasks/planned/WP04-documentation-validation.md](tasks/planned/WP04-documentation-validation.md)
 
 **Included Subtasks**:
-- [ ] **T025**: Create docs/deployment/ directory structure [P]
-- [ ] **T026**: Create docs/deployment/quickstart.md (local, staging, prod, K8s guides) [P]
-- [ ] **T027**: Create docs/deployment/configuration-reference.md (env var catalog) [P]
-- [ ] **T028**: Create docs/deployment/troubleshooting.md (common issues & fixes) [P]
-- [ ] **T029**: Create docs/deployment/cloud-providers.md (AWS/GCP/Azure specifics) [P]
-- [ ] **T030**: Create docs/deployment/alternatives.md (Traefik, Caddy, Kustomize notes) [P]
-- [ ] **T031**: Create docs/adr/020-deployment-automation-strategy.md (ADR) [P]
-- [ ] **T032**: Update main README.md with deployment quickstart link [Depends: T026]
+- [x] **T025**: Create docs/deployment/ directory structure [P]
+- [x] **T026**: Create docs/deployment/quickstart.md (local, staging, prod, K8s guides) [P]
+- [x] **T027**: Create docs/deployment/configuration-reference.md (env var catalog) [P]
+- [x] **T028**: Create docs/deployment/troubleshooting.md (common issues & fixes) [P]
+- [x] **T029**: Create docs/deployment/cloud-providers.md (AWS/GCP/Azure specifics) [P]
+- [x] **T030**: Create docs/deployment/alternatives.md (Traefik, Caddy, Kustomize notes) [P]
+- [x] **T031**: Create docs/adr/020-deployment-automation-strategy.md (ADR) [P]
+- [x] **T032**: Update main README.md with deployment quickstart link [Depends: T026]
 
 **Implementation Sketch**:
 1. Create docs/deployment/ directory
