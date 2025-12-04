@@ -45,6 +45,25 @@
 - [ ] T007 Create `docs/assets/` directory for images
 - [ ] T008 Create `docs/nav.yml` navigation structure and placeholder `mkdocs.yml`
 
+### T008 mkdocs.yml Content Specification
+
+The placeholder `mkdocs.yml` MUST include:
+```yaml
+# Placeholder for future MkDocs deployment
+# Uncomment and configure when ready to publish
+# site_name: Django Core-App Documentation
+# theme:
+#   name: material
+# nav: !include nav.yml
+# plugins:
+#   - search
+# markdown_extensions:
+#   - pymdownx.superfences:
+#       custom_fences:
+#         - name: mermaid
+#           class: mermaid
+```
+
 ### Implementation Notes
 - Move existing loose files to appropriate folders (see research.md section 1.3)
 - Keep `docs/adr/`, `docs/deployment/`, `docs/scaffolding/`, `docs/tasks/` as-is
@@ -247,7 +266,7 @@
 - [ ] T063 Create `examples/crud-api/urls.py` (URL routing)
 - [ ] T064 Create `examples/crud-api/apps.py` (Django app config)
 - [ ] T065 Write `examples/crud-api/README.md` (walkthrough)
-- [ ] T066 Create `tests/examples/test_crud_api_smoke.py` (smoke tests)
+- [ ] T066 Create `tests/examples/test_crud_api_smoke.py` (smoke tests, `@pytest.mark.timeout(30)`)
 - [ ] T067 Create `tests/examples/__init__.py` and `conftest.py`
 - [ ] T068 Register example app in test settings
 
@@ -281,7 +300,7 @@
 - [ ] T072 [P] Create `examples/background-tasks/signals.py` (task signals/logging)
 - [ ] T073 Create `examples/background-tasks/apps.py` (Django app config)
 - [ ] T074 Write `examples/background-tasks/README.md` (walkthrough)
-- [ ] T075 Create `tests/examples/test_background_tasks_smoke.py` (smoke tests)
+- [ ] T075 Create `tests/examples/test_background_tasks_smoke.py` (smoke tests, `@pytest.mark.timeout(30)`)
 - [ ] T076 Demonstrate logging and metrics in example
 - [ ] T077 Register example app in test settings
 
@@ -313,7 +332,7 @@
 - [ ] T079 Write `examples/scaffolding-demo/README.md` (CLI walkthrough)
 - [ ] T080 Document scaffolding commands with examples
 - [ ] T081 Create `examples/scaffolding-demo/demo-output/` (sample generated app)
-- [ ] T082 Create `tests/examples/test_scaffolding_demo_smoke.py` (smoke tests)
+- [ ] T082 Create `tests/examples/test_scaffolding_demo_smoke.py` (smoke tests, `@pytest.mark.timeout(30)`)
 - [ ] T083 Smoke test: CLI list templates
 - [ ] T084 Smoke test: CLI generate minimal app
 - [ ] T085 Smoke test: validate generated code passes Ruff

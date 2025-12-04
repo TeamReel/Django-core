@@ -8,7 +8,9 @@
 
 ## Overview
 
-B21 delivers comprehensive documentation and thematic examples for Django Core-App. The implementation is divided into four work packages that can be worked in parallel with minimal dependencies.
+B21 delivers comprehensive documentation and thematic examples for Django Core-App. The implementation is divided into ten work packages organized in four phases.
+
+> **Note**: This plan provides high-level guidance. See `tasks.md` for the authoritative work breakdown with 10 WPs (WP01-WP10) and 94 subtasks.
 
 ---
 
