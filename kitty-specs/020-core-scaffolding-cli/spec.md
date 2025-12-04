@@ -221,7 +221,7 @@ A DevOps engineer wants to automate module generation in CI pipelines (e.g., gen
 - **FR-037**: Validation MUST check testing structure (tests/ directory present, pytest patterns used)
 - **FR-038**: Validation MUST check code quality (Ruff linting passes, type hints present)
 - **FR-039**: Validation results MUST be displayed as clear pass/fail report with specific violations and line numbers
-- **FR-040**: System MUST exit with non-zero code if validation fails (for CI/CD failure detection)
+- **FR-040**: System MUST exit with code 3 if validation fails (for CI/CD failure detection). CLI follows standard exit code contract: 0=success, 1=user error (invalid input), 2=system error (file I/O failure), 3=validation failure (constitutional checks failed), 4=template not found, 5=conflict (target directory exists). See [contracts/cli-interface.md](contracts/cli-interface.md) for full specification.
 
 #### User Experience
 
