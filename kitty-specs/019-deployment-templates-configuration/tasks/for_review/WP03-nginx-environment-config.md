@@ -11,7 +11,7 @@ subtasks:
   - "T024"
 title: "Nginx & Environment Configuration"
 phase: "Phase 2 - Configuration & Documentation"
-lane: "doing"
+lane: "for_review"
 assignee: "GitHub Copilot"
 agent: "GitHub Copilot"
 shell_pid: ""
@@ -107,13 +107,13 @@ Add commented examples for:
 
 ## Definition of Done
 
-- [ ] nginx/ directory with 3 config files
-- [ ] All security headers present in staging/prod configs
-- [ ] Static file serving configured
-- [ ] SSL termination in production.conf
-- [ ] .env.example updated with B03/B15/B18 variables
-- [ ] Cloud provider examples in .env.example comments
-- [ ] Nginx configs tested with docker-compose (staging/prod)
+- [X] nginx/ directory with 3 config files
+- [X] All security headers present in staging/prod configs
+- [X] Static file serving configured
+- [X] SSL termination in production.conf
+- [X] .env.example updated with B03/B15/B18 variables (completed in WP01)
+- [X] Cloud provider examples in .env.example comments (completed in WP01)
+- [ ] Nginx configs tested with docker-compose (staging/prod) - Pending Docker Desktop
 
 ---
 
@@ -121,3 +121,8 @@ Add commented examples for:
 
 - 2025-12-03T00:00:00Z – copilot – lane=planned – Prompt created
 - 2025-12-04T10:40:00Z – GitHub Copilot – lane=doing – Started WP03 implementation (Nginx configs + expand .env.example)
+- 2025-12-04T10:50:00Z – GitHub Copilot – T017-T020 complete – Created nginx/local.conf (29 lines), nginx/staging.conf (75 lines), nginx/production.conf (177 lines)
+- 2025-12-04T10:50:00Z – GitHub Copilot – T021-T024 complete – Verified .env.example already contains all B03/B15/B18 variables (completed in WP01). No additional changes needed.
+- 2025-12-04T10:50:00Z – GitHub Copilot – Extra – Created nginx/README.md (comprehensive deployment guide with security checklist)
+- 2025-12-04T10:50:00Z – GitHub Copilot – All subtasks complete – Ready for review (nginx testing pending Docker Desktop)
+- 2025-12-04T10:50:00Z – GitHub Copilot – lane=for_review – Moved to review (T017-T024 complete)
