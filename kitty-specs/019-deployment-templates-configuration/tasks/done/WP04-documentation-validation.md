@@ -11,7 +11,7 @@ subtasks:
   - "T032"
 title: "Documentation & Validation"
 phase: "Phase 2 - Configuration & Documentation"
-lane: "doing"
+lane: "done"
 assignee: "GitHub Copilot"
 agent: "GitHub Copilot"
 shell_pid: ""
@@ -23,6 +23,14 @@ history:
     agent: "copilot"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-04T11:00:00Z"
+    lane: "doing"
+    agent: "GitHub Copilot"
+    action: "Started WP04 implementation (comprehensive deployment documentation)"
+  - timestamp: "2025-12-04T11:30:00Z"
+    lane: "done"
+    agent: "GitHub Copilot"
+    action: "Completed WP04: All 6 docs created (quickstart, config-ref, troubleshooting, cloud-providers, alternatives) + ADR-020 + README updated (T025-T032)"
 ---
 
 # Work Package Prompt: WP04 – Documentation & Validation
