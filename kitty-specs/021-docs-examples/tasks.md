@@ -29,21 +29,21 @@
 
 ---
 
-## Work Package WP01: Documentation Structure & Navigation (Priority: P0) 🎯 MVP
+## Work Package WP01: Documentation Structure & Navigation (Priority: P0) 🎯 MVP ✅ DONE
 
 **Goal**: Create MkDocs-compatible directory structure and reorganize existing docs.
 **Independent Test**: `docs/` has all required section folders with index.md files; nav.yml exists.
-**Prompt**: `tasks/planned/WP01-docs-structure.md`
+**Prompt**: `tasks/done/WP01-docs-structure.md`
 
 ### Included Subtasks
-- [ ] T001 Create `docs/getting-started/` directory with `index.md`
-- [ ] T002 [P] Create `docs/architecture/` directory with `index.md`
-- [ ] T003 [P] Create `docs/guides/` directory with `index.md`
-- [ ] T004 [P] Create `docs/modules/` directory with `index.md`
-- [ ] T005 [P] Create `docs/contributing/` directory with `index.md`
-- [ ] T006 [P] Create `docs/troubleshooting/` directory with `index.md`
-- [ ] T007 Create `docs/assets/` directory for images
-- [ ] T008 Create `docs/nav.yml` navigation structure and placeholder `mkdocs.yml`
+- [x] T001 Create `docs/getting-started/` directory with `index.md`
+- [x] T002 [P] Create `docs/architecture/` directory with `index.md`
+- [x] T003 [P] Create `docs/guides/` directory with `index.md`
+- [x] T004 [P] Create `docs/modules/` directory with `index.md`
+- [x] T005 [P] Create `docs/contributing/` directory with `index.md`
+- [x] T006 [P] Create `docs/troubleshooting/` directory with `index.md`
+- [x] T007 Create `docs/assets/` directory for images
+- [x] T008 Create `docs/nav.yml` navigation structure and placeholder `mkdocs.yml`
 
 ### T008 mkdocs.yml Content Specification
 
