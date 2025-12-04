@@ -79,13 +79,13 @@ All subtasks are listed here for quick reference. See work package sections belo
 | T034 | Add integration tests for code generation with rollback scenarios | WP04 | P1 | ✅ |
 | T026a | Create project bootstrap template with B01 skeleton + stable foundational apps (FR-027) | WP04 | P1 | No |
 | T026b | Integrate B19 deployment templates into project bootstrap (FR-028) | WP04 | P1 | [P] |
-| T035 | Implement check_policy.py subprocess runner | WP05 | P1 | No |
-| T036 | Implement validation report parser (JSON output from check_policy.py) | WP05 | P1 | [P] |
-| T037 | Implement validation error formatter (user-friendly display) | WP05 | P1 | [P] |
-| T038 | Implement --validate / --no-validate flag behavior | WP05 | P1 | [P] |
-| T039 | Implement --force flag (bypass validation failures, ADR-022) | WP05 | P1 | [P] |
-| T040 | Implement exit code mapping (validation failure → exit 3) | WP05 | P1 | [P] |
-| T041 | Add unit tests for validation integration with mock check_policy.py | WP05 | P1 | [P] |
+| T035 | Implement check_policy.py subprocess runner | WP05 | P1 | ✅ |
+| T036 | Implement validation report parser (JSON output from check_policy.py) | WP05 | P1 | ✅ |
+| T037 | Implement validation error formatter (user-friendly display) | WP05 | P1 | ✅ |
+| T038 | Implement --validate / --no-validate flag behavior | WP05 | P1 | ✅ |
+| T039 | Implement --force flag (bypass validation failures, ADR-022) | WP05 | P1 | ✅ |
+| T040 | Implement exit code mapping (validation failure → exit 3) | WP05 | P1 | ✅ |
+| T041 | Add unit tests for validation integration with mock check_policy.py | WP05 | P1 | ✅ |
 | T042 | Implement TTY detection (sys.stdout.isatty()) | WP06 | P2 | [P] |
 | T043 | Implement Click interactive prompts (template selection, app name) | WP06 | P2 | [P] |
 | T044 | Implement auto-detection logic (interactive in terminal, non-interactive in CI) | WP06 | P2 | [P] |

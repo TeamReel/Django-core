@@ -9,10 +9,12 @@ from scaffolding.generation.generator import CodeGenerator
 from scaffolding.generation.exceptions import (
     ConflictError,
     ValidationError,
+    ValidationFailure,
 )
 
 __all__ = [
     "CodeGenerator",
     "ConflictError",
     "ValidationError",
+    "ValidationFailure",
 ]

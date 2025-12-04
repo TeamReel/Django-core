@@ -13,8 +13,16 @@ import tempfile
 from pathlib import Path
 from typing import List, Optional
 
-from scaffolding.generation.exceptions import ConflictError, ValidationError
+import click
+
+from scaffolding.generation.exceptions import (
+    ConflictError,
+    ValidationError,
+    ValidationFailure,
+)
 from scaffolding.rendering.engine import TemplateRenderer
+from scaffolding.validation.formatter import format_validation_report
+from scaffolding.validation.runner import ValidationRunner
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +54,7 @@ class CodeGenerator:
         template: str,
         project_root: Path,
         validate: bool = True,
+        force: bool = False,
     ) -> None:
         """
         Generate Django app with atomic rollback.
@@ -63,11 +72,13 @@ class CodeGenerator:
             name: App name (must be snake_case)
             template: Template name (e.g., 'minimal', 'api-first')
             project_root: Project root directory
-            validate: Whether to run validation (default: True)
+            validate: Whether to run constitutional validation (default: True)
+            force: Bypass validation failures with warning (default: False)
 
         Raises:
             ValidationError: If app name is invalid
             ConflictError: If target directory already exists
+            ValidationFailure: If constitutional validation fails and force=False
             OSError: If file operations fail
         """
         # Pre-generation validation (T032)
@@ -90,13 +101,13 @@ class CodeGenerator:
             created_files = self._build_files(staging_dir)
             logger.info(f"Rendered {len(created_files)} files to staging")
 
-            # Validate generated code if requested (WP05 integration point)
-            if validate:
-                self._validate_generated_code(staging_dir)
-
             # Atomic move staging → target (T028)
             self._atomic_move(staging_dir, target_dir)
             logger.info(f"Generated app '{name}' at {target_dir}")
+
+            # Validate generated code if requested (WP05 integration)
+            if validate:
+                self._validate_generated_code(target_dir, project_root, force)
 
         except Exception as e:
             # Rollback: cleanup staging on any failure (T029)
@@ -214,22 +225,82 @@ class CodeGenerator:
                 f"Atomic move failed: {target_dir} not created after move"
             )
 
-    def _validate_generated_code(self, staging_dir: Path) -> None:
+    def _validate_generated_code(
+        self, target_dir: Path, project_root: Path, force: bool = False
+    ) -> None:
         """
-        Validate generated code (WP05 integration point).
+        Validate generated code using check_policy.py (WP05 integration).
 
-        Placeholder for constitutional validation integration.
-        Will be implemented in WP05.
+        Executes constitutional validation on generated code. If validation
+        fails and force=False, raises ValidationFailure. If force=True,
+        logs warning and continues.
 
         Args:
-            staging_dir: Path to staging directory with generated code
+            target_dir: Path to generated code directory
+            project_root: Project root directory (location of check_policy.py)
+            force: Bypass validation failures with warning (default: False)
 
         Raises:
-            ValidationError: If validation fails
+            ValidationFailure: If validation fails and force=False
+            FileNotFoundError: If check_policy.py not found
+            TimeoutError: If validation times out
         """
-        # WP05 will implement check_policy.py integration
-        # For now, this is a no-op placeholder
-        pass
+        check_policy_path = project_root / "check_policy.py"
+
+        if not check_policy_path.exists():
+            logger.warning(
+                f"check_policy.py not found at {check_policy_path}, skipping validation"
+            )
+            click.secho(
+                f"⚠ Warning: check_policy.py not found at {check_policy_path}. "
+                "Skipping constitutional validation.",
+                fg="yellow",
+            )
+            return
+
+        try:
+            runner = ValidationRunner(check_policy_path)
+            report = runner.validate_directory(target_dir)
+
+            if report["passed"]:
+                logger.info("Constitutional validation passed")
+                return
+
+            # Validation failed - format and display report
+            error_msg = format_validation_report(report)
+            click.echo(error_msg, err=True)
+
+            if force:
+                # Warning but continue
+                click.secho(
+                    "\n⚠ Validation failed but continuing due to --force flag",
+                    fg="yellow",
+                    bold=True,
+                )
+                logger.warning(
+                    "Constitutional validation failed but continuing with --force"
+                )
+            else:
+                # Exit with validation failure
+                logger.error("Constitutional validation failed, aborting")
+                raise ValidationFailure(
+                    f"Constitutional validation failed with "
+                    f"{len(report['violations'])} violations"
+                )
+
+        except (FileNotFoundError, TimeoutError) as e:
+            # Re-raise these specific errors
+            raise
+
+        except Exception as e:
+            logger.error(f"Unexpected error during validation: {e}")
+            if force:
+                click.secho(
+                    f"\n⚠ Validation error ({e}) but continuing due to --force flag",
+                    fg="yellow",
+                )
+            else:
+                raise
 
     def _validate_app_name(self, name: str) -> None:
         """
