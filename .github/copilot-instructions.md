@@ -21,6 +21,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-23
 - Python 3.12+ + Celery 5.3+ with Redis broker, celery-beat for scheduling, pytest-celery for testing (015-tasks-scheduling-foundation)
 - Redis (broker and lightweight result backend), PostgreSQL (B09 audit events only) (015-tasks-scheduling-foundation)
 - N/A (no persistent data models; all observability data emitted to external systems) (018-platform-observability-foundation)
+- Python 3.12+ + Django 5.1+, Jinja2 3.1+, Click 8.1+, PyYAML 6.0+, importlib.metadata (stdlib) (020-core-scaffolding-cli)
+- File-based (YAML manifests, Jinja2 templates, generated code) - no database persistence required (020-core-scaffolding-cli)
 
 ## Project Structure
 ```
@@ -45,9 +47,9 @@ Quick reminders:
 Python 3.12+: Follow standard conventions
 
 ## Recent Changes
+- 020-core-scaffolding-cli: Added Python 3.12+ + Django 5.1+, Jinja2 3.1+, Click 8.1+, PyYAML 6.0+, importlib.metadata (stdlib)
 - 018-platform-observability-foundation: Added Python 3.12+
 - 015-tasks-scheduling-foundation: Added Python 3.12+ + Celery 5.3+ with Redis broker, celery-beat for scheduling, pytest-celery for testing
-- 015-tasks-scheduling-foundation: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
