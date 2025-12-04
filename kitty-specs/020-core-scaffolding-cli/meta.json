@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "020",
+    "slug":  "020-core-scaffolding-cli",
+    "friendly_name":  "Core Scaffolding CLI",
+    "source_description":  "A hybrid scaffolding CLI that generates new Django apps/modules and bootstraps downstream projects following Core-App conventions, security baselines, and i18n patterns, with extensible templates and constitutional enforcement at generation time.",
+    "created_at":  "2025-12-04T09:16:53Z"
+}
