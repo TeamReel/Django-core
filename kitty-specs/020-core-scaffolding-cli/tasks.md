@@ -596,13 +596,13 @@ def show_progress(message: str) -> None:
 - **Principle V (Security & Privacy)**: Generated code follows B03 security baseline (secure defaults, no secrets).
 
 **Subtasks**:
-- [ ] T048: Create "minimal" template (models.py, apps.py, tests/, migrations/, locale/, \_\_init\_\_.py, FR-016, FR-017)
-- [ ] T049: Create "api-first" template (extends minimal, adds serializers.py, views.py, urls.py, API tests, FR-023)
-- [ ] T050: Create "service" template (extends minimal, adds services.py with type hints, unit tests, no views, FR-024)
-- [ ] T051: Create "ui-backed" template (extends minimal, adds views.py, forms.py, templates/, static/, frontend tests, FR-025)
-- [ ] T052: [P] Add \_\_template\_\_.yaml manifest for each template (name, description, extends, variables, files per data-model.md)
-- [ ] T053: [P] Add golden file tests for all 4 templates (generate with fixtures, compare output to expected files, FR-018, FR-019)
-- [ ] T054: [P] Validate templates with explicit smoke tests: for each of 4 templates (minimal, api-first, service, ui-backed), generate test app in temp directory → run `ruff check` → run `pytest` → run `check_policy.py` → verify all pass (exit 0) to ensure generated code is functionally runnable, not just syntactically valid (100% compliance for all generated code, SC-002)
+- [x] T048: Create "minimal" template (models.py, apps.py, tests/, migrations/, locale/, \_\_init\_\_.py, FR-016, FR-017)
+- [x] T049: Create "api-first" template (extends minimal, adds serializers.py, views.py, urls.py, API tests, FR-023)
+- [x] T050: Create "service" template (extends minimal, adds services.py with type hints, unit tests, no views, FR-024)
+- [x] T051: Create "ui-backed" template (extends minimal, adds views.py, forms.py, templates/, static/, frontend tests, FR-025)
+- [x] T052: [P] Add \_\_template\_\_.yaml manifest for each template (name, description, extends, variables, files per data-model.md)
+- [x] T053: [P] Add golden file tests for all 4 templates (generate with fixtures, compare output to expected files, FR-018, FR-019)
+- [x] T054: [P] Validate templates with explicit smoke tests: for each of 4 templates (minimal, api-first, service, ui-backed), generate test app in temp directory → run `ruff check` → run `pytest` → run `check_policy.py` → verify all pass (exit 0) to ensure generated code is functionally runnable, not just syntactically valid (100% compliance for all generated code, SC-002)
 
 **Implementation Sketch**:
 ```yaml
