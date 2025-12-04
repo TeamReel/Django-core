@@ -1,0 +1,59 @@
+# Placeholder for future MkDocs deployment
+# Uncomment and configure when ready to publish
+#
+# site_name: Django Core-App Documentation
+# site_description: Documentation for Django Core-App platform
+# site_url: https://your-org.github.io/django-core/
+#
+# repo_name: your-org/django-core
+# repo_url: https://github.com/your-org/django-core
+#
+# theme:
+#   name: material
+#   palette:
+#     - media: "(prefers-color-scheme: light)"
+#       scheme: default
+#       primary: indigo
+#       accent: indigo
+#       toggle:
+#         icon: material/brightness-7
+#         name: Switch to dark mode
+#     - media: "(prefers-color-scheme: dark)"
+#       scheme: slate
+#       primary: indigo
+#       accent: indigo
+#       toggle:
+#         icon: material/brightness-4
+#         name: Switch to light mode
+#   features:
+#     - navigation.tabs
+#     - navigation.sections
+#     - navigation.expand
+#     - search.suggest
+#     - content.code.copy
+#
+# nav: !include docs/nav.yml
+#
+# plugins:
+#   - search
+#
+# markdown_extensions:
+#   - admonition
+#   - pymdownx.details
+#   - pymdownx.superfences:
+#       custom_fences:
+#         - name: mermaid
+#           class: mermaid
+#           format: !!python/name:pymdownx.superfences.fence_code_format
+#   - pymdownx.tabbed:
+#       alternate_style: true
+#   - attr_list
+#   - md_in_html
+#   - tables
+#   - toc:
+#       permalink: true
+#
+# extra:
+#   social:
+#     - icon: fontawesome/brands/github
+#       link: https://github.com/your-org/django-core
