@@ -1,0 +1,155 @@
+# Kubernetes Deployment - Celery Worker
+# B19 Deployment Templates & Configuration
+#
+# Purpose: Deploy Celery task workers for background job processing (B15)
+# Usage: kubectl apply -f deployment-celery-worker.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-celery-worker
+  namespace: default
+  labels:
+    app: django-core
+    component: celery-worker
+    tier: backend
+spec:
+  replicas: 2  # Scale based on queue depth and task volume
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: django-core
+      component: celery-worker
+  template:
+    metadata:
+      labels:
+        app: django-core
+        component: celery-worker
+        tier: backend
+      annotations:
+        # Prometheus scraping for Celery metrics (B18 integration)
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9808"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Run as non-root user (B03 security)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      
+      containers:
+        - name: celery-worker
+          image: your-registry/django-core:latest  # Replace with your image
+          imagePullPolicy: Always
+          command:
+            - "celery"
+            - "-A"
+            - "config"
+            - "worker"
+            - "--loglevel=info"
+            - "--concurrency=4"
+            - "--max-tasks-per-child=1000"
+            - "--task-events"
+          
+          # Environment variables from ConfigMap and Secret
+          envFrom:
+            - configMapRef:
+                name: django-core-config
+            - secretRef:
+                name: django-core-secrets
+          
+          # Liveness probe: Worker process running?
+          # Note: Celery workers don't expose HTTP endpoints by default
+          # Using exec probe to check process health
+          livenessProbe:
+            exec:
+              command:
+                - "celery"
+                - "-A"
+                - "config"
+                - "inspect"
+                - "ping"
+                - "-d"
+                - "celery@$(hostname)"
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+          
+          # Readiness probe: Worker ready to accept tasks?
+          readinessProbe:
+            exec:
+              command:
+                - "celery"
+                - "-A"
+                - "config"
+                - "inspect"
+                - "active"
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+          
+          # Resource requests and limits
+          # Workers typically need more memory for task processing
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          
+          # Security context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+      
+      # Pod anti-affinity: Spread workers across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: component
+                      operator: In
+                      values:
+                        - celery-worker
+                topologyKey: kubernetes.io/hostname
+      
+      # Restart policy
+      restartPolicy: Always
+      
+      # Graceful shutdown: Allow workers to finish current tasks
+      terminationGracePeriodSeconds: 300  # 5 minutes
+
+---
+# Worker Deployment Notes:
+# - Replace "your-registry/django-core:latest" with your actual image
+# - Scale replicas based on queue depth (use HPA for autoscaling)
+# - Workers process tasks from B15 task scheduling system
+# - Concurrency=4 means 4 tasks processed simultaneously per pod
+# - max-tasks-per-child=1000 prevents memory leaks from long-running workers
+# - Graceful shutdown (300s) allows in-flight tasks to complete
+# - Resource limits prevent runaway tasks from consuming all memory
+# - Liveness/readiness probes use Celery inspect commands
+# - B18 observability: Task metrics exported via prometheus-celery-exporter (optional)
+#
+# Scaling Guidelines:
+# - Monitor queue depth: celery -A config inspect active_queues
+# - Scale up if queue depth consistently > 100
+# - Use HorizontalPodAutoscaler based on queue depth metric
+# - Typical setup: 2-5 workers for moderate load, 10+ for high load

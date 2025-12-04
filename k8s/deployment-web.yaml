@@ -1,0 +1,179 @@
+# Kubernetes Deployment - Django Web Application
+# B19 Deployment Templates & Configuration
+#
+# Purpose: Deploy Django web tier with Gunicorn
+# Usage: kubectl apply -f deployment-web.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-web
+  namespace: default
+  labels:
+    app: django-core
+    component: web
+    tier: frontend
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero-downtime deployments
+  selector:
+    matchLabels:
+      app: django-core
+      component: web
+  template:
+    metadata:
+      labels:
+        app: django-core
+        component: web
+        tier: frontend
+      annotations:
+        # Prometheus scraping annotations (B18 integration)
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Run as non-root user (B03 security)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      
+      # Init container: Run database migrations before starting web server
+      initContainers:
+        - name: migrate
+          image: your-registry/django-core:latest  # Replace with your image
+          command: ["python", "manage.py", "migrate", "--noinput"]
+          envFrom:
+            - configMapRef:
+                name: django-core-config
+            - secretRef:
+                name: django-core-secrets
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+      
+      containers:
+        - name: django
+          image: your-registry/django-core:latest  # Replace with your image
+          imagePullPolicy: Always
+          command:
+            - "gunicorn"
+            - "config.wsgi:application"
+            - "--bind"
+            - "0.0.0.0:8000"
+            - "--workers"
+            - "4"
+            - "--worker-class"
+            - "sync"
+            - "--max-requests"
+            - "1000"
+            - "--max-requests-jitter"
+            - "50"
+            - "--timeout"
+            - "30"
+            - "--graceful-timeout"
+            - "30"
+            - "--access-logfile"
+            - "-"
+            - "--error-logfile"
+            - "-"
+            - "--log-level"
+            - "info"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          
+          # Environment variables from ConfigMap and Secret
+          envFrom:
+            - configMapRef:
+                name: django-core-config
+            - secretRef:
+                name: django-core-secrets
+          
+          # Liveness probe: Is container alive? (B18 integration)
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          
+          # Readiness probe: Can container serve traffic? (B18 integration)
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+          
+          # Startup probe: Initial container startup (B18 integration)
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12  # 60 seconds max startup time
+            successThreshold: 1
+          
+          # Resource requests and limits
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          
+          # Security context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # Django needs write access for some operations
+            capabilities:
+              drop:
+                - ALL
+      
+      # Pod anti-affinity: Spread pods across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: component
+                      operator: In
+                      values:
+                        - web
+                topologyKey: kubernetes.io/hostname
+      
+      # Restart policy
+      restartPolicy: Always
+
+---
+# Deployment Notes:
+# - Replace "your-registry/django-core:latest" with your actual image
+# - Adjust replicas based on expected traffic (recommend 3+ for HA)
+# - Tune resource requests/limits based on actual usage
+# - Init container runs migrations before each deployment
+# - Health probes use B18 endpoints (/health/live, /health/ready)
+# - Zero-downtime updates via rolling deployment strategy
+# - Pod anti-affinity spreads replicas across nodes for resilience
+# - Prometheus annotations enable automatic metrics scraping

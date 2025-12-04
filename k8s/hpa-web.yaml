@@ -1,0 +1,103 @@
+# Kubernetes HorizontalPodAutoscaler - Web Tier
+# B19 Deployment Templates & Configuration
+#
+# Purpose: Automatically scale web pods based on CPU/memory utilization
+# Usage: kubectl apply -f hpa-web.yaml
+#
+# Prerequisites: Metrics Server must be installed in cluster
+#   kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: django-web-hpa
+  namespace: default
+  labels:
+    app: django-core
+    component: web
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: django-web
+  
+  minReplicas: 3  # Minimum for high availability
+  maxReplicas: 10  # Adjust based on expected max load
+  
+  metrics:
+    # Scale based on CPU utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # Scale up when average CPU > 70%
+    
+    # Scale based on memory utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80  # Scale up when average memory > 80%
+  
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60  # Wait 60s before scaling up
+      policies:
+        - type: Percent
+          value: 50  # Scale up by 50% of current replicas
+          periodSeconds: 60
+        - type: Pods
+          value: 2  # Or add 2 pods at a time (whichever is larger)
+          periodSeconds: 60
+      selectPolicy: Max  # Use the policy that scales up faster
+    
+    scaleDown:
+      stabilizationWindowSeconds: 300  # Wait 5 minutes before scaling down
+      policies:
+        - type: Percent
+          value: 25  # Scale down by 25% of current replicas
+          periodSeconds: 60
+        - type: Pods
+          value: 1  # Or remove 1 pod at a time (whichever is smaller)
+          periodSeconds: 60
+      selectPolicy: Min  # Use the policy that scales down slower
+
+---
+# HPA Notes:
+# - Requires Metrics Server installed in cluster
+# - Scales django-web Deployment between 3-10 replicas
+# - Triggers: CPU > 70% or Memory > 80%
+# - Scale-up: Aggressive (50% or 2 pods, whichever is larger, after 60s)
+# - Scale-down: Conservative (25% or 1 pod, whichever is smaller, after 300s)
+# - Works with LoadBalancer Service for traffic distribution
+#
+# Metrics Server Installation:
+#   kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+#
+# Verify HPA:
+#   kubectl get hpa django-web-hpa
+#   kubectl describe hpa django-web-hpa
+#
+# Advanced Metrics (requires custom metrics):
+# - Request count per second
+# - Response time (p95, p99)
+# - Queue depth
+# - Custom business metrics
+# Install Prometheus Adapter for custom metrics:
+#   helm install prometheus-adapter prometheus-community/prometheus-adapter
+#
+# Example custom metric (request rate):
+#   - type: Pods
+#     pods:
+#       metric:
+#         name: http_requests_per_second
+#       target:
+#         type: AverageValue
+#         averageValue: "1000"
+#
+# Monitoring:
+# - Watch HPA decisions: kubectl get hpa -w
+# - Check current metrics: kubectl top pods -l component=web
+# - B18 integration: HPA events in observability logs
