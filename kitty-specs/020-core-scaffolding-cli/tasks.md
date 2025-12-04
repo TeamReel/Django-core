@@ -131,14 +131,14 @@ All subtasks are listed here for quick reference. See work package sections belo
 - **Principle VII (API Design)**: CLI interface is consistent, validated at boundary (arg validation before execution).
 
 **Subtasks**:
-- [ ] T001: Create src/scaffolding/ module structure (\_\_init\_\_.py, cli.py, utils/)
-- [ ] T002: Implement console script entrypoint (django-core-scaffold) in pyproject.toml [console_scripts] (FR-001)
-- [ ] T003: Implement Django management command (python manage.py scaffold) in scaffolding/management/commands/scaffold.py (FR-002)
-- [ ] T004: Implement Click-based command tree with subcommands: app, init, list-templates, validate (FR-003, FR-004)
-- [ ] T005: [P] Implement global CLI options: --no-interactive, --verbose, --help, --version (FR-006, FR-045, FR-046)
-- [ ] T006: [P] Implement exit code handling: 0=success, 1=user error, 2=system error, 3=validation failure, 4=template not found, 5=conflict (CLI contract)
-- [ ] T007: [P] Add CLI error message formatting utilities (clear, actionable error messages per FR-043)
-- [ ] T008: Wire CLI commands to placeholder backend functions (returns "Not implemented" for now, replaced in later WPs)
+- [X] T001: Create src/scaffolding/ module structure (\_\_init\_\_.py, cli.py, utils/)
+- [X] T002: Implement console script entrypoint (django-core-scaffold) in pyproject.toml [console_scripts] (FR-001)
+- [X] T003: Implement Django management command (python manage.py scaffold) in scaffolding/management/commands/scaffold.py (FR-002)
+- [X] T004: Implement Click-based command tree with subcommands: app, init, list-templates, validate (FR-003, FR-004)
+- [X] T005: [P] Implement global CLI options: --no-interactive, --verbose, --help, --version (FR-006, FR-045, FR-046)
+- [X] T006: [P] Implement exit code handling: 0=success, 1=user error, 2=system error, 3=validation failure, 4=template not found, 5=conflict (CLI contract)
+- [X] T007: [P] Add CLI error message formatting utilities (clear, actionable error messages per FR-043)
+- [X] T008: Wire CLI commands to placeholder backend functions (returns "Not implemented" for now, replaced in later WPs)
 
 **Implementation Sketch**:
 ```python
