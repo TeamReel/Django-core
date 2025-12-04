@@ -60,14 +60,14 @@ All subtasks are listed here for quick reference. See work package sections belo
 | T015 | Implement template conflict detection (custom overrides Core with warning) | WP02 | P0 | [P] |
 | T016 | Implement template validation (manifest schema compliance) | WP02 | P0 | [P] |
 | T017 | Add unit tests for TemplateRegistry with mock filesystem | WP02 | P0 | [P] |
-| T018 | Set up Jinja2 environment with custom configuration | WP03 | P1 | No |
-| T019 | Implement variable substitution engine (app_name, project_name, etc.) | WP03 | P1 | No |
-| T020 | Implement built-in Jinja2 variables (timestamp, author, python_version) | WP03 | P1 | [P] |
-| T021 | Implement template file processor (handles .j2 suffix, preserves non-templates) | WP03 | P1 | [P] |
-| T022 | Implement cross-platform path handling (Windows, macOS, Linux) | WP03 | P1 | [P] |
-| T023 | Implement template inheritance file merging | WP03 | P1 | No |
-| T024 | Add Jinja2 rendering error handling with line number reporting | WP03 | P1 | [P] |
-| T025 | Add unit tests for template rendering with golden files | WP03 | P1 | [P] |
+| T018 | Set up Jinja2 environment with custom configuration | WP03 | P1 | ✅ |
+| T019 | Implement variable substitution engine (app_name, project_name, etc.) | WP03 | P1 | ✅ |
+| T020 | Implement built-in Jinja2 variables (timestamp, author, python_version) | WP03 | P1 | ✅ |
+| T021 | Implement template file processor (handles .j2 suffix, preserves non-templates) | WP03 | P1 | ✅ |
+| T022 | Implement cross-platform path handling (Windows, macOS, Linux) | WP03 | P1 | ✅ |
+| T023 | Implement template inheritance file merging | WP03 | P1 | ✅ |
+| T024 | Add Jinja2 rendering error handling with line number reporting | WP03 | P1 | ✅ |
+| T025 | Add unit tests for template rendering with golden files | WP03 | P1 | ✅ |
 | T026 | Implement staging directory creation (mkdtemp) | WP04 | P1 | No |
 | T027 | Implement file builder (writes rendered templates to staging) | WP04 | P1 | No |
 | T028 | Implement atomic move operation (staging → target with rollback) | WP04 | P1 | No |
@@ -297,14 +297,14 @@ class TemplateRegistry:
 - **Principle VI (Performance & Reliability)**: Graceful degradation on template errors with line number reporting.
 
 **Subtasks**:
-- [ ] T018: Set up Jinja2 environment with custom configuration (autoescape=False for Python code, strict undefined variables)
-- [ ] T019: Implement variable substitution engine (replaces {{ app_name }}, {{ project_name }}, etc. from CLI inputs, FR-011)
-- [ ] T020: [P] Implement built-in Jinja2 variables: timestamp, author (from git config), python_version, core_version
-- [ ] T021: [P] Implement template file processor (handles .j2 suffix, preserves non-template files unchanged, binary files copied)
-- [ ] T022: [P] Implement cross-platform path handling (use pathlib, normalize Windows backslashes, preserve Unix permissions)
-- [ ] T023: Implement template inheritance file merging (base files + override files = merged output)
-- [ ] T024: [P] Add Jinja2 rendering error handling with line number reporting (clear error messages for syntax errors, undefined variables)
-- [ ] T025: [P] Add unit tests for template rendering with golden files (compare rendered output to expected fixtures, test edge cases)
+- [X] T018: Set up Jinja2 environment with custom configuration (autoescape=False for Python code, strict undefined variables)
+- [X] T019: Implement variable substitution engine (replaces {{ app_name }}, {{ project_name }}, etc. from CLI inputs, FR-011)
+- [X] T020: [P] Implement built-in Jinja2 variables: timestamp, author (from git config), python_version, core_version
+- [X] T021: [P] Implement template file processor (handles .j2 suffix, preserves non-template files unchanged, binary files copied)
+- [X] T022: [P] Implement cross-platform path handling (use pathlib, normalize Windows backslashes, preserve Unix permissions)
+- [X] T023: Implement template inheritance file merging (base files + override files = merged output)
+- [X] T024: [P] Add Jinja2 rendering error handling with line number reporting (clear error messages for syntax errors, undefined variables)
+- [X] T025: [P] Add unit tests for template rendering with golden files (compare rendered output to expected fixtures, test edge cases)
 
 **Implementation Sketch**:
 ```python
