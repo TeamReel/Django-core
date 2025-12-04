@@ -12,10 +12,10 @@ subtasks:
   - "T034"
 title: "Code Generation & Atomic Rollback"
 phase: "Phase 2 - Core Functionality"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "GitHub Copilot (Claude Sonnet 4.5)"
+agent: "claude"
+shell_pid: "46272"
 review_status: ""
 reviewed_by: ""
 history:
@@ -24,6 +24,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-04T19:15:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "46272"
+    action: "Started WP04 implementation: Code Generation & Atomic Rollback"
 ---
 
 # Work Package Prompt: WP04 – Code Generation & Atomic Rollback
