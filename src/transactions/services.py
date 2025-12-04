@@ -263,13 +263,11 @@ def get_organization_balance(organization_id: int, use_cache: bool = True) -> di
     """
     cache_key = f"balance:org:{organization_id}"
     start_time = time.time()
-    cache_hit = False
 
     # Try to get from cache
     if use_cache:
         cached = cache.get(cache_key)
         if cached:
-            cache_hit = True
             cache_hits_total.labels(cache_key_prefix="balance:org").inc()
 
             latency = time.time() - start_time

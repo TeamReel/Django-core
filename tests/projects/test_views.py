@@ -421,7 +421,7 @@ class TestTopLevelProjectRoutes:
 
     def test_list_projects_top_level(self, authenticated_client, project):
         """Test listing projects via top-level route."""
-        url = reverse("project-list-top-level")
+        url = reverse("api_v1:project-list")
         response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
@@ -429,7 +429,7 @@ class TestTopLevelProjectRoutes:
 
     def test_retrieve_project_top_level(self, authenticated_client, project):
         """Test retrieving project via top-level route."""
-        url = reverse("project-detail-top-level", kwargs={"id": project.id})
+        url = reverse("api_v1:project-detail", kwargs={"id": project.id})
         response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
@@ -454,7 +454,7 @@ class TestTopLevelProjectRoutes:
 
         # user1 should only see org1 projects
         api_client.force_authenticate(user=user1)
-        url = reverse("project-list-top-level")
+        url = reverse("api_v1:project-list")
         response = api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK

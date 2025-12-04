@@ -3,11 +3,12 @@
 Tests that organization quiet hours policies properly limit notifications.
 """
 
-import pytest
-from unittest.mock import patch
 from datetime import datetime
-from contextual_notifications.services import EventService
+from unittest.mock import patch
+
+import pytest
 from contextual_notifications.models import RoutingRule
+from contextual_notifications.services import EventService
 
 
 @pytest.mark.django_db

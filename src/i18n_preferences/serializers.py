@@ -1,6 +1,7 @@
 """Serializers for i18n preference API endpoints."""
 
 from rest_framework import serializers
+
 from .validators import validate_language_code, validate_locale_code, validate_timezone
 
 

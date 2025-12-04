@@ -7,14 +7,12 @@ standard fallback chain for anonymous users.
 """
 
 import pytest
-import pytz
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone, translation
-
-from organisations.models import Organisation
-from settings.models import Setting, SettingType, ScopeType
 from i18n_preferences.middleware import PreferenceLocaleMiddleware, PreferenceTimezoneMiddleware
+from organisations.models import Organisation
+from settings.models import ScopeType, Setting, SettingType
 
 User = get_user_model()
 

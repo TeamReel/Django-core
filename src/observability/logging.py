@@ -5,12 +5,10 @@ import json
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Any
-
 
 # T016: Correlation ID contextvar
 correlation_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
-    'correlation_id', 
+    'correlation_id',
     default=None
 )
 
@@ -29,7 +27,7 @@ def set_correlation_id(correlation_id: str) -> None:
 class JSONFormatter(logging.Formatter):
     """
     JSON formatter for structured logging (FR-006).
-    
+
     Emits log records as JSON with required fields:
     - timestamp (ISO 8601)
     - severity
@@ -37,12 +35,12 @@ class JSONFormatter(logging.Formatter):
     - correlation_id
     - context
     """
-    
+
     def format(self, record: logging.LogRecord) -> str:
         """Format log record as JSON with required fields."""
         log_data = {
             "timestamp": datetime.fromtimestamp(
-                record.created, 
+                record.created,
                 tz=timezone.utc
             ).isoformat(),
             "severity": record.levelname,
@@ -54,7 +52,7 @@ class JSONFormatter(logging.Formatter):
             "line": record.lineno,
             "context": getattr(record, 'context', {}),
         }
-        
+
         # Add exception info if present
         if record.exc_info:
             log_data["exception"] = {
@@ -62,7 +60,7 @@ class JSONFormatter(logging.Formatter):
                 "message": str(record.exc_info[1]),
                 "traceback": self.formatException(record.exc_info)
             }
-        
+
         return json.dumps(log_data, default=str)
 
 
@@ -70,26 +68,26 @@ class JSONFormatter(logging.Formatter):
 class PIIRedactionFilter(logging.Filter):
     """
     Filter to redact PII fields from log records (FR-007).
-    
-    Redacts sensitive fields: password, secret, token, api_key, email, 
+
+    Redacts sensitive fields: password, secret, token, api_key, email,
     ssn, phone_number, credit_card, date_of_birth.
     """
-    
+
     REDACTED_FIELDS = {
         'password', 'secret', 'token', 'api_key', 'private_key',
         'email', 'ssn', 'phone_number', 'credit_card', 'date_of_birth'
     }
-    
+
     def filter(self, record: logging.LogRecord) -> bool:
         """Redact PII from record context and exception details."""
         context = getattr(record, 'context', {})
         if context:
             record.context = self._redact_dict(context)
-        
+
         # Redact message if contains email patterns
         if hasattr(record, 'msg'):
             record.msg = self._redact_string(str(record.msg))
-        
+
         if record.exc_info and record.exc_info[1]:
             # Redact exception message if contains PII patterns
             exc_msg = self._redact_string(str(record.exc_info[1]))
@@ -98,15 +96,15 @@ class PIIRedactionFilter(logging.Filter):
                 type(record.exc_info[1])(exc_msg),
                 record.exc_info[2]
             )
-        
+
         return True
-    
+
     def _redact_dict(self, data: dict) -> dict:
         """Recursively redact sensitive fields in dictionary."""
         redacted = {}
         for key, value in data.items():
             # Check exact match or substring patterns
-            if (key.lower() in self.REDACTED_FIELDS or 
+            if (key.lower() in self.REDACTED_FIELDS or
                 any(pattern in key.lower() for pattern in ['_token', '_secret', '_key', '_password'])):
                 redacted[key] = "[REDACTED]"
             elif isinstance(value, dict):
@@ -123,7 +121,7 @@ class PIIRedactionFilter(logging.Filter):
                 else:
                     redacted[key] = value
         return redacted
-    
+
     def _redact_string(self, text: str) -> str:
         """Redact email patterns and potential tokens from string."""
         # Redact email addresses
@@ -150,7 +148,7 @@ class PIIRedactionFilter(logging.Filter):
 # T019: CorrelationIDFilter
 class CorrelationIDFilter(logging.Filter):
     """Filter to inject correlation ID into log records (FR-008)."""
-    
+
     def filter(self, record: logging.LogRecord) -> bool:
         """Add correlation ID from contextvar to record."""
         record.correlation_id = get_correlation_id()
@@ -161,7 +159,7 @@ class CorrelationIDFilter(logging.Filter):
 def redact_sql_params(sql: str) -> str:
     """
     Strip parameters from SQL queries for FR-015.
-    
+
     Replaces numeric and string literals with placeholders.
     """
     # Replace numeric literals: WHERE id=123 → WHERE id=?

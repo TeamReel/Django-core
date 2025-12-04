@@ -1,8 +1,8 @@
 """Tests for PreferenceService."""
 
 import pytest
-from contextual_notifications.services.preference_service import PreferenceService
 from contextual_notifications.models import NotificationPreference
+from contextual_notifications.services.preference_service import PreferenceService
 
 
 @pytest.mark.django_db

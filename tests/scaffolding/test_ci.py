@@ -11,12 +11,10 @@ is complete in WP04-WP06.
 import os
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
-
-from scaffolding.cli import scaffold, EXIT_SYSTEM_ERROR
+from scaffolding.cli import EXIT_SYSTEM_ERROR, scaffold
 
 
 @pytest.fixture
@@ -36,14 +34,14 @@ def runner():
 def ci_environment():
     """Mock CI environment variables."""
     original_env = os.environ.copy()
-    
+
     # Set common CI environment variables
     os.environ['CI'] = 'true'
     os.environ['GITHUB_ACTIONS'] = 'true'
     os.environ['CONTINUOUS_INTEGRATION'] = 'true'
-    
+
     yield
-    
+
     # Restore original environment
     os.environ.clear()
     os.environ.update(original_env)
@@ -64,7 +62,7 @@ class TestCICDNonInteractiveMode:
             "app",
             "ci_test_app",
         ])
-        
+
         # Should not hang waiting for input
         # Currently returns SYSTEM_ERROR (placeholder)
         assert result.exit_code == EXIT_SYSTEM_ERROR
@@ -77,7 +75,7 @@ class TestCICDNonInteractiveMode:
             "app",
             "test_app",
         ])
-        
+
         assert result.exit_code == EXIT_SYSTEM_ERROR
 
 

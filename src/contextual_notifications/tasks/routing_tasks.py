@@ -9,14 +9,7 @@ from prometheus_client import Counter, Histogram
 
 # Avoid circular import: services imports event_service, which imports this module
 if TYPE_CHECKING:
-    from ..services import (
-        AuditService,
-        NotificationHandoffService,
-        PolicyService,
-        PreferenceService,
-        RoutingService,
-        SuppressionService,
-    )
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +73,6 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
     # Late imports to avoid circular dependency
     from ..services.audit_service import AuditService
     from ..services.notification_handoff_service import NotificationHandoffService
-    from ..services.policy_service import PolicyService
     from ..services.routing_service import RoutingService
 
     event_type = event_dict.get("type", "unknown")

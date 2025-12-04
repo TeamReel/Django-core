@@ -1,8 +1,8 @@
 """Policy service for organisation-level notification policies including quiet hours."""
 
 import logging
-from datetime import datetime, time, timedelta
-from typing import Any, Optional
+from datetime import datetime, timedelta
+from typing import Optional
 
 import pytz
 from django.core.cache import cache
@@ -73,7 +73,7 @@ class PolicyService:
                 policy = OrganisationNotificationPolicy.objects.select_related(
                     "organisation"
                 ).get(organisation_id=org_id)
-                
+
                 logger.debug(
                     "Retrieved policy for org",
                     extra={
@@ -81,7 +81,7 @@ class PolicyService:
                         "quiet_hours_enabled": policy.quiet_hours_enabled,
                     },
                 )
-                
+
                 return policy
             except OrganisationNotificationPolicy.DoesNotExist:
                 logger.debug(
@@ -205,7 +205,7 @@ class PolicyService:
         try:
             # Use atomic Redis INCR operation to avoid race conditions
             current_count = cache.get(redis_key)
-            
+
             if current_count is None:
                 # First notification in this minute bucket - initialize with 1
                 cache.set(redis_key, 1, timeout=60)
@@ -219,7 +219,7 @@ class PolicyService:
                     },
                 )
                 return True
-            
+
             elif current_count >= policy.quiet_hours_rate_limit:
                 # Already at or over limit - reject immediately
                 rate_limited_total.labels(org_id=policy.organisation_id).inc()
@@ -233,12 +233,12 @@ class PolicyService:
                     },
                 )
                 return False
-            
+
             else:
                 # Increment atomically and check result
                 try:
                     new_count = cache.incr(redis_key)
-                    
+
                     if new_count > policy.quiet_hours_rate_limit:
                         # Raced past limit - decrement back but still reject this notification
                         cache.decr(redis_key)
@@ -253,7 +253,7 @@ class PolicyService:
                             },
                         )
                         return False
-                    
+
                     logger.debug(
                         "Rate limit check passed",
                         extra={
@@ -264,7 +264,7 @@ class PolicyService:
                         },
                     )
                     return True
-                    
+
                 except ValueError:
                     # Key doesn't exist (deleted between get and incr) - initialize
                     cache.set(redis_key, 1, timeout=60)
@@ -370,7 +370,7 @@ class PolicyService:
 
         # Calculate time until quiet hours end
         end_time = policy.quiet_hours_end
-        
+
         # Create datetime for end time today
         end_datetime = local_time.replace(
             hour=end_time.hour,

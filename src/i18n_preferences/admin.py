@@ -2,7 +2,8 @@
 
 from django.contrib import admin
 from django.utils.html import format_html
-from settings.models import Setting, ScopeType
+from settings.models import ScopeType, Setting
+
 from .services import PreferenceResolutionService
 
 

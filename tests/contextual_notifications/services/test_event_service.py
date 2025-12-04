@@ -3,10 +3,11 @@
 Tests the event emission API for contextual notifications.
 """
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from contextual_notifications.services.event_service import EventService
 from contextual_notifications.exceptions import ValidationError
+from contextual_notifications.services.event_service import EventService
 
 
 @pytest.fixture

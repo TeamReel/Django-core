@@ -15,8 +15,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
-from scaffolding.templates.registry import TemplateRegistry
 from scaffolding.validation.runner import ValidationRunner
 
 

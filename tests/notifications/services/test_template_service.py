@@ -2,7 +2,6 @@
 
 import pytest
 from django.template import TemplateDoesNotExist
-
 from notifications.services.template_service import TemplateService
 
 

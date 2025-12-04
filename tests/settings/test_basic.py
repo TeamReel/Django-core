@@ -9,7 +9,6 @@ from django.core.cache import cache
 from django.test import TestCase
 from organisations.models import Organisation
 from projects.models import Project
-
 from settings.api import get_flag, get_setting, set_flag, set_setting
 from settings.cache import generate_cache_key, get_cached_value
 from settings.models import FeatureFlag, ScopeType, Setting, SettingType

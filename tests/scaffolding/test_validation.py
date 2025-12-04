@@ -8,10 +8,9 @@ with CodeGenerator for --validate and --force flags.
 import json
 import subprocess
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
-
 from scaffolding.generation.exceptions import ValidationFailure
 from scaffolding.generation.generator import CodeGenerator
 from scaffolding.validation.formatter import format_validation_report

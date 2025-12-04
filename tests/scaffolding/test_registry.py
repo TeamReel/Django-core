@@ -6,15 +6,12 @@ and conflict detection with mock filesystem.
 """
 
 import logging
-from pathlib import Path
 
 import pytest
 import yaml
-
-from scaffolding.templates.loaders import FilesystemLoader, PluginLoader
+from scaffolding.templates.loaders import FilesystemLoader
 from scaffolding.templates.manifest import TemplateManifest
 from scaffolding.templates.registry import TemplateRegistry
-
 
 # Fixtures
 

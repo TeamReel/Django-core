@@ -45,7 +45,7 @@ class RoutingRuleAdmin(admin.ModelAdmin):
     ]
     date_hierarchy = "created_at"
     ordering = ["-priority", "event_type"]
-    
+
     fieldsets = (
         (
             "Rule Configuration",
@@ -127,7 +127,7 @@ class NotificationPreferenceAdmin(admin.ModelAdmin):
     ]
     date_hierarchy = "updated_at"
     ordering = ["user", "event_type", "channel"]
-    
+
     fieldsets = (
         (
             "Preference Configuration",
@@ -178,7 +178,7 @@ class OrganisationNotificationPolicyAdmin(admin.ModelAdmin):
     ]
     date_hierarchy = "updated_at"
     ordering = ["organisation"]
-    
+
     fieldsets = (
         (
             "Organisation",

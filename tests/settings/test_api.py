@@ -15,7 +15,6 @@ from django.core.cache import cache
 from django.test import TestCase, override_settings
 from organisations.models import Organisation
 from projects.models import Project
-
 from settings.api import get_flag, get_setting, set_flag, set_setting
 from settings.cache import (
     generate_cache_key,
@@ -49,10 +48,10 @@ class TestScopeHierarchyResolution(SettingsAPITestCase):
     def test_global_scope_only(self):
         """Test 1: Global flag/setting with no project or org specified."""
         # Create global flag and setting
-        flag = FeatureFlag.objects.create(
+        FeatureFlag.objects.create(
             key="global_flag", enabled=True, scope_type=ScopeType.GLOBAL
         )
-        setting = Setting.objects.create(
+        Setting.objects.create(
             key="global_setting",
             value="global_value",
             value_type=SettingType.STRING,
@@ -66,10 +65,10 @@ class TestScopeHierarchyResolution(SettingsAPITestCase):
 
     def test_organisation_scope_only(self):
         """Test 2: Org flag/setting accessed at org level."""
-        flag = FeatureFlag.objects.create(
+        FeatureFlag.objects.create(
             key="org_flag", enabled=True, scope_type=ScopeType.ORGANISATION, organisation=self.org
         )
-        setting = Setting.objects.create(
+        Setting.objects.create(
             key="org_setting",
             value="org_value",
             value_type=SettingType.STRING,
@@ -84,14 +83,14 @@ class TestScopeHierarchyResolution(SettingsAPITestCase):
 
     def test_project_scope_only(self):
         """Test 3: Project flag/setting accessed at project level."""
-        flag = FeatureFlag.objects.create(
+        FeatureFlag.objects.create(
             key="project_flag",
             enabled=True,
             scope_type=ScopeType.PROJECT,
             organisation=self.org,
             project=self.project,
         )
-        setting = Setting.objects.create(
+        Setting.objects.create(
             key="project_setting",
             value="project_value",
             value_type=SettingType.STRING,

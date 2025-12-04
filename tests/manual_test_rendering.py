@@ -4,8 +4,8 @@ Run this to verify the rendering engine works before full pytest.
 """
 
 import sys
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -47,10 +47,10 @@ def test_simple_render():
     with tempfile.TemporaryDirectory() as tmpdir:
         template_dir = Path(tmpdir)
         (template_dir / "test.py.j2").write_text('app = "{{ app_name }}"')
-        
+
         renderer = TemplateRenderer(template_dir, {"app_name": "payments"})
         output = renderer.render("test.py.j2")
-        
+
         assert output == 'app = "payments"'
         print(f"✓ Rendered: {output}")
 
@@ -62,13 +62,13 @@ def test_directory_render():
         template_dir = Path(tmpdir)
         output_dir = Path(tmpdir) / "output"
         output_dir.mkdir()
-        
+
         (template_dir / "models.py.j2").write_text("# {{ app_name }} models")
         (template_dir / "views.py.j2").write_text("# {{ app_name }} views")
-        
+
         renderer = TemplateRenderer(template_dir, {"app_name": "payments"})
         created_files = renderer.render_directory(output_dir)
-        
+
         assert len(created_files) == 2
         assert (output_dir / "models.py").exists()
         assert (output_dir / "views.py").exists()
@@ -80,13 +80,13 @@ if __name__ == "__main__":
     print("=" * 60)
     print("Manual Rendering Engine Test")
     print("=" * 60)
-    
+
     try:
         test_builtin_variables()
         test_jinja_env()
         test_simple_render()
         test_directory_render()
-        
+
         print("\n" + "=" * 60)
         print("✓ ALL TESTS PASSED")
         print("=" * 60)

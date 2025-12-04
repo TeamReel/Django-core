@@ -1,12 +1,11 @@
 """DRF viewsets for routing decision logs (B09 audit events)."""
 
+from audit.models import AuditEvent
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
-
-from audit.models import AuditEvent
 
 from ..serializers.routing_serializers import RoutingDecisionLogSerializer
 

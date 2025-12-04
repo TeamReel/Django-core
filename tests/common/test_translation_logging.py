@@ -5,17 +5,14 @@ Verifies structured logging functions for translation events, fallback warnings,
 and error handling.
 """
 
-import logging
-from unittest.mock import MagicMock, patch
-
-import pytest
-from django.test import TestCase
+from unittest.mock import patch
 
 from common.translation_logging import (
     log_translation_error,
     log_translation_event,
     log_translation_fallback,
 )
+from django.test import TestCase
 
 
 class TranslationLoggingTest(TestCase):
@@ -162,6 +159,7 @@ class TranslationLoggingTest(TestCase):
         """Verify logger uses django.translation namespace."""
         # Import the actual module (not mocked) to check logger initialization
         import importlib
+
         import common.translation_logging as tl_module
 
         # Reload to get actual logger instance

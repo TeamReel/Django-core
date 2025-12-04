@@ -12,9 +12,8 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
-from scaffolding.templates.registry import TemplateRegistry
 from scaffolding.rendering.engine import TemplateRenderer
+from scaffolding.templates.registry import TemplateRegistry
 
 
 @pytest.fixture
@@ -72,10 +71,10 @@ class TestTemplateRenderer:
         """Test rendering conditional template logic."""
         renderer = TemplateRenderer()
         template_str = "{% if show %}Visible{% endif %}"
-        
+
         result_true = renderer.render(template_str, {"show": True})
         assert result_true == "Visible"
-        
+
         result_false = renderer.render(template_str, {"show": False})
         assert result_false == ""
 
@@ -83,7 +82,7 @@ class TestTemplateRenderer:
         """Test rendering loop template logic."""
         renderer = TemplateRenderer()
         template_str = "{% for item in items %}{{ item }}{% endfor %}"
-        
+
         result = renderer.render(template_str, {"items": ["a", "b", "c"]})
         assert result == "abc"
 

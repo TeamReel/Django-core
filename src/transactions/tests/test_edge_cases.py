@@ -15,8 +15,6 @@ from decimal import Decimal
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from organisations.models import Organisation
-from projects.models import Project
 
 from transactions.exceptions import DuplicateIdempotencyKeyError, InsufficientBalanceError
 from transactions.models import (

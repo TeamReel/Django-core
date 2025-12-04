@@ -9,7 +9,6 @@ from unittest.mock import Mock, patch
 from django.contrib.admin import site
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
-
 from settings.admin import FeatureFlagAdmin, SettingAdmin
 from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 

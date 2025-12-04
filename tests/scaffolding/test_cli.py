@@ -5,18 +5,17 @@ Tests command parsing, exit codes, error handling, and CLI interface.
 Uses Click's test infrastructure for testing the CLI.
 """
 
-from click.testing import CliRunner
 import pytest
-
+from click.testing import CliRunner
 from scaffolding.cli import (
-    scaffold,
-    main,
-    EXIT_SUCCESS,
-    EXIT_USER_ERROR,
-    EXIT_SYSTEM_ERROR,
-    EXIT_VALIDATION_FAILURE,
-    EXIT_TEMPLATE_NOT_FOUND,
     EXIT_CONFLICT,
+    EXIT_SUCCESS,
+    EXIT_SYSTEM_ERROR,
+    EXIT_TEMPLATE_NOT_FOUND,
+    EXIT_USER_ERROR,
+    EXIT_VALIDATION_FAILURE,
+    main,
+    scaffold,
 )
 
 

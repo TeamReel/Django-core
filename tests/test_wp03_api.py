@@ -101,7 +101,7 @@ class TestProjectListSerializer:
     def test_list_serializer_fields(self, api_client, admin_user, org, project):
         """Test list serializer includes correct fields."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-list")
+        url = reverse("api_v1:project-list")
         response = api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
@@ -128,7 +128,7 @@ class TestProjectDetailSerializer:
     def test_detail_serializer_includes_creator(self, api_client, admin_user, project):
         """Test detail serializer includes creator with nested fields."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-detail", kwargs={"id": project.id})
+        url = reverse("api_v1:project-detail", kwargs={"id": project.id})
         response = api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
@@ -143,7 +143,7 @@ class TestProjectDetailSerializer:
     def test_name_validation_too_short(self, api_client, admin_user, org):
         """Test name validation rejects empty strings."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("organisation-projects-list", kwargs={"organisation_id": org.id})
+        url = reverse("api_v1:organisation-projects-list", kwargs={"organisation_id": org.id})
         response = api_client.post(url, {"name": "   ", "description": "Test"})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -152,7 +152,7 @@ class TestProjectDetailSerializer:
     def test_name_validation_too_long(self, api_client, admin_user, org):
         """Test name validation rejects strings over 200 characters."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("organisation-projects-list", kwargs={"organisation_id": org.id})
+        url = reverse("api_v1:organisation-projects-list", kwargs={"organisation_id": org.id})
         response = api_client.post(url, {"name": "x" * 201, "description": "Test"})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -161,7 +161,7 @@ class TestProjectDetailSerializer:
     def test_description_validation_too_long(self, api_client, admin_user, org):
         """Test description validation rejects strings over 2000 characters."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("organisation-projects-list", kwargs={"organisation_id": org.id})
+        url = reverse("api_v1:organisation-projects-list", kwargs={"organisation_id": org.id})
         response = api_client.post(url, {"name": "Valid Name", "description": "x" * 2001})
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -170,7 +170,7 @@ class TestProjectDetailSerializer:
     def test_case_insensitive_name_uniqueness(self, api_client, admin_user, org, project):
         """Test case-insensitive name uniqueness within organisation."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("organisation-projects-list", kwargs={"organisation_id": org.id})
+        url = reverse("api_v1:organisation-projects-list", kwargs={"organisation_id": org.id})
         # Try to create project with same name but different case
         response = api_client.post(url, {"name": "TEST PROJECT", "description": "Test"})
 
@@ -185,7 +185,7 @@ class TestProjectViewSet:
     def test_create_project(self, api_client, admin_user, org):
         """Test creating a project via API."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("organisation-projects-list", kwargs={"organisation_id": org.id})
+        url = reverse("api_v1:organisation-projects-list", kwargs={"organisation_id": org.id})
         data = {"name": "New Project", "description": "New project description"}
 
         response = api_client.post(url, data)
@@ -201,7 +201,7 @@ class TestProjectViewSet:
         """Test creating a project requires organisation_id in nested route."""
         api_client.force_authenticate(user=admin_user)
         # This should fail as top-level create is not supported
-        url = reverse("project-list")
+        url = reverse("api_v1:project-list")
         data = {"name": "New Project", "description": "Test"}
 
         response = api_client.post(url, data)
@@ -212,7 +212,7 @@ class TestProjectViewSet:
     def test_list_projects_top_level(self, api_client, admin_user, project):
         """Test listing projects via top-level route."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-list")
+        url = reverse("api_v1:project-list")
 
         response = api_client.get(url)
 
@@ -224,7 +224,7 @@ class TestProjectViewSet:
     def test_list_projects_nested(self, api_client, admin_user, org, project):
         """Test listing projects via nested route."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("organisation-projects-list", kwargs={"organisation_id": org.id})
+        url = reverse("api_v1:organisation-projects-list", kwargs={"organisation_id": org.id})
 
         response = api_client.get(url)
 
@@ -235,7 +235,7 @@ class TestProjectViewSet:
     def test_retrieve_project(self, api_client, admin_user, project):
         """Test retrieving a single project."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-detail", kwargs={"id": project.id})
+        url = reverse("api_v1:project-detail", kwargs={"id": project.id})
 
         response = api_client.get(url)
 
@@ -247,7 +247,7 @@ class TestProjectViewSet:
     def test_update_project(self, api_client, admin_user, project):
         """Test updating a project."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-detail", kwargs={"id": project.id})
+        url = reverse("api_v1:project-detail", kwargs={"id": project.id})
         original_slug = project.slug
         data = {"name": "Updated Name", "description": "Updated description"}
 
@@ -263,7 +263,7 @@ class TestProjectViewSet:
     def test_archive_project(self, api_client, admin_user, project):
         """Test archiving a project."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-archive", kwargs={"id": project.id})
+        url = reverse("api_v1:project-archive", kwargs={"id": project.id})
 
         response = api_client.post(url)
 
@@ -279,7 +279,7 @@ class TestProjectViewSet:
         project.archive()
 
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-restore", kwargs={"id": project.id})
+        url = reverse("api_v1:project-restore", kwargs={"id": project.id})
 
         response = api_client.post(url)
 
@@ -295,7 +295,7 @@ class TestProjectViewSet:
         project.archive()
 
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-archive", kwargs={"id": project.id})
+        url = reverse("api_v1:project-archive", kwargs={"id": project.id})
 
         response = api_client.post(url)
 
@@ -306,7 +306,7 @@ class TestProjectViewSet:
         """Test restoring an already active project returns 400."""
         # Project is already active (default state)
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-restore", kwargs={"id": project.id})
+        url = reverse("api_v1:project-restore", kwargs={"id": project.id})
 
         response = api_client.post(url)
 
@@ -330,7 +330,7 @@ class TestProjectPagination:
             )
 
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-list")
+        url = reverse("api_v1:project-list")
         response = api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
@@ -349,7 +349,7 @@ class TestProjectPagination:
             )
 
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-list")
+        url = reverse("api_v1:project-list")
         response = api_client.get(url, {"page_size": 10})
 
         assert response.status_code == status.HTTP_200_OK
@@ -378,7 +378,7 @@ class TestProjectQueryFilters:
         archived.archive()
 
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-list")
+        url = reverse("api_v1:project-list")
 
         # Without include_archived, only active projects
         response = api_client.get(url)
@@ -405,7 +405,7 @@ class TestProjectQueryFilters:
         )
 
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-list")
+        url = reverse("api_v1:project-list")
 
         # Search for "django"
         response = api_client.get(url, {"search": "django"})
@@ -420,7 +420,7 @@ class TestProjectPermissions:
     def test_member_can_read(self, api_client, member_user, project):
         """Test organisation member can read projects."""
         api_client.force_authenticate(user=member_user)
-        url = reverse("project-detail", kwargs={"id": project.id})
+        url = reverse("api_v1:project-detail", kwargs={"id": project.id})
 
         response = api_client.get(url)
 
@@ -429,7 +429,7 @@ class TestProjectPermissions:
     def test_member_cannot_create(self, api_client, member_user, org):
         """Test organisation member cannot create projects."""
         api_client.force_authenticate(user=member_user)
-        url = reverse("organisation-projects-list", kwargs={"organisation_id": org.id})
+        url = reverse("api_v1:organisation-projects-list", kwargs={"organisation_id": org.id})
         data = {"name": "New Project", "description": "Test"}
 
         response = api_client.post(url, data)
@@ -439,7 +439,7 @@ class TestProjectPermissions:
     def test_member_cannot_update(self, api_client, member_user, project):
         """Test organisation member cannot update projects."""
         api_client.force_authenticate(user=member_user)
-        url = reverse("project-detail", kwargs={"id": project.id})
+        url = reverse("api_v1:project-detail", kwargs={"id": project.id})
         data = {"name": "Updated Name"}
 
         response = api_client.patch(url, data)
@@ -449,7 +449,7 @@ class TestProjectPermissions:
     def test_admin_can_create(self, api_client, admin_user, org):
         """Test organisation admin can create projects."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("organisation-projects-list", kwargs={"organisation_id": org.id})
+        url = reverse("api_v1:organisation-projects-list", kwargs={"organisation_id": org.id})
         data = {"name": "New Project", "description": "Test"}
 
         response = api_client.post(url, data)
@@ -459,7 +459,7 @@ class TestProjectPermissions:
     def test_admin_can_update(self, api_client, admin_user, project):
         """Test organisation admin can update projects."""
         api_client.force_authenticate(user=admin_user)
-        url = reverse("project-detail", kwargs={"id": project.id})
+        url = reverse("api_v1:project-detail", kwargs={"id": project.id})
         data = {"name": "Updated Name"}
 
         response = api_client.patch(url, data)
@@ -468,7 +468,7 @@ class TestProjectPermissions:
 
     def test_unauthenticated_cannot_access(self, api_client, project):
         """Test unauthenticated users cannot access projects."""
-        url = reverse("project-detail", kwargs={"id": project.id})
+        url = reverse("api_v1:project-detail", kwargs={"id": project.id})
 
         response = api_client.get(url)
 
@@ -487,7 +487,7 @@ class TestProjectPermissions:
         api_client.force_authenticate(user=other_user)
         # Use the nested list route which checks organisation membership
         url = reverse(
-            "organisation-projects-list",
+            "api_v1:organisation-projects-list",
             kwargs={"organisation_id": org.id},
         )
 

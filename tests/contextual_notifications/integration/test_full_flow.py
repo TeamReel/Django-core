@@ -3,10 +3,11 @@
 Tests the complete flow from event emission to B16 handoff.
 """
 
-import pytest
 from unittest.mock import patch
-from contextual_notifications.services import EventService
+
+import pytest
 from contextual_notifications.models import RoutingRule
+from contextual_notifications.services import EventService
 
 
 @pytest.mark.django_db

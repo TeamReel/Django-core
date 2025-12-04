@@ -5,9 +5,8 @@ Provides spinners, progress bars, and status messages for file generation,
 validation, and other operations. Only shows in interactive mode.
 """
 
-import time
 from contextlib import contextmanager
-from typing import Iterator, Optional
+from typing import Iterator
 
 import click
 

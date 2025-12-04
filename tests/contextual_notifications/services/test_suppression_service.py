@@ -1,7 +1,8 @@
 """Tests for SuppressionService."""
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from contextual_notifications.services.suppression_service import SuppressionService
 
 

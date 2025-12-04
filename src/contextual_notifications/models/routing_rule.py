@@ -6,9 +6,7 @@ from django.db import models
 from django.db.models import CheckConstraint, Index, Q, UniqueConstraint
 
 if TYPE_CHECKING:
-    from organisations.models import Organisation
-    from projects.models import Project
-    from accounts.models import User
+    pass
 
 from .managers import RoutingRuleManager
 
@@ -118,12 +116,12 @@ class RoutingRule(models.Model):
         verbose_name = "Routing Rule"
         verbose_name_plural = "Routing Rules"
         ordering = ["-priority", "event_type"]
-        
+
         indexes = [
             Index(fields=["event_type", "organisation"]),
             Index(fields=["event_type", "scope"]),
         ]
-        
+
         constraints = [
             # Scope consistency checks
             CheckConstraint(

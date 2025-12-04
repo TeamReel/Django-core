@@ -9,8 +9,6 @@ from typing import Dict, List, Optional
 
 import click
 
-from scaffolding.ux.detection import is_interactive
-
 
 def prompt_for_template(
     available_templates: List[str],

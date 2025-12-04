@@ -11,7 +11,6 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from organisations.models import Organisation
 from projects.models import Project
-
 from settings.api import get_flag, get_setting
 from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 

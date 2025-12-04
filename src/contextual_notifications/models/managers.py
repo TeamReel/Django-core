@@ -6,7 +6,6 @@ from django.db import models
 
 if TYPE_CHECKING:
     from .routing_rule import RoutingRule
-    from .notification_preference import NotificationPreference
 
 
 class RoutingRuleManager(models.Manager["RoutingRule"]):
@@ -30,10 +29,10 @@ class RoutingRuleManager(models.Manager["RoutingRule"]):
             QuerySet of matching RoutingRules with related objects loaded
         """
         queryset = self.select_related("organisation", "project", "created_by")
-        
+
         # Start with event type match
         queryset = queryset.filter(event_type=event_type, is_enabled=True)
-        
+
         # Apply scope filtering
         if project_id:
             # Project-specific rules
@@ -55,7 +54,7 @@ class RoutingRuleManager(models.Manager["RoutingRule"]):
                 organisation__isnull=True,
                 project__isnull=True,
             )
-        
+
         # Order by priority (highest first)
         return queryset.order_by("-priority", "id")
 
@@ -86,16 +85,16 @@ class NotificationPreferenceManager(models.Manager["NotificationPreference"]):
         """
         if not user_ids:
             return {}
-        
+
         # Fetch preferences for all users
         preferences = self.filter(
             user_id__in=user_ids,
             event_type=event_type,
             channel=channel,
         ).values_list("user_id", "enabled")
-        
+
         # Build result dict (default to True if no preference)
         result = {user_id: True for user_id in user_ids}
         result.update(dict(preferences))
-        
+
         return result

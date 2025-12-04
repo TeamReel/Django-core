@@ -4,13 +4,12 @@ Permission tests for Settings & Feature Flags system.
 Tests scope-aware permission checking and helper functions.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from organisations.models import Organisation
 from projects.models import Project
-
 from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 from settings.permissions import (
     ScopeAwarePermission,

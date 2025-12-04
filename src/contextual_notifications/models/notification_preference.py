@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import Index, UniqueConstraint
 
 if TYPE_CHECKING:
-    from accounts.models import User
+    pass
 
 from .managers import NotificationPreferenceManager
 
@@ -61,11 +61,11 @@ class NotificationPreference(models.Model):
         verbose_name = "Notification Preference"
         verbose_name_plural = "Notification Preferences"
         ordering = ["user", "event_type", "channel"]
-        
+
         indexes = [
             Index(fields=["user", "event_type", "channel"]),
         ]
-        
+
         constraints = [
             # One preference per user per event type per channel
             UniqueConstraint(

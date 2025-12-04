@@ -16,10 +16,9 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
-
-from scaffolding.cli import scaffold, EXIT_SYSTEM_ERROR
-from scaffolding.templates.registry import TemplateRegistry
+from scaffolding.cli import EXIT_SYSTEM_ERROR, scaffold
 from scaffolding.generation.generator import CodeGenerator
+from scaffolding.templates.registry import TemplateRegistry
 
 
 @pytest.fixture
@@ -38,7 +37,7 @@ def runner():
 class TestUS1EndToEndGeneration:
     """
     Integration tests for US1: Generate Django app from built-in template.
-    
+
     Acceptance: scaffold app → validate → tests pass
     """
 
@@ -46,17 +45,17 @@ class TestUS1EndToEndGeneration:
     def test_generate_minimal_app_e2e(self, runner, temp_workspace):
         """Test end-to-end generation of minimal app."""
         app_name = "test_minimal_app"
-        
+
         result = runner.invoke(scaffold, [
             "app",
             app_name,
             "--template", "minimal",
             "--no-validate",
         ])
-        
+
         # When implemented, should succeed
         assert result.exit_code == 0
-        
+
         # Verify app directory structure
         app_dir = temp_workspace / app_name
         assert app_dir.exists()
@@ -66,21 +65,21 @@ class TestUS1EndToEndGeneration:
     def test_generate_api_first_app_e2e(self, runner, temp_workspace):
         """Test end-to-end generation of API-first app."""
         app_name = "test_api_app"
-        
+
         result = runner.invoke(scaffold, [
             "app",
             app_name,
             "--template", "api-first",
             "--no-validate",
         ])
-        
+
         assert result.exit_code == 0
 
 
 class TestUS2ProjectBootstrap:
     """
     Integration tests for US2: Bootstrap downstream project.
-    
+
     Acceptance: scaffold init → run → all modules load
     """
 
@@ -88,13 +87,13 @@ class TestUS2ProjectBootstrap:
     def test_bootstrap_project_e2e(self, runner, temp_workspace):
         """Test end-to-end project bootstrap."""
         project_name = "test_project"
-        
+
         result = runner.invoke(scaffold, [
             "init",
             project_name,
             "--no-validate",
         ])
-        
+
         assert result.exit_code == 0
 
 
@@ -121,7 +120,7 @@ class TestUS7CIAutomation:
             "app",
             "ci_test_app",
         ])
-        
+
         # Should not hang waiting for input
         # Currently returns SYSTEM_ERROR (placeholder)
         assert result.exit_code == EXIT_SYSTEM_ERROR

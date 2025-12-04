@@ -4,7 +4,6 @@ import json
 import logging
 from io import StringIO
 
-import pytest
 from observability.logging import (
     CorrelationIDFilter,
     JSONFormatter,
@@ -34,7 +33,7 @@ class TestCorrelationIDContextVar:
         """Test that correlation IDs are context-isolated."""
         set_correlation_id("context-1")
         assert get_correlation_id() == "context-1"
-        
+
         # Simulate new context (contextvars handle this automatically)
         set_correlation_id("context-2")
         assert get_correlation_id() == "context-2"
@@ -48,7 +47,7 @@ class TestJSONFormatter:
         self.logger = logging.getLogger("test_json")
         self.logger.setLevel(logging.INFO)
         self.logger.handlers = []  # Clear existing handlers
-        
+
         self.stream = StringIO()
         handler = logging.StreamHandler(self.stream)
         handler.setFormatter(JSONFormatter())
@@ -58,10 +57,10 @@ class TestJSONFormatter:
         """Test that logs are valid JSON with required fields."""
         set_correlation_id("test-123")
         self.logger.info("Test message")
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert "timestamp" in log_data
         assert "severity" in log_data
         assert "message" in log_data
@@ -71,7 +70,7 @@ class TestJSONFormatter:
         assert "function" in log_data
         assert "line" in log_data
         assert "context" in log_data
-        
+
         assert log_data["message"] == "Test message"
         assert log_data["severity"] == "INFO"
         assert log_data["logger_name"] == "test_json"
@@ -82,10 +81,10 @@ class TestJSONFormatter:
             "User action",
             extra={"context": {"user_id": 123, "action": "login"}}
         )
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert log_data["context"]["user_id"] == 123
         assert log_data["context"]["action"] == "login"
 
@@ -95,10 +94,10 @@ class TestJSONFormatter:
             raise ValueError("Test error")
         except ValueError:
             self.logger.exception("Exception occurred")
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert "exception" in log_data
         assert log_data["exception"]["type"] == "ValueError"
         assert "Test error" in log_data["exception"]["message"]
@@ -107,10 +106,10 @@ class TestJSONFormatter:
     def test_timestamp_iso8601_format(self):
         """Test that timestamp is in ISO 8601 format with timezone."""
         self.logger.info("Test")
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         # Verify ISO 8601 format (e.g., 2025-12-03T14:00:00+00:00)
         assert "T" in log_data["timestamp"]
         assert "+" in log_data["timestamp"] or "Z" in log_data["timestamp"]
@@ -124,7 +123,7 @@ class TestPIIRedactionFilter:
         self.logger = logging.getLogger("test_pii")
         self.logger.setLevel(logging.INFO)
         self.logger.handlers = []
-        
+
         self.stream = StringIO()
         handler = logging.StreamHandler(self.stream)
         handler.setFormatter(JSONFormatter())
@@ -137,10 +136,10 @@ class TestPIIRedactionFilter:
             "User login",
             extra={"context": {"username": "alice", "password": "secret123"}}
         )
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert log_data["context"]["password"] == "[REDACTED]"
         assert log_data["context"]["username"] == "alice"
 
@@ -156,10 +155,10 @@ class TestPIIRedactionFilter:
                 "name": "Alice"
             }}
         )
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert log_data["context"]["email"] == "[REDACTED]"
         assert log_data["context"]["phone_number"] == "[REDACTED]"
         assert log_data["context"]["ssn"] == "[REDACTED]"
@@ -178,10 +177,10 @@ class TestPIIRedactionFilter:
                 "amount": 100
             }}
         )
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert log_data["context"]["user"]["email"] == "[REDACTED]"
         assert log_data["context"]["user"]["api_key"] == "[REDACTED]"
         assert log_data["context"]["amount"] == 100
@@ -189,30 +188,30 @@ class TestPIIRedactionFilter:
     def test_redact_email_in_message(self):
         """Test email redaction in log message."""
         self.logger.info("User alice@example.com logged in")
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert "[REDACTED_EMAIL]" in log_data["message"]
         assert "alice@example.com" not in log_data["message"]
 
     def test_redact_credit_card_pattern(self):
         """Test credit card pattern redaction."""
         self.logger.info("Card: 1234-5678-9012-3456")
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert "[REDACTED_CC]" in log_data["message"]
         assert "1234-5678-9012-3456" not in log_data["message"]
 
     def test_redact_ssn_pattern(self):
         """Test SSN pattern redaction."""
         self.logger.info("SSN: 123-45-6789")
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert "[REDACTED_SSN]" in log_data["message"]
         assert "123-45-6789" not in log_data["message"]
 
@@ -226,10 +225,10 @@ class TestPIIRedactionFilter:
                 "user_id": 456
             }}
         )
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert log_data["context"]["access_token"] == "[REDACTED]"
         assert log_data["context"]["refresh_token"] == "[REDACTED]"
         assert log_data["context"]["user_id"] == 456
@@ -245,10 +244,10 @@ class TestPIIRedactionFilter:
                 ]
             }}
         )
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert log_data["context"]["users"][0]["email"] == "[REDACTED]"
         assert log_data["context"]["users"][1]["email"] == "[REDACTED]"
         assert log_data["context"]["users"][0]["name"] == "Alice"
@@ -264,10 +263,10 @@ class TestPIIRedactionFilter:
                 "created_at": "2025-12-03T14:00:00Z"
             }}
         )
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert log_data["context"]["username"] == "alice"
         assert log_data["context"]["user_id"] == 123
         assert log_data["context"]["status"] == "active"
@@ -281,7 +280,7 @@ class TestCorrelationIDFilter:
         self.logger = logging.getLogger("test_correlation")
         self.logger.setLevel(logging.INFO)
         self.logger.handlers = []
-        
+
         self.stream = StringIO()
         handler = logging.StreamHandler(self.stream)
         handler.setFormatter(JSONFormatter())
@@ -292,20 +291,20 @@ class TestCorrelationIDFilter:
         """Test that correlation ID is injected into log records."""
         set_correlation_id("test-456")
         self.logger.info("Test message")
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert log_data["correlation_id"] == "test-456"
 
     def test_correlation_id_none_when_not_set(self):
         """Test that correlation ID is None when not set."""
         correlation_id_var.set(None)  # Reset
         self.logger.info("Test message")
-        
+
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
-        
+
         assert log_data["correlation_id"] is None
 
 
@@ -359,7 +358,7 @@ class TestJSONParsability:
         self.logger = logging.getLogger("test_parse")
         self.logger.setLevel(logging.INFO)
         self.logger.handlers = []
-        
+
         self.stream = StringIO()
         handler = logging.StreamHandler(self.stream)
         handler.setFormatter(JSONFormatter())
@@ -370,7 +369,7 @@ class TestJSONParsability:
     def test_1000_logs_parsable(self):
         """Test that 1,000 log samples are all valid JSON."""
         set_correlation_id("batch-test")
-        
+
         for i in range(1000):
             self.logger.info(
                 f"Log {i}",
@@ -380,11 +379,11 @@ class TestJSONParsability:
                     "password": f"secret{i}"
                 }}
             )
-        
+
         # Parse all logs
         log_lines = self.stream.getvalue().strip().split('\n')
         assert len(log_lines) == 1000
-        
+
         parse_errors = 0
         for line in log_lines:
             try:
@@ -399,6 +398,6 @@ class TestJSONParsability:
                 assert log_data["context"]["password"] == "[REDACTED]"
             except (json.JSONDecodeError, AssertionError):
                 parse_errors += 1
-        
+
         # SC-003: 100% parsability
         assert parse_errors == 0

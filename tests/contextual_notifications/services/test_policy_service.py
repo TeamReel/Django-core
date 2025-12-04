@@ -1,10 +1,10 @@
 """Tests for PolicyService."""
 
-import pytest
-from datetime import time, datetime
+from datetime import datetime
 from unittest.mock import patch
+
+import pytest
 from contextual_notifications.services.policy_service import PolicyService
-from contextual_notifications.models import OrganisationNotificationPolicy
 
 
 @pytest.mark.django_db

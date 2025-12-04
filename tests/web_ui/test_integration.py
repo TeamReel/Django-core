@@ -1,10 +1,9 @@
 """Integration tests for web_ui app."""
 
 import pytest
+from accounts.models import User
 from django.contrib.auth.models import Permission
 from django.test import Client
-
-from accounts.models import User
 from organisations.models import Membership, Organisation
 from projects.models import Project
 
