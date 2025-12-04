@@ -1,0 +1,185 @@
+# Docker Compose - Production Environment
+# B19 Deployment Templates & Configuration
+#
+# Purpose: Production deployment on single-server multi-container setup
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+#
+# Prerequisites:
+# - External PostgreSQL database (AWS RDS, GCP Cloud SQL, Azure PostgreSQL)
+# - External Redis instance (AWS ElastiCache, GCP Memorystore, Azure Cache)
+# - .env file with production secrets
+# - SSL/TLS certificate for HTTPS (if using Nginx SSL termination)
+
+version: '3.9'
+
+services:
+  # Database Migration (runs before web starts)
+  migrate:
+    image: ${DOCKER_IMAGE:?DOCKER_IMAGE required}
+    command: python manage.py migrate --noinput
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY required}
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL required}
+      - REDIS_URL=${REDIS_URL:?REDIS_URL required}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-${REDIS_URL}}
+    restart: "no"
+
+  # Django Web Application (production)
+  web:
+    image: ${DOCKER_IMAGE:?DOCKER_IMAGE required}
+    command: >
+      gunicorn config.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers ${GUNICORN_WORKERS:-4}
+      --worker-class sync
+      --max-requests 1000
+      --max-requests-jitter 50
+      --timeout 30
+      --graceful-timeout 30
+      --access-logfile -
+      --error-logfile -
+      --log-level info
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY required}
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL required}
+      - REDIS_URL=${REDIS_URL:?REDIS_URL required}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-${REDIS_URL}}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:?ALLOWED_HOSTS required}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:?CSRF_TRUSTED_ORIGINS required}
+      - SECURE_SSL_REDIRECT=${SECURE_SSL_REDIRECT:-True}
+      - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-True}
+      - CSRF_COOKIE_SECURE=${CSRF_COOKIE_SECURE:-True}
+      - SECURE_HSTS_SECONDS=${SECURE_HSTS_SECONDS:-31536000}
+      - SECURE_HSTS_INCLUDE_SUBDOMAINS=${SECURE_HSTS_INCLUDE_SUBDOMAINS:-True}
+      - LOGGING_LEVEL=${LOGGING_LEVEL:-INFO}
+      - PROMETHEUS_METRICS_ENABLED=${PROMETHEUS_METRICS_ENABLED:-True}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+    volumes:
+      - static_volume:/app/staticfiles
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Nginx Reverse Proxy (production with SSL)
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/production.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - ${SSL_CERT_PATH:-./ssl}:/etc/nginx/ssl:ro  # Mount SSL certificates
+    depends_on:
+      - web
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # Celery Worker (production - multiple workers recommended)
+  celery-worker:
+    image: ${DOCKER_IMAGE:?DOCKER_IMAGE required}
+    command: celery -A config worker --loglevel=info --concurrency=${CELERY_WORKER_CONCURRENCY:-4}
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY required}
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL required}
+      - REDIS_URL=${REDIS_URL:?REDIS_URL required}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-${REDIS_URL}}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-}
+      - CELERY_TASK_SOFT_TIME_LIMIT=${CELERY_TASK_SOFT_TIME_LIMIT:-300}
+      - CELERY_TASK_TIME_LIMIT=${CELERY_TASK_TIME_LIMIT:-600}
+      - LOGGING_LEVEL=${LOGGING_LEVEL:-INFO}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+    restart: unless-stopped
+    deploy:
+      replicas: ${CELERY_WORKER_REPLICAS:-2}
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Celery Beat Scheduler (production - single instance only)
+  celery-beat:
+    image: ${DOCKER_IMAGE:?DOCKER_IMAGE required}
+    command: celery -A config beat --loglevel=info
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY required}
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL required}
+      - REDIS_URL=${REDIS_URL:?REDIS_URL required}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-${REDIS_URL}}
+      - LOGGING_LEVEL=${LOGGING_LEVEL:-INFO}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+    restart: unless-stopped
+    deploy:
+      replicas: 1  # CRITICAL: Only one beat instance
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+volumes:
+  static_volume:
+
+# Production Environment Notes:
+# - All sensitive values MUST be in .env file (never commit secrets!)
+# - External PostgreSQL and Redis required (managed services recommended)
+# - Nginx handles SSL termination, static files, security headers
+# - B03 Security: HTTPS enforced, secure cookies, HSTS enabled
+# - B15 Tasks: Separate worker/beat services with production concurrency
+# - B18 Observability: Health checks, Prometheus metrics, structured logging
+# - Resource limits prevent single service from consuming all resources
+# - Graceful shutdown with 30s timeout for in-flight requests
+# - Zero-downtime deployment: Use `docker-compose up -d --no-deps --build web`
+#
+# Required Environment Variables (.env file):
+# - DOCKER_IMAGE: Image tag (e.g., myregistry.com/django-core:1.0.0)
+# - SECRET_KEY: Django secret key (50+ random characters)
+# - DATABASE_URL: PostgreSQL connection string
+# - REDIS_URL: Redis connection string
+# - ALLOWED_HOSTS: Comma-separated hostnames
+# - CSRF_TRUSTED_ORIGINS: Comma-separated HTTPS origins
+#
+# Optional Environment Variables:
+# - GUNICORN_WORKERS: Number of web workers (default: 4)
+# - CELERY_WORKER_CONCURRENCY: Tasks per worker (default: 4)
+# - CELERY_WORKER_REPLICAS: Number of worker containers (default: 2)
+# - SSL_CERT_PATH: Path to SSL certificates directory (default: ./ssl)
+# - SENTRY_DSN: Sentry error tracking DSN
+# - LOGGING_LEVEL: Log level (default: INFO)

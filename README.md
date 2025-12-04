@@ -435,6 +435,90 @@ django-core/
 
 ---
 
+## Deployment
+
+Django Core-App provides comprehensive deployment templates for all environments:
+
+### Quick Start
+
+**Local Development** (<5 minutes):
+```bash
+cp .env.example .env
+docker-compose -f docker-compose.local.yml up
+```
+Access: http://localhost:8000
+
+**Staging Environment**:
+```bash
+docker build -t django-core:staging .
+docker-compose -f docker-compose.staging.yml up -d
+```
+Full production parity with Nginx, PostgreSQL, Redis, and Celery.
+
+**Production Deployment** (<30 minutes):
+```bash
+# Single-server VPS deployment
+docker-compose -f docker-compose.prod.yml up -d
+```
+HTTPS with SSL termination, external PostgreSQL/Redis, zero-downtime updates.
+
+**Kubernetes** (<2 minutes):
+```bash
+kubectl create secret generic django-core-secrets \
+  --from-literal=SECRET_KEY="..." \
+  --from-literal=DATABASE_URL="..." \
+  --from-literal=REDIS_URL="..."
+
+kubectl apply -f k8s/
+```
+Autoscaling (3-10 replicas), health checks, Prometheus metrics.
+
+### Documentation
+
+- **[Deployment Quickstart Guide](docs/deployment/quickstart.md)** - Step-by-step deployment for all environments
+- **[Configuration Reference](docs/deployment/configuration-reference.md)** - Complete environment variable catalog
+- **[Troubleshooting Guide](docs/deployment/troubleshooting.md)** - Solutions to 10+ common deployment issues
+- **[Cloud Providers Guide](docs/deployment/cloud-providers.md)** - AWS, GCP, Azure deployment specifics
+- **[Alternatives Guide](docs/deployment/alternatives.md)** - Traefik, Caddy, Helm, Kustomize options
+- **[ADR-020: Deployment Strategy](docs/adr/020-deployment-automation-strategy.md)** - Architecture decision rationale
+
+### Deployment Files
+
+```
+django-core/
+├── Dockerfile                    # Multi-stage production build
+├── .dockerignore                 # Build context optimization
+├── docker-compose.local.yml      # Local development (hot-reload)
+├── docker-compose.staging.yml    # Staging (Nginx + full stack)
+├── docker-compose.prod.yml       # Production (external services)
+├── .env.example                  # Environment variables template
+├── k8s/                          # Kubernetes manifests
+│   ├── configmap.yaml            # Non-sensitive configuration
+│   ├── secret.yaml               # Credentials template
+│   ├── deployment-web.yaml       # Django + Gunicorn (3+ replicas)
+│   ├── deployment-celery-worker.yaml  # Task workers
+│   ├── deployment-celery-beat.yaml    # Task scheduler (1 replica)
+│   ├── service-web.yaml          # LoadBalancer service
+│   └── hpa-web.yaml              # Horizontal Pod Autoscaler
+├── nginx/                        # Nginx reverse proxy configs
+│   ├── local.conf                # Simple HTTP proxy
+│   ├── staging.conf              # HTTP + security headers
+│   └── production.conf           # HTTPS + SSL termination
+└── docs/deployment/              # Comprehensive deployment docs
+```
+
+### Technologies
+
+- **Containerization**: Docker multi-stage builds, non-root user (UID 1000)
+- **Orchestration**: Docker Compose (dev/staging/prod), Kubernetes (production clusters)
+- **WSGI Server**: Gunicorn (4 workers, 30s timeout)
+- **Reverse Proxy**: Nginx (TLS 1.2/1.3, HSTS, CSP, static file serving)
+- **Observability**: B18 health checks (`/health/live`, `/health/ready`), Prometheus `/metrics`
+- **Security**: B03 compliance (SECURE_SSL_REDIRECT, SESSION_COOKIE_SECURE, HSTS)
+- **Task Scheduling**: B15 Celery worker + beat services
+
+---
+
 ## Architecture
 
 ### Hierarchical Access Control

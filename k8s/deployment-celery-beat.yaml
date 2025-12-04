@@ -1,0 +1,128 @@
+# Kubernetes Deployment - Celery Beat Scheduler
+# B19 Deployment Templates & Configuration
+#
+# Purpose: Deploy Celery beat scheduler for periodic tasks (B15)
+# Usage: kubectl apply -f deployment-celery-beat.yaml
+#
+# WARNING: ONLY ONE REPLICA ALLOWED (beat schedules tasks, multiple instances cause duplicates)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-celery-beat
+  namespace: default
+  labels:
+    app: django-core
+    component: celery-beat
+    tier: backend
+spec:
+  replicas: 1  # CRITICAL: Must be exactly 1 (never scale beat horizontally)
+  strategy:
+    type: Recreate  # Recreate strategy prevents duplicate schedulers during updates
+  selector:
+    matchLabels:
+      app: django-core
+      component: celery-beat
+  template:
+    metadata:
+      labels:
+        app: django-core
+        component: celery-beat
+        tier: backend
+    spec:
+      # Run as non-root user (B03 security)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      
+      containers:
+        - name: celery-beat
+          image: your-registry/django-core:latest  # Replace with your image
+          imagePullPolicy: Always
+          command:
+            - "celery"
+            - "-A"
+            - "config"
+            - "beat"
+            - "--loglevel=info"
+            - "--pidfile=/tmp/celerybeat.pid"
+            - "--schedule=/tmp/celerybeat-schedule"
+          
+          # Environment variables from ConfigMap and Secret
+          envFrom:
+            - configMapRef:
+                name: django-core-config
+            - secretRef:
+                name: django-core-secrets
+          
+          # Liveness probe: Beat process running?
+          livenessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "test -f /tmp/celerybeat.pid && kill -0 $(cat /tmp/celerybeat.pid)"
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          
+          # Resource requests and limits
+          # Beat is lightweight (just schedules, doesn't execute tasks)
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          
+          # Security context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # Beat needs to write PID and schedule files
+            capabilities:
+              drop:
+                - ALL
+          
+          # Volume mount for beat schedule persistence (optional)
+          # Uncomment if you want schedule to persist across restarts
+          # volumeMounts:
+          #   - name: beat-schedule
+          #     mountPath: /tmp
+      
+      # Volumes (optional, for schedule persistence)
+      # volumes:
+      #   - name: beat-schedule
+      #     emptyDir: {}
+      
+      # Restart policy
+      restartPolicy: Always
+      
+      # Graceful shutdown
+      terminationGracePeriodSeconds: 30
+
+---
+# Beat Scheduler Notes:
+# - Replace "your-registry/django-core:latest" with your actual image
+# - CRITICAL: replicas MUST be 1 (multiple beat instances cause duplicate task execution)
+# - Recreate strategy prevents overlapping schedulers during updates
+# - Beat schedules periodic tasks from B15 task scheduling system
+# - PID file in /tmp (writable by non-root user)
+# - Schedule file in /tmp (can persist via volume for faster restarts)
+# - Lightweight resource usage (beat doesn't execute tasks, just schedules them)
+# - Liveness probe checks if beat process is still running
+#
+# High Availability:
+# - Beat is a single point of failure by design (cannot be scaled horizontally)
+# - Kubernetes will automatically restart beat if it crashes
+# - Use PersistentVolume if schedule persistence is critical (not typically needed)
+# - Alternative: Use django-celery-beat for database-backed scheduling (HA-friendly)
+#
+# Monitoring:
+# - Monitor beat logs for scheduling errors
+# - Alert if beat pod is not running (critical for periodic tasks)
+# - B18 integration: Beat startup/health events in audit log

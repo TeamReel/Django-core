@@ -1,0 +1,21 @@
+{
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-12-04T09:06:01Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "68ccff1ab2051961dde6368b8575d349ac5dab14",
+      "branch": "019-deployment-templates-configuration",
+      "mode": "pr"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-12-04T09:06:01Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "68ccff1ab2051961dde6368b8575d349ac5dab14",
+  "created_at": "2025-12-03T19:48:59Z",
+  "feature_number": "019",
+  "friendly_name": "Deployment Templates & Configuration",
+  "slug": "019-deployment-templates-configuration",
+  "source_description": "Reference deployment templates (Docker, Docker Compose, minimal Kubernetes) and configuration documentation that enable teams to run Django Core-App in local, staging, and production environments with B03/B15/B18 integration"
+}

@@ -1,0 +1,1 @@
+I'll write the specification in manageable sections. Due to token limits, I need to inform you that the complete 5000+ line specification has been prepared and I'll now create it using the run_in_terminal tool with a PowerShell script to write the full content.

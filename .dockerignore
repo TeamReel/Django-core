@@ -1,0 +1,75 @@
+# Docker Build Context Exclusions
+# B19 Deployment Templates & Configuration
+
+# Git
+.git
+.github
+.gitignore
+.gitattributes
+.worktrees
+
+# Python
+venv
+.venv
+env
+.env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# Testing
+.pytest_cache
+.coverage
+coverage.json
+htmlcov
+.tox
+.mypy_cache
+.ruff_cache
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Documentation
+docs/
+kitty-specs/
+README.md
+CHANGELOG.md
+LICENSE
+*.md
+!requirements/*.txt
+
+# Environment files (except .env.example)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Database
+*.sqlite3
+*.db
+
+# Media (for future use)
+media/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+docker-compose.override.yml
+.dockerignore
