@@ -39,6 +39,7 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH="/app/src:$PYTHONPATH" \
     DJANGO_SETTINGS_MODULE=config.settings.production
 
 # Install runtime system dependencies only
@@ -58,11 +59,11 @@ WORKDIR /app
 # Copy application code
 COPY --chown=django:django . /app
 
+# Switch to non-root user (before collectstatic for proper ownership)
+USER django
+
 # Collect static files (served by Nginx in production)
 RUN python manage.py collectstatic --noinput --clear
-
-# Switch to non-root user
-USER django
 
 # Expose port for Gunicorn
 EXPOSE 8000
