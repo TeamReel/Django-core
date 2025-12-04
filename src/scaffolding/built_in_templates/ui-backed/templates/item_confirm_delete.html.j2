@@ -1,0 +1,24 @@
+{% raw %}{% extends "{{ app_name }}/base.html" %}
+
+{% block title %}Delete {{ {{ model_name | default('item') | lower }}.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Delete {{ model_name | default('Item') }}</h1>
+</div>
+
+<div class="confirm-delete">
+    <div class="alert alert-danger">
+        <h3>Are you sure you want to delete "{{ {{ model_name | default('item') | lower }}.name }}"?</h3>
+        <p>This action cannot be undone.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-detail' {{ model_name | default('item') | lower }}.pk %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}{% endraw %}

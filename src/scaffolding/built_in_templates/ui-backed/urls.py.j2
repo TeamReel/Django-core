@@ -1,0 +1,17 @@
+"""
+URL routing for {{ app_name }}.
+"""
+
+from django.urls import path
+
+from . import views
+
+app_name = "{{ app_name }}"
+
+urlpatterns = [
+    path("", views.{{ model_name | default("Item") }}ListView.as_view(), name="{{ model_name | default('item') | lower }}-list"),
+    path("create/", views.{{ model_name | default("Item") }}CreateView.as_view(), name="{{ model_name | default('item') | lower }}-create"),
+    path("<int:pk>/", views.{{ model_name | default("Item") }}DetailView.as_view(), name="{{ model_name | default('item') | lower }}-detail"),
+    path("<int:pk>/update/", views.{{ model_name | default("Item") }}UpdateView.as_view(), name="{{ model_name | default('item') | lower }}-update"),
+    path("<int:pk>/delete/", views.{{ model_name | default("Item") }}DeleteView.as_view(), name="{{ model_name | default('item') | lower }}-delete"),
+]

@@ -1,0 +1,125 @@
+"""
+Tests for {{ app_name }} serializers.
+"""
+
+import pytest
+from rest_framework.exceptions import ValidationError
+
+from {{ app_name }}.models import {{ model_name | default("Item") }}
+from {{ app_name }}.serializers import (
+    {{ model_name | default("Item") }}CreateSerializer,
+    {{ model_name | default("Item") }}ListSerializer,
+    {{ model_name | default("Item") }}Serializer,
+)
+
+
+@pytest.mark.django_db
+class Test{{ model_name | default("Item") }}Serializer:
+    """Test {{ model_name | default("Item") }}Serializer."""
+
+    def test_serialize_{{ model_name | default("item") | lower }}(self):
+        """Test serializing {{ model_name | default("item") | lower }} to JSON."""
+        item = {{ model_name | default("Item") }}.objects.create(
+            name="Test {{ model_name | default('Item') }}",
+            description="Test description",
+            is_active=True
+        )
+        serializer = {{ model_name | default("Item") }}Serializer(item)
+        data = serializer.data
+
+        assert data["name"] == "Test {{ model_name | default('Item') }}"
+        assert data["description"] == "Test description"
+        assert data["is_active"] is True
+        assert "id" in data
+        assert "created_at" in data
+        assert "updated_at" in data
+
+    def test_deserialize_valid_data(self):
+        """Test deserializing valid JSON to {{ model_name | default("item") | lower }}."""
+        data = {
+            "name": "New {{ model_name | default('Item') }}",
+            "description": "New description",
+            "is_active": True
+        }
+        serializer = {{ model_name | default("Item") }}Serializer(data=data)
+        
+        assert serializer.is_valid()
+        item = serializer.save()
+        assert item.name == "New {{ model_name | default('Item') }}"
+
+    def test_deserialize_missing_required_field(self):
+        """Test deserializing data missing required field fails."""
+        data = {"description": "Missing name"}
+        serializer = {{ model_name | default("Item") }}Serializer(data=data)
+        
+        assert not serializer.is_valid()
+        assert "name" in serializer.errors
+
+    def test_validate_name_empty(self):
+        """Test name validation rejects empty strings."""
+        data = {"name": "   ", "is_active": True}
+        serializer = {{ model_name | default("Item") }}Serializer(data=data)
+        
+        assert not serializer.is_valid()
+        assert "name" in serializer.errors
+
+    def test_validate_name_too_short(self):
+        """Test name validation rejects short names."""
+        data = {"name": "ab", "is_active": True}
+        serializer = {{ model_name | default("Item") }}Serializer(data=data)
+        
+        assert not serializer.is_valid()
+        assert "name" in serializer.errors
+
+    def test_read_only_fields(self):
+        """Test read-only fields cannot be set via serializer."""
+        item = {{ model_name | default("Item") }}.objects.create(name="Original")
+        data = {
+            "id": 9999,  # Should be ignored
+            "name": "Updated",
+            "created_at": "2020-01-01T00:00:00Z",  # Should be ignored
+        }
+        serializer = {{ model_name | default("Item") }}Serializer(item, data=data, partial=True)
+        
+        assert serializer.is_valid()
+        updated_item = serializer.save()
+        assert updated_item.id == item.id  # Unchanged
+        assert updated_item.name == "Updated"
+
+
+@pytest.mark.django_db
+class Test{{ model_name | default("Item") }}ListSerializer:
+    """Test {{ model_name | default("Item") }}ListSerializer."""
+
+    def test_list_serializer_excludes_heavy_fields(self):
+        """Test list serializer excludes description for performance."""
+        item = {{ model_name | default("Item") }}.objects.create(
+            name="Test",
+            description="Long description that should be excluded"
+        )
+        serializer = {{ model_name | default("Item") }}ListSerializer(item)
+        data = serializer.data
+
+        assert "name" in data
+        assert "is_active" in data
+        assert "description" not in data  # Excluded for performance
+
+
+@pytest.mark.django_db
+class Test{{ model_name | default("Item") }}CreateSerializer:
+    """Test {{ model_name | default("Item") }}CreateSerializer."""
+
+    def test_create_{{ model_name | default("item") | lower }}(self):
+        """Test creating {{ model_name | default("item") | lower }} via serializer."""
+        data = {
+            "name": "Created {{ model_name | default('Item') }}",
+            "description": "Created via serializer",
+            "is_active": False
+        }
+        serializer = {{ model_name | default("Item") }}CreateSerializer(data=data)
+        
+        assert serializer.is_valid()
+        item = serializer.save()
+        assert item.name == "Created {{ model_name | default('Item') }}"
+        assert item.is_active is False
+        assert {{ model_name | default("Item") }}.objects.filter(pk=item.pk).exists()

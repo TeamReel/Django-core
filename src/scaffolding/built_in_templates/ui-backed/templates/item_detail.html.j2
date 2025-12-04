@@ -1,0 +1,40 @@
+{% raw %}{% extends "{{ app_name }}/base.html" %}
+
+{% block title %}{{ {{ model_name | default('item') | lower }}.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ {{ model_name | default('item') | lower }}.name }}</h1>
+    <div class="actions">
+        <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-update' {{ model_name | default('item') | lower }}.pk %}" class="btn btn-primary">Edit</a>
+        <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-delete' {{ model_name | default('item') | lower }}.pk %}" class="btn btn-danger">Delete</a>
+        <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="detail-view">
+    <div class="detail-section">
+        <h3>Details</h3>
+        <dl>
+            <dt>Name:</dt>
+            <dd>{{ {{ model_name | default('item') | lower }}.name }}</dd>
+
+            <dt>Description:</dt>
+            <dd>{{ {{ model_name | default('item') | lower }}.description|default:"No description provided" }}</dd>
+
+            <dt>Status:</dt>
+            <dd>
+                <span class="badge {% if {{ model_name | default('item') | lower }}.is_active %}badge-success{% else %}badge-secondary{% endif %}">
+                    {{ {{ model_name | default('item') | lower }}.is_active|yesno:"Active,Inactive" }}
+                </span>
+            </dd>
+
+            <dt>Created:</dt>
+            <dd>{{ {{ model_name | default('item') | lower }}.created_at|date:"F d, Y g:i A" }}</dd>
+
+            <dt>Last Updated:</dt>
+            <dd>{{ {{ model_name | default('item') | lower }}.updated_at|date:"F d, Y g:i A" }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}{% endraw %}

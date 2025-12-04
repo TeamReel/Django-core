@@ -7,10 +7,11 @@ readme = "README.md"
 
 [project.scripts]
 constitution-engine = "constitution_engine.cli:main"
+django-core-scaffold = "scaffolding.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["constitution_engine*"]
+include = ["constitution_engine*", "scaffolding*"]
 
 [build-system]
 requires = ["setuptools>=68.0"]

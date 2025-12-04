@@ -1,0 +1,40 @@
+# Service-Oriented Django App Template
+# Extends minimal template with service layer for business logic
+
+name: service
+description: |
+  Service-oriented Django app with dedicated service layer for business logic.
+  Includes service classes with type hints, dependency injection patterns,
+  and comprehensive service tests. Ideal for domain-driven design and
+  complex business logic separation.
+
+extends: minimal  # Inherits all files from minimal template
+
+variables:
+  required:
+    app_name:
+      type: string
+      description: "Name of the Django app (snake_case)"
+      validation: "^[a-z][a-z0-9_]*$"
+  optional:
+    service_name:
+      type: string
+      description: "Name of the primary service class (PascalCase)"
+      default: "ItemService"
+      validation: "^[A-Z][a-zA-Z0-9]*Service$"
+
+files:
+  # Inherited from minimal: __init__.py, apps.py, models.py, tests/__init__.py, tests/test_models.py, migrations/__init__.py, locale/.gitkeep
+  
+  # Service-specific files
+  - path: "services.py"
+    template: "services.py.j2"
+  - path: "exceptions.py"
+    template: "exceptions.py.j2"
+  - path: "tests/test_services.py"
+    template: "tests/test_services.py.j2"
+
+# Template metadata
+author: "Django Core Team"
+version: "1.0.0"
+django_version: ">=5.1"

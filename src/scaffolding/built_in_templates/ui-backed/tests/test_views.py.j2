@@ -1,0 +1,139 @@
+"""
+Tests for {{ app_name }} views.
+"""
+
+import pytest
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+
+from {{ app_name }}.models import {{ model_name | default("Item") }}
+
+User = get_user_model()
+
+
+@pytest.fixture
+def user():
+    """Create test user."""
+    return User.objects.create_user(username="testuser", password="testpass123")
+
+
+@pytest.fixture
+def logged_in_client(client, user):
+    """Provide logged-in client."""
+    client.force_login(user)
+    return client
+
+
+@pytest.fixture
+def sample_item():
+    """Create sample {{ model_name | default("item") | lower }} for testing."""
+    return {{ model_name | default("Item") }}.objects.create(
+        name="Test {{ model_name | default('Item') }}",
+        description="A test {{ model_name | default('item') | lower }}",
+        is_active=True
+    )
+
+
+@pytest.mark.django_db
+class Test{{ model_name | default("Item") }}ListView:
+    """Test {{ model_name | default("Item") }} list view."""
+
+    def test_list_view_requires_login(self, client):
+        """Test list view redirects to login for unauthenticated users."""
+        url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-list")
+        response = client.get(url)
+        
+        assert response.status_code == 302
+        assert "/login" in response.url
+
+    def test_list_view_shows_items(self, logged_in_client, sample_item):
+        """Test list view displays items."""
+        url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-list")
+        response = logged_in_client.get(url)
+        
+        assert response.status_code == 200
+        assert sample_item.name in str(response.content)
+
+    def test_list_view_search(self, logged_in_client):
+        """Test list view search functionality."""
+        {{ model_name | default("Item") }}.objects.create(name="Findable Item")
+        {{ model_name | default("Item") }}.objects.create(name="Other Item")
+
+        url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-list")
+        response = logged_in_client.get(url, {"search": "Findable"})
+        
+        assert response.status_code == 200
+        assert "Findable Item" in str(response.content)
+        assert "Other Item" not in str(response.content)
+
+
+@pytest.mark.django_db
+class Test{{ model_name | default("Item") }}DetailView:
+    """Test {{ model_name | default("Item") }} detail view."""
+
+    def test_detail_view_shows_item(self, logged_in_client, sample_item):
+        """Test detail view displays item details."""
+        url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-detail", args=[sample_item.pk])
+        response = logged_in_client.get(url)
+        
+        assert response.status_code == 200
+        assert sample_item.name in str(response.content)
+        assert sample_item.description in str(response.content)
+
+
+@pytest.mark.django_db
+class Test{{ model_name | default("Item") }}CreateView:
+    """Test {{ model_name | default("Item") }} create view."""
+
+    def test_create_view_get(self, logged_in_client):
+        """Test create view GET request shows form."""
+        url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-create")
+        response = logged_in_client.get(url)
+        
+        assert response.status_code == 200
+        assert "form" in str(response.content).lower()
+
+    def test_create_view_post_valid(self, logged_in_client):
+        """Test creating {{ model_name | default('item') | lower }} with valid data."""
+        url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-create")
+        data = {
+            "name": "New {{ model_name | default('Item') }}",
+            "description": "New description",
+            "is_active": True
+        }
+        response = logged_in_client.post(url, data)
+        
+        assert response.status_code == 302  # Redirect after success
+        assert {{ model_name | default("Item") }}.objects.filter(name="New {{ model_name | default('Item') }}").exists()
+
+
+@pytest.mark.django_db
+class Test{{ model_name | default("Item") }}UpdateView:
+    """Test {{ model_name | default("Item") }} update view."""
+
+    def test_update_view_post(self, logged_in_client, sample_item):
+        """Test updating {{ model_name | default('item') | lower }}."""
+        url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-update", args=[sample_item.pk])
+        data = {
+            "name": "Updated Name",
+            "description": sample_item.description,
+            "is_active": sample_item.is_active
+        }
+        response = logged_in_client.post(url, data)
+        
+        assert response.status_code == 302
+        sample_item.refresh_from_db()
+        assert sample_item.name == "Updated Name"
+
+
+@pytest.mark.django_db
+class Test{{ model_name | default("Item") }}DeleteView:
+    """Test {{ model_name | default("Item") }} delete view."""
+
+    def test_delete_view_post(self, logged_in_client, sample_item):
+        """Test deleting {{ model_name | default('item') | lower }}."""
+        url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-delete", args=[sample_item.pk])
+        response = logged_in_client.post(url)
+        
+        assert response.status_code == 302
+        assert not {{ model_name | default("Item") }}.objects.filter(pk=sample_item.pk).exists()

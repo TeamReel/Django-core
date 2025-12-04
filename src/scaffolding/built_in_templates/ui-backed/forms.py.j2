@@ -1,0 +1,60 @@
+"""
+Forms for {{ app_name }}.
+"""
+
+from django import forms
+from django.utils.translation import gettext_lazy as _
+
+from .models import {{ model_name | default("Item") }}
+
+
+class {{ model_name | default("Item") }}Form(forms.ModelForm):
+    """Form for creating and updating {{ model_name | default("Item") }}s."""
+
+    class Meta:
+        model = {{ model_name | default("Item") }}
+        fields = ["name", "description", "is_active"]
+        widgets = {
+            "name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": _("Enter {{ model_name | default('item') | lower }} name"),
+            }),
+            "description": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": _("Enter {{ model_name | default('item') | lower }} description (optional)"),
+            }),
+            "is_active": forms.CheckboxInput(attrs={
+                "class": "form-check-input",
+            }),
+        }
+        labels = {
+            "name": _("Name"),
+            "description": _("Description"),
+            "is_active": _("Active"),
+        }
+        help_texts = {
+            "name": _("Required. {{ model_name | default('Item') }} name must be unique."),
+            "description": _("Optional. Additional details about this {{ model_name | default('item') | lower }}."),
+            "is_active": _("Inactive {{ model_name | default('items') | lower }} are hidden from normal views."),
+        }
+
+    def clean_name(self):
+        """Validate name field."""
+        name = self.cleaned_data.get("name")
+        
+        if not name or not name.strip():
+            raise forms.ValidationError(_("Name is required."))
+        
+        if len(name.strip()) < 3:
+            raise forms.ValidationError(_("Name must be at least 3 characters long."))
+        
+        # Check for duplicate names (excluding current instance in updates)
+        qs = {{ model_name | default("Item") }}.objects.filter(name=name.strip())
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        
+        if qs.exists():
+            raise forms.ValidationError(_("A {{ model_name | default('item') | lower }} with this name already exists."))
+        
+        return name.strip()

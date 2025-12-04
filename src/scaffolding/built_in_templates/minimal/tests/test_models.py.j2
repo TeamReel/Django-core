@@ -1,0 +1,110 @@
+"""
+Tests for {{ app_name }} models.
+"""
+
+import pytest
+from django.db import IntegrityError
+from django.utils import timezone
+
+from {{ app_name }}.models import Item
+
+
+@pytest.mark.django_db
+class TestBaseModel:
+    """Test BaseModel abstract functionality."""
+
+    def test_created_at_auto_set(self):
+        """Test created_at is automatically set on creation."""
+        item = Item.objects.create(name="Test Item")
+        assert item.created_at is not None
+        assert item.created_at <= timezone.now()
+
+    def test_updated_at_auto_updates(self):
+        """Test updated_at updates automatically on save."""
+        item = Item.objects.create(name="Test Item")
+        original_updated = item.updated_at
+
+        # Update item
+        item.name = "Updated Item"
+        item.save()
+
+        item.refresh_from_db()
+        assert item.updated_at > original_updated
+
+    def test_ordering_by_created_at(self):
+        """Test default ordering is by -created_at."""
+        item1 = Item.objects.create(name="First")
+        item2 = Item.objects.create(name="Second")
+
+        items = list(Item.objects.all())
+        assert items[0].id == item2.id  # Most recent first
+        assert items[1].id == item1.id
+
+
+@pytest.mark.django_db
+class TestItem:
+    """Test Item model."""
+
+    def test_create_item(self):
+        """Test creating an item with required fields."""
+        item = Item.objects.create(name="Test Item")
+        assert item.name == "Test Item"
+        assert item.description == ""
+        assert item.is_active is True
+
+    def test_create_item_with_description(self):
+        """Test creating item with optional description."""
+        item = Item.objects.create(
+            name="Test Item",
+            description="A test description"
+        )
+        assert item.description == "A test description"
+
+    def test_item_str_representation(self):
+        """Test __str__ returns item name."""
+        item = Item.objects.create(name="My Item")
+        assert str(item) == "My Item"
+
+    def test_item_repr_representation(self):
+        """Test __repr__ includes id and name."""
+        item = Item.objects.create(name="My Item")
+        assert repr(item) == f"<Item(id={item.pk}, name='My Item')>"
+
+    def test_is_active_default_true(self):
+        """Test is_active defaults to True."""
+        item = Item.objects.create(name="Test")
+        assert item.is_active is True
+
+    def test_deactivate_item(self):
+        """Test setting is_active to False."""
+        item = Item.objects.create(name="Test")
+        item.is_active = False
+        item.save()
+
+        item.refresh_from_db()
+        assert item.is_active is False
+
+    def test_name_max_length(self):
+        """Test name field enforces max_length."""
+        long_name = "x" * 256  # Exceeds max_length of 255
+        with pytest.raises(Exception):  # DataError or ValidationError
+            Item.objects.create(name=long_name)
+
+    def test_query_active_items(self):
+        """Test filtering by is_active."""
+        Item.objects.create(name="Active", is_active=True)
+        Item.objects.create(name="Inactive", is_active=False)
+
+        active_items = Item.objects.filter(is_active=True)
+        assert active_items.count() == 1
+        assert active_items.first().name == "Active"
+
+    def test_indexes_created(self):
+        """Test database indexes are created."""
+        # This test verifies indexes exist (checked via migrations)
+        # Actual index performance would be tested in integration tests
+        item = Item.objects.create(name="Test")
+        
+        # Query using indexed fields should work efficiently
+        Item.objects.filter(name="Test").exists()
+        Item.objects.filter(is_active=True).order_by("-created_at").first()

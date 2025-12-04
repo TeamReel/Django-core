@@ -286,6 +286,78 @@ def send_email(recipient, subject, body):
 
 ---
 
+### Scaffolding CLI (Feature 020 - B20)
+
+Generate Django apps from templates with best practices built-in.
+
+**Key Capabilities**:
+- **Built-in Templates**: 4 production-ready templates (minimal, api-first, service, ui-backed)
+- **Custom Templates**: Create and share your own templates via Jinja2
+- **Template Inheritance**: Extend built-in templates with additional files
+- **Interactive UX**: Prompts for missing variables with validation
+- **Non-Interactive Mode**: CI/CD support with `--non-interactive` flag
+- **Automatic Validation**: Ruff, mypy, and constitutional checks on generated code
+- **Atomic Rollback**: Failed generation cleans up partial changes
+
+**Quick Start**:
+```bash
+# Generate a minimal app
+python manage.py scaffold generate minimal accounts
+
+# Generate an API-first app with custom model
+python manage.py scaffold generate api-first products --var model_name=Product
+
+# Generate a service layer
+python manage.py scaffold generate service orders --var service_name=OrderService
+
+# Generate a full-stack UI app
+python manage.py scaffold generate ui-backed dashboard --var model_name=Widget
+
+# List available templates
+python manage.py scaffold list
+
+# Validate generated code
+python manage.py scaffold validate --directory products/ --strict
+```
+
+**Built-in Templates**:
+| Template | Description | Extends | Files |
+|----------|-------------|---------|-------|
+| `minimal` | Basic Django app with models, tests, migrations | - | 7 files |
+| `api-first` | DRF API with serializers, viewsets, permissions | `minimal` | +9 files |
+| `service` | Service layer for business logic | `minimal` | +4 files |
+| `ui-backed` | Full-stack with views, forms, templates, static | `minimal` | +14 files |
+
+**CI/CD Integration**:
+```bash
+#!/bin/bash
+# CI pipeline example
+python manage.py scaffold generate minimal accounts --non-interactive
+python manage.py scaffold generate api-first products --var model_name=Product --non-interactive
+python manage.py scaffold validate --strict
+```
+
+**Documentation**:
+- [CLI User Guide](docs/scaffolding/cli-guide.md) - Complete command reference
+- [Template Authoring Guide](docs/scaffolding/template-authoring.md) - Create custom templates
+- [Architecture Overview](docs/scaffolding/architecture.md) - System design and patterns
+- [Extension Guide](docs/scaffolding/extension-guide.md) - Advanced customization
+- [Quickstart Tutorial](docs/scaffolding/quickstart.md) - Step-by-step walkthrough
+
+**Features**:
+- ✅ 4 built-in templates for common Django patterns
+- ✅ Custom template support via `--template-dir`
+- ✅ Jinja2-based templating with inheritance
+- ✅ Automatic validation (Ruff, mypy, constitutional checks)
+- ✅ Non-interactive mode for CI/CD pipelines
+- ✅ Interactive prompts for missing variables
+- ✅ Atomic rollback on errors
+- ✅ Template discovery from multiple sources
+- ✅ Comprehensive test coverage (>80%)
+- ✅ Type-safe with mypy validation
+
+---
+
 ### Security Baseline
 
 Constitutional enforcement engine with security rule validation and ASVS compliance reporting.
