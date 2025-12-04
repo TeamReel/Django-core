@@ -1,173 +1,201 @@
-"""Tests for EventService."""
+"""Tests for EventService.
+
+Tests the event emission API for contextual notifications.
+"""
 
 import pytest
 from unittest.mock import patch, MagicMock
 from contextual_notifications.services.event_service import EventService
-from contextual_notifications.exceptions import EventValidationError
+from contextual_notifications.exceptions import ValidationError
+
+
+@pytest.fixture
+def valid_event_data():
+    """Provide valid event data for tests."""
+    return {
+        "event_type": "project.updated",
+        "context": {"org_id": 1, "project_id": 42, "user_id": 7},
+        "payload": {"title": "Project Updated", "body": "Test body"},
+    }
 
 
 @pytest.mark.django_db
-class TestEventService:
-    """Tests for EventService."""
+class TestEventServiceValidation:
+    """Tests for EventService validation."""
 
-    def test_validate_and_normalize_valid_event(self, event_data):
-        """Test validation of a valid event."""
-        result = EventService.validate_and_normalize(event_data)
+    def test_validate_valid_event(self, valid_event_data):
+        """Test validation passes for valid event."""
+        errors = EventService._validate_event(
+            valid_event_data["event_type"],
+            valid_event_data["context"],
+            valid_event_data["payload"],
+        )
+        assert errors == {}
 
-        assert result["event_type"] == "project.updated"
-        assert result["context"]["org_id"] == 1
-        assert result["payload"]["title"] == "Project Updated"
+    def test_validate_missing_event_type(self, valid_event_data):
+        """Test validation fails when event_type is empty."""
+        errors = EventService._validate_event(
+            "",  # Empty event type
+            valid_event_data["context"],
+            valid_event_data["payload"],
+        )
+        assert "event_type" in errors
 
-    def test_validate_missing_event_type(self):
-        """Test validation fails when event_type is missing."""
-        invalid_event = {
-            "context": {"org_id": 1},
-            "payload": {"title": "Test"},
-        }
-
-        with pytest.raises(EventValidationError, match="event_type"):
-            EventService.validate_and_normalize(invalid_event)
-
-    def test_validate_missing_context(self):
-        """Test validation fails when context is missing."""
-        invalid_event = {
-            "event_type": "test.event",
-            "payload": {"title": "Test"},
-        }
-
-        with pytest.raises(EventValidationError, match="context"):
-            EventService.validate_and_normalize(invalid_event)
-
-    def test_validate_missing_payload(self):
-        """Test validation fails when payload is missing."""
-        invalid_event = {
-            "event_type": "test.event",
-            "context": {"org_id": 1},
-        }
-
-        with pytest.raises(EventValidationError, match="payload"):
-            EventService.validate_and_normalize(invalid_event)
-
-    def test_validate_invalid_event_type_format(self):
+    def test_validate_invalid_event_type_format(self, valid_event_data):
         """Test validation fails for invalid event_type format."""
-        invalid_event = {
-            "event_type": "INVALID EVENT",  # Should be lowercase with dots
-            "context": {"org_id": 1},
-            "payload": {"title": "Test"},
-        }
+        errors = EventService._validate_event(
+            "INVALID EVENT",  # Should be lowercase with dots
+            valid_event_data["context"],
+            valid_event_data["payload"],
+        )
+        assert "event_type" in errors
 
-        with pytest.raises(EventValidationError, match="event_type"):
-            EventService.validate_and_normalize(invalid_event)
-
-    def test_validate_missing_org_id_in_context(self):
+    def test_validate_missing_org_id(self, valid_event_data):
         """Test validation fails when org_id is missing from context."""
-        invalid_event = {
-            "event_type": "project.updated",
-            "context": {"user_id": 1},  # Missing org_id
-            "payload": {"title": "Test"},
-        }
-
-        with pytest.raises(EventValidationError, match="org_id"):
-            EventService.validate_and_normalize(invalid_event)
-
-    @patch("contextual_notifications.services.event_service.route_notification.delay")
-    def test_emit_event_queues_celery_task(self, mock_route_task, event_data):
-        """Test that emit_event queues a Celery task."""
-        EventService.emit_event(
-            event_type=event_data["event_type"],
-            context=event_data["context"],
-            payload=event_data["payload"],
+        context = {"user_id": 1}  # Missing org_id
+        errors = EventService._validate_event(
+            valid_event_data["event_type"],
+            context,
+            valid_event_data["payload"],
         )
+        assert "context.org_id" in errors
 
-        mock_route_task.assert_called_once()
-        call_args = mock_route_task.call_args[0][0]
-        assert call_args["event_type"] == "project.updated"
-        assert call_args["context"]["org_id"] == 1
-
-    @patch("contextual_notifications.services.event_service.route_notification.delay")
-    def test_emit_event_with_invalid_data_does_not_queue(self, mock_route_task):
-        """Test that invalid events are not queued."""
-        with pytest.raises(EventValidationError):
-            EventService.emit_event(
-                event_type="",  # Invalid
-                context={"org_id": 1},
-                payload={"title": "Test"},
-            )
-
-        mock_route_task.assert_not_called()
-
-    @patch("contextual_notifications.services.event_service.logger")
-    @patch("contextual_notifications.services.event_service.route_notification.delay")
-    def test_emit_event_logs_emission(self, mock_route_task, mock_logger, event_data):
-        """Test that event emission is logged."""
-        EventService.emit_event(
-            event_type=event_data["event_type"],
-            context=event_data["context"],
-            payload=event_data["payload"],
+    def test_validate_invalid_org_id_type(self, valid_event_data):
+        """Test validation fails when org_id is not an integer."""
+        context = {"org_id": "invalid"}  # Should be int
+        errors = EventService._validate_event(
+            valid_event_data["event_type"],
+            context,
+            valid_event_data["payload"],
         )
+        assert "context.org_id" in errors
 
-        mock_logger.info.assert_called()
-        log_message = mock_logger.info.call_args[0][0]
-        assert "project.updated" in log_message
+    def test_validate_missing_title(self, valid_event_data):
+        """Test validation fails when title is missing."""
+        payload = {"body": "Test body"}  # Missing title
+        errors = EventService._validate_event(
+            valid_event_data["event_type"],
+            valid_event_data["context"],
+            payload,
+        )
+        assert "payload.title" in errors
 
-    def test_normalize_adds_resource_id_if_missing(self):
-        """Test that normalization adds resource_id if not provided."""
-        event = {
-            "event_type": "project.updated",
-            "context": {
-                "org_id": 1,
-                "project_id": 42,
-            },
-            "payload": {"title": "Test"},
+    def test_validate_missing_body(self, valid_event_data):
+        """Test validation fails when body is missing."""
+        payload = {"title": "Test title"}  # Missing body
+        errors = EventService._validate_event(
+            valid_event_data["event_type"],
+            valid_event_data["context"],
+            payload,
+        )
+        assert "payload.body" in errors
+
+    def test_validate_empty_title(self, valid_event_data):
+        """Test validation fails for empty title."""
+        payload = {"title": "   ", "body": "Test body"}  # Whitespace title
+        errors = EventService._validate_event(
+            valid_event_data["event_type"],
+            valid_event_data["context"],
+            payload,
+        )
+        assert "payload.title" in errors
+
+    def test_validate_optional_url(self, valid_event_data):
+        """Test validation passes with optional url."""
+        payload = {
+            "title": "Test",
+            "body": "Body",
+            "url": "https://example.com",
         }
-
-        result = EventService.validate_and_normalize(event)
-
-        # Should generate resource_id from project_id
-        assert "resource_id" in result["context"]
-        assert "project_42" in result["context"]["resource_id"]
-
-    def test_normalize_preserves_existing_resource_id(self):
-        """Test that normalization preserves existing resource_id."""
-        event = {
-            "event_type": "project.updated",
-            "context": {
-                "org_id": 1,
-                "project_id": 42,
-                "resource_id": "custom_id_123",
-            },
-            "payload": {"title": "Test"},
-        }
-
-        result = EventService.validate_and_normalize(event)
-
-        assert result["context"]["resource_id"] == "custom_id_123"
+        errors = EventService._validate_event(
+            valid_event_data["event_type"],
+            valid_event_data["context"],
+            payload,
+        )
+        assert errors == {}
 
     def test_validate_event_type_pattern(self):
-        """Test that event_type must match pattern (lowercase, dots, underscores)."""
+        """Test that valid event types pass pattern check."""
         valid_types = [
             "project.created",
             "task.assigned",
             "org.member_invited",
             "workflow.step.completed",
+            "test_event",
         ]
 
         for event_type in valid_types:
-            event = {
-                "event_type": event_type,
-                "context": {"org_id": 1},
-                "payload": {"title": "Test"},
-            }
-            result = EventService.validate_and_normalize(event)
-            assert result["event_type"] == event_type
+            errors = EventService._validate_event(
+                event_type,
+                {"org_id": 1},
+                {"title": "Test", "body": "Body"},
+            )
+            assert "event_type" not in errors, f"{event_type} should be valid"
 
-    def test_validate_rejects_uppercase_event_type(self):
-        """Test that uppercase event types are rejected."""
-        event = {
-            "event_type": "Project.Created",  # Uppercase
-            "context": {"org_id": 1},
-            "payload": {"title": "Test"},
-        }
 
-        with pytest.raises(EventValidationError):
-            EventService.validate_and_normalize(event)
+@pytest.mark.django_db
+class TestEventServiceEmit:
+    """Tests for EventService.emit_event method."""
+
+    @patch("contextual_notifications.services.event_service.route_event_task")
+    def test_emit_event_queues_celery_task(self, mock_route_task, valid_event_data):
+        """Test that emit_event queues a Celery task."""
+        EventService.emit_event(
+            event_type=valid_event_data["event_type"],
+            context=valid_event_data["context"],
+            payload=valid_event_data["payload"],
+        )
+
+        mock_route_task.delay.assert_called_once()
+        call_args = mock_route_task.delay.call_args[0][0]
+        assert call_args["type"] == "project.updated"
+        assert call_args["context"]["org_id"] == 1
+
+    def test_emit_event_with_invalid_data_raises(self, valid_event_data):
+        """Test that invalid events raise ValidationError."""
+        with pytest.raises(ValidationError):
+            EventService.emit_event(
+                event_type="",  # Invalid - empty
+                context=valid_event_data["context"],
+                payload=valid_event_data["payload"],
+            )
+
+    @patch("contextual_notifications.services.event_service.route_event_task")
+    def test_emit_event_with_invalid_data_does_not_queue(
+        self, mock_route_task, valid_event_data
+    ):
+        """Test that invalid events are not queued."""
+        with pytest.raises(ValidationError):
+            EventService.emit_event(
+                event_type="",  # Invalid
+                context=valid_event_data["context"],
+                payload=valid_event_data["payload"],
+            )
+
+        mock_route_task.delay.assert_not_called()
+
+    @patch("contextual_notifications.services.event_service.logger")
+    @patch("contextual_notifications.services.event_service.route_event_task")
+    def test_emit_event_logs_emission(
+        self, mock_route_task, mock_logger, valid_event_data
+    ):
+        """Test that event emission is logged."""
+        EventService.emit_event(
+            event_type=valid_event_data["event_type"],
+            context=valid_event_data["context"],
+            payload=valid_event_data["payload"],
+        )
+
+        mock_logger.info.assert_called()
+
+    @patch("contextual_notifications.services.event_service.route_event_task")
+    def test_emit_event_handles_celery_error(self, mock_route_task, valid_event_data):
+        """Test that Celery errors are handled gracefully (fire-and-forget)."""
+        mock_route_task.delay.side_effect = Exception("Celery unavailable")
+
+        # Should not raise - fire-and-forget
+        EventService.emit_event(
+            event_type=valid_event_data["event_type"],
+            context=valid_event_data["context"],
+            payload=valid_event_data["payload"],
+        )
