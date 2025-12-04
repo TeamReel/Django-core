@@ -11,9 +11,9 @@ subtasks:
   - "T024"
 title: "Nginx & Environment Configuration"
 phase: "Phase 2 - Configuration & Documentation"
-lane: "planned"
-assignee: ""
-agent: ""
+lane: "doing"
+assignee: "GitHub Copilot"
+agent: "GitHub Copilot"
 shell_pid: ""
 review_status: ""
 reviewed_by: ""
@@ -120,3 +120,4 @@ Add commented examples for:
 ## Activity Log
 
 - 2025-12-03T00:00:00Z – copilot – lane=planned – Prompt created
+- 2025-12-04T10:40:00Z – GitHub Copilot – lane=doing – Started WP03 implementation (Nginx configs + expand .env.example)
