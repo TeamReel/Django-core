@@ -68,15 +68,15 @@ All subtasks are listed here for quick reference. See work package sections belo
 | T023 | Implement template inheritance file merging | WP03 | P1 | ✅ |
 | T024 | Add Jinja2 rendering error handling with line number reporting | WP03 | P1 | ✅ |
 | T025 | Add unit tests for template rendering with golden files | WP03 | P1 | ✅ |
-| T026 | Implement staging directory creation (mkdtemp) | WP04 | P1 | No |
-| T027 | Implement file builder (writes rendered templates to staging) | WP04 | P1 | No |
-| T028 | Implement atomic move operation (staging → target with rollback) | WP04 | P1 | No |
-| T029 | Implement rollback mechanism (cleanup staging on failure, ADR-022) | WP04 | P1 | No |
-| T030 | Implement file permission preservation (chmod, metadata) | WP04 | P1 | [P] |
-| T031 | Implement pre-generation conflict detection (existing directory check) | WP04 | P1 | [P] |
-| T032 | Implement app name validation (Django naming conventions, FR-008) | WP04 | P1 | [P] |
-| T033 | Implement project name validation and sanitization | WP04 | P1 | [P] |
-| T034 | Add integration tests for code generation with rollback scenarios | WP04 | P1 | [P] |
+| T026 | Implement staging directory creation (mkdtemp) | WP04 | P1 | ✅ |
+| T027 | Implement file builder (writes rendered templates to staging) | WP04 | P1 | ✅ |
+| T028 | Implement atomic move operation (staging → target with rollback) | WP04 | P1 | ✅ |
+| T029 | Implement rollback mechanism (cleanup staging on failure, ADR-022) | WP04 | P1 | ✅ |
+| T030 | Implement file permission preservation (chmod, metadata) | WP04 | P1 | ✅ |
+| T031 | Implement pre-generation conflict detection (existing directory check) | WP04 | P1 | ✅ |
+| T032 | Implement app name validation (Django naming conventions, FR-008) | WP04 | P1 | ✅ |
+| T033 | Implement project name validation and sanitization | WP04 | P1 | ✅ |
+| T034 | Add integration tests for code generation with rollback scenarios | WP04 | P1 | ✅ |
 | T026a | Create project bootstrap template with B01 skeleton + stable foundational apps (FR-027) | WP04 | P1 | No |
 | T026b | Integrate B19 deployment templates into project bootstrap (FR-028) | WP04 | P1 | [P] |
 | T035 | Implement check_policy.py subprocess runner | WP05 | P1 | No |
