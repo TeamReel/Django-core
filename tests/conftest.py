@@ -1,11 +1,35 @@
 """Test configuration for Django Core-App.
 
 This module provides test fixtures for all Django applications,
-with special focus on Celery/async task testing (B15).
+with special focus on Celery/async task testing (B15) and
+graceful handling of Redis unavailability for local development.
 """
 
 import pytest
 from django.conf import settings
+
+
+def _check_redis_available():
+    """Check if Redis is available at the configured URL."""
+    try:
+        import redis
+        client = redis.Redis(host='127.0.0.1', port=6379, socket_timeout=1)
+        client.ping()
+        return True
+    except Exception:
+        return False
+
+
+# Cache this at module level to avoid repeated connection attempts
+_REDIS_AVAILABLE = None
+
+
+def is_redis_available():
+    """Check Redis availability (cached for session)."""
+    global _REDIS_AVAILABLE
+    if _REDIS_AVAILABLE is None:
+        _REDIS_AVAILABLE = _check_redis_available()
+    return _REDIS_AVAILABLE
 
 
 def pytest_configure(config):
@@ -16,6 +40,22 @@ def pytest_configure(config):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     # Don't set EAGER_PROPAGATES here - let tests control exception behavior
 
+    # Override cache to use in-memory backend when Redis is not available
+    # This allows tests to run locally without Redis while CI uses real Redis
+    if not is_redis_available():
+        settings.CACHES = {
+            "default": {
+                "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+                "LOCATION": "test-cache",
+            }
+        }
+
+    # Register custom markers
+    config.addinivalue_line(
+        "markers",
+        "requires_redis: mark test as requiring Redis (skip if unavailable)"
+    )
+
 
 def pytest_addoption(parser):
     """Add custom pytest command-line options."""
@@ -25,6 +65,24 @@ def pytest_addoption(parser):
         default=False,
         help="Run integration tests (requires Redis)",
     )
+
+
+def pytest_collection_modifyitems(config, items):
+    """Skip tests that require Redis when it's not available."""
+    if is_redis_available():
+        # Redis is available, run all tests
+        return
+
+    skip_redis = pytest.mark.skip(reason="Redis not available (run with Redis for full test suite)")
+    for item in items:
+        if "requires_redis" in item.keywords:
+            item.add_marker(skip_redis)
+
+
+@pytest.fixture(scope="session")
+def redis_available():
+    """Fixture to check if Redis is available."""
+    return is_redis_available()
 
 
 @pytest.fixture(scope="session")
