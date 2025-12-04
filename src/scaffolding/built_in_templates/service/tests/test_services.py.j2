@@ -1,0 +1,255 @@
+"""
+Tests for {{ app_name }} service layer.
+"""
+
+import pytest
+from django.db import transaction
+
+from {{ app_name }}.exceptions import (
+    {{ app_name | title | replace('_', '') }}BusinessError,
+    {{ app_name | title | replace('_', '') }}ValidationError,
+)
+from {{ app_name }}.models import Item
+from {{ app_name }}.services import {{ service_name | default("ItemService") }}
+
+
+@pytest.mark.django_db
+class Test{{ service_name | default("ItemService") }}GetOperations:
+    """Test {{ service_name | default("ItemService") }} read operations."""
+
+    def test_get_all_items(self):
+        """Test retrieving all items."""
+        Item.objects.create(name="Item 1")
+        Item.objects.create(name="Item 2")
+
+        items = {{ service_name | default("ItemService") }}.get_all()
+        assert items.count() == 2
+
+    def test_get_all_active_only(self):
+        """Test retrieving only active items."""
+        Item.objects.create(name="Active", is_active=True)
+        Item.objects.create(name="Inactive", is_active=False)
+
+        items = {{ service_name | default("ItemService") }}.get_all(active_only=True)
+        assert items.count() == 1
+        assert items.first().name == "Active"
+
+    def test_get_by_id_existing(self):
+        """Test retrieving item by ID."""
+        item = Item.objects.create(name="Test Item")
+        
+        found = {{ service_name | default("ItemService") }}.get_by_id(item.id)
+        assert found is not None
+        assert found.id == item.id
+        assert found.name == "Test Item"
+
+    def test_get_by_id_nonexistent(self):
+        """Test retrieving non-existent item returns None."""
+        found = {{ service_name | default("ItemService") }}.get_by_id(9999)
+        assert found is None
+
+
+@pytest.mark.django_db
+class Test{{ service_name | default("ItemService") }}CreateOperations:
+    """Test {{ service_name | default("ItemService") }} create operations."""
+
+    def test_create_item_valid(self):
+        """Test creating item with valid data."""
+        item = {{ service_name | default("ItemService") }}.create(
+            name="New Item",
+            description="A new item",
+            is_active=True
+        )
+        
+        assert item.id is not None
+        assert item.name == "New Item"
+        assert item.description == "A new item"
+        assert item.is_active is True
+        assert Item.objects.filter(pk=item.id).exists()
+
+    def test_create_item_minimal(self):
+        """Test creating item with minimal data."""
+        item = {{ service_name | default("ItemService") }}.create(name="Minimal Item")
+        
+        assert item.name == "Minimal Item"
+        assert item.description == ""
+        assert item.is_active is True
+
+    def test_create_item_empty_name(self):
+        """Test creating item with empty name raises error."""
+        with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError, match="Name is required"):
+            {{ service_name | default("ItemService") }}.create(name="")
+
+    def test_create_item_whitespace_name(self):
+        """Test creating item with whitespace-only name raises error."""
+        with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError, match="Name is required"):
+            {{ service_name | default("ItemService") }}.create(name="   ")
+
+    def test_create_item_short_name(self):
+        """Test creating item with short name raises error."""
+        with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError, match="at least 3 characters"):
+            {{ service_name | default("ItemService") }}.create(name="ab")
+
+    def test_create_item_duplicate_name(self):
+        """Test creating item with duplicate name raises error."""
+        Item.objects.create(name="Existing")
+        
+        with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError, match="already exists"):
+            {{ service_name | default("ItemService") }}.create(name="Existing")
+
+    def test_create_item_trims_whitespace(self):
+        """Test creating item trims whitespace from fields."""
+        item = {{ service_name | default("ItemService") }}.create(
+            name="  Trimmed  ",
+            description="  Also trimmed  "
+        )
+        
+        assert item.name == "Trimmed"
+        assert item.description == "Also trimmed"
+
+
+@pytest.mark.django_db
+class Test{{ service_name | default("ItemService") }}UpdateOperations:
+    """Test {{ service_name | default("ItemService") }} update operations."""
+
+    def test_update_item_name(self):
+        """Test updating item name."""
+        item = Item.objects.create(name="Original")
+        
+        updated = {{ service_name | default("ItemService") }}.update(item.id, name="Updated")
+        
+        assert updated.name == "Updated"
+        item.refresh_from_db()
+        assert item.name == "Updated"
+
+    def test_update_item_multiple_fields(self):
+        """Test updating multiple fields."""
+        item = Item.objects.create(name="Original", is_active=True)
+        
+        updated = {{ service_name | default("ItemService") }}.update(
+            item.id,
+            name="Updated",
+            description="New description",
+            is_active=False
+        )
+        
+        assert updated.name == "Updated"
+        assert updated.description == "New description"
+        assert updated.is_active is False
+
+    def test_update_nonexistent_item(self):
+        """Test updating non-existent item raises error."""
+        with pytest.raises({{ app_name | title | replace('_', '') }}BusinessError, match="not found"):
+            {{ service_name | default("ItemService") }}.update(9999, name="Updated")
+
+    def test_update_item_empty_name(self):
+        """Test updating item with empty name raises error."""
+        item = Item.objects.create(name="Original")
+        
+        with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError, match="cannot be empty"):
+            {{ service_name | default("ItemService") }}.update(item.id, name="")
+
+    def test_update_item_short_name(self):
+        """Test updating item with short name raises error."""
+        item = Item.objects.create(name="Original")
+        
+        with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError, match="at least 3 characters"):
+            {{ service_name | default("ItemService") }}.update(item.id, name="ab")
+
+
+@pytest.mark.django_db
+class Test{{ service_name | default("ItemService") }}DeleteOperations:
+    """Test {{ service_name | default("ItemService") }} delete operations."""
+
+    def test_delete_item(self):
+        """Test deleting existing item."""
+        item = Item.objects.create(name="To Delete")
+        
+        {{ service_name | default("ItemService") }}.delete(item.id)
+        
+        assert not Item.objects.filter(pk=item.id).exists()
+
+    def test_delete_nonexistent_item(self):
+        """Test deleting non-existent item raises error."""
+        with pytest.raises({{ app_name | title | replace('_', '') }}BusinessError, match="not found"):
+            {{ service_name | default("ItemService") }}.delete(9999)
+
+
+@pytest.mark.django_db
+class Test{{ service_name | default("ItemService") }}ActivationOperations:
+    """Test {{ service_name | default("ItemService") }} activation/deactivation."""
+
+    def test_activate_item(self):
+        """Test activating inactive item."""
+        item = Item.objects.create(name="Inactive", is_active=False)
+        
+        activated = {{ service_name | default("ItemService") }}.activate(item.id)
+        
+        assert activated.is_active is True
+        item.refresh_from_db()
+        assert item.is_active is True
+
+    def test_deactivate_item(self):
+        """Test deactivating active item."""
+        item = Item.objects.create(name="Active", is_active=True)
+        
+        deactivated = {{ service_name | default("ItemService") }}.deactivate(item.id)
+        
+        assert deactivated.is_active is False
+        item.refresh_from_db()
+        assert item.is_active is False
+
+    def test_activate_nonexistent_item(self):
+        """Test activating non-existent item raises error."""
+        with pytest.raises({{ app_name | title | replace('_', '') }}BusinessError, match="not found"):
+            {{ service_name | default("ItemService") }}.activate(9999)
+
+    def test_bulk_activate_items(self):
+        """Test bulk activation of multiple items."""
+        item1 = Item.objects.create(name="Item 1", is_active=False)
+        item2 = Item.objects.create(name="Item 2", is_active=False)
+        item3 = Item.objects.create(name="Item 3", is_active=False)
+
+        count = {{ service_name | default("ItemService") }}.bulk_activate([item1.id, item2.id, item3.id])
+        
+        assert count == 3
+        assert Item.objects.filter(is_active=True).count() == 3
+
+    def test_bulk_deactivate_items(self):
+        """Test bulk deactivation of multiple items."""
+        item1 = Item.objects.create(name="Item 1", is_active=True)
+        item2 = Item.objects.create(name="Item 2", is_active=True)
+
+        count = {{ service_name | default("ItemService") }}.bulk_deactivate([item1.id, item2.id])
+        
+        assert count == 2
+        assert Item.objects.filter(is_active=False).count() == 2
+
+
+@pytest.mark.django_db
+class Test{{ service_name | default("ItemService") }}Transactions:
+    """Test {{ service_name | default("ItemService") }} transaction handling."""
+
+    def test_create_rollback_on_error(self):
+        """Test transaction rollback when create fails."""
+        initial_count = Item.objects.count()
+
+        # This should raise an error and rollback
+        with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError):
+            {{ service_name | default("ItemService") }}.create(name="ab")  # Too short
+
+        # Count should be unchanged (transaction rolled back)
+        assert Item.objects.count() == initial_count
+
+    def test_update_rollback_on_error(self):
+        """Test transaction rollback when update fails."""
+        item = Item.objects.create(name="Original")
+        original_name = item.name
+
+        # This should raise an error and rollback
+        with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError):
+            {{ service_name | default("ItemService") }}.update(item.id, name="x")  # Too short
+
+        # Name should be unchanged (transaction rolled back)
+        item.refresh_from_db()
+        assert item.name == original_name

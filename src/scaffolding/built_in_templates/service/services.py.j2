@@ -1,0 +1,250 @@
+"""
+Business logic services for {{ app_name }}.
+
+Service layer provides:
+- Encapsulated business logic
+- Transaction management
+- Input validation
+- Domain operations
+- Reusable business workflows
+"""
+
+from typing import List, Optional
+
+from django.db import transaction
+from django.db.models import QuerySet
+
+from .exceptions import {{ app_name | title | replace('_', '') }}BusinessError, {{ app_name | title | replace('_', '') }}ValidationError
+from .models import Item
+
+
+class {{ service_name | default("ItemService") }}:
+    """
+    Service class for {{ model_name | default("Item") }} business logic.
+
+    Provides high-level operations for {{ model_name | default("Item") }} management
+    with validation, transactions, and error handling.
+    """
+
+    @staticmethod
+    def get_all(active_only: bool = False) -> QuerySet[Item]:
+        """
+        Retrieve all items.
+
+        Args:
+            active_only: If True, return only active items
+
+        Returns:
+            QuerySet of items
+        """
+        queryset = Item.objects.all()
+        if active_only:
+            queryset = queryset.filter(is_active=True)
+        return queryset
+
+    @staticmethod
+    def get_by_id(item_id: int) -> Optional[Item]:
+        """
+        Retrieve item by ID.
+
+        Args:
+            item_id: Primary key of item
+
+        Returns:
+            Item instance or None if not found
+        """
+        try:
+            return Item.objects.get(pk=item_id)
+        except Item.DoesNotExist:
+            return None
+
+    @staticmethod
+    @transaction.atomic
+    def create(
+        name: str,
+        description: str = "",
+        is_active: bool = True,
+        **kwargs
+    ) -> Item:
+        """
+        Create new item with validation.
+
+        Args:
+            name: Item name (required)
+            description: Item description (optional)
+            is_active: Whether item is active (default: True)
+            **kwargs: Additional fields
+
+        Returns:
+            Created Item instance
+
+        Raises:
+            {{ app_name | title | replace('_', '') }}ValidationError: If validation fails
+        """
+        # Validate input
+        if not name or not name.strip():
+            raise {{ app_name | title | replace('_', '') }}ValidationError("Name is required")
+
+        if len(name.strip()) < 3:
+            raise {{ app_name | title | replace('_', '') }}ValidationError("Name must be at least 3 characters")
+
+        # Check for duplicates
+        if Item.objects.filter(name=name.strip()).exists():
+            raise {{ app_name | title | replace('_', '') }}ValidationError(f"Item with name '{name}' already exists")
+
+        # Create item
+        item = Item.objects.create(
+            name=name.strip(),
+            description=description.strip(),
+            is_active=is_active,
+            **kwargs
+        )
+
+        return item
+
+    @staticmethod
+    @transaction.atomic
+    def update(
+        item_id: int,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        **kwargs
+    ) -> Item:
+        """
+        Update existing item.
+
+        Args:
+            item_id: Primary key of item to update
+            name: New name (optional)
+            description: New description (optional)
+            is_active: New active status (optional)
+            **kwargs: Additional fields to update
+
+        Returns:
+            Updated Item instance
+
+        Raises:
+            {{ app_name | title | replace('_', '') }}BusinessError: If item not found
+            {{ app_name | title | replace('_', '') }}ValidationError: If validation fails
+        """
+        try:
+            item = Item.objects.get(pk=item_id)
+        except Item.DoesNotExist:
+            raise {{ app_name | title | replace('_', '') }}BusinessError(f"Item with ID {item_id} not found")
+
+        # Update fields if provided
+        if name is not None:
+            if not name.strip():
+                raise {{ app_name | title | replace('_', '') }}ValidationError("Name cannot be empty")
+            if len(name.strip()) < 3:
+                raise {{ app_name | title | replace('_', '') }}ValidationError("Name must be at least 3 characters")
+            item.name = name.strip()
+
+        if description is not None:
+            item.description = description.strip()
+
+        if is_active is not None:
+            item.is_active = is_active
+
+        # Update additional fields
+        for key, value in kwargs.items():
+            if hasattr(item, key):
+                setattr(item, key, value)
+
+        item.save()
+        return item
+
+    @staticmethod
+    @transaction.atomic
+    def delete(item_id: int) -> None:
+        """
+        Delete item.
+
+        Args:
+            item_id: Primary key of item to delete
+
+        Raises:
+            {{ app_name | title | replace('_', '') }}BusinessError: If item not found
+        """
+        try:
+            item = Item.objects.get(pk=item_id)
+            item.delete()
+        except Item.DoesNotExist:
+            raise {{ app_name | title | replace('_', '') }}BusinessError(f"Item with ID {item_id} not found")
+
+    @staticmethod
+    @transaction.atomic
+    def activate(item_id: int) -> Item:
+        """
+        Activate item.
+
+        Args:
+            item_id: Primary key of item to activate
+
+        Returns:
+            Activated Item instance
+
+        Raises:
+            {{ app_name | title | replace('_', '') }}BusinessError: If item not found
+        """
+        try:
+            item = Item.objects.get(pk=item_id)
+            item.is_active = True
+            item.save()
+            return item
+        except Item.DoesNotExist:
+            raise {{ app_name | title | replace('_', '') }}BusinessError(f"Item with ID {item_id} not found")
+
+    @staticmethod
+    @transaction.atomic
+    def deactivate(item_id: int) -> Item:
+        """
+        Deactivate item.
+
+        Args:
+            item_id: Primary key of item to deactivate
+
+        Returns:
+            Deactivated Item instance
+
+        Raises:
+            {{ app_name | title | replace('_', '') }}BusinessError: If item not found
+        """
+        try:
+            item = Item.objects.get(pk=item_id)
+            item.is_active = False
+            item.save()
+            return item
+        except Item.DoesNotExist:
+            raise {{ app_name | title | replace('_', '') }}BusinessError(f"Item with ID {item_id} not found")
+
+    @staticmethod
+    @transaction.atomic
+    def bulk_activate(item_ids: List[int]) -> int:
+        """
+        Activate multiple items in bulk.
+
+        Args:
+            item_ids: List of item primary keys
+
+        Returns:
+            Number of items activated
+        """
+        count = Item.objects.filter(pk__in=item_ids).update(is_active=True)
+        return count
+
+    @staticmethod
+    @transaction.atomic
+    def bulk_deactivate(item_ids: List[int]) -> int:
+        """
+        Deactivate multiple items in bulk.
+
+        Args:
+            item_ids: List of item primary keys
+
+        Returns:
+            Number of items deactivated
+        """
+        count = Item.objects.filter(pk__in=item_ids).update(is_active=False)
+        return count

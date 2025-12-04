@@ -1,0 +1,96 @@
+"""
+Tests for {{ app_name }} forms.
+"""
+
+import pytest
+
+from {{ app_name }}.forms import {{ model_name | default("Item") }}Form
+from {{ app_name }}.models import {{ model_name | default("Item") }}
+
+
+@pytest.mark.django_db
+class Test{{ model_name | default("Item") }}Form:
+    """Test {{ model_name | default("Item") }}Form."""
+
+    def test_form_valid_data(self):
+        """Test form with valid data."""
+        form_data = {
+            "name": "Test {{ model_name | default('Item') }}",
+            "description": "Test description",
+            "is_active": True
+        }
+        form = {{ model_name | default("Item") }}Form(data=form_data)
+        
+        assert form.is_valid()
+
+    def test_form_missing_required_field(self):
+        """Test form with missing required field."""
+        form_data = {
+            "description": "Missing name"
+        }
+        form = {{ model_name | default("Item") }}Form(data=form_data)
+        
+        assert not form.is_valid()
+        assert "name" in form.errors
+
+    def test_form_empty_name(self):
+        """Test form with empty name."""
+        form_data = {
+            "name": "   ",
+            "is_active": True
+        }
+        form = {{ model_name | default("Item") }}Form(data=form_data)
+        
+        assert not form.is_valid()
+        assert "name" in form.errors
+
+    def test_form_short_name(self):
+        """Test form with name too short."""
+        form_data = {
+            "name": "ab",
+            "is_active": True
+        }
+        form = {{ model_name | default("Item") }}Form(data=form_data)
+        
+        assert not form.is_valid()
+        assert "name" in form.errors
+
+    def test_form_duplicate_name(self):
+        """Test form with duplicate name."""
+        {{ model_name | default("Item") }}.objects.create(name="Existing")
+        
+        form_data = {
+            "name": "Existing",
+            "is_active": True
+        }
+        form = {{ model_name | default("Item") }}Form(data=form_data)
+        
+        assert not form.is_valid()
+        assert "name" in form.errors
+
+    def test_form_save(self):
+        """Test form save creates instance."""
+        form_data = {
+            "name": "Form {{ model_name | default('Item') }}",
+            "description": "Created via form",
+            "is_active": False
+        }
+        form = {{ model_name | default("Item") }}Form(data=form_data)
+        
+        assert form.is_valid()
+        item = form.save()
+        assert item.name == "Form {{ model_name | default('Item') }}"
+        assert item.is_active is False
+
+    def test_form_update_excludes_duplicate_check_for_self(self):
+        """Test form update allows same name for same instance."""
+        item = {{ model_name | default("Item") }}.objects.create(name="Original")
+        
+        form_data = {
+            "name": "Original",  # Same name
+            "description": "Updated description",
+            "is_active": True
+        }
+        form = {{ model_name | default("Item") }}Form(data=form_data, instance=item)
+        
+        assert form.is_valid()

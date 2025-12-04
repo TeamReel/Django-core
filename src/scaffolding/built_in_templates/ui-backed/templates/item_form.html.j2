@@ -1,0 +1,54 @@
+{% raw %}{% extends "{{ app_name }}/base.html" %}
+
+{% block title %}
+    {% if {{ model_name | default('item') | lower }} %}
+        Edit {{ {{ model_name | default('item') | lower }}.name }}
+    {% else %}
+        Create {{ model_name | default('Item') }}
+    {% endif %}
+    - {{ block.super }}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>
+        {% if {{ model_name | default('item') | lower }} %}
+            Edit {{ model_name | default('Item') }}
+        {% else %}
+            Create New {{ model_name | default('Item') }}
+        {% endif %}
+    </h1>
+</div>
+
+<form method="post" class="form">
+    {% csrf_token %}
+    
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    {% for field in form %}
+        <div class="form-group {% if field.errors %}has-error{% endif %}">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+                <small class="form-text">{{ field.help_text }}</small>
+            {% endif %}
+            {% if field.errors %}
+                <div class="field-errors">
+                    {{ field.errors }}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            {% if {{ model_name | default('item') | lower }} %}Update{% else %}Create{% endif %}
+        </button>
+        <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}{% endraw %}

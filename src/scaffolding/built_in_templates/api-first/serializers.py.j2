@@ -1,0 +1,85 @@
+"""
+DRF serializers for {{ app_name }}.
+"""
+
+from rest_framework import serializers
+
+from .models import {{ model_name | default("Item") }}
+
+
+class {{ model_name | default("Item") }}Serializer(serializers.ModelSerializer):
+    """
+    Serializer for {{ model_name | default("Item") }} model.
+
+    Provides full CRUD serialization with validation.
+    """
+
+    class Meta:
+        model = {{ model_name | default("Item") }}
+        fields = [
+            "id",
+            "name",
+            "description",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate_name(self, value: str) -> str:
+        """
+        Validate name field.
+
+        Args:
+            value: Name to validate
+
+        Returns:
+            Validated name
+
+        Raises:
+            serializers.ValidationError: If name is invalid
+        """
+        if not value or not value.strip():
+            raise serializers.ValidationError("Name cannot be empty")
+        
+        if len(value.strip()) < 3:
+            raise serializers.ValidationError("Name must be at least 3 characters")
+        
+        return value.strip()
+
+
+class {{ model_name | default("Item") }}ListSerializer(serializers.ModelSerializer):
+    """
+    Lightweight serializer for {{ model_name | default("Item") }} list views.
+
+    Excludes heavy fields for better performance.
+    """
+
+    class Meta:
+        model = {{ model_name | default("Item") }}
+        fields = ["id", "name", "is_active", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+
+class {{ model_name | default("Item") }}CreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating {{ model_name | default("Item") }} instances.
+
+    Includes only fields required for creation.
+    """
+
+    class Meta:
+        model = {{ model_name | default("Item") }}
+        fields = ["name", "description", "is_active"]
+
+    def create(self, validated_data):
+        """
+        Create new {{ model_name | default("Item") }} instance.
+
+        Args:
+            validated_data: Validated input data
+
+        Returns:
+            Created {{ model_name | default("Item") }} instance
+        """
+        return {{ model_name | default("Item") }}.objects.create(**validated_data)

@@ -1,0 +1,61 @@
+"""
+Custom permissions for {{ app_name }} API.
+"""
+
+from rest_framework import permissions
+
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission: object owner has full access, others read-only.
+
+    Allows any authenticated user to view objects, but only owners
+    can modify them. Useful for user-specific resources.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user has permission for specific object.
+
+        Args:
+            request: HTTP request
+            view: View requesting permission
+            obj: Object being accessed
+
+        Returns:
+            True if user has permission, False otherwise
+        """
+        # Read permissions (GET, HEAD, OPTIONS) allowed for any authenticated user
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Write permissions only for object owner
+        # Adjust this logic based on your object's ownership field
+        return hasattr(obj, "owner") and obj.owner == request.user
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission: admins have full access, others read-only.
+
+    Allows any authenticated user to view objects, but only admins
+    can create, update, or delete them.
+    """
+
+    def has_permission(self, request, view):
+        """
+        Check if user has permission for this view.
+
+        Args:
+            request: HTTP request
+            view: View requesting permission
+
+        Returns:
+            True if user has permission, False otherwise
+        """
+        # Read permissions allowed for any authenticated user
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+
+        # Write permissions only for admin users
+        return request.user and request.user.is_staff

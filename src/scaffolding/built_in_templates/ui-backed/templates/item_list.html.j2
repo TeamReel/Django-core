@@ -1,0 +1,73 @@
+{% raw %}{% extends "{{ app_name }}/base.html" %}
+
+{% block title %}{{ model_name | default('Items') }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ model_name | default('Items') }}</h1>
+    <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-create' %}" class="btn btn-primary">
+        Create New {{ model_name | default('Item') }}
+    </a>
+</div>
+
+<form method="get" class="search-form">
+    <input type="text" name="search" placeholder="Search by name..." value="{{ request.GET.search }}">
+    <select name="is_active">
+        <option value="">All</option>
+        <option value="true" {% if request.GET.is_active == 'true' %}selected{% endif %}>Active</option>
+        <option value="false" {% if request.GET.is_active == 'false' %}selected{% endif %}>Inactive</option>
+    </select>
+    <button type="submit" class="btn btn-secondary">Search</button>
+</form>
+
+{% if {{ model_name | default('items') | lower }} %}
+    <div class="item-grid">
+        {% for {{ model_name | default('item') | lower }} in {{ model_name | default('items') | lower }} %}
+            <div class="item-card {% if not {{ model_name | default('item') | lower }}.is_active %}inactive{% endif %}">
+                <h3>
+                    <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-detail' {{ model_name | default('item') | lower }}.pk %}">
+                        {{ {{ model_name | default('item') | lower }}.name }}
+                    </a>
+                </h3>
+                <p class="description">{{ {{ model_name | default('item') | lower }}.description|truncatewords:20 }}</p>
+                <div class="item-meta">
+                    <span class="status {% if {{ model_name | default('item') | lower }}.is_active %}active{% else %}inactive{% endif %}">
+                        {{ {{ model_name | default('item') | lower }}.is_active|yesno:"Active,Inactive" }}
+                    </span>
+                    <span class="date">{{ {{ model_name | default('item') | lower }}.created_at|date:"M d, Y" }}</span>
+                </div>
+                <div class="item-actions">
+                    <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-detail' {{ model_name | default('item') | lower }}.pk %}" class="btn btn-sm btn-secondary">View</a>
+                    <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-update' {{ model_name | default('item') | lower }}.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                    <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-delete' {{ model_name | default('item') | lower }}.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; First</a>
+                <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            {% endif %}
+
+            <span class="current-page">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% else %}
+    <div class="empty-state">
+        <p>No {{ model_name | default('items') | lower }} found.</p>
+        <a href="{% url '{{ app_name }}:{{ model_name | default('item') | lower }}-create' %}" class="btn btn-primary">
+            Create your first {{ model_name | default('item') | lower }}
+        </a>
+    </div>
+{% endif %}
+{% endblock %}{% endraw %}

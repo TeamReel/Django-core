@@ -1,0 +1,39 @@
+# Minimal Django App Template
+# Provides basic app structure with models, apps config, tests, migrations, and i18n support
+
+name: minimal
+description: |
+  Basic Django app with models, apps configuration, test structure,
+  migrations directory, and i18n/l10n support. Ideal for simple apps
+  with minimal dependencies.
+
+extends: null  # Base template (does not extend anything)
+
+variables:
+  required:
+    app_name:
+      type: string
+      description: "Name of the Django app (snake_case)"
+      validation: "^[a-z][a-z0-9_]*$"
+  optional: {}
+
+files:
+  - path: "__init__.py"
+    template: "__init__.py.j2"
+  - path: "apps.py"
+    template: "apps.py.j2"
+  - path: "models.py"
+    template: "models.py.j2"
+  - path: "tests/__init__.py"
+    template: null  # Empty file
+  - path: "tests/test_models.py"
+    template: "tests/test_models.py.j2"
+  - path: "migrations/__init__.py"
+    template: null  # Empty file
+  - path: "locale/.gitkeep"
+    template: null  # Empty file
+
+# Template metadata
+author: "Django Core Team"
+version: "1.0.0"
+django_version: ">=5.1"

@@ -1,0 +1,69 @@
+"""
+Database models for {{ app_name }}.
+"""
+
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+
+class BaseModel(models.Model):
+    """
+    Abstract base model with common fields.
+
+    Provides created_at and updated_at timestamps for all models.
+    """
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name=_("Created at"),
+        help_text=_("Timestamp when record was created"),
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name=_("Updated at"),
+        help_text=_("Timestamp when record was last updated"),
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ["-created_at"]
+
+
+# Example model - customize as needed
+class Item(BaseModel):
+    """
+    Example model for {{ app_name }}.
+
+    Replace this with your actual models.
+    """
+
+    name = models.CharField(
+        max_length=255,
+        verbose_name=_("Name"),
+        help_text=_("Item name"),
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name=_("Description"),
+        help_text=_("Optional item description"),
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name=_("Is active"),
+        help_text=_("Whether item is currently active"),
+    )
+
+    class Meta:
+        verbose_name = _("Item")
+        verbose_name_plural = _("Items")
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["name"]),
+            models.Index(fields=["is_active", "-created_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f"<Item(id={self.pk}, name={self.name!r})>"

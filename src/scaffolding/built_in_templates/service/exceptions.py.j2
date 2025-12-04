@@ -1,0 +1,42 @@
+"""
+Custom exceptions for {{ app_name }} business logic.
+"""
+
+
+class {{ app_name | title | replace('_', '') }}BaseException(Exception):
+    """Base exception for {{ app_name }} errors."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
+class {{ app_name | title | replace('_', '') }}ValidationError({{ app_name | title | replace('_', '') }}BaseException):
+    """
+    Raised when business logic validation fails.
+
+    Used for domain validation errors that are expected
+    and should be handled gracefully (e.g., invalid input,
+    duplicate entries, business rule violations).
+    """
+    pass
+
+
+class {{ app_name | title | replace('_', '') }}BusinessError({{ app_name | title | replace('_', '') }}BaseException):
+    """
+    Raised when business operation fails.
+
+    Used for operational errors like entity not found,
+    insufficient permissions, state conflicts, etc.
+    """
+    pass
+
+
+class {{ app_name | title | replace('_', '') }}ConfigurationError({{ app_name | title | replace('_', '') }}BaseException):
+    """
+    Raised when service is misconfigured.
+
+    Used for configuration errors that prevent
+    service initialization or operation.
+    """
+    pass

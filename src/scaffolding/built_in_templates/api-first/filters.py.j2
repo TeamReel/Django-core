@@ -1,0 +1,33 @@
+"""
+Django filters for {{ app_name }} API.
+"""
+
+import django_filters
+
+from .models import {{ model_name | default("Item") }}
+
+
+class {{ model_name | default("Item") }}Filter(django_filters.FilterSet):
+    """
+    FilterSet for {{ model_name | default("Item") }} queryset filtering.
+
+    Provides field-based filtering with operators for API queries.
+    """
+
+    name = django_filters.CharFilter(lookup_expr="icontains")
+    description = django_filters.CharFilter(lookup_expr="icontains")
+    is_active = django_filters.BooleanFilter()
+    created_after = django_filters.DateTimeFilter(
+        field_name="created_at", lookup_expr="gte"
+    )
+    created_before = django_filters.DateTimeFilter(
+        field_name="created_at", lookup_expr="lte"
+    )
+
+    class Meta:
+        model = {{ model_name | default("Item") }}
+        fields = {
+            "name": ["exact", "icontains"],
+            "is_active": ["exact"],
+            "created_at": ["gte", "lte"],
+        }

@@ -1,0 +1,2 @@
+# This file ensures the locale directory is tracked by git
+# Translation files (.po, .mo) will be placed here
