@@ -12,10 +12,10 @@ subtasks:
   - "T017"
 title: "Template Discovery System"
 phase: "Phase 1 - Foundation"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "GitHub Copilot (Claude Sonnet 4.5)"
+agent: "claude"
+shell_pid: "46272"
 review_status: ""
 reviewed_by: ""
 history:
@@ -24,6 +24,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-04T17:10:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "46272"
+    action: "Started WP02 implementation: Template Discovery System"
 ---
 
 # Work Package Prompt: WP02 – Template Discovery System
