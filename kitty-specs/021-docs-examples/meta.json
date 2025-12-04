@@ -1,0 +1,20 @@
+{
+  "id": "021-docs-examples",
+  "name": "Docs and Examples",
+  "status": "draft",
+  "created": "2025-12-04",
+  "branch": "021-docs-examples",
+  "dependencies": [
+    "001-core-project-skeleton",
+    "013-api-foundation-standards",
+    "015-tasks-scheduling-foundation",
+    "018-platform-observability-foundation",
+    "020-core-scaffolding-cli"
+  ],
+  "technologies": [
+    "Markdown",
+    "Mermaid (diagrams)",
+    "MkDocs-ready structure",
+    "pytest (smoke tests)"
+  ]
+}
