@@ -168,13 +168,50 @@ def list_templates(ctx: click.Context) -> None:
           service      - Service module with business logic
           ui-backed    - UI-backed module with views and forms
     """
+    from scaffolding.templates import TemplateRegistry
+
     if ctx.obj.get("verbose"):
         click.echo("Discovering available templates...")
 
-    # Placeholder implementation (WP02 will implement template discovery)
-    click.secho("Not implemented: template discovery", fg="yellow")
-    click.echo("Implementation coming in WP02 (Template Discovery)")
-    ctx.exit(EXIT_SYSTEM_ERROR)
+    try:
+        registry = TemplateRegistry()
+        registry.discover()
+        templates = registry.list_templates()
+
+        if not templates:
+            click.echo("No templates found.")
+            click.echo(
+                "\nTemplates are discovered from:"
+                "\n  1. Project-local templates/scaffold/"
+                "\n  2. SCAFFOLD_TEMPLATE_DIRS (Django settings)"
+                "\n  3. Core built-in templates"
+                "\n  4. Installed plugin packages"
+            )
+            ctx.exit(EXIT_SUCCESS)
+
+        click.secho("\nAvailable templates:", bold=True)
+        for template in templates:
+            # Format: name (padded to 15 chars) - description
+            name_padded = template.name.ljust(15)
+            click.echo(f"  {name_padded} - {template.description}")
+
+            if ctx.obj.get("verbose"):
+                # Show source and file count in verbose mode
+                click.echo(
+                    f"    Source: {template._source}, Files: {len(template.files)}"
+                )
+                if template.extends:
+                    click.echo(f"    Extends: {template.extends}")
+
+        ctx.exit(EXIT_SUCCESS)
+
+    except Exception as e:
+        click.secho(f"Error discovering templates: {e}", fg="red", err=True)
+        if ctx.obj.get("verbose"):
+            import traceback
+
+            click.echo(traceback.format_exc(), err=True)
+        ctx.exit(EXIT_SYSTEM_ERROR)
 
 
 @scaffold.command()
