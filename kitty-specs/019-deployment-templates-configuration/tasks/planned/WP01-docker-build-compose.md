@@ -11,12 +11,12 @@ subtasks:
   - "T008"
 title: "Docker Build & Compose Templates"
 phase: "Phase 1 - Foundational Infrastructure"
-lane: "for_review"
-assignee: "GitHub Copilot"
+lane: "planned"
+assignee: ""
 agent: "copilot"
 shell_pid: "39236"
-review_status: ""
-reviewed_by: ""
+review_status: "has_feedback"
+reviewed_by: "copilot-reviewer"
 history:
   - timestamp: "2025-12-03T00:00:00Z"
     lane: "planned"
@@ -45,7 +45,116 @@ history:
 
 ## Review Feedback
 
-*[Empty initially. Reviewers will populate this section if work needs changes.]*
+**Status**: ❌ **Needs Changes**
+
+**Reviewed by**: GitHub Copilot (Code Review Agent)  
+**Review Date**: 2025-12-04  
+**Shell PID**: 39236
+
+---
+
+### Critical Issues (Must Fix)
+
+**Issue 1: Python Path Configuration Missing for src/ Directory** 🔴
+- **Problem**: The Django application code is in `src/` directory, but Dockerfile doesn't configure PYTHONPATH
+- **Evidence**: 
+  - `manage.py` adds `src/` to sys.path: `sys.path.insert(0, str(src_dir))`
+  - `config.wsgi` is at `src/config/wsgi.py`, not `/app/config/wsgi.py`
+  - Gunicorn CMD references `config.wsgi:application` which won't be found
+- **Impact**: Docker container will fail to start with `ModuleNotFoundError: No module named 'config'`
+- **Solution Options**:
+  1. **Recommended**: Set `ENV PYTHONPATH="/app/src:$PYTHONPATH"` in Dockerfile before collectstatic
+  2. **Alternative**: Change Gunicorn CMD to use full path with `-m` flag
+  3. **Alternative**: Copy src/ contents to /app directly (but requires restructuring)
+
+**Location**: [Dockerfile](../../../Dockerfile) lines 40-42 (WORKDIR, COPY, collectstatic)
+
+---
+
+### Minor Issues (Should Fix)
+
+**Issue 2: collectstatic Runs as Root Before USER Switch** 🟡
+- **Problem**: Static files are collected as root before switching to django user
+- **Location**: [Dockerfile](../../../Dockerfile) line 62
+- **Current**: 
+  ```dockerfile
+  COPY --chown=django:django . /app
+  RUN python manage.py collectstatic --noinput --clear  # Runs as root
+  USER django
+  ```
+- **Impact**: Low - Files still accessible but owned by root (not ideal security practice)
+- **Recommendation**: Either:
+  1. Move `USER django` before collectstatic (preferred - fails fast if permission issues)
+  2. Add `chown` after collectstatic: `RUN chown -R django:django /app/staticfiles`
+
+---
+
+### What Was Done Well ✅
+
+1. **Multi-stage build**: Excellent separation of builder and production stages
+2. **Security baseline (B03)**: Non-root user (UID 1000) correctly configured
+3. **Health checks (B18)**: HEALTHCHECK directive uses /health/live endpoint
+4. **Docker Compose variants**: All three environments (local, staging, prod) properly differentiated
+5. **Environment documentation**: Comprehensive .env.example with cloud provider examples
+6. **B15 integration**: Celery worker/beat services properly separated
+7. **Resource limits**: Production compose has CPU/memory constraints
+8. **.dockerignore**: Comprehensive exclusions for build optimization
+9. **Documentation**: Inline comments explain service purposes clearly
+10. **Git commits**: Clean, descriptive commit messages with proper feat() prefix
+
+---
+
+### Action Items (Must Complete Before Re-Review)
+
+- [ ] **Fix Python path for src/ directory** (Critical - Issue 1)
+  - Add `ENV PYTHONPATH="/app/src:$PYTHONPATH"` to Dockerfile before collectstatic line
+  - OR adjust Gunicorn CMD if using alternative approach
+  - Verify collectstatic runs successfully with src/ in path
+- [ ] **Move USER django before collectstatic** (Recommended - Issue 2)
+  - Ensures static files are owned by django user from creation
+  - Fails fast if there are permission issues
+- [ ] **Test Docker build locally when Docker Desktop available** (T007)
+  - Verify build completes without ModuleNotFoundError
+  - Confirm static files collected successfully
+  - Verify non-root user with `docker run --rm <image> whoami`
+- [ ] **Update activity log** when fixes complete
+  - Document what was changed to address review feedback
+
+---
+
+### Testing Recommendations
+
+When Docker Desktop is running:
+```bash
+# Test Dockerfile build
+docker build -t django-core:test .
+
+# Test Python path is correct
+docker run --rm django-core:test python -c "import config; print('OK')"
+
+# Test static files collected
+docker run --rm django-core:test ls -la /app/staticfiles/
+
+# Test user is non-root
+docker run --rm django-core:test whoami  # Should output: django
+
+# Test local compose
+cp .env.example .env
+docker-compose -f docker-compose.local.yml up -d
+curl http://localhost:8000/health/live
+docker-compose -f docker-compose.local.yml down
+```
+
+---
+
+### Review Summary
+
+**Overall Assessment**: Strong implementation with comprehensive deployment templates. One critical path issue prevents Docker container from starting. Once Python path is corrected, this will be production-ready.
+
+**Completion**: 6/8 subtasks complete (T001-T006), T007-T008 pending Docker availability  
+**Code Quality**: Excellent - follows best practices, well-documented  
+**Constitution Compliance**: ✅ Passes all B03/B15/B18 requirements  
+**Blocking Issue**: Python path configuration (easily fixable)
 
 ---
 
@@ -411,3 +520,4 @@ history:
 - 2025-12-03T11:00:00Z – copilot – shell_pid=39236 – lane=doing – Completed T001-T006: All Docker and Compose files created at repository root
 - 2025-12-03T11:00:00Z – copilot – shell_pid=39236 – lane=doing – NOTE: T007-T008 (verification) require Docker Desktop to be running - cannot complete without Docker engine
 - 2025-12-03T11:15:00Z – copilot – shell_pid=39236 – lane=for_review – Implementation complete, ready for review (T001-T006 complete, T007-T008 pending Docker availability)
+- 2025-12-04T09:00:00Z – copilot-reviewer – shell_pid=39236 – lane=planned – Code review complete: Critical issue found - Python path missing for src/ directory. Container won't start without PYTHONPATH=/app/src. Minor: collectstatic runs as root. See Review Feedback section for details.
