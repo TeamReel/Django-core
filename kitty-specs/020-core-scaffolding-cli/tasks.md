@@ -209,15 +209,15 @@ def init(ctx: click.Context, name: str, project_name: Optional[str]) -> None:
 - **Principle III (Code Quality)**: Type hints on all functions, schema validation for manifests, comprehensive error handling.
 
 **Subtasks**:
-- [ ] T009: Create TemplateRegistry class with singleton pattern (central registry of all discovered templates)
-- [ ] T010: Implement hybrid discovery strategy: (1) project-local, (2) SCAFFOLD_TEMPLATE_DIRS, (3) Core built-in, (4) plugin packages (ADR-021, FR-012)
-- [ ] T011: [P] Implement filesystem template loader (scans directories for __template__.yaml, loads template metadata)
-- [ ] T012: [P] Implement plugin package loader (uses importlib.metadata to find installed packages with scaffold_templates module, FR-015)
-- [ ] T013: [P] Implement YAML manifest parser (validates TemplateManifest schema: name, description, extends, variables, files per data-model.md)
-- [ ] T014: Implement template inheritance resolver (resolves `extends` chains, max depth 2, file-level override, ADR-021, FR-014)
-- [ ] T015: [P] Implement template conflict detection (custom templates override Core templates by name, warning logged, FR-013)
-- [ ] T016: [P] Implement template validation (checks manifest schema compliance, required files present, variables defined)
-- [ ] T017: [P] Add unit tests for TemplateRegistry with mock filesystem and plugin packages (test precedence, inheritance, conflicts)
+- [X] T009: Create TemplateRegistry class with singleton pattern (central registry of all discovered templates)
+- [X] T010: Implement hybrid discovery strategy: (1) project-local, (2) SCAFFOLD_TEMPLATE_DIRS, (3) Core built-in, (4) plugin packages (ADR-021, FR-012)
+- [X] T011: [P] Implement filesystem template loader (scans directories for __template__.yaml, loads template metadata)
+- [X] T012: [P] Implement plugin package loader (uses importlib.metadata to find installed packages with scaffold_templates module, FR-015)
+- [X] T013: [P] Implement YAML manifest parser (validates TemplateManifest schema: name, description, extends, variables, files per data-model.md)
+- [X] T014: Implement template inheritance resolver (resolves `extends` chains, max depth 2, file-level override, ADR-021, FR-014)
+- [X] T015: [P] Implement template conflict detection (custom templates override Core templates by name, warning logged, FR-013)
+- [X] T016: [P] Implement template validation (checks manifest schema compliance, required files present, variables defined)
+- [X] T017: [P] Add unit tests for TemplateRegistry with mock filesystem and plugin packages (test precedence, inheritance, conflicts)
 
 **Implementation Sketch**:
 ```python
