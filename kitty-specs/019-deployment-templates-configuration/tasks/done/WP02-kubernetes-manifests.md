@@ -14,7 +14,7 @@ phase: "Phase 1 - Foundational Infrastructure"
 lane: "done"
 assignee: "GitHub Copilot"
 agent: "GitHub Copilot"
-shell_pid: ""
+shell_pid: "39236"
 review_status: "approved"
 reviewed_by: "GitHub Copilot"
 history:
@@ -138,14 +138,14 @@ Copy from contracts/k8s/hpa-web.yaml. Verify:
 
 ## Definition of Done
 
-- [X] All 8 K8s manifest files in k8s/ directory
-- [X] k8s/README.md with deployment instructions
-- [X] kubectl dry-run validation passes (offline YAML validation)
-- [X] Health probes use B18 endpoints
-- [X] Prometheus annotations present for web
-- [X] Beat deployment has exactly 1 replica
-- [X] All manifests well-commented
-- [X] Image placeholder "your-registry/django-core:latest" documented for replacement
+- [x] All 8 K8s manifest files in k8s/ directory
+- [x] k8s/README.md with deployment instructions
+- [x] kubectl dry-run validation passes (offline YAML validation)
+- [x] Health probes use B18 endpoints
+- [x] Prometheus annotations present for web
+- [x] Beat deployment has exactly 1 replica
+- [x] All manifests well-commented
+- [x] Image placeholder "your-registry/django-core:latest" documented for replacement
 
 ---
 
