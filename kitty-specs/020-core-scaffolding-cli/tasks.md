@@ -527,12 +527,12 @@ class ValidationRunner:
 - **Principle XI (Documentation)**: CLI is self-documenting via prompts and help messages, reduces need for external docs.
 
 **Subtasks**:
-- [ ] T042: [P] Implement TTY detection (sys.stdout.isatty(), used for auto-detection logic)
-- [ ] T043: [P] Implement Click interactive prompts (template selection from list, app name confirmation, FR-041)
-- [ ] T044: [P] Implement auto-detection logic (interactive in terminal, non-interactive in CI/CD, FR-041, FR-042)
-- [ ] T045: [P] Implement progress indicators (spinner for file creation, validation running, FR-042)
-- [ ] T046: [P] Implement post-generation summary (list of files created, next steps, FR-044)
-- [ ] T047: [P] Add manual UX tests (interactive prompts, progress display, summary formatting)
+- [x] T042: [P] Implement TTY detection (sys.stdout.isatty(), used for auto-detection logic)
+- [x] T043: [P] Implement Click interactive prompts (template selection from list, app name confirmation, FR-041)
+- [x] T044: [P] Implement auto-detection logic (interactive in terminal, non-interactive in CI/CD, FR-041, FR-042)
+- [x] T045: [P] Implement progress indicators (spinner for file creation, validation running, FR-042)
+- [x] T046: [P] Implement post-generation summary (list of files created, next steps, FR-044)
+- [x] T047: [P] Add manual UX tests (interactive prompts, progress display, summary formatting)
 
 **Implementation Sketch**:
 ```python
