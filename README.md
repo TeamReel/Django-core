@@ -431,7 +431,7 @@ black src/                   # Formatting
 pre-commit run --all-files   # All checks
 ```
 
-📚 **[First Contribution Guide](docs/getting-started/first-contribution.md)** | **[Project Structure](docs/getting-started/project-structure.md)**
+📚 **[First Contribution](docs/getting-started/first-contribution.md)** | **[Testing Guide](docs/contributing/testing.md)** | **[Code Style](docs/contributing/code-style.md)**
 
 ---
 
@@ -606,11 +606,12 @@ View audit events in the Django admin at `/admin/audit/auditevent/`. Use filters
 ## Contributing
 
 1. Follow the [First Contribution Guide](docs/getting-started/first-contribution.md)
-2. Create a feature branch from `main`
-3. Run quality checks: `pre-commit run --all-files`
-4. Submit pull request
+2. Review [Spec Kitty Workflow](docs/contributing/spec-kitty-workflow.md) for feature development
+3. Create a feature branch from `main`
+4. Run quality checks: `pre-commit run --all-files`
+5. Submit pull request following [PR Guidelines](docs/contributing/pr-guidelines.md)
 
-📚 **[Contributing Guidelines](docs/contributing/index.md)** | **[Code Style](docs/contributing/code-style.md)**
+📚 **[Contributing Guidelines](docs/contributing/index.md)** | **[Code Style](docs/contributing/code-style.md)** | **[Testing](docs/contributing/testing.md)**
 
 ---
 

@@ -28,6 +28,7 @@ We use the **Spec Kitty** workflow for feature development:
 | Topic | Description |
 |-------|-------------|
 | [Spec Kitty Workflow](spec-kitty-workflow.md) | Feature specification process |
+| [Updating Features](updating-features.md) | Modifying existing features |
 | [Code Style](code-style.md) | Python 3.12+, Black, Ruff, type hints |
 | [Testing](testing.md) | pytest-django, coverage gates |
 | [PR Guidelines](pr-guidelines.md) | Review requirements, CI checks |
