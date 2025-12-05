@@ -112,21 +112,21 @@ The placeholder `mkdocs.yml` MUST include:
 
 ---
 
-## Work Package WP03: Contributing Documentation (Priority: P1) 🎯 MVP
+## Work Package WP03: Contributing Documentation (Priority: P1) 🎯 MVP ✅ DONE
 
 **Goal**: Document contribution workflow including Spec Kitty process.
 **Independent Test**: Contributor reads spec-kitty-workflow.md and creates valid feature spec.
-**Prompt**: `tasks/planned/WP03-contributing-docs.md`
+**Prompt**: `tasks/done/WP03-contributing-docs.md`
 
 ### Included Subtasks
-- [ ] T017 Write `docs/contributing/spec-kitty-workflow.md` (full lifecycle)
-- [ ] T018 [P] Write `docs/contributing/code-style.md` (Python conventions)
-- [ ] T019 [P] Write `docs/contributing/testing.md` (pytest patterns, coverage)
-- [ ] T020 [P] Write `docs/contributing/pr-guidelines.md` (PR process)
-- [ ] T021 Write `docs/contributing/updating-features.md` (modifying existing features)
-- [ ] T022 Update `docs/contributing/index.md` with section overview
-- [ ] T023 Consolidate `docs/testing.md` and `docs/TESTING_GUIDE.md` into contributing/testing.md
-- [ ] T024 Extract Development section from `README.md` to contributing docs
+- [x] T017 Write `docs/contributing/spec-kitty-workflow.md` (full lifecycle)
+- [x] T018 [P] Write `docs/contributing/code-style.md` (Python conventions)
+- [x] T019 [P] Write `docs/contributing/testing.md` (pytest patterns, coverage)
+- [x] T020 [P] Write `docs/contributing/pr-guidelines.md` (PR process)
+- [x] T021 Write `docs/contributing/updating-features.md` (modifying existing features)
+- [x] T022 Update `docs/contributing/index.md` with section overview
+- [x] T023 Consolidate `docs/testing.md` and `docs/TESTING_GUIDE.md` into contributing/testing.md
+- [x] T024 Extract Development section from `README.md` to contributing docs
 
 ### Implementation Notes
 - Document the full Spec Kitty workflow: specify → plan → tasks → implement → review → accept
