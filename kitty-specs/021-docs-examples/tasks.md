@@ -80,21 +80,21 @@ The placeholder `mkdocs.yml` MUST include:
 
 ---
 
-## Work Package WP02: Getting Started Documentation (Priority: P1) 🎯 MVP
+## Work Package WP02: Getting Started Documentation (Priority: P1) 🎯 MVP ✅ DONE
 
 **Goal**: Write onboarding documentation for new developers.
 **Independent Test**: New developer follows quickstart.md and has working environment in 30 minutes.
-**Prompt**: `tasks/planned/WP02-getting-started.md`
+**Prompt**: `tasks/for_review/WP02-getting-started.md`
 
 ### Included Subtasks
-- [ ] T009 Write `docs/getting-started/quickstart.md` (< 15 min to first run)
-- [ ] T010 [P] Write `docs/getting-started/prerequisites.md` (required tools list)
-- [ ] T011 [P] Write `docs/getting-started/first-contribution.md` (first PR workflow)
-- [ ] T012 [P] Write `docs/getting-started/project-structure.md` (directory layout)
-- [ ] T013 Update `docs/getting-started/index.md` with section overview
-- [ ] T014 Extract relevant content from `README.md` to getting-started docs
-- [ ] T015 Update `README.md` to link to getting-started docs
-- [ ] T016 Validate quickstart by following it on clean environment
+- [x] T009 Write `docs/getting-started/quickstart.md` (< 15 min to first run)
+- [x] T010 [P] Write `docs/getting-started/prerequisites.md` (required tools list)
+- [x] T011 [P] Write `docs/getting-started/first-contribution.md` (first PR workflow)
+- [x] T012 [P] Write `docs/getting-started/project-structure.md` (directory layout)
+- [x] T013 Update `docs/getting-started/index.md` with section overview
+- [x] T014 Extract relevant content from `README.md` to getting-started docs
+- [x] T015 Update `README.md` to link to getting-started docs
+- [x] T016 Validate quickstart by following it on clean environment
 
 ### Implementation Notes
 - Extract Getting Started section from README.md

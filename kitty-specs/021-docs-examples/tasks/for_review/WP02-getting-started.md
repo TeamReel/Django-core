@@ -11,11 +11,11 @@ subtasks:
   - "T016"
 title: "Getting Started Documentation"
 phase: "Phase 2 - Documentation"
-lane: "doing"
+lane: "for_review"
 assignee: "claude-agent"
 agent: "claude-agent"
 shell_pid: ""
-review_status: ""
+review_status: "pending"
 reviewed_by: ""
 history:
   - timestamp: "2025-12-04T21:30:00Z"
@@ -28,6 +28,11 @@ history:
     agent: "claude-agent"
     shell_pid: ""
     action: "Started implementation"
+  - timestamp: "2025-12-05T09:15:00Z"
+    lane: "for_review"
+    agent: "claude-agent"
+    shell_pid: ""
+    action: "Implementation complete, ready for review"
 ---
 
 # Work Package Prompt: WP02 – Getting Started Documentation
