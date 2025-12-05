@@ -84,7 +84,7 @@ The placeholder `mkdocs.yml` MUST include:
 
 **Goal**: Write onboarding documentation for new developers.
 **Independent Test**: New developer follows quickstart.md and has working environment in 30 minutes.
-**Prompt**: `tasks/for_review/WP02-getting-started.md`
+**Prompt**: `tasks/done/WP02-getting-started.md`
 
 ### Included Subtasks
 - [x] T009 Write `docs/getting-started/quickstart.md` (< 15 min to first run)
