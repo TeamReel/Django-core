@@ -15,9 +15,9 @@ subtasks:
   - "T058"
 title: "Guides & Troubleshooting"
 phase: "Phase 2 - Documentation"
-lane: "planned"
+lane: "done"
 assignee: ""
-agent: ""
+agent: "system"
 shell_pid: ""
 review_status: ""
 reviewed_by: ""
@@ -258,4 +258,4 @@ Cover: Auth errors, permission errors, validation errors, rate limiting
 ## Activity Log
 
 - 2025-12-04T21:30:00Z – system – lane=planned – Prompt created.
-
+- 2025-12-05T12:36:01Z – system – shell_pid= – lane=done – All 12 subtasks complete: 8 guides + 4 troubleshooting docs created with examples, error handling patterns, and cross-references
