@@ -287,11 +287,11 @@ The placeholder `mkdocs.yml` MUST include:
 
 ---
 
-## Work Package WP08: Background Tasks Example (Priority: P2) 📬 FOR REVIEW
+## Work Package WP08: Background Tasks Example (Priority: P2) ✅ DONE
 
 **Goal**: Create example demonstrating Celery tasks with observability.
 **Independent Test**: Run smoke tests; task executes and logs appear.
-**Prompt**: `tasks/for_review/WP08-background-tasks-example.md`
+**Prompt**: `tasks/done/WP08-background-tasks-example.md`
 
 ### Included Subtasks
 - [x] T069 Create `examples/background-tasks/` directory structure
