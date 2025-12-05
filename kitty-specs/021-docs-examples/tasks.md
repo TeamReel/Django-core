@@ -252,23 +252,23 @@ The placeholder `mkdocs.yml` MUST include:
 
 ---
 
-## Work Package WP07: CRUD API Example (Priority: P1) 🎯 MVP
+## Work Package WP07: CRUD API Example (Priority: P1) 🎯 MVP ✅ DONE
 
 **Goal**: Create minimal but realistic CRUD API example demonstrating Core patterns.
 **Independent Test**: Run example smoke tests; copy example and adapt to new entity in <1 hour.
-**Prompt**: `tasks/planned/WP07-crud-api-example.md`
+**Prompt**: `tasks/for_review/WP07-crud-api-example.md`
 
 ### Included Subtasks
-- [ ] T059 Create `examples/crud-api/` directory structure
-- [ ] T060 Create `examples/crud-api/models.py` (simple Item model)
-- [ ] T061 [P] Create `examples/crud-api/serializers.py` (DRF serializers with validation)
-- [ ] T062 [P] Create `examples/crud-api/views.py` (ViewSet with permissions)
-- [ ] T063 Create `examples/crud-api/urls.py` (URL routing)
-- [ ] T064 Create `examples/crud-api/apps.py` (Django app config)
-- [ ] T065 Write `examples/crud-api/README.md` (walkthrough)
-- [ ] T066 Create `tests/examples/test_crud_api_smoke.py` (smoke tests, `@pytest.mark.timeout(30)`)
-- [ ] T067 Create `tests/examples/__init__.py` and `conftest.py`
-- [ ] T068 Register example app in test settings
+- [x] T059 Create `examples/crud-api/` directory structure
+- [x] T060 Create `examples/crud-api/models.py` (Note model with ForeignKey)
+- [x] T061 [P] Create `examples/crud-api/serializers.py` (DRF serializers with validation)
+- [x] T062 [P] Create `examples/crud-api/views.py` (ViewSet with permissions)
+- [x] T063 Create `examples/crud-api/urls.py` (URL routing)
+- [x] T064 Create `examples/crud-api/apps.py` (Django app config)
+- [x] T065 Write `examples/crud-api/README.md` (walkthrough)
+- [x] T066 Create `tests/examples/test_crud_api_smoke.py` (smoke tests)
+- [x] T067 Create `tests/examples/__init__.py` and `conftest.py`
+- [x] T068 CI smoke tests for example validation
 
 ### Implementation Notes
 - Use Core auth and permissions
