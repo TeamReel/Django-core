@@ -1,9 +1,23 @@
 {
-  "id": "021-docs-examples",
-  "name": "Docs and Examples",
-  "status": "draft",
-  "created": "2025-12-04",
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-12-05T13:12:03Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "9286c4620a5cfbde4e9899930caa6b66780d706c",
+      "branch": "021-docs-examples",
+      "mode": "pr",
+      "validation_commands": [
+        "pytest (35 passed, 76 Redis-related failures)"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-12-05T13:12:03Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "9286c4620a5cfbde4e9899930caa6b66780d706c",
   "branch": "021-docs-examples",
+  "created": "2025-12-04",
   "dependencies": [
     "001-core-project-skeleton",
     "013-api-foundation-standards",
@@ -11,6 +25,9 @@
     "018-platform-observability-foundation",
     "020-core-scaffolding-cli"
   ],
+  "id": "021-docs-examples",
+  "name": "Docs and Examples",
+  "status": "draft",
   "technologies": [
     "Markdown",
     "Mermaid (diagrams)",
