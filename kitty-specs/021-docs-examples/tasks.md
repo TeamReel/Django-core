@@ -215,25 +215,25 @@ The placeholder `mkdocs.yml` MUST include:
 
 ---
 
-## Work Package WP06: API Guides & Troubleshooting (Priority: P2)
+## Work Package WP06: API Guides & Troubleshooting (Priority: P2) ✅ DONE
 
 **Goal**: Write conceptual API guides and troubleshooting documentation.
 **Independent Test**: Developer reads auth guide and successfully makes authenticated request.
-**Prompt**: `tasks/planned/WP06-guides-troubleshooting.md`
+**Prompt**: `tasks/done/WP06-guides-troubleshooting.md`
 
 ### Included Subtasks
-- [ ] T047 Write `docs/guides/authentication.md` (JWT flow, token refresh)
-- [ ] T048 [P] Write `docs/guides/permissions.md` (RBAC model)
-- [ ] T049 [P] Write `docs/guides/pagination.md` (cursor pagination)
-- [ ] T050 [P] Write `docs/guides/error-handling.md` (error response format)
-- [ ] T051 Update `docs/guides/index.md` with section overview
-- [ ] T052 Write `docs/troubleshooting/local-dev.md` (common local issues)
-- [ ] T053 [P] Write `docs/troubleshooting/migrations.md` (migration problems)
-- [ ] T054 [P] Write `docs/troubleshooting/auth.md` (auth debugging)
-- [ ] T055 [P] Write `docs/troubleshooting/tasks.md` (Celery issues)
-- [ ] T056 Update `docs/troubleshooting/index.md` with section overview
-- [ ] T057 Move `docs/notifications-troubleshooting.md` to troubleshooting/
-- [ ] T058 Move `docs/observability-troubleshooting.md` to troubleshooting/
+- [x] T047 Write `docs/guides/api-authentication.md` (JWT flow, token refresh, examples)
+- [x] T048 [P] Write `docs/guides/api-pagination.md` (cursor pagination patterns)
+- [x] T049 [P] Write `docs/guides/api-filtering.md` (filter syntax, search, ordering)
+- [x] T050 [P] Write `docs/guides/webhook-integration.md` (HMAC verification, events)
+- [x] T051 [P] Write `docs/guides/rate-limiting.md` (limits, headers, retry strategies)
+- [x] T052 Update `docs/guides/index.md` with section overview and quick start
+- [x] T053 Write `docs/troubleshooting/common-errors.md` (comprehensive FAQ format)
+- [x] T054 [P] Write `docs/troubleshooting/debugging.md` (debugging tips)
+- [x] T055 [P] Write `docs/troubleshooting/performance.md` (optimization guidance)
+- [x] T056 Update `docs/troubleshooting/index.md` with section overview
+- [x] T057 Consolidate security docs into `docs/guides/security.md`
+- [x] T058 Create `docs/guides/deployment.md` for deployment guidance
 
 ### Implementation Notes
 - Guides link to Swagger UI, don't duplicate API reference
