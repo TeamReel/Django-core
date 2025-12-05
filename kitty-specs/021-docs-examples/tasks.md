@@ -256,7 +256,7 @@ The placeholder `mkdocs.yml` MUST include:
 
 **Goal**: Create minimal but realistic CRUD API example demonstrating Core patterns.
 **Independent Test**: Run example smoke tests; copy example and adapt to new entity in <1 hour.
-**Prompt**: `tasks/for_review/WP07-crud-api-example.md`
+**Prompt**: `tasks/done/WP07-crud-api-example.md`
 
 ### Included Subtasks
 - [x] T059 Create `examples/crud-api/` directory structure
