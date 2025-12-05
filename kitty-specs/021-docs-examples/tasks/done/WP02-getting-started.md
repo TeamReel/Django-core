@@ -13,7 +13,7 @@ title: "Getting Started Documentation"
 phase: "Phase 2 - Documentation"
 lane: "done"
 assignee: "claude-agent"
-agent: "claude-reviewer"
+agent: "copilot"
 shell_pid: ""
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
@@ -230,4 +230,4 @@ django-core/
 ## Activity Log
 
 - 2025-12-04T21:30:00Z – system – lane=planned – Prompt created.
-
+- 2025-12-05T13:07:18Z – copilot – shell_pid= – lane=done – Marked complete

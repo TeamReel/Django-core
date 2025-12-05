@@ -13,7 +13,7 @@ title: "Scaffolding Demo Example"
 phase: "Phase 3 - Examples"
 lane: "done"
 assignee: ""
-agent: "claude-implementer"
+agent: "copilot"
 shell_pid: ""
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
@@ -438,4 +438,4 @@ class TestTemplates:
 ## Activity Log
 
 - 2025-12-04T21:30:00Z – system – lane=planned – Prompt created.
-
+- 2025-12-05T13:08:39Z – copilot – shell_pid= – lane=done – Marked complete
