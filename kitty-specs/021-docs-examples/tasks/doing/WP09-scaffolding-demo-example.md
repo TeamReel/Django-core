@@ -11,9 +11,9 @@ subtasks:
   - "T085"
 title: "Scaffolding Demo Example"
 phase: "Phase 3 - Examples"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
+agent: "claude-implementer"
 shell_pid: ""
 review_status: ""
 reviewed_by: ""
@@ -23,6 +23,10 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-05T10:40:00Z"
+    lane: "doing"
+    agent: "claude-implementer"
+    action: "Started implementation of Scaffolding Demo Example"
 ---
 
 # Work Package Prompt: WP09 – Scaffolding Demo Example
