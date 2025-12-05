@@ -11,9 +11,9 @@ subtasks:
   - "T024"
 title: "Contributing Documentation"
 phase: "Phase 2 - Documentation"
-lane: "planned"
-assignee: ""
-agent: ""
+lane: "doing"
+assignee: "claude-agent"
+agent: "claude-agent"
 shell_pid: ""
 review_status: ""
 reviewed_by: ""
@@ -23,6 +23,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-05T10:00:00Z"
+    lane: "doing"
+    agent: "claude-agent"
+    shell_pid: ""
+    action: "Started implementation"
 ---
 
 # Work Package Prompt: WP03 – Contributing Documentation
