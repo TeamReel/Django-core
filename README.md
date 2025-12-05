@@ -2,6 +2,25 @@
 
 Enterprise-ready Django foundation with authentication, organizations, projects, hierarchical access control, audit logging, and security baseline.
 
+## Quick Links
+
+| Getting Started | Development | Reference |
+|-----------------|-------------|-----------|
+| [Quickstart](docs/getting-started/quickstart.md) | [Contributing](docs/contributing/index.md) | [Architecture](docs/architecture/overview.md) |
+| [Prerequisites](docs/getting-started/prerequisites.md) | [Code Style](docs/contributing/code-style.md) | [API Modules](docs/modules/index.md) |
+| [First Contribution](docs/getting-started/first-contribution.md) | [Testing Guide](docs/contributing/testing.md) | [ADRs](docs/adr/) |
+| [Project Structure](docs/getting-started/project-structure.md) | [Spec Kitty](docs/contributing/spec-kitty-workflow.md) | [Troubleshooting](docs/troubleshooting/index.md) |
+
+## Examples
+
+| Example | Description |
+|---------|-------------|
+| [CRUD API](examples/crud-api/) | Complete REST API implementation with DRF |
+| [Background Tasks](examples/background-tasks/) | Celery task patterns and scheduling |
+| [Scaffolding Demo](examples/scaffolding-demo/) | Template-based code generation |
+
+---
+
 ## Features
 
 ### Authentication & User Management (Feature 005)

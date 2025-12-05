@@ -6,9 +6,9 @@ Working code examples demonstrating Django Core-App patterns and best practices.
 
 | Example | Description | Demonstrates |
 |---------|-------------|--------------|
-| [CRUD API](crud-api.md) | Complete REST API with auth | ViewSets, serializers, permissions, pagination |
-| [Background Tasks](background-tasks.md) | Celery task patterns | Async tasks, retries, health checks, observability |
-| [Scaffolding Demo](scaffolding-demo.md) | CLI project generation | Template system, code generation |
+| [CRUD API](../../examples/crud-api/README.md) | Complete REST API with auth | ViewSets, serializers, permissions, pagination |
+| [Background Tasks](../../examples/background-tasks/README.md) | Celery task patterns | Async tasks, retries, health checks, observability |
+| [Scaffolding Demo](../../examples/scaffolding-demo/README.md) | CLI project generation | Template system, code generation |
 
 ## How to Use Examples
 

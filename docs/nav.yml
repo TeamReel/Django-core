@@ -42,9 +42,9 @@ nav:
   
   - Examples:
     - examples/index.md
-    - CRUD API: examples/crud-api.md
-    - Background Tasks: examples/background-tasks.md
-    - Scaffolding Demo: examples/scaffolding-demo.md
+    - CRUD API: ../examples/crud-api/README.md
+    - Background Tasks: ../examples/background-tasks/README.md
+    - Scaffolding Demo: ../examples/scaffolding-demo/README.md
   
   - Contributing:
     - contributing/index.md
