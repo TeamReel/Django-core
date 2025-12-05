@@ -287,22 +287,22 @@ The placeholder `mkdocs.yml` MUST include:
 
 ---
 
-## Work Package WP08: Background Tasks Example (Priority: P2)
+## Work Package WP08: Background Tasks Example (Priority: P2) 📬 FOR REVIEW
 
 **Goal**: Create example demonstrating Celery tasks with observability.
 **Independent Test**: Run smoke tests; task executes and logs appear.
-**Prompt**: `tasks/planned/WP08-background-tasks-example.md`
+**Prompt**: `tasks/for_review/WP08-background-tasks-example.md`
 
 ### Included Subtasks
-- [ ] T069 Create `examples/background-tasks/` directory structure
-- [ ] T070 Create `examples/background-tasks/tasks.py` (sample Celery tasks)
-- [ ] T071 [P] Create `examples/background-tasks/health.py` (health check integration)
-- [ ] T072 [P] Create `examples/background-tasks/signals.py` (task signals/logging)
-- [ ] T073 Create `examples/background-tasks/apps.py` (Django app config)
-- [ ] T074 Write `examples/background-tasks/README.md` (walkthrough)
-- [ ] T075 Create `tests/examples/test_background_tasks_smoke.py` (smoke tests, `@pytest.mark.timeout(30)`)
-- [ ] T076 Demonstrate logging and metrics in example
-- [ ] T077 Register example app in test settings
+- [x] T069 Create `examples/background-tasks/` directory structure
+- [x] T070 Create `examples/background-tasks/pyproject.toml` (Celery dependencies)
+- [x] T071 Create `examples/background-tasks/tasks.py` (async tasks with retries, chains)
+- [x] T072 Create `examples/background-tasks/scheduler.py` (periodic tasks, health checks)
+- [x] T073 Create `examples/background-tasks/apps.py` (Django app config)
+- [x] T074 Create `examples/background-tasks/models.py` (EmailLog model with status)
+- [x] T075 Create `tests/examples/test_background_tasks_smoke.py` (smoke tests)
+- [x] T076 Create `examples/background-tasks/tests/conftest.py` (Celery fixtures)
+- [x] T077 Write `examples/background-tasks/README.md` (walkthrough)
 
 ### Implementation Notes
 - Use B15 Celery setup
