@@ -8,10 +8,21 @@ Django Core-App is a modular, product-agnostic platform providing reusable infra
 
 ## What You'll Find Here
 
-- **[Overview](overview.md)** - High-level system architecture with diagrams
-- **[Layers](layers.md)** - API, service, model, and infrastructure layers
-- **[Extension Points](extension-points.md)** - How to extend and customize Core
-- **[Decisions](decisions/)** - Architecture Decision Records (ADRs)
+### Core Architecture
+
+- **[Overview](overview.md)** - High-level system architecture with Mermaid diagrams
+- **[Layers](layers.md)** - Presentation, business logic, data access, and infrastructure layers
+- **[Data Model](data-model.md)** - Entity relationships and database schema
+
+### Request Handling
+
+- **[Request Flow](request-flow.md)** - HTTP request lifecycle from edge to response
+- **[Async Patterns](async-patterns.md)** - Celery task patterns and background processing
+
+### Security & Decisions
+
+- **[Security Model](security-model.md)** - Authentication, authorization, and security controls
+- **[ADRs](adr/index.md)** - Architecture Decision Records with full index
 
 ## Core Principles
 
@@ -24,7 +35,16 @@ Django Core-App is a modular, product-agnostic platform providing reusable infra
 
 | Topic | Description |
 |-------|-------------|
-| [Overview](overview.md) | System components and interactions |
-| [Layers](layers.md) | Architectural layering explained |
-| [Extension Points](extension-points.md) | Customization guide for downstream projects |
-| [ADRs](../adr/) | Historical design decisions |
+| [Overview](overview.md) | Platform vision, tech stack, system components |
+| [Layers](layers.md) | Four-layer architecture explained |
+| [Data Model](data-model.md) | ER diagrams, models, indexes |
+| [Request Flow](request-flow.md) | Middleware stack, auth flow, error handling |
+| [Async Patterns](async-patterns.md) | Celery tasks, retries, monitoring |
+| [Security Model](security-model.md) | Auth, RBAC, rate limits, audit |
+| [ADRs](adr/index.md) | 18 architectural decisions indexed |
+
+## Related Documentation
+
+- [Getting Started](../getting-started/index.md) - Installation and first steps
+- [Examples](../examples/index.md) - Working code examples
+- [API Reference](../api/index.md) - API endpoints and schemas
