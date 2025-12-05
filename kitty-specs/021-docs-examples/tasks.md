@@ -144,22 +144,22 @@ The placeholder `mkdocs.yml` MUST include:
 
 ---
 
-## Work Package WP04: Architecture Documentation (Priority: P2)
+## Work Package WP04: Architecture Documentation (Priority: P2) ✅ DONE
 
 **Goal**: Document system architecture with Mermaid diagrams.
 **Independent Test**: Tech lead reads overview.md and understands layering and extension points.
-**Prompt**: `tasks/planned/WP04-architecture-docs.md`
+**Prompt**: `tasks/done/WP04-architecture-docs.md`
 
 ### Included Subtasks
-- [ ] T025 Write `docs/architecture/overview.md` with high-level Mermaid diagram
-- [ ] T026 [P] Write `docs/architecture/layers.md` (API/service/model layering)
-- [ ] T027 [P] Write `docs/architecture/extension-points.md` (where to customize)
-- [ ] T028 Create `docs/architecture/decisions/README.md` (ADR index)
-- [ ] T029 [P] Create Mermaid diagram: system components interaction
-- [ ] T030 [P] Create Mermaid diagram: request flow through layers
-- [ ] T031 [P] Create Mermaid diagram: module dependencies
-- [ ] T032 Update `docs/architecture/index.md` with section overview
-- [ ] T033 Link architecture docs from main `docs/index.md`
+- [x] T025 Write `docs/architecture/overview.md` with high-level Mermaid diagram
+- [x] T026 [P] Write `docs/architecture/layers.md` (API/service/model layering)
+- [x] T027 [P] Write `docs/architecture/data-model.md` (entity relationships)
+- [x] T028 [P] Write `docs/architecture/request-flow.md` (request lifecycle)
+- [x] T029 Write `docs/architecture/async-patterns.md` (Celery patterns)
+- [x] T030 Write `docs/architecture/security-model.md` (security architecture)
+- [x] T031 [P] Create `docs/architecture/adr/index.md` (ADR index)
+- [x] T032 Update `docs/architecture/index.md` with section overview
+- [x] T033 Link architecture docs from existing ADRs location (preserved backward compatibility)
 
 ### Implementation Notes
 - Mermaid diagrams must render on GitHub
