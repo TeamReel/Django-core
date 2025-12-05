@@ -22,20 +22,16 @@ We use [Black](https://black.readthedocs.io/) for consistent code formatting.
 **Configuration** (in `pyproject.toml`):
 ```toml
 [tool.black]
-line-length = 88
+line-length = 100
 target-version = ['py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
     \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
     | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
+    | venv
+    | \.mypy_cache
+    | \.pytest_cache
     | migrations
 )/
 '''
@@ -64,29 +60,26 @@ We use [Ruff](https://docs.astral.sh/ruff/) for fast linting and import sorting.
 **Configuration** (in `pyproject.toml`):
 ```toml
 [tool.ruff]
-line-length = 88
+line-length = 100
 target-version = "py312"
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "migrations",
+    "__pycache__",
+]
 
 [tool.ruff.lint]
 select = [
-    "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
-    "F",    # Pyflakes
-    "I",    # isort
-    "B",    # flake8-bugbear
-    "C4",   # flake8-comprehensions
-    "UP",   # pyupgrade
-    "ARG",  # flake8-unused-arguments
-    "SIM",  # flake8-simplify
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "S",   # bandit (security)
+    "B",   # bugbear
 ]
-ignore = [
-    "E501",   # line too long (handled by Black)
-    "B008",   # function call in default argument
-    "ARG001", # unused function argument
-]
-
-[tool.ruff.lint.isort]
-known-first-party = ["accounts", "organisations", "projects", "permissions", "audit"]
 ```
 
 **Usage:**
