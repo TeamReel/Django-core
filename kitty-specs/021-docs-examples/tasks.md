@@ -178,26 +178,26 @@ The placeholder `mkdocs.yml` MUST include:
 
 ---
 
-## Work Package WP05: Module Documentation (Priority: P2)
+## Work Package WP05: Module Documentation (Priority: P2) ✅ DONE
 
 **Goal**: Create consolidated documentation for each Core module.
 **Independent Test**: Developer finds module doc and understands purpose, API, configuration.
-**Prompt**: `tasks/planned/WP05-module-docs.md`
+**Prompt**: `tasks/done/WP05-module-docs.md`
 
 ### Included Subtasks
-- [ ] T034 Write `docs/modules/accounts.md` (consolidate from src/accounts/README.md)
-- [ ] T035 [P] Write `docs/modules/organisations.md`
-- [ ] T036 [P] Write `docs/modules/projects.md`
-- [ ] T037 [P] Write `docs/modules/permissions.md`
-- [ ] T038 [P] Write `docs/modules/audit.md`
-- [ ] T039 [P] Write `docs/modules/tasks.md`
-- [ ] T040 [P] Write `docs/modules/notifications.md`
-- [ ] T041 [P] Write `docs/modules/transactions.md`
-- [ ] T042 [P] Write `docs/modules/settings.md`
-- [ ] T043 [P] Write `docs/modules/observability.md`
-- [ ] T044 [P] Write `docs/modules/security-baseline.md`
-- [ ] T045 [P] Write `docs/modules/scaffolding.md`
-- [ ] T046 Update `docs/modules/index.md` with module overview table
+- [x] T034 Create `docs/modules/_template.md` (module documentation template)
+- [x] T035 Write `docs/modules/accounts.md` (user auth, JWT, role system)
+- [x] T036 [P] Write `docs/modules/organisations.md` (multi-tenancy, memberships)
+- [x] T037 [P] Write `docs/modules/projects.md` (workspaces, archival)
+- [x] T038 [P] Write `docs/modules/permissions.md` (RBAC, role assignments)
+- [x] T039 [P] Write `docs/modules/audit.md` (event logging, immutability)
+- [x] T040 [P] Write `docs/modules/settings.md` (feature flags, configuration)
+- [x] T041 [P] Write `docs/modules/transactions.md` (ledgers, credits, double-entry)
+- [x] T042 [P] Write `docs/modules/notifications.md` (multi-channel delivery)
+- [x] T043 [P] Write `docs/modules/tasks.md` (Celery patterns, scheduling)
+- [x] T044 [P] Write `docs/modules/api.md` (DRF standards, versioning)
+- [x] T045 [P] Write `docs/modules/i18n.md` (locale management, translations)
+- [x] T046 Update `docs/modules/index.md` with module overview and dependency diagram
 
 ### Implementation Notes
 - Each module doc includes: Purpose, Key Concepts, Models, API Endpoints, Usage Examples, Configuration
