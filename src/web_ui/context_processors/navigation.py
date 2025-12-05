@@ -1,6 +1,6 @@
 """Context processor for navigation and user state."""
 
-from typing import Any, Callable, Dict
+from typing import Any, Dict
 
 from django.http import HttpRequest
 

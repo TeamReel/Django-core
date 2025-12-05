@@ -5,12 +5,9 @@ Tests interactive vs non-interactive behavior, prompt logic, progress
 indicators, and summary formatting.
 """
 
-import sys
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-
 from scaffolding.ux.detection import is_interactive
 from scaffolding.ux.progress import ProgressReporter
 from scaffolding.ux.prompts import (
@@ -221,7 +218,7 @@ class TestProgressReporter:
             mock_bar.return_value.__enter__ = lambda self: self
             mock_bar.return_value.__exit__ = lambda *args: None
 
-            with reporter.progress_bar(10, "Copying files") as bar:
+            with reporter.progress_bar(10, "Copying files"):
                 pass
 
             mock_bar.assert_called_once()

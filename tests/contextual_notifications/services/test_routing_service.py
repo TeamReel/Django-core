@@ -1,9 +1,10 @@
 """Tests for RoutingService."""
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from contextual_notifications.services.routing_service import RoutingService
 from contextual_notifications.models import RoutingRule
+from contextual_notifications.services.routing_service import RoutingService
 
 
 @pytest.mark.django_db
@@ -94,7 +95,7 @@ class TestRoutingService:
     def test_evaluate_rules_priority_ordering(self, organisation, user, project):
         """Test that rules are evaluated by priority within scope."""
         # Create multiple rules with different priorities
-        urgent_rule = RoutingRule.objects.create(
+        RoutingRule.objects.create(
             event_type="task.overdue",
             scope="global",
             channel="in_app",
@@ -102,7 +103,7 @@ class TestRoutingService:
             enabled=True,
             target_role="member",
         )
-        normal_rule = RoutingRule.objects.create(
+        RoutingRule.objects.create(
             event_type="task.overdue",
             scope="global",
             channel="email",

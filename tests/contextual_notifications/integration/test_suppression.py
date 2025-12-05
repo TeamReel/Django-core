@@ -3,10 +3,11 @@
 Tests that Redis-based suppression prevents duplicate notifications.
 """
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from contextual_notifications.services import EventService
 from contextual_notifications.models import RoutingRule
+from contextual_notifications.services import EventService
 
 
 @pytest.mark.django_db

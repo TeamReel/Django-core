@@ -10,7 +10,6 @@ from pathlib import Path
 
 import pytest
 from jinja2 import TemplateError
-
 from scaffolding.rendering.engine import (
     TemplateRenderer,
     create_jinja_env,

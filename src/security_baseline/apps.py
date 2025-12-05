@@ -115,7 +115,7 @@ class SecurityBaselineConfig(AppConfig):
             engine.register_rule(rule)
 
         # Start security validation run with correlation ID
-        correlation_id = security_logger.start_validation_run(
+        security_logger.start_validation_run(
             enforcement_mode=enforcement_mode, environment=environment
         )
 

@@ -432,7 +432,7 @@ class TestConfigValidation:
 
     def test_config_validator_invalid_severity(self):
         """Test validation catches invalid severity levels."""
-        validator = ConfigValidator()
+        ConfigValidator()
 
         # Creating a RuleConfig with invalid severity should now raise
         with pytest.raises(ConfigurationError):

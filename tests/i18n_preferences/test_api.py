@@ -2,9 +2,9 @@
 
 import pytest
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
 from organisations.models import Organisation
-from settings.models import Setting, ScopeType
+from rest_framework.test import APIClient
+from settings.models import ScopeType, Setting
 
 User = get_user_model()
 

@@ -1,7 +1,8 @@
 """Tests for OrganisationNotificationPolicy model."""
 
-import pytest
 from datetime import time
+
+import pytest
 from contextual_notifications.models import OrganisationNotificationPolicy
 
 

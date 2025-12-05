@@ -2,6 +2,25 @@
 
 Enterprise-ready Django foundation with authentication, organizations, projects, hierarchical access control, audit logging, and security baseline.
 
+## Quick Links
+
+| Getting Started | Development | Reference |
+|-----------------|-------------|-----------|
+| [Quickstart](docs/getting-started/quickstart.md) | [Contributing](docs/contributing/index.md) | [Architecture](docs/architecture/overview.md) |
+| [Prerequisites](docs/getting-started/prerequisites.md) | [Code Style](docs/contributing/code-style.md) | [API Modules](docs/modules/index.md) |
+| [First Contribution](docs/getting-started/first-contribution.md) | [Testing Guide](docs/contributing/testing.md) | [ADRs](docs/adr/) |
+| [Project Structure](docs/getting-started/project-structure.md) | [Spec Kitty](docs/contributing/spec-kitty-workflow.md) | [Troubleshooting](docs/troubleshooting/index.md) |
+
+## Examples
+
+| Example | Description |
+|---------|-------------|
+| [CRUD API](examples/crud-api/) | Complete REST API implementation with DRF |
+| [Background Tasks](examples/background-tasks/) | Celery task patterns and scheduling |
+| [Scaffolding Demo](examples/scaffolding-demo/) | Template-based code generation |
+
+---
+
 ## Features
 
 ### Authentication & User Management (Feature 005)
@@ -389,89 +408,49 @@ Constitutional enforcement engine with security rule validation and ASVS complia
 
 ## Getting Started
 
-### Prerequisites
+### Quick Setup
 
-- Python 3.12+
-- PostgreSQL 13+
-- Redis 6+
+**Option A: Docker (Recommended)**
 
-### Installation
+```bash
+git clone https://github.com/TeamReel/django-core.git
+cd django-core
+cp .env.example .env
+docker-compose -f docker-compose.local.yml up
+```
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/TeamReel/django-core.git
-   cd django-core
-   ```
+Visit [http://localhost:8000](http://localhost:8000) - you're ready!
 
-2. **Create virtual environment**:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+**Option B: Local Python**
 
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements/local.txt
-   ```
+```bash
+git clone https://github.com/TeamReel/django-core.git
+cd django-core
+python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements/local.txt
+cp .env.example .env  # Edit with your database settings
+python manage.py migrate
+python manage.py runserver
+```
 
-4. **Configure environment**:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your database and Redis settings
-   ```
-
-5. **Run migrations**:
-   ```bash
-   python manage.py migrate
-   ```
-
-6. **Create superuser**:
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-7. **Run development server**:
-   ```bash
-   python manage.py runserver
-   ```
-
-Visit http://localhost:8000/admin/ to access the Django admin interface.
+📚 **[Full Quickstart Guide](docs/getting-started/quickstart.md)** | **[Prerequisites](docs/getting-started/prerequisites.md)**
 
 ---
 
 ## Development
 
-### Running Tests
+### Running Quality Checks
 
 ```bash
-# All tests
-pytest
-
-# Specific app
-pytest tests/audit/
-
-# With coverage
-pytest --cov=src --cov-report=html
+pytest                        # Run tests
+pytest --cov=src             # With coverage
+mypy src/                    # Type checking
+ruff check src/              # Linting
+black src/                   # Formatting
+pre-commit run --all-files   # All checks
 ```
 
-### Type Checking
-
-```bash
-mypy src/
-```
-
-### Code Quality
-
-```bash
-# Linting
-ruff check src/
-
-# Formatting
-black src/
-
-# Pre-commit hooks
-pre-commit run --all-files
-```
+📚 **[First Contribution](docs/getting-started/first-contribution.md)** | **[Testing Guide](docs/contributing/testing.md)** | **[Code Style](docs/contributing/code-style.md)**
 
 ---
 
@@ -479,31 +458,17 @@ pre-commit run --all-files
 
 ```
 django-core/
-├── src/                          # Django applications
-│   ├── accounts/                 # User authentication (Feature 005)
-│   ├── organisations/            # Organization management (Feature 006)
-│   ├── projects/                 # Project workspaces (Feature 007)
-│   ├── permissions/              # Hierarchical access control (Feature 008)
-│   ├── audit/                    # Audit logging (Feature 009)
-│   ├── security_baseline/        # Security validation
-│   ├── constitution_engine/      # Constitutional rule engine
-│   ├── common/                   # Shared utilities
-│   └── config/                   # Django settings
-├── tests/                        # Test suite
+├── src/                          # Django applications (accounts, permissions, audit, etc.)
+├── tests/                        # Test suite (mirrors src/)
 ├── docs/                         # Documentation
-│   ├── architecture/             # ADRs and architecture docs
-│   ├── howto/                    # How-to guides
-│   └── examples/                 # Code examples
 ├── kitty-specs/                  # Feature specifications
+├── examples/                     # Example implementations
 ├── requirements/                 # Python dependencies
-│   ├── base.txt                  # Common dependencies
-│   ├── local.txt                 # Development dependencies
-│   └── production.txt            # Production dependencies
-├── manage.py                     # Django management script
-├── pyproject.toml                # Python project configuration
-├── CHANGELOG.md                  # Project changelog
-└── README.md                     # This file
+├── k8s/                          # Kubernetes manifests
+└── docker-compose.*.yml          # Docker configurations
 ```
+
+📚 **[Full Project Structure Guide](docs/getting-started/project-structure.md)**
 
 ---
 
@@ -659,13 +624,13 @@ View audit events in the Django admin at `/admin/audit/auditevent/`. Use filters
 
 ## Contributing
 
-1. Create a feature branch from `main`
-2. Implement changes following the coding standards
-3. Add tests (aim for >85% coverage)
-4. Run type checking (`mypy src/`)
-5. Run linting (`ruff check src/`)
-6. Run tests (`pytest`)
-7. Submit pull request
+1. Follow the [First Contribution Guide](docs/getting-started/first-contribution.md)
+2. Review [Spec Kitty Workflow](docs/contributing/spec-kitty-workflow.md) for feature development
+3. Create a feature branch from `main`
+4. Run quality checks: `pre-commit run --all-files`
+5. Submit pull request following [PR Guidelines](docs/contributing/pr-guidelines.md)
+
+📚 **[Contributing Guidelines](docs/contributing/index.md)** | **[Code Style](docs/contributing/code-style.md)** | **[Testing](docs/contributing/testing.md)**
 
 ---
 

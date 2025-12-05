@@ -2,8 +2,7 @@
 
 import pytest
 from django.core.exceptions import ValidationError
-from django.test import override_settings, SimpleTestCase
-
+from django.test import SimpleTestCase, override_settings
 from i18n_preferences.validators import (
     validate_language_code,
     validate_locale_code,

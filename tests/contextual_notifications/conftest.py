@@ -5,14 +5,14 @@ and related entities (users, organizations, projects).
 """
 
 import pytest
+from contextual_notifications.models import (
+    NotificationPreference,
+    OrganisationNotificationPolicy,
+    RoutingRule,
+)
 from django.contrib.auth import get_user_model
 from organisations.models import Organisation
 from projects.models import Project
-from contextual_notifications.models import (
-    RoutingRule,
-    NotificationPreference,
-    OrganisationNotificationPolicy,
-)
 
 User = get_user_model()
 

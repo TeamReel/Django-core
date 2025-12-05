@@ -7,9 +7,10 @@ settings from B12 (i18n_preferences).
 """
 
 import logging
+
 import pytz
 from django.middleware.locale import LocaleMiddleware
-from django.utils import translation, timezone
+from django.utils import timezone, translation
 from django.utils.deprecation import MiddlewareMixin
 
 from .services import PreferenceResolutionService

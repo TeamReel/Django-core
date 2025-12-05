@@ -24,7 +24,7 @@ class TestPrometheusMetrics:
 
     def test_transaction_write_metrics_incremented(self, user, organization):
         """Test that transaction writes increment metrics."""
-        from transactions.metrics import transaction_writes_total, transaction_write_latency_seconds
+        from transactions.metrics import transaction_writes_total
 
         # Get initial metric values
         initial_writes = transaction_writes_total.labels(

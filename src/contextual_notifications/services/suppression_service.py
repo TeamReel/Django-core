@@ -2,7 +2,6 @@
 
 import logging
 from datetime import datetime
-from typing import Any
 
 from django.core.cache import cache
 from prometheus_client import Counter, Histogram

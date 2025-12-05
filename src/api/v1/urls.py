@@ -6,8 +6,8 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
-from api.views import LogoutView
 from api.v1.views import api_root
+from api.views import LogoutView
 
 # DRF Router for domain viewsets (WP05)
 router = DefaultRouter()

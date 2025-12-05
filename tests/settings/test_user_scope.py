@@ -12,7 +12,6 @@ Tests coverage:
 import pytest
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
-
 from organisations.models import Organisation
 from projects.models import Project
 from settings.api import get_flag, get_setting

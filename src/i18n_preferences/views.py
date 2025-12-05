@@ -1,13 +1,14 @@
 """API views for i18n preference management."""
 
-from rest_framework import views, status, generics
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from settings.models import Setting, ScopeType
 from organisations.models import Organisation
-from .serializers import PreferenceSerializer, EffectivePreferenceSerializer
-from .services import PreferenceResolutionService
+from rest_framework import generics, status, views
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from settings.models import ScopeType, Setting
+
 from .permissions import IsOrganisationAdmin
+from .serializers import EffectivePreferenceSerializer, PreferenceSerializer
+from .services import PreferenceResolutionService
 
 
 class UserPreferenceView(views.APIView):

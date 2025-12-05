@@ -1,0 +1,63 @@
+# Navigation structure for MkDocs
+# Reference: https://www.mkdocs.org/user-guide/configuration/#nav
+
+nav:
+  - Home: index.md
+  
+  - Getting Started:
+    - getting-started/index.md
+    - Quickstart: getting-started/quickstart.md
+    - Prerequisites: getting-started/prerequisites.md
+    - First Contribution: getting-started/first-contribution.md
+    - Project Structure: getting-started/project-structure.md
+  
+  - Architecture:
+    - architecture/index.md
+    - Overview: architecture/overview.md
+    - Layers: architecture/layers.md
+    - Extension Points: architecture/extension-points.md
+    - Decisions: architecture/decisions/
+  
+  - Guides:
+    - guides/index.md
+    - Authentication: guides/authentication.md
+    - Permissions: guides/permissions.md
+    - Pagination: guides/pagination.md
+    - Error Handling: guides/error-handling.md
+  
+  - Modules:
+    - modules/index.md
+    - Accounts: modules/accounts.md
+    - Organisations: modules/organisations.md
+    - Projects: modules/projects.md
+    - Permissions: modules/permissions.md
+    - Audit: modules/audit.md
+    - Tasks: modules/tasks.md
+    - Notifications: modules/notifications.md
+    - Transactions: modules/transactions.md
+    - Settings: modules/settings.md
+    - I18n: modules/i18n.md
+    - Security: modules/security-baseline.md
+    - API: modules/api.md
+  
+  - Examples:
+    - examples/index.md
+    - CRUD API: ../examples/crud-api/README.md
+    - Background Tasks: ../examples/background-tasks/README.md
+    - Scaffolding Demo: ../examples/scaffolding-demo/README.md
+  
+  - Contributing:
+    - contributing/index.md
+    - Spec Kitty Workflow: contributing/spec-kitty-workflow.md
+    - Code Style: contributing/code-style.md
+    - Testing: contributing/testing.md
+    - PR Guidelines: contributing/pr-guidelines.md
+  
+  - Troubleshooting:
+    - troubleshooting/index.md
+    - Local Development: troubleshooting/local-dev.md
+    - Migrations: troubleshooting/migrations.md
+    - Authentication: troubleshooting/auth.md
+    - Tasks: troubleshooting/tasks.md
+  
+  - ADRs: adr/

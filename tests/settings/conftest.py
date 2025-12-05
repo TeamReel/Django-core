@@ -13,7 +13,6 @@ from organisations.models import Organisation
 from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
 from projects.models import Project
 from rest_framework.test import APIClient
-
 from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()

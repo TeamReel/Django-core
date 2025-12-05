@@ -2,19 +2,14 @@
 
 import logging
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from celery import shared_task
 from prometheus_client import Counter, Histogram
 
-from ..services import (
-    AuditService,
-    NotificationHandoffService,
-    PolicyService,
-    PreferenceService,
-    RoutingService,
-    SuppressionService,
-)
+# Avoid circular import: services imports event_service, which imports this module
+if TYPE_CHECKING:
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +70,11 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
             }
         }
     """
+    # Late imports to avoid circular dependency
+    from ..services.audit_service import AuditService
+    from ..services.notification_handoff_service import NotificationHandoffService
+    from ..services.routing_service import RoutingService
+
     event_type = event_dict.get("type", "unknown")
     context = event_dict.get("context", {})
     payload = event_dict.get("payload", {})
@@ -334,6 +334,9 @@ def _apply_preference_filtering(
         - filtered_users: List of (user_id, channel) tuples that passed filtering
         - filtered_out_user_ids: List of user IDs that were filtered out
     """
+    # Late import to avoid circular dependency
+    from ..services.preference_service import PreferenceService
+
     filtered_users = []
     filtered_out_users: set[int] = set()
 
@@ -396,6 +399,9 @@ def _apply_suppression(
         - unsuppressed_users: List of (user_id, channel) tuples that are not suppressed
         - suppressed_user_ids: List of user IDs that were suppressed
     """
+    # Late import to avoid circular dependency
+    from ..services.suppression_service import SuppressionService
+
     unsuppressed_users = []
     suppressed_user_ids: list[int] = []
 
@@ -457,6 +463,9 @@ def _apply_policy_filtering(
         - policy_filtered_users: List of (user_id, channel) tuples that passed policy checks
         - rate_limited_user_ids: List of user IDs that were rate limited
     """
+    # Late import to avoid circular dependency
+    from ..services.policy_service import PolicyService
+
     # If no org context, skip policy checks
     if not org_id:
         logger.debug(

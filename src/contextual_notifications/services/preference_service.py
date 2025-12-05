@@ -1,7 +1,6 @@
 """Preference service for filtering users based on notification preferences."""
 
 import logging
-from typing import Any
 
 from prometheus_client import Counter, Histogram
 

@@ -13,7 +13,6 @@ from i18n_preferences.helpers import (
     user_locale_context,
 )
 from organisations.models import Organisation
-
 from settings.models import ScopeType, Setting
 
 User = get_user_model()

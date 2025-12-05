@@ -222,7 +222,7 @@ class LanguageDetector:
             root_path = Path(root)
 
             for file in files:
-                file_path = root_path / file
+                root_path / file
 
                 # Check for language by extension
                 for language, extensions in self.LANGUAGE_PATTERNS.items():
@@ -243,7 +243,7 @@ class LanguageDetector:
 
         for root, dirs, files in os.walk(self.repo_path):
             dirs[:] = [d for d in dirs if d not in self.exclude_patterns]
-            root_path = Path(root)
+            Path(root)
 
             for file in files:
                 for language, extensions in self.LANGUAGE_PATTERNS.items():

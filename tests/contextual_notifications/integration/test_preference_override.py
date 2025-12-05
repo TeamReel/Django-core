@@ -3,10 +3,11 @@
 Tests that user preferences properly filter routing decisions.
 """
 
-import pytest
 from unittest.mock import patch
+
+import pytest
+from contextual_notifications.models import NotificationPreference, RoutingRule
 from contextual_notifications.services import EventService
-from contextual_notifications.models import RoutingRule, NotificationPreference
 
 
 @pytest.mark.django_db

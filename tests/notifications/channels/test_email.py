@@ -1,11 +1,9 @@
 """Unit tests for EmailChannel."""
 
-import pytest
 from smtplib import SMTPException
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
-from django.core.validators import ValidationError
-
+import pytest
 from notifications.channels.email import EmailChannel
 from notifications.channels.exceptions import PermanentChannelError, TransientChannelError
 from notifications.models import Notification

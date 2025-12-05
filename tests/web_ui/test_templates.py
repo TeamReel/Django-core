@@ -1,9 +1,8 @@
 """Test template rendering for web_ui app."""
 
 import pytest
-from django.test import Client
-
 from accounts.models import User
+from django.test import Client
 
 
 @pytest.fixture

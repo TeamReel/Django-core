@@ -109,7 +109,7 @@ class CodeGenerator:
             if validate:
                 self._validate_generated_code(target_dir, project_root, force)
 
-        except Exception as e:
+        except Exception:
             # Rollback: cleanup staging on any failure (T029)
             if staging_dir.exists():
                 shutil.rmtree(staging_dir, ignore_errors=True)
@@ -288,7 +288,7 @@ class CodeGenerator:
                     f"{len(report['violations'])} violations"
                 )
 
-        except (FileNotFoundError, TimeoutError) as e:
+        except (FileNotFoundError, TimeoutError):
             # Re-raise these specific errors
             raise
 

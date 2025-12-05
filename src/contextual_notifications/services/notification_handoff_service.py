@@ -4,9 +4,8 @@ import logging
 from typing import Any
 
 from django.db import transaction
-from prometheus_client import Counter, Histogram
-
 from notifications.models import Notification, NotificationType
+from prometheus_client import Counter, Histogram
 
 logger = logging.getLogger(__name__)
 

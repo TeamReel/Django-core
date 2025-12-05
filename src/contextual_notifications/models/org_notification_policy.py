@@ -8,7 +8,7 @@ from django.db import models
 from django.db.models import CheckConstraint, Q
 
 if TYPE_CHECKING:
-    from organisations.models import Organisation
+    pass
 
 
 class OrganisationNotificationPolicy(models.Model):
@@ -68,7 +68,7 @@ class OrganisationNotificationPolicy(models.Model):
         verbose_name = "Organisation Notification Policy"
         verbose_name_plural = "Organisation Notification Policies"
         ordering = ["organisation"]
-        
+
         constraints = [
             # If quiet hours enabled, start and end times must be set
             CheckConstraint(
@@ -87,14 +87,14 @@ class OrganisationNotificationPolicy(models.Model):
     def clean(self) -> None:
         """Validate model fields."""
         super().clean()
-        
+
         # Validate timezone
         if self.quiet_hours_timezone and self.quiet_hours_timezone not in pytz.all_timezones:
             raise ValidationError({
                 "quiet_hours_timezone": f"Invalid timezone: {self.quiet_hours_timezone}. "
                 f"Must be a valid pytz timezone name."
             })
-        
+
         # Validate quiet hours consistency
         if self.quiet_hours_enabled:
             if not self.quiet_hours_start or not self.quiet_hours_end:

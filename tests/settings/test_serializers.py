@@ -8,7 +8,6 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from organisations.models import Organisation
 from projects.models import Project
-
 from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 from settings.serializers import (
     FeatureFlagResolveSerializer,

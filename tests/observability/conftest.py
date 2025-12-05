@@ -1,8 +1,9 @@
 """Pytest configuration for observability tests."""
 
+from unittest.mock import Mock, patch
+
 import pytest
 from django.conf import settings
-from unittest.mock import Mock, patch
 
 
 @pytest.fixture

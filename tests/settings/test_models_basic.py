@@ -6,7 +6,6 @@ Tests core model functionality, constraints, and validation.
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-
 from settings.models import FeatureFlag, ScopeType, Setting, SettingType
 
 User = get_user_model()
@@ -54,12 +53,12 @@ class TestFeatureFlagBasic(TestCase):
         # multiple global scope entries with same key (both org and project are NULL)
 
         # Create initial flag
-        flag1 = FeatureFlag.objects.create(
+        FeatureFlag.objects.create(
             key="global_test", scope_type=ScopeType.GLOBAL, created_by=self.user
         )
 
         # Creating another global flag with same key is allowed (both org/project are NULL)
-        flag2 = FeatureFlag.objects.create(
+        FeatureFlag.objects.create(
             key="global_test", scope_type=ScopeType.GLOBAL, created_by=self.user
         )
 

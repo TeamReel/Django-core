@@ -7,13 +7,10 @@ validation, and conflict detection.
 
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
 
 import pytest
-
 from scaffolding.generation.exceptions import ConflictError, ValidationError
 from scaffolding.generation.generator import CodeGenerator
-from scaffolding.rendering.engine import TemplateRenderer
 
 
 class MockRenderer:

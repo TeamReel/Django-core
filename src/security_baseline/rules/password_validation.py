@@ -183,7 +183,7 @@ class PasswordBreachRule(SecurityRule):
         """Validate breach detection bloom filter is available."""
         from security_baseline.validators.breach_detector import BreachDetector
 
-        settings = context.get("settings")
+        context.get("settings")
         environment = context.get("environment", os.getenv("DJANGO_ENV", "unknown"))
 
         detector = BreachDetector()

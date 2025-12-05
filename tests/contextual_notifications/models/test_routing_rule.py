@@ -1,8 +1,6 @@
 """Tests for RoutingRule model."""
 
 import pytest
-from django.core.exceptions import ValidationError
-from django.db import IntegrityError
 from contextual_notifications.models import RoutingRule
 
 

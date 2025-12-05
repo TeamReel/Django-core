@@ -4,10 +4,9 @@ import logging
 from datetime import datetime
 from typing import Any
 
+from audit.models import AuditEvent
 from django.db import transaction
 from prometheus_client import Counter, Histogram
-
-from audit.models import AuditEvent
 
 logger = logging.getLogger(__name__)
 

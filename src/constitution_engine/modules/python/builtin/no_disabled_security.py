@@ -45,11 +45,6 @@ class NoDisabledSecurityRule:
         results = []
 
         # List of security-critical rule identifiers that must never be disabled
-        critical_rules = [
-            "no-secrets-in-code",
-            "secure-dependencies",
-            "csrf-protection-enabled",
-        ]
 
         # Check if any critical rules are explicitly disabled in config
         # (This is a simplified example; actual implementation would check config)

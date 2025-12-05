@@ -1,6 +1,7 @@
 """URL routing for i18n preference API endpoints."""
 
 from django.urls import path
+
 from . import views
 
 app_name = "i18n_preferences"
