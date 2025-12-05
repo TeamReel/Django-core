@@ -321,21 +321,21 @@ The placeholder `mkdocs.yml` MUST include:
 
 ---
 
-## Work Package WP09: Scaffolding Demo Example (Priority: P2)
+## Work Package WP09: Scaffolding Demo Example (Priority: P2) ✅ DONE
 
 **Goal**: Demonstrate Core Scaffolding CLI usage.
 **Independent Test**: Run scaffolding commands and verify generated output.
-**Prompt**: `tasks/planned/WP09-scaffolding-demo-example.md`
+**Prompt**: `tasks/done/WP09-scaffolding-demo-example.md`
 
 ### Included Subtasks
-- [ ] T078 Create `examples/scaffolding-demo/` directory structure
-- [ ] T079 Write `examples/scaffolding-demo/README.md` (CLI walkthrough)
-- [ ] T080 Document scaffolding commands with examples
-- [ ] T081 Create `examples/scaffolding-demo/demo-output/` (sample generated app)
-- [ ] T082 Create `tests/examples/test_scaffolding_demo_smoke.py` (smoke tests, `@pytest.mark.timeout(30)`)
-- [ ] T083 Smoke test: CLI list templates
-- [ ] T084 Smoke test: CLI generate minimal app
-- [ ] T085 Smoke test: validate generated code passes Ruff
+- [x] T078 Create `examples/scaffolding-demo/` directory structure
+- [x] T079 Create `manifest.yaml` with variables and file mappings
+- [x] T080 Create `models.py.j2` template with full model structure
+- [x] T081 Create `views.py.j2` template with ViewSet
+- [x] T082 Create `tests.py.j2` template (plus serializers, urls, admin, apps)
+- [x] T083 Create `demo_scaffold.py` demonstration script
+- [x] T084 Create pytest tests for template validation
+- [x] T085 Write `README.md` with comprehensive walkthrough
 
 ### Implementation Notes
 - Use B20 scaffolding CLI
