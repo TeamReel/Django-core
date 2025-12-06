@@ -74,18 +74,18 @@
 **Prompt**: `/tasks/planned/WP02-design-token-system.md`
 
 ### Included Subtasks
-- [ ] T014 Create `src/tokens/colors.css.ts` with semantic + palette colors
-- [ ] T015 [P] Create `src/tokens/typography.css.ts` with font families, sizes, weights, line heights
-- [ ] T016 [P] Create `src/tokens/spacing.css.ts` with spacing scale (4px base)
-- [ ] T017 [P] Create `src/tokens/radius.css.ts` with border radius values
-- [ ] T018 [P] Create `src/tokens/shadows.css.ts` with shadow definitions
-- [ ] T019 [P] Create `src/tokens/zIndex.css.ts` with z-index layers
-- [ ] T020 [P] Create `src/tokens/breakpoints.css.ts` with responsive breakpoints
-- [ ] T021 [P] Create `src/tokens/motion.css.ts` with duration and easing tokens
-- [ ] T022 Create `src/tokens/theme.css.ts` with unified theme contract
-- [ ] T023 Create `src/tokens/index.ts` barrel export
-- [ ] T024 Verify CSS custom properties generate correctly in build output
-- [ ] T025 Write unit tests for token type exports
+- [X] T014 Create `src/tokens/colors.css.ts` with semantic + palette colors
+- [X] T015 [P] Create `src/tokens/typography.css.ts` with font families, sizes, weights, line heights
+- [X] T016 [P] Create `src/tokens/spacing.css.ts` with spacing scale (4px base)
+- [X] T017 [P] Create `src/tokens/radius.css.ts` with border radius values
+- [X] T018 [P] Create `src/tokens/shadows.css.ts` with shadow definitions
+- [X] T019 [P] Create `src/tokens/zIndex.css.ts` with z-index layers
+- [X] T020 [P] Create `src/tokens/breakpoints.css.ts` with responsive breakpoints
+- [X] T021 [P] Create `src/tokens/motion.css.ts` with duration and easing tokens
+- [X] T022 Create `src/tokens/theme.css.ts` with unified theme contract
+- [X] T023 Create `src/tokens/index.ts` barrel export
+- [X] T024 Verify CSS custom properties generate correctly in build output
+- [X] T025 Write unit tests for token type exports
 
 ### Constitutional Alignment
 - Principle I (Product-Agnostic): Tokens contain no product-specific values

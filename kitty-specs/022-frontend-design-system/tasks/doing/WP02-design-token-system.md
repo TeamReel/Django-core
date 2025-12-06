@@ -16,9 +16,9 @@ subtasks:
 title: "Design Token System"
 phase: "Phase 0 - Foundation"
 lane: "doing"
-assignee: ""
-agent: "system"
-shell_pid: ""
+assignee: "GitHub Copilot"
+agent: "github-copilot-claude"
+shell_pid: "46272"
 review_status: ""
 reviewed_by: ""
 history:
