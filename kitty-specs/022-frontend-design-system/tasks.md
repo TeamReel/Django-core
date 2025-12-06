@@ -116,16 +116,16 @@
 **Prompt**: `/tasks/planned/WP03-theming-infrastructure.md`
 
 ### Included Subtasks
-- [ ] T026 Create `src/theme/themes/light.css.ts` with light theme values
-- [ ] T027 [P] Create `src/theme/themes/dark.css.ts` with dark theme values
-- [ ] T028 Create `src/theme/ThemeProvider.tsx` with context and CSS class application
-- [ ] T029 Create `src/theme/useTheme.ts` hook for theme access and toggle
-- [ ] T030 Implement `prefers-color-scheme` media query detection
-- [ ] T031 Implement `prefers-reduced-motion` detection and respect
-- [ ] T032 Create `src/theme/index.ts` barrel export
-- [ ] T033 Write unit tests for ThemeProvider and useTheme
-- [ ] T034 Create Storybook decorator for theme switching
-- [ ] T035 Document theme extension pattern for brand themes
+- [x] T026 Create `src/theme/themes/light.css.ts` with light theme values
+- [x] T027 [P] Create `src/theme/themes/dark.css.ts` with dark theme values
+- [x] T028 Create `src/theme/ThemeProvider.tsx` with context and CSS class application
+- [x] T029 Create `src/theme/useTheme.ts` hook for theme access and toggle
+- [x] T030 Implement `prefers-color-scheme` media query detection
+- [x] T031 Implement `prefers-reduced-motion` detection and respect
+- [x] T032 Create `src/theme/index.ts` barrel export
+- [x] T033 Write unit tests for ThemeProvider and useTheme
+- [x] T034 Create Storybook decorator for theme switching
+- [x] T035 Document theme extension pattern for brand themes
 
 ### Constitutional Alignment
 - Principle I (Product-Agnostic): Brand themes are extensions, not hardcoded
@@ -156,26 +156,26 @@
 **Prompt**: `/tasks/planned/WP04-core-form-components.md`
 
 ### Included Subtasks
-- [ ] T036 Create `src/components/Button/Button.tsx` with variants (primary, secondary, ghost, destructive)
-- [ ] T037 [P] Create `src/components/Button/Button.css.ts` with all states
-- [ ] T038 [P] Create `src/components/Button/Button.test.tsx` with unit + a11y tests
-- [ ] T039 [P] Create `src/components/Button/Button.stories.tsx` with all variants
-- [ ] T040 Create `src/components/Input/Input.tsx` with validation states
-- [ ] T041 [P] Create `src/components/Input/Input.css.ts`
-- [ ] T042 [P] Create `src/components/Input/Input.test.tsx`
-- [ ] T043 [P] Create `src/components/Input/Input.stories.tsx`
-- [ ] T044 Create `src/components/Textarea/Textarea.tsx`
-- [ ] T045 [P] Create `src/components/Textarea/Textarea.css.ts`
-- [ ] T046 [P] Create `src/components/Textarea/Textarea.test.tsx`
-- [ ] T047 [P] Create `src/components/Textarea/Textarea.stories.tsx`
-- [ ] T048 Create `src/components/Checkbox/Checkbox.tsx` with label support
-- [ ] T049 [P] Create `src/components/Checkbox/Checkbox.css.ts`
-- [ ] T050 [P] Create `src/components/Checkbox/Checkbox.test.tsx`
-- [ ] T051 [P] Create `src/components/Checkbox/Checkbox.stories.tsx`
-- [ ] T052 Create `src/components/Radio/Radio.tsx` with RadioGroup
-- [ ] T053 [P] Create `src/components/Radio/Radio.css.ts`
-- [ ] T054 [P] Create `src/components/Radio/Radio.test.tsx`
-- [ ] T055 [P] Create `src/components/Radio/Radio.stories.tsx`
+- [x] T036 Create `src/components/Button/Button.tsx` with variants (primary, secondary, ghost, destructive)
+- [x] T037 [P] Create `src/components/Button/Button.css.ts` with all states
+- [x] T038 [P] Create `src/components/Button/Button.test.tsx` with unit + a11y tests
+- [x] T039 [P] Create `src/components/Button/Button.stories.tsx` with all variants
+- [x] T040 Create `src/components/Input/Input.tsx` with validation states
+- [x] T041 [P] Create `src/components/Input/Input.css.ts`
+- [x] T042 [P] Create `src/components/Input/Input.test.tsx`
+- [x] T043 [P] Create `src/components/Input/Input.stories.tsx`
+- [x] T044 Create `src/components/Textarea/Textarea.tsx`
+- [x] T045 [P] Create `src/components/Textarea/Textarea.css.ts`
+- [x] T046 [P] Create `src/components/Textarea/Textarea.test.tsx`
+- [x] T047 [P] Create `src/components/Textarea/Textarea.stories.tsx`
+- [x] T048 Create `src/components/Checkbox/Checkbox.tsx` with label support
+- [x] T049 [P] Create `src/components/Checkbox/Checkbox.css.ts`
+- [x] T050 [P] Create `src/components/Checkbox/Checkbox.test.tsx`
+- [x] T051 [P] Create `src/components/Checkbox/Checkbox.stories.tsx`
+- [x] T052 Create `src/components/Radio/Radio.tsx` with RadioGroup
+- [x] T053 [P] Create `src/components/Radio/Radio.css.ts`
+- [x] T054 [P] Create `src/components/Radio/Radio.test.tsx`
+- [x] T055 [P] Create `src/components/Radio/Radio.stories.tsx`
 
 ### Constitutional Alignment
 - Principle III (Code Quality): All components typed with strict props
