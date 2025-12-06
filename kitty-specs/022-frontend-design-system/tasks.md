@@ -31,19 +31,19 @@
 **Prompt**: `/tasks/planned/WP01-package-setup-tooling.md`
 
 ### Included Subtasks
-- [ ] T001 Create `packages/design-system/` directory structure
-- [ ] T002 Initialize `package.json` with workspace configuration and scripts
-- [ ] T003 [P] Configure `tsconfig.json` with strict mode and vanilla-extract support
-- [ ] T004 [P] Configure `vite.config.ts` for library mode (ESM + CJS outputs)
-- [ ] T005 [P] Configure vanilla-extract Vite plugin
-- [ ] T006 [P] Configure ESLint with TypeScript and React rules
-- [ ] T007 [P] Configure Prettier for code formatting
-- [ ] T008 Initialize Storybook 8 with vanilla-extract support
-- [ ] T009 Configure `.storybook/main.ts` and `.storybook/preview.ts`
-- [ ] T010 [P] Configure Jest + Testing Library + axe-core
-- [ ] T011 Setup lint-staged + husky for pre-commit hooks
-- [ ] T012 Create base `packages/design-system/README.md`
-- [ ] T013 Pin all dependencies explicitly in package.json
+- [X] T001 Create `packages/design-system/` directory structure
+- [X] T002 Initialize `package.json` with workspace configuration and scripts
+- [X] T003 [P] Configure `tsconfig.json` with strict mode and vanilla-extract support
+- [X] T004 [P] Configure `vite.config.ts` for library mode (ESM + CJS outputs)
+- [X] T005 [P] Configure vanilla-extract Vite plugin
+- [X] T006 [P] Configure ESLint with TypeScript and React rules
+- [X] T007 [P] Configure Prettier for code formatting
+- [X] T008 Initialize Storybook 8 with vanilla-extract support
+- [X] T009 Configure `.storybook/main.ts` and `.storybook/preview.ts`
+- [X] T010 [P] Configure Jest + Testing Library + axe-core
+- [X] T011 Setup lint-staged + husky for pre-commit hooks
+- [X] T012 Create base `packages/design-system/README.md`
+- [X] T013 Pin all dependencies explicitly in package.json
 
 ### Constitutional Alignment
 - Principle III (Code Quality): TypeScript strict, ESLint, Prettier
