@@ -18,35 +18,54 @@
  * - Tests can verify className presence and component behavior
  */
 
-/**
- * Mock implementation of vanilla-extract's recipe() function
- * Returns a function that accepts variant props and returns a className string
- */
-export const recipe = () => {
-  // Return the actual className-generating function
-  // (not a factory - this IS the function that components call)
-  return (props: Record<string, unknown> = {}) => {
-    const classNames = ['mock-recipe'];
-    Object.entries(props).forEach(([key, value]) => {
-      if (value) {
-        classNames.push(`mock-${key}-${value}`);
-      }
-    });
-    return classNames.join(' ');
-  };
+// Create a recipe function generator for exports
+// Returns a function that generates mock className strings
+// Uses hyphens instead of spaces to create valid single CSS tokens
+const createMockRecipe = () => (props: Record<string, unknown> = {}) => {
+  const parts = ['mock-recipe'];
+  Object.entries(props).forEach(([key, value]) => {
+    if (value) {
+      parts.push(`${key}-${value}`);
+    }
+  });
+  return parts.join('-'); // Join with hyphens not spaces
 };
 
-// Mock other vanilla-extract utilities
+// Export vanilla-extract package functions as ESM named exports
+// These are used by .css.ts files when they import from vanilla-extract packages
+export const recipe = () => createMockRecipe();
 export const style = () => 'mock-style';
 export const globalStyle = () => {};
+export const keyframes = () => 'mock-keyframes';
 export const createTheme = () => ({});
 export const createThemeContract = () => ({});
 
-// Default export for recipe-based stylesheets
-export default {
-  recipe,
-  style,
-};
+// Use module.exports with __esModule flag to support both CJS and ESM imports
+// This allows Jest to handle any named import from .css.ts files dynamically
+module.exports = new Proxy(
+  {
+    __esModule: true,
+    recipe: () => createMockRecipe(),
+    style: () => 'mock-style',
+    globalStyle: () => {},
+    keyframes: () => 'mock-keyframes',
+    createTheme: () => ({}),
+    createThemeContract: () => ({}),
+  },
+  {
+    get(target: any, prop: string) {
+      if (prop in target) {
+        return target[prop];
+      }
+      // For any other property (CSS class names), return a mock
+      return typeof prop === 'string' && prop !== 'then' ? createMockRecipe() : undefined;
+    },
+  }
+);
+
+
+
+
 
 // Pre-instantiated recipe mocks for each component
 // These are used when component .css.ts files export: `export const button = recipe({ ... })`
