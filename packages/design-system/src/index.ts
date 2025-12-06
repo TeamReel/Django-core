@@ -9,3 +9,4 @@ export * from './tokens';
 // Components
 export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './components/Button';
 export { Input, type InputProps, type InputState, type InputSize } from './components/Input';
+export { Textarea, type TextareaProps, type TextareaState, type TextareaSize, type TextareaResize } from './components/Textarea';
