@@ -19,7 +19,7 @@ subtasks:
   - "T071"
 title: "Feedback Components"
 phase: "Phase 1 - Components"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "github-copilot"
 shell_pid: "17604"
@@ -403,3 +403,4 @@ pnpm --filter design-system storybook
 
 - 2025-12-05T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-06T15:03:35Z – github-copilot – shell_pid=17604 – lane=doing – Moved to doing
+- 2025-12-06T15:40:39Z – github-copilot – shell_pid=17604 – lane=for_review – Moved to for_review
