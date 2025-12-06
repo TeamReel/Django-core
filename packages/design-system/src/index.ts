@@ -2,7 +2,6 @@
 // Product-agnostic design system foundation
 
 export { ThemeProvider, useTheme } from './theme';
-export type { ThemeProviderProps } from './theme';
 
 // Re-export design tokens
 export * from './tokens';

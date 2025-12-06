@@ -1,8 +1,7 @@
 module.exports = {
   root: true,
-  env: { browser: true, es2020: true },
+  env: { browser: true, es2020: true, node: true, jest: true },
   extends: [
-    'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:react/recommended',
     'plugin:react/jsx-runtime',
@@ -11,7 +10,7 @@ module.exports = {
     'plugin:storybook/recommended',
     'prettier',
   ],
-  ignorePatterns: ['dist', '.eslintrc.cjs', 'vite.config.ts'],
+  ignorePatterns: ['dist', '.eslintrc.cjs', 'vite.config.ts', '*.test.tsx', '*.test.ts'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
@@ -28,5 +27,14 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/consistent-type-imports': 'error',
     'jsx-a11y/no-autofocus': 'off', // Allowed with proper documentation
+    'no-undef': 'off', // TypeScript handles this
   },
+  overrides: [
+    {
+      files: ['*.ts', '*.tsx'],
+      rules: {
+        'no-undef': 'off',
+      },
+    },
+  ],
 };

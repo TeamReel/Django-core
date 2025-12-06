@@ -1,19 +1,7 @@
-// Placeholder theme exports - will be implemented in WP03
-import type { ReactNode } from 'react';
+export { ThemeProvider, ThemeContext, type ThemeMode } from './ThemeProvider';
+export { useTheme } from './useTheme';
+export { lightTheme } from './themes/light.css';
+export { darkTheme } from './themes/dark.css';
 
-export interface ThemeProviderProps {
-  theme?: 'light' | 'dark' | 'system';
-  children: ReactNode;
-}
-
-export const ThemeProvider = ({ children }: ThemeProviderProps): ReactNode => {
-  return children;
-};
-
-export const useTheme = () => {
-  return {
-    theme: 'light' as const,
-    setTheme: () => {},
-    resolvedTheme: 'light' as const,
-  };
-};
+// Import global styles to ensure they're included in the bundle
+import './global.css';

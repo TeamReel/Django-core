@@ -1,9 +1,12 @@
 import type { Preview } from '@storybook/react';
-import '../src/index.css'; // Will be created later with tokens
+import { ThemeProvider } from '../src/theme';
+import '../src/theme/themes/light.css';
+import '../src/theme/themes/dark.css';
 
 const preview: Preview = {
   parameters: {
     actions: { argTypesRegex: '^on[A-Z].*' },
+    backgrounds: { disable: true },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -28,14 +31,18 @@ const preview: Preview = {
       toolbar: {
         title: 'Theme',
         icon: 'circlehollow',
-        items: [
-          { value: 'light', icon: 'sun', title: 'Light' },
-          { value: 'dark', icon: 'moon', title: 'Dark' },
-        ],
+        items: ['light', 'dark', 'system'],
         dynamicTitle: true,
       },
     },
   },
+  decorators: [
+    (Story, context) => (
+      <ThemeProvider defaultTheme={context.globals.theme}>
+        <Story />
+      </ThemeProvider>
+    ),
+  ],
 };
 
 export default preview;
