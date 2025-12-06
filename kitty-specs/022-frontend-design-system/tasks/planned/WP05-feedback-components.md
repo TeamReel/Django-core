@@ -19,12 +19,12 @@ subtasks:
   - "T071"
 title: "Feedback Components"
 phase: "Phase 1 - Components"
-lane: "for_review"
+lane: "planned"
 assignee: ""
 agent: "github-copilot"
 shell_pid: "17604"
-review_status: ""
-reviewed_by: ""
+review_status: "has_feedback"
+reviewed_by: "github-copilot"
 history:
   - timestamp: "2025-12-05T12:00:00Z"
     lane: "planned"
@@ -47,7 +47,87 @@ history:
 
 ## Review Feedback
 
-*[This section is empty initially. Reviewers will populate it if the work is returned from review.]*
+**Status**: ⚠️ **Needs Changes** (Scope Mismatch)
+
+**Reviewed by**: github-copilot
+**Review date**: 2025-12-06
+
+### Critical Issue: Wrong Components Implemented
+
+The work package prompt explicitly requests 4 components:
+1. **Card** (T056-T059) - Content grouping container
+2. **Alert** (T060-T063) - Semantic notifications
+3. **Badge** (T064-T067) - Status indicators
+4. **Spinner** (T068-T071) - Loading states
+
+However, the implementation delivered:
+- ❌ **Card** - Not implemented (missing entirely)
+- ✅ **Alert** - Implemented correctly
+- ✅ **Badge** - Implemented correctly
+- ❌ **Progress** - Implemented but NOT in the prompt specification
+- ✅ **Spinner** - Implemented correctly
+
+### What Was Done Well
+
+**Excellent quality on the components that were delivered**:
+- ✅ Alert has proper ARIA roles (`role="alert"` for error/warning, `role="status"` for info/success)
+- ✅ Alert uses correct `aria-live` attributes (assertive vs polite)
+- ✅ Spinner respects `prefers-reduced-motion` with CSS media query
+- ✅ Badge uses `<span>` for proper inline rendering
+- ✅ All 3 implemented components have comprehensive tests (63 tests total, all passing)
+- ✅ All components have Storybook stories with multiple variants
+- ✅ All components pass jest-axe accessibility validation
+- ✅ TypeScript types are well-defined with RecipeVariants
+- ✅ Ref forwarding and props spreading implemented correctly
+- ✅ vanilla-extract mock issue resolved elegantly with Proxy pattern
+
+**The Progress component quality is excellent**, but it's not part of this work package scope.
+
+### Action Items (Must Complete Before Re-Review)
+
+1. **[ ] Remove Progress component from this work package**
+   - Progress is well-implemented but doesn't belong in WP05
+   - Consider moving it to a separate work package (WP06 or standalone)
+   - Remove: `src/components/Progress/*` from this WP05 commit
+   - Keep the code somewhere safe - it's good work that shouldn't be lost
+
+2. **[ ] Implement Card component per specification**
+   - Follow subtasks T056-T059 in the prompt
+   - Support padding variants: none, sm, md, lg
+   - Support visual variants: outlined, elevated, filled
+   - Create Card.tsx, Card.css.ts, Card.test.tsx, Card.stories.tsx
+   - Ensure tests cover all variant combinations
+   - Add accessibility tests with jest-axe
+
+3. **[ ] Update subtask task IDs**
+   - The prompt uses T056-T059 for Card, but implementation may have used those IDs for Alert
+   - Verify task ID mapping is correct: T056-T059=Card, T060-T063=Alert, T064-T067=Badge, T068-T071=Spinner
+
+4. **[ ] Verify all 4 required components pass tests**
+   - Run: `npm test -- src/components/Card src/components/Alert src/components/Badge src/components/Spinner`
+   - Confirm all tests pass
+   - Verify coverage meets 80% threshold
+
+5. **[ ] Update tasks.md**
+   - Mark T056-T071 as complete (all 16 subtasks)
+   - Ensure WP05 status reflects all 4 components delivered
+
+### Why This Matters
+
+Work packages define precise scope to ensure:
+- Features align with product requirements
+- Dependencies are tracked correctly
+- Code reviews validate the right functionality
+- Progress tracking is accurate
+
+Implementing different components (even high-quality ones) breaks scope contracts and can cause downstream issues.
+
+### Next Steps
+
+1. Address the action items above
+2. Re-commit with the correct 4 components (Card, Alert, Badge, Spinner)
+3. Move back to for_review when ready
+4. Consider creating a new work package for the Progress component
 
 ---
 
@@ -404,3 +484,4 @@ pnpm --filter design-system storybook
 - 2025-12-05T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-06T15:03:35Z – github-copilot – shell_pid=17604 – lane=doing – Moved to doing
 - 2025-12-06T15:40:39Z – github-copilot – shell_pid=17604 – lane=for_review – Moved to for_review
+- 2025-12-06T16:45:00Z – github-copilot (reviewer) – shell_pid=17604 – lane=planned – Code review complete: Scope mismatch - Progress implemented instead of Card. Quality excellent but wrong components. See Review Feedback section for details.
