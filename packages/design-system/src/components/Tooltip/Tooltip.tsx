@@ -61,6 +61,7 @@ export function Tooltip({
         ref: refs.setReference,
         'aria-describedby': isOpen ? tooltipId : undefined,
         ...getReferenceProps(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
     : children;
 

@@ -11,10 +11,10 @@ type TextOwnProps<T extends ElementType = ElementType> = {
 export type TextProps<T extends ElementType = 'p'> = TextOwnProps<T> &
   Omit<ComponentPropsWithoutRef<T>, keyof TextOwnProps>;
 
-export const Text = forwardRef(
+const TextComponent = forwardRef(
   <T extends ElementType = 'p'>(
     { size = 'md', weight = 'normal', color = 'primary', as, className, children, ...props }: TextProps<T>,
-    ref: React.Ref<any>
+    ref: React.Ref<Element>
   ) => {
     const Component = as || ('p' as ElementType);
     return (
@@ -27,6 +27,8 @@ export const Text = forwardRef(
       </Component>
     );
   }
-) as <T extends ElementType = 'p'>(props: TextProps<T> & { ref?: React.Ref<Element> }) => React.ReactElement;
+);
 
-(Text as any).displayName = 'Text';
+TextComponent.displayName = 'Text';
+
+export const Text = TextComponent as <T extends ElementType = 'p'>(props: TextProps<T> & { ref?: React.Ref<Element> }) => React.ReactElement;
