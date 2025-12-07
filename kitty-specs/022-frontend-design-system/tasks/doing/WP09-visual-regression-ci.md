@@ -11,10 +11,10 @@ subtasks:
   - "T115"
 title: "Visual Regression & CI"
 phase: "Phase 2 - Quality"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "github-copilot"
+shell_pid: "17604"
 review_status: ""
 reviewed_by: ""
 history:
@@ -339,3 +339,4 @@ pnpm --filter design-system chromatic --dry-run
 ## Activity Log
 
 - 2025-12-05T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-07T14:04:46Z – github-copilot – shell_pid=17604 – lane=doing – Starting CI and visual regression setup
