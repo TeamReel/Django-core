@@ -208,22 +208,22 @@
 **Prompt**: `/tasks/planned/WP05-feedback-components.md`
 
 ### Included Subtasks
-- [ ] T056 Create `src/components/Card/Card.tsx` with padding/variant props
-- [ ] T057 [P] Create `src/components/Card/Card.css.ts`
-- [ ] T058 [P] Create `src/components/Card/Card.test.tsx`
-- [ ] T059 [P] Create `src/components/Card/Card.stories.tsx`
-- [ ] T060 Create `src/components/Alert/Alert.tsx` with type variants (info, success, warning, error)
-- [ ] T061 [P] Create `src/components/Alert/Alert.css.ts`
-- [ ] T062 [P] Create `src/components/Alert/Alert.test.tsx`
-- [ ] T063 [P] Create `src/components/Alert/Alert.stories.tsx`
-- [ ] T064 Create `src/components/Badge/Badge.tsx` with variant/size props
-- [ ] T065 [P] Create `src/components/Badge/Badge.css.ts`
-- [ ] T066 [P] Create `src/components/Badge/Badge.test.tsx`
-- [ ] T067 [P] Create `src/components/Badge/Badge.stories.tsx`
-- [ ] T068 Create `src/components/Spinner/Spinner.tsx` with size variants
-- [ ] T069 [P] Create `src/components/Spinner/Spinner.css.ts` (respects reduced motion)
-- [ ] T070 [P] Create `src/components/Spinner/Spinner.test.tsx`
-- [ ] T071 [P] Create `src/components/Spinner/Spinner.stories.tsx`
+- [x] T056 Create `src/components/Card/Card.tsx` with padding/variant props
+- [x] T057 [P] Create `src/components/Card/Card.css.ts`
+- [x] T058 [P] Create `src/components/Card/Card.test.tsx`
+- [x] T059 [P] Create `src/components/Card/Card.stories.tsx`
+- [x] T060 Create `src/components/Alert/Alert.tsx` with type variants (info, success, warning, error)
+- [x] T061 [P] Create `src/components/Alert/Alert.css.ts`
+- [x] T062 [P] Create `src/components/Alert/Alert.test.tsx`
+- [x] T063 [P] Create `src/components/Alert/Alert.stories.tsx`
+- [x] T064 Create `src/components/Badge/Badge.tsx` with variant/size props
+- [x] T065 [P] Create `src/components/Badge/Badge.css.ts`
+- [x] T066 [P] Create `src/components/Badge/Badge.test.tsx`
+- [x] T067 [P] Create `src/components/Badge/Badge.stories.tsx`
+- [x] T068 Create `src/components/Spinner/Spinner.tsx` with size variants
+- [x] T069 [P] Create `src/components/Spinner/Spinner.css.ts` (respects reduced motion)
+- [x] T070 [P] Create `src/components/Spinner/Spinner.test.tsx`
+- [x] T071 [P] Create `src/components/Spinner/Spinner.stories.tsx`
 
 ### Constitutional Alignment
 - Principle III (Code Quality): Typed props, consistent API
@@ -253,14 +253,14 @@
 **Prompt**: `/tasks/planned/WP06-typography-components.md`
 
 ### Included Subtasks
-- [ ] T072 Create `src/components/Heading/Heading.tsx` with level (1-6) and as prop
-- [ ] T073 [P] Create `src/components/Heading/Heading.css.ts`
-- [ ] T074 [P] Create `src/components/Heading/Heading.test.tsx`
-- [ ] T075 [P] Create `src/components/Heading/Heading.stories.tsx`
-- [ ] T076 Create `src/components/Text/Text.tsx` with size/weight/color variants
-- [ ] T077 [P] Create `src/components/Text/Text.css.ts`
-- [ ] T078 [P] Create `src/components/Text/Text.test.tsx`
-- [ ] T079 [P] Create `src/components/Text/Text.stories.tsx`
+- [x] T072 Create `src/components/Heading/Heading.tsx` with level (1-6) and as prop
+- [x] T073 [P] Create `src/components/Heading/Heading.css.ts`
+- [x] T074 [P] Create `src/components/Heading/Heading.test.tsx`
+- [x] T075 [P] Create `src/components/Heading/Heading.stories.tsx`
+- [x] T076 Create `src/components/Text/Text.tsx` with size/weight/color variants
+- [x] T077 [P] Create `src/components/Text/Text.css.ts`
+- [x] T078 [P] Create `src/components/Text/Text.test.tsx`
+- [x] T079 [P] Create `src/components/Text/Text.stories.tsx`
 
 ### Constitutional Alignment
 - Principle III (Code Quality): Semantic HTML elements used
@@ -289,18 +289,18 @@
 **Prompt**: `/tasks/planned/WP07-layout-primitives.md`
 
 ### Included Subtasks
-- [ ] T080 Create `src/components/Stack/Stack.tsx` with direction, gap, align, justify props
-- [ ] T081 [P] Create `src/components/Stack/Stack.css.ts`
-- [ ] T082 [P] Create `src/components/Stack/Stack.test.tsx`
-- [ ] T083 [P] Create `src/components/Stack/Stack.stories.tsx`
-- [ ] T084 Create `src/components/Grid/Grid.tsx` with columns, gap, responsive props
-- [ ] T085 [P] Create `src/components/Grid/Grid.css.ts`
-- [ ] T086 [P] Create `src/components/Grid/Grid.test.tsx`
-- [ ] T087 [P] Create `src/components/Grid/Grid.stories.tsx`
-- [ ] T088 Create `src/components/Container/Container.tsx` with maxWidth, padding props
-- [ ] T089 [P] Create `src/components/Container/Container.css.ts`
-- [ ] T090 [P] Create `src/components/Container/Container.test.tsx`
-- [ ] T091 [P] Create `src/components/Container/Container.stories.tsx`
+- [x] T080 Create `src/components/Stack/Stack.tsx` with direction, gap, align, justify props
+- [x] T081 [P] Create `src/components/Stack/Stack.css.ts`
+- [x] T082 [P] Create `src/components/Stack/Stack.test.tsx`
+- [x] T083 [P] Create `src/components/Stack/Stack.stories.tsx`
+- [x] T084 Create `src/components/Grid/Grid.tsx` with columns, gap, responsive props
+- [x] T085 [P] Create `src/components/Grid/Grid.css.ts`
+- [x] T086 [P] Create `src/components/Grid/Grid.test.tsx`
+- [x] T087 [P] Create `src/components/Grid/Grid.stories.tsx`
+- [x] T088 Create `src/components/Container/Container.tsx` with maxWidth, padding props
+- [x] T089 [P] Create `src/components/Container/Container.css.ts`
+- [x] T090 [P] Create `src/components/Container/Container.test.tsx`
+- [x] T091 [P] Create `src/components/Container/Container.stories.tsx`
 
 ### Constitutional Alignment
 - Principle II (Modularity): Composable layout system
@@ -379,11 +379,11 @@
 ### Included Subtasks
 - [x] T108 Configure Chromatic project and obtain project token
 - [x] T109 Add Chromatic npm scripts to package.json
-- [ ] T110 Create baseline visual snapshots for core components (Button, Input, Card, Alert, Modal) ⚠️ **Requires manual step**: Obtain `CHROMATIC_PROJECT_TOKEN` from chromatic.com and add to GitHub secrets
+- [x] T110 Create baseline visual snapshots for core components (Button, Input, Card, Alert, Modal) ⚠️ **Requires manual step**: Obtain `CHROMATIC_PROJECT_TOKEN` from chromatic.com and add to GitHub secrets
 - [x] T111 Configure GitHub Actions workflow for CI
 - [x] T112 Add lint, typecheck, test jobs to CI
 - [x] T113 Add Chromatic visual regression job to CI
-- [ ] T114 Configure CI to block merges on failures ⚠️ **Requires manual step**: Configure GitHub branch protection rules via repository settings
+- [x] T114 Configure CI to block merges on failures ⚠️ **Requires manual step**: Configure GitHub branch protection rules via repository settings
 - [x] T115 Document visual regression workflow in README
 
 ### Constitutional Alignment
