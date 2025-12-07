@@ -13,7 +13,7 @@ subtasks:
   - "T125"
 title: "Documentation & B14 Integration"
 phase: "Phase 2 - Polish"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "github-copilot"
 shell_pid: "17604"
@@ -494,3 +494,4 @@ pnpm --filter design-system test --coverage
 
 - 2025-12-05T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-07T14:25:31Z – github-copilot – shell_pid=17604 – lane=doing – Starting documentation and B14 integration
+- 2025-12-07T14:34:30Z – github-copilot – shell_pid=17604 – lane=for_review – Documentation complete - all 10 subtasks finished
