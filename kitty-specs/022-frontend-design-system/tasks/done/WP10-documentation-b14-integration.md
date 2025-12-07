@@ -14,7 +14,7 @@ subtasks:
 title: "Documentation & B14 Integration"
 phase: "Phase 2 - Polish"
 lane: "done"
-assignee: ""
+assignee: "github-copilot"
 agent: "github-copilot-reviewer"
 shell_pid: "17604"
 review_status: "approved without changes"

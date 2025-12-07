@@ -20,7 +20,7 @@ subtasks:
 title: "Interaction Components"
 phase: "Phase 2 - Advanced"
 lane: "done"
-assignee: ""
+assignee: "github-copilot"
 agent: "github-copilot-reviewer"
 shell_pid: "19884"
 review_status: "approved without changes"

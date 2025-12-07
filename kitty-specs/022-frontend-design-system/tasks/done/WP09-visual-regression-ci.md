@@ -12,7 +12,7 @@ subtasks:
 title: "Visual Regression & CI"
 phase: "Phase 2 - Quality"
 lane: "done"
-assignee: ""
+assignee: "github-copilot"
 agent: "github-copilot"
 shell_pid: "17604"
 review_status: "approved without changes"
