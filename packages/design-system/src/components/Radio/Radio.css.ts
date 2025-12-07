@@ -1,4 +1,5 @@
-import { style, recipe, RecipeVariants } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
+import { recipe, type RecipeVariants } from '@vanilla-extract/recipes';
 import { tokens } from '../../tokens/tokens.css';
 
 export const radioGroup = style({

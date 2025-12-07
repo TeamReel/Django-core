@@ -1,4 +1,4 @@
-import React, { forwardRef, type HTMLAttributes } from 'react';
+import { forwardRef, type HTMLAttributes } from 'react';
 import { grid } from './Grid.css';
 import { themeVars } from '../../tokens/theme.css';
 

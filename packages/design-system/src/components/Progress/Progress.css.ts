@@ -1,4 +1,5 @@
-import { recipe, style, type RecipeVariants } from '@vanilla-extract/recipes';
+import { style } from '@vanilla-extract/css';
+import { recipe, type RecipeVariants } from '@vanilla-extract/recipes';
 import { themeVars } from '../../tokens/theme.css';
 
 export const progress = recipe({

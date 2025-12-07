@@ -1,4 +1,4 @@
-import React, { forwardRef, type HTMLAttributes, type CSSProperties } from 'react';
+import { forwardRef, type HTMLAttributes, type CSSProperties } from 'react';
 import { stack } from './Stack.css';
 import { themeVars } from '../../tokens/theme.css';
 
