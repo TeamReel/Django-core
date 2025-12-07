@@ -64,3 +64,4 @@ Thumbs.db
 
 # Spec Kitty tooling
 .kittify/
+node_modules
