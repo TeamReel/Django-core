@@ -40,6 +40,26 @@ export const keyframes = () => 'mock-keyframes';
 export const createTheme = () => ({});
 export const createThemeContract = () => ({});
 
+// Mock theme vars to prevent 'Cannot read properties of undefined' errors
+// When components access themeVars.spacing['4'], themeVars.color.primary, etc.
+const mockSpacing = new Proxy({}, {
+  get: () => '1rem' // Return a valid CSS value for any spacing key
+});
+
+const mockColor = new Proxy({}, {
+  get: () => '#000000' // Return a valid color for any color key
+});
+
+export const themeVars = {
+  spacing: mockSpacing,
+  color: mockColor,
+  typography: {},
+  radius: {},
+  shadow: {},
+  zIndex: {},
+  motion: {},
+};
+
 // Use module.exports with __esModule flag to support both CJS and ESM imports
 // This allows Jest to handle any named import from .css.ts files dynamically
 module.exports = new Proxy(
@@ -51,6 +71,7 @@ module.exports = new Proxy(
     keyframes: () => 'mock-keyframes',
     createTheme: () => ({}),
     createThemeContract: () => ({}),
+    themeVars,
   },
   {
     get(target: any, prop: string) {
@@ -62,10 +83,6 @@ module.exports = new Proxy(
     },
   }
 );
-
-
-
-
 
 // Pre-instantiated recipe mocks for each component
 // These are used when component .css.ts files export: `export const button = recipe({ ... })`
@@ -83,3 +100,5 @@ export const checkIcon = recipe();
 export const radio = recipe();
 export const radioGroup = recipe();
 export const radioWrapper = recipe();
+export const stack = recipe();
+export const grid = () => 'mock-grid';
