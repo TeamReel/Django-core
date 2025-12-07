@@ -3,8 +3,8 @@
 
 // Theme
 export { ThemeProvider, useTheme } from './theme';
-export { lightTheme, darkTheme } from './theme/themes';
-export type { ThemeMode } from './theme/ThemeContext';
+export { lightTheme, darkTheme } from './theme';
+export type { ThemeMode } from './theme';
 
 // Re-export design tokens
 export * from './tokens';

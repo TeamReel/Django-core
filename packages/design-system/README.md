@@ -1,5 +1,9 @@
 # @django-core/design-system
 
+[![CI](https://github.com/django-core/django-core/actions/workflows/design-system.yml/badge.svg)](https://github.com/django-core/django-core/actions/workflows/design-system.yml)
+[![npm version](https://img.shields.io/npm/v/@django-core/design-system.svg)](https://www.npmjs.com/package/@django-core/design-system)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > Product-agnostic design system providing design tokens, core UI components, theming infrastructure, and interaction patterns.
 
 ## Features
