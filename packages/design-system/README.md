@@ -175,6 +175,48 @@ function App() {
 }
 ```
 
+## Development
+
+### Running Storybook Locally
+
+Storybook provides an interactive development environment for exploring and testing components:
+
+```bash
+# Start Storybook development server (runs on http://localhost:6006)
+pnpm --filter design-system storybook
+
+# Or from the design-system directory
+cd packages/design-system
+pnpm storybook
+```
+
+The Storybook dev server includes:
+- Hot module reloading for instant feedback
+- Interactive controls for component props
+- Theme switcher for light/dark mode testing
+- Accessibility checks via @storybook/addon-a11y
+- Viewport controls for responsive testing
+
+### Building Storybook for Production
+
+To build a static version of Storybook (e.g., for deployment or Chromatic):
+
+```bash
+# Build Storybook static files
+pnpm --filter design-system build-storybook
+
+# Or from the design-system directory
+cd packages/design-system
+pnpm build-storybook
+```
+
+The build output is saved to `storybook-static/` directory. This command is used by:
+- GitHub Actions CI for visual regression testing
+- Chromatic CLI (`npx chromatic` runs `build-storybook` internally)
+- Manual deployments to hosting platforms
+
+**Note**: Ensure `build-storybook` completes successfully before pushing to CI, as Chromatic depends on a successful build.
+
 ## Testing
 
 ```bash
