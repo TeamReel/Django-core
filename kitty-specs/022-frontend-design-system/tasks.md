@@ -411,19 +411,19 @@
 
 **Goal**: Complete documentation and CSS export for B14 Django template integration.
 **Independent Test**: Storybook builds and deploys; B14 can import tokens.css and use variables.
-**Prompt**: `/tasks/planned/WP10-documentation-b14-integration.md`
+**Prompt**: `/tasks/for_review/WP10-documentation-b14-integration.md`
 
 ### Included Subtasks
-- [ ] T116 Create comprehensive `packages/design-system/README.md`
-- [ ] T117 [P] Add inline documentation (JSDoc) to all exported components
-- [ ] T118 [P] Create usage examples in Storybook MDX docs
-- [ ] T119 Configure Vite to output standalone `tokens.css` file
-- [ ] T120 Document B14 integration pattern (importing CSS variables)
-- [ ] T121 Create `docs/design-system-b14-integration.md` guide
-- [ ] T122 Update `kitty-specs/022-frontend-design-system/quickstart.md` with final paths
-- [ ] T123 Create component barrel exports in `src/index.ts`
-- [ ] T124 Verify tree-shaking works with bundle size analysis: (a) measure full bundle baseline, (b) measure 3-component import bundle, (c) verify >60% size reduction per SC-007, (d) integrate size-limit or rollup-plugin-visualizer
-- [ ] T125 Final accessibility audit with axe-core across all stories
+- [x] T116 Create comprehensive `packages/design-system/README.md`
+- [x] T117 [P] Add inline documentation (JSDoc) to all exported components
+- [x] T118 [P] Create usage examples in Storybook MDX docs
+- [x] T119 Configure Vite to output standalone `tokens.css` file
+- [x] T120 Document B14 integration pattern (importing CSS variables)
+- [x] T121 Create `docs/design-system-b14-integration.md` guide
+- [x] T122 Update `kitty-specs/022-frontend-design-system/quickstart.md` with final paths
+- [x] T123 Create component barrel exports in `src/index.ts`
+- [x] T124 Verify tree-shaking works with bundle size analysis: (a) measure full bundle baseline, (b) measure 3-component import bundle, (c) verify >60% size reduction per SC-007, (d) integrate size-limit or rollup-plugin-visualizer
+- [x] T125 Final accessibility audit with axe-core across all stories
 
 ### Constitutional Alignment
 - Principle I (Product-Agnostic): B14 uses tokens only, no React dependency
