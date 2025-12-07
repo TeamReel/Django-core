@@ -1,11 +1,11 @@
 import { style } from '@vanilla-extract/css';
 import { recipe, type RecipeVariants } from '@vanilla-extract/recipes';
-import { tokens } from '../../tokens/tokens.css';
+import { themeVars } from '../../tokens/theme.css';
 
 export const container = style({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: tokens.space.sm,
+  gap: themeVars.spacing['3'], // sm: 12px
   cursor: 'pointer',
   userSelect: 'none',
 
@@ -38,31 +38,31 @@ export const checkbox = recipe({
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: tokens.borderRadius.sm,
-    border: `2px solid ${tokens.colors.border.default}`,
-    backgroundColor: tokens.colors.background.paper,
+    borderRadius: themeVars.radius.sm,
+    border: `2px solid ${themeVars.color.border.primary}`,
+    backgroundColor: themeVars.color.background.primary,
     transition: 'all 0.2s',
     flexShrink: 0,
 
     selectors: {
       [`${hiddenInput}:focus-visible + &`]: {
-        outline: `2px solid ${tokens.colors.primary.main}`,
+        outline: `2px solid ${themeVars.color.palette.primary['500']}`,
         outlineOffset: '2px',
       },
 
       [`${hiddenInput}:checked + &`]: {
-        backgroundColor: tokens.colors.primary.main,
-        borderColor: tokens.colors.primary.main,
+        backgroundColor: themeVars.color.palette.primary['500'],
+        borderColor: themeVars.color.palette.primary['500'],
       },
 
       [`${hiddenInput}:indeterminate + &`]: {
-        backgroundColor: tokens.colors.primary.main,
-        borderColor: tokens.colors.primary.main,
+        backgroundColor: themeVars.color.palette.primary['500'],
+        borderColor: themeVars.color.palette.primary['500'],
       },
 
       [`${hiddenInput}:disabled + &`]: {
-        backgroundColor: tokens.colors.background.disabled,
-        borderColor: tokens.colors.border.default,
+        backgroundColor: themeVars.color.palette.neutral['100'],
+        borderColor: themeVars.color.border.primary,
         cursor: 'not-allowed',
       },
     },
@@ -72,28 +72,28 @@ export const checkbox = recipe({
     state: {
       default: {},
       error: {
-        borderColor: tokens.colors.error.main,
+        borderColor: themeVars.color.palette.error['500'],
         selectors: {
           [`${hiddenInput}:checked + &`]: {
-            backgroundColor: tokens.colors.error.main,
-            borderColor: tokens.colors.error.main,
+            backgroundColor: themeVars.color.palette.error['500'],
+            borderColor: themeVars.color.palette.error['500'],
           },
           [`${hiddenInput}:indeterminate + &`]: {
-            backgroundColor: tokens.colors.error.main,
-            borderColor: tokens.colors.error.main,
+            backgroundColor: themeVars.color.palette.error['500'],
+            borderColor: themeVars.color.palette.error['500'],
           },
         },
       },
       success: {
-        borderColor: tokens.colors.success.main,
+        borderColor: themeVars.color.palette.success['500'],
         selectors: {
           [`${hiddenInput}:checked + &`]: {
-            backgroundColor: tokens.colors.success.main,
-            borderColor: tokens.colors.success.main,
+            backgroundColor: themeVars.color.palette.success['500'],
+            borderColor: themeVars.color.palette.success['500'],
           },
           [`${hiddenInput}:indeterminate + &`]: {
-            backgroundColor: tokens.colors.success.main,
-            borderColor: tokens.colors.success.main,
+            backgroundColor: themeVars.color.palette.success['500'],
+            borderColor: themeVars.color.palette.success['500'],
           },
         },
       },
@@ -124,18 +124,18 @@ export const checkbox = recipe({
 export const checkIcon = style({
   width: '100%',
   height: '100%',
-  color: tokens.colors.background.paper,
+  color: themeVars.color.background.primary,
 });
 
 export const label = recipe({
   base: {
-    fontSize: tokens.fontSize.base,
-    color: tokens.colors.text.primary,
+    fontSize: themeVars.typography.fontSize.md,
+    color: themeVars.color.text.primary,
     cursor: 'pointer',
 
     selectors: {
       '[data-disabled="true"] &': {
-        color: tokens.colors.text.disabled,
+        color: themeVars.color.text.disabled,
         cursor: 'not-allowed',
       },
     },
@@ -145,10 +145,10 @@ export const label = recipe({
     state: {
       default: {},
       error: {
-        color: tokens.colors.error.main,
+        color: themeVars.color.palette.error['500'],
       },
       success: {
-        color: tokens.colors.success.main,
+        color: themeVars.color.palette.success['500'],
       },
     },
   },
@@ -161,20 +161,20 @@ export const label = recipe({
 export const helperText = recipe({
   base: {
     display: 'block',
-    fontSize: tokens.fontSize.xs,
-    marginTop: tokens.space.xs,
-    marginLeft: 'calc(20px + ' + tokens.space.sm + ')',
-    color: tokens.colors.text.secondary,
+    fontSize: themeVars.typography.fontSize.xs,
+    marginTop: themeVars.spacing['2'], // xs: 8px
+    marginLeft: `calc(20px + ${themeVars.spacing['3']})`, // 20px + sm (12px)
+    color: themeVars.color.text.secondary,
   },
 
   variants: {
     state: {
       default: {},
       error: {
-        color: tokens.colors.error.main,
+        color: themeVars.color.palette.error['500'],
       },
       success: {
-        color: tokens.colors.success.main,
+        color: themeVars.color.palette.success['500'],
       },
     },
   },

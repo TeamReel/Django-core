@@ -1,4 +1,4 @@
-import { style } from '@vanilla-extract/css';
+import { style, globalStyle } from '@vanilla-extract/css';
 import { themeVars } from '../../tokens/theme.css';
 
 export const modalOverlay = style({
@@ -33,14 +33,13 @@ export const modalHeader = style({
   justifyContent: 'space-between',
   padding: themeVars.spacing['6'],
   borderBottom: `1px solid ${themeVars.color.border.primary}`,
-  selectors: {
-    '& h2': {
-      margin: 0,
-      fontSize: themeVars.typography.fontSize.lg,
-      fontWeight: themeVars.typography.fontWeight.semibold,
-      color: themeVars.color.text.primary,
-    },
-  },
+});
+
+globalStyle(`${modalHeader} h2`, {
+  margin: 0,
+  fontSize: themeVars.typography.fontSize.lg,
+  fontWeight: themeVars.typography.fontWeight.semibold,
+  color: themeVars.color.text.primary,
 });
 
 export const modalCloseButton = style({
