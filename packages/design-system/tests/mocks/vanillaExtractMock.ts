@@ -72,14 +72,52 @@ module.exports = new Proxy(
     createTheme: () => ({}),
     createThemeContract: () => ({}),
     themeVars,
+    // Known recipe-based exports (all components that use recipe())
+    // Button
+    button: createMockRecipe(),
+    // Input
+    input: createMockRecipe(),
+    // Textarea
+    textarea: createMockRecipe(),
+    // Checkbox
+    checkbox: createMockRecipe(),
+    checkboxStyle: createMockRecipe(),
+    checkboxWrapper: createMockRecipe(),
+    hiddenInput: createMockRecipe(),
+    checkIcon: createMockRecipe(),
+    // Radio
+    radio: createMockRecipe(),
+    // Label, helperText (shared by Input/Textarea/Checkbox/Radio)
+    label: createMockRecipe(),
+    helperText: createMockRecipe(),
+    labelStyle: createMockRecipe(),
+    // Alert
+    alert: createMockRecipe(),
+    alertIcon: createMockRecipe(),
+    // Badge
+    badge: createMockRecipe(),
+    // Spinner
+    spinner: createMockRecipe(),
+    // Text
+    text: createMockRecipe(),
+    // Progress
+    progress: createMockRecipe(),
+    // Container
+    container: createMockRecipe(),
+    // Stack
+    stack: createMockRecipe(),
+    // Heading
+    heading: createMockRecipe(),
+    // Card
+    card: createMockRecipe(),
   },
   {
     get(target: any, prop: string) {
       if (prop in target) {
         return target[prop];
       }
-      // For any other property (CSS class names), return a mock
-      return typeof prop === 'string' && prop !== 'then' ? createMockRecipe() : undefined;
+      // For unknown properties, default to string (most CSS exports are from style())
+      return typeof prop === 'string' && prop !== 'then' ? 'mock-style' : undefined;
     },
   }
 );

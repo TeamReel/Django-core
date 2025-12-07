@@ -110,6 +110,8 @@
     "directory": "packages/design-system"
   },
   "dependencies": {
-    "@vanilla-extract/recipes": "^0.5.7"
+    "@floating-ui/react": "^0.27.16",
+    "@vanilla-extract/recipes": "^0.5.7",
+    "focus-trap-react": "^11.0.4"
   }
 }
