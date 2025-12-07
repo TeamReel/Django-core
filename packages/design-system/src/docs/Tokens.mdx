@@ -1,0 +1,306 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design Tokens" />
+
+# Design Tokens
+
+Design tokens are the visual design atoms of the design system — named entities that store visual design attributes.
+
+## Why Tokens?
+
+Tokens provide:
+
+- **Consistency** - Single source of truth for design values
+- **Maintainability** - Update once, change everywhere
+- **Theming** - Easy theme switching
+- **Scale** - Systematic design at any size
+
+## Token Categories
+
+### Color Tokens
+
+Semantic color tokens organized by purpose:
+
+#### Text Colors
+```css
+--color-text-primary      /* Main text */
+--color-text-secondary    /* Supporting text */
+--color-text-tertiary     /* Subtle text */
+--color-text-disabled     /* Disabled text */
+--color-text-inverse      /* Text on dark backgrounds */
+--color-text-link         /* Hyperlinks */
+--color-text-success      /* Success messages */
+--color-text-error        /* Error messages */
+--color-text-warning      /* Warning messages */
+```
+
+#### Background Colors
+```css
+--color-background-primary    /* Main surface */
+--color-background-secondary  /* Secondary surface */
+--color-background-tertiary   /* Tertiary surface */
+--color-background-hover      /* Hover state */
+--color-background-disabled   /* Disabled state */
+```
+
+#### Brand Colors
+```css
+--color-primary           /* Primary brand */
+--color-primary-hover     /* Primary hover */
+--color-primary-active    /* Primary active/pressed */
+--color-secondary         /* Secondary brand */
+--color-secondary-hover   /* Secondary hover */
+--color-secondary-active  /* Secondary active */
+```
+
+#### State Colors
+```css
+--color-success           /* Success states */
+--color-error             /* Error states */
+--color-warning           /* Warning states */
+--color-info              /* Info states */
+```
+
+### Typography Tokens
+
+Font families, sizes, weights, and line heights:
+
+#### Font Families
+```css
+--typography-fontFamily-sans   /* System sans-serif stack */
+--typography-fontFamily-serif  /* Serif stack */
+--typography-fontFamily-mono   /* Monospace stack */
+```
+
+#### Font Sizes
+```css
+--typography-fontSize-xs   /* 12px */
+--typography-fontSize-sm   /* 14px */
+--typography-fontSize-md   /* 16px */
+--typography-fontSize-lg   /* 18px */
+--typography-fontSize-xl   /* 20px */
+--typography-fontSize-2xl  /* 24px */
+--typography-fontSize-3xl  /* 30px */
+--typography-fontSize-4xl  /* 36px */
+--typography-fontSize-5xl  /* 48px */
+```
+
+#### Font Weights
+```css
+--typography-fontWeight-normal   /* 400 */
+--typography-fontWeight-medium   /* 500 */
+--typography-fontWeight-semibold /* 600 */
+--typography-fontWeight-bold     /* 700 */
+```
+
+#### Line Heights
+```css
+--typography-lineHeight-tight    /* 1.25 */
+--typography-lineHeight-normal   /* 1.5 */
+--typography-lineHeight-relaxed  /* 1.75 */
+```
+
+### Spacing Tokens
+
+Consistent spacing scale based on 4px grid:
+
+```css
+--spacing-0    /* 0px */
+--spacing-1    /* 4px */
+--spacing-2    /* 8px */
+--spacing-3    /* 12px */
+--spacing-4    /* 16px */
+--spacing-5    /* 20px */
+--spacing-6    /* 24px */
+--spacing-8    /* 32px */
+--spacing-10   /* 40px */
+--spacing-12   /* 48px */
+--spacing-16   /* 64px */
+--spacing-20   /* 80px */
+--spacing-24   /* 96px */
+```
+
+### Border Radius Tokens
+
+Rounded corners for different contexts:
+
+```css
+--radius-none   /* 0px - Sharp corners */
+--radius-sm     /* 2px - Subtle rounding */
+--radius-md     /* 4px - Standard rounding */
+--radius-lg     /* 8px - Prominent rounding */
+--radius-xl     /* 12px - Large rounding */
+--radius-2xl    /* 16px - Extra large */
+--radius-full   /* 9999px - Pill shape */
+```
+
+### Shadow Tokens
+
+Elevation and depth:
+
+```css
+--shadow-none   /* No shadow */
+--shadow-sm     /* Subtle lift */
+--shadow-md     /* Standard elevation */
+--shadow-lg     /* Prominent elevation */
+--shadow-xl     /* Maximum elevation */
+```
+
+### Z-Index Tokens
+
+Layer management:
+
+```css
+--zIndex-base       /* 0 - Base layer */
+--zIndex-dropdown   /* 1000 - Dropdowns */
+--zIndex-sticky     /* 1100 - Sticky elements */
+--zIndex-fixed      /* 1200 - Fixed elements */
+--zIndex-overlay    /* 1300 - Overlays */
+--zIndex-modal      /* 1400 - Modals */
+--zIndex-popover    /* 1500 - Popovers */
+--zIndex-tooltip    /* 1600 - Tooltips */
+```
+
+### Motion Tokens
+
+Animation timing and easing:
+
+```css
+--motion-duration-fast     /* 150ms */
+--motion-duration-normal   /* 200ms */
+--motion-duration-slow     /* 300ms */
+
+--motion-easing-standard   /* cubic-bezier(0.4, 0, 0.2, 1) */
+--motion-easing-enter      /* cubic-bezier(0, 0, 0.2, 1) */
+--motion-easing-exit       /* cubic-bezier(0.4, 0, 1, 1) */
+```
+
+### Breakpoint Tokens
+
+Responsive design breakpoints:
+
+```css
+--breakpoint-sm   /* 640px */
+--breakpoint-md   /* 768px */
+--breakpoint-lg   /* 1024px */
+--breakpoint-xl   /* 1280px */
+--breakpoint-2xl  /* 1536px */
+```
+
+## Using Tokens
+
+### In React Components
+
+Import and use tokens with TypeScript support:
+
+```tsx
+import { themeVars } from '@django-core/design-system';
+
+const MyComponent = () => (
+  <div style={{
+    padding: themeVars.spacing[4],
+    backgroundColor: themeVars.color.background.primary,
+    borderRadius: themeVars.radius.md,
+  }}>
+    Content
+  </div>
+);
+```
+
+### In CSS
+
+Reference tokens via CSS custom properties:
+
+```css
+.my-element {
+  padding: var(--spacing-4);
+  color: var(--color-text-primary);
+  background: var(--color-background-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+```
+
+### In Django Templates (B14)
+
+Import the tokens CSS file:
+
+```html
+<link rel="stylesheet" href="{% static 'design-system/tokens.css' %}">
+
+<div class="my-card" style="
+  padding: var(--spacing-4);
+  background: var(--color-background-secondary);
+  border-radius: var(--radius-md);
+">
+  Content
+</div>
+```
+
+## Token Architecture
+
+### Tier System
+
+Tokens are organized in two tiers:
+
+1. **Base tokens** - Raw values (colors, sizes)
+2. **Semantic tokens** - Purpose-based (text-primary, background-hover)
+
+This allows themes to remap base tokens without changing semantic meaning:
+
+```css
+/* Light theme */
+--color-text-primary: var(--color-gray-900);
+
+/* Dark theme */
+--color-text-primary: var(--color-gray-50);
+```
+
+### Theme Switching
+
+All semantic tokens automatically update when themes switch:
+
+```tsx
+<ThemeProvider theme="dark">
+  {/* All components use dark theme tokens */}
+</ThemeProvider>
+```
+
+## Best Practices
+
+### Do's ✅
+
+- Use semantic tokens (`text-primary` instead of `gray-900`)
+- Follow the spacing scale consistently
+- Use motion tokens for animations
+- Respect z-index layers
+
+### Don'ts ❌
+
+- Don't hard-code pixel values
+- Don't skip spacing scale steps
+- Don't create custom z-index values
+- Don't override base tokens directly
+
+## Extending Tokens
+
+For project-specific needs, extend semantic tokens:
+
+```css
+:root {
+  --color-accent: #ff00ff;
+  --spacing-custom: calc(var(--spacing-4) * 1.5);
+}
+```
+
+But prefer using existing tokens when possible.
+
+## Reference
+
+Full token reference available in the type definitions:
+
+```tsx
+import type { ThemeVars } from '@django-core/design-system';
+```
+
+Or explore visually in the [Token Examples](/story/tokens-colors--all-colors) stories.
