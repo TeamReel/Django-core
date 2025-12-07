@@ -117,6 +117,7 @@ export const CustomPlaceholder: Story = {
 };
 
 export const KeyboardNavigation: Story = {
+  args: { options: fruitOptions, placeholder: 'Select a fruit', onChange: () => {} },
   render: () => (
     <div style={{ width: '300px' }}>
       <p style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#666' }}>
@@ -137,6 +138,7 @@ export const KeyboardNavigation: Story = {
 };
 
 export const InForm: Story = {
+  args: { options: fruitOptions, placeholder: 'Select a fruit', onChange: () => {} },
   render: () => {
     const [formData, setFormData] = useState({ fruit: '', country: '' });
 

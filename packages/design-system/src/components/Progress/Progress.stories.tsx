@@ -68,7 +68,8 @@ export const Large: Story = {
   },
 };
 
-export const AllSizes: Story = {
+export const AllStates: Story = {
+  args: { value: 60 },
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '400px' }}>
       <div>
@@ -88,6 +89,7 @@ export const AllSizes: Story = {
 };
 
 export const DifferentValues: Story = {
+  args: { value: 50 },
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '400px' }}>
       <Progress value={0} label="Not started" showLabel />
@@ -100,6 +102,7 @@ export const DifferentValues: Story = {
 };
 
 export const Animated: Story = {
+  args: { value: 0 },
   render: () => {
     const [progress, setProgress] = useState(0);
 
@@ -123,6 +126,7 @@ export const Animated: Story = {
 };
 
 export const FileUpload: Story = {
+  args: { value: 0 },
   render: () => {
     const [progress, setProgress] = useState(0);
 
@@ -145,6 +149,7 @@ export const FileUpload: Story = {
 };
 
 export const MultipleProgress: Story = {
+  args: { value: 50 },
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '400px' }}>
       <Progress value={100} label="Installation" showLabel />
@@ -156,6 +161,7 @@ export const MultipleProgress: Story = {
 };
 
 export const CustomMax: Story = {
+  args: { value: 150 },
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '400px' }}>
       <div>

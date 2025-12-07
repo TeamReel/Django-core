@@ -24,17 +24,22 @@ export { Progress, type ProgressProps } from './components/Progress';
 export type { ProgressSize } from './components/Progress/Progress.css';
 
 // Feedback Components
-export { Alert, type AlertProps, type AlertVariant } from './components/Alert';
-export { Spinner, type SpinnerProps, type SpinnerSize } from './components/Spinner';
+export { Alert, type AlertProps } from './components/Alert';
+export type { AlertVariant } from './components/Alert/Alert.css';
+export { Spinner, type SpinnerProps } from './components/Spinner';
+export type { SpinnerSize } from './components/Spinner/Spinner.css';
 
 // Typography Components
-export { Heading, type HeadingProps, type HeadingLevel, type HeadingSize, type HeadingWeight } from './components/Heading';
-export { Text, type TextProps, type TextSize, type TextWeight, type TextColor } from './components/Text';
+export { Heading, type HeadingProps } from './components/Heading';
+export type { HeadingLevel } from './components/Heading/Heading.css';
+export { Text, type TextProps } from './components/Text';
+export type { TextSize, TextWeight, TextColor } from './components/Text/Text.css';
 
 // Layout Components
-export { Stack, type StackProps, type StackDirection, type StackAlign, type StackJustify } from './components/Stack';
+export { Stack, type StackProps } from './components/Stack';
 export { Grid, type GridProps } from './components/Grid';
-export { Container, type ContainerProps, type ContainerSize } from './components/Container';
+export { Container, type ContainerProps } from './components/Container';
+export type { ContainerMaxWidth as ContainerSize } from './components/Container/Container.css';
 
 // Interaction Components
 export { Modal, type ModalProps } from './components/Modal';

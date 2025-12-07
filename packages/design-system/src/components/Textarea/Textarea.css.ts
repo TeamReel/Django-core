@@ -146,6 +146,6 @@ export const helperText = recipe({
   },
 });
 
-export type TextareaState = NonNullable<RecipeVariants<typeof textarea>['state']>;
-export type TextareaSize = NonNullable<RecipeVariants<typeof textarea>['size']>;
-export type TextareaResize = NonNullable<RecipeVariants<typeof textarea>['resize']>;
+export type TextareaState = NonNullable<RecipeVariants<typeof textarea>>['state'];
+export type TextareaSize = NonNullable<RecipeVariants<typeof textarea>>['size'];
+export type TextareaResize = NonNullable<RecipeVariants<typeof textarea>>['resize'];

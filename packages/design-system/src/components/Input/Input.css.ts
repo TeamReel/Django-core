@@ -1,5 +1,5 @@
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
-import { tokens } from '../../tokens';
+import { tokens } from '../../tokens/tokens.css';
 
 export const input = recipe({
   base: {
@@ -13,10 +13,6 @@ export const input = recipe({
     color: tokens.colors.neutral[900],
     transition: 'all 150ms ease',
     outline: 'none',
-
-    ':hover:not(:disabled)': {
-      borderColor: tokens.colors.neutral[400],
-    },
 
     ':focus': {
       borderColor: tokens.colors.primary[500],
@@ -46,6 +42,9 @@ export const input = recipe({
       },
       success: {
         borderColor: tokens.colors.success[500],
+        ':hover:not(:disabled)': {
+          borderColor: tokens.colors.success[600],
+        },
         ':focus': {
           borderColor: tokens.colors.success[500],
           boxShadow: `0 0 0 3px ${tokens.colors.success[100]}`,

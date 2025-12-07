@@ -8,7 +8,7 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
   onDismiss?: () => void;
 }
 
-const icons: Record<AlertVariant, string> = {
+const icons: Record<NonNullable<AlertVariant>, string> = {
   info: 'ℹ',
   success: '✓',
   warning: '⚠',

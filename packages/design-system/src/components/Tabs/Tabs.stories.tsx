@@ -14,6 +14,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: { children: null },
   render: () => (
     <div style={{ width: '600px' }}>
       <Tabs defaultValue="overview">
@@ -45,6 +46,7 @@ export const Default: Story = {
 };
 
 export const WithDisabledTab: Story = {
+  args: { children: null },
   render: () => (
     <div style={{ width: '600px' }}>
       <Tabs defaultValue="active">
@@ -68,6 +70,7 @@ export const WithDisabledTab: Story = {
 };
 
 export const ManyTabs: Story = {
+  args: { children: null },
   render: () => (
     <div style={{ width: '800px' }}>
       <Tabs defaultValue="1">
@@ -95,6 +98,7 @@ export const ManyTabs: Story = {
 };
 
 export const WithComplexContent: Story = {
+  args: { children: null },
   render: () => (
     <div style={{ width: '700px' }}>
       <Tabs defaultValue="account">
@@ -168,6 +172,7 @@ export const WithComplexContent: Story = {
 };
 
 export const KeyboardNavigation: Story = {
+  args: { children: null },
   render: () => (
     <div style={{ width: '600px' }}>
       <p style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#666' }}>

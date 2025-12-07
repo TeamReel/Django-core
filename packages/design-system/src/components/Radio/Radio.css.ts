@@ -196,5 +196,5 @@ export const helperText = recipe({
   },
 });
 
-export type RadioState = NonNullable<RecipeVariants<typeof radio>['state']>;
-export type RadioSize = NonNullable<RecipeVariants<typeof radio>['size']>;
+export type RadioState = NonNullable<RecipeVariants<typeof radio>>['state'];
+export type RadioSize = NonNullable<RecipeVariants<typeof radio>>['size'];

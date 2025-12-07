@@ -15,7 +15,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function ModalWrapper(args: React.ComponentProps<typeof Modal>) {
+function ModalWrapper(args: Omit<React.ComponentProps<typeof Modal>, 'isOpen'>) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -27,6 +27,7 @@ function ModalWrapper(args: React.ComponentProps<typeof Modal>) {
 }
 
 export const Default: Story = {
+  args: { isOpen: true, onClose: () => {}, children: <></> },
   render: () => (
     <ModalWrapper title="Default Modal" onClose={() => {}}>
       <p>This is a simple modal with a title and content.</p>
@@ -36,6 +37,7 @@ export const Default: Story = {
 };
 
 export const WithFooter: Story = {
+  args: { isOpen: true, onClose: () => {}, children: <></> },
   render: () => {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -64,6 +66,7 @@ export const WithFooter: Story = {
 };
 
 export const NoTitle: Story = {
+  args: { isOpen: true, onClose: () => {}, children: '' },
   render: () => (
     <ModalWrapper onClose={() => {}}>
       <h3 style={{ marginTop: 0 }}>Custom Content</h3>
@@ -74,6 +77,7 @@ export const NoTitle: Story = {
 };
 
 export const DisableOverlayClick: Story = {
+  args: { isOpen: true, onClose: () => {}, children: <></> },
   render: () => (
     <ModalWrapper
       title="No Overlay Close"
@@ -87,6 +91,7 @@ export const DisableOverlayClick: Story = {
 };
 
 export const DisableEscapeKey: Story = {
+  args: { isOpen: true, onClose: () => {}, children: <></> },
   render: () => (
     <ModalWrapper
       title="No Escape Close"
@@ -100,6 +105,7 @@ export const DisableEscapeKey: Story = {
 };
 
 export const LongContent: Story = {
+  args: { isOpen: true, onClose: () => {}, children: <></> },
   render: () => (
     <ModalWrapper title="Long Content Modal" onClose={() => {}}>
       <p>This modal has content that exceeds the viewport height.</p>
@@ -112,6 +118,7 @@ export const LongContent: Story = {
 };
 
 export const LongContentWithFooter: Story = {
+  args: { isOpen: true, onClose: () => {}, children: '' },
   render: () => {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -142,6 +149,7 @@ export const LongContentWithFooter: Story = {
 };
 
 export const NestedInteractions: Story = {
+  args: { isOpen: true, onClose: () => {}, children: '' },
   render: () => {
     const [isOpen, setIsOpen] = useState(false);
 

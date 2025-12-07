@@ -15,6 +15,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: { content: 'Tooltip text', children: <button>Hover me</button> },
   render: () => (
     <Tooltip content="This is a helpful tooltip">
       <Button>Hover me</Button>
@@ -23,6 +24,7 @@ export const Default: Story = {
 };
 
 export const LongContent: Story = {
+  args: { content: 'Long tooltip content', children: <button>Hover me</button> },
   render: () => (
     <Tooltip content="This is a longer tooltip with more detailed information that wraps across multiple lines.">
       <Button>Hover for long tooltip</Button>
@@ -31,6 +33,7 @@ export const LongContent: Story = {
 };
 
 export const TopPlacement: Story = {
+  args: { content: 'Top tooltip', children: <button>Hover me</button> },
   render: () => (
     <Tooltip content="Tooltip on top" placement="top">
       <Button>Top</Button>
@@ -39,6 +42,7 @@ export const TopPlacement: Story = {
 };
 
 export const RightPlacement: Story = {
+  args: { content: 'Right tooltip', children: <button>Hover me</button> },
   render: () => (
     <Tooltip content="Tooltip on right" placement="right">
       <Button>Right</Button>
@@ -47,6 +51,7 @@ export const RightPlacement: Story = {
 };
 
 export const BottomPlacement: Story = {
+  args: { content: 'Bottom tooltip', children: <button>Hover me</button> },
   render: () => (
     <Tooltip content="Tooltip on bottom" placement="bottom">
       <Button>Bottom</Button>
@@ -55,6 +60,7 @@ export const BottomPlacement: Story = {
 };
 
 export const LeftPlacement: Story = {
+  args: { content: 'Left tooltip', children: <button>Hover me</button> },
   render: () => (
     <Tooltip content="Tooltip on left" placement="left">
       <Button>Left</Button>
@@ -63,6 +69,7 @@ export const LeftPlacement: Story = {
 };
 
 export const WithDelay: Story = {
+  args: { content: 'Delayed tooltip', children: <button>Hover me</button> },
   render: () => (
     <Tooltip content="This tooltip appears after 1 second" delay={1000}>
       <Button>Hover with delay</Button>
@@ -71,6 +78,7 @@ export const WithDelay: Story = {
 };
 
 export const OnTextElement: Story = {
+  args: { content: 'Text tooltip', children: <span>text</span> },
   render: () => (
     <div>
       <p>
@@ -87,6 +95,7 @@ export const OnTextElement: Story = {
 };
 
 export const OnIconButton: Story = {
+  args: { content: 'Icon tooltip', children: <button>Hover me</button> },
   render: () => (
     <Tooltip content="More information about this action">
       <button
@@ -108,6 +117,7 @@ export const OnIconButton: Story = {
 };
 
 export const MultipleTooltips: Story = {
+  args: { content: 'Tooltip', children: <button>Hover me</button> },
   render: () => (
     <div style={{ display: 'flex', gap: '1rem' }}>
       <Tooltip content="First tooltip" placement="top">
@@ -124,6 +134,7 @@ export const MultipleTooltips: Story = {
 };
 
 export const AllPlacements: Story = {
+  args: { content: 'Tooltip', children: <button>Hover me</button> },
   render: () => (
     <div
       style={{
@@ -180,6 +191,7 @@ export const AllPlacements: Story = {
 };
 
 export const KeyboardAccessible: Story = {
+  args: { content: 'Keyboard tooltip', children: <button>Hover me</button> },
   render: () => (
     <div>
       <p style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#666' }}>

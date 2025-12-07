@@ -184,5 +184,5 @@ export const helperText = recipe({
   },
 });
 
-export type CheckboxState = NonNullable<RecipeVariants<typeof checkbox>['state']>;
-export type CheckboxSize = NonNullable<RecipeVariants<typeof checkbox>['size']>;
+export type CheckboxState = NonNullable<RecipeVariants<typeof checkbox>>['state'];
+export type CheckboxSize = NonNullable<RecipeVariants<typeof checkbox>>['size'];
