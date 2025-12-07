@@ -184,6 +184,52 @@ pnpm --filter design-system test:watch
 pnpm --filter design-system test:coverage
 ```
 
+## Visual Regression Testing
+
+This design system uses [Chromatic](https://www.chromatic.com/) for visual regression testing to catch unintended UI changes.
+
+### Running Visual Tests Locally
+
+```bash
+# Build Storybook and run visual tests
+pnpm --filter design-system chromatic
+
+# Preview changes without failing on differences
+pnpm --filter design-system chromatic --exit-zero-on-changes
+```
+
+### CI Integration
+
+Visual regression tests run automatically on every pull request via GitHub Actions. When visual changes are detected:
+
+1. **Review Required**: The Chromatic job will show detected changes in the PR checks
+2. **Review Changes**: Click the Chromatic build link to review visual diffs
+3. **Accept or Reject**:
+   - **Accept**: If changes are intentional (new feature, bug fix, design update)
+   - **Reject**: If changes are unintended regressions
+
+### Making Intentional Visual Changes
+
+When you intentionally modify component appearance:
+
+1. Make your code changes
+2. Commit and push to your PR branch
+3. Wait for Chromatic to detect changes
+4. Review the visual diffs in Chromatic UI
+5. Accept the changes if they match your intent
+6. Chromatic will update the baseline for future comparisons
+
+### Troubleshooting
+
+**Visual diffs on unrelated changes**: If you see diffs that shouldn't exist, ensure:
+- Font loading is consistent (check Storybook preview config)
+- Animations are disabled in stories (use `parameters.chromatic.disableSnapshot`)
+- Dynamic data is mocked to stable values
+
+**Build failures**: Check that:
+- All Storybook stories render without errors
+- `CHROMATIC_PROJECT_TOKEN` secret is configured in GitHub repository settings
+
 ## Contributing
 
 See the main repository [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
