@@ -1,0 +1,158 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Getting Started" />
+
+# Getting Started
+
+Welcome to the Django Core Design System! This guide will help you get up and running quickly.
+
+## Installation
+
+Install the design system package using your preferred package manager:
+
+```bash
+# Using pnpm (recommended)
+pnpm add @django-core/design-system react react-dom
+
+# Using npm
+npm install @django-core/design-system react react-dom
+
+# Using yarn
+yarn add @django-core/design-system react react-dom
+```
+
+## Setup
+
+### React Applications
+
+Wrap your application in the `ThemeProvider` to enable theming:
+
+```tsx
+import { ThemeProvider } from '@django-core/design-system';
+import '@django-core/design-system/tokens.css';
+
+function App() {
+  return (
+    <ThemeProvider>
+      {/* Your app content */}
+    </ThemeProvider>
+  );
+}
+```
+
+### Theme Modes
+
+The design system supports light and dark themes:
+
+```tsx
+import { ThemeProvider } from '@django-core/design-system';
+
+function App() {
+  return (
+    <ThemeProvider theme="dark">
+      {/* Your app content */}
+    </ThemeProvider>
+  );
+}
+```
+
+### System Preference Detection
+
+Automatically respect user's system theme preference:
+
+```tsx
+import { ThemeProvider } from '@django-core/design-system';
+
+function App() {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  });
+
+  return (
+    <ThemeProvider theme={theme}>
+      <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+        Toggle Theme
+      </button>
+      {/* Your app content */}
+    </ThemeProvider>
+  );
+}
+```
+
+## Quick Example
+
+Here's a complete example using multiple components:
+
+```tsx
+import {
+  ThemeProvider,
+  Container,
+  Stack,
+  Heading,
+  Text,
+  Button,
+  Card,
+} from '@django-core/design-system';
+import '@django-core/design-system/tokens.css';
+
+function App() {
+  return (
+    <ThemeProvider>
+      <Container size="md">
+        <Stack direction="column" gap="6">
+          <Heading level={1}>Welcome</Heading>
+          <Card>
+            <Stack direction="column" gap="4">
+              <Text size="lg">
+                This is a simple example using the Design System.
+              </Text>
+              <Button variant="primary" size="md">
+                Get Started
+              </Button>
+            </Stack>
+          </Card>
+        </Stack>
+      </Container>
+    </ThemeProvider>
+  );
+}
+```
+
+## Next Steps
+
+- **[Browse Components](/docs/components)** - Explore all available components
+- **[Learn about Theming](/docs/theming)** - Customize colors and create brand themes
+- **[View Design Tokens](/docs/tokens)** - Understand the token system
+- **[B14 Integration](/docs/b14-integration)** - Use tokens in Django templates
+
+## TypeScript Support
+
+The design system is built with TypeScript and includes full type definitions. Import types alongside components:
+
+```tsx
+import { Button, type ButtonProps, type ButtonVariant } from '@django-core/design-system';
+```
+
+## Tree-Shaking
+
+The library supports tree-shaking out of the box. Import only what you need:
+
+```tsx
+// ✅ Good - only imports Button code
+import { Button } from '@django-core/design-system';
+
+// ❌ Avoid - imports everything
+import * as DS from '@django-core/design-system';
+```
+
+## Browser Support
+
+The design system supports modern browsers:
+
+- Chrome/Edge 90+
+- Firefox 88+
+- Safari 14+
+
+For older browsers, you may need polyfills for modern JavaScript features.

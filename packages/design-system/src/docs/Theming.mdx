@@ -1,0 +1,239 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Theming" />
+
+# Theming
+
+The design system includes a powerful theming system built on CSS custom properties (variables).
+
+## Built-in Themes
+
+Two themes are provided out of the box:
+
+- **Light Theme** - Clean, bright interface
+- **Dark Theme** - Comfortable low-light interface
+
+### Using Themes
+
+```tsx
+import { ThemeProvider } from '@django-core/design-system';
+
+function App() {
+  return (
+    <ThemeProvider theme="light">
+      {/* Your app */}
+    </ThemeProvider>
+  );
+}
+```
+
+### Dynamic Theme Switching
+
+```tsx
+import { ThemeProvider, useTheme, Button } from '@django-core/design-system';
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <Button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+      {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+    </Button>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <ThemeToggle />
+      {/* Your app */}
+    </ThemeProvider>
+  );
+}
+```
+
+## Creating Custom Themes
+
+### Extending Existing Themes
+
+Create brand-specific themes by extending the base themes:
+
+```tsx
+import { createTheme } from '@django-core/design-system';
+
+const acmeTheme = createTheme({
+  colors: {
+    primary: '#FF5722',
+    primaryHover: '#E64A19',
+    primaryActive: '#BF360C',
+    secondary: '#2196F3',
+    secondaryHover: '#1976D2',
+    secondaryActive: '#1565C0',
+  },
+});
+```
+
+### Using Custom Themes
+
+```tsx
+function App() {
+  return (
+    <ThemeProvider theme={acmeTheme}>
+      {/* Your app */}
+    </ThemeProvider>
+  );
+}
+```
+
+## Theme Tokens
+
+Themes control the following token categories:
+
+### Color Tokens
+
+- **Primary colors** - Main brand colors
+- **Secondary colors** - Accent colors
+- **Text colors** - Typography colors
+- **Background colors** - Surface colors
+- **Border colors** - Divider and outline colors
+- **State colors** - Success, error, warning, info
+
+### Semantic Mapping
+
+All colors are semantically mapped for consistent meaning:
+
+```css
+/* Light theme */
+--color-text-primary: var(--color-gray-900);
+--color-background-primary: var(--color-white);
+
+/* Dark theme */
+--color-text-primary: var(--color-gray-50);
+--color-background-primary: var(--color-gray-900);
+```
+
+## Theme Persistence
+
+Persist theme preferences using localStorage:
+
+```tsx
+import { ThemeProvider } from '@django-core/design-system';
+import { useState, useEffect } from 'react';
+
+function App() {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('theme');
+    return (saved as 'light' | 'dark') || 'light';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  return (
+    <ThemeProvider theme={theme}>
+      <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+        Toggle Theme
+      </button>
+      {/* Your app */}
+    </ThemeProvider>
+  );
+}
+```
+
+## System Preference Detection
+
+Automatically detect and respond to system theme changes:
+
+```tsx
+function App() {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setTheme(e.matches ? 'dark' : 'light');
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  return (
+    <ThemeProvider theme={theme}>
+      {/* Your app */}
+    </ThemeProvider>
+  );
+}
+```
+
+## Reduced Motion
+
+The theming system respects `prefers-reduced-motion` for accessibility:
+
+```tsx
+// Automatically handled by ThemeProvider
+// No additional configuration needed
+```
+
+All animations and transitions are disabled when users prefer reduced motion.
+
+## Theme Architecture
+
+### CSS Custom Properties
+
+Themes are implemented using CSS custom properties for runtime switching without JavaScript overhead:
+
+```css
+/* Applied to root element */
+.theme-light {
+  --color-text-primary: #1a1a1a;
+  --color-background-primary: #ffffff;
+}
+
+.theme-dark {
+  --color-text-primary: #f5f5f5;
+  --color-background-primary: #1a1a1a;
+}
+```
+
+### Component Integration
+
+All components consume theme tokens:
+
+```tsx
+// Components automatically use theme tokens
+<Button variant="primary" /> // Uses --color-primary-* tokens
+<Card /> // Uses --color-background-* and --color-border-* tokens
+```
+
+## Best Practices
+
+### Do's ✅
+
+- Use semantic color tokens (`text-primary`, `background-secondary`)
+- Test themes in both light and dark modes
+- Respect `prefers-reduced-motion`
+- Provide theme toggle UI for user control
+
+### Don'ts ❌
+
+- Don't hard-code colors in components
+- Don't override theme tokens inline
+- Don't ignore system preferences
+- Don't forget to test color contrast ratios
+
+## Accessibility
+
+All themes maintain WCAG 2.1 AA contrast ratios:
+
+- **Normal text**: 4.5:1 minimum
+- **Large text**: 3:1 minimum
+- **UI components**: 3:1 minimum
+
+Use the built-in themes as templates for accessible custom themes.
