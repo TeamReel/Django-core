@@ -1,32 +1,32 @@
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
-import { tokens } from '../../tokens/tokens.css';
+import { themeVars } from '../../tokens/theme.css';
 
 export const input = recipe({
   base: {
     width: '100%',
-    padding: `${tokens.space[2]} ${tokens.space[3]}`,
-    fontSize: tokens.fontSize.sm,
-    lineHeight: tokens.lineHeight.normal,
-    borderRadius: tokens.borderRadius.md,
-    border: `1px solid ${tokens.colors.neutral[300]}`,
-    backgroundColor: tokens.colors.white,
-    color: tokens.colors.neutral[900],
+    padding: `${themeVars.spacing['2']} ${themeVars.spacing['3']}`,
+    fontSize: themeVars.typography.fontSize.sm,
+    lineHeight: themeVars.typography.lineHeight.normal,
+    borderRadius: themeVars.radius.md,
+    border: `1px solid ${themeVars.color.palette.neutral['300']}`,
+    backgroundColor: themeVars.color.background.primary,
+    color: themeVars.color.palette.neutral['900'],
     transition: 'all 150ms ease',
     outline: 'none',
 
     ':focus': {
-      borderColor: tokens.colors.primary[500],
-      boxShadow: `0 0 0 3px ${tokens.colors.primary[100]}`,
+      borderColor: themeVars.color.palette.primary['500'],
+      boxShadow: `0 0 0 3px ${themeVars.color.palette.primary['100']}`,
     },
 
     ':disabled': {
-      backgroundColor: tokens.colors.neutral[100],
-      color: tokens.colors.neutral[500],
+      backgroundColor: themeVars.color.palette.neutral['100'],
+      color: themeVars.color.palette.neutral['500'],
       cursor: 'not-allowed',
     },
 
     '::placeholder': {
-      color: tokens.colors.neutral[400],
+      color: themeVars.color.palette.neutral['400'],
     },
   },
 
@@ -34,35 +34,35 @@ export const input = recipe({
     state: {
       default: {},
       error: {
-        borderColor: tokens.colors.error[500],
+        borderColor: themeVars.color.palette.error['500'],
         ':focus': {
-          borderColor: tokens.colors.error[500],
-          boxShadow: `0 0 0 3px ${tokens.colors.error[100]}`,
+          borderColor: themeVars.color.palette.error['500'],
+          boxShadow: `0 0 0 3px ${themeVars.color.palette.error['100']}`,
         },
       },
       success: {
-        borderColor: tokens.colors.success[500],
+        borderColor: themeVars.color.palette.success['500'],
         ':hover:not(:disabled)': {
-          borderColor: tokens.colors.success[600],
+          borderColor: themeVars.color.palette.success['600'],
         },
         ':focus': {
-          borderColor: tokens.colors.success[500],
-          boxShadow: `0 0 0 3px ${tokens.colors.success[100]}`,
+          borderColor: themeVars.color.palette.success['500'],
+          boxShadow: `0 0 0 3px ${themeVars.color.palette.success['100']}`,
         },
       },
     },
     size: {
       sm: {
-        padding: `${tokens.space[1]} ${tokens.space[2]}`,
-        fontSize: tokens.fontSize.xs,
+        padding: `${themeVars.spacing['1']} ${themeVars.spacing['2']}`,
+        fontSize: themeVars.typography.fontSize.xs,
       },
       md: {
-        padding: `${tokens.space[2]} ${tokens.space[3]}`,
-        fontSize: tokens.fontSize.sm,
+        padding: `${themeVars.spacing['2']} ${themeVars.spacing['3']}`,
+        fontSize: themeVars.typography.fontSize.sm,
       },
       lg: {
-        padding: `${tokens.space[3]} ${tokens.space[4]}`,
-        fontSize: tokens.fontSize.base,
+        padding: `${themeVars.spacing['3']} ${themeVars.spacing['4']}`,
+        fontSize: themeVars.typography.fontSize.md,
       },
     },
   },
@@ -76,27 +76,27 @@ export const input = recipe({
 export const label = recipe({
   base: {
     display: 'block',
-    fontSize: tokens.fontSize.sm,
-    fontWeight: tokens.fontWeight.medium,
-    color: tokens.colors.neutral[700],
-    marginBottom: tokens.space[1],
+    fontSize: themeVars.typography.fontSize.sm,
+    fontWeight: themeVars.typography.fontWeight.medium,
+    color: themeVars.color.palette.neutral['700'],
+    marginBottom: themeVars.spacing['1'],
   },
 
   variants: {
     state: {
       default: {},
       error: {
-        color: tokens.colors.error[700],
+        color: themeVars.color.palette.error['700'],
       },
       success: {
-        color: tokens.colors.success[700],
+        color: themeVars.color.palette.success['700'],
       },
     },
     required: {
       true: {
         '::after': {
           content: '" *"',
-          color: tokens.colors.error[500],
+          color: themeVars.color.palette.error['500'],
         },
       },
     },
@@ -110,19 +110,19 @@ export const label = recipe({
 export const helperText = recipe({
   base: {
     display: 'block',
-    fontSize: tokens.fontSize.xs,
-    marginTop: tokens.space[1],
-    color: tokens.colors.neutral[600],
+    fontSize: themeVars.typography.fontSize.xs,
+    marginTop: themeVars.spacing['1'],
+    color: themeVars.color.palette.neutral['600'],
   },
 
   variants: {
     state: {
       default: {},
       error: {
-        color: tokens.colors.error[600],
+        color: themeVars.color.palette.error['600'],
       },
       success: {
-        color: tokens.colors.success[600],
+        color: themeVars.color.palette.success['600'],
       },
     },
   },
