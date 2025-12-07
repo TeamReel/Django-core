@@ -1,4 +1,4 @@
-import { recipe, type RecipeVariants } from '@vanilla-extract/recipes';
+import { recipe } from '@vanilla-extract/recipes';
 import { themeVars } from '../../tokens/theme.css';
 
 export const heading = recipe({

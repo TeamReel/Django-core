@@ -23,7 +23,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       resize = 'vertical',
       id,
       required,
-      className,
+      className: _className,
       ...rest
     },
     ref

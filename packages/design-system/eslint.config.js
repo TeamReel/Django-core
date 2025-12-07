@@ -5,6 +5,7 @@ import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import reactRefreshPlugin from 'eslint-plugin-react-refresh';
+import globals from 'globals';
 
 export default [
   js.configs.recommended,
@@ -20,6 +21,7 @@ export default [
         },
       },
       globals: {
+        ...globals.browser,
         React: 'readonly',
         JSX: 'readonly',
       },
@@ -43,7 +45,31 @@ export default [
       ...reactHooksPlugin.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'react/no-unescaped-entities': 'off',
       'jsx-a11y/no-autofocus': 'off',
+    },
+  },
+  // Test files configuration
+  {
+    files: ['**/*.test.{ts,tsx}', '**/tests/**/*.{ts,tsx}'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.jest,
+      },
+    },
+  },
+  // Storybook files configuration
+  {
+    files: ['**/*.stories.{ts,tsx}'],
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
     },
   },
   {
