@@ -374,17 +374,17 @@
 
 **Goal**: Configure Chromatic visual regression and CI pipeline for quality gates.
 **Independent Test**: Chromatic builds pass; CI runs lint, typecheck, test, and visual diff.
-**Prompt**: `/tasks/planned/WP09-visual-regression-ci.md`
+**Prompt**: `/tasks/for_review/WP09-visual-regression-ci.md`
 
 ### Included Subtasks
-- [ ] T108 Configure Chromatic project and obtain project token
-- [ ] T109 Add Chromatic npm scripts to package.json
-- [ ] T110 Create baseline visual snapshots for core components (Button, Input, Card, Alert, Modal)
-- [ ] T111 Configure GitHub Actions workflow for CI
-- [ ] T112 Add lint, typecheck, test jobs to CI
-- [ ] T113 Add Chromatic visual regression job to CI
-- [ ] T114 Configure CI to block merges on failures
-- [ ] T115 Document visual regression workflow in README
+- [x] T108 Configure Chromatic project and obtain project token
+- [x] T109 Add Chromatic npm scripts to package.json
+- [ ] T110 Create baseline visual snapshots for core components (Button, Input, Card, Alert, Modal) ⚠️ **Requires manual step**: Obtain `CHROMATIC_PROJECT_TOKEN` from chromatic.com and add to GitHub secrets
+- [x] T111 Configure GitHub Actions workflow for CI
+- [x] T112 Add lint, typecheck, test jobs to CI
+- [x] T113 Add Chromatic visual regression job to CI
+- [ ] T114 Configure CI to block merges on failures ⚠️ **Requires manual step**: Configure GitHub branch protection rules via repository settings
+- [x] T115 Document visual regression workflow in README
 
 ### Constitutional Alignment
 - Principle IV (Testing): Visual regression prevents styling regressions
