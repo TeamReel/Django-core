@@ -11,7 +11,7 @@ subtasks:
   - "T115"
 title: "Visual Regression & CI"
 phase: "Phase 2 - Quality"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "github-copilot"
 shell_pid: "17604"
@@ -340,3 +340,4 @@ pnpm --filter design-system chromatic --dry-run
 
 - 2025-12-05T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-07T14:04:46Z – github-copilot – shell_pid=17604 – lane=doing – Starting CI and visual regression setup
+- 2025-12-07T14:09:24Z – github-copilot – shell_pid=17604 – lane=for_review – CI workflow and Chromatic configuration complete - requires manual token setup
