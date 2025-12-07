@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { useState } from 'react';
 import { RadioGroup, Radio } from './Radio';
 
 const meta = {
@@ -24,106 +25,136 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: () => (
-    <RadioGroup name="color">
-      <Radio value="red" label="Red" />
-      <Radio value="blue" label="Blue" />
-      <Radio value="green" label="Green" />
-    </RadioGroup>
-  ),
+  args: {
+    name: 'color',
+    children: [
+      <Radio key="red" value="red" label="Red" />,
+      <Radio key="blue" value="blue" label="Blue" />,
+      <Radio key="green" value="green" label="Green" />,
+    ],
+  },
+  render: (args) => <RadioGroup {...args} />,
 };
 
 export const WithHelperText: Story = {
-  render: () => (
-    <RadioGroup name="color" helperText="Choose your favorite color">
-      <Radio value="red" label="Red" />
-      <Radio value="blue" label="Blue" />
-      <Radio value="green" label="Green" />
-    </RadioGroup>
-  ),
+  args: {
+    name: 'color',
+    helperText: 'Choose your favorite color',
+    children: [
+      <Radio key="red" value="red" label="Red" />,
+      <Radio key="blue" value="blue" label="Blue" />,
+      <Radio key="green" value="green" label="Green" />,
+    ],
+  },
+  render: (args) => <RadioGroup {...args} />,
 };
 
 export const WithDefaultValue: Story = {
-  render: () => (
-    <RadioGroup name="color" defaultValue="blue">
-      <Radio value="red" label="Red" />
-      <Radio value="blue" label="Blue" />
-      <Radio value="green" label="Green" />
-    </RadioGroup>
-  ),
+  args: {
+    name: 'color',
+    defaultValue: 'blue',
+    children: [
+      <Radio key="red" value="red" label="Red" />,
+      <Radio key="blue" value="blue" label="Blue" />,
+      <Radio key="green" value="green" label="Green" />,
+    ],
+  },
+  render: (args) => <RadioGroup {...args} />,
 };
 
 export const WithError: Story = {
-  render: () => (
-    <RadioGroup name="color" error="Please select a color">
-      <Radio value="red" label="Red" />
-      <Radio value="blue" label="Blue" />
-      <Radio value="green" label="Green" />
-    </RadioGroup>
-  ),
+  args: {
+    name: 'color',
+    error: 'Please select a color',
+    children: [
+      <Radio key="red" value="red" label="Red" />,
+      <Radio key="blue" value="blue" label="Blue" />,
+      <Radio key="green" value="green" label="Green" />,
+    ],
+  },
+  render: (args) => <RadioGroup {...args} />,
 };
 
 export const WithSuccess: Story = {
-  render: () => (
-    <RadioGroup name="color" success="Great choice!" defaultValue="blue">
-      <Radio value="red" label="Red" />
-      <Radio value="blue" label="Blue" />
-      <Radio value="green" label="Green" />
-    </RadioGroup>
-  ),
+  args: {
+    name: 'color',
+    success: 'Great choice!',
+    defaultValue: 'blue',
+    children: [
+      <Radio key="red" value="red" label="Red" />,
+      <Radio key="blue" value="blue" label="Blue" />,
+      <Radio key="green" value="green" label="Green" />,
+    ],
+  },
+  render: (args) => <RadioGroup {...args} />,
 };
 
 export const Disabled: Story = {
-  render: () => (
-    <RadioGroup name="color" disabled>
-      <Radio value="red" label="Red" />
-      <Radio value="blue" label="Blue" />
-      <Radio value="green" label="Green" />
-    </RadioGroup>
-  ),
+  args: {
+    name: 'color',
+    disabled: true,
+    children: [
+      <Radio key="red" value="red" label="Red" />,
+      <Radio key="blue" value="blue" label="Blue" />,
+      <Radio key="green" value="green" label="Green" />,
+    ],
+  },
+  render: (args) => <RadioGroup {...args} />,
 };
 
 export const IndividualDisabled: Story = {
-  render: () => (
-    <RadioGroup name="color">
-      <Radio value="red" label="Red" />
-      <Radio value="blue" label="Blue" disabled />
-      <Radio value="green" label="Green" />
-    </RadioGroup>
-  ),
+  args: {
+    name: 'color',
+    children: [
+      <Radio key="red" value="red" label="Red" />,
+      <Radio key="blue" value="blue" label="Blue" disabled />,
+      <Radio key="green" value="green" label="Green" />,
+    ],
+  },
+  render: (args) => <RadioGroup {...args} />,
 };
 
 export const SmallSize: Story = {
-  render: () => (
-    <RadioGroup name="color" size="sm">
-      <Radio value="red" label="Red" />
-      <Radio value="blue" label="Blue" />
-      <Radio value="green" label="Green" />
-    </RadioGroup>
-  ),
+  args: {
+    name: 'color',
+    size: 'sm' as const,
+    children: [
+      <Radio key="red" value="red" label="Red" />,
+      <Radio key="blue" value="blue" label="Blue" />,
+      <Radio key="green" value="green" label="Green" />,
+    ],
+  },
+  render: (args) => <RadioGroup {...args} />,
 };
 
 export const MediumSize: Story = {
-  render: () => (
-    <RadioGroup name="color" size="md">
-      <Radio value="red" label="Red" />
-      <Radio value="blue" label="Blue" />
-      <Radio value="green" label="Green" />
-    </RadioGroup>
-  ),
+  args: {
+    name: 'color',
+    size: 'md' as const,
+    children: [
+      <Radio key="red" value="red" label="Red" />,
+      <Radio key="blue" value="blue" label="Blue" />,
+      <Radio key="green" value="green" label="Green" />,
+    ],
+  },
+  render: (args) => <RadioGroup {...args} />,
 };
 
 export const LargeSize: Story = {
-  render: () => (
-    <RadioGroup name="color" size="lg">
-      <Radio value="red" label="Red" />
-      <Radio value="blue" label="Blue" />
-      <Radio value="green" label="Green" />
-    </RadioGroup>
-  ),
+  args: {
+    name: 'color',
+    size: 'lg' as const,
+    children: [
+      <Radio key="red" value="red" label="Red" />,
+      <Radio key="blue" value="blue" label="Blue" />,
+      <Radio key="green" value="green" label="Green" />,
+    ],
+  },
+  render: (args) => <RadioGroup {...args} />,
 };
 
 export const AllStates: Story = {
+  args: {} as any,
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <RadioGroup name="color1">
@@ -150,6 +181,7 @@ export const AllStates: Story = {
 };
 
 export const AllSizes: Story = {
+  args: {} as any,
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <RadioGroup name="size1" size="sm">
@@ -171,6 +203,7 @@ export const AllSizes: Story = {
 };
 
 export const FormExample: Story = {
+  args: {} as any,
   render: () => (
     <div style={{ maxWidth: '400px' }}>
       <h3 style={{ margin: 0, marginBottom: '16px' }}>Shipping Method</h3>
@@ -185,6 +218,7 @@ export const FormExample: Story = {
 };
 
 export const ControlledExample: Story = {
+  args: {} as any,
   render: () => {
     const [value, setValue] = React.useState('blue');
 

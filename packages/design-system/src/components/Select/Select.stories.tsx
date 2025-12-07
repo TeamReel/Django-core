@@ -44,69 +44,75 @@ function SelectWrapper(args: React.ComponentProps<typeof Select>) {
 }
 
 export const Default: Story = {
-  render: () => (
-    <SelectWrapper
-      options={fruitOptions}
-      placeholder="Select a fruit"
-      onChange={() => {}}
-    />
+  args: {
+    options: fruitOptions,
+    placeholder: 'Select a fruit',
+    onChange: () => {},
+  },
+  render: (args) => (
+    <SelectWrapper {...args} />
   ),
 };
 
 export const WithSelectedValue: Story = {
-  render: () => (
-    <SelectWrapper
-      options={fruitOptions}
-      value="banana"
-      onChange={() => {}}
-    />
+  args: {
+    options: fruitOptions,
+    value: 'banana',
+    onChange: () => {},
+  },
+  render: (args) => (
+    <SelectWrapper {...args} />
   ),
 };
 
 export const ManyOptions: Story = {
-  render: () => (
-    <SelectWrapper
-      options={countryOptions}
-      placeholder="Select a country"
-      onChange={() => {}}
-    />
+  args: {
+    options: countryOptions,
+    placeholder: 'Select a country',
+    onChange: () => {},
+  },
+  render: (args) => (
+    <SelectWrapper {...args} />
   ),
 };
 
 export const WithDisabledOptions: Story = {
-  render: () => (
-    <SelectWrapper
-      options={[
-        { value: '1', label: 'Option 1' },
-        { value: '2', label: 'Option 2 (Disabled)', disabled: true },
-        { value: '3', label: 'Option 3' },
-        { value: '4', label: 'Option 4 (Disabled)', disabled: true },
-        { value: '5', label: 'Option 5' },
-      ]}
-      placeholder="Select an option"
-      onChange={() => {}}
-    />
+  args: {
+    options: [
+      { value: '1', label: 'Option 1' },
+      { value: '2', label: 'Option 2 (Disabled)', disabled: true },
+      { value: '3', label: 'Option 3' },
+      { value: '4', label: 'Option 4 (Disabled)', disabled: true },
+      { value: '5', label: 'Option 5' },
+    ],
+    placeholder: 'Select an option',
+    onChange: () => {},
+  },
+  render: (args) => (
+    <SelectWrapper {...args} />
   ),
 };
 
 export const Disabled: Story = {
-  render: () => (
-    <SelectWrapper
-      options={fruitOptions}
-      value="apple"
-      disabled
-      onChange={() => {}}
-    />
+  args: {
+    options: fruitOptions,
+    value: 'apple',
+    disabled: true,
+    onChange: () => {},
+  },
+  render: (args) => (
+    <SelectWrapper {...args} />
   ),
 };
 
 export const CustomPlaceholder: Story = {
-  render: () => (
-    <SelectWrapper
-      options={fruitOptions}
-      placeholder="🍎 Pick your favorite fruit"
-      onChange={() => {}}
-    />
+  args: {
+    options: fruitOptions,
+    placeholder: '🍎 Pick your favorite fruit',
+    onChange: () => {},
+  },
+  render: (args) => (
+    <SelectWrapper {...args} />
   ),
 };
 

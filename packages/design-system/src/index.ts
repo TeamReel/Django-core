@@ -18,8 +18,10 @@ export { Radio, RadioGroup, type RadioProps, type RadioGroupProps, type RadioSta
 
 // Data Display Components
 export { Card, type CardProps } from './components/Card';
-export { Badge, type BadgeProps, type BadgeVariant, type BadgeSize } from './components/Badge';
-export { Progress, type ProgressProps, type ProgressSize } from './components/Progress';
+export { Badge, type BadgeProps } from './components/Badge';
+export type { BadgeVariant, BadgeSize } from './components/Badge/Badge.css';
+export { Progress, type ProgressProps } from './components/Progress';
+export type { ProgressSize } from './components/Progress/Progress.css';
 
 // Feedback Components
 export { Alert, type AlertProps, type AlertVariant } from './components/Alert';

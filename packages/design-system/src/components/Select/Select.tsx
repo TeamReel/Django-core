@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useId } from 'react';
+import { useState, useEffect, useId } from 'react';
 import {
   useFloating,
   autoUpdate,
@@ -41,8 +41,6 @@ export function Select({
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
   const activeDescendantId = activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined;
 
@@ -100,29 +98,31 @@ export function Select({
           if (activeIndex >= 0 && !options[activeIndex]?.disabled) {
             onChange(options[activeIndex].value);
             setIsOpen(false);
-            buttonRef.current?.focus();
+            (refs.reference.current as HTMLElement | null)?.focus();
           }
           break;
         case 'Escape':
           e.preventDefault();
           setIsOpen(false);
-          buttonRef.current?.focus();
+          (refs.reference.current as HTMLElement | null)?.focus();
           break;
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, activeIndex, options, onChange]);
+  }, [isOpen, activeIndex, options, onChange, refs.reference]);
 
   // Handle click outside
   useEffect(() => {
     if (!isOpen) return;
 
     const handleClickOutside = (e: MouseEvent) => {
+      const refElement = refs.reference.current as HTMLElement | null;
+      const floatElement = refs.floating.current as HTMLElement | null;
       if (
-        !buttonRef.current?.contains(e.target as Node) &&
-        !dropdownRef.current?.contains(e.target as Node)
+        !refElement?.contains(e.target as Node) &&
+        !floatElement?.contains(e.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -130,21 +130,18 @@ export function Select({
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  }, [isOpen, refs.reference, refs.floating]);
 
   const handleOptionClick = (optionValue: string) => {
     onChange(optionValue);
     setIsOpen(false);
-    buttonRef.current?.focus();
+    (refs.reference.current as HTMLElement | null)?.focus();
   };
 
   return (
     <div className={`${selectContainer} ${className ?? ''}`}>
       <button
-        ref={(node) => {
-          buttonRef.current = node;
-          refs.setReference(node);
-        }}
+        ref={(node) => refs.setReference(node)}
         type="button"
         className={selectButton}
         onClick={() => setIsOpen(!isOpen)}
@@ -160,10 +157,7 @@ export function Select({
 
       {isOpen && (
         <div
-          ref={(node) => {
-            dropdownRef.current = node;
-            refs.setFloating(node);
-          }}
+          ref={(node) => refs.setFloating(node)}
           className={selectDropdown}
           style={floatingStyles}
           role="listbox"

@@ -1,14 +1,17 @@
-import { forwardRef, type HTMLAttributes, type ElementType } from 'react';
+import { forwardRef, type ElementType, type ComponentPropsWithoutRef } from 'react';
 import { text, type TextSize, type TextWeight, type TextColor } from './Text.css';
 
-export interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
+type TextOwnProps = {
   size?: TextSize;
   weight?: TextWeight;
   color?: TextColor;
   as?: ElementType;
-}
+};
 
-export const Text = forwardRef<HTMLParagraphElement, TextProps>(
+export type TextProps<T extends ElementType = 'p'> = TextOwnProps &
+  Omit<ComponentPropsWithoutRef<T>, keyof TextOwnProps>;
+
+export const Text = forwardRef<HTMLElement, TextProps>(
   ({ size = 'md', weight = 'normal', color = 'primary', as: Component = 'p', className, children, ...props }, ref) => {
     return (
       <Component
