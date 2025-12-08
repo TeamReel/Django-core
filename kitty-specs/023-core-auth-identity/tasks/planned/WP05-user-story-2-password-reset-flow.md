@@ -29,7 +29,7 @@ lane: "planned"
 assignee: ""
 agent: "claude-reviewer"
 shell_pid: "35160"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-08T00:00:00Z"
