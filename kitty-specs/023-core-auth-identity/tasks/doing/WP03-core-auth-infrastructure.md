@@ -17,10 +17,10 @@ subtasks:
   - "T032"
 title: "Core Auth Infrastructure"
 phase: "Phase 0 - Foundation"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "Claude"
+agent: "claude"
+shell_pid: "35160"
 review_status: ""
 reviewed_by: ""
 history:
@@ -991,3 +991,4 @@ describe('AuthProvider', () => {
 ## Activity Log
 
 - 2025-12-07T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-08T18:48:31Z – system – shell_pid= – lane=doing – Started WP03: Core Auth Infrastructure - AuthProvider, Context, apiClient, error handling
