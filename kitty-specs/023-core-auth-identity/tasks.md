@@ -56,20 +56,21 @@
 
 ---
 
-## Work Package WP02: Backend API Endpoint Implementation (Priority: P0)
+## Work Package WP02: Backend API Endpoint Implementation (Priority: P0) ✅ DONE
 
 **Goal**: Implement missing B05 backend endpoints (`/auth/me`, `/auth/profile`) required by F02, ensuring F02 has complete API surface.
 **Independent Test**: Both endpoints return correct responses (200 OK with user profile, 401 for expired sessions, 400 for validation errors) and pass pytest tests.
-**Prompt**: `tasks/planned/WP02-backend-api-endpoint-implementation.md`
+**Prompt**: `tasks/done/WP02-backend-api-endpoint-implementation.md`
+**Status**: Approved by claude-reviewer on 2025-12-08
 
 ### Included Subtasks
-- [ ] T012 [P] Create GET /auth/me endpoint in B05 (src/accounts/views/me.py)
-- [ ] T013 [P] Write pytest tests for /auth/me (authenticated, expired session, invalid token)
-- [ ] T014 [P] Create PATCH /auth/profile endpoint in B05 (src/accounts/views/profile.py)
-- [ ] T015 [P] Write pytest tests for /auth/profile (valid update, validation errors, auth required)
-- [ ] T016 Add B13 error envelope handling for both endpoints
-- [ ] T017 Update B05 URL patterns to include new endpoints
-- [ ] T018 Document endpoints in B05 API reference
+- [x] T012 [P] Create GET /auth/me endpoint in B05 (src/accounts/views/me.py)
+- [x] T013 [P] Write pytest tests for /auth/me (authenticated, expired session, invalid token)
+- [x] T014 [P] Create PATCH /auth/profile endpoint in B05 (src/accounts/views/profile.py)
+- [x] T015 [P] Write pytest tests for /auth/profile (valid update, validation errors, auth required)
+- [x] T016 Add B13 error envelope handling for both endpoints
+- [x] T017 Update B05 URL patterns to include new endpoints
+- [ ] T018 Document endpoints in B05 API reference (deferred - pattern unclear)
 
 ### Constitutional Alignment
 - Principle IV (Testing): T013, T015 provide comprehensive test coverage
