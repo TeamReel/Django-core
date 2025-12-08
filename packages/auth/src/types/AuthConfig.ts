@@ -22,7 +22,7 @@ export interface AuthConfig {
     /** Current user session verification - GET */
     me: string;
     /** Update user profile - PATCH */
-    updateProfile: string;
+    profile: string;
   };
 
   /**

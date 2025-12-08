@@ -17,11 +17,11 @@ subtasks:
   - "T032"
 title: "Core Auth Infrastructure"
 phase: "Phase 0 - Foundation"
-lane: "planned"
+lane: "doing"
 assignee: "Claude"
 agent: "claude"
 shell_pid: "35160"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-07T00:00:00Z"
@@ -44,6 +44,11 @@ history:
     agent: "claude-reviewer"
     shell_pid: "35160"
     action: "Code review: test infrastructure needs fixes"
+  - timestamp: "2025-12-08T20:20:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "35160"
+    action: "Acknowledged review feedback, addressing test infrastructure fixes"
 ---
 
 ## Review Feedback

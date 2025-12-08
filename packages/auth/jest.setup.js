@@ -1,4 +1,5 @@
 require('@testing-library/jest-dom');
+require('whatwg-fetch');
 
 // Mock window.matchMedia (required for F01 components)
 Object.defineProperty(window, 'matchMedia', {
