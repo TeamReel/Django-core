@@ -17,12 +17,12 @@ subtasks:
   - "T032"
 title: "Core Auth Infrastructure"
 phase: "Phase 0 - Foundation"
-lane: "for_review"
+lane: "planned"
 assignee: "Claude"
 agent: "claude"
 shell_pid: "35160"
-review_status: ""
-reviewed_by: ""
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-07T00:00:00Z"
     lane: "planned"
@@ -39,7 +39,136 @@ history:
     agent: "claude"
     shell_pid: "35160"
     action: "Completed all 14 subtasks (T019-T032)"
+  - timestamp: "2025-12-08T20:15:00Z"
+    lane: "planned"
+    agent: "claude-reviewer"
+    shell_pid: "35160"
+    action: "Code review: test infrastructure needs fixes"
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Reviewer**: claude-reviewer
+**Review Date**: 2025-12-08
+
+### Critical Issues
+
+1. **Missing Response Polyfill in Jest Setup** - BLOCKS ALL TESTS
+   - **Problem**: All tests fail with `ReferenceError: Response is not defined`
+   - **Root Cause**: Jest's jsdom environment doesn't include fetch API globals (Response, Request, Headers)
+   - **Impact**: 27 test failures across apiClient, errorNormalizer, and AuthProvider tests
+   - **Fix Required**: Add `whatwg-fetch` or similar polyfill to `jest.setup.js`:
+     ```javascript
+     // Add to jest.setup.js
+     import 'whatwg-fetch';
+     ```
+   - **Alternative**: Use `@jest/globals` or `node-fetch` polyfill
+
+2. **Syntax Error in redirectHelper.test.ts** - BLOCKS TEST SUITE
+   - **Problem**: `delete window;` on line 76 causes SyntaxError in strict mode
+   - **Root Cause**: TypeScript strict mode prevents deletion of unqualified identifiers
+   - **Impact**: Entire redirectHelper test suite fails to parse
+   - **Fix Required**: Replace `delete window;` with proper mock cleanup:
+     ```typescript
+     // Instead of: delete window;
+     Object.defineProperty(global, 'window', {
+       value: undefined,
+       writable: true
+     });
+     ```
+
+### What Was Done Well
+
+✅ **Architecture & Design**:
+- Clean separation of concerns (types, utilities, components, hooks)
+- Proper TypeScript strict mode compliance throughout
+- Well-documented interfaces with JSDoc comments
+- Smart use of React patterns (Context, hooks, useCallback, useRef)
+
+✅ **Implementation Quality**:
+- AuthProvider correctly implements session initialization on mount
+- apiClient properly handles CSRF tokens from cookies
+- errorNormalizer correctly parses B13 envelope format
+- redirectHelper provides comprehensive URL manipulation
+- All hooks follow React best practices
+
+✅ **Code Structure**:
+- Logical file organization (types/, lib/, components/, hooks/)
+- Proper barrel exports in index.ts files
+- Consistent naming conventions
+- Good test coverage intent (unit + integration tests written)
+
+✅ **Security**:
+- credentials: 'include' for cookie-based auth
+- CSRF token automatically added to state-changing requests
+- 401/403 handling with automatic redirect
+- Safe window checks for SSR compatibility
+
+### Action Items (Must Complete Before Re-Review)
+
+- [ ] **Fix Jest setup** - Add Response/fetch polyfill to `jest.setup.js`
+  ```javascript
+  // Add to packages/auth/jest.setup.js (after @testing-library/jest-dom)
+  import 'whatwg-fetch';
+  ```
+
+- [ ] **Fix redirectHelper test** - Replace `delete window;` with proper mock cleanup in `tests/lib/redirectHelper.test.ts:76`
+  ```typescript
+  // Replace strict mode violation
+  Object.defineProperty(global, 'window', {
+    value: undefined,
+    writable: true,
+    configurable: true
+  });
+  ```
+
+- [ ] **Verify test suite passes** - Run `cd packages/auth && pnpm test` and confirm:
+  - All 34 tests pass
+  - No ReferenceError or SyntaxError failures
+  - Coverage ≥80% (per WP03 success criteria)
+
+- [ ] **Update AuthConfig type** - Fix `updateProfile` field name (should be `profile` to match WP03 spec line 145)
+  ```typescript
+  // In src/types/AuthConfig.ts
+  endpoints: {
+    // ...
+    profile: string;  // NOT updateProfile
+  }
+  ```
+
+### Constitutional Compliance Check
+
+- ✅ **Principle III (Code Quality)**: TypeScript strict mode, comprehensive typing
+- ❌ **Principle IV (Testing)**: Test infrastructure broken, cannot verify 80%+ coverage
+- ✅ **Principle V (Security)**: CSRF, credentials, redirect validation implemented
+
+### Test Results
+
+```
+Test Suites: 4 failed, 1 passed, 5 total
+Tests:       27 failed, 7 passed, 34 total
+
+FAILURES:
+- apiClient.test.ts: 10/10 tests blocked by missing Response
+- errorNormalizer.test.ts: 14/14 tests blocked by missing Response
+- AuthProvider.test.tsx: 3/6 tests blocked by missing Response
+- redirectHelper.test.ts: Entire suite blocked by syntax error
+```
+
+### Next Steps
+
+1. Add fetch polyfill to jest.setup.js
+2. Fix redirectHelper test syntax error
+3. Fix AuthConfig.updateProfile → AuthConfig.profile field name
+4. Run test suite to verify all pass
+5. Move back to for_review lane
+6. Request re-review
+
+**Estimated Fix Time**: 15 minutes
+
+**Severity**: Critical (blocks validation of all acceptance criteria)
 
 # Work Package Prompt: WP03 – Core Auth Infrastructure
 
