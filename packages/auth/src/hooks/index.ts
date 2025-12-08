@@ -6,3 +6,5 @@ export { useAuth } from './useAuth';
 export { useAuthStatus, type AuthStatusFlags } from './useAuthStatus';
 export { useCurrentUser } from './useCurrentUser';
 export { useSignIn, type UseSignInResult } from './useSignIn';
+export { useRequestPasswordReset, type UseRequestPasswordResetResult } from './useRequestPasswordReset';
+export { useConfirmPasswordReset, type UseConfirmPasswordResetResult } from './useConfirmPasswordReset';
