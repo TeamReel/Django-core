@@ -25,12 +25,12 @@ title: "User Story 2 – Password Reset Flow"
 phase: "Phase 1 - Core Auth Flows"
 priority: "P1"
 mvp: true
-lane: "for_review"
-assignee: "Claude"
-agent: "claude"
+lane: "planned"
+assignee: ""
+agent: "claude-reviewer"
 shell_pid: "35160"
-review_status: "pending"
-reviewed_by: ""
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-08T00:00:00Z"
     lane: "planned"
@@ -47,6 +47,11 @@ history:
     agent: "claude"
     shell_pid: "35160"
     action: "Completed WP05 core implementation: 2 hooks (useRequestPasswordReset, useConfirmPasswordReset), 2 forms with validation, 2 page components, all exports updated. Features: generic success messaging, password strength validation, token-based reset, F01 placeholders. Test files created but need apiClient mock fixes (6/7 failing). Ready for manual testing and review."
+  - timestamp: "2025-12-09T01:00:00Z"
+    lane: "planned"
+    agent: "claude-reviewer"
+    shell_pid: "35160"
+    action: "Code review complete: 2 BLOCKERS found. (1) TypeScript compilation errors - components/index.ts not updated to export password reset components. (2) Hook tests failing 13/15 due to apiClient mock issues. Core implementation is excellent (security, validation, UX) but cannot build/test until exports fixed. See Review Feedback section for details."
 ---
 
 # Work Package Prompt: WP05 – User Story 2: Password Reset Flow
@@ -63,7 +68,142 @@ history:
 
 ## Review Feedback
 
-*[Empty initially. Reviewers will populate if work needs changes.]*
+**Status**: ❌ **NEEDS CHANGES**
+**Reviewed By**: claude-reviewer
+**Review Date**: 2025-12-09T01:00:00Z
+
+### Critical Issues (Must Fix)
+
+#### 1. 🔴 BLOCKER: TypeScript Compilation Errors
+**Problem**: Package exports are broken - TypeScript cannot find password reset components
+
+**Details**:
+```
+src/index.ts(52,3): error TS2305: Module '"./components"' has no exported member 'RequestPasswordResetForm'.
+src/index.ts(53,3): error TS2305: Module '"./components"' has no exported member 'RequestPasswordResetPage'.
+src/index.ts(54,3): error TS2305: Module '"./components"' has no exported member 'ConfirmPasswordResetForm'.
+src/index.ts(55,3): error TS2305: Module '"./components"' has no exported member 'ConfirmPasswordResetPage'.
+```
+
+**Root Cause**: `packages/auth/src/components/index.ts` was not updated to re-export the password reset forms and pages.
+
+**Impact**:
+- Package cannot be built (`npm run build` will fail)
+- Components cannot be imported by consumers
+- TypeScript type checking fails
+
+**Fix Required**:
+Update `packages/auth/src/components/index.ts` to include:
+```typescript
+export { RequestPasswordResetForm, type RequestPasswordResetFormProps } from './forms';
+export { RequestPasswordResetPage, type RequestPasswordResetPageProps } from './pages';
+export { ConfirmPasswordResetForm, type ConfirmPasswordResetFormProps } from './forms';
+export { ConfirmPasswordResetPage, type ConfirmPasswordResetPageProps } from './pages';
+```
+
+**Verification**: Run `npm run typecheck` - should report 0 errors
+
+---
+
+#### 2. 🔴 BLOCKER: Hook Tests Failing (6/7 tests)
+**Problem**: Unit tests for password reset hooks are failing due to apiClient mocking issues
+
+**Details**:
+- Tests created: `useRequestPasswordReset.test.tsx` and `useConfirmPasswordReset.test.tsx`
+- Failure rate: 13/15 tests failing (87% failure rate)
+- Error: `"Cannot read properties of undefined (reading 'ok')"`
+- Root cause: apiClient mock not returning proper Response object
+
+**Impact**:
+- Cannot verify hook behavior programmatically
+- CI/CD pipeline will fail
+- Test coverage goals not met (currently ~13% for hooks)
+
+**Fix Required**:
+The mock setup needs to match the working pattern in `useSignIn.test.tsx`. The issue is that the mock needs to return a complete Response-like object. Review the working test file and ensure:
+1. Mock factory function is correct: `jest.mock('../../src/lib/apiClient', () => ({ apiClient: jest.fn() }))`
+2. Mock responses include all required properties: `ok`, `status`, `json`, `headers`, `statusText`
+3. Async `json()` method returns proper data structure
+
+**Example Fix** (from working useSignIn tests):
+```typescript
+mockApiClient.mockResolvedValueOnce({
+  ok: true,
+  status: 200,
+  json: async () => ({ data: mockUser }),
+  headers: new Headers(),
+  statusText: 'OK',
+} as Response);
+```
+
+**Verification**: Run `npm test -- useRequestPasswordReset useConfirmPasswordReset` - should show 15/15 tests passing
+
+---
+
+### What Was Done Well ✅
+
+**Excellent Work**:
+1. **Security-First Design**: Generic success messaging properly prevents email enumeration attacks
+2. **Complete Implementation**: All 6 core components created (2 hooks, 2 forms, 2 pages)
+3. **Validation**: Password strength rules correctly implemented (8+ chars, mixed case, number, special char)
+4. **Code Quality**: Consistent patterns, good TypeScript typing, comprehensive JSDoc comments
+5. **Error Handling**: Proper field-level and form-level error display from API
+6. **UX**: Loading states, success messages, clear navigation links
+7. **Architecture**: Follows established patterns from WP04 (useSignIn hook pattern)
+8. **F01 Integration**: Placeholder components ready for design system swap
+
+**Notable Achievements**:
+- Token-based reset flow matches Django's URL structure (`/auth/password-reset-confirm/:uidb64/:token/`)
+- Form validation provides immediate client-side feedback
+- Success states guide users to next action
+- ~1,600 lines of well-structured code across 4 commits
+
+---
+
+### Action Items (Complete Before Re-Review)
+
+**Must Complete**:
+- [ ] Fix TypeScript exports in `packages/auth/src/components/index.ts`
+- [ ] Fix apiClient mocking in hook test files
+- [ ] Verify `npm run typecheck` passes with 0 errors
+- [ ] Verify `npm test` passes with 15/15 hook tests passing
+- [ ] Run `npm run build` to confirm package builds successfully
+
+**Optional (Recommended)**:
+- [ ] Add at least 2 component tests (RequestPasswordResetForm, ConfirmPasswordResetForm)
+- [ ] Test manual flow: render components in browser, verify UI behavior
+- [ ] Document any known limitations or follow-up work needed
+
+**Re-Review Criteria**:
+When resubmitting, this task must:
+1. Pass TypeScript compilation (`npm run typecheck`)
+2. Have hook tests passing (≥80% of tests)
+3. Build successfully (`npm run build`)
+4. Have no linting errors (`npm run lint`)
+
+---
+
+### Testing Notes
+
+**What I Tested**:
+- ✅ TypeScript type checking (via `npm run typecheck`)
+- ✅ File structure review (all expected files present)
+- ✅ Code quality review (patterns, naming, documentation)
+- ⚠️ Unit tests (attempted - found failures)
+
+**Could Not Test** (blocked by compilation errors):
+- Build process (`npm run build`)
+- Manual browser testing (components won't import)
+- Integration testing
+- Storybook stories (not created)
+
+---
+
+**Next Steps**:
+1. Fix the two BLOCKER issues above
+2. Update `review_status: "acknowledged"` when you've read this feedback
+3. Move task back to `doing` lane when ready to fix
+4. Re-submit to `for_review` when fixes are complete
 
 ---
 
