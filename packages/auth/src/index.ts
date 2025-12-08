@@ -32,10 +32,34 @@
 export { AuthProvider, AuthContext, type AuthProviderProps, type AuthContextValue } from './components/AuthProvider';
 
 // Hooks
-export { useAuth, useAuthStatus, useCurrentUser, useSignIn, type AuthStatusFlags, type UseSignInResult } from './hooks';
+export {
+  useAuth,
+  useAuthStatus,
+  useCurrentUser,
+  useSignIn,
+  useRequestPasswordReset,
+  useConfirmPasswordReset,
+  type AuthStatusFlags,
+  type UseSignInResult,
+  type UseRequestPasswordResetResult,
+  type UseConfirmPasswordResetResult
+} from './hooks';
 
 // Components
-export { SignInForm, SignInPage, type SignInFormProps, type SignInPageProps } from './components';
+export {
+  SignInForm,
+  SignInPage,
+  RequestPasswordResetForm,
+  RequestPasswordResetPage,
+  ConfirmPasswordResetForm,
+  ConfirmPasswordResetPage,
+  type SignInFormProps,
+  type SignInPageProps,
+  type RequestPasswordResetFormProps,
+  type RequestPasswordResetPageProps,
+  type ConfirmPasswordResetFormProps,
+  type ConfirmPasswordResetPageProps
+} from './components';
 
 // Types
 export type { AuthConfig, AuthState, User, ApiError } from './types';
