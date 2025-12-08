@@ -25,10 +25,10 @@ title: "User Story 2 – Password Reset Flow"
 phase: "Phase 1 - Core Auth Flows"
 priority: "P1"
 mvp: true
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "Claude"
+agent: "claude"
+shell_pid: "35160"
 review_status: ""
 reviewed_by: ""
 history:
@@ -37,6 +37,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-08T23:10:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "35160"
+    action: "Started WP05: Password Reset Flow implementation. Will implement request + confirm pages, hooks, and validation following US02 requirements."
 ---
 
 # Work Package Prompt: WP05 – User Story 2: Password Reset Flow
