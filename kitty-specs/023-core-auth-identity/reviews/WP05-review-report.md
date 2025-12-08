@@ -1,23 +1,70 @@
 # Review Report: WP05 – Password Reset Flow
 
 **Work Package**: WP05 – User Story 2: Password Reset Flow
-**Reviewer**: Pending
-**Review Date**: 2025-12-09
-**Status**: PENDING REVIEW
+**Reviewer**: claude-reviewer
+**Review Date**: 2025-12-09T01:00:00Z
+**Status**: ❌ **NEEDS CHANGES**
 
 ---
 
 ## Executive Summary
 
-WP05 implements the complete password reset flow with request and confirmation pages, custom hooks, form validation, and security-first design. Core functionality is complete with 9 new files (~1,600 lines) across 4 commits.
+WP05 implements password reset flow with excellent architecture and security design. However, **2 CRITICAL BLOCKERS** prevent the package from building and testing:
 
-**Key Achievement**: Generic success messaging prevents email enumeration attacks, password strength validation enforces security requirements, and token-based reset flow follows Django's password reset URL structure.
+1. **TypeScript Compilation Failure**: Components not exported from `components/index.ts` (8 type errors)
+2. **Test Failures**: Hook tests failing 13/15 (87% failure rate) due to apiClient mock issues
 
-**Test Status**: Hook tests created but have apiClient mocking issues (6/7 tests failing). Components are functionally complete and ready for manual testing.
+**Core implementation quality is excellent** - security measures, validation logic, and code patterns are well-executed. Once the export and test mocking issues are fixed, this will be ready for approval.
+
+**Decision**: **REJECTED - Needs Changes**
+**Action**: Task moved back to `planned` lane with detailed feedback
 
 ---
 
-## Implementation Overview
+## Critical Blockers Found
+
+### 🔴 BLOCKER 1: TypeScript Exports Missing
+
+**Issue**: `packages/auth/src/components/index.ts` not updated to re-export password reset components
+
+**Evidence**:
+```
+$ npm run typecheck
+src/index.ts(52,3): error TS2305: Module '"./components"' has no exported member 'RequestPasswordResetForm'.
+src/index.ts(53,3): error TS2305: Module '"./components"' has no exported member 'RequestPasswordResetPage'.
+src/index.ts(54,3): error TS2305: Module '"./components"' has no exported member 'ConfirmPasswordResetForm'.
+src/index.ts(55,3): error TS2305: Module '"./components"' has no exported member 'ConfirmPasswordResetPage'.
+(4 more similar errors for Props types)
+```
+
+**Impact**:
+- Package cannot be built
+- Components cannot be imported by consumers
+- Blocks all downstream work
+
+**Required Fix**: Add 4 export lines to `packages/auth/src/components/index.ts`
+
+---
+
+### 🔴 BLOCKER 2: Hook Tests Failing
+
+**Issue**: apiClient mock not returning proper Response objects
+
+**Evidence**:
+```
+Test Suites: 2 failed, 2 total
+Tests:       13 failed, 2 passed, 15 total
+Error: "Cannot read properties of undefined (reading 'ok')"
+```
+
+**Impact**:
+- Cannot verify hook behavior
+- CI/CD will fail
+- Coverage goals not met
+
+**Required Fix**: Update mock factory to return complete Response-like objects (see feedback in task file)
+
+---## Implementation Overview
 
 ### Files Created (9 files)
 
@@ -222,29 +269,39 @@ WP05 implements the complete password reset flow with request and confirmation p
 
 ## Review Decision
 
-**Status**: ⏸️ **PENDING REVIEW**
+**Status**: ❌ **REJECTED - NEEDS CHANGES**
 
-**Recommendation**:
+**Rationale**:
+While the core implementation demonstrates excellent software engineering practices (security-first design, consistent patterns, good documentation), the package has critical build failures that must be resolved:
 
-**Option 1 - APPROVE WITH FOLLOW-UP**:
-- Core implementation is complete and functionally ready
-- Accept test mocking issue as follow-up work
-- Manual testing can verify functionality
-- Component tests can be added later
+1. **Cannot Build**: TypeScript compilation fails due to missing exports
+2. **Cannot Test**: 87% of hook tests fail due to mock configuration
 
-**Option 2 - REQUEST CHANGES**:
-- Fix apiClient mocking in hook tests
-- Add basic component tests for forms
-- Re-submit for review
+These are straightforward fixes that should take < 30 minutes to resolve.
 
-**Option 3 - APPROVE AS-IS**:
-- Accept test coverage gaps for MVP
-- Document as technical debt
-- Prioritize feature delivery over test completeness
+**Recommendation**: Fix both blockers, verify build and tests pass, then resubmit for review.
 
 ---
 
-## Follow-Up Items
+## Follow-Up Actions
+
+**For Implementer (Priority Order)**:
+1. ✅ **Read review feedback** in task file (`Review Feedback` section)
+2. 🔧 **Fix BLOCKER 1**: Update `packages/auth/src/components/index.ts` exports
+3. 🔧 **Fix BLOCKER 2**: Fix apiClient mocks in test files
+4. ✅ **Verify**: Run `npm run typecheck` (0 errors expected)
+5. ✅ **Verify**: Run `npm test` (15/15 hook tests passing expected)
+6. ✅ **Verify**: Run `npm run build` (successful build expected)
+7. 📝 **Update**: Set `review_status: "acknowledged"` in task frontmatter
+8. ↩️ **Resubmit**: Move task to `for_review` when ready
+
+**For Reviewer (Next Review)**:
+- Verify TypeScript compiles cleanly
+- Verify hook tests pass
+- Verify package builds
+- Consider approving if above criteria met (component tests can be follow-up)
+
+---## Follow-Up Items
 
 If approved with follow-up:
 
@@ -271,6 +328,8 @@ If approved with follow-up:
 
 ---
 
-**Generated**: 2025-12-09T00:35:00Z
-**Reviewer**: _[Pending Assignment]_
-**Review Completed**: _[Pending]_
+**Generated**: 2025-12-09T01:00:00Z
+**Reviewer**: claude-reviewer
+**Review Completed**: 2025-12-09T01:00:00Z
+**Outcome**: NEEDS CHANGES - 2 blockers identified
+**Task Status**: Moved to `planned` lane with detailed feedback
