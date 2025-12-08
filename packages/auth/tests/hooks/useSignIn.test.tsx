@@ -6,10 +6,14 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { useSignIn } from '../../src/hooks/useSignIn';
 import { AuthProvider } from '../../src/components/AuthProvider';
 import type { AuthConfig } from '../../src/types';
+import { apiClient } from '../../src/lib/apiClient';
 
-// Mock fetch globally
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
+// Mock apiClient instead of global fetch
+jest.mock('../../src/lib/apiClient', () => ({
+  apiClient: jest.fn(),
+}));
+
+const mockApiClient = apiClient as jest.MockedFunction<typeof apiClient>;
 
 const mockConfig: AuthConfig = {
   apiBaseUrl: '',
@@ -30,7 +34,7 @@ const mockConfig: AuthConfig = {
 
 describe('useSignIn', () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    mockApiClient.mockClear();
   });
 
   it('should initialize with default state', () => {
@@ -54,11 +58,13 @@ describe('useSignIn', () => {
       last_name: 'User',
     };
 
-    mockFetch.mockResolvedValueOnce({
+    mockApiClient.mockResolvedValueOnce({
       ok: true,
+      status: 200,
       json: async () => ({ data: mockUser }),
       headers: new Headers(),
-    });
+      statusText: 'OK',
+    } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <AuthProvider config={mockConfig}>{children}</AuthProvider>
@@ -84,7 +90,7 @@ describe('useSignIn', () => {
     });
 
     expect(user).toEqual(mockUser);
-    expect(mockFetch).toHaveBeenCalledWith(
+    expect(mockApiClient).toHaveBeenCalledWith(
       '/auth/sign-in/',
       expect.objectContaining({
         method: 'POST',
@@ -102,12 +108,13 @@ describe('useSignIn', () => {
       },
     };
 
-    mockFetch.mockResolvedValueOnce({
+    mockApiClient.mockResolvedValueOnce({
       ok: false,
       status: 400,
       json: async () => mockError,
       headers: new Headers(),
-    });
+      statusText: 'Bad Request',
+    } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <AuthProvider config={mockConfig}>{children}</AuthProvider>
@@ -130,7 +137,7 @@ describe('useSignIn', () => {
   });
 
   it('should handle network errors', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    mockApiClient.mockRejectedValueOnce(new Error('Network error'));
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <AuthProvider config={mockConfig}>{children}</AuthProvider>
@@ -158,12 +165,13 @@ describe('useSignIn', () => {
       message: 'Invalid credentials',
     };
 
-    mockFetch.mockResolvedValueOnce({
+    mockApiClient.mockResolvedValueOnce({
       ok: false,
       status: 400,
       json: async () => mockError,
       headers: new Headers(),
-    });
+      statusText: 'Bad Request',
+    } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <AuthProvider config={mockConfig}>{children}</AuthProvider>
@@ -190,12 +198,13 @@ describe('useSignIn', () => {
 
   it('should clear error when starting a new sign-in attempt', async () => {
     // First attempt fails
-    mockFetch.mockResolvedValueOnce({
+    mockApiClient.mockResolvedValueOnce({
       ok: false,
       status: 400,
       json: async () => ({ status: 400, message: 'Invalid credentials' }),
       headers: new Headers(),
-    });
+      statusText: 'Bad Request',
+    } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <AuthProvider config={mockConfig}>{children}</AuthProvider>
@@ -212,11 +221,13 @@ describe('useSignIn', () => {
     });
 
     // Second attempt succeeds
-    mockFetch.mockResolvedValueOnce({
+    mockApiClient.mockResolvedValueOnce({
       ok: true,
+      status: 200,
       json: async () => ({ data: { id: 1, email: 'test@example.com' } }),
       headers: new Headers(),
-    });
+      statusText: 'OK',
+    } as Response);
 
     const signInPromise = result.current.signIn('test@example.com', 'correctpass');
 
