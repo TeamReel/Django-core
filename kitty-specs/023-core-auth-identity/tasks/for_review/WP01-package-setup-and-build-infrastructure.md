@@ -14,7 +14,7 @@ subtasks:
   - "T011"
 title: "Package Setup & Build Infrastructure"
 phase: "Phase 0 - Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: "Claude"
 agent: "claude"
 shell_pid: "35160"
@@ -31,6 +31,11 @@ history:
     agent: "claude"
     shell_pid: "35160"
     action: "Started WP01: Package Setup & Build Infrastructure"
+  - timestamp: "2025-12-08T19:19:51Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "35160"
+    action: "Completed WP01: Package setup fully functional (build, test, lint, typecheck passing). T008/T009 deferred to main branch."
 ---
 
 # Work Package Prompt: WP01 – Package Setup & Build Infrastructure
