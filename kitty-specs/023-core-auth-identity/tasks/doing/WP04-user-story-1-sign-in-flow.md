@@ -35,6 +35,11 @@ history:
     agent: "claude"
     shell_pid: "35160"
     action: "Started WP04: Sign-In flow implementation"
+  - timestamp: "2025-12-08T21:15:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "35160"
+    action: "Completed T033-T040: useSignIn hook, SignInForm, SignInPage. 8/13 subtasks done. Components exported, config added to AuthContext. Tests need fetch mocking fixes."
 ---
 
 # Work Package Prompt: WP04 – User Story 1: Sign-In Flow 🎯 MVP
