@@ -52,11 +52,15 @@ class TestAuthMeEndpoint:
         assert "email_verified" in data
 
     def test_unauthenticated_user_returns_401(self, db):
-        """Test: Unauthenticated request returns 401."""
+        """Test: Unauthenticated request returns 401 with B13 envelope."""
         client = Client()
         response = client.get("/api/v1/auth/me")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        data = response.json()
+        assert data["status"] == "error"
+        assert data["error"]["code"] == "not_authenticated"
+        assert "timestamp" in data["meta"]
 
     def test_superuser_role_mapping(self, db):
         """Test: Superuser mapped to 'superadmin' role."""

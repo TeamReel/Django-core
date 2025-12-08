@@ -46,9 +46,9 @@ class TestProfileUpdateEndpoint:
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert data["success"] is True
-        assert data["data"]["first_name"] == "Updated"
-        assert data["data"]["last_name"] == "Name"  # Unchanged
+        # Success response returns data directly (no envelope)
+        assert data["first_name"] == "Updated"
+        assert data["last_name"] == "Name"  # Unchanged
 
         # Verify database updated
         user.refresh_from_db()
@@ -73,7 +73,7 @@ class TestProfileUpdateEndpoint:
         assert user.last_name == "New Last"
 
     def test_missing_current_password_returns_400(self, authenticated_client):
-        """Test: Request without current_password fails."""
+        """Test: Request without current_password fails with B13 envelope."""
         client, user = authenticated_client
         response = client.patch(
             "/api/v1/auth/profile",
@@ -83,11 +83,13 @@ class TestProfileUpdateEndpoint:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         data = response.json()
-        assert data["success"] is False
-        assert "current_password" in data["errors"]
+        assert data["status"] == "error"
+        assert data["error"]["code"] == "validation_error"
+        assert "current_password" in data["error"]["details"]
+        assert "timestamp" in data["meta"]
 
     def test_incorrect_current_password_returns_400(self, authenticated_client):
-        """Test: Wrong current_password fails with generic error."""
+        """Test: Wrong current_password fails with generic error in B13 envelope."""
         client, user = authenticated_client
         response = client.patch(
             "/api/v1/auth/profile",
@@ -97,15 +99,16 @@ class TestProfileUpdateEndpoint:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         data = response.json()
-        assert data["success"] is False
-        assert "Unable to verify credentials" in str(data["errors"])
+        assert data["status"] == "error"
+        assert data["error"]["code"] == "authentication_failed"
+        assert "Unable to verify credentials" in data["error"]["message"]
 
         # Verify no changes persisted
         user.refresh_from_db()
         assert user.first_name == "Original"
 
     def test_empty_first_name_returns_400(self, authenticated_client):
-        """Test: Empty first_name fails validation."""
+        """Test: Empty first_name fails validation with B13 envelope."""
         client, user = authenticated_client
         response = client.patch(
             "/api/v1/auth/profile",
@@ -115,10 +118,11 @@ class TestProfileUpdateEndpoint:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         data = response.json()
-        assert "first_name" in data["errors"]
+        assert data["status"] == "error"
+        assert "first_name" in data["error"]["details"]
 
     def test_too_long_name_returns_400(self, authenticated_client):
-        """Test: Name exceeding 150 chars fails validation."""
+        """Test: Name exceeding 150 chars fails validation with B13 envelope."""
         client, user = authenticated_client
         response = client.patch(
             "/api/v1/auth/profile",
@@ -128,10 +132,11 @@ class TestProfileUpdateEndpoint:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         data = response.json()
-        assert "first_name" in data["errors"]
+        assert data["status"] == "error"
+        assert "first_name" in data["error"]["details"]
 
     def test_unauthenticated_request_returns_401(self, db):
-        """Test: Unauthenticated request returns 401."""
+        """Test: Unauthenticated request returns 401 with B13 envelope."""
         client = Client()
         response = client.patch(
             "/api/v1/auth/profile",
@@ -140,6 +145,9 @@ class TestProfileUpdateEndpoint:
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        data = response.json()
+        assert data["status"] == "error"
+        assert data["error"]["code"] == "not_authenticated"
 
     def test_update_last_name_only(self, authenticated_client):
         """Test: Update only last_name, first_name unchanged."""
@@ -156,7 +164,7 @@ class TestProfileUpdateEndpoint:
         assert user.last_name == "NewLastName"
 
     def test_empty_last_name_returns_400(self, authenticated_client):
-        """Test: Empty last_name fails validation."""
+        """Test: Empty last_name fails validation with B13 envelope."""
         client, user = authenticated_client
         response = client.patch(
             "/api/v1/auth/profile",
@@ -166,4 +174,20 @@ class TestProfileUpdateEndpoint:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         data = response.json()
-        assert "last_name" in data["errors"]
+        assert data["status"] == "error"
+        assert "last_name" in data["error"]["details"]
+
+    def test_empty_request_body_returns_400(self, authenticated_client):
+        """Test: Request with only password (no fields to update) returns 400."""
+        client, user = authenticated_client
+        response = client.patch(
+            "/api/v1/auth/profile",
+            data={"current_password": "TestPass123!"},
+            content_type="application/json",
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        data = response.json()
+        assert data["status"] == "error"
+        assert data["error"]["code"] == "validation_error"
+        assert "At least one field" in data["error"]["message"]

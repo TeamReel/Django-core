@@ -41,7 +41,8 @@ Cookie: sessionid=<session_id>
 ```json
 {
   "first_name": "Jane",
-  "last_name": "Smith"
+  "last_name": "Smith",
+  "current_password": "user_password_for_verification"
 }
 ```
 
@@ -51,6 +52,7 @@ Cookie: sessionid=<session_id>
 interface UpdateProfileRequest {
   first_name?: string; // Optional, minimum 1 character
   last_name?: string;  // Optional, minimum 1 character
+  current_password: string; // Required for security verification
   // Future: email change (requires verification)
 }
 ```
@@ -58,6 +60,7 @@ interface UpdateProfileRequest {
 **Validation Rules**:
 - `first_name`: 1-150 characters, letters/spaces/hyphens only
 - `last_name`: 1-150 characters, letters/spaces/hyphens only
+- `current_password`: **Required** - User's current password for verification (prevents unauthorized profile changes if session is hijacked)
 - At least one field must be provided (empty PATCH not allowed)
 
 ---
@@ -145,6 +148,28 @@ interface UpdateProfileResponse {
   }
 }
 ```
+
+---
+
+#### 400 Bad Request - Invalid Password
+
+**Scenario**: Provided `current_password` does not match user's actual password.
+
+```json
+{
+  "status": "error",
+  "error": {
+    "code": "authentication_failed",
+    "message": "Unable to verify credentials.",
+    "details": {}
+  },
+  "meta": {
+    "timestamp": "2025-12-07T10:30:00Z"
+  }
+}
+```
+
+**Security Note**: Generic error message prevents password enumeration attacks.
 
 ---
 

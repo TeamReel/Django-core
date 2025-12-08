@@ -179,9 +179,19 @@ def auth_me(request):
         200 OK: User profile (id, email, first_name, last_name, role, email_verified, is_active)
         401 Unauthorized: Session expired or not authenticated
     """
+    from django.utils import timezone
+
     if not request.user.is_authenticated:
         return Response(
-            {"error": "not_authenticated", "message": "Authentication required."},
+            {
+                "status": "error",
+                "error": {
+                    "code": "not_authenticated",
+                    "message": "Authentication credentials were not provided.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
@@ -225,9 +235,19 @@ def update_profile(request):
         400 Bad Request: Validation errors (B13 envelope)
         401 Unauthorized: Session expired
     """
+    from django.utils import timezone
+
     if not request.user.is_authenticated:
         return Response(
-            {"error": "not_authenticated", "message": "Authentication required."},
+            {
+                "status": "error",
+                "error": {
+                    "code": "not_authenticated",
+                    "message": "Authentication credentials were not provided.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
@@ -239,9 +259,13 @@ def update_profile(request):
     if not current_password:
         return Response(
             {
-                "success": False,
-                "message": "Current password is required",
-                "errors": {"current_password": ["This field is required"]},
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Current password is required",
+                    "details": {"current_password": ["This field is required"]},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
@@ -250,18 +274,24 @@ def update_profile(request):
         # Generic error to prevent password guessing
         return Response(
             {
-                "success": False,
-                "message": "Unable to update profile",
-                "errors": {"non_field_errors": ["Unable to verify credentials"]},
+                "status": "error",
+                "error": {
+                    "code": "authentication_failed",
+                    "message": "Unable to verify credentials.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     # Update fields if provided
     errors = {}
+    has_update_fields = False
 
     first_name = data.get("first_name")
     if first_name is not None:
+        has_update_fields = True
         if not first_name.strip():
             errors["first_name"] = ["First name cannot be empty"]
         elif len(first_name) > 150:
@@ -271,6 +301,7 @@ def update_profile(request):
 
     last_name = data.get("last_name")
     if last_name is not None:
+        has_update_fields = True
         if not last_name.strip():
             errors["last_name"] = ["Last name cannot be empty"]
         elif len(last_name) > 150:
@@ -278,9 +309,32 @@ def update_profile(request):
         else:
             user.last_name = last_name.strip()
 
+    # Check if at least one field was provided
+    if not has_update_fields:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "At least one field must be provided to update.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     if errors:
         return Response(
-            {"success": False, "message": "Validation failed", "errors": errors},
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Validation failed",
+                    "details": errors,
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -294,18 +348,16 @@ def update_profile(request):
         else ("admin" if getattr(user, "is_admin", False) or user.is_staff else "user")
     )
 
+    # Success response returns data directly (no envelope)
     return Response(
         {
-            "success": True,
-            "data": {
-                "id": user.id,
-                "email": user.email,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "role": role,
-                "email_verified": getattr(user, "email_verified", True),
-                "is_active": user.is_active,
-            },
+            "id": user.id,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "role": role,
+            "email_verified": getattr(user, "email_verified", True),
+            "is_active": user.is_active,
         },
         status=status.HTTP_200_OK,
     )
