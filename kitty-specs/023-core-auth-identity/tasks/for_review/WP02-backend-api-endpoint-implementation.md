@@ -10,7 +10,7 @@ subtasks:
   - "T018"
 title: "Backend API Endpoint Implementation"
 phase: "Phase 0 - Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: "Claude"
 agent: "claude"
 shell_pid: "35160"
@@ -27,6 +27,11 @@ history:
     agent: "claude"
     shell_pid: "35160"
     action: "Started WP02: Backend API Endpoint Implementation"
+  - timestamp: "2025-12-08T20:00:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "35160"
+    action: "Completed T012-T017: Implemented /auth/me and /auth/profile endpoints with tests and URL routing. T018 (documentation) pending."
 ---
 
 # Work Package Prompt: WP02 – Backend API Endpoint Implementation
