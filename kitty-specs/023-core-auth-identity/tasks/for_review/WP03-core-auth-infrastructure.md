@@ -17,11 +17,11 @@ subtasks:
   - "T032"
 title: "Core Auth Infrastructure"
 phase: "Phase 0 - Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: "Claude"
 agent: "claude"
 shell_pid: "35160"
-review_status: "acknowledged"
+review_status: "addressed"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-07T00:00:00Z"
@@ -49,6 +49,11 @@ history:
     agent: "claude"
     shell_pid: "35160"
     action: "Acknowledged review feedback, addressing test infrastructure fixes"
+  - timestamp: "2025-12-08T20:30:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "35160"
+    action: "Addressed all review feedback: tests passing, coverage 81.2%"
 ---
 
 ## Review Feedback
@@ -113,13 +118,14 @@ history:
 
 ### Action Items (Must Complete Before Re-Review)
 
-- [ ] **Fix Jest setup** - Add Response/fetch polyfill to `jest.setup.js`
+- [X] **Fix Jest setup** - Add Response/fetch polyfill to `jest.setup.js`
   ```javascript
   // Add to packages/auth/jest.setup.js (after @testing-library/jest-dom)
   import 'whatwg-fetch';
   ```
+  ✅ **COMPLETED**: Added `require('whatwg-fetch');` to jest.setup.js + installed package
 
-- [ ] **Fix redirectHelper test** - Replace `delete window;` with proper mock cleanup in `tests/lib/redirectHelper.test.ts:76`
+- [X] **Fix redirectHelper test** - Replace `delete window;` with proper mock cleanup in `tests/lib/redirectHelper.test.ts:76`
   ```typescript
   // Replace strict mode violation
   Object.defineProperty(global, 'window', {
@@ -128,13 +134,15 @@ history:
     configurable: true
   });
   ```
+  ✅ **COMPLETED**: Replaced all `delete` statements with proper Object.defineProperty mocks
 
-- [ ] **Verify test suite passes** - Run `cd packages/auth && pnpm test` and confirm:
+- [X] **Verify test suite passes** - Run `cd packages/auth && pnpm test` and confirm:
   - All 34 tests pass
   - No ReferenceError or SyntaxError failures
   - Coverage ≥80% (per WP03 success criteria)
+  ✅ **COMPLETED**: All 53 tests pass, 81.2% statement coverage, 84.16% line coverage
 
-- [ ] **Update AuthConfig type** - Fix `updateProfile` field name (should be `profile` to match WP03 spec line 145)
+- [X] **Update AuthConfig type** - Fix `updateProfile` field name (should be `profile` to match WP03 spec line 145)
   ```typescript
   // In src/types/AuthConfig.ts
   endpoints: {
@@ -142,6 +150,7 @@ history:
     profile: string;  // NOT updateProfile
   }
   ```
+  ✅ **COMPLETED**: Renamed to `profile` in AuthConfig.ts
 
 ### Constitutional Compliance Check
 
