@@ -22,7 +22,6 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { apiClient } from '../lib/apiClient';
-import { errorNormalizer } from '../lib/errorNormalizer';
 import type { User, ApiError } from '../types';
 
 export interface UseSignInResult {
