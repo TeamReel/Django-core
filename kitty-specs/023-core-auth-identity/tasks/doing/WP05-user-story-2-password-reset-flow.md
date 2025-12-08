@@ -25,7 +25,7 @@ title: "User Story 2 – Password Reset Flow"
 phase: "Phase 1 - Core Auth Flows"
 priority: "P1"
 mvp: true
-lane: "planned"
+lane: "doing"
 assignee: ""
 agent: "claude-reviewer"
 shell_pid: "35160"
@@ -854,3 +854,7 @@ When resubmitting, this task must:
 
 **Prompt Version**: 1.0
 **Last Updated**: 2025-12-08
+
+## Activity Log
+
+- 2025-12-08T21:38:42Z – claude-reviewer – shell_pid=35160 – lane=doing – Addressing review feedback: fixing TypeScript exports and test mocks
