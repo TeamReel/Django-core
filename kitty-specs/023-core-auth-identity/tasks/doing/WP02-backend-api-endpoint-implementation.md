@@ -10,12 +10,12 @@ subtasks:
   - "T018"
 title: "Backend API Endpoint Implementation"
 phase: "Phase 0 - Foundation"
-lane: "for_review"
+lane: "doing"
 assignee: "Claude"
 agent: "claude"
 shell_pid: "35160"
-review_status: ""
-reviewed_by: ""
+review_status: "acknowledged"
+reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-07T00:00:00Z"
     lane: "planned"
@@ -32,6 +32,16 @@ history:
     agent: "claude"
     shell_pid: "35160"
     action: "Completed T012-T017: Implemented /auth/me and /auth/profile endpoints with tests and URL routing. T018 (documentation) pending."
+  - timestamp: "2025-12-08T20:15:00Z"
+    lane: "planned"
+    agent: "claude-reviewer"
+    shell_pid: "35160"
+    action: "Code review complete: NEEDS CHANGES - Critical contract violations: wrong error format (must use B13 envelope), success response format mismatch, missing password requirement in contract."
+  - timestamp: "2025-12-08T20:30:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "35160"
+    action: "Acknowledged review feedback - addressing all critical action items: B13 envelope format, contract update for password requirement, success response consistency"
 ---
 
 # Work Package Prompt: WP02 – Backend API Endpoint Implementation
@@ -47,7 +57,120 @@ history:
 
 ## Review Feedback
 
-*[Empty initially. Reviewers will populate if work needs changes.]*
+**Status**: ❌ **NEEDS CHANGES**
+
+**Reviewed by**: Claude Code Review Agent
+**Review date**: 2025-12-08T20:15:00Z
+**Commit reviewed**: ded3b6f5
+
+### Summary
+WP02 implements the core backend API endpoints for `/auth/me` and `/auth/profile`, but there are **critical contract violations** that must be fixed before approval. The implementation has the right structure but deviates from the B13 API specification in error response format and required functionality.
+
+### ❌ Critical Issues (Must Fix)
+
+**Issue 1: Contract Violation - Wrong Error Response Format**
+- **Problem**: Implementation uses custom error format instead of B13 baseline envelope
+- **Current**: `{"error": "not_authenticated", "message": "..."}`
+- **Required (per contract)**:
+  ```json
+  {
+    "status": "error",
+    "error": {
+      "code": "not_authenticated",
+      "message": "Authentication credentials were not provided.",
+      "details": {}
+    },
+    "meta": {
+      "timestamp": "2025-12-07T10:30:00Z"
+    }
+  }
+  ```
+- **Files affected**: `src/accounts/api/views.py` (both `auth_me` and `update_profile`)
+- **Why critical**: F02 frontend expects B13 envelope format. Wrong format breaks error handling.
+
+**Issue 2: Missing Password Verification Requirement**
+- **Problem**: Contract `b13-profile-update.md` does **not** mention `current_password` requirement, but implementation enforces it
+- **Contract says**: Only `first_name` and `last_name` are accepted fields
+- **Implementation has**: Mandatory `current_password` validation
+- **Why this matters**:
+  - If password verification is needed, contract must be updated first
+  - If not needed, remove password check from implementation
+  - **Recommendation**: Keep password verification (good security practice) but **update contract** to document it
+
+**Issue 3: Success Response Format Mismatch**
+- **Problem**: `/auth/profile` success response uses B13 envelope but `/auth/me` does not
+- **Current `/auth/me`**: Returns data directly `{id, email, ...}`
+- **Current `/auth/profile`**: Returns `{success: true, data: {id, email, ...}}`
+- **Contract expects**: Both should return data directly (no envelope for 200 OK)
+- **Fix**: Remove `{success: true, data: {...}}` wrapper from `/auth/profile`, return data directly
+
+### ⚠️ Medium Issues (Should Fix)
+
+**Issue 4: Missing CSRF Protection Decorator**
+- **Problem**: `/auth/profile` PATCH endpoint doesn't have `@ensure_csrf_cookie` or DRF CSRF enforcement
+- **Risk**: CSRF attacks possible
+- **Fix**: Ensure Django's CSRF middleware is enabled (check settings) OR add explicit decorator
+- **Note**: DRF SessionAuthentication includes CSRF by default, but explicit declaration is clearer
+
+**Issue 5: Test Scenarios Missing**
+- **Problem**: Tests don't cover all contract scenarios
+- **Missing tests**:
+  - Empty request body (no fields provided) - should return 400
+  - Update with whitespace-only names - covered ✓
+  - Role verification after superuser login - covered ✓
+- **Minor gap**: Consider adding test for "no changes made" scenario (same values)
+
+### ✅ What Was Done Well
+
+1. **Comprehensive test coverage**: 15 test scenarios across both endpoints
+2. **Security-first**: Generic error messages prevent password enumeration
+3. **Field validation**: Proper empty string and max length checks
+4. **Code quality**: Clean, readable implementation with good documentation
+5. **Ruff compliance**: Proper noqa comments for test files
+6. **URL routing**: Correctly registered both endpoints
+
+### 📋 Action Items (must complete before re-review)
+
+- [ ] **CRITICAL**: Fix error response format in `auth_me` to match B13 envelope (lines 182-185)
+- [ ] **CRITICAL**: Fix error response format in `update_profile` to match B13 envelope (lines 230-233)
+- [ ] **CRITICAL**: Update contract `b13-profile-update.md` to document `current_password` requirement OR remove password check from implementation
+- [ ] **CRITICAL**: Remove `{success: true, data: {...}}` wrapper from `/auth/profile` success response - return data directly like `/auth/me`
+- [ ] Update B13 error responses for validation errors (lines 242-250, 262-269, 283-285) to use envelope format
+- [ ] Verify CSRF protection is active (check `REST_FRAMEWORK` settings for SessionAuthentication)
+- [ ] Add test case for empty request body to `/auth/profile`
+- [ ] Update tests to assert B13 envelope format in error responses
+
+### 🔄 Implementation Pattern (B13 Envelope)
+
+**For all error responses**, use this structure:
+
+```python
+from django.utils import timezone
+
+return Response(
+    {
+        "status": "error",
+        "error": {
+            "code": "validation_error",  # or "not_authenticated", etc.
+            "message": "Human-readable message",
+            "details": {"field": ["error message"]}  # or {} for no details
+        },
+        "meta": {
+            "timestamp": timezone.now().isoformat()
+        }
+    },
+    status=status.HTTP_400_BAD_REQUEST
+)
+```
+
+**For success responses (200 OK)**, return data directly:
+```python
+return Response({
+    "id": user.id,
+    "email": user.email,
+    # ... other fields
+}, status=status.HTTP_200_OK)
+```
 
 ---
 
