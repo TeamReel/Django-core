@@ -20,6 +20,11 @@ import { shouldRedirectToLogin, redirectToLogin } from '../lib/redirectHelper';
  */
 export interface AuthContextValue extends AuthState {
   /**
+   * Authentication configuration.
+   */
+  config: AuthConfig;
+
+  /**
    * Initialize session (call /auth/me).
    * Returns user on success, null on failure.
    */
@@ -248,6 +253,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
 
   const value: AuthContextValue = {
     ...state,
+    config,
     initializeSession,
     clearAuth,
     handleApiError,

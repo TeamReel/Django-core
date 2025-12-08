@@ -32,7 +32,10 @@
 export { AuthProvider, AuthContext, type AuthProviderProps, type AuthContextValue } from './components/AuthProvider';
 
 // Hooks
-export { useAuth, useAuthStatus, useCurrentUser, type AuthStatusFlags } from './hooks';
+export { useAuth, useAuthStatus, useCurrentUser, useSignIn, type AuthStatusFlags, type UseSignInResult } from './hooks';
+
+// Components
+export { SignInForm, SignInPage, type SignInFormProps, type SignInPageProps } from './components';
 
 // Types
 export type { AuthConfig, AuthState, User, ApiError } from './types';
