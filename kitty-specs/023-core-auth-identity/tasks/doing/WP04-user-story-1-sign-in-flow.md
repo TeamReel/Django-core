@@ -18,11 +18,11 @@ title: "User Story 1 – Sign-In Flow"
 phase: "Phase 1 - Core Auth Flows"
 priority: "P1"
 mvp: true
-lane: "planned"
+lane: "doing"
 assignee: "Claude"
 agent: "claude"
 shell_pid: "35160"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-08T00:00:00Z"
@@ -50,6 +50,11 @@ history:
     agent: "claude-reviewer"
     shell_pid: "35160"
     action: "Code review complete: NEEDS CHANGES. 1 linting error (unused import) + 13 tests failing (mock infrastructure issue). Core functionality verified working. Must fix ESLint error before merge."
+  - timestamp: "2025-12-08T22:35:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "35160"
+    action: "Acknowledged review feedback. Addressing: 1) Remove unused errorNormalizer import (BLOCKER), 2) Fix test mocking strategy for 100% pass rate"
 ---
 
 # Work Package Prompt: WP04 – User Story 1: Sign-In Flow 🎯 MVP
