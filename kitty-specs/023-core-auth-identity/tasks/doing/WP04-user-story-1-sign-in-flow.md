@@ -18,10 +18,10 @@ title: "User Story 1 – Sign-In Flow"
 phase: "Phase 1 - Core Auth Flows"
 priority: "P1"
 mvp: true
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "Claude"
+agent: "claude"
+shell_pid: "35160"
 review_status: ""
 reviewed_by: ""
 history:
@@ -30,6 +30,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-08T20:40:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "35160"
+    action: "Started WP04: Sign-In flow implementation"
 ---
 
 # Work Package Prompt: WP04 – User Story 1: Sign-In Flow 🎯 MVP
