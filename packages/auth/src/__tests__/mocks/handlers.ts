@@ -57,9 +57,7 @@ export const handlers = [
   }),
 
   // Password reset request endpoint
-  rest.post(`${BASE_URL}/password/reset/`, async (req, res, ctx) => {
-    const body = await req.json() as { email: string };
-
+  rest.post(`${BASE_URL}/password/reset/`, async (_req, res, ctx) => {
     // Always succeed for password reset requests (realistic behavior)
     return res(ctx.json({
       success: true,

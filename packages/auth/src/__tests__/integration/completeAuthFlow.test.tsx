@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AuthProvider, SignInPage, ProfilePage } from '../../index';
 import { testUser, testPassword } from '../mocks/handlers';

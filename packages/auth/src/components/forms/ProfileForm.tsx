@@ -1,7 +1,6 @@
 import React, { useState, FormEvent, ChangeEvent } from 'react';
 import { useUpdateProfile } from '../../hooks/useUpdateProfile';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
-import type { ApiError } from '../../types';
 
 // TODO: Import from @teamreel/design-system when available
 // For now, using placeholder interfaces matching F01 spec

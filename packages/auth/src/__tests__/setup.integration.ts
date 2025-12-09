@@ -32,7 +32,7 @@ afterAll(() => {
 // Suppress console errors in tests (optional, comment out if debugging)
 const originalError = console.error;
 beforeAll(() => {
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     // Suppress MSW-related warnings
     if (
       typeof args[0] === 'string' &&
