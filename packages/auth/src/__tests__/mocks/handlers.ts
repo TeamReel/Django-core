@@ -27,7 +27,7 @@ export const handlers = [
     if (body.email === TEST_USER.email && body.password === TEST_PASSWORD) {
       return res(ctx.json({
         success: true,
-        user: TEST_USER,
+        data: TEST_USER,
       }));
     }
 
@@ -44,7 +44,7 @@ export const handlers = [
   rest.get(`${BASE_URL}/me/`, (req, res, ctx) => {
     return res(ctx.json({
       success: true,
-      user: TEST_USER,
+      data: TEST_USER,
     }));
   }),
 
@@ -139,7 +139,7 @@ export const handlers = [
 
     return res(ctx.json({
       success: true,
-      user: updatedUser,
+      data: updatedUser,
     }));
   }),
 

@@ -87,6 +87,7 @@ describe('Complete Authentication Flow', () => {
     // Step 3: Update profile
     const firstNameInput = screen.getByLabelText(/first name/i);
     const lastNameInput = screen.getByLabelText(/last name/i);
+    const currentPasswordInput = screen.getByLabelText(/current password/i);
     const updateButton = screen.getByRole('button', { name: /save|update/i });
 
     // Clear and update first name
@@ -96,6 +97,9 @@ describe('Complete Authentication Flow', () => {
     // Clear and update last name
     await user.clear(lastNameInput);
     await user.type(lastNameInput, 'Doe');
+
+    // Enter current password (required for verification)
+    await user.type(currentPasswordInput, 'Password123!');
 
     await user.click(updateButton);
 

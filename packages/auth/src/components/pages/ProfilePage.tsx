@@ -1,6 +1,7 @@
 import React from 'react';
 import { ProfileForm } from '../forms/ProfileForm';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useSignOut } from '../../hooks/useSignOut';
 
 /**
  * ProfilePage component for viewing and editing user profile.
@@ -18,6 +19,7 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
  */
 export const ProfilePage: React.FC = () => {
   const user = useCurrentUser();
+  const { signOut, loading: signingOut } = useSignOut();
 
   if (!user) {
     return (
@@ -35,7 +37,23 @@ export const ProfilePage: React.FC = () => {
         borderRadius: '8px',
         padding: '2rem',
       }}>
-        <h1 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Profile</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h1 style={{ marginTop: 0, marginBottom: 0 }}>Profile</h1>
+          <button
+            onClick={() => signOut()}
+            disabled={signingOut}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: signingOut ? '#ccc' : '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: signingOut ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {signingOut ? 'Signing Out...' : 'Sign Out'}
+          </button>
+        </div>
 
         <ProfileForm />
 

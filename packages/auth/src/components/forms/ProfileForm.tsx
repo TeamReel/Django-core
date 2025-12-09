@@ -84,6 +84,7 @@ const Alert: React.FC<AlertProps> = ({ variant, children }) => {
   };
   return (
     <div
+      role="alert"
       style={{
         padding: '0.75rem 1rem',
         marginBottom: '1rem',
