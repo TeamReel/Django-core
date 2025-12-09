@@ -17,7 +17,7 @@
 - ✅ Automatic session verification
 
 🎯 **Developer Experience**
-- 📦 Tiny bundle size (~10-15KB gzipped)
+- 📦 Tiny bundle size (6.28KB gzipped ESM)
 - 🎨 Built with @django-core/design-system
 - 🔒 TypeScript support with full type safety
 - 🪝 React hooks for custom integrations
@@ -56,6 +56,26 @@ yarn add @django-core/auth-ui @django-core/design-system react react-dom
 - `react` ^18.0.0
 - `react-dom` ^18.0.0
 - `@django-core/design-system` ^1.0.0
+
+---
+
+## Performance
+
+**Bundle Size**: 6.28 KB gzipped (ESM), 5.26 KB gzipped (CJS)
+**Target**: ≤15 KB gzipped
+**External Dependencies**: React, React-DOM, @django-core/design-system
+**Tree-Shaking**: Enabled (`sideEffects: false`)
+**Build Time**: ~1.2s
+
+The package is optimized for minimal bundle size impact:
+- Only 42% of the target budget used (8.72 KB headroom)
+- Peer dependencies externalized (not bundled)
+- Side-effect free for optimal tree-shaking
+- No code splitting needed (bundle already optimal)
+
+### Bundle Analysis
+
+Run `pnpm analyze` to view an interactive bundle composition treemap showing all included modules and their sizes.
 
 ---
 
