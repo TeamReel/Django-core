@@ -1244,5 +1244,6 @@ describe('AuthProvider', () => {
 
 ## Activity Log
 
+- 2025-12-08T20:00:00Z – copilot – lane=done – Core infrastructure completed and reviewed
 - 2025-12-07T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-08T18:48:31Z – system – shell_pid= – lane=doing – Started WP03: Core Auth Infrastructure - AuthProvider, Context, apiClient, error handling

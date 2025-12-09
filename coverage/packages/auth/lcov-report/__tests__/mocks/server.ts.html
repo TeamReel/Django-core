@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for hooks/index.ts</title>
+    <title>Code coverage report for __tests__/mocks/server.ts</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../prettify.css" />
-    <link rel="stylesheet" href="../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../sort-arrow-sprite.png);
+            background-image: url(../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">hooks</a> index.ts</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">__tests__/mocks</a> server.ts</h1>
         <div class='clearfix'>
 
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>8/16</span>
+                <span class='fraction'>4/4</span>
             </div>
 
 
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/8</span>
+                <span class='fraction'>3/3</span>
             </div>
 
 
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -73,32 +73,26 @@
 <a name='L8'></a><a href='#L8'>8</a>
 <a name='L9'></a><a href='#L9'>9</a>
 <a name='L10'></a><a href='#L10'>10</a>
-<a name='L11'></a><a href='#L11'>11</a>
-<a name='L12'></a><a href='#L12'>12</a>
-<a name='L13'></a><a href='#L13'>13</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L11'></a><a href='#L11'>11</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
- * Authentication hooks - convenient access to auth state.
- */
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { setupServer } from 'msw/node';
+import { handlers } from './handlers';
 &nbsp;
-export { <span class="cstat-no" title="statement not covered" >useAuth } from '</span>./useAuth';
-export { <span class="cstat-no" title="statement not covered" >useAuthStatus, type AuthStatusFlags } from '</span>./useAuthStatus';
-export { <span class="cstat-no" title="statement not covered" >useCurrentUser } from '</span>./useCurrentUser';
-export { <span class="cstat-no" title="statement not covered" >useSignIn, type UseSignInResult } from '</span>./useSignIn';
-export { <span class="cstat-no" title="statement not covered" >useSignOut, type UseSignOutResult } from '</span>./useSignOut';
-export { <span class="cstat-no" title="statement not covered" >useRequestPasswordReset, type UseRequestPasswordResetResult } from '</span>./useRequestPasswordReset';
-export { <span class="cstat-no" title="statement not covered" >useConfirmPasswordReset, type UseConfirmPasswordResetResult } from '</span>./useConfirmPasswordReset';
-export { <span class="cstat-no" title="statement not covered" >useUpdateProfile, type UseUpdateProfileResult } from '</span>./useUpdateProfile';
+/**
+ * MSW Server for Node.js Test Environment (MSW v2)
+ *
+ * This server intercepts all HTTP requests during tests and responds
+ * with mocked data. No real backend API calls are made.
+ */
+export const server = setupServer(...handlers);
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -108,13 +102,13 @@ export { <span class="cstat-no" title="statement not covered" >useUpdateProfile,
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
                 at 2025-12-09T16:29:12.540Z
             </div>
-        <script src="../prettify.js"></script>
+        <script src="../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../sorter.js"></script>
-        <script src="../block-navigation.js"></script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
     </body>
 </html>

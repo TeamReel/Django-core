@@ -106,6 +106,9 @@ export default {
         '<rootDir>/jest.setup.js',
         '<rootDir>/src/__tests__/setup.integration.ts',
       ],
+      // Integration tests focus on user journeys, not code coverage
+      // Coverage is measured by unit tests
+      coverageThreshold: undefined,
     },
   ],
 };

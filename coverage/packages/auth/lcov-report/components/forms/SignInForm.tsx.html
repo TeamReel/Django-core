@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for components/AuthProvider.tsx</title>
+    <title>Code coverage report for components/forms/SignInForm.tsx</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../prettify.css" />
-    <link rel="stylesheet" href="../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../sort-arrow-sprite.png);
+            background-image: url(../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">components</a> AuthProvider.tsx</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">components/forms</a> SignInForm.tsx</h1>
         <div class='clearfix'>
 
             <div class='fl pad1y space-right2'>
-                <span class="strong">67.69% </span>
+                <span class="strong">94.11% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>44/65</span>
+                <span class='fraction'>64/68</span>
             </div>
 
 
             <div class='fl pad1y space-right2'>
-                <span class="strong">30% </span>
+                <span class="strong">88.37% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>6/20</span>
+                <span class='fraction'>38/43</span>
             </div>
 
 
             <div class='fl pad1y space-right2'>
-                <span class="strong">81.81% </span>
+                <span class="strong">93.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>9/11</span>
+                <span class='fraction'>14/15</span>
             </div>
 
 
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.1% </span>
+                <span class="strong">95.08% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>39/59</span>
+                <span class='fraction'>58/61</span>
             </div>
 
 
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -348,7 +348,76 @@
 <a name='L283'></a><a href='#L283'>283</a>
 <a name='L284'></a><a href='#L284'>284</a>
 <a name='L285'></a><a href='#L285'>285</a>
-<a name='L286'></a><a href='#L286'>286</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L286'></a><a href='#L286'>286</a>
+<a name='L287'></a><a href='#L287'>287</a>
+<a name='L288'></a><a href='#L288'>288</a>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a>
+<a name='L308'></a><a href='#L308'>308</a>
+<a name='L309'></a><a href='#L309'>309</a>
+<a name='L310'></a><a href='#L310'>310</a>
+<a name='L311'></a><a href='#L311'>311</a>
+<a name='L312'></a><a href='#L312'>312</a>
+<a name='L313'></a><a href='#L313'>313</a>
+<a name='L314'></a><a href='#L314'>314</a>
+<a name='L315'></a><a href='#L315'>315</a>
+<a name='L316'></a><a href='#L316'>316</a>
+<a name='L317'></a><a href='#L317'>317</a>
+<a name='L318'></a><a href='#L318'>318</a>
+<a name='L319'></a><a href='#L319'>319</a>
+<a name='L320'></a><a href='#L320'>320</a>
+<a name='L321'></a><a href='#L321'>321</a>
+<a name='L322'></a><a href='#L322'>322</a>
+<a name='L323'></a><a href='#L323'>323</a>
+<a name='L324'></a><a href='#L324'>324</a>
+<a name='L325'></a><a href='#L325'>325</a>
+<a name='L326'></a><a href='#L326'>326</a>
+<a name='L327'></a><a href='#L327'>327</a>
+<a name='L328'></a><a href='#L328'>328</a>
+<a name='L329'></a><a href='#L329'>329</a>
+<a name='L330'></a><a href='#L330'>330</a>
+<a name='L331'></a><a href='#L331'>331</a>
+<a name='L332'></a><a href='#L332'>332</a>
+<a name='L333'></a><a href='#L333'>333</a>
+<a name='L334'></a><a href='#L334'>334</a>
+<a name='L335'></a><a href='#L335'>335</a>
+<a name='L336'></a><a href='#L336'>336</a>
+<a name='L337'></a><a href='#L337'>337</a>
+<a name='L338'></a><a href='#L338'>338</a>
+<a name='L339'></a><a href='#L339'>339</a>
+<a name='L340'></a><a href='#L340'>340</a>
+<a name='L341'></a><a href='#L341'>341</a>
+<a name='L342'></a><a href='#L342'>342</a>
+<a name='L343'></a><a href='#L343'>343</a>
+<a name='L344'></a><a href='#L344'>344</a>
+<a name='L345'></a><a href='#L345'>345</a>
+<a name='L346'></a><a href='#L346'>346</a>
+<a name='L347'></a><a href='#L347'>347</a>
+<a name='L348'></a><a href='#L348'>348</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -360,188 +429,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">316x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">34x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">34x</span>
-<span class="cline-any cline-yes">34x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">34x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">34x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">34x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -555,28 +442,181 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">34x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">34x</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">116x</span>
+<span class="cline-any cline-yes">116x</span>
+<span class="cline-any cline-yes">116x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">116x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -586,20 +626,82 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">81x</span>
+<span class="cline-any cline-yes">81x</span>
+<span class="cline-any cline-yes">81x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">81x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">34x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-yes">246x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -609,20 +711,42 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">34x</span>
-<span class="cline-any cline-yes">23x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">34x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -634,289 +758,351 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
- * AuthProvider - Core authentication context provider.
+ * SignInForm - Email/password form for user authentication.
  *
- * Manages:
- * - Authentication state (user, status, error)
- * - Session initialization (/auth/me on mount)
- * - Token management (CSRF via apiClient)
- * - Error handling with B13 envelope normalization
- * - Automatic redirect on 401/403
- */
-&nbsp;
-import React, { createContext, useEffect, useState, useCallback, useRef } from 'react';
-import type { AuthConfig, AuthState, User, ApiError } from '../types';
-import { apiClient } from '../lib/apiClient';
-import { errorNormalizer } from '../lib/errorNormalizer';
-import { shouldRedirectToLogin, redirectToLogin } from '../lib/redirectHelper';
-&nbsp;
-/**
- * AuthContext shape - provides state and actions.
- */
-export interface AuthContextValue extends AuthState {
-  /**
-   * Authentication configuration.
-   */
-  config: AuthConfig;
-&nbsp;
-  /**
-   * Initialize session (call /auth/me).
-   * Returns user on success, null on failure.
-   */
-  initializeSession: () =&gt; Promise&lt;User | null&gt;;
-&nbsp;
-  /**
-   * Clear authentication state (e.g., on sign out).
-   */
-  clearAuth: () =&gt; void;
-&nbsp;
-  /**
-   * Handle API error - normalize and update state.
-   * Redirects to login on 401/403.
-   */
-  handleApiError: (response: Response) =&gt; Promise&lt;ApiError&gt;;
-&nbsp;
-  /**
-   * Set authenticated user and update state.
-   */
-  setUser: (user: User) =&gt; void;
-}
-&nbsp;
-/**
- * AuthContext - React Context for authentication state.
- */
-export const AuthContext = createContext&lt;AuthContextValue | null&gt;(null);
-&nbsp;
-/**
- * AuthProvider props.
- */
-export interface AuthProviderProps {
-  children: React.ReactNode;
-  config: AuthConfig;
-  /**
-   * Skip automatic session initialization on mount.
-   * Useful for testing or manual session management.
-   */
-  skipInitialLoad?: boolean;
-}
-&nbsp;
-/**
- * AuthProvider - Provides authentication state and utilities.
+ * Features:
+ * - Client-side validation (email format, password min length)
+ * - Loading states with disabled inputs
+ * - Field-level and form-level error display
+ * - Uses F01 Design System components (Input, Button, Alert)
  *
  * @example
  * ```tsx
- * const authConfig = {
- *   apiBaseUrl: 'http://localhost:8000',
- *   endpoints: {
- *     signIn: '/auth/sign-in/',
- *     signOut: '/auth/sign-out/',
- *     me: '/auth/me/',
- *     // ...
- *   },
- *   routes: {
- *     login: '/login',
- *     defaultAfterLogin: '/dashboard',
- *     afterLogout: '/',
- *   },
- * };
- *
- * &lt;AuthProvider config={authConfig}&gt;
- *   &lt;App /&gt;
- * &lt;/AuthProvider&gt;
+ * &lt;SignInForm
+ *   onSuccess={(user) =&gt; console.log('Signed in:', user)}
+ *   forgotPasswordUrl="/forgot-password"
+ * /&gt;
  * ```
  */
-export const AuthProvider: React.FC&lt;AuthProviderProps&gt; = ({
-  children,
-  config,
-  skipInitialLoad = false,
+&nbsp;
+import React, { useState, useCallback, type FormEvent } from 'react';
+import { useSignIn } from '../../hooks/useSignIn';
+import type { User } from '../../types';
+&nbsp;
+// TODO: Import from @teamreel/design-system when available
+// For now, using placeholder interfaces matching F01 spec
+interface InputProps {
+  id: string;
+  name: string;
+  type: string;
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; void;
+  onBlur?: () =&gt; void;
+  error?: string;
+  disabled?: boolean;
+  required?: boolean;
+  autoComplete?: string;
+  'aria-describedby'?: string;
+}
+&nbsp;
+interface ButtonProps {
+  type: 'submit' | 'button';
+  children: React.ReactNode;
+  disabled?: boolean;
+  loading?: boolean;
+  variant?: 'primary' | 'secondary';
+}
+&nbsp;
+interface AlertProps {
+  variant: 'error' | 'warning' | 'info' | 'success';
+  children: React.ReactNode;
+  role?: string;
+  'aria-live'?: 'polite' | 'assertive';
+}
+&nbsp;
+// Placeholder components - will be replaced with actual F01 imports
+const Input: React.FC&lt;InputProps&gt; = ({ label, error, ...props }) =&gt; (
+  &lt;div style={{ marginBottom: '1rem' }}&gt;
+    &lt;label htmlFor={props.id} style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500 }}&gt;
+      {label} {props.required &amp;&amp; &lt;span style={{ color: 'red' }}&gt;*&lt;/span&gt;}
+    &lt;/label&gt;
+    &lt;input
+      {...props}
+      style={{
+        width: '100%',
+        padding: '0.5rem',
+        border: error ? '2px solid red' : '1px solid #ccc',
+        borderRadius: '4px',
+        fontSize: '1rem',
+      }}
+    /&gt;
+    {error &amp;&amp; (
+      &lt;span
+        style={{ display: 'block', marginTop: '0.25rem', color: 'red', fontSize: '0.875rem' }}
+        role="alert"
+      &gt;
+        {error}
+      &lt;/span&gt;
+    )}
+  &lt;/div&gt;
+);
+&nbsp;
+const Button: React.FC&lt;ButtonProps&gt; = ({ children, loading, disabled, ...props }) =&gt; (
+  &lt;button
+    {...props}
+    disabled={disabled || loading}
+    style={{
+      width: '100%',
+      padding: '0.75rem',
+      backgroundColor: disabled || loading ? '#ccc' : '#0070f3',
+      color: 'white',
+      border: 'none',
+      borderRadius: '4px',
+      fontSize: '1rem',
+      fontWeight: 600,
+      cursor: disabled || loading ? 'not-allowed' : 'pointer',
+    }}
+  &gt;
+    {loading ? 'Signing in...' : children}
+  &lt;/button&gt;
+);
+&nbsp;
+const Alert: React.FC&lt;AlertProps&gt; = ({ variant, children, ...props }) =&gt; (
+  &lt;div
+    {...props}
+    style={{
+      padding: '0.75rem 1rem',
+      marginBottom: '1rem',
+      backgroundColor: variant === 'error' ? '#fee' : <span class="branch-1 cbranch-no" title="branch not covered" >'#e0f7fa',</span>
+      border: `1px solid ${variant === 'error' ? '#fcc' : <span class="branch-1 cbranch-no" title="branch not covered" >'#b2ebf2'}`,</span>
+      borderRadius: '4px',
+      color: variant === 'error' ? '#c33' : <span class="branch-1 cbranch-no" title="branch not covered" >'#00796b',</span>
+    }}
+  &gt;
+    {children}
+  &lt;/div&gt;
+);
+&nbsp;
+export interface SignInFormProps {
+  /**
+   * Callback on successful sign-in.
+   */
+  onSuccess?: (user: User) =&gt; void;
+&nbsp;
+  /**
+   * Callback on sign-in error.
+   */
+  onError?: (error: Error) =&gt; void;
+&nbsp;
+  /**
+   * URL for "Forgot password?" link.
+   */
+  forgotPasswordUrl?: string;
+&nbsp;
+  /**
+   * Additional CSS class name.
+   */
+  className?: string;
+}
+&nbsp;
+interface ValidationErrors {
+  email?: string;
+  password?: string;
+}
+&nbsp;
+/**
+ * Email validation regex - basic format check.
+ */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+&nbsp;
+/**
+ * Minimum password length per security requirements.
+ */
+const MIN_PASSWORD_LENGTH = 8;
+&nbsp;
+/**
+ * SignInForm component.
+ */
+export const SignInForm: React.FC&lt;SignInFormProps&gt; = ({
+  onSuccess,
+  onError,
+  forgotPasswordUrl,
+  className,
 }) =&gt; {
-  const [state, setState] = useState&lt;AuthState&gt;({
-    user: null,
-    status: 'loading',
-    isLoading: true,
-    error: null,
-    lastVerified: null,
-  });
+  const { signIn, isLoading, error: apiError, clearError } = useSignIn();
 &nbsp;
-  const configRef = useRef(config);
-  configRef.current = config;
-&nbsp;
-  // Track in-flight verification request to prevent duplicates
-  const verificationInProgress = useRef(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [touched, setTouched] = useState({ email: false, password: false });
+  const [validationErrors, setValidationErrors] = useState&lt;ValidationErrors&gt;({});
 &nbsp;
   /**
-   * Initialize session by calling /auth/me endpoint.
-   * Includes debouncing to prevent redundant calls within 60 seconds.
+   * Validate email field.
    */
-  const initializeSession = useCallback(async (): Promise&lt;User | null&gt; =&gt; {
-    // Debounce: Skip if verified less than 60 seconds ago
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (state.lastVerified &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >(Date.now() - state.lastVerified) &lt; 60000) {</span>
-<span class="cstat-no" title="statement not covered" >      console.debug('[AuthProvider] Session verified recently, skipping redundant call');</span>
-<span class="cstat-no" title="statement not covered" >      return state.user;</span>
+  const validateEmail = useCallback((value: string): string | undefined =&gt; {
+    if (!value) {
+      return 'Email is required';
     }
-&nbsp;
-    // Prevent duplicate concurrent requests
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (verificationInProgress.current) {
-<span class="cstat-no" title="statement not covered" >      console.debug('[AuthProvider] Verification already in progress, skipping duplicate call');</span>
-<span class="cstat-no" title="statement not covered" >      return state.user;</span>
+    if (!EMAIL_REGEX.test(value)) {
+      return 'Please enter a valid email address';
     }
+    return undefined;
+  }, []);
 &nbsp;
-    verificationInProgress.current = true;
-    setState((prev) =&gt; ({ ...prev, isLoading: true, error: null }));
+  /**
+   * Validate password field.
+   */
+  const validatePassword = useCallback((value: string): string | undefined =&gt; {
+    if (!value) {
+      return 'Password is required';
+    }
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (value.length &lt; MIN_PASSWORD_LENGTH) {
+<span class="cstat-no" title="statement not covered" >      return `Password must be at least ${MIN_PASSWORD_LENGTH} characters`;</span>
+    }
+    return undefined;
+  }, []);
 &nbsp;
-    try {
-      const url = `${configRef.current.apiBaseUrl}${configRef.current.endpoints.me}`;
-      const response = await apiClient(url, { method: 'GET' });
+  /**
+   * Handle email change.
+   */
+  const handleEmailChange = useCallback(
+    (e: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
+      const value = e.target.value;
+      setEmail(value);
+      clearError();
 &nbsp;
-      <span class="missing-if-branch" title="if path not taken" >I</span>if (!response.ok) {
-        // Handle unauthenticated (401) or forbidden (403)
-<span class="cstat-no" title="statement not covered" >        <span class="missing-if-branch" title="if path not taken" >I</span>if (shouldRedirectToLogin(response.status)) {</span>
-<span class="cstat-no" title="statement not covered" >          setState({</span>
-            user: null,
-            status: 'unauthenticated',
-            isLoading: false,
-            error: null,
-            lastVerified: Date.now(),
-          });
-<span class="cstat-no" title="statement not covered" >          return null;</span>
-        }
+      if (touched.email) {
+        const error = validateEmail(value);
+        setValidationErrors((prev) =&gt; ({ ...prev, email: error }));
+      }
+    },
+    [touched.email, validateEmail, clearError]
+  );
 &nbsp;
-        // Other errors
-        const error = <span class="cstat-no" title="statement not covered" >await errorNormalizer(response);</span>
-<span class="cstat-no" title="statement not covered" >        setState({</span>
-          user: null,
-          status: 'error',
-          isLoading: false,
-          error,
-          lastVerified: Date.now(),
+  /**
+   * Handle password change.
+   */
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
+      const value = e.target.value;
+      setPassword(value);
+      clearError();
+&nbsp;
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (touched.password) {
+        const error = <span class="cstat-no" title="statement not covered" >validatePassword(value);</span>
+<span class="cstat-no" title="statement not covered" >        setValidationErrors(<span class="fstat-no" title="function not covered" >(p</span>rev) =&gt; (<span class="cstat-no" title="statement not covered" >{ ...prev, password: error }));</span></span>
+      }
+    },
+    [touched.password, validatePassword, clearError]
+  );
+&nbsp;
+  /**
+   * Handle field blur - mark as touched and validate.
+   */
+  const handleEmailBlur = useCallback(() =&gt; {
+    setTouched((prev) =&gt; ({ ...prev, email: true }));
+    const error = validateEmail(email);
+    setValidationErrors((prev) =&gt; ({ ...prev, email: error }));
+  }, [email, validateEmail]);
+&nbsp;
+  const handlePasswordBlur = useCallback(() =&gt; {
+    setTouched((prev) =&gt; ({ ...prev, password: true }));
+    const error = validatePassword(password);
+    setValidationErrors((prev) =&gt; ({ ...prev, password: error }));
+  }, [password, validatePassword]);
+&nbsp;
+  /**
+   * Handle form submission.
+   */
+  const handleSubmit = useCallback(
+    async (e: FormEvent&lt;HTMLFormElement&gt;) =&gt; {
+      e.preventDefault();
+&nbsp;
+      // Mark all fields as touched
+      setTouched({ email: true, password: true });
+&nbsp;
+      // Validate all fields
+      const emailError = validateEmail(email);
+      const passwordError = validatePassword(password);
+&nbsp;
+      if (emailError || passwordError) {
+        setValidationErrors({
+          email: emailError,
+          password: passwordError,
         });
-<span class="cstat-no" title="statement not covered" >        return null;</span>
+        return;
       }
 &nbsp;
-      const data = await response.json();
-      const user: User = data.data || <span class="branch-1 cbranch-no" title="branch not covered" >data; /</span>/ Handle B13 envelope or direct user object
+      // Clear validation errors
+      setValidationErrors({});
 &nbsp;
-      setState({
-        user,
-        status: 'authenticated',
-        isLoading: false,
-        error: null,
-        lastVerified: Date.now(),
-      });
-&nbsp;
-      return user;
-    } catch (err) {
-<span class="cstat-no" title="statement not covered" >      setState({</span>
-        user: null,
-        status: 'error',
-        isLoading: false,
-        error: {
-          status: 0,
-          fieldErrors: {},
-          formErrors: [err instanceof Error ? err.message : 'Network error'],
-        },
-        lastVerified: Date.now(),
-      });
-<span class="cstat-no" title="statement not covered" >      return null;</span>
-    } finally {
-      verificationInProgress.current = false;
-    }
-  }, [state.lastVerified, state.user]);
-&nbsp;
-  /**
-   * Clear authentication state.
-   */
-  const clearAuth = useCallback(() =&gt; {
-    setState({
-      user: null,
-      status: 'unauthenticated',
-      isLoading: false,
-      error: null,
-      lastVerified: Date.now(),
-    });
-  }, []);
-&nbsp;
-  /**
-   * Handle API error response.
-   * Normalizes error and redirects on 401/403.
-   */
-  const handleApiError = useCallback(async (response: Response): Promise&lt;ApiError&gt; =&gt; {
-    const error = await errorNormalizer(response);
-&nbsp;
-    // Redirect to login on 401/403
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (shouldRedirectToLogin(response.status)) {
-<span class="cstat-no" title="statement not covered" >      clearAuth();</span>
-<span class="cstat-no" title="statement not covered" >      redirectToLogin(configRef.current.routes.login);</span>
-    }
-&nbsp;
-    setState((prev) =&gt; ({
-      ...prev,
-      error,
-      status: shouldRedirectToLogin(response.status) ? <span class="branch-0 cbranch-no" title="branch not covered" >'unauthenticated' : '</span>error',
-    }));
-&nbsp;
-    return error;
-  }, [clearAuth]);
-&nbsp;
-  /**
-   * Set authenticated user.
-   */
-  const setUser = useCallback((user: User) =&gt; {
-    setState({
-      user,
-      status: 'authenticated',
-      isLoading: false,
-      error: null,
-      lastVerified: Date.now(),
-    });
-  }, []);
-&nbsp;
-  /**
-   * Initialize session on mount (unless skipInitialLoad is true).
-   */
-  useEffect(() =&gt; {
-    if (!skipInitialLoad) {
-      initializeSession();
-    } else <span class="missing-if-branch" title="else path not taken" >E</span>{
-      // Set to unauthenticated immediately if skipping
-<span class="cstat-no" title="statement not covered" >      setState({</span>
-        user: null,
-        status: 'unauthenticated',
-        isLoading: false,
-        error: null,
-        lastVerified: null,
-      });
-    }
-    // Only run on mount - initializeSession has internal debouncing
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skipInitialLoad]);
-&nbsp;
-  /**
-   * Optional: Session polling (if enabled in config).
-   */
-  useEffect(() =&gt; {
-    if (!config.security?.enableSessionPolling) return;
-&nbsp;
-    const interval = <span class="cstat-no" title="statement not covered" >config.security.sessionPollingInterval || 300000; /</span>/ Default 5 minutes
-    const timerId = <span class="cstat-no" title="statement not covered" >setInterval(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
-<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (state.status === 'authenticated') {</span>
-<span class="cstat-no" title="statement not covered" >        initializeSession(); /</span>/ Re-verify session (debounced internally)
+      try {
+        const user = await signIn(email, password);
+        onSuccess?.(user);
+      } catch (err) {
+        onError?.(err as Error);
       }
-    }, interval);
+    },
+    [email, password, validateEmail, validatePassword, signIn, onSuccess, onError]
+  );
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return <span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >c</span>learInterval(timerId);</span></span>
-  }, [config.security, state.status, initializeSession]);
+  // Combine field errors from validation and API
+  const emailError = validationErrors.email || apiError?.fieldErrors?.email?.[0];
+  const passwordError = validationErrors.password || apiError?.fieldErrors?.password?.[0];
+  const formErrors = apiError?.formErrors || [];
 &nbsp;
-  const value: AuthContextValue = {
-    ...state,
-    config,
-    initializeSession,
-    clearAuth,
-    handleApiError,
-    setUser,
-  };
+  return (
+    &lt;form onSubmit={handleSubmit} className={className} noValidate&gt;
+      {/* Form-level errors */}
+      {formErrors.length &gt; 0 &amp;&amp; (
+        &lt;Alert variant="error" role="alert" aria-live="assertive"&gt;
+          {formErrors.map((error, index) =&gt; (
+            &lt;div key={index}&gt;{error}&lt;/div&gt;
+          ))}
+        &lt;/Alert&gt;
+      )}
 &nbsp;
-  return &lt;AuthContext.Provider value={value}&gt;{children}&lt;/AuthContext.Provider&gt;;
+      {/* Email field */}
+      &lt;Input
+        id="sign-in-email"
+        name="email"
+        type="email"
+        label="Email"
+        value={email}
+        onChange={handleEmailChange}
+        onBlur={handleEmailBlur}
+        error={emailError}
+        disabled={isLoading}
+        required
+        autoComplete="email"
+        aria-describedby={emailError ? 'sign-in-email-error' : undefined}
+      /&gt;
+&nbsp;
+      {/* Password field */}
+      &lt;Input
+        id="sign-in-password"
+        name="password"
+        type="password"
+        label="Password"
+        value={password}
+        onChange={handlePasswordChange}
+        onBlur={handlePasswordBlur}
+        error={passwordError}
+        disabled={isLoading}
+        required
+        autoComplete="current-password"
+        aria-describedby={passwordError ? 'sign-in-password-error' : undefined}
+      /&gt;
+&nbsp;
+      {/* Forgot password link */}
+      {forgotPasswordUrl &amp;&amp; (
+        &lt;div style={{ marginBottom: '1rem', textAlign: 'right' }}&gt;
+          &lt;a
+            href={forgotPasswordUrl}
+            style={{ color: '#0070f3', textDecoration: 'none', fontSize: '0.875rem' }}
+          &gt;
+            Forgot password?
+          &lt;/a&gt;
+        &lt;/div&gt;
+      )}
+&nbsp;
+      {/* Submit button */}
+      &lt;Button type="submit" loading={isLoading} disabled={isLoading}&gt;
+        Sign In
+      &lt;/Button&gt;
+    &lt;/form&gt;
+  );
 };
 &nbsp;</pre></td></tr></table></pre>
 
@@ -927,13 +1113,13 @@ export const AuthProvider: React.FC&lt;AuthProviderProps&gt; = ({
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
                 at 2025-12-09T16:29:12.540Z
             </div>
-        <script src="../prettify.js"></script>
+        <script src="../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../sorter.js"></script>
-        <script src="../block-navigation.js"></script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
     </body>
 </html>

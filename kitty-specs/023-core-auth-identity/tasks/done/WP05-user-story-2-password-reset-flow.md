@@ -26,7 +26,7 @@ phase: "Phase 1 - Core Auth Flows"
 priority: "P1"
 mvp: true
 lane: "done"
-assignee: ""
+assignee: "claude-implementer"
 agent: "claude-reviewer"
 shell_pid: "35160"
 review_status: "approved with notes"

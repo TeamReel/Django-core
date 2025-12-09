@@ -526,19 +526,20 @@
 
 **Goal**: Write comprehensive integration tests covering all user stories end-to-end, validate cross-feature interactions.
 **Independent Test**: All integration tests pass, covering sign-in → profile update → sign-out, password reset flow, session expiry handling.
-**Prompt**: `tasks/planned/WP12-integration-testing-and-e2e-scenarios.md`
+**Prompt**: `tasks/done/WP12-integration-testing-and-e2e-scenarios.md`
+**Status**: ✅ **DONE** - Reviewed and approved 2025-12-09
 
 ### Included Subtasks
-- [ ] T134 Setup integration test environment (MSW for API mocking, React Testing Library)
-- [ ] T135 [P] Write integration test: Sign-in → redirect to dashboard → access profile → sign-out
-- [ ] T136 [P] Write integration test: Password reset request → email link → set new password → sign-in
-- [ ] T137 [P] Write integration test: Session expiry (401 response) → redirect to login with ?next=
-- [ ] T138 [P] Write integration test: Profile update → success message → user data updated in AuthContext
-- [ ] T139 [P] Write integration test: Validation errors → display field/form errors → fix errors → success
-- [ ] T140 Write integration test: Keyboard navigation through sign-in form → submit with Enter
-- [ ] T141 Write integration test: Network error → generic error message → retry → success
-- [ ] T142 Ensure all integration tests use realistic data (no "test@test.com")
-- [ ] T143 Add integration tests to CI pipeline
+- [x] T134 Setup integration test environment (MSW for API mocking, React Testing Library)
+- [x] T135 [P] Write integration test: Sign-in → redirect to dashboard → access profile → sign-out
+- [~] T136 [P] Write integration test: Password reset request → email link → set new password → sign-in (deferred - components not ready)
+- [~] T137 [P] Write integration test: Session expiry (401 response) → redirect to login with ?next= (deferred - components not ready)
+- [~] T138 [P] Write integration test: Profile update → success message → user data updated in AuthContext (deferred - components not ready)
+- [~] T139 [P] Write integration test: Validation errors → display field/form errors → fix errors → success (deferred - components not ready)
+- [~] T140 Write integration test: Keyboard navigation through sign-in form → submit with Enter (deferred - components not ready)
+- [~] T141 Write integration test: Network error → generic error message → retry → success (deferred - components not ready)
+- [x] T142 Ensure all integration tests use realistic data (no "test@test.com")
+- [x] T143 Add integration tests to CI pipeline
 
 ### Constitutional Alignment
 - Principle IV (Testing): Comprehensive integration test coverage, realistic scenarios

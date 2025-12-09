@@ -15,7 +15,7 @@ phase: "Phase 1 - Core Auth Flows"
 priority: "P1"
 mvp: true
 lane: "done"
-assignee: ""
+assignee: "claude-implementer"
 agent: "claude-reviewer"
 shell_pid: "35160"
 review_status: "approved without changes"
@@ -61,7 +61,7 @@ WP06 Sign-Out Flow is **APPROVED** for production. All success criteria met with
 ### Implementation Quality ✅
 
 **Excellent Work**:
-1. **Security-First Design**: 
+1. **Security-First Design**:
    - 401 responses treated as success (no user enumeration)
    - Network errors don't block sign-out (local state authoritative)
    - Hard redirect clears all state

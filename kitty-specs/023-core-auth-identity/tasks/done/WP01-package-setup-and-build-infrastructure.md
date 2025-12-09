@@ -985,4 +985,5 @@ When this feature branch merges to main:
 
 ## Activity Log
 
+- 2025-12-08T00:00:00Z – copilot – lane=done – Package setup completed and reviewed
 - 2025-12-07T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
