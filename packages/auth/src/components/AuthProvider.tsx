@@ -106,10 +106,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   const configRef = useRef(config);
   configRef.current = config;
 
+  // Track in-flight verification request to prevent duplicates
+  const verificationInProgress = useRef(false);
+
   /**
    * Initialize session by calling /auth/me endpoint.
+   * Includes debouncing to prevent redundant calls within 60 seconds.
    */
   const initializeSession = useCallback(async (): Promise<User | null> => {
+    // Debounce: Skip if verified less than 60 seconds ago
+    if (state.lastVerified && (Date.now() - state.lastVerified) < 60000) {
+      console.debug('[AuthProvider] Session verified recently, skipping redundant call');
+      return state.user;
+    }
+
+    // Prevent duplicate concurrent requests
+    if (verificationInProgress.current) {
+      console.debug('[AuthProvider] Verification already in progress, skipping duplicate call');
+      return state.user;
+    }
+
+    verificationInProgress.current = true;
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
@@ -166,8 +183,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
         lastVerified: Date.now(),
       });
       return null;
+    } finally {
+      verificationInProgress.current = false;
     }
-  }, []);
+  }, [state.lastVerified, state.user]);
 
   /**
    * Clear authentication state.
@@ -233,7 +252,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
         lastVerified: null,
       });
     }
-  }, [skipInitialLoad, initializeSession]);
+    // Only run on mount - initializeSession has internal debouncing
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skipInitialLoad]);
 
   /**
    * Optional: Session polling (if enabled in config).
@@ -241,10 +262,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   useEffect(() => {
     if (!config.security?.enableSessionPolling) return;
 
-    const interval = config.security.sessionPollingInterval || 60000; // Default 60s
+    const interval = config.security.sessionPollingInterval || 300000; // Default 5 minutes
     const timerId = setInterval(() => {
       if (state.status === 'authenticated') {
-        initializeSession(); // Re-verify session
+        initializeSession(); // Re-verify session (debounced internally)
       }
     }, interval);
 
