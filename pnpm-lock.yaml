@@ -102,6 +102,9 @@ importers:
       rollup-plugin-visualizer:
         specifier: ^6.0.5
         version: 6.0.5(rollup@4.53.3)
+      size-limit:
+        specifier: ^12.0.0
+        version: 12.0.0
       storybook:
         specifier: ^7.6.6
         version: 7.6.20
