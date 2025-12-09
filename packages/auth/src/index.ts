@@ -53,6 +53,7 @@ export {
   RequestPasswordResetPage,
   ConfirmPasswordResetForm,
   ConfirmPasswordResetPage,
+  ProfilePage,
   type SignInFormProps,
   type SignInPageProps,
   type RequestPasswordResetFormProps,

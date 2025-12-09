@@ -39,4 +39,70 @@ export default {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  testMatch: [
+    '**/__tests__/**/*.(test|spec).(ts|tsx)',
+    '**/tests/**/*.(test|spec).(ts|tsx)',
+  ],
+  // Separate test patterns for unit vs integration
+  projects: [
+    {
+      displayName: 'unit',
+      testEnvironment: 'jsdom',
+      transform: {
+        '^.+\\.(ts|tsx)$': [
+          '@swc/jest',
+          {
+            jsc: {
+              parser: {
+                syntax: 'typescript',
+                tsx: true,
+              },
+              transform: {
+                react: {
+                  runtime: 'automatic',
+                },
+              },
+            },
+          },
+        ],
+      },
+      moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      testMatch: ['**/tests/**/*.test.(ts|tsx)', '!**/__tests__/integration/**'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+    },
+    {
+      displayName: 'integration',
+      testEnvironment: 'jsdom',
+      transform: {
+        '^.+\\.(ts|tsx)$': [
+          '@swc/jest',
+          {
+            jsc: {
+              parser: {
+                syntax: 'typescript',
+                tsx: true,
+              },
+              transform: {
+                react: {
+                  runtime: 'automatic',
+                },
+              },
+            },
+          },
+        ],
+      },
+      moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      testMatch: ['**/__tests__/integration/**/*.test.(ts|tsx)'],
+      setupFilesAfterEnv: [
+        '<rootDir>/jest.setup.js',
+        '<rootDir>/src/__tests__/setup.integration.ts',
+      ],
+    },
+  ],
 };

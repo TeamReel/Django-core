@@ -10,3 +10,6 @@ export { RequestPasswordResetForm, type RequestPasswordResetFormProps } from './
 export { RequestPasswordResetPage, type RequestPasswordResetPageProps } from './pages';
 export { ConfirmPasswordResetForm, type ConfirmPasswordResetFormProps } from './forms';
 export { ConfirmPasswordResetPage, type ConfirmPasswordResetPageProps } from './pages';
+
+// Profile Components
+export { ProfilePage } from './pages';
