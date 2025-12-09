@@ -267,15 +267,12 @@ describe('SignInForm', () => {
   });
 
   it('should display field-level errors from API', async () => {
+    // Django REST Framework style field errors (direct field objects at root)
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 400,
       json: async () => ({
-        status: 400,
-        message: 'Validation failed',
-        errors: {
-          email: ['User with this email does not exist'],
-        },
+        email: ['User with this email does not exist'],
       }),
       headers: new Headers(),
     });
