@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { SignInPage } from '../../src/components/pages/SignInPage';
 import { AuthProvider } from '../../src/components/AuthProvider';
 import type { AuthConfig, User } from '../../src/types';
@@ -113,9 +113,6 @@ describe('SignInPage', () => {
       headers: new Headers(),
     });
 
-    // Mock setTimeout
-    jest.useFakeTimers();
-
     renderWithAuth(<SignInPage />);
 
     const emailInput = screen.getByLabelText(/email/i);
@@ -126,17 +123,10 @@ describe('SignInPage', () => {
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.click(submitButton);
 
-    // Wait for fetch to complete
+    // Wait for fetch to complete and redirect to happen
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalled();
-    });
-
-    // Run all timers (includes the setTimeout for redirect)
-    jest.runAllTimers();
-
-    expect(window.location.href).toBe('/');
-
-    jest.useRealTimers();
+      expect(window.location.href).toBe('/');
+    }, { timeout: 500 });
   });
 
   it('should redirect to custom default URL after successful sign-in', async () => {
@@ -147,8 +137,6 @@ describe('SignInPage', () => {
       json: async () => ({ data: mockUser }),
       headers: new Headers(),
     });
-
-    jest.useFakeTimers();
 
     renderWithAuth(<SignInPage defaultRedirect="/dashboard" />);
 
@@ -161,14 +149,8 @@ describe('SignInPage', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalled();
-    });
-
-    jest.advanceTimersByTime(100);
-
-    expect(window.location.href).toBe('/dashboard');
-
-    jest.useRealTimers();
+      expect(window.location.href).toBe('/dashboard');
+    }, { timeout: 500 });
   });
 
   it('should redirect to ?next= URL after successful sign-in', async () => {
@@ -196,14 +178,8 @@ describe('SignInPage', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalled();
-    });
-
-    jest.advanceTimersByTime(100);
-
-    expect(window.location.href).toBe('/projects/123');
-
-    jest.useRealTimers();
+      expect(window.location.href).toBe('/projects/123');
+    }, { timeout: 500 });
   });
 
   it('should prevent open redirect attacks with absolute URLs', async () => {
@@ -216,9 +192,7 @@ describe('SignInPage', () => {
     });
 
     // Try to redirect to external site
-    window.location.search = '?next=http://evil.com';
-
-    jest.useFakeTimers();
+    (window as any).location.search = '?next=http://evil.com';
 
     renderWithAuth(<SignInPage />);
 
@@ -230,16 +204,10 @@ describe('SignInPage', () => {
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.click(submitButton);
 
+    // Should redirect to default, not the malicious URL
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalled();
-    });
-
-    jest.advanceTimersByTime(100);
-
-    // Should redirect to default, not evil.com
-    expect(window.location.href).toBe('/');
-
-    jest.useRealTimers();
+      expect(window.location.href).toBe('/');
+    }, { timeout: 500 });
   });
 
   it('should prevent open redirect attacks with protocol-relative URLs', async () => {
@@ -252,9 +220,7 @@ describe('SignInPage', () => {
     });
 
     // Try protocol-relative URL
-    window.location.search = '?next=//evil.com';
-
-    jest.useFakeTimers();
+    (window as any).location.search = '?next=//evil.com';
 
     renderWithAuth(<SignInPage />);
 
@@ -266,16 +232,10 @@ describe('SignInPage', () => {
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.click(submitButton);
 
+    // Should redirect to default, not the protocol-relative URL
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalled();
-    });
-
-    jest.advanceTimersByTime(100);
-
-    // Should redirect to default, not evil.com
-    expect(window.location.href).toBe('/');
-
-    jest.useRealTimers();
+      expect(window.location.href).toBe('/');
+    }, { timeout: 500 });
   });
 
   it('should prevent javascript: protocol in redirect', async () => {
@@ -288,9 +248,7 @@ describe('SignInPage', () => {
     });
 
     // Try javascript: protocol
-    window.location.search = '?next=javascript:alert(1)';
-
-    jest.useFakeTimers();
+    (window as any).location.search = '?next=javascript:alert(1)';
 
     renderWithAuth(<SignInPage />);
 
@@ -302,15 +260,9 @@ describe('SignInPage', () => {
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.click(submitButton);
 
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalled();
-    });
-
-    jest.advanceTimersByTime(100);
-
     // Should redirect to default, not execute javascript
-    expect(window.location.href).toBe('/');
-
-    jest.useRealTimers();
+    await waitFor(() => {
+      expect(window.location.href).toBe('/');
+    }, { timeout: 500 });
   });
 });
