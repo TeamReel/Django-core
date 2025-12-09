@@ -42,20 +42,20 @@ describe('Complete Authentication Flow', () => {
     localStorage.clear();
   });
 
-  it('completes full authenticated user journey', async () => {
+  it('maintains session across component re-renders', async () => {
     const user = userEvent.setup();
 
-    // State to control which page is shown
-    let currentPage: 'signin' | 'profile' = 'signin';
+    // State to control which page is shown (using object for mutability)
+    const pageState = { current: 'signin' as 'signin' | 'profile' };
 
     // Wrapper component that maintains same AuthProvider instance
     const TestApp = () => (
       <AuthProvider config={mockConfig}>
-        {currentPage === 'signin' ? <SignInPage /> : <ProfilePage />}
+        {pageState.current === 'signin' ? <SignInPage /> : <ProfilePage />}
       </AuthProvider>
     );
 
-    // Initial render with SignInPage
+    // Initial render with sign-in page
     const { rerender } = render(<TestApp />);
 
     // Step 1: Sign in
@@ -73,7 +73,7 @@ describe('Complete Authentication Flow', () => {
     });
 
     // Step 2: Navigate to ProfilePage (simulating route change)
-    currentPage = 'profile';
+    pageState.current = 'profile';
     rerender(<TestApp />);
 
     // Wait for profile data to load (first_name and last_name are in form inputs)
@@ -114,7 +114,7 @@ describe('Complete Authentication Flow', () => {
     await user.click(signOutButton);
 
     // Wait for sign-out to complete and navigate back to sign-in
-    currentPage = 'signin';
+    pageState.current = 'signin';
     rerender(<TestApp />);
 
     // Verify we're back at sign-in page (email input should be visible and empty)
@@ -157,13 +157,13 @@ describe('Complete Authentication Flow', () => {
   it('maintains session across component re-renders', async () => {
     const user = userEvent.setup();
 
-    // State to control which page is shown
-    let currentPage: 'signin' | 'profile' = 'signin';
+    // State to control which page is shown (using object for mutability)
+    const pageState = { current: 'signin' as 'signin' | 'profile' };
 
     // Wrapper component that maintains same AuthProvider instance
     const TestApp = () => (
       <AuthProvider config={mockConfig}>
-        {currentPage === 'signin' ? <SignInPage /> : <ProfilePage />}
+        {pageState.current === 'signin' ? <SignInPage /> : <ProfilePage />}
       </AuthProvider>
     );
 
@@ -180,7 +180,7 @@ describe('Complete Authentication Flow', () => {
     });
 
     // Navigate to profile page (simulating navigation)
-    currentPage = 'profile';
+    pageState.current = 'profile';
     rerender(<TestApp />);
 
     // Session should be maintained - profile should load
