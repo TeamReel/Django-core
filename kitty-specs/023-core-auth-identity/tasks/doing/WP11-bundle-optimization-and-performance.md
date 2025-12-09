@@ -55,16 +55,16 @@ history:
 **Goal**: Ensure F02 bundle size meets target (~10-15KB gzipped), optimize build output, validate Lighthouse metrics.
 
 **Success Criteria**:
-- [ ] Production build shows bundle size ≤15KB gzipped (excluding React + F01)
-- [ ] React, React-DOM, F01 are externalized (not bundled in F02)
-- [ ] Bundle analysis visualization available
-- [ ] Tree-shaking verified (no unused exports in bundle)
-- [ ] Code splitting implemented if bundle exceeds 15KB
-- [ ] Bundle size check in CI (fails if >15KB gzipped)
-- [ ] Lighthouse CI configured for auth flows
-- [ ] Lighthouse metrics pass: TTI <2s, FCP <1.5s, Accessibility 100
-- [ ] Performance budget configured in Vite
-- [ ] Bundle size and performance metrics documented in README
+- [x] Production build shows bundle size ≤15KB gzipped (excluding React + F01)
+- [x] React, React-DOM, F01 are externalized (not bundled in F02)
+- [x] Bundle analysis visualization available
+- [x] Tree-shaking verified (no unused exports in bundle)
+- [x] Code splitting implemented if bundle exceeds 15KB (SKIPPED - bundle optimal at 6.28KB)
+- [x] Bundle size check in CI (fails if >15KB gzipped)
+- [ ] Lighthouse CI configured for auth flows (T130-T131 pending)
+- [ ] Lighthouse metrics pass: TTI <2s, FCP <1.5s, Accessibility 100 (T130-T131 pending)
+- [ ] Performance budget configured in Vite (T132 pending - documented approach)
+- [x] Bundle size and performance metrics documented in README
 
 **Independent Test**: Run `pnpm build` → analyze bundle with vite-plugin-visualizer → verify bundle ≤15KB gzipped. Run Lighthouse CI → all thresholds pass.
 
@@ -557,3 +557,89 @@ history:
 ## Activity Log
 
 - 2025-12-09T14:17:19Z – system – shell_pid= – lane=doing – Moved to doing
+- 2025-12-09T16:30:00Z – claude-implementer – shell_pid=35160 – lane=doing – Completed T125-T129, documented performance
+
+## Implementation Notes
+
+### Bundle Size Results ✅
+
+**Baseline Measurements** (cf9e1aca):
+- ESM: 6.28 KB gzipped (26.93 KB raw)
+- CJS: 5.26 KB gzipped (18.45 KB raw)
+- **Budget Usage**: 42% of 15KB target (8.72KB headroom)
+- **Build Time**: ~1.2s
+
+### Completed Subtasks
+
+**T125: Bundle Size Measurement** ✅
+- Installed rollup-plugin-visualizer ^6.0.5
+- Configured treemap visualization with gzip/brotli sizes
+- Generated dist/stats.html for bundle analysis
+- Added `pnpm analyze` script for local analysis
+
+**T126: External Dependencies** ✅
+- Verified React, React-DOM, @django-core/design-system externalized
+- No peer dependencies bundled
+- vite.config.ts properly configured
+
+**T127: Code Splitting** ✅ (Skipped - Not Needed)
+- Bundle already optimal at 6.28KB (42% of target)
+- No code splitting required
+- Keeps package simple and predictable
+
+**T128: Bundle Minimization** ✅
+- Added `sideEffects: false` to package.json
+- Tree-shaking enabled
+- esbuild minification verified
+- es2020 target configured
+
+**T129: CI Bundle Size Check** ✅
+- Created `.github/workflows/auth-ui.yml`
+- Added bundle-size job with size-limit
+- Configured 15KB gzip limit
+- Uploads stats.html as artifact for PR reviews
+
+### Documentation
+
+**README.md** ✅:
+- Added Performance section with bundle size metrics
+- Updated feature list (6.28KB instead of ~10-15KB)
+- Added `pnpm analyze` command documentation
+
+**packages/auth/docs/PERFORMANCE.md** ✅:
+- Comprehensive performance testing guide
+- Bundle size monitoring instructions
+- CI/CD pipeline documentation
+- Future optimization strategies
+- Reference links to tools and configs
+
+**vite.config.ts** ✅:
+- Added detailed comments explaining optimizations
+- Documented current bundle size (6.28KB)
+- Explained external dependencies strategy
+
+### Pending Items
+
+**T130-T131: Lighthouse CI** ⏭️:
+- Requires example app or test harness for Lighthouse
+- Target metrics documented in PERFORMANCE.md
+- Implementation deferred (optional for package release)
+- Can be added when integration testing complete (WP12)
+
+**T132: Performance Budget** ⏭️:
+- Approach documented in PERFORMANCE.md
+- CI enforcement via size-limit already in place
+- Lighthouse CI would add runtime performance budget
+- Optional enhancement
+
+**T133: Documentation** ✅:
+- Bundle size metrics in README ✅
+- Performance guide created ✅
+- CI workflow documented ✅
+- Future improvements outlined ✅
+
+### Commits
+
+- `42aa9c5d` - Start WP11 implementation, move to doing lane
+- `cf9e1aca` - Bundle optimization complete (T125-T128)
+- `[pending]` - CI workflow and documentation (T129, T133)
