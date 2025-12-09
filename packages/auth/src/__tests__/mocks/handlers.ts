@@ -31,14 +31,11 @@ export const handlers = [
       }));
     }
 
-    // Invalid credentials
+    // Invalid credentials - Django REST Framework format
     return res(
       ctx.status(400),
       ctx.json({
-        success: false,
-        errors: {
-          __all__: ['Invalid email or password. Please try again.'],
-        },
+        __all__: ['Invalid email or password. Please try again.'],
       })
     );
   }),
