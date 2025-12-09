@@ -2,18 +2,14 @@
  * Tests for useSignIn hook.
  */
 
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useSignIn } from '../../src/hooks/useSignIn';
 import { AuthProvider } from '../../src/components/AuthProvider';
 import type { AuthConfig, User } from '../../src/types';
-import { apiClient } from '../../src/lib/apiClient';
 
-// Mock apiClient instead of global fetch
-jest.mock('../../src/lib/apiClient', () => ({
-  apiClient: jest.fn(),
-}));
-
-const mockApiClient = apiClient as jest.MockedFunction<typeof apiClient>;
+// Mock fetch globally
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
 // Helper to create complete User objects
 const createMockUser = (overrides?: Partial<User>): User => ({
@@ -46,12 +42,12 @@ const mockConfig: AuthConfig = {
 
 describe('useSignIn', () => {
   beforeEach(() => {
-    mockApiClient.mockClear();
+    mockFetch.mockClear();
   });
 
   it('should initialize with default state', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useSignIn(), { wrapper });
@@ -65,39 +61,30 @@ describe('useSignIn', () => {
   it('should successfully sign in and update auth context', async () => {
     const mockUser = createMockUser();
 
-    mockApiClient.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: true,
-      status: 200,
       json: async () => ({ data: mockUser }),
       headers: new Headers(),
-      statusText: 'OK',
-    } as Response);
+    });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useSignIn(), { wrapper });
 
     expect(result.current.isLoading).toBe(false);
 
-    const signInPromise = result.current.signIn('test@example.com', 'password123');
-
-    // Should be loading during request
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(true);
+    let user: User;
+    await act(async () => {
+      user = await result.current.signIn('test@example.com', 'password123');
     });
-
-    const user = await signInPromise;
 
     // Should complete successfully
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-      expect(result.current.error).toBeNull();
-    });
-
-    expect(user).toEqual(mockUser);
-    expect(mockApiClient).toHaveBeenCalledWith(
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.error).toBeNull();
+    expect(user!).toEqual(mockUser);
+    expect(mockFetch).toHaveBeenCalledWith(
       '/auth/sign-in/',
       expect.objectContaining({
         method: 'POST',
@@ -115,7 +102,7 @@ describe('useSignIn', () => {
       },
     };
 
-    mockApiClient.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 400,
       json: async () => mockError,
@@ -124,7 +111,7 @@ describe('useSignIn', () => {
     } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useSignIn(), { wrapper });
@@ -144,10 +131,10 @@ describe('useSignIn', () => {
   });
 
   it('should handle network errors', async () => {
-    mockApiClient.mockRejectedValueOnce(new Error('Network error'));
+    mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useSignIn(), { wrapper });
@@ -172,7 +159,7 @@ describe('useSignIn', () => {
       message: 'Invalid credentials',
     };
 
-    mockApiClient.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 400,
       json: async () => mockError,
@@ -181,7 +168,7 @@ describe('useSignIn', () => {
     } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useSignIn(), { wrapper });
@@ -205,7 +192,7 @@ describe('useSignIn', () => {
 
   it('should clear error when starting a new sign-in attempt', async () => {
     // First attempt fails
-    mockApiClient.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 400,
       json: async () => ({ status: 400, message: 'Invalid credentials' }),
@@ -214,7 +201,7 @@ describe('useSignIn', () => {
     } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useSignIn(), { wrapper });
@@ -228,7 +215,7 @@ describe('useSignIn', () => {
     });
 
     // Second attempt succeeds
-    mockApiClient.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => ({ data: { id: 1, email: 'test@example.com' } }),
