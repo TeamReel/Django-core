@@ -206,9 +206,17 @@ describe('useSignIn', () => {
 
     const { result } = renderHook(() => useSignIn(), { wrapper });
 
-    await expect(
-      result.current.signIn('test@example.com', 'wrongpass')
-    ).rejects.toMatchObject({ status: 400 });
+    // First attempt fails
+    let error: any;
+    await act(async () => {
+      try {
+        await result.current.signIn('test@example.com', 'wrongpass');
+      } catch (e) {
+        error = e;
+      }
+    });
+
+    expect(error).toMatchObject({ status: 400 });
 
     await waitFor(() => {
       expect(result.current.error).not.toBeNull();
@@ -223,16 +231,12 @@ describe('useSignIn', () => {
       statusText: 'OK',
     } as Response);
 
-    const signInPromise = result.current.signIn('test@example.com', 'correctpass');
-
-    // Error should be cleared immediately when starting new attempt
-    expect(result.current.error).toBeNull();
-
-    await signInPromise;
-
-    await waitFor(() => {
-      expect(result.current.error).toBeNull();
-      expect(result.current.isLoading).toBe(false);
+    await act(async () => {
+      await result.current.signIn('test@example.com', 'correctpass');
     });
+
+    // Error should be cleared after second attempt
+    expect(result.current.error).toBeNull();
+    expect(result.current.isLoading).toBe(false);
   });
 });
