@@ -13,8 +13,8 @@ subtasks:
 title: "Bundle Optimization & Performance"
 phase: "Phase 3 - Quality & Polish"
 priority: "P3"
-lane: "doing"
-assignee: "claude-implementer"
+lane: "for_review"
+assignee: "claude-reviewer"
 agent: "claude-implementer"
 shell_pid: "35160"
 review_status: ""
@@ -563,6 +563,7 @@ history:
 
 - 2025-12-09T14:17:19Z – system – shell_pid= – lane=doing – Moved to doing
 - 2025-12-09T16:30:00Z – claude-implementer – shell_pid=35160 – lane=doing – Completed T125-T129, documented performance
+- 2025-12-09T14:44:21Z – claude-implementer – shell_pid=35160 – lane=for_review – Moved to for_review
 
 ## Implementation Notes
 
