@@ -14,7 +14,7 @@ title: "User Story 3 – Sign-Out Flow"
 phase: "Phase 1 - Core Auth Flows"
 priority: "P1"
 mvp: true
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "35160"
@@ -490,3 +490,4 @@ history:
 ## Activity Log
 
 - 2025-12-09T07:53:24Z – claude – shell_pid=35160 – lane=doing – Starting WP06 implementation
+- 2025-12-09T07:58:18Z – claude – shell_pid=35160 – lane=for_review – WP06 complete
