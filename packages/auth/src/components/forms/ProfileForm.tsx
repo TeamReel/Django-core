@@ -30,28 +30,32 @@ interface AlertProps {
 }
 
 // Placeholder components (will be replaced with @teamreel/design-system)
-const Input: React.FC<InputProps> = ({ label, value, onChange, error, disabled, required, type = 'text', helperText }) => (
-  <div style={{ marginBottom: '1rem' }}>
-    <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500 }}>
-      {label} {required && <span style={{ color: 'red' }}>*</span>}
-    </label>
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      disabled={disabled}
-      required={required}
-      style={{
-        width: '100%',
-        padding: '0.5rem',
-        border: error ? '1px solid red' : '1px solid #ccc',
-        borderRadius: '4px',
-      }}
-    />
-    {helperText && <small style={{ display: 'block', marginTop: '0.25rem', color: '#666' }}>{helperText}</small>}
-    {error && <div style={{ color: 'red', fontSize: '0.875rem', marginTop: '0.25rem' }}>{error}</div>}
-  </div>
-);
+const Input: React.FC<InputProps> = ({ label, value, onChange, error, disabled, required, type = 'text', helperText }) => {
+  const inputId = `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
+  return (
+    <div style={{ marginBottom: '1rem' }}>
+      <label htmlFor={inputId} style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500 }}>
+        {label} {required && <span style={{ color: 'red' }}>*</span>}
+      </label>
+      <input
+        id={inputId}
+        type={type}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        aria-required={required}
+        style={{
+          width: '100%',
+          padding: '0.5rem',
+          border: error ? '1px solid red' : '1px solid #ccc',
+          borderRadius: '4px',
+        }}
+      />
+      {helperText && <small style={{ display: 'block', marginTop: '0.25rem', color: '#666' }}>{helperText}</small>}
+      {error && <div style={{ color: 'red', fontSize: '0.875rem', marginTop: '0.25rem' }}>{error}</div>}
+    </div>
+  );
+};
 
 const Button: React.FC<ButtonProps> = ({ type = 'button', loading, disabled, children, onClick }) => (
   <button
