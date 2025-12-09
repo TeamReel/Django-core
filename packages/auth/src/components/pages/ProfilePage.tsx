@@ -37,23 +37,7 @@ export const ProfilePage: React.FC = () => {
         borderRadius: '8px',
         padding: '2rem',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h1 style={{ marginTop: 0, marginBottom: 0 }}>Profile</h1>
-          <button
-            onClick={() => signOut()}
-            disabled={signingOut}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: signingOut ? '#ccc' : '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: signingOut ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {signingOut ? 'Signing Out...' : 'Sign Out'}
-          </button>
-        </div>
+        <h1 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Profile</h1>
 
         <ProfileForm />
 
@@ -69,11 +53,30 @@ export const ProfilePage: React.FC = () => {
 
         <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e0e0e0' }} />
 
-        <div>
+        <div style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Password</h2>
           <small style={{ color: '#666', fontSize: '0.875rem' }}>
             Password change - coming soon
           </small>
+        </div>
+
+        <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e0e0e0' }} />
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => signOut()}
+            disabled={signingOut}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: signingOut ? '#ccc' : '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: signingOut ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {signingOut ? 'Signing Out...' : 'Sign Out'}
+          </button>
         </div>
       </div>
     </div>
