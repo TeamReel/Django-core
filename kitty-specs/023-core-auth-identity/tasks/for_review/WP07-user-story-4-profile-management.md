@@ -18,7 +18,7 @@ subtasks:
 title: "User Story 4 – Profile Management"
 phase: "Phase 2 - Extended Features"
 priority: "P2"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude-implementer"
 shell_pid: "35160"
@@ -572,3 +572,4 @@ history:
 ## Activity Log
 
 - 2025-12-09T08:06:23Z – claude-implementer – shell_pid=35160 – lane=doing – Started implementation of Profile Management
+- 2025-12-09T08:34:51Z – claude-implementer – shell_pid=35160 – lane=for_review – Implementation complete: useUpdateProfile hook, ProfileForm, ProfilePage with 18/18 tests passing
