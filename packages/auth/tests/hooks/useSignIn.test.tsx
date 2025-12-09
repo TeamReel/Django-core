@@ -5,7 +5,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { useSignIn } from '../../src/hooks/useSignIn';
 import { AuthProvider } from '../../src/components/AuthProvider';
-import type { AuthConfig } from '../../src/types';
+import type { AuthConfig, User } from '../../src/types';
 import { apiClient } from '../../src/lib/apiClient';
 
 // Mock apiClient instead of global fetch
@@ -14,6 +14,18 @@ jest.mock('../../src/lib/apiClient', () => ({
 }));
 
 const mockApiClient = apiClient as jest.MockedFunction<typeof apiClient>;
+
+// Helper to create complete User objects
+const createMockUser = (overrides?: Partial<User>): User => ({
+  id: 1,
+  email: 'test@example.com',
+  first_name: 'Test',
+  last_name: 'User',
+  role: 'user',
+  email_verified: true,
+  is_active: true,
+  ...overrides,
+});
 
 const mockConfig: AuthConfig = {
   apiBaseUrl: '',
@@ -51,12 +63,7 @@ describe('useSignIn', () => {
   });
 
   it('should successfully sign in and update auth context', async () => {
-    const mockUser = {
-      id: 1,
-      email: 'test@example.com',
-      first_name: 'Test',
-      last_name: 'User',
-    };
+    const mockUser = createMockUser();
 
     mockApiClient.mockResolvedValueOnce({
       ok: true,

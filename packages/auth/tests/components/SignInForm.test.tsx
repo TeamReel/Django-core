@@ -12,6 +12,18 @@ import type { AuthConfig, User } from '../../src/types';
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
+// Helper to create complete User objects
+const createMockUser = (overrides?: Partial<User>): User => ({
+  id: 1,
+  email: 'test@example.com',
+  first_name: 'Test',
+  last_name: 'User',
+  role: 'user',
+  email_verified: true,
+  is_active: true,
+  ...overrides,
+});
+
 const mockConfig: AuthConfig = {
   apiBaseUrl: 'http://localhost:8000',
   endpoints: {
@@ -141,12 +153,7 @@ describe('SignInForm', () => {
   });
 
   it('should disable inputs while loading', async () => {
-    const mockUser: User = {
-      id: 1,
-      email: 'test@example.com',
-      first_name: 'Test',
-      last_name: 'User',
-    };
+    const mockUser = createMockUser();
 
     // Mock slow response
     mockFetch.mockImplementation(() =>
@@ -182,12 +189,7 @@ describe('SignInForm', () => {
   });
 
   it('should call onSuccess callback on successful sign-in', async () => {
-    const mockUser: User = {
-      id: 1,
-      email: 'test@example.com',
-      first_name: 'Test',
-      last_name: 'User',
-    };
+    const mockUser = createMockUser();
 
     mockFetch.mockResolvedValueOnce({
       ok: true,

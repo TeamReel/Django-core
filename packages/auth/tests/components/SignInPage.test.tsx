@@ -12,16 +12,22 @@ import type { AuthConfig, User } from '../../src/types';
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-// Mock window.location
+// Mock window.location with proper setter
+let mockHref = '';
 const mockLocationHref = jest.fn();
-Object.defineProperty(window, 'location', {
-  value: {
-    href: '',
-    search: '',
+delete (window as any).location;
+(window as any).location = {
+  get href() {
+    return mockHref;
   },
-  writable: true,
-  configurable: true,
-});
+  set href(value: string) {
+    mockHref = value;
+    mockLocationHref(value);
+  },
+  search: '',
+  origin: 'http://localhost',
+  pathname: '/',
+};
 
 const mockConfig: AuthConfig = {
   apiBaseUrl: 'http://localhost:8000',
@@ -40,6 +46,18 @@ const mockConfig: AuthConfig = {
   },
 };
 
+// Helper to create complete User objects
+const createMockUser = (overrides?: Partial<User>): User => ({
+  id: 1,
+  email: 'test@example.com',
+  first_name: 'Test',
+  last_name: 'User',
+  role: 'user',
+  email_verified: true,
+  is_active: true,
+  ...overrides,
+});
+
 const renderWithAuth = (ui: React.ReactElement) => {
   return render(
     <AuthProvider config={mockConfig} skipInitialLoad>
@@ -52,8 +70,9 @@ describe('SignInPage', () => {
   beforeEach(() => {
     mockFetch.mockClear();
     mockLocationHref.mockClear();
-    window.location.search = '';
-    window.location.href = '';
+    mockHref = '';
+    (window as any).location.search = '';
+    (window as any).location.pathname = '/';
   });
 
   it('should render sign-in page with title', () => {
@@ -86,12 +105,7 @@ describe('SignInPage', () => {
   });
 
   it('should redirect to default URL after successful sign-in', async () => {
-    const mockUser: User = {
-      id: 1,
-      email: 'test@example.com',
-      first_name: 'Test',
-      last_name: 'User',
-    };
+    const mockUser = createMockUser();
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -112,12 +126,13 @@ describe('SignInPage', () => {
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.click(submitButton);
 
+    // Wait for fetch to complete
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalled();
     });
 
-    // Fast-forward timers
-    jest.advanceTimersByTime(100);
+    // Run all timers (includes the setTimeout for redirect)
+    jest.runAllTimers();
 
     expect(window.location.href).toBe('/');
 
@@ -125,12 +140,7 @@ describe('SignInPage', () => {
   });
 
   it('should redirect to custom default URL after successful sign-in', async () => {
-    const mockUser: User = {
-      id: 1,
-      email: 'test@example.com',
-      first_name: 'Test',
-      last_name: 'User',
-    };
+    const mockUser = createMockUser();
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -162,12 +172,7 @@ describe('SignInPage', () => {
   });
 
   it('should redirect to ?next= URL after successful sign-in', async () => {
-    const mockUser: User = {
-      id: 1,
-      email: 'test@example.com',
-      first_name: 'Test',
-      last_name: 'User',
-    };
+    const mockUser = createMockUser();
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -202,12 +207,7 @@ describe('SignInPage', () => {
   });
 
   it('should prevent open redirect attacks with absolute URLs', async () => {
-    const mockUser: User = {
-      id: 1,
-      email: 'test@example.com',
-      first_name: 'Test',
-      last_name: 'User',
-    };
+    const mockUser = createMockUser();
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -243,12 +243,7 @@ describe('SignInPage', () => {
   });
 
   it('should prevent open redirect attacks with protocol-relative URLs', async () => {
-    const mockUser: User = {
-      id: 1,
-      email: 'test@example.com',
-      first_name: 'Test',
-      last_name: 'User',
-    };
+    const mockUser = createMockUser();
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -284,12 +279,7 @@ describe('SignInPage', () => {
   });
 
   it('should prevent javascript: protocol in redirect', async () => {
-    const mockUser: User = {
-      id: 1,
-      email: 'test@example.com',
-      first_name: 'Test',
-      last_name: 'User',
-    };
+    const mockUser = createMockUser();
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
