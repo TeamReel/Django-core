@@ -78,7 +78,7 @@ describe('SignInPage', () => {
   it('should render sign-in page with title', () => {
     renderWithAuth(<SignInPage />);
 
-    expect(screen.getByText(/sign in/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument();
   });
 
   it('should render SignInForm component', () => {
