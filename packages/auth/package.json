@@ -41,8 +41,7 @@
     {
       "path": "dist/index.js",
       "limit": "15 KB",
-      "gzip": true,
-      "running": false
+      "gzip": true
     }
   ],
   "peerDependencies": {
