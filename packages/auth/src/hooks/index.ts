@@ -9,3 +9,4 @@ export { useSignIn, type UseSignInResult } from './useSignIn';
 export { useSignOut, type UseSignOutResult } from './useSignOut';
 export { useRequestPasswordReset, type UseRequestPasswordResetResult } from './useRequestPasswordReset';
 export { useConfirmPasswordReset, type UseConfirmPasswordResetResult } from './useConfirmPasswordReset';
+export { useUpdateProfile, type UseUpdateProfileResult } from './useUpdateProfile';
