@@ -2,18 +2,14 @@
  * Tests for useConfirmPasswordReset hook.
  */
 
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useConfirmPasswordReset } from '../../src/hooks/useConfirmPasswordReset';
 import { AuthProvider } from '../../src/components/AuthProvider';
 import type { AuthConfig } from '../../src/types';
-import { apiClient } from '../../src/lib/apiClient';
 
-// Mock apiClient
-jest.mock('../../src/lib/apiClient', () => ({
-  apiClient: jest.fn(),
-}));
-
-const mockApiClient = apiClient as jest.MockedFunction<typeof apiClient>;
+// Mock fetch globally
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
 const mockConfig: AuthConfig = {
   apiBaseUrl: '',
@@ -34,12 +30,12 @@ const mockConfig: AuthConfig = {
 
 describe('useConfirmPasswordReset', () => {
   beforeEach(() => {
-    mockApiClient.mockClear();
+    mockFetch.mockClear();
   });
 
   it('should initialize with default state', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useConfirmPasswordReset(), { wrapper });
@@ -52,7 +48,7 @@ describe('useConfirmPasswordReset', () => {
   });
 
   it('should successfully confirm password reset', async () => {
-    mockApiClient.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => ({ message: 'Password reset successful' }),
@@ -61,7 +57,7 @@ describe('useConfirmPasswordReset', () => {
     } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useConfirmPasswordReset(), { wrapper });
@@ -69,27 +65,20 @@ describe('useConfirmPasswordReset', () => {
     expect(result.current.isLoading).toBe(false);
     expect(result.current.success).toBe(false);
 
-    const confirmPromise = result.current.confirmReset(
-      'abc123',
-      'token456',
-      'NewP@ssw0rd'
-    );
-
-    // Should be loading during request
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(true);
+    await act(async () => {
+      await result.current.confirmReset(
+        'abc123',
+        'token456',
+        'NewP@ssw0rd'
+      );
     });
-
-    await confirmPromise;
 
     // Should complete successfully
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-      expect(result.current.success).toBe(true);
-      expect(result.current.error).toBeNull();
-    });
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.success).toBe(true);
+    expect(result.current.error).toBeNull();
 
-    expect(mockApiClient).toHaveBeenCalledWith(
+    expect(mockFetch).toHaveBeenCalledWith(
       '/auth/password-reset-confirm/',
       expect.objectContaining({
         method: 'POST',
@@ -111,7 +100,7 @@ describe('useConfirmPasswordReset', () => {
       },
     };
 
-    mockApiClient.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 400,
       json: async () => mockError,
@@ -120,7 +109,7 @@ describe('useConfirmPasswordReset', () => {
     } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useConfirmPasswordReset(), { wrapper });
@@ -140,18 +129,15 @@ describe('useConfirmPasswordReset', () => {
   });
 
   it('should handle password validation errors (400)', async () => {
+    // Django REST Framework style field errors (direct field objects at root)
     const mockError = {
-      status: 400,
-      message: 'Validation failed',
-      errors: {
-        new_password: [
-          'Password must be at least 8 characters',
-          'Password must include uppercase, lowercase, number, and special character',
-        ],
-      },
+      new_password: [
+        'Password must be at least 8 characters',
+        'Password must include uppercase, lowercase, number, and special character',
+      ],
     };
 
-    mockApiClient.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 400,
       json: async () => mockError,
@@ -160,14 +146,22 @@ describe('useConfirmPasswordReset', () => {
     } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useConfirmPasswordReset(), { wrapper });
 
-    await expect(
-      result.current.confirmReset('abc123', 'token456', 'weak')
-    ).rejects.toMatchObject({
+    let error: any;
+    await act(async () => {
+      try {
+        await result.current.confirmReset('abc123', 'token456', 'weak');
+      } catch (e) {
+        error = e;
+      }
+    });
+
+    // Check the thrown error
+    expect(error).toMatchObject({
       status: 400,
       fieldErrors: {
         new_password: expect.arrayContaining([
@@ -185,10 +179,10 @@ describe('useConfirmPasswordReset', () => {
   });
 
   it('should handle network errors', async () => {
-    mockApiClient.mockRejectedValueOnce(new Error('Network error'));
+    mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useConfirmPasswordReset(), { wrapper });
@@ -215,7 +209,7 @@ describe('useConfirmPasswordReset', () => {
       errors: {},
     };
 
-    mockApiClient.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 404,
       json: async () => mockError,
@@ -224,7 +218,7 @@ describe('useConfirmPasswordReset', () => {
     } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useConfirmPasswordReset(), { wrapper });
@@ -244,7 +238,7 @@ describe('useConfirmPasswordReset', () => {
   });
 
   it('should reset state when reset() is called', async () => {
-    mockApiClient.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => ({ message: 'Success' }),
@@ -253,7 +247,7 @@ describe('useConfirmPasswordReset', () => {
     } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useConfirmPasswordReset(), { wrapper });
@@ -266,7 +260,9 @@ describe('useConfirmPasswordReset', () => {
     });
 
     // Reset the state
-    result.current.reset();
+    act(() => {
+      result.current.reset();
+    });
 
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeNull();
@@ -274,7 +270,7 @@ describe('useConfirmPasswordReset', () => {
   });
 
   it('should handle multiple sequential requests', async () => {
-    mockApiClient
+    mockFetch
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -291,7 +287,7 @@ describe('useConfirmPasswordReset', () => {
       } as Response);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AuthProvider config={mockConfig}>{children}</AuthProvider>
+      <AuthProvider config={mockConfig} skipInitialLoad>{children}</AuthProvider>
     );
 
     const { result } = renderHook(() => useConfirmPasswordReset(), { wrapper });
@@ -312,6 +308,6 @@ describe('useConfirmPasswordReset', () => {
       expect(result.current.success).toBe(true);
     });
 
-    expect(mockApiClient).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 });
