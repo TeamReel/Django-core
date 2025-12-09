@@ -1,0 +1,343 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Getting Started" />
+
+# Getting Started
+
+## Installation
+
+### Prerequisites
+
+Before installing `@django-core/auth-ui`, ensure you have:
+
+- **React 18.x** or higher
+- **@django-core/design-system** (F01) installed
+- **TypeScript 5.x** (recommended but optional)
+- A Django backend with authentication endpoints
+
+### Install the Package
+
+```bash
+# Using pnpm (recommended for monorepo)
+pnpm add @django-core/auth-ui
+
+# Using npm
+npm install @django-core/auth-ui
+
+# Using yarn
+yarn add @django-core/auth-ui
+```
+
+### Install Peer Dependencies
+
+```bash
+pnpm add react@^18.0.0 react-dom@^18.0.0 @django-core/design-system
+```
+
+## Basic Setup
+
+### 1. Configure AuthProvider
+
+Wrap your application root with `<AuthProvider>`:
+
+```tsx
+// App.tsx
+import React from 'react';
+import { AuthProvider } from '@django-core/auth-ui';
+import { ThemeProvider } from '@django-core/design-system';
+
+const authConfig = {
+  apiBaseUrl: '/api/v1',
+  endpoints: {
+    signIn: '/auth/login',
+    signOut: '/auth/logout',
+    requestPasswordReset: '/auth/password-reset',
+    confirmPasswordReset: '/auth/password-reset-confirm',
+    me: '/auth/me',
+    updateProfile: '/auth/profile',
+  },
+  routes: {
+    login: '/auth/login',
+    defaultAfterLogin: '/dashboard',
+    afterLogout: '/',
+  },
+};
+
+function App() {
+  return (
+    <ThemeProvider theme="light">
+      <AuthProvider config={authConfig}>
+        {/* Your app components */}
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
+```
+
+### 2. Add Sign-In Page
+
+```tsx
+// pages/SignInPage.tsx
+import { SignInPage } from '@django-core/auth-ui';
+
+export default function SignIn() {
+  return <SignInPage />;
+}
+```
+
+### 3. Protect Routes
+
+```tsx
+// App.tsx
+import { ProtectedRoute } from '@django-core/auth-ui';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+function App() {
+  return (
+    <AuthProvider config={authConfig}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/auth/login" element={<SignInPage />} />
+
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
+```
+
+## Configuration Options
+
+### AuthConfig Interface
+
+```typescript
+interface AuthConfig {
+  // API endpoints
+  apiBaseUrl: string;
+  endpoints: {
+    signIn: string;
+    signOut: string;
+    requestPasswordReset: string;
+    confirmPasswordReset: string;
+    me: string;
+    updateProfile: string;
+  };
+
+  // Route configuration
+  routes: {
+    login: string;
+    defaultAfterLogin: string;
+    afterLogout: string;
+  };
+
+  // Security settings
+  security?: {
+    enableSessionPolling?: boolean;
+    sessionPollingInterval?: number; // milliseconds
+    enableCsrfProtection?: boolean;
+  };
+
+  // Error handling
+  errorHandling?: {
+    onUnauthorized?: () => void;
+    onForbidden?: () => void;
+    onServerError?: (error: Error) => void;
+  };
+}
+```
+
+### Default Configuration
+
+```typescript
+const defaultConfig = {
+  security: {
+    enableSessionPolling: true,
+    sessionPollingInterval: 300000, // 5 minutes
+    enableCsrfProtection: true,
+  },
+};
+```
+
+## Django Backend Setup
+
+### Required Django Endpoints
+
+Your Django backend must implement these endpoints:
+
+#### POST /auth/login
+```json
+// Request
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+
+// Response (200)
+{
+  "data": {
+    "id": 1,
+    "email": "user@example.com",
+    "first_name": "John",
+    "last_name": "Doe"
+  }
+}
+```
+
+#### POST /auth/logout
+```json
+// Request: Empty body
+
+// Response (200)
+{
+  "message": "Successfully logged out"
+}
+```
+
+#### GET /auth/me
+```json
+// Response (200)
+{
+  "data": {
+    "id": 1,
+    "email": "user@example.com",
+    "first_name": "John",
+    "last_name": "Doe"
+  }
+}
+```
+
+#### POST /auth/password-reset
+```json
+// Request
+{
+  "email": "user@example.com"
+}
+
+// Response (200)
+{
+  "message": "Password reset email sent"
+}
+```
+
+#### POST /auth/password-reset-confirm
+```json
+// Request
+{
+  "uidb64": "MQ",
+  "token": "abc123-token",
+  "new_password": "newPassword123"
+}
+
+// Response (200)
+{
+  "message": "Password successfully reset"
+}
+```
+
+### Django CORS Configuration
+
+```python
+# settings.py
+INSTALLED_APPS = [
+    'corsheaders',
+    # ...
+]
+
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    # ...
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
+```
+
+## Next Steps
+
+- **Explore Components**: Check out the Components section for interactive demos
+- **Learn Hooks**: See the Hooks section for programmatic authentication
+- **Customize**: Read the Customization guide to style components
+- **Test**: Review the Testing guide for testing authentication flows
+- **Troubleshoot**: Visit the Troubleshooting section for common issues
+
+## Common Patterns
+
+### Check Authentication Status
+
+```tsx
+import { useAuth } from '@django-core/auth-ui';
+
+function MyComponent() {
+  const { user, status } = useAuth();
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
+
+  if (status === 'authenticated') {
+    return <div>Welcome, {user?.email}!</div>;
+  }
+
+  return <div>Please sign in</div>;
+}
+```
+
+### Programmatic Sign-In
+
+```tsx
+import { useSignIn } from '@django-core/auth-ui';
+
+function CustomSignIn() {
+  const { signIn, isLoading, error } = useSignIn();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await signIn(email, password);
+      // User signed in, AuthProvider will redirect
+    } catch (err) {
+      // Error displayed automatically via error state
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Your custom form */}
+      {error && <ErrorMessage error={error} />}
+      <button disabled={isLoading}>Sign In</button>
+    </form>
+  );
+}
+```
+
+### Custom Redirect After Login
+
+```tsx
+import { SignInPage } from '@django-core/auth-ui';
+import { useNavigate } from 'react-router-dom';
+
+function CustomSignInPage() {
+  const navigate = useNavigate();
+
+  return (
+    <SignInPage
+      onSuccess={(user) => {
+        // Custom redirect logic
+        if (user.isAdmin) {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
+      }}
+    />
+  );
+}
+```
