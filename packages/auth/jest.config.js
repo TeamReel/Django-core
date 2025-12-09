@@ -98,6 +98,9 @@ export default {
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
       },
+      transformIgnorePatterns: [
+        'node_modules/(?!(msw)/)',
+      ],
       testMatch: ['**/__tests__/integration/**/*.test.(ts|tsx)'],
       setupFilesAfterEnv: [
         '<rootDir>/jest.setup.js',
