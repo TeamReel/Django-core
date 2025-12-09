@@ -1,0 +1,326 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Components Overview" />
+
+# Components Overview
+
+`@django-core/auth-ui` provides three categories of components:
+
+## 📄 Page Components
+
+Full-page layouts for common authentication screens. These include routing, error handling, and loading states out of the box.
+
+### SignInPage
+
+Complete sign-in page with email/password form, "forgot password" link, and customizable branding.
+
+**Props:**
+- `onSuccess?: (user: User) => void` - Callback after successful sign-in
+- `onError?: (error: ApiError) => void` - Callback for error handling
+- `forgotPasswordUrl?: string` - Custom "forgot password" link (default: `/auth/forgot-password`)
+- `redirectAfterLogin?: string` - Override default redirect destination
+
+**Example:**
+```tsx
+<SignInPage
+  onSuccess={(user) => console.log('Signed in:', user)}
+  forgotPasswordUrl="/reset-password"
+  redirectAfterLogin="/dashboard"
+/>
+```
+
+**Story:** See [SignInPage story](/?path=/story/pages-signinpage--default) for interactive demo.
+
+---
+
+### ForgotPasswordPage
+
+Password reset request page where users enter their email.
+
+**Props:**
+- `onSuccess?: () => void` - Callback after email sent
+- `onError?: (error: ApiError) => void` - Error callback
+- `backToLoginUrl?: string` - "Back to login" link URL (default: `/auth/login`)
+
+**Example:**
+```tsx
+<ForgotPasswordPage
+  onSuccess={() => alert('Check your email!')}
+  backToLoginUrl="/login"
+/>
+```
+
+**Story:** See [ForgotPasswordPage story](/?path=/story/pages-forgotpasswordpage--default).
+
+---
+
+### ResetPasswordPage
+
+Password reset confirmation page with new password form.
+
+**Props:**
+- `uidb64: string` - User ID from email link (required)
+- `token: string` - Reset token from email link (required)
+- `onSuccess?: () => void` - Callback after password reset
+- `onError?: (error: ApiError) => void` - Error callback
+
+**Example:**
+```tsx
+import { useSearchParams } from 'react-router-dom';
+
+function ResetPassword() {
+  const [searchParams] = useSearchParams();
+  const uidb64 = searchParams.get('uidb64');
+  const token = searchParams.get('token');
+
+  return (
+    <ResetPasswordPage
+      uidb64={uidb64!}
+      token={token!}
+      onSuccess={() => navigate('/login')}
+    />
+  );
+}
+```
+
+**Story:** See [ResetPasswordPage story](/?path=/story/pages-resetpasswordpage--default).
+
+---
+
+## 📝 Form Components
+
+Standalone forms for building custom authentication pages.
+
+### SignInForm
+
+Email/password sign-in form with validation.
+
+**Props:**
+- `onSuccess?: (user: User) => void`
+- `onError?: (error: ApiError) => void`
+- `forgotPasswordUrl?: string`
+- `showRememberMe?: boolean` - Show "remember me" checkbox (default: true)
+
+**Example:**
+```tsx
+function CustomAuthPage() {
+  return (
+    <div className="custom-layout">
+      <h1>Welcome Back</h1>
+      <SignInForm
+        onSuccess={(user) => redirect('/dashboard')}
+        forgotPasswordUrl="/forgot"
+      />
+    </div>
+  );
+}
+```
+
+**Story:** See [SignInForm story](/?path=/story/forms-signinform--default).
+
+---
+
+### RequestPasswordResetForm
+
+Form for requesting password reset email.
+
+**Props:**
+- `onSuccess?: () => void`
+- `onError?: (error: ApiError) => void`
+
+**Example:**
+```tsx
+<RequestPasswordResetForm
+  onSuccess={() => setEmailSent(true)}
+/>
+```
+
+**Story:** See [RequestPasswordResetForm story](/?path=/story/forms-requestpasswordresetform--default).
+
+---
+
+### ConfirmPasswordResetForm
+
+Form for setting new password after clicking email link.
+
+**Props:**
+- `uidb64: string` (required)
+- `token: string` (required)
+- `onSuccess?: () => void`
+- `onError?: (error: ApiError) => void`
+
+**Example:**
+```tsx
+<ConfirmPasswordResetForm
+  uidb64="MQ"
+  token="abc123-token"
+  onSuccess={() => alert('Password reset!')}
+/>
+```
+
+**Story:** See [ConfirmPasswordResetForm story](/?path=/story/forms-confirmpasswordresetform--default).
+
+---
+
+## 🛡️ Utility Components
+
+Components for protecting routes and managing access.
+
+### ProtectedRoute
+
+Route wrapper that redirects unauthenticated users to login.
+
+**Props:**
+- `children: ReactNode` - Protected content
+- `redirectTo?: string` - Login page URL (default: `/auth/login`)
+- `fallback?: ReactNode` - Loading component while checking auth
+
+**Example:**
+```tsx
+import { Route } from 'react-router-dom';
+
+<Route path="/dashboard" element={
+  <ProtectedRoute fallback={<Spinner />}>
+    <Dashboard />
+  </ProtectedRoute>
+} />
+```
+
+---
+
+### AuthGuard
+
+Component-level authentication guard with role checking.
+
+**Props:**
+- `children: ReactNode`
+- `requireAuth?: boolean` - Require authentication (default: true)
+- `requireRoles?: string[]` - Required user roles
+- `fallback?: ReactNode` - Shown when not authenticated
+- `unauthorizedFallback?: ReactNode` - Shown when missing required roles
+
+**Example:**
+```tsx
+<AuthGuard
+  requireRoles={['admin', 'moderator']}
+  unauthorizedFallback={<div>Access denied</div>}
+>
+  <AdminPanel />
+</AuthGuard>
+```
+
+---
+
+## Component Architecture
+
+### Design Principles
+
+1. **Composition Over Configuration**: Components are composable building blocks
+2. **Sensible Defaults**: Work out of the box with minimal configuration
+3. **Escape Hatches**: Every component accepts custom callbacks and props
+4. **Accessibility First**: WCAG 2.1 AA compliant by default
+5. **Design System Integration**: Uses F01 tokens consistently
+
+### Component Hierarchy
+
+```
+AuthProvider (Context)
+├── SignInPage (Page)
+│   └── SignInForm (Form)
+│       ├── EmailInput (F01)
+│       ├── PasswordInput (F01)
+│       └── Button (F01)
+├── ForgotPasswordPage (Page)
+│   └── RequestPasswordResetForm (Form)
+│       ├── EmailInput (F01)
+│       └── Button (F01)
+└── ResetPasswordPage (Page)
+    └── ConfirmPasswordResetForm (Form)
+        ├── PasswordInput (F01)
+        └── Button (F01)
+```
+
+### Styling Components
+
+All components accept standard React props:
+
+```tsx
+<SignInPage
+  style={{ maxWidth: '400px', margin: '0 auto' }}
+  className="custom-sign-in"
+/>
+```
+
+For advanced styling, use CSS modules or styled-components:
+
+```tsx
+import styled from 'styled-components';
+
+const StyledSignInPage = styled(SignInPage)`
+  max-width: 400px;
+  margin: 0 auto;
+
+  .sign-in-form {
+    padding: 2rem;
+    background: var(--color-background);
+  }
+`;
+```
+
+---
+
+## Error Handling
+
+All components display errors from the API automatically:
+
+```tsx
+// Errors displayed in UI automatically
+<SignInForm />
+
+// Custom error handling
+<SignInForm
+  onError={(error) => {
+    if (error.status === 429) {
+      alert('Too many attempts. Please wait.');
+    }
+  }}
+/>
+```
+
+### ApiError Type
+
+```typescript
+interface ApiError {
+  status: number;
+  fieldErrors: Record<string, string[]>;
+  formErrors: string[];
+}
+```
+
+---
+
+## Best Practices
+
+### ✅ DO
+
+- Use page components (`SignInPage`) for standard flows
+- Use form components (`SignInForm`) for custom layouts
+- Handle `onSuccess` for navigation and analytics
+- Use `ProtectedRoute` for entire routes
+- Use `AuthGuard` for component-level protection
+
+### ❌ DON'T
+
+- Don't nest `AuthProvider` (use only once at app root)
+- Don't bypass `ProtectedRoute` with manual auth checks
+- Don't store auth tokens manually (handled by `AuthProvider`)
+- Don't modify form components' internal state directly
+
+---
+
+## Next Steps
+
+- **Interactive Demos**: Explore Storybook stories for each component
+- **Hooks**: Learn about programmatic authentication with hooks
+- **Customization**: Read the customization guide for styling
+- **Testing**: See testing strategies for authentication flows

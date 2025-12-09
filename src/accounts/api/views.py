@@ -170,6 +170,199 @@ def logout_api(request):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@api_view(["GET"])
+def auth_me(request):
+    """
+    Get current authenticated user profile.
+
+    Returns:
+        200 OK: User profile (id, email, first_name, last_name, role, email_verified, is_active)
+        401 Unauthorized: Session expired or not authenticated
+    """
+    from django.utils import timezone
+
+    if not request.user.is_authenticated:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "not_authenticated",
+                    "message": "Authentication credentials were not provided.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    user = request.user
+
+    # Determine role based on user attributes
+    if user.is_superuser:
+        role = "superadmin"
+    elif getattr(user, "is_admin", False) or user.is_staff:
+        role = "admin"
+    else:
+        role = "user"
+
+    data = {
+        "id": user.id,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "role": role,
+        "email_verified": getattr(user, "email_verified", True),
+        "is_active": user.is_active,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
+
+
+@api_view(["PATCH"])
+def update_profile(request):
+    """
+    Update authenticated user's profile (first_name, last_name).
+
+    Request Body:
+        {
+            "first_name": str (optional),
+            "last_name": str (optional),
+            "current_password": str (required for verification)
+        }
+
+    Returns:
+        200 OK: Updated user profile
+        400 Bad Request: Validation errors (B13 envelope)
+        401 Unauthorized: Session expired
+    """
+    from django.utils import timezone
+
+    if not request.user.is_authenticated:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "not_authenticated",
+                    "message": "Authentication credentials were not provided.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    user = request.user
+    data = request.data
+
+    # Validate current_password (required for security)
+    current_password = data.get("current_password")
+    if not current_password:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Current password is required",
+                    "details": {"current_password": ["This field is required"]},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not user.check_password(current_password):
+        # Generic error to prevent password guessing
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "authentication_failed",
+                    "message": "Unable to verify credentials.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Update fields if provided
+    errors = {}
+    has_update_fields = False
+
+    first_name = data.get("first_name")
+    if first_name is not None:
+        has_update_fields = True
+        if not first_name.strip():
+            errors["first_name"] = ["First name cannot be empty"]
+        elif len(first_name) > 150:
+            errors["first_name"] = ["First name must be 150 characters or fewer"]
+        else:
+            user.first_name = first_name.strip()
+
+    last_name = data.get("last_name")
+    if last_name is not None:
+        has_update_fields = True
+        if not last_name.strip():
+            errors["last_name"] = ["Last name cannot be empty"]
+        elif len(last_name) > 150:
+            errors["last_name"] = ["Last name must be 150 characters or fewer"]
+        else:
+            user.last_name = last_name.strip()
+
+    # Check if at least one field was provided
+    if not has_update_fields:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "At least one field must be provided to update.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if errors:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Validation failed",
+                    "details": errors,
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Save updates
+    user.save()
+
+    # Return updated profile (same format as /auth/me)
+    role = (
+        "superadmin"
+        if user.is_superuser
+        else ("admin" if getattr(user, "is_admin", False) or user.is_staff else "user")
+    )
+
+    # Success response returns data directly (no envelope)
+    return Response(
+        {
+            "id": user.id,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "role": role,
+            "email_verified": getattr(user, "email_verified", True),
+            "is_active": user.is_active,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def password_reset_request_api(request):

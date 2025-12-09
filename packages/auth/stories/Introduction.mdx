@@ -1,0 +1,134 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Introduction" />
+
+# @django-core/auth-ui
+
+> Lightweight React authentication UI package for Django Core
+
+## Overview
+
+`@django-core/auth-ui` provides production-ready React components and hooks for Django authentication workflows. Built on top of `@django-core/design-system` (F01), it offers:
+
+- 🔐 **Complete Auth Flows**: Sign-in, sign-out, password reset with email confirmation
+- ♿ **Accessibility First**: WCAG 2.1 AA compliant with comprehensive ARIA support
+- 🎨 **Design System Integration**: Seamlessly uses F01 tokens and components
+- 🔒 **Security Built-in**: CSRF protection, XSS prevention, secure session management
+- 📱 **Responsive**: Mobile-first design that works on all screen sizes
+- 🌍 **I18n Ready**: Internationalization support via B04 preferences
+- 🧪 **Well Tested**: 300+ tests with 99% coverage
+
+## Quick Start
+
+### Installation
+
+```bash
+pnpm add @django-core/auth-ui
+```
+
+### Basic Setup
+
+```tsx
+import { AuthProvider, SignInPage } from '@django-core/auth-ui';
+
+const authConfig = {
+  apiBaseUrl: '/api/v1',
+  endpoints: {
+    signIn: '/auth/login',
+    signOut: '/auth/logout',
+    me: '/auth/me',
+  },
+  routes: {
+    login: '/auth/login',
+    defaultAfterLogin: '/dashboard',
+  },
+};
+
+function App() {
+  return (
+    <AuthProvider config={authConfig}>
+      <SignInPage />
+    </AuthProvider>
+  );
+}
+```
+
+## Architecture
+
+### Components
+
+Pre-built, accessible UI components for common auth patterns:
+
+- **Pages**: `SignInPage`, `ForgotPasswordPage`, `ResetPasswordPage`
+- **Forms**: `SignInForm`, `RequestPasswordResetForm`, `ConfirmPasswordResetForm`
+- **Utilities**: `ProtectedRoute`, `AuthGuard`
+
+### Hooks
+
+React hooks for programmatic authentication:
+
+- `useAuth()` - Access current user and auth state
+- `useSignIn()` - Sign in with email/password
+- `useSignOut()` - Sign out current user
+- `useRequestPasswordReset()` - Request password reset email
+- `useConfirmPasswordReset()` - Confirm password reset with token
+- `useUpdateProfile()` - Update user profile
+
+### Provider
+
+`<AuthProvider>` manages authentication state globally:
+
+- Automatic session management
+- Token refresh
+- CSRF protection
+- Error handling
+- Loading states
+
+## Features
+
+### Security
+
+- **CSRF Protection**: Automatic CSRF token handling for Django
+- **XSS Prevention**: Input sanitization and output encoding
+- **Session Management**: Secure cookie-based sessions
+- **Password Validation**: Client-side validation matching Django rules
+- **Rate Limiting**: Built-in rate limit error handling
+
+### Accessibility
+
+- **WCAG 2.1 AA Compliant**: Meets accessibility standards
+- **Keyboard Navigation**: Full keyboard support for all interactions
+- **Screen Reader Support**: Comprehensive ARIA labels and live regions
+- **Focus Management**: Proper focus handling for modals and errors
+- **High Contrast**: Supports high contrast mode
+
+### Developer Experience
+
+- **TypeScript**: Full type safety with comprehensive type definitions
+- **Storybook**: Interactive component documentation
+- **Testing Utilities**: Test helpers for authentication flows
+- **Error Messages**: Clear, actionable error messages
+- **Customization**: Override styles and behavior easily
+
+## Documentation Structure
+
+- **Introduction** (this page) - Overview and quick start
+- **Getting Started** - Detailed installation and setup guide
+- **Components** - Interactive component demos with props
+- **Hooks** - Hook usage patterns and examples
+- **Customization** - Styling and behavior customization
+- **Testing** - Testing strategies and utilities
+- **Troubleshooting** - Common issues and solutions
+
+## Resources
+
+- [GitHub Repository](https://github.com/TeamReel/django-core)
+- [Full Documentation](../../README.md)
+- [Quickstart Guide](../../kitty-specs/023-core-auth-identity/quickstart.md)
+- [API Reference](../../kitty-specs/023-core-auth-identity/api.md)
+
+## Support
+
+- **Bug Reports**: [GitHub Issues](https://github.com/TeamReel/django-core/issues)
+- **Questions**: [GitHub Discussions](https://github.com/TeamReel/django-core/discussions)
+- **Security**: Email security@django-core.dev for security concerns

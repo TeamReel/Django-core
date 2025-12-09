@@ -1,0 +1,627 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Hooks Overview" />
+
+# Hooks Overview
+
+`@django-core/auth-ui` provides React hooks for programmatic authentication. Use these when you need custom UI or advanced control over authentication flows.
+
+## 🔑 Core Hooks
+
+### useAuth()
+
+Access current authentication state and user information.
+
+**Returns:**
+```typescript
+{
+  user: User | null;
+  status: 'loading' | 'authenticated' | 'unauthenticated' | 'error';
+  isLoading: boolean;
+  error: ApiError | null;
+}
+```
+
+**Example:**
+```tsx
+import { useAuth } from '@django-core/auth-ui';
+
+function UserProfile() {
+  const { user, status } = useAuth();
+
+  if (status === 'loading') {
+    return <Spinner />;
+  }
+
+  if (status === 'unauthenticated') {
+    return <Navigate to="/login" />;
+  }
+
+  return (
+    <div>
+      <h1>Welcome, {user?.first_name}!</h1>
+      <p>{user?.email}</p>
+    </div>
+  );
+}
+```
+
+**Key Features:**
+- Automatically refreshes on auth state changes
+- Polls session status (configurable interval)
+- Handles loading and error states
+- Works anywhere inside `<AuthProvider>`
+
+---
+
+### useSignIn()
+
+Sign in a user with email and password.
+
+**Returns:**
+```typescript
+{
+  signIn: (email: string, password: string) => Promise<User>;
+  isLoading: boolean;
+  error: ApiError | null;
+  clearError: () => void;
+}
+```
+
+**Example:**
+```tsx
+import { useSignIn } from '@django-core/auth-ui';
+
+function CustomSignInForm() {
+  const { signIn, isLoading, error } = useSignIn();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const user = await signIn(email, password);
+      console.log('Signed in:', user);
+      // AuthProvider automatically redirects
+    } catch (err) {
+      // Error available in `error` state
+      console.error('Sign-in failed:', err);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        disabled={isLoading}
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        disabled={isLoading}
+      />
+
+      {error && (
+        <div className="error">
+          {error.formErrors.join(', ')}
+        </div>
+      )}
+
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Signing in...' : 'Sign In'}
+      </button>
+    </form>
+  );
+}
+```
+
+**Error Handling:**
+```typescript
+// Field-level errors (email, password)
+error.fieldErrors: {
+  email?: string[];
+  password?: string[];
+}
+
+// Form-level errors (invalid credentials)
+error.formErrors: string[];
+
+// HTTP status
+error.status: number;
+```
+
+---
+
+### useSignOut()
+
+Sign out the current user.
+
+**Returns:**
+```typescript
+{
+  signOut: () => Promise<void>;
+  isLoading: boolean;
+  error: ApiError | null;
+}
+```
+
+**Example:**
+```tsx
+import { useSignOut } from '@django-core/auth-ui';
+
+function UserMenu() {
+  const { signOut, isLoading } = useSignOut();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      // AuthProvider automatically redirects to login
+    } catch (err) {
+      console.error('Sign-out failed:', err);
+    }
+  };
+
+  return (
+    <button onClick={handleSignOut} disabled={isLoading}>
+      {isLoading ? 'Signing out...' : 'Sign Out'}
+    </button>
+  );
+}
+```
+
+---
+
+### useRequestPasswordReset()
+
+Request a password reset email.
+
+**Returns:**
+```typescript
+{
+  requestReset: (email: string) => Promise<void>;
+  isLoading: boolean;
+  success: boolean;
+  error: ApiError | null;
+  reset: () => void;
+}
+```
+
+**Example:**
+```tsx
+import { useRequestPasswordReset } from '@django-core/auth-ui';
+
+function ForgotPasswordForm() {
+  const { requestReset, isLoading, success, error } = useRequestPasswordReset();
+  const [email, setEmail] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await requestReset(email);
+      // success = true after this
+    } catch (err) {
+      // error state updated
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="success">
+        <p>Password reset email sent!</p>
+        <p>Check {email} for instructions.</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter your email"
+        disabled={isLoading}
+      />
+
+      {error && <div className="error">{error.formErrors.join(', ')}</div>}
+
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Sending...' : 'Send Reset Link'}
+      </button>
+    </form>
+  );
+}
+```
+
+**Security Note:** For security reasons, this endpoint always returns success (200) even if the email doesn't exist. This prevents email enumeration attacks.
+
+---
+
+### useConfirmPasswordReset()
+
+Confirm password reset with token from email.
+
+**Returns:**
+```typescript
+{
+  confirmReset: (uidb64: string, token: string, newPassword: string) => Promise<void>;
+  isLoading: boolean;
+  success: boolean;
+  error: ApiError | null;
+  reset: () => void;
+}
+```
+
+**Example:**
+```tsx
+import { useConfirmPasswordReset } from '@django-core/auth-ui';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+
+function ResetPasswordForm() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { confirmReset, isLoading, success, error } = useConfirmPasswordReset();
+
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const uidb64 = searchParams.get('uidb64');
+  const token = searchParams.get('token');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (newPassword !== confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    try {
+      await confirmReset(uidb64!, token!, newPassword);
+      // success = true
+    } catch (err) {
+      // error state updated
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="success">
+        <p>Password successfully reset!</p>
+        <button onClick={() => navigate('/login')}>
+          Sign In
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="password"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+        placeholder="New password"
+        disabled={isLoading}
+      />
+      <input
+        type="password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        placeholder="Confirm new password"
+        disabled={isLoading}
+      />
+
+      {error && (
+        <div className="error">
+          {error.fieldErrors.new_password?.join(', ') || error.formErrors.join(', ')}
+        </div>
+      )}
+
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Resetting...' : 'Reset Password'}
+      </button>
+    </form>
+  );
+}
+```
+
+---
+
+### useUpdateProfile()
+
+Update current user's profile information.
+
+**Returns:**
+```typescript
+{
+  updateProfile: (updates: Partial<User>) => Promise<User>;
+  isLoading: boolean;
+  error: ApiError | null;
+}
+```
+
+**Example:**
+```tsx
+import { useAuth, useUpdateProfile } from '@django-core/auth-ui';
+
+function ProfileEditor() {
+  const { user } = useAuth();
+  const { updateProfile, isLoading, error } = useUpdateProfile();
+
+  const [firstName, setFirstName] = useState(user?.first_name || '');
+  const [lastName, setLastName] = useState(user?.last_name || '');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const updatedUser = await updateProfile({
+        first_name: firstName,
+        last_name: lastName,
+      });
+      console.log('Profile updated:', updatedUser);
+    } catch (err) {
+      console.error('Update failed:', err);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+        placeholder="First name"
+        disabled={isLoading}
+      />
+      <input
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+        placeholder="Last name"
+        disabled={isLoading}
+      />
+
+      {error && <div className="error">{error.formErrors.join(', ')}</div>}
+
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Saving...' : 'Save Changes'}
+      </button>
+    </form>
+  );
+}
+```
+
+---
+
+## 🎯 Advanced Patterns
+
+### Conditional Rendering Based on Auth
+
+```tsx
+import { useAuth } from '@django-core/auth-ui';
+
+function Navigation() {
+  const { user, status } = useAuth();
+
+  return (
+    <nav>
+      <Link to="/">Home</Link>
+
+      {status === 'authenticated' ? (
+        <>
+          <Link to="/dashboard">Dashboard</Link>
+          <Link to="/profile">{user?.first_name}</Link>
+          <SignOutButton />
+        </>
+      ) : (
+        <>
+          <Link to="/login">Sign In</Link>
+          <Link to="/signup">Sign Up</Link>
+        </>
+      )}
+    </nav>
+  );
+}
+```
+
+### Optimistic UI Updates
+
+```tsx
+import { useAuth, useUpdateProfile } from '@django-core/auth-ui';
+
+function ProfileNameEditor() {
+  const { user } = useAuth();
+  const { updateProfile } = useUpdateProfile();
+  const [optimisticName, setOptimisticName] = useState(user?.first_name);
+
+  const handleBlur = async () => {
+    // Update UI immediately (optimistic)
+    const newName = optimisticName;
+
+    try {
+      // Then sync with server
+      await updateProfile({ first_name: newName });
+    } catch (err) {
+      // Revert on error
+      setOptimisticName(user?.first_name);
+    }
+  };
+
+  return (
+    <input
+      value={optimisticName}
+      onChange={(e) => setOptimisticName(e.target.value)}
+      onBlur={handleBlur}
+    />
+  );
+}
+```
+
+### Role-Based Access Control
+
+```tsx
+import { useAuth } from '@django-core/auth-ui';
+
+function useHasRole(requiredRoles: string[]) {
+  const { user } = useAuth();
+
+  return user?.roles?.some(role =>
+    requiredRoles.includes(role)
+  ) ?? false;
+}
+
+function AdminPanel() {
+  const isAdmin = useHasRole(['admin', 'superuser']);
+
+  if (!isAdmin) {
+    return <div>Access denied</div>;
+  }
+
+  return <div>Admin tools...</div>;
+}
+```
+
+### Auto-Refresh Authentication
+
+```tsx
+import { useAuth } from '@django-core/auth-ui';
+import { useEffect } from 'react';
+
+function useAutoRefreshAuth() {
+  const { user, status } = useAuth();
+
+  useEffect(() => {
+    // AuthProvider handles polling automatically
+    // But you can add custom logic here:
+
+    if (status === 'authenticated') {
+      console.log('User authenticated:', user);
+    } else if (status === 'unauthenticated') {
+      console.log('User not authenticated');
+    }
+  }, [status, user]);
+}
+```
+
+---
+
+## 🧪 Testing with Hooks
+
+### Mock AuthProvider for Tests
+
+```tsx
+import { AuthProvider } from '@django-core/auth-ui';
+import { render } from '@testing-library/react';
+
+const mockAuthConfig = {
+  apiBaseUrl: 'http://localhost',
+  endpoints: {
+    signIn: '/auth/login',
+    signOut: '/auth/logout',
+    me: '/auth/me',
+  },
+  routes: {
+    login: '/login',
+    defaultAfterLogin: '/dashboard',
+    afterLogout: '/',
+  },
+};
+
+function renderWithAuth(component) {
+  return render(
+    <AuthProvider config={mockAuthConfig}>
+      {component}
+    </AuthProvider>
+  );
+}
+
+test('displays user name', () => {
+  const { getByText } = renderWithAuth(<UserProfile />);
+  expect(getByText(/Welcome/i)).toBeInTheDocument();
+});
+```
+
+### Mock Hook Responses
+
+```tsx
+import * as authHooks from '@django-core/auth-ui';
+
+jest.spyOn(authHooks, 'useAuth').mockReturnValue({
+  user: { id: 1, email: 'test@example.com', first_name: 'Test' },
+  status: 'authenticated',
+  isLoading: false,
+  error: null,
+});
+
+test('shows authenticated UI', () => {
+  const { getByText } = render(<MyComponent />);
+  expect(getByText(/Test/i)).toBeInTheDocument();
+});
+```
+
+---
+
+## 📚 Type Definitions
+
+### User Type
+
+```typescript
+interface User {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  roles?: string[];
+  [key: string]: any;
+}
+```
+
+### ApiError Type
+
+```typescript
+interface ApiError {
+  status: number;
+  fieldErrors: Record<string, string[]>;
+  formErrors: string[];
+}
+```
+
+### AuthStatus Type
+
+```typescript
+type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated' | 'error';
+```
+
+---
+
+## Best Practices
+
+### ✅ DO
+
+- Use `useAuth()` for read-only auth state
+- Use specific hooks (`useSignIn`, `useSignOut`) for actions
+- Handle loading states with `isLoading`
+- Display errors from `error` state
+- Clear errors with `clearError()` when user retries
+
+### ❌ DON'T
+
+- Don't call auth hooks outside `<AuthProvider>`
+- Don't manually manipulate auth tokens
+- Don't ignore `isLoading` state
+- Don't forget error handling
+- Don't poll auth status manually (AuthProvider handles it)
+
+---
+
+## Next Steps
+
+- **Components**: Learn about pre-built authentication components
+- **Customization**: Style and configure authentication flows
+- **Testing**: Test authentication in your application
+- **Troubleshooting**: Solve common authentication issues
