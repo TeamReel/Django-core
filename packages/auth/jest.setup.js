@@ -1,6 +1,10 @@
 require('@testing-library/jest-dom');
 require('whatwg-fetch');
 
+// jest-axe matchers for accessibility testing
+const { toHaveNoViolations } = require('jest-axe');
+expect.extend(toHaveNoViolations);
+
 // Mock window.matchMedia (required for F01 components)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
