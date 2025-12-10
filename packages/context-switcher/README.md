@@ -81,6 +81,40 @@ function MyComponent() {
 }
 ```
 
+### 3. Add the ContextSwitcher component to your shell
+
+```tsx
+import { ContextSwitcher } from '@django-core/context-switcher';
+
+function AppShell() {
+  return (
+    <div>
+      {/* Header with horizontal layout */}
+      <header>
+        <Logo />
+        <ContextSwitcher variant="horizontal" />
+        <UserMenu />
+      </header>
+
+      {/* Or sidebar with vertical layout */}
+      <aside>
+        <ContextSwitcher variant="vertical" />
+        <Navigation />
+      </aside>
+
+      <main>{children}</main>
+    </div>
+  );
+}
+```
+
+The `ContextSwitcher` component provides a complete, ready-to-use UI that:
+- Displays the current context (organisation and project)
+- Opens pickers to switch organisation or project on click
+- Handles loading and error states automatically
+- Fully keyboard accessible with ARIA attributes
+- Works in horizontal (header) or vertical (sidebar) layouts
+
 ## Features
 
 - **URL-based context**: Organisation and project context synchronized with URL paths
@@ -107,6 +141,32 @@ Main provider component that wraps your application.
   - `onBeforeContextChange`: (from, to) => boolean | Promise<boolean> - Pre-switch hook
   - `onContextChanged`: (context) => void - Post-switch hook
   - `onContextError`: (error) => void - Error handler
+
+### ContextSwitcher
+
+Main UI component that composes the context indicator and pickers into a unified interface.
+
+**Props:**
+- `className`: string (optional) - Custom CSS class
+- `variant`: 'horizontal' | 'vertical' (default: 'horizontal') - Layout direction
+  - `horizontal`: Side-by-side layout for headers
+  - `vertical`: Stacked layout for sidebars
+
+**Example:**
+```tsx
+// In app header
+<ContextSwitcher variant="horizontal" />
+
+// In sidebar
+<ContextSwitcher variant="vertical" />
+```
+
+The component automatically:
+- Renders the current context indicator
+- Opens OrganisationPicker when org name is clicked
+- Opens ProjectPicker when project name is clicked
+- Disables project picker when no organisation is selected
+- Handles all loading and error states
 
 ### useContextSwitcher()
 

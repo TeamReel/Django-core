@@ -25,6 +25,7 @@ export {
 export { useContextSwitcher } from './hooks';
 
 // Components
+export { ContextSwitcher, type ContextSwitcherProps } from './components/ContextSwitcher';
 export { ContextIndicator, type ContextIndicatorProps } from './components/ContextIndicator';
 export { OrganisationPicker, type OrganisationPickerProps } from './components/OrganisationPicker';
 export { ProjectPicker, type ProjectPickerProps } from './components/ProjectPicker';
