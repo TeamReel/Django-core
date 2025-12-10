@@ -17,7 +17,7 @@ subtasks:
   - "T085"
 title: "Project Picker Component"
 phase: "Phase 1 - Core Context & UI"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude-sonnet-4"
 shell_pid: "212"
@@ -456,3 +456,4 @@ Implement project picker UI (dropdown/modal) filtered by selected organisation, 
 
 - 2025-12-09T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-10T19:33:36Z – claude-sonnet-4 – shell_pid=212 – lane=doing – Started implementation
+- 2025-12-10T19:36:59Z – claude-sonnet-4 – shell_pid=212 – lane=for_review – Completed implementation - ready for review
