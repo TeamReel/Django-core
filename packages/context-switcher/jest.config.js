@@ -18,6 +18,7 @@ export default {
   testPathIgnorePatterns: ['/node_modules/', '__tests__/setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@django-core/api-client$': '<rootDir>/../api-client/src/index.ts',
   },
   transform: {
     '^.+\\.tsx?$': [

@@ -38,10 +38,10 @@ describe('useContextSwitcher', () => {
   });
 
   it('provides context value when used inside provider', async () => {
-    // Mock fetch responses
+    // Mock API client responses
     (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: (): Promise<never[]> => Promise.resolve([]),
+      json: () => Promise.resolve({ data: { organisations: [] } }),
     });
 
     const wrapper = ({ children }: { children: React.ReactNode }): React.ReactElement => (

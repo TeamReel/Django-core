@@ -16,6 +16,12 @@ import type {
   Project,
   ContextError,
 } from '../types';
+import {
+  fetchOrganisations as apiFetchOrganisations,
+  fetchProjects as apiFetchProjects,
+  fetchCurrentContext,
+  setCurrentContext,
+} from '../api';
 
 /**
  * Props for ContextSwitcherProvider.
@@ -84,79 +90,37 @@ export function ContextSwitcherProvider({
    * Fetch all organisations for the current user.
    */
   const fetchOrganisations = useCallback(async (): Promise<Organisation[]> => {
-    const response = await fetch(`${apiBaseUrl}/organisations`, {
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch organisations: ${response.statusText}`);
-    }
-
-    return response.json() as Promise<Organisation[]>;
+    return apiFetchOrganisations(apiBaseUrl);
   }, [apiBaseUrl]);
 
   /**
-   * Fetch organisation by slug.
+   * Find organisation by slug from the organisations list.
    */
-  const fetchOrganisation = useCallback(
-    async (orgSlug: string): Promise<Organisation> => {
-      const response = await fetch(`${apiBaseUrl}/organisations/${orgSlug}`, {
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const error: ContextError = {
-          code: response.status,
-          message: `Failed to load organisation: ${response.statusText}`,
-        };
-        throw new Error(error.message);
-      }
-
-      return response.json() as Promise<Organisation>;
+  const findOrganisation = useCallback(
+    (orgSlug: string): Organisation | null => {
+      return organisations.find(org => org.slug === orgSlug) || null;
     },
-    [apiBaseUrl]
+    [organisations]
   );
 
   /**
    * Fetch all projects for an organisation.
    */
   const fetchProjects = useCallback(
-    async (orgSlug: string): Promise<Project[]> => {
-      const response = await fetch(
-        `${apiBaseUrl}/organisations/${orgSlug}/projects`,
-        { credentials: 'include' }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch projects: ${response.statusText}`);
-      }
-
-      return response.json() as Promise<Project[]>;
+    async (orgId: string): Promise<Project[]> => {
+      return apiFetchProjects(orgId, apiBaseUrl);
     },
     [apiBaseUrl]
   );
 
   /**
-   * Fetch project by slug.
+   * Find project by slug from the projects list.
    */
-  const fetchProject = useCallback(
-    async (orgSlug: string, projectSlug: string): Promise<Project> => {
-      const response = await fetch(
-        `${apiBaseUrl}/organisations/${orgSlug}/projects/${projectSlug}`,
-        { credentials: 'include' }
-      );
-
-      if (!response.ok) {
-        const error: ContextError = {
-          code: response.status,
-          message: `Failed to load project: ${response.statusText}`,
-        };
-        throw new Error(error.message);
-      }
-
-      return response.json() as Promise<Project>;
+  const findProject = useCallback(
+    (projectSlug: string): Project | null => {
+      return projects.find(proj => proj.slug === projectSlug) || null;
     },
-    [apiBaseUrl]
+    [projects]
   );
 
   /**
@@ -185,14 +149,19 @@ export function ContextSwitcherProvider({
         return;
       }
 
-      // Fetch current organisation and projects
-      const organisation = await fetchOrganisation(orgSlug);
-      const orgProjects = await fetchProjects(orgSlug);
+      // Find organisation from list
+      const organisation = findOrganisation(orgSlug);
+      if (!organisation) {
+        throw new Error(`Organisation not found: ${orgSlug}`);
+      }
+
+      // Fetch projects for this organisation
+      const orgProjects = await fetchProjects(organisation.id);
       setProjects(orgProjects);
 
-      // Fetch current project if specified
+      // Find current project if specified
       const project = projectSlug
-        ? await fetchProject(orgSlug, projectSlug)
+        ? orgProjects.find(p => p.slug === projectSlug) || null
         : null;
 
       const newContext: UserContext = {
@@ -232,9 +201,8 @@ export function ContextSwitcherProvider({
     }
   }, [
     fetchOrganisations,
-    fetchOrganisation,
+    findOrganisation,
     fetchProjects,
-    fetchProject,
     parseContextFromPath,
     onContextChanged,
     onContextError,
@@ -267,6 +235,9 @@ export function ContextSwitcherProvider({
           { orgSlug: org.slug, projectSlug: project?.slug },
           { preservePath: true, fallbackPath: '/dashboard' }
         );
+
+        // Persist context to backend (optional endpoint)
+        await setCurrentContext(org.id, project?.id || null, apiBaseUrl);
 
         routerAdapter.navigateTo(newPath);
 
