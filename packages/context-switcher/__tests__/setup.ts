@@ -1,4 +1,11 @@
 import '@testing-library/jest-dom';
+import { server } from './mocks/server';
 
-// Note: MSW setup will be added in WP04 when we implement API mocking
-// For now, tests will mock fetch directly
+// Establish API mocking before all tests
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+
+// Reset handlers after each test (important for test isolation)
+afterEach(() => server.resetHandlers());
+
+// Clean up after all tests
+afterAll(() => server.close());
