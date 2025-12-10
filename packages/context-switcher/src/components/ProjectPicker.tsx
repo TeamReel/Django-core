@@ -1,7 +1,12 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Modal, Input, Stack, Text, Spinner } from '@django-core/design-system';
 import { useContextSwitcher } from '../hooks/useContextSwitcher';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { VirtualizedList } from './VirtualizedList';
 import type { Project } from '../types';
+
+// Threshold for enabling virtualization (50+ items)
+const VIRTUALIZATION_THRESHOLD = 50;
 
 export interface ProjectPickerProps {
   /**
@@ -44,6 +49,9 @@ export function ProjectPicker({
   const { projects, switchContext, isSwitching, context } = useContextSwitcher();
   const listRef = useRef<HTMLDivElement>(null);
 
+  // Debounce search query for better performance
+  const debouncedQuery = useDebouncedValue(searchQuery, 300);
+
   // Filter projects by current organisation
   const projectsForCurrentOrg = useMemo(() => {
     if (!context.organisation) {
@@ -55,17 +63,20 @@ export function ProjectPicker({
 
   // Filter projects based on search query (minimum 3 characters)
   const filteredProjects = useMemo(() => {
-    if (!searchQuery || searchQuery.length < 3) {
+    if (!debouncedQuery || debouncedQuery.length < 3) {
       return projectsForCurrentOrg;
     }
 
-    const query = searchQuery.toLowerCase();
+    const query = debouncedQuery.toLowerCase();
     return projectsForCurrentOrg.filter(
       (project) =>
         project.name.toLowerCase().includes(query) ||
         project.slug.toLowerCase().includes(query)
     );
-  }, [projectsForCurrentOrg, searchQuery]);
+  }, [projectsForCurrentOrg, debouncedQuery]);
+
+  // Check if we should use virtualization
+  const shouldVirtualize = filteredProjects.length > VIRTUALIZATION_THRESHOLD;
 
   // Reset selected index when filtered list changes
   useEffect(() => {
@@ -221,58 +232,114 @@ export function ProjectPicker({
 
         {/* Project list */}
         {filteredProjects.length > 0 ? (
-          <div
-            ref={listRef}
-            role="listbox"
-            aria-label="Project picker"
-            aria-activedescendant={
-              filteredProjects[selectedIndex] ? `project-${filteredProjects[selectedIndex].id}` : undefined
-            }
-            onKeyDown={handleKeyDown}
-            tabIndex={0}
-            style={{
-              maxHeight: '400px',
-              overflowY: 'auto',
-              outline: 'none',
-            }}
-          >
-            <Stack direction="vertical" spacing="xs">
-              {filteredProjects.map((project, index) => (
-                <button
-                  key={project.id}
-                  id={`project-${project.id}`}
-                  role="option"
-                  aria-selected={index === selectedIndex}
-                  onClick={() => void handleSelect(project)}
-                  disabled={isSwitching || project.id === context.project?.id}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    textAlign: 'left',
-                    border: 'none',
-                    backgroundColor: index === selectedIndex ? '#f3f4f6' : 'transparent',
-                    cursor: project.id === context.project?.id ? 'default' : 'pointer',
-                    borderRadius: '4px',
-                    transition: 'background-color 0.2s',
-                    opacity: project.id === context.project?.id ? 0.6 : 1,
-                  }}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                >
-                  <Text
-                    size="md"
-                    weight={project.id === context.project?.id ? 'medium' : 'normal'}
+          shouldVirtualize ? (
+            <div
+              ref={listRef}
+              role="listbox"
+              aria-label="Project picker"
+              aria-activedescendant={
+                filteredProjects[selectedIndex] ? `project-${filteredProjects[selectedIndex].id}` : undefined
+              }
+              onKeyDown={handleKeyDown}
+              tabIndex={0}
+              style={{
+                outline: 'none',
+              }}
+            >
+              <VirtualizedList
+                items={filteredProjects}
+                itemHeight={48}
+                height={400}
+                renderItem={(project, index) => (
+                  <button
+                    key={project.id}
+                    id={`project-${project.id}`}
+                    role="option"
+                    aria-selected={index === selectedIndex}
+                    onClick={() => void handleSelect(project)}
+                    disabled={isSwitching || project.id === context.project?.id}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      border: 'none',
+                      backgroundColor: index === selectedIndex ? '#f3f4f6' : 'transparent',
+                      cursor: project.id === context.project?.id ? 'default' : 'pointer',
+                      borderRadius: '4px',
+                      transition: 'background-color 0.2s',
+                      opacity: project.id === context.project?.id ? 0.6 : 1,
+                    }}
+                    onMouseEnter={() => setSelectedIndex(index)}
                   >
-                    {project.name}
-                  </Text>
-                  {project.id === context.project?.id && (
-                    <Text size="sm" color="tertiary" style={{ marginTop: '4px' }}>
-                      Current project
+                    <Text
+                      size="md"
+                      weight={project.id === context.project?.id ? 'medium' : 'normal'}
+                    >
+                      {project.name}
                     </Text>
-                  )}
-                </button>
-              ))}
-            </Stack>
-          </div>
+                    {project.id === context.project?.id && (
+                      <Text size="sm" color="tertiary" style={{ marginTop: '4px' }}>
+                        Current project
+                      </Text>
+                    )}
+                  </button>
+                )}
+              />
+            </div>
+          ) : (
+            <div
+              ref={listRef}
+              role="listbox"
+              aria-label="Project picker"
+              aria-activedescendant={
+                filteredProjects[selectedIndex] ? `project-${filteredProjects[selectedIndex].id}` : undefined
+              }
+              onKeyDown={handleKeyDown}
+              tabIndex={0}
+              style={{
+                maxHeight: '400px',
+                overflowY: 'auto',
+                outline: 'none',
+              }}
+            >
+              <Stack direction="vertical" spacing="xs">
+                {filteredProjects.map((project, index) => (
+                  <button
+                    key={project.id}
+                    id={`project-${project.id}`}
+                    role="option"
+                    aria-selected={index === selectedIndex}
+                    onClick={() => void handleSelect(project)}
+                    disabled={isSwitching || project.id === context.project?.id}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      border: 'none',
+                      backgroundColor: index === selectedIndex ? '#f3f4f6' : 'transparent',
+                      cursor: project.id === context.project?.id ? 'default' : 'pointer',
+                      borderRadius: '4px',
+                      transition: 'background-color 0.2s',
+                      opacity: project.id === context.project?.id ? 0.6 : 1,
+                    }}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  >
+                    <Text
+                      size="md"
+                      weight={project.id === context.project?.id ? 'medium' : 'normal'}
+                    >
+                      {project.name}
+                    </Text>
+                    {project.id === context.project?.id && (
+                      <Text size="sm" color="tertiary" style={{ marginTop: '4px' }}>
+                        Current project
+                      </Text>
+                    )}
+                  </button>
+                ))}
+              </Stack>
+            </div>
+          )
         ) : (
           renderEmptyState()
         )}

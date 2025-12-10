@@ -23,6 +23,7 @@ export {
 
 // Hooks
 export { useContextSwitcher } from './hooks';
+export { useDebouncedValue } from './hooks/useDebouncedValue';
 
 // Components
 export { ContextSwitcher, type ContextSwitcherProps } from './components/ContextSwitcher';

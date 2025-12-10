@@ -1,7 +1,11 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Modal, Input, Stack, Text, Spinner } from '@django-core/design-system';
 import { useContextSwitcher } from '../hooks/useContextSwitcher';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { VirtualizedList } from './VirtualizedList';
 import type { Organisation } from '../types';
+
+const VIRTUALIZATION_THRESHOLD = 50;
 
 export interface OrganisationPickerProps {
   /**
@@ -44,19 +48,25 @@ export function OrganisationPicker({
   const { organisations, switchContext, isSwitching, context } = useContextSwitcher();
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Filter organisations based on search query (minimum 3 characters)
+  // Debounce search query (300ms delay)
+  const debouncedQuery = useDebouncedValue(searchQuery, 300);
+
+  // Filter organisations based on debounced search query (minimum 3 characters)
   const filteredOrgs = useMemo(() => {
-    if (!searchQuery || searchQuery.length < 3) {
+    if (!debouncedQuery || debouncedQuery.length < 3) {
       return organisations;
     }
 
-    const query = searchQuery.toLowerCase();
+    const query = debouncedQuery.toLowerCase();
     return organisations.filter(
       (org) =>
         org.name.toLowerCase().includes(query) ||
         org.slug.toLowerCase().includes(query)
     );
-  }, [organisations, searchQuery]);
+  }, [organisations, debouncedQuery]);
+
+  // Check if virtualization should be enabled
+  const shouldVirtualize = filteredOrgs.length > VIRTUALIZATION_THRESHOLD;
 
   // Reset selected index when filtered list changes
   useEffect(() => {
@@ -186,58 +196,114 @@ export function OrganisationPicker({
 
         {/* Organisation list */}
         {filteredOrgs.length > 0 ? (
-          <div
-            ref={listRef}
-            role="listbox"
-            aria-label="Organisation picker"
-            aria-activedescendant={
-              filteredOrgs[selectedIndex] ? `org-${filteredOrgs[selectedIndex].id}` : undefined
-            }
-            onKeyDown={handleKeyDown}
-            tabIndex={0}
-            style={{
-              maxHeight: '400px',
-              overflowY: 'auto',
-              outline: 'none',
-            }}
-          >
-            <Stack direction="vertical" spacing="xs">
-              {filteredOrgs.map((org, index) => (
-                <button
-                  key={org.id}
-                  id={`org-${org.id}`}
-                  role="option"
-                  aria-selected={index === selectedIndex}
-                  onClick={() => void handleSelect(org)}
-                  disabled={isSwitching || org.id === context.organisation?.id}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    textAlign: 'left',
-                    border: 'none',
-                    backgroundColor: index === selectedIndex ? '#f3f4f6' : 'transparent',
-                    cursor: org.id === context.organisation?.id ? 'default' : 'pointer',
-                    borderRadius: '4px',
-                    transition: 'background-color 0.2s',
-                    opacity: org.id === context.organisation?.id ? 0.6 : 1,
-                  }}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                >
-                  <Text
-                    size="md"
-                    weight={org.id === context.organisation?.id ? 'medium' : 'normal'}
+          shouldVirtualize ? (
+            <div
+              ref={listRef}
+              role="listbox"
+              aria-label="Organisation picker"
+              aria-activedescendant={
+                filteredOrgs[selectedIndex] ? `org-${filteredOrgs[selectedIndex].id}` : undefined
+              }
+              onKeyDown={handleKeyDown}
+              tabIndex={0}
+              style={{
+                outline: 'none',
+              }}
+            >
+              <VirtualizedList
+                items={filteredOrgs}
+                itemHeight={48}
+                height={400}
+                renderItem={(org, index) => (
+                  <button
+                    key={org.id}
+                    id={`org-${org.id}`}
+                    role="option"
+                    aria-selected={index === selectedIndex}
+                    onClick={() => void handleSelect(org)}
+                    disabled={isSwitching || org.id === context.organisation?.id}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      border: 'none',
+                      backgroundColor: index === selectedIndex ? '#f3f4f6' : 'transparent',
+                      cursor: org.id === context.organisation?.id ? 'default' : 'pointer',
+                      borderRadius: '4px',
+                      transition: 'background-color 0.2s',
+                      opacity: org.id === context.organisation?.id ? 0.6 : 1,
+                    }}
+                    onMouseEnter={() => setSelectedIndex(index)}
                   >
-                    {org.name}
-                  </Text>
-                  {org.id === context.organisation?.id && (
-                    <Text size="sm" color="tertiary" style={{ marginTop: '4px' }}>
-                      Current organisation
+                    <Text
+                      size="md"
+                      weight={org.id === context.organisation?.id ? 'medium' : 'normal'}
+                    >
+                      {org.name}
                     </Text>
-                  )}
-                </button>
-              ))}
-            </Stack>
-          </div>
+                    {org.id === context.organisation?.id && (
+                      <Text size="sm" color="tertiary" style={{ marginTop: '4px' }}>
+                        Current organisation
+                      </Text>
+                    )}
+                  </button>
+                )}
+              />
+            </div>
+          ) : (
+            <div
+              ref={listRef}
+              role="listbox"
+              aria-label="Organisation picker"
+              aria-activedescendant={
+                filteredOrgs[selectedIndex] ? `org-${filteredOrgs[selectedIndex].id}` : undefined
+              }
+              onKeyDown={handleKeyDown}
+              tabIndex={0}
+              style={{
+                maxHeight: '400px',
+                overflowY: 'auto',
+                outline: 'none',
+              }}
+            >
+              <Stack direction="vertical" spacing="xs">
+                {filteredOrgs.map((org, index) => (
+                  <button
+                    key={org.id}
+                    id={`org-${org.id}`}
+                    role="option"
+                    aria-selected={index === selectedIndex}
+                    onClick={() => void handleSelect(org)}
+                    disabled={isSwitching || org.id === context.organisation?.id}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      border: 'none',
+                      backgroundColor: index === selectedIndex ? '#f3f4f6' : 'transparent',
+                      cursor: org.id === context.organisation?.id ? 'default' : 'pointer',
+                      borderRadius: '4px',
+                      transition: 'background-color 0.2s',
+                      opacity: org.id === context.organisation?.id ? 0.6 : 1,
+                    }}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  >
+                    <Text
+                      size="md"
+                      weight={org.id === context.organisation?.id ? 'medium' : 'normal'}
+                    >
+                      {org.name}
+                    </Text>
+                    {org.id === context.organisation?.id && (
+                      <Text size="sm" color="tertiary" style={{ marginTop: '4px' }}>
+                        Current organisation
+                      </Text>
+                    )}
+                  </button>
+                ))}
+              </Stack>
+            </div>
+          )
         ) : (
           renderEmptyState()
         )}
