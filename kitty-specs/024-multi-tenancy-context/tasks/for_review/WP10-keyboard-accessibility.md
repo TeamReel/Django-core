@@ -15,7 +15,7 @@ subtasks:
   - "T117"
 title: "Keyboard Shortcuts & Accessibility"
 phase: "Phase 2 - Performance & Search"
-lane: "doing"
+lane: "for_review"
 assignee: "claude-sonnet-4"
 agent: "claude-sonnet-4"
 shell_pid: "212"
@@ -32,6 +32,11 @@ history:
     agent: "claude-sonnet-4"
     shell_pid: "212"
     note: "Started implementation of keyboard shortcuts and accessibility features"
+  - timestamp: "2025-12-10T23:00:00Z"
+    lane: "for_review"
+    agent: "claude-sonnet-4"
+    shell_pid: "212"
+    note: "Completed implementation: useKeyboardShortcut hook, Cmd/Ctrl+K global shortcut, Escape closes pickers, ARIA live regions. Build successful (85.66 KB / 17.26 KB gzipped)"
 ---
 
 # Work Package Prompt: WP10 – Keyboard Shortcuts & Accessibility

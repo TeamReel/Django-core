@@ -24,6 +24,8 @@ export {
 // Hooks
 export { useContextSwitcher } from './hooks';
 export { useDebouncedValue } from './hooks/useDebouncedValue';
+export { useKeyboardShortcut } from './hooks/useKeyboardShortcut';
+export type { KeyboardShortcutOptions } from './hooks/useKeyboardShortcut';
 
 // Components
 export { ContextSwitcher, type ContextSwitcherProps } from './components/ContextSwitcher';

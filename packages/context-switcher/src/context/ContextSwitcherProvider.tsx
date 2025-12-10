@@ -60,6 +60,9 @@ export function ContextSwitcherProvider({
   const [projects, setProjects] = useState<Project[]>([]);
   const [isSwitching, setIsSwitching] = useState(false);
 
+  // ARIA live region for screen reader announcements
+  const [announcement, setAnnouncement] = useState<string>('');
+
   const {
     routerAdapter,
     apiBaseUrl = '/api/v1',
@@ -230,6 +233,15 @@ export function ContextSwitcherProvider({
 
         routerAdapter.navigateTo(newPath);
 
+        // Announce context change to screen readers
+        const message = project
+          ? `Switched to ${org.name}, ${project.name} project`
+          : `Switched to ${org.name}`;
+        setAnnouncement(message);
+
+        // Clear announcement after 3 seconds
+        setTimeout(() => setAnnouncement(''), 3000);
+
         // Context will be reloaded by useEffect when URL changes
       } catch (err) {
         if (onContextError) {
@@ -284,6 +296,21 @@ export function ContextSwitcherProvider({
 
   return (
     <ContextSwitcherContext.Provider value={contextValue}>
+      {/* ARIA live region for screen reader announcements */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        style={{
+          position: 'absolute',
+          left: '-10000px',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+        }}
+      >
+        {announcement}
+      </div>
       {children}
     </ContextSwitcherContext.Provider>
   );

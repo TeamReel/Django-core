@@ -4,6 +4,7 @@ import { ContextIndicator } from './ContextIndicator';
 import { OrganisationPicker } from './OrganisationPicker';
 import { ProjectPicker } from './ProjectPicker';
 import { useContextSwitcher } from '../hooks/useContextSwitcher';
+import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 
 export interface ContextSwitcherProps {
   /**
@@ -42,6 +43,21 @@ export function ContextSwitcher({
   const { context } = useContextSwitcher();
   const [orgPickerOpen, setOrgPickerOpen] = useState(false);
   const [projectPickerOpen, setProjectPickerOpen] = useState(false);
+
+  // Global keyboard shortcut: Cmd/Ctrl+K opens organisation picker
+  // Detects platform to use correct modifier key
+  const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
+  useKeyboardShortcut(
+    {
+      key: 'k',
+      ctrlKey: !isMac,  // Ctrl on Windows/Linux
+      metaKey: isMac,   // Cmd on macOS
+    },
+    () => {
+      setOrgPickerOpen(true);
+    }
+  );
 
   // Determine if project picker should be disabled
   const projectPickerDisabled = !context.organisation;

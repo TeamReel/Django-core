@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Modal, Input, Stack, Text, Spinner } from '@django-core/design-system';
 import { useContextSwitcher } from '../hooks/useContextSwitcher';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 import { VirtualizedList } from './VirtualizedList';
 import type { Organisation } from '../types';
 
@@ -47,6 +48,16 @@ export function OrganisationPicker({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { organisations, switchContext, isSwitching, context } = useContextSwitcher();
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Escape key closes the picker
+  useKeyboardShortcut(
+    { key: 'Escape' },
+    () => {
+      if (isOpen) {
+        onClose();
+      }
+    }
+  );
 
   // Debounce search query (300ms delay)
   const debouncedQuery = useDebouncedValue(searchQuery, 300);
