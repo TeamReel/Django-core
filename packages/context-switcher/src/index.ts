@@ -26,3 +26,4 @@ export { useContextSwitcher } from './hooks';
 
 // Components
 export { ContextIndicator, type ContextIndicatorProps } from './components/ContextIndicator';
+export { OrganisationPicker, type OrganisationPickerProps } from './components/OrganisationPicker';
