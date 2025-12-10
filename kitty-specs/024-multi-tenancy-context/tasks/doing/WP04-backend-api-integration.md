@@ -15,10 +15,10 @@ subtasks:
   - "T048"
 title: "Backend API Integration"
 phase: "Phase 1 - Core Context & UI"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude-sonnet-4"
+shell_pid: "212"
 review_status: ""
 reviewed_by: ""
 history:
@@ -778,3 +778,4 @@ Implement API client functions for fetching organisations, projects, and current
 ## Activity Log
 
 - 2025-12-09T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-10T18:32:51Z – claude-sonnet-4 – shell_pid=212 – lane=doing – Started WP04 - Backend API Integration
