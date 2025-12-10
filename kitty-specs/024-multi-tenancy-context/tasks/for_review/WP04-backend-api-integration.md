@@ -15,7 +15,7 @@ subtasks:
   - "T048"  # ❌ TODO - Fix MSW conflicts & verify all tests pass
 title: "Backend API Integration"
 phase: "Phase 1 - Core Context & UI"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude-sonnet-4"
 shell_pid: "212"
@@ -789,3 +789,4 @@ Implement API client functions for fetching organisations, projects, and current
 
 - 2025-12-09T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-10T18:32:51Z – claude-sonnet-4 – shell_pid=212 – lane=doing – Started WP04 - Backend API Integration
+- 2025-12-10T18:48:52Z – claude-sonnet-4 – shell_pid=212 – lane=for_review – Completed T037-T047. API functions integrated into Provider. MSW conflicts pending resolution for full test coverage.
