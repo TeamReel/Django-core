@@ -1,6 +1,8 @@
 /**
  * Internal API client utility for making authenticated requests.
  *
+ * This now wraps @django-core/api-client to avoid code duplication.
+ *
  * Features:
  * - Automatic credentials: 'include' for cookie-based auth
  * - CSRF token handling from cookies
@@ -9,19 +11,23 @@
  * @internal This is an internal utility, not exported from package
  */
 
+import { getCsrfToken as sharedGetCsrfToken } from '@django-core/api-client/src/csrfToken';
+
 /**
  * Get CSRF token from cookies.
  * Django stores CSRF token in 'csrftoken' cookie.
+ *
+ * Re-exported from @django-core/api-client for backwards compatibility.
  */
 export function getCsrfToken(): string | null {
-  if (typeof document === 'undefined') return null;
-
-  const match = document.cookie.match(/csrftoken=([^;]+)/);
-  return match ? match[1] : null;
+  return sharedGetCsrfToken();
 }
 
 /**
  * Make an authenticated API request.
+ *
+ * This is a compatibility wrapper around @django-core/api-client that maintains
+ * the original function signature while using the shared implementation internally.
  *
  * @param url - Full URL or path to request
  * @param options - Fetch options (will be merged with defaults)

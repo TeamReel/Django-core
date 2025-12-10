@@ -25,6 +25,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-23
 - File-based (YAML manifests, Jinja2 templates, generated code) - no database persistence required (020-core-scaffolding-cli)
 - TypeScript 5.x, React 18.x + vanilla-extract 1.x, Vite 5.x, Storybook 8.x, Chromatic (022-frontend-design-system)
 - N/A (frontend-only, no database) (022-frontend-design-system)
+- TypeScript 5.x + React 18.x (024-multi-tenancy-context)
+- N/A (frontend-only package; backend B06/B07 owns data) (024-multi-tenancy-context)
 
 ## Project Structure
 ```
@@ -49,9 +51,32 @@ Quick reminders:
 Python 3.12+: Follow standard conventions
 
 ## Recent Changes
+- 024-multi-tenancy-context: Added TypeScript 5.x + React 18.x
 - 022-frontend-design-system: Added TypeScript 5.x, React 18.x + vanilla-extract 1.x, Vite 5.x, Storybook 8.x, Chromatic
 - 020-core-scaffolding-cli: Added Python 3.12+ + Django 5.1+, Jinja2 3.1+, Click 8.1+, PyYAML 6.0+, importlib.metadata (stdlib)
-- 018-platform-observability-foundation: Added Python 3.12+
 
 <!-- MANUAL ADDITIONS START -->
+
+## F03: Multi-Tenancy Context Switcher (024-multi-tenancy-context)
+
+**New Packages**:
+- `@django-core/api-client` - Shared CSRF-protected fetch wrapper + error normalizer
+- `@django-core/context-switcher` - Multi-tenancy context UI (React components + hooks)
+
+**Dependencies**:
+- `@django-core/design-system` (F01) for all UI components
+- `react-window` or `@tanstack/react-virtual` for list virtualization
+- Backend: B06 (organisations), B07 (projects), B08 (authorization), B13 (API baseline)
+
+**Key Patterns**:
+- React Context + hooks for state management (no Zustand/Redux)
+- RouterAdapter interface for router-agnostic navigation
+- Search: 300ms debounce, 3-character minimum
+- Keyboard shortcut: Ctrl/Cmd+K (configurable)
+- Zero custom CSS - 100% F01 design tokens
+
+**F02 Refactoring**:
+- Extract api-client utilities from `@django-core/auth` to shared package
+- Update F02 imports to use `@django-core/api-client`
+
 <!-- MANUAL ADDITIONS END -->
