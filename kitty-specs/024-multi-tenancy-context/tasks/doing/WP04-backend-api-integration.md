@@ -1,18 +1,18 @@
 ---
 work_package_id: "WP04"
 subtasks:
-  - "T037"
-  - "T038"
-  - "T039"
-  - "T040"
-  - "T041"
-  - "T042"
-  - "T043"
-  - "T044"
-  - "T045"
-  - "T046"
-  - "T047"
-  - "T048"
+  - "T037"  # ✅ COMPLETE - organisationsApi.ts
+  - "T038"  # ✅ COMPLETE - projectsApi.ts
+  - "T039"  # ✅ COMPLETE - contextApi.ts
+  - "T040"  # ✅ COMPLETE - @django-core/api-client integration verified
+  - "T041"  # ✅ COMPLETE - MSW v2 handlers + server setup
+  - "T042"  # ⚠️ PARTIAL - Unit tests created but MSW type conflicts
+  - "T043"  # ⚠️ PARTIAL - Unit tests created but MSW type conflicts
+  - "T044"  # ⚠️ PARTIAL - Unit tests created but MSW type conflicts
+  - "T045"  # ❌ TODO - Update Provider to call fetchOrganisations
+  - "T046"  # ❌ TODO - Update Provider to call fetchProjects
+  - "T047"  # ❌ TODO - Update Provider to call fetch/set Context APIs
+  - "T048"  # ❌ TODO - Fix MSW conflicts & verify all tests pass
 title: "Backend API Integration"
 phase: "Phase 1 - Core Context & UI"
 lane: "doing"
@@ -27,6 +27,16 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-10T18:32:51Z"
+    lane: "doing"
+    agent: "claude-sonnet-4"
+    shell_pid: "212"
+    action: "Started WP04 - Backend API Integration"
+  - timestamp: "2025-12-10T19:15:00Z"
+    lane: "doing"
+    agent: "claude-sonnet-4"
+    shell_pid: "212"
+    action: "Completed T037-T044 (partial). Created API functions and unit tests. MSW type conflicts blocking test execution. Provider integration pending."
 ---
 
 # Work Package Prompt: WP04 – Backend API Integration
