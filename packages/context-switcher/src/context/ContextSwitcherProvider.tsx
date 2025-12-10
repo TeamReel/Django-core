@@ -19,7 +19,6 @@ import type {
 import {
   fetchOrganisations as apiFetchOrganisations,
   fetchProjects as apiFetchProjects,
-  fetchCurrentContext,
   setCurrentContext,
 } from '../api';
 
@@ -111,16 +110,6 @@ export function ContextSwitcherProvider({
       return apiFetchProjects(orgId, apiBaseUrl);
     },
     [apiBaseUrl]
-  );
-
-  /**
-   * Find project by slug from the projects list.
-   */
-  const findProject = useCallback(
-    (projectSlug: string): Project | null => {
-      return projects.find(proj => proj.slug === projectSlug) || null;
-    },
-    [projects]
   );
 
   /**
@@ -250,7 +239,7 @@ export function ContextSwitcherProvider({
         setIsSwitching(false);
       }
     },
-    [context, routerAdapter, onBeforeContextChange, onContextError]
+    [context, routerAdapter, onBeforeContextChange, onContextError, apiBaseUrl]
   );
 
   /**
