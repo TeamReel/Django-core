@@ -23,3 +23,6 @@ export {
 
 // Hooks
 export { useContextSwitcher } from './hooks';
+
+// Components
+export { ContextIndicator, type ContextIndicatorProps } from './components/ContextIndicator';
