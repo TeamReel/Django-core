@@ -3,10 +3,10 @@ work_package_id: "WP09"
 subtasks: ["T053", "T054", "T055", "T056"]
 title: "Unread Badge Component"
 phase: "Phase 4 - UI Components – Badge & Context Integration"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "26596"
 review_status: ""
 reviewed_by: ""
 history:
@@ -56,3 +56,4 @@ Test count display, variants, hide-when-zero, max count.
 
 ## Activity Log
 - 2025-12-11T15:43:19Z – system – lane=planned – Prompt created
+- 2025-12-11T18:48:13Z – claude – shell_pid=26596 – lane=doing – Started implementation
