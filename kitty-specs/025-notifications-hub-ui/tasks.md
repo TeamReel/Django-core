@@ -752,7 +752,7 @@ This document breaks down the implementation of F04 into discrete work packages 
 | WP | Title | Priority | Effort | Dependencies | Prompt File | Status |
 |----|-------|----------|--------|--------------|-------------|--------|
 | WP01 | Package Bootstrap & Configuration | P1 | 2-3h | None | `tasks/done/WP01-package-bootstrap.md` | ✅ DONE |
-| WP02 | Core Utilities & Test Helpers | P1 | 3-4h | WP01 | `WP02-core-utilities.md` | |
+| WP02 | Core Utilities & Test Helpers | P1 | 3-4h | WP01 | `tasks/done/WP02-core-utilities.md` | ✅ DONE |
 | WP03 | Notifications Context & Reducer | P1 | 4-5h | WP01, WP02 | `WP03-context-reducer.md` | |
 | WP04 | API Integration & Data Fetching | P1 | 4-5h | WP03 | `WP04-api-integration.md` |
 | WP05 | Custom Hooks | P1 | 3-4h | WP03, WP04 | `WP05-custom-hooks.md` |
