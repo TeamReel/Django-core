@@ -3,7 +3,7 @@ work_package_id: "WP11"
 subtasks: ["T065", "T066", "T067", "T068", "T069", "T070"]
 title: "Error Handling & Observability"
 phase: "Phase 5 - Error Handling, Performance & Accessibility"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "26596"
@@ -66,3 +66,4 @@ Test: API returns 500 → error message shown → retry succeeds.
 ## Activity Log
 - 2025-12-11T15:43:19Z – system – lane=planned – Prompt created
 - 2025-12-11T20:12:27Z – claude – shell_pid=26596 – lane=doing – Started WP11: Error Handling & Observability implementation
+- 2025-12-11T20:22:43Z – claude – shell_pid=26596 – lane=for_review – Ready for review: All tasks complete, 7/7 tests passing
