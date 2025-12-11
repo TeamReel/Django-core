@@ -7,10 +7,10 @@ subtasks:
   - "T010"
 title: "Core Utilities & Test Helpers"
 phase: "Phase 0 - Setup & Foundation"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "GitHub Copilot (Claude)"
+agent: "claude"
+shell_pid: "21096"
 review_status: ""
 reviewed_by: ""
 history:
@@ -696,3 +696,4 @@ export { renderWithProviders as render };
 ## Activity Log
 
 - 2025-12-11T15:43:19Z – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-11T16:18:17Z – claude – shell_pid=21096 – lane=doing – Started implementation
