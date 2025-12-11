@@ -394,7 +394,6 @@ Refactor `@django-core/auth` (F02) package to use the new shared `@django-core/a
 ## Activity Log
 
 - 2025-12-09T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
-- 2025-12-11T08:30:00Z – copilot – shell_pid= – lane=done – Work package marked complete for feature acceptance
 - 2025-01-23T12:00:00Z – claude – lane=doing – Started WP02, moved from planned
 - 2025-01-23T12:30:00Z – claude – lane=doing – **SCOPE CHANGE**: After investigation, F02's API structure differs significantly from shared client. F02 uses simple `apiClient(url, options): Promise<Response>` wrapper, while shared uses factory pattern returning `ApiResponse<T>`. Full refactoring would require breaking changes across F02. **Decision**: Minimal refactoring approach - only share getCsrfToken() function, keep F02's simpler API intact.
 - 2025-01-23T12:45:00Z – claude – lane=doing – ✅ T014: Added `@django-core/api-client: workspace:*` to peerDependencies
@@ -402,3 +401,4 @@ Refactor `@django-core/auth` (F02) package to use the new shared `@django-core/a
 - 2025-01-23T13:00:00Z – claude – lane=doing – ✅ Resolved Jest ES module parsing error by importing from source TypeScript (`@django-core/api-client/src/csrfToken`) instead of built dist files
 - 2025-01-23T13:10:00Z – claude – lane=doing – ✅ All tests passing: 261 passed, 3 skipped, 21 test suites
 - 2025-01-23T13:15:00Z – claude – lane=doing – **Remaining T016-T021 CANCELLED**: Original scope assumed duplicate code to remove, but F02's implementation serves different architectural purpose (simpler, response-based). Only getCsrfToken was truly duplicative (~5 lines). Keeping F02's errorNormalizer and apiClient as-is maintains API stability and test simplicity.
+- 2025-12-11T08:30:00Z – copilot – shell_pid= – lane=done – Work package marked complete for feature acceptance
