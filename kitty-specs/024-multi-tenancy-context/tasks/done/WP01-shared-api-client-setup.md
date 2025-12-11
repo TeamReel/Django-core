@@ -17,7 +17,7 @@ subtasks:
 title: "Shared API Client Package Setup"
 phase: "Phase 0 - Foundation"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude-sonnet-4"
 shell_pid: ""
 review_status: "approved without changes"
@@ -877,3 +877,4 @@ Create a standalone `@django-core/api-client` package that provides:
 - 2025-12-09T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-09T20:56:44Z – claude – shell_pid=8396 – lane=doing – Started implementation
 - 2025-12-09T21:45:00Z – claude – shell_pid=8396 – lane=doing – Completed all subtasks T001-T013. All DoD criteria met: ✅ Package structure created, ✅ TypeScript strict mode configured, ✅ ESLint/Prettier configured, ✅ Jest configured with 90%+ coverage threshold, ✅ All types defined (src/types.ts), ✅ CSRF token extraction implemented and tested (src/csrfToken.ts), ✅ Fetch wrapper with CSRF injection implemented (src/client.ts), ✅ B13 error normalizer implemented (src/errorNormalizer.ts), ✅ Public API exported (src/index.ts), ✅ 25 unit tests written covering all functions, ✅ Test coverage: 100% statements/functions/lines, 92% branches (exceeds 90% threshold), ✅ README complete with usage examples, ✅ Bundle size: 1.35 KB gzipped (<10KB target), ✅ pnpm build passes, ✅ pnpm lint passes (0 errors/warnings). Ready for review and WP02 integration.
+- 2025-12-11T08:30:00Z – copilot – shell_pid= – lane=done – Work package marked complete for feature acceptance

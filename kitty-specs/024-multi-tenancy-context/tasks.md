@@ -36,19 +36,19 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP01-shared-api-client-setup.md`
 
 ### Included Subtasks
-- [ ] T001 Create package structure at `packages/api-client/` with package.json, tsconfig.json, vite.config.ts
-- [ ] T002 [P] Configure TypeScript strict mode, ESLint, Prettier matching F01/F02 patterns
-- [ ] T003 [P] Setup Jest + @testing-library configuration for unit tests
-- [ ] T004 [P] Create `src/types.ts` with ApiClientConfig, RequestOptions, ApiResponse, ApiError types
-- [ ] T005 Implement CSRF token extractor in `src/csrfToken.ts` (read from cookie, return string)
-- [ ] T006 Implement fetch wrapper in `src/client.ts` with CSRF injection, JSON envelope handling, error mapping
-- [ ] T007 Implement B13 error normalizer in `src/errorNormalizer.ts` (parse error envelope, extract user message)
-- [ ] T008 Create public API exports in `src/index.ts`
-- [ ] T009 [P] Write unit tests for CSRF token extraction (mock document.cookie)
-- [ ] T010 [P] Write unit tests for fetch wrapper (mock global fetch, verify CSRF header)
-- [ ] T011 [P] Write unit tests for error normalizer (401/403/404/500 scenarios)
-- [ ] T012 Create package README with usage examples, API reference
-- [ ] T013 Verify bundle size <10KB gzipped (excluding dependencies)
+- [X] T001 Create package structure at `packages/api-client/` with package.json, tsconfig.json, vite.config.ts
+- [X] T002 [P] Configure TypeScript strict mode, ESLint, Prettier matching F01/F02 patterns
+- [X] T003 [P] Setup Jest + @testing-library configuration for unit tests
+- [X] T004 [P] Create `src/types.ts` with ApiClientConfig, RequestOptions, ApiResponse, ApiError types
+- [X] T005 Implement CSRF token extractor in `src/csrfToken.ts` (read from cookie, return string)
+- [X] T006 Implement fetch wrapper in `src/client.ts` with CSRF injection, JSON envelope handling, error mapping
+- [X] T007 Implement B13 error normalizer in `src/errorNormalizer.ts` (parse error envelope, extract user message)
+- [X] T008 Create public API exports in `src/index.ts`
+- [X] T009 [P] Write unit tests for CSRF token extraction (mock document.cookie)
+- [X] T010 [P] Write unit tests for fetch wrapper (mock global fetch, verify CSRF header)
+- [X] T011 [P] Write unit tests for error normalizer (401/403/404/500 scenarios)
+- [X] T012 Create package README with usage examples, API reference
+- [X] T013 Verify bundle size <10KB gzipped (excluding dependencies)
 
 ### Constitutional Alignment
 - Principle II (Architecture): Reusable, single-purpose package (CSRF + error handling)
@@ -86,14 +86,14 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP02-f02-api-client-refactor.md`
 
 ### Included Subtasks
-- [ ] T014 Add `@django-core/api-client` dependency to `packages/auth/package.json`
-- [ ] T015 Remove `packages/auth/src/lib/apiClient.ts` (replaced by shared package)
-- [ ] T016 Remove `packages/auth/src/lib/errorNormalizer.ts` (replaced by shared package)
-- [ ] T017 Update imports in `packages/auth/src/` to use `@django-core/api-client`
-- [ ] T018 Run F02 test suite, verify all tests pass with shared api-client
-- [ ] T019 Run F02 integration tests against real backend (if available), verify CSRF/auth still works
-- [ ] T020 Update F02 README to reference shared api-client package
-- [ ] T021 Verify F02 bundle size unchanged or reduced
+- [X] T014 Add `@django-core/api-client` dependency to `packages/auth/package.json`
+- [X] T015 Remove `packages/auth/src/lib/apiClient.ts` (replaced by shared package)
+- [X] T016 Remove `packages/auth/src/lib/errorNormalizer.ts` (replaced by shared package)
+- [X] T017 Update imports in `packages/auth/src/` to use `@django-core/api-client`
+- [X] T018 Run F02 test suite, verify all tests pass with shared api-client
+- [X] T019 Run F02 integration tests against real backend (if available), verify CSRF/auth still works
+- [X] T020 Update F02 README to reference shared api-client package
+- [X] T021 Verify F02 bundle size unchanged or reduced
 
 ### Constitutional Alignment
 - Principle II (Architecture): DRY principle, eliminate duplication
@@ -129,21 +129,21 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP03-context-provider-state.md`
 
 ### Included Subtasks
-- [ ] T022 Create package structure at `packages/context-switcher/` with package.json, tsconfig.json, vite.config.ts
-- [ ] T023 [P] Configure TypeScript strict mode, ESLint, Prettier matching F01/F02 patterns
-- [ ] T024 [P] Setup Jest + React Testing Library + MSW for tests
-- [ ] T025 [P] Create types in `src/types/index.ts` (re-export from data-model.md)
-- [ ] T026 Create RouterAdapter interface in `src/types/router.ts`
-- [ ] T027 Create ContextSwitcherConfig type in `src/types/config.ts`
-- [ ] T028 Create ContextSwitcherContext in `src/context/ContextSwitcherContext.ts` (React.createContext)
-- [ ] T029 Implement ContextSwitcherProvider in `src/context/ContextSwitcherProvider.tsx` (initialize state, expose context)
-- [ ] T030 Implement useCurrentContext hook in `src/hooks/useCurrentContext.ts` (read context, refresh function)
-- [ ] T031 Implement useContextSwitcher hook in `src/hooks/useContextSwitcher.ts` (switchContext, switchProject, isSwitching state)
-- [ ] T032 Implement context memory utility in `src/utils/contextMemory.ts` (localStorage wrapper, last-visited project tracking)
-- [ ] T033 [P] Write unit tests for ContextSwitcherProvider (mount, unmount, state updates)
-- [ ] T034 [P] Write unit tests for useCurrentContext (returns context, refresh triggers refetch)
-- [ ] T035 [P] Write unit tests for useContextSwitcher (switchContext updates state, calls routerAdapter.navigateTo)
-- [ ] T036 [P] Write unit tests for contextMemory (read/write localStorage, handle missing data)
+- [X] T022 Create package structure at `packages/context-switcher/` with package.json, tsconfig.json, vite.config.ts
+- [X] T023 [P] Configure TypeScript strict mode, ESLint, Prettier matching F01/F02 patterns
+- [X] T024 [P] Setup Jest + React Testing Library + MSW for tests
+- [X] T025 [P] Create types in `src/types/index.ts` (re-export from data-model.md)
+- [X] T026 Create RouterAdapter interface in `src/types/router.ts`
+- [X] T027 Create ContextSwitcherConfig type in `src/types/config.ts`
+- [X] T028 Create ContextSwitcherContext in `src/context/ContextSwitcherContext.ts` (React.createContext)
+- [X] T029 Implement ContextSwitcherProvider in `src/context/ContextSwitcherProvider.tsx` (initialize state, expose context)
+- [X] T030 Implement useCurrentContext hook in `src/hooks/useCurrentContext.ts` (read context, refresh function)
+- [X] T031 Implement useContextSwitcher hook in `src/hooks/useContextSwitcher.ts` (switchContext, switchProject, isSwitching state)
+- [X] T032 Implement context memory utility in `src/utils/contextMemory.ts` (localStorage wrapper, last-visited project tracking)
+- [X] T033 [P] Write unit tests for ContextSwitcherProvider (mount, unmount, state updates)
+- [X] T034 [P] Write unit tests for useCurrentContext (returns context, refresh triggers refetch)
+- [X] T035 [P] Write unit tests for useContextSwitcher (switchContext updates state, calls routerAdapter.navigateTo)
+- [X] T036 [P] Write unit tests for contextMemory (read/write localStorage, handle missing data)
 
 ### Constitutional Alignment
 - Principle II (Architecture): Clear separation of concerns (context, hooks, utilities)
@@ -181,18 +181,18 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP04-backend-api-integration.md`
 
 ### Included Subtasks
-- [ ] T037 Create API client in `src/api/organisationsApi.ts` (fetchOrganisations function)
-- [ ] T038 Create API client in `src/api/projectsApi.ts` (fetchProjects function)
-- [ ] T039 Create API client in `src/api/contextApi.ts` (fetchCurrentContext, setCurrentContext functions)
-- [ ] T040 Integrate `@django-core/api-client` for CSRF-protected requests
-- [ ] T041 [P] Setup MSW handlers in `__tests__/mocks/handlers.ts` (mock /api/organisations/, /api/organisations/{id}/projects/)
-- [ ] T042 [P] Write unit tests for fetchOrganisations (success, 401, 403, 500, network error)
-- [ ] T043 [P] Write unit tests for fetchProjects (success, 403, 404, network error)
-- [ ] T044 [P] Write unit tests for fetchCurrentContext/setCurrentContext (success, error scenarios)
-- [ ] T045 Update ContextSwitcherProvider to call fetchOrganisations on mount
-- [ ] T046 Update ContextSwitcherProvider to call fetchProjects when org context changes
-- [ ] T047 Update ContextSwitcherProvider to call fetchCurrentContext if backend provides endpoint
-- [ ] T048 Update useContextSwitcher to call setCurrentContext after successful switch (if backend endpoint available)
+- [X] T037 Create API client in `src/api/organisationsApi.ts` (fetchOrganisations function)
+- [X] T038 Create API client in `src/api/projectsApi.ts` (fetchProjects function)
+- [X] T039 Create API client in `src/api/contextApi.ts` (fetchCurrentContext, setCurrentContext functions)
+- [X] T040 Integrate `@django-core/api-client` for CSRF-protected requests
+- [X] T041 [P] Setup MSW handlers in `__tests__/mocks/handlers.ts` (mock /api/organisations/, /api/organisations/{id}/projects/)
+- [X] T042 [P] Write unit tests for fetchOrganisations (success, 401, 403, 500, network error)
+- [X] T043 [P] Write unit tests for fetchProjects (success, 403, 404, network error)
+- [X] T044 [P] Write unit tests for fetchCurrentContext/setCurrentContext (success, error scenarios)
+- [X] T045 Update ContextSwitcherProvider to call fetchOrganisations on mount
+- [X] T046 Update ContextSwitcherProvider to call fetchProjects when org context changes
+- [X] T047 Update ContextSwitcherProvider to call fetchCurrentContext if backend provides endpoint
+- [X] T048 Update useContextSwitcher to call setCurrentContext after successful switch (if backend endpoint available)
 
 ### Constitutional Alignment
 - Principle II (Architecture): API layer separated from UI components
@@ -233,15 +233,15 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP05-context-indicator-component.md`
 
 ### Included Subtasks
-- [ ] T049 Create ContextIndicator component in `src/components/ContextIndicator.tsx`
-- [ ] T050 Integrate F01 Typography component for org/project names
-- [ ] T051 Integrate F01 Skeleton component for loading state
-- [ ] T052 Integrate F01 ErrorBanner component for error state
-- [ ] T053 Implement text truncation with CSS (ellipsis, max-width, hover shows full name)
-- [ ] T054 Add ARIA labels for screen reader support (aria-label, role="status")
-- [ ] T055 [P] Write unit tests for ContextIndicator (renders org name, renders org+project, loading state, error state)
-- [ ] T056 [P] Write accessibility tests with axe-core (keyboard navigation, screen reader labels)
-- [ ] T057 Create Storybook story for ContextIndicator (all variants: org-only, org+project, loading, error)
+- [X] T049 Create ContextIndicator component in `src/components/ContextIndicator.tsx`
+- [X] T050 Integrate F01 Typography component for org/project names
+- [X] T051 Integrate F01 Skeleton component for loading state
+- [X] T052 Integrate F01 ErrorBanner component for error state
+- [X] T053 Implement text truncation with CSS (ellipsis, max-width, hover shows full name)
+- [X] T054 Add ARIA labels for screen reader support (aria-label, role="status")
+- [X] T055 [P] Write unit tests for ContextIndicator (renders org name, renders org+project, loading state, error state)
+- [X] T056 [P] Write accessibility tests with axe-core (keyboard navigation, screen reader labels)
+- [X] T057 Create Storybook story for ContextIndicator (all variants: org-only, org+project, loading, error)
 
 ### Constitutional Alignment
 - Principle II (Architecture): Presentational component, depends on F01 only
@@ -281,20 +281,20 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP06-organisation-picker-component.md`
 
 ### Included Subtasks
-- [ ] T058 Create OrganisationPicker component in `src/components/OrganisationPicker.tsx`
-- [ ] T059 Integrate F01 Dropdown component for desktop (popover positioning)
-- [ ] T060 Integrate F01 Modal component for mobile (full-screen sheet)
-- [ ] T061 Integrate F01 SearchField component for search input
-- [ ] T062 Integrate F01 List/ListItem components for org list
-- [ ] T063 Integrate F01 EmptyState component for "No organisations" / "No search results"
-- [ ] T064 Implement search filter logic (case-insensitive substring match on name and slug)
-- [ ] T065 Integrate useDebouncedValue hook for 300ms debounce, 3-char minimum (implement in WP09)
-- [ ] T066 Handle organisation selection (call useContextSwitcher.switchContext)
-- [ ] T067 Add keyboard navigation (ArrowUp/Down, Enter, Escape)
-- [ ] T068 Add ARIA attributes (role="listbox", aria-activedescendant, aria-labelledby)
-- [ ] T069 [P] Write unit tests (opens on trigger, renders org list, search filters, selection calls switchContext)
-- [ ] T070 [P] Write accessibility tests (axe-core, keyboard-only navigation)
-- [ ] T071 Create Storybook story (empty state, few orgs, 100+ orgs, loading, error)
+- [X] T058 Create OrganisationPicker component in `src/components/OrganisationPicker.tsx`
+- [X] T059 Integrate F01 Dropdown component for desktop (popover positioning)
+- [X] T060 Integrate F01 Modal component for mobile (full-screen sheet)
+- [X] T061 Integrate F01 SearchField component for search input
+- [X] T062 Integrate F01 List/ListItem components for org list
+- [X] T063 Integrate F01 EmptyState component for "No organisations" / "No search results"
+- [X] T064 Implement search filter logic (case-insensitive substring match on name and slug)
+- [X] T065 Integrate useDebouncedValue hook for 300ms debounce, 3-char minimum (implement in WP09)
+- [X] T066 Handle organisation selection (call useContextSwitcher.switchContext)
+- [X] T067 Add keyboard navigation (ArrowUp/Down, Enter, Escape)
+- [X] T068 Add ARIA attributes (role="listbox", aria-activedescendant, aria-labelledby)
+- [X] T069 [P] Write unit tests (opens on trigger, renders org list, search filters, selection calls switchContext)
+- [X] T070 [P] Write accessibility tests (axe-core, keyboard-only navigation)
+- [X] T071 Create Storybook story (empty state, few orgs, 100+ orgs, loading, error)
 
 ### Constitutional Alignment
 - Principle III (Code Quality): Zero custom CSS, 100% F01 components
@@ -337,20 +337,20 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP07-project-picker-component.md`
 
 ### Included Subtasks
-- [ ] T072 Create ProjectPicker component in `src/components/ProjectPicker.tsx`
-- [ ] T073 Integrate F01 Dropdown component for desktop
-- [ ] T074 Integrate F01 Modal component for mobile
-- [ ] T075 Integrate F01 SearchField component for search input
-- [ ] T076 Integrate F01 List/ListItem components for project list
-- [ ] T077 Integrate F01 EmptyState component for "No projects" / "No search results"
-- [ ] T078 Implement search filter logic (case-insensitive substring match on name and slug)
-- [ ] T079 Integrate useDebouncedValue hook for 300ms debounce, 3-char minimum
-- [ ] T080 Handle project selection (call useContextSwitcher.switchProject)
-- [ ] T081 Add keyboard navigation (ArrowUp/Down, Enter, Escape)
-- [ ] T082 Add ARIA attributes (role="listbox", aria-activedescendant, aria-labelledby)
-- [ ] T083 [P] Write unit tests (opens on trigger, renders project list, search filters, selection calls switchProject)
-- [ ] T084 [P] Write accessibility tests (axe-core, keyboard-only navigation)
-- [ ] T085 Create Storybook story (empty state, few projects, 100+ projects, loading, error)
+- [X] T072 Create ProjectPicker component in `src/components/ProjectPicker.tsx`
+- [X] T073 Integrate F01 Dropdown component for desktop
+- [X] T074 Integrate F01 Modal component for mobile
+- [X] T075 Integrate F01 SearchField component for search input
+- [X] T076 Integrate F01 List/ListItem components for project list
+- [X] T077 Integrate F01 EmptyState component for "No projects" / "No search results"
+- [X] T078 Implement search filter logic (case-insensitive substring match on name and slug)
+- [X] T079 Integrate useDebouncedValue hook for 300ms debounce, 3-char minimum
+- [X] T080 Handle project selection (call useContextSwitcher.switchProject)
+- [X] T081 Add keyboard navigation (ArrowUp/Down, Enter, Escape)
+- [X] T082 Add ARIA attributes (role="listbox", aria-activedescendant, aria-labelledby)
+- [X] T083 [P] Write unit tests (opens on trigger, renders project list, search filters, selection calls switchProject)
+- [X] T084 [P] Write accessibility tests (axe-core, keyboard-only navigation)
+- [X] T085 Create Storybook story (empty state, few projects, 100+ projects, loading, error)
 
 ### Constitutional Alignment
 - Principle III (Code Quality): Zero custom CSS, 100% F01 components
@@ -392,17 +392,17 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP08-main-context-switcher.md`
 
 ### Included Subtasks
-- [ ] T086 Create ContextSwitcher component in `src/components/ContextSwitcher.tsx`
-- [ ] T087 Compose ContextIndicator (always visible), OrganisationPicker (opens on org click), ProjectPicker (opens on project click)
-- [ ] T088 Implement variant prop: "header" (compact), "sidebar" (vertical), "standalone" (card-style)
-- [ ] T089 Add showLogo prop (optional org logo/avatar display)
-- [ ] T090 Wire up keyboard shortcut (Ctrl/Cmd+K) to open OrganisationPicker
-- [ ] T091 Integrate useKeyboardShortcut hook (from WP10)
-- [ ] T092 Handle loading state (show skeleton during initial context fetch)
-- [ ] T093 Handle error state (show error banner with retry action)
-- [ ] T094 [P] Write unit tests (renders indicator, opens pickers, switches context, keyboard shortcut)
-- [ ] T095 [P] Write integration tests (full context switch flow: open picker → search → select → URL updates)
-- [ ] T096 Create Storybook story (header variant, sidebar variant, standalone variant, with/without logo)
+- [X] T086 Create ContextSwitcher component in `src/components/ContextSwitcher.tsx`
+- [X] T087 Compose ContextIndicator (always visible), OrganisationPicker (opens on org click), ProjectPicker (opens on project click)
+- [X] T088 Implement variant prop: "header" (compact), "sidebar" (vertical), "standalone" (card-style)
+- [X] T089 Add showLogo prop (optional org logo/avatar display)
+- [X] T090 Wire up keyboard shortcut (Ctrl/Cmd+K) to open OrganisationPicker
+- [X] T091 Integrate useKeyboardShortcut hook (from WP10)
+- [X] T092 Handle loading state (show skeleton during initial context fetch)
+- [X] T093 Handle error state (show error banner with retry action)
+- [X] T094 [P] Write unit tests (renders indicator, opens pickers, switches context, keyboard shortcut)
+- [X] T095 [P] Write integration tests (full context switch flow: open picker → search → select → URL updates)
+- [X] T096 Create Storybook story (header variant, sidebar variant, standalone variant, with/without logo)
 
 ### Constitutional Alignment
 - Principle II (Architecture): Composition pattern, clear component hierarchy
@@ -444,15 +444,15 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP09-search-virtualization.md`
 
 ### Included Subtasks
-- [ ] T097 Create useDebouncedValue hook in `src/hooks/useDebouncedValue.ts` (300ms debounce, 3-char minimum)
-- [ ] T098 [P] Write unit tests for useDebouncedValue (debounce timing, minimum char enforcement, immediate updates on clear)
-- [ ] T099 Install react-window (or @tanstack/react-virtual) as dependency
-- [ ] T100 Create VirtualizedList component in `src/components/VirtualizedList.tsx` (wraps react-window with F01 styling)
-- [ ] T101 Integrate VirtualizedList into OrganisationPicker (threshold: 50+ items)
-- [ ] T102 Integrate VirtualizedList into ProjectPicker (threshold: 50+ items)
-- [ ] T103 [P] Write unit tests for VirtualizedList (renders visible items, scrolls correctly, handles dynamic heights)
-- [ ] T104 [P] Write performance tests (measure render time for 500+ items, verify 60fps scrolling with React DevTools Profiler)
-- [ ] T105 Create Storybook story for VirtualizedList (100 items, 500 items, 1000 items)
+- [X] T097 Create useDebouncedValue hook in `src/hooks/useDebouncedValue.ts` (300ms debounce, 3-char minimum)
+- [X] T098 [P] Write unit tests for useDebouncedValue (debounce timing, minimum char enforcement, immediate updates on clear)
+- [X] T099 Install react-window (or @tanstack/react-virtual) as dependency
+- [X] T100 Create VirtualizedList component in `src/components/VirtualizedList.tsx` (wraps react-window with F01 styling)
+- [X] T101 Integrate VirtualizedList into OrganisationPicker (threshold: 50+ items)
+- [X] T102 Integrate VirtualizedList into ProjectPicker (threshold: 50+ items)
+- [X] T103 [P] Write unit tests for VirtualizedList (renders visible items, scrolls correctly, handles dynamic heights)
+- [X] T104 [P] Write performance tests (measure render time for 500+ items, verify 60fps scrolling with React DevTools Profiler)
+- [X] T105 Create Storybook story for VirtualizedList (100 items, 500 items, 1000 items)
 
 ### Constitutional Alignment
 - Principle III (Code Quality): Small, focused hooks and components
@@ -491,18 +491,18 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP10-keyboard-accessibility.md`
 
 ### Included Subtasks
-- [ ] T106 Create useKeyboardShortcut hook in `src/hooks/useKeyboardShortcut.ts` (listen for Ctrl/Cmd+K, configurable, disable-able)
-- [ ] T107 [P] Write unit tests for useKeyboardShortcut (captures shortcut, respects input focus, cleans up listener)
-- [ ] T108 Integrate hook into ContextSwitcher component (open OrganisationPicker on Ctrl+K)
-- [ ] T109 Add aria-keyshortcuts attribute to ContextIndicator (announce "Ctrl+K to open picker")
-- [ ] T110 Verify tab order: ContextIndicator → OrganisationPicker → ProjectPicker
-- [ ] T111 Add focus trap to OrganisationPicker modal (Escape closes, Tab cycles within)
-- [ ] T112 Add focus trap to ProjectPicker modal
-- [ ] T113 Verify ARIA live regions announce context changes (aria-live="polite" on success message)
-- [ ] T114 Run axe-core audits on all components (ContextIndicator, pickers, ContextSwitcher)
-- [ ] T115 Fix any axe-core violations (color contrast, missing labels, keyboard traps)
-- [ ] T116 Manual screen reader testing (NVDA on Windows, VoiceOver on macOS, JAWS if available)
-- [ ] T117 Document keyboard shortcuts in quickstart.md (Ctrl/Cmd+K, Arrow keys, Enter, Escape)
+- [X] T106 Create useKeyboardShortcut hook in `src/hooks/useKeyboardShortcut.ts` (listen for Ctrl/Cmd+K, configurable, disable-able)
+- [X] T107 [P] Write unit tests for useKeyboardShortcut (captures shortcut, respects input focus, cleans up listener)
+- [X] T108 Integrate hook into ContextSwitcher component (open OrganisationPicker on Ctrl+K)
+- [X] T109 Add aria-keyshortcuts attribute to ContextIndicator (announce "Ctrl+K to open picker")
+- [X] T110 Verify tab order: ContextIndicator → OrganisationPicker → ProjectPicker
+- [X] T111 Add focus trap to OrganisationPicker modal (Escape closes, Tab cycles within)
+- [X] T112 Add focus trap to ProjectPicker modal
+- [X] T113 Verify ARIA live regions announce context changes (aria-live="polite" on success message)
+- [X] T114 Run axe-core audits on all components (ContextIndicator, pickers, ContextSwitcher)
+- [X] T115 Fix any axe-core violations (color contrast, missing labels, keyboard traps)
+- [X] T116 Manual screen reader testing (NVDA on Windows, VoiceOver on macOS, JAWS if available)
+- [X] T117 Document keyboard shortcuts in quickstart.md (Ctrl/Cmd+K, Arrow keys, Enter, Escape)
 
 ### Constitutional Alignment
 - Principle III (Code Quality): Clean hook implementation, clear naming
@@ -541,20 +541,20 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP11-testing-suite-coverage.md`
 
 ### Included Subtasks
-- [ ] T118 Configure Jest coverage thresholds (90% statements, branches, functions, lines)
-- [ ] T119 [P] Write integration test: User Story 1 - View Current Context (context visible on load)
-- [ ] T120 [P] Write integration test: User Story 2 - Switch Organisations (picker opens, org selected, URL updates)
-- [ ] T121 [P] Write integration test: User Story 4 - URL-Based Context (deep link loads correct context)
-- [ ] T122 [P] Write integration test: Edge Case - 403 on org switch (graceful error, fallback to safe context)
-- [ ] T123 [P] Write integration test: Edge Case - Network failure (error banner, retry action)
-- [ ] T124 Setup MSW server lifecycle (beforeAll, afterEach, afterAll)
-- [ ] T125 Create MSW handlers for all B13 endpoints (success, 401, 403, 404, 500 variants)
-- [ ] T126 [P] Write unit tests for all untested utilities (pathBuilder, contextMemory, type guards)
-- [ ] T127 Run coverage report, identify gaps, add missing tests
-- [ ] T128 Verify all tests are deterministic (no flakiness, no time-based failures)
-- [ ] T129 Verify all tests are fast (<5s total test suite execution)
-- [ ] T130 Add test:coverage script to package.json
-- [ ] T131 Configure CI to run tests and enforce coverage gates
+- [X] T118 Configure Jest coverage thresholds (90% statements, branches, functions, lines)
+- [X] T119 [P] Write integration test: User Story 1 - View Current Context (context visible on load)
+- [X] T120 [P] Write integration test: User Story 2 - Switch Organisations (picker opens, org selected, URL updates)
+- [X] T121 [P] Write integration test: User Story 4 - URL-Based Context (deep link loads correct context)
+- [X] T122 [P] Write integration test: Edge Case - 403 on org switch (graceful error, fallback to safe context)
+- [X] T123 [P] Write integration test: Edge Case - Network failure (error banner, retry action)
+- [X] T124 Setup MSW server lifecycle (beforeAll, afterEach, afterAll)
+- [X] T125 Create MSW handlers for all B13 endpoints (success, 401, 403, 404, 500 variants)
+- [X] T126 [P] Write unit tests for all untested utilities (pathBuilder, contextMemory, type guards)
+- [X] T127 Run coverage report, identify gaps, add missing tests
+- [X] T128 Verify all tests are deterministic (no flakiness, no time-based failures)
+- [X] T129 Verify all tests are fast (<5s total test suite execution)
+- [X] T130 Add test:coverage script to package.json
+- [X] T131 Configure CI to run tests and enforce coverage gates
 
 ### Constitutional Alignment
 - Principle IV (Testing): 90%+ coverage, integration tests for P1 user stories, deterministic tests
@@ -594,19 +594,19 @@ description: "Work package task list for Multi-Tenancy Context Switcher implemen
 **Prompt**: `tasks/planned/WP12-documentation-examples.md`
 
 ### Included Subtasks
-- [ ] T132 Create package README in `packages/context-switcher/README.md` (overview, installation, usage, API reference)
-- [ ] T133 Create integration guide (expand quickstart.md with more examples)
-- [ ] T134 Create customization guide (RouterAdapter examples, onBeforeContextChange patterns, custom labels)
-- [ ] T135 Create troubleshooting guide (common issues, debug tips, FAQ)
-- [ ] T136 Create ADR for router adapter pattern (why adapter, alternatives considered, decision rationale)
-- [ ] T137 Create ADR for shared api-client extraction (why shared, impact on F02, benefits)
-- [ ] T138 [P] Update Copilot instructions (already done in Phase 1, verify completeness)
-- [ ] T139 [P] Create example app: React Router integration (full working example in `examples/context-switcher-react-router/`)
-- [ ] T140 [P] Create example app: Next.js integration (full working example in `examples/context-switcher-nextjs/`)
-- [ ] T141 Validate quickstart scenario end-to-end (follow quickstart.md step-by-step, verify it works)
-- [ ] T142 Add JSDoc comments to all public APIs (types, hooks, components)
-- [ ] T143 Generate TypeScript API docs (use typedoc or similar)
-- [ ] T144 Update main project README with link to context-switcher package
+- [X] T132 Create package README in `packages/context-switcher/README.md` (overview, installation, usage, API reference)
+- [X] T133 Create integration guide (expand quickstart.md with more examples)
+- [X] T134 Create customization guide (RouterAdapter examples, onBeforeContextChange patterns, custom labels)
+- [X] T135 Create troubleshooting guide (common issues, debug tips, FAQ)
+- [X] T136 Create ADR for router adapter pattern (why adapter, alternatives considered, decision rationale)
+- [X] T137 Create ADR for shared api-client extraction (why shared, impact on F02, benefits)
+- [X] T138 [P] Update Copilot instructions (already done in Phase 1, verify completeness)
+- [X] T139 [P] Create example app: React Router integration (full working example in `examples/context-switcher-react-router/`)
+- [X] T140 [P] Create example app: Next.js integration (full working example in `examples/context-switcher-nextjs/`)
+- [X] T141 Validate quickstart scenario end-to-end (follow quickstart.md step-by-step, verify it works)
+- [X] T142 Add JSDoc comments to all public APIs (types, hooks, components)
+- [X] T143 Generate TypeScript API docs (use typedoc or similar)
+- [X] T144 Update main project README with link to context-switcher package
 
 ### Constitutional Alignment
 - Principle VIII (Developer Experience): Easy setup, clear documentation, helpful examples

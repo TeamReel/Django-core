@@ -18,7 +18,7 @@ subtasks:
 title: "Organisation Picker Component"
 phase: "Phase 1 - Core Context & UI"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude-sonnet-4"
 shell_pid: "212"
 review_status: "approved with minor notes"

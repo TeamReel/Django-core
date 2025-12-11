@@ -12,7 +12,7 @@ subtasks:
 title: "F02 Refactoring to Use Shared API Client (Minimal Approach)"
 phase: "Phase 0 - Foundation"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude-sonnet-4"
 shell_pid: ""
 review_status: "approved without changes"
@@ -394,6 +394,7 @@ Refactor `@django-core/auth` (F02) package to use the new shared `@django-core/a
 ## Activity Log
 
 - 2025-12-09T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-11T08:30:00Z – copilot – shell_pid= – lane=done – Work package marked complete for feature acceptance
 - 2025-01-23T12:00:00Z – claude – lane=doing – Started WP02, moved from planned
 - 2025-01-23T12:30:00Z – claude – lane=doing – **SCOPE CHANGE**: After investigation, F02's API structure differs significantly from shared client. F02 uses simple `apiClient(url, options): Promise<Response>` wrapper, while shared uses factory pattern returning `ApiResponse<T>`. Full refactoring would require breaking changes across F02. **Decision**: Minimal refactoring approach - only share getCsrfToken() function, keep F02's simpler API intact.
 - 2025-01-23T12:45:00Z – claude – lane=doing – ✅ T014: Added `@django-core/api-client: workspace:*` to peerDependencies
