@@ -1,7 +1,7 @@
-﻿{
-    "feature_number":  "024",
-    "slug":  "024-multi-tenancy-context",
-    "friendly_name":  "Multi-Tenancy Context Switcher",
-    "source_description":  "F03-multi-tenancy-context-switcher",
-    "created_at":  "2025-12-09T17:05:02Z"
+{
+    "feature_number": "024",
+    "slug": "024-multi-tenancy-context",
+    "friendly_name": "Multi-Tenancy Context Switcher",
+    "source_description": "F03-multi-tenancy-context-switcher",
+    "created_at": "2025-12-09T17:05:02Z"
 }
