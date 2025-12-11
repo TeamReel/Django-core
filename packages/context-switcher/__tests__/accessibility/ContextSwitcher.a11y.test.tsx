@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { ContextSwitcher } from '../../src/components/ContextSwitcher';
 import { ContextSwitcherProvider } from '../../src/context/ContextSwitcherProvider';
 import type { RouterAdapter } from '../../src/types';
+import { API_BASE_URL } from '../testUtils/apiTestConfig';
 
 expect.extend(toHaveNoViolations);
 
@@ -58,7 +59,7 @@ const renderWithProvider = (ui: React.ReactElement) => {
     <ContextSwitcherProvider
       config={{
         routerAdapter: mockRouterAdapter,
-        apiBaseUrl: '/api/v1',
+        apiBaseUrl: API_BASE_URL,
       }}
     >
       {ui}

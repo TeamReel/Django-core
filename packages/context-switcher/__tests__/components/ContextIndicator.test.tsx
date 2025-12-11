@@ -10,6 +10,7 @@ import { ContextSwitcherProvider } from '../../src/context/ContextSwitcherProvid
 import type { RouterAdapter } from '../../src/types/router';
 import type { Organisation, Project } from '../../src/types';
 import * as api from '../../src/api';
+import { API_BASE_URL } from '../testUtils/apiTestConfig';
 
 // Mock the design system components
 jest.mock('@django-core/design-system', () => ({
@@ -60,7 +61,7 @@ describe('ContextIndicator', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -90,7 +91,7 @@ describe('ContextIndicator', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: routerWithProject,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -111,7 +112,7 @@ describe('ContextIndicator', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -130,7 +131,7 @@ describe('ContextIndicator', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -160,7 +161,7 @@ describe('ContextIndicator', () => {
             ...mockRouterAdapter,
             getCurrentPath: () => `/${longOrg.slug}`,
           },
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -192,7 +193,7 @@ describe('ContextIndicator', () => {
             ...mockRouterAdapter,
             getCurrentPath: () => '/acme-corp/website',
           },
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -220,7 +221,7 @@ describe('ContextIndicator', () => {
             ...mockRouterAdapter,
             getCurrentPath: () => '/acme-corp/website',
           },
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -245,7 +246,7 @@ describe('ContextIndicator', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />

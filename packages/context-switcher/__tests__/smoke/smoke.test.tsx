@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import type { RouterAdapter } from '../../src/types';
+import { API_BASE_URL } from '../testUtils/apiTestConfig';
 
 // Import all public APIs
 import {
@@ -71,7 +72,7 @@ describe('Smoke tests', () => {
           <ContextSwitcherProvider
             config={{
               routerAdapter: mockRouterAdapter,
-              apiBaseUrl: '/api',
+              apiBaseUrl: API_BASE_URL,
             }}
           >
             <div>Test Child</div>
@@ -86,7 +87,7 @@ describe('Smoke tests', () => {
           <ContextSwitcherProvider
             config={{
               routerAdapter: mockRouterAdapter,
-              apiBaseUrl: '/api',
+              apiBaseUrl: API_BASE_URL,
             }}
           >
             <ContextSwitcher />
@@ -101,7 +102,7 @@ describe('Smoke tests', () => {
           <ContextSwitcherProvider
             config={{
               routerAdapter: mockRouterAdapter,
-              apiBaseUrl: '/api',
+              apiBaseUrl: API_BASE_URL,
             }}
           >
             <ContextIndicator />
@@ -116,7 +117,7 @@ describe('Smoke tests', () => {
           <ContextSwitcherProvider
             config={{
               routerAdapter: mockRouterAdapter,
-              apiBaseUrl: '/api',
+              apiBaseUrl: API_BASE_URL,
             }}
           >
             <OrganisationPicker isOpen={false} onClose={() => {}} />
@@ -131,7 +132,7 @@ describe('Smoke tests', () => {
           <ContextSwitcherProvider
             config={{
               routerAdapter: mockRouterAdapter,
-              apiBaseUrl: '/api',
+              apiBaseUrl: API_BASE_URL,
             }}
           >
             <ProjectPicker isOpen={false} onClose={() => {}} />

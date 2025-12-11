@@ -75,18 +75,19 @@ function VirtualizedListInner<T>({
     <div style={style}>{renderItem(items[index], index)}</div>
   );
 
+  // Cast List to any to work around react-window type definition issues
+  const ListComponent = List as any;
+
   return (
-    // @ts-expect-error - react-window List component has type inference issues in some environments
-    <List
+    <ListComponent
       className={className}
       height={height}
       itemCount={items.length}
       itemSize={itemHeight}
       width="100%"
     >
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      {Row as any}
-    </List>
+      {Row}
+    </ListComponent>
   );
 }
 

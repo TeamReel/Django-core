@@ -5,9 +5,10 @@
  */
 
 import { rest } from 'msw';
+import { MSW_BASE_URL } from '../testUtils/apiTestConfig';
 
 // Use localhost URL for MSW 1.x compatibility with jsdom
-const BASE_URL = 'http://localhost';
+const BASE_URL = MSW_BASE_URL;
 
 export const handlers = [
   // GET /api/organisations/

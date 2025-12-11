@@ -5,6 +5,7 @@ import { useContextSwitcher } from '../../src/hooks/useContextSwitcher';
 import type { RouterAdapter } from '../../src/types';
 import { server } from '../mocks/server';
 import { rest } from 'msw';
+import { API_BASE_URL, MSW_BASE_URL } from '../testUtils/apiTestConfig';
 
 // Mock router adapter
 const mockRouterAdapter: RouterAdapter = {
@@ -64,7 +65,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <TestComponent />
@@ -88,7 +89,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <TestComponent />
@@ -106,7 +107,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <TestComponent />
@@ -131,7 +132,7 @@ describe('ContextSwitcherProvider', () => {
 
   it('handles API errors gracefully', async () => {
     server.use(
-      rest.get('/api/organisations/', (req, res, ctx) => {
+      rest.get(`${MSW_BASE_URL}/api/organisations/`, (req, res, ctx) => {
         return res(ctx.status(500), ctx.json(
           { detail: 'Internal Server Error' }));
       })
@@ -141,7 +142,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <TestComponent />
@@ -158,7 +159,7 @@ describe('ContextSwitcherProvider', () => {
 
   it('clears project when switching to org with no projects', async () => {
     server.use(
-      rest.get('/api/organisations/org_456/projects/', (req, res, ctx) => {
+      rest.get(`${MSW_BASE_URL}/api/organisations/org_456/projects/`, (req, res, ctx) => {
         return res(ctx.json({ projects: [] }));
       })
     );
@@ -167,7 +168,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <TestComponent />
@@ -196,7 +197,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
           onContextChanged,
         }}
       >
@@ -216,7 +217,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
           onBeforeContextChange,
         }}
       >
@@ -245,7 +246,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
           onBeforeContextChange,
         }}
       >
@@ -275,7 +276,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <TestComponent />
@@ -304,7 +305,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <TestComponent />
@@ -325,7 +326,7 @@ describe('ContextSwitcherProvider', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <TestComponent />

@@ -4,6 +4,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { ProjectPicker } from '../../src/components/ProjectPicker';
 import { ContextSwitcherProvider } from '../../src/context/ContextSwitcherProvider';
 import type { ContextSwitcherConfig, Organisation, Project } from '../../src/types';
+import { API_BASE_URL } from '../testUtils/apiTestConfig';
 
 expect.extend(toHaveNoViolations);
 
@@ -47,7 +48,7 @@ const mockConfig: ContextSwitcherConfig = {
     buildPathForContext: () => '/test-path',
     navigateTo: jest.fn(),
   },
-  apiBaseUrl: '/api/v1',
+  apiBaseUrl: API_BASE_URL,
 };
 
 function renderWithProvider(ui: React.ReactElement, config = mockConfig) {
@@ -117,7 +118,7 @@ describe('ProjectPicker Accessibility', () => {
         buildPathForContext: () => '/test-path',
         navigateTo: jest.fn(),
       },
-      apiBaseUrl: '/api/v1',
+      apiBaseUrl: API_BASE_URL,
     };
 
     const { container } = renderWithProvider(
@@ -220,7 +221,7 @@ describe('ProjectPicker Accessibility', () => {
         buildPathForContext: () => '/test-path',
         navigateTo: jest.fn(),
       },
-      apiBaseUrl: '/api/v1',
+      apiBaseUrl: API_BASE_URL,
     };
 
     renderWithProvider(
