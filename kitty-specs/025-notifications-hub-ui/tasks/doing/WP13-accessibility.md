@@ -3,10 +3,10 @@ work_package_id: "WP13"
 subtasks: ["T076", "T077", "T078", "T079", "T080"]
 title: "Accessibility & Keyboard Navigation"
 phase: "Phase 5 - Error Handling, Performance & Accessibility"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "26596"
 review_status: ""
 reviewed_by: ""
 history:
@@ -61,3 +61,4 @@ Test with NVDA/JAWS (Windows), VoiceOver (macOS). Keyboard-only navigation. Run 
 
 ## Activity Log
 - 2025-12-11T15:43:19Z – system – lane=planned – Prompt created
+- 2025-12-11T20:49:59Z – claude – shell_pid=26596 – lane=doing – Started WP13: Accessibility & Keyboard Navigation
