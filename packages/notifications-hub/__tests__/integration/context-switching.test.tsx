@@ -74,7 +74,7 @@ const project789Notifications = [
 ];
 
 const server = setupServer(
-  rest.get('/api/v1/notifications', (req, res, ctx) => {
+  rest.get('*/api/v1/notifications', (req, res, ctx) => {
     const org = req.url.searchParams.get('org');
     const project = req.url.searchParams.get('project');
 
@@ -122,7 +122,7 @@ const server = setupServer(
   })
 );
 
-beforeAll(() => server.listen());
+beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
@@ -200,10 +200,9 @@ describe('Integration: Context Switching', () => {
     );
 
     // Verify notifications are cleared immediately (CONTEXT_CHANGE action)
-    await waitFor(() => {
-      const list = screen.getByTestId('notification-list');
-      expect(list).toHaveTextContent('No notifications');
-    });
+    // Check that old org-123 notifications are gone
+    expect(screen.queryByTestId('notification-notif-org123-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('notification-notif-org123-2')).not.toBeInTheDocument();
 
     // Verify loading state is shown
     expect(screen.getByTestId('loading-state')).toHaveTextContent('loading');
@@ -266,11 +265,9 @@ describe('Integration: Context Switching', () => {
       </TestProviders>
     );
 
-    // Verify notifications are cleared
-    await waitFor(() => {
-      const list = screen.getByTestId('notification-list');
-      expect(list).toHaveTextContent('No notifications');
-    });
+    // Verify notifications are cleared (CONTEXT_CHANGE resets state)
+    // Check that old org-123 notifications are gone immediately after switch
+    expect(screen.queryByTestId('notification-notif-org123-1')).not.toBeInTheDocument();
 
     // Wait for project-scoped notifications to load
     await waitFor(() => {

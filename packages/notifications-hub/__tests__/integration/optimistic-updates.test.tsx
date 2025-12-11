@@ -59,7 +59,7 @@ let shouldMarkReadFail = false;
 let markReadCallCount = 0;
 
 const server = setupServer(
-  rest.get('/api/v1/notifications', (req, res, ctx) => {
+  rest.get('*/api/v1/notifications', (req, res, ctx) => {
     return res(
       ctx.json({
         results: mockNotifications,
@@ -70,7 +70,7 @@ const server = setupServer(
     );
   }),
 
-  rest.patch('/api/v1/notifications/:id/read', (req, res, ctx) => {
+  rest.patch('*/api/v1/notifications/:id/read', (req, res, ctx) => {
     markReadCallCount++;
 
     if (shouldMarkReadFail) {
@@ -87,7 +87,7 @@ const server = setupServer(
   })
 );
 
-beforeAll(() => server.listen());
+beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
 afterEach(() => {
   server.resetHandlers();
   shouldMarkReadFail = false;
@@ -98,7 +98,7 @@ afterAll(() => server.close());
 // Test component with mark-as-read action
 function TestComponent() {
   const { notifications, loading, error, markAsRead } = useNotifications();
-  const unreadCount = useUnreadCount();
+  const { count: unreadCount } = useUnreadCount();
 
   return (
     <div>

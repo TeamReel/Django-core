@@ -23,7 +23,8 @@ export function NotificationsProvider({
   const isPollingActiveRef = useRef(true);
 
   // F02 auth context
-  const { isAuthenticated } = useAuth();
+  const { status: authStatus } = useAuth();
+  const isAuthenticated = authStatus === 'authenticated';
 
   // F03 multi-tenancy context
   const { context } = useContextSwitcher();

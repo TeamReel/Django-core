@@ -127,3 +127,4 @@ Test: mark as read → UI updates immediately → API fails → state reverted �
 - 2025-12-11T19:20:15Z – claude-reviewer – shell_pid=26596 – lane=planned – Code review complete: TestProviders uses incorrect provider APIs, tests cannot run
 - 2025-12-11T19:19:45Z – claude-reviewer – shell_pid=26596 – lane=planned – Code review complete: TestProviders uses incorrect provider APIs, tests cannot run
 - 2025-12-11T19:21:33Z – claude – shell_pid=26596 – lane=doing – Addressing review feedback - fixing provider configuration
+- 2025-12-11T19:30:00Z – claude – shell_pid=26596 – lane=doing – Fixed provider configuration: TestProviders now uses ContextSwitcherContext.Provider + AuthContext.Provider, NotificationsProvider uses useContextSwitcher hook, TestComponent destructures useUnreadCount correctly. Tests now run (provider errors resolved), but have assertion/timing failures needing investigation.
