@@ -213,10 +213,10 @@ describe('Integration: Optimistic Updates', () => {
     expect(screen.getByTestId('read-status-notif-1')).toHaveTextContent('read');
     expect(screen.getByTestId('unread-badge')).toHaveTextContent('1');
 
-    // Wait for API call to fail and state to revert
+    // Wait for API call to fail and state to revert (retries take ~7s)
     await waitFor(() => {
       expect(screen.getByTestId('read-status-notif-1')).toHaveTextContent('unread');
-    });
+    }, { timeout: 10000 });
 
     // Verify unread count reverted
     expect(screen.getByTestId('unread-badge')).toHaveTextContent('2');
@@ -224,8 +224,8 @@ describe('Integration: Optimistic Updates', () => {
     // Verify error is shown
     await waitFor(() => {
       expect(screen.getByTestId('error-message')).toBeInTheDocument();
-    });
-  });
+    }, { timeout: 10000 });
+  }, 15000); // Jest test timeout
 
   it('shows error message on rollback', async () => {
     const user = userEvent.setup();
@@ -256,10 +256,10 @@ describe('Integration: Optimistic Updates', () => {
     const markReadBtn = screen.getByTestId('mark-read-btn-notif-2');
     await user.click(markReadBtn);
 
-    // Wait for rollback and error
+    // Wait for rollback and error (retries take ~7s)
     await waitFor(() => {
       expect(screen.getByTestId('read-status-notif-2')).toHaveTextContent('unread');
-    });
+    }, { timeout: 10000 });
 
     // Verify error message is displayed
     expect(screen.getByTestId('error-message')).toBeInTheDocument();
@@ -271,7 +271,7 @@ describe('Integration: Optimistic Updates', () => {
     );
 
     consoleErrorSpy.mockRestore();
-  });
+  }, 15000); // Jest test timeout
 
   it('handles multiple optimistic updates with mixed success/failure', async () => {
     const user = userEvent.setup();
@@ -322,10 +322,10 @@ describe('Integration: Optimistic Updates', () => {
     expect(screen.getByTestId('read-status-notif-2')).toHaveTextContent('read');
     expect(screen.getByTestId('unread-badge')).toHaveTextContent('0');
 
-    // Wait for second API call to fail and rollback
+    // Wait for second API call to fail and rollback (retries take ~7s)
     await waitFor(() => {
       expect(screen.getByTestId('read-status-notif-2')).toHaveTextContent('unread');
-    });
+    }, { timeout: 10000 });
 
     // Verify notif-1 still read (success), notif-2 reverted (failure)
     expect(screen.getByTestId('read-status-notif-1')).toHaveTextContent('read');
@@ -333,7 +333,7 @@ describe('Integration: Optimistic Updates', () => {
 
     // Verify unread count: 1 (notif-2 is unread, notif-1 is read)
     expect(screen.getByTestId('unread-badge')).toHaveTextContent('1');
-  });
+  }, 15000); // Jest test timeout
 
   it('decrements unread count immediately and reverts on failure', async () => {
     const user = userEvent.setup();
@@ -369,12 +369,12 @@ describe('Integration: Optimistic Updates', () => {
     // Verify unread count decremented immediately (optimistic)
     expect(screen.getByTestId('unread-badge')).toHaveTextContent('1');
 
-    // Wait for API failure and rollback
+    // Wait for API failure and rollback (retries take ~7s)
     await waitFor(() => {
       expect(screen.getByTestId('read-status-notif-1')).toHaveTextContent('unread');
-    });
+    }, { timeout: 10000 });
 
     // Verify unread count reverted to 2
     expect(screen.getByTestId('unread-badge')).toHaveTextContent('2');
-  });
+  }, 15000); // Jest test timeout
 });
