@@ -3,10 +3,10 @@ work_package_id: "WP14"
 subtasks: ["T081", "T082", "T083", "T084", "T085"]
 title: "Documentation & Examples"
 phase: "Phase 6 - Documentation & Polish"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "claude"
+agent: "claude"
+shell_pid: "26596"
 review_status: ""
 reviewed_by: ""
 history:
@@ -61,3 +61,4 @@ Common issues: notifications not loading, toasts not appearing, badge not updati
 
 ## Activity Log
 - 2025-12-11T15:43:19Z – system – lane=planned – Prompt created
+- 2025-12-11T21:35:00Z – claude – shell_pid=26596 – lane=doing – Started WP14: Documentation & Examples
