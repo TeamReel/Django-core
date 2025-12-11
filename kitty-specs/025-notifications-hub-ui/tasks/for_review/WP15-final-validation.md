@@ -3,10 +3,10 @@ work_package_id: "WP15"
 subtasks: ["T086", "T087", "T088", "T089", "T090"]
 title: "Final Validation & Browser Testing"
 phase: "Phase 6 - Documentation & Polish"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
-shell_pid: "26596"
+shell_pid: ""
 review_status: ""
 reviewed_by: ""
 history:
