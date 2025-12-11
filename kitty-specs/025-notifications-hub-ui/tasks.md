@@ -664,18 +664,19 @@ This document breaks down the implementation of F04 into discrete work packages 
 
 #### WP13 – Accessibility & Keyboard Navigation
 **Priority**: P2 (User Story compliance)
-**Prompt**: `tasks/planned/WP13-accessibility.md`
+**Prompt**: `tasks/done/WP13-accessibility.md`
 **Dependencies**: WP06, WP08
 **Estimated Effort**: 3-4 hours
+**Status**: ✅ DONE (Reviewed by claude-reviewer on 2025-12-11)
 
 **Objective**: Ensure full keyboard navigation, screen reader support, and WCAG 2.1 AA compliance for all notification UI components.
 
 **Included Subtasks**:
-- [x] T076 – Add ARIA labels to all interactive elements
-- [x] T077 – Implement keyboard shortcuts
-- [x] T078 – Add screen reader announcements
-- [x] T079 – Ensure focus management
-- [x] T080 – Test with keyboard/screen reader
+- [X] T076 – Add ARIA labels to all interactive elements
+- [X] T077 – Implement keyboard shortcuts
+- [X] T078 – Add screen reader announcements
+- [X] T079 – Ensure focus management
+- [X] T080 – Test with keyboard/screen reader
 
 **Success Criteria**:
 - All buttons, links, panels have clear ARIA labels
