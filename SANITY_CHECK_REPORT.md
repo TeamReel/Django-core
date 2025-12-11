@@ -1,24 +1,62 @@
 # Repository Sanity Check Report
 **Date**: 2025-12-11
-**Branch**: main (post-merge of F03: 024-multi-tenancy-context)
-**Commit**: 835a742e
-**Last Updated**: 2025-12-11 (TypeScript compilation fixes complete)
+**Branch**: main
+**Commit**: f75a6d5b
+**Last Updated**: 2025-12-11 (Behavioral test fixes in progress)
 
 ## Summary
 
-**Overall Status**: 🔄 **IN PROGRESS** - All packages compile, significant test progress
+**Overall Status**: 🔄 **IN PROGRESS** - All packages compile, 69% tests passing
 
 ### Validation Results
 
 | Command | Status | Details |
 |---------|--------|---------|
 | `pnpm lint` | ✅ **PASSING** | 0 errors, 0 warnings |
-| `pnpm test` | 🔄 **IN PROGRESS** | context-switcher: 81/178 tests passing, 15/19 suites failing behaviorally |
+| `pnpm test` | 🔄 **IN PROGRESS** | context-switcher: 129/187 tests passing (69%), 14/19 suites failing |
 | `pnpm build` | ⏸️ **SKIPPED** | (deferred) |
 
 ---
 
-## Status Update (2025-12-11)
+## Status Update (2025-12-11 - Behavioral Fixes)
+
+### ✅ **Major Provider Bug Fixed + Test Suite Updates**
+
+**Critical Fix**: ContextSwitcherProvider was using stale state instead of fresh fetched data
+- Issue: `findOrganisation` called after `setOrganisations` but state updates are async
+- Fix: Use fetched `allOrgs` array directly instead of relying on state
+- Impact: 48 additional tests now passing (from 81 → 129)
+
+**Test Updates**:
+1. **ContextIndicator.a11y.test.tsx** (7/9 passing, was 0/9)
+   - Updated all tests to use `config` prop pattern instead of invalid `routerAdapter`/`initialContext` props
+   - Fixed API mocks to properly simulate loading/error/success states
+   - Fixed querySelector specificity to avoid selecting provider's ARIA live region
+
+2. **contextApi.test.ts** (8/8 passing, was 7/8)
+   - Fixed test expectation to match graceful fallback behavior (returns null instead of throwing)
+
+**Current Test Status**:
+- **Smoke tests**: 19/20 passing (95%) - only missing `module` field in package.json
+- **API tests**: 3/3 suites passing (organisationsApi, projectsApi, contextApi)
+- **Hook tests**: 2/2 suites passing (useDebouncedValue, useKeyboardShortcut)
+- **Accessibility tests**:
+  - ContextIndicator.a11y: 7/9 passing
+  - OrganisationPicker.a11y: 8/10 passing
+  - ProjectPicker.a11y: 8/10 passing
+  - ContextSwitcher.a11y: 0/13 passing (needs querySelector fixes)
+- **Component tests**: ~58% passing (21/50 failing)
+- **Integration tests**: Failing (needs investigation)
+- **Edge case tests**: Failing (needs investigation)
+
+**Files Modified**:
+- `packages/context-switcher/src/context/ContextSwitcherProvider.tsx` (critical bug fix)
+- `packages/context-switcher/__tests__/accessibility/ContextIndicator.a11y.test.tsx`
+- `packages/context-switcher/__tests__/api/contextApi.test.ts`
+
+---
+
+## Status Update (2025-12-11 - TypeScript Compilation)
 
 ### ✅ **TypeScript Compilation Errors Resolved**
 
