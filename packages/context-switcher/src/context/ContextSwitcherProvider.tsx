@@ -141,8 +141,8 @@ export function ContextSwitcherProvider({
         return;
       }
 
-      // Find organisation from list
-      const organisation = findOrganisation(orgSlug);
+      // Find organisation from fetched list (not state, since setState is async)
+      const organisation = allOrgs.find(org => org.slug === orgSlug) || null;
       if (!organisation) {
         throw new Error(`Organisation not found: ${orgSlug}`);
       }
