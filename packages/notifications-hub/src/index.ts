@@ -13,6 +13,7 @@ export * from './components/NotificationList';
 export * from './components/NotificationPanel';
 export * from './components/UnreadBadge';
 export * from './components/ErrorBoundary';
+export * from './components/PerformanceMonitor';
 
 // Context (for provider)
 export { NotificationsProvider } from './context/NotificationsProvider';

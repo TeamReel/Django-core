@@ -45,6 +45,15 @@ export interface NotificationListProps {
 
   /** Callback when retry button is clicked (error state) */
   onRetry?: () => void;
+
+  /** T073: Callback to load more notifications (pagination) */
+  onLoadMore?: () => void;
+
+  /** T073: Whether there are more notifications to load */
+  hasMore?: boolean;
+
+  /** T073: Whether a loadMore request is currently in progress */
+  isLoadingMore?: boolean;
 }
 
 export const NotificationList: React.FC<NotificationListProps> = ({
@@ -56,6 +65,9 @@ export const NotificationList: React.FC<NotificationListProps> = ({
   onNotificationClick,
   onMarkRead,
   onRetry,
+  onLoadMore,
+  hasMore = false,
+  isLoadingMore = false,
 }) => {
   // Loading state
   if (loading && notifications.length === 0) {
@@ -219,6 +231,9 @@ export const NotificationList: React.FC<NotificationListProps> = ({
       width={width}
       onNotificationClick={onNotificationClick}
       onMarkRead={onMarkRead}
+      onLoadMore={onLoadMore}
+      hasMore={hasMore}
+      isLoadingMore={isLoadingMore}
     />
   );
 };

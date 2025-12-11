@@ -11,6 +11,9 @@ import { NotificationActions } from './NotificationActions';
  *
  * Uses F01 placeholder styling until F01 components are available.
  *
+ * T074: Wrapped with React.memo for performance optimization.
+ * Only re-renders when notification data or callbacks change.
+ *
  * @component
  * @example
  * <NotificationItem
@@ -31,7 +34,7 @@ export interface NotificationItemProps {
   onMarkRead?: (notification: Notification, read: boolean) => void;
 }
 
-export const NotificationItem: React.FC<NotificationItemProps> = ({
+const NotificationItemComponent: React.FC<NotificationItemProps> = ({
   notification,
   onClick,
   onMarkRead,
@@ -167,3 +170,55 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
     </div>
   );
 };
+
+/**
+ * T074: Custom comparison function for React.memo
+ *
+ * Prevents unnecessary re-renders by performing shallow comparison of props.
+ * Only re-render if:
+ * - notification.id changed (different notification)
+ * - notification.read changed (state update)
+ * - notification.title/message/severity changed (content update)
+ * - onClick/onMarkRead callbacks changed (function reference change)
+ *
+ * @param prevProps - Previous props
+ * @param nextProps - Next props
+ * @returns true if props are equal (skip re-render), false otherwise
+ */
+function arePropsEqual(
+  prevProps: NotificationItemProps,
+  nextProps: NotificationItemProps
+): boolean {
+  // Quick reference check first (most common case)
+  if (prevProps.notification === nextProps.notification &&
+      prevProps.onClick === nextProps.onClick &&
+      prevProps.onMarkRead === nextProps.onMarkRead) {
+    return true;
+  }
+
+  // Shallow comparison of notification properties
+  const prevNotif = prevProps.notification;
+  const nextNotif = nextProps.notification;
+
+  // Key properties that affect rendering
+  const notificationEqual =
+    prevNotif.id === nextNotif.id &&
+    prevNotif.read === nextNotif.read &&
+    prevNotif.title === nextNotif.title &&
+    prevNotif.message === nextNotif.message &&
+    prevNotif.severity === nextNotif.severity &&
+    prevNotif.timestamp === nextNotif.timestamp;
+
+  // Callbacks comparison (by reference)
+  const callbacksEqual =
+    prevProps.onClick === nextProps.onClick &&
+    prevProps.onMarkRead === nextProps.onMarkRead;
+
+  return notificationEqual && callbacksEqual;
+}
+
+/**
+ * T074: Export memoized component for performance optimization
+ * Prevents re-renders when parent re-renders but props haven't changed
+ */
+export const NotificationItem = React.memo(NotificationItemComponent, arePropsEqual);

@@ -102,9 +102,13 @@ export function NotificationsProvider({
     }
   }, [config.apiBaseUrl, orgId, projectId, state.filters.status, state.filters.type, state.pagination.page, state.pagination.pageSize]);
 
-  // Load more (pagination)
+  // T072: Load more (pagination with enhanced error handling)
   const loadMore = useCallback(async () => {
     if (!orgId || !state.pagination.hasMore || state.loadingMore) {
+      // T075: Performance monitoring - log when loadMore is skipped
+      if (!state.pagination.hasMore) {
+        console.debug('[F04] loadMore skipped: no more pages available');
+      }
       return;
     }
 
@@ -112,6 +116,14 @@ export function NotificationsProvider({
 
     try {
       const nextPage = state.pagination.page + 1;
+
+      // T075: Performance monitoring - log pagination metrics
+      console.debug('[F04] Loading more notifications', {
+        nextPage,
+        currentCount: state.notifications.length,
+        timestamp: new Date().toISOString(),
+      });
+
       const response = await api.fetchNotifications(config.apiBaseUrl, {
         org: orgId,
         project: projectId,
@@ -130,15 +142,46 @@ export function NotificationsProvider({
         type: 'LOAD_MORE_SUCCESS',
         payload: {
           results: validNotifications,
-          count: validNotifications.length,
+          count: response.count || validNotifications.length,
           page: nextPage,
         },
       });
+
+      // T075: Performance monitoring - log successful load
+      console.debug('[F04] Successfully loaded more notifications', {
+        loaded: validNotifications.length,
+        totalCount: state.notifications.length + validNotifications.length,
+        hasMore: state.notifications.length + validNotifications.length < (response.count || 0),
+      });
     } catch (error) {
-      console.error('[F04] Failed to load more notifications:', error);
+      // T068: Observability - log structured error
+      const logData = formatErrorForLogging('load_more', error as Error);
+      console.error('[F04] Failed to load more notifications:', logData);
+
+      // T066: User-friendly error handling
+      const userError = handleError(error as Error);
+
       dispatch({ type: 'FETCH_ERROR', payload: error as Error });
+
+      // Show error toast
+      dispatch({
+        type: 'TOAST_ADD',
+        payload: {
+          toast: {
+            id: `error-load-more-${Date.now()}`,
+            type: 'system.error',
+            severity: 'ERROR',
+            title: 'Failed to load more notifications',
+            message: userError.message,
+            timestamp: new Date().toISOString(),
+            read: false,
+            org_id: orgId || '',
+            metadata: { context: 'load_more', page: state.pagination.page + 1 },
+          },
+        },
+      });
     }
-  }, [config.apiBaseUrl, orgId, projectId, state.filters.status, state.filters.type, state.pagination.page, state.pagination.pageSize, state.pagination.hasMore, state.loadingMore]);
+  }, [config.apiBaseUrl, orgId, projectId, state.filters.status, state.filters.type, state.pagination.page, state.pagination.pageSize, state.pagination.hasMore, state.loadingMore, state.notifications.length]);
 
   // Refresh (reset to page 1)
   const refresh = useCallback(async () => {
