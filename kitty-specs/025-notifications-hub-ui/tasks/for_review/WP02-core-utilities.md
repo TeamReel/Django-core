@@ -7,7 +7,7 @@ subtasks:
   - "T010"
 title: "Core Utilities & Test Helpers"
 phase: "Phase 0 - Setup & Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: "GitHub Copilot (Claude)"
 agent: "claude"
 shell_pid: "21096"
@@ -697,3 +697,5 @@ export { renderWithProviders as render };
 
 - 2025-12-11T15:43:19Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-11T16:18:17Z – claude – shell_pid=21096 – lane=doing – Started implementation
+- 2025-12-11T17:45:55Z – claude – shell_pid=21096 – lane=doing – Completed all subtasks (T007-T010): validation utilities, notification mapper, MSW handlers, test providers. All 34 tests passing.
+- 2025-12-11T17:45:55Z – claude – shell_pid=21096 – lane=for_review – Ready for review
