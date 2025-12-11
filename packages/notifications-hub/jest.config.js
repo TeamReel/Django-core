@@ -5,7 +5,23 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.ts?(x)', '**/*.test.ts?(x)'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@django-core/design-system$': '<rootDir>/__tests__/setup/__mocks__/@django-core/design-system.tsx',
     '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
+  },
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {
+      tsconfig: {
+        jsx: 'react-jsx',
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+        skipLibCheck: true,
+        paths: {
+          '@/*': ['<rootDir>/src/*'],
+          '@django-core/design-system': ['<rootDir>/__tests__/setup/__mocks__/@django-core/design-system.tsx'],
+        },
+      },
+      isolatedModules: true,
+    }],
   },
   setupFilesAfterEnv: ['<rootDir>/__tests__/setup/jest.setup.ts'],
   transformIgnorePatterns: [

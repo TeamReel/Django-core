@@ -11,6 +11,7 @@ export * from './hooks';
 export * from './components/ToastHost';
 export * from './components/NotificationList';
 export * from './components/NotificationPanel';
+export * from './components/UnreadBadge';
 
 // Context (for provider)
 export { NotificationsProvider } from './context/NotificationsProvider';
