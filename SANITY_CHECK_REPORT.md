@@ -1,20 +1,58 @@
 # Repository Sanity Check Report
-**Date**: 2025-01-10
+**Date**: 2025-12-11
 **Branch**: main (post-merge of F03: 024-multi-tenancy-context)
-**Commit**: ae165f93
-**Last Updated**: 2025-01-10 (post-fix)
+**Commit**: 835a742e
+**Last Updated**: 2025-12-11 (TypeScript compilation fixes complete)
 
 ## Summary
 
-**Overall Status**: ✅ **SIGNIFICANTLY IMPROVED** - Lint clean, major test progress
+**Overall Status**: 🔄 **IN PROGRESS** - All packages compile, significant test progress
 
 ### Validation Results
 
 | Command | Status | Details |
 |---------|--------|---------|
 | `pnpm lint` | ✅ **PASSING** | 0 errors, 0 warnings |
-| `pnpm test` | 🔄 **IN PROGRESS** | 4/4 packages building, 45/65 tests passing |
+| `pnpm test` | 🔄 **IN PROGRESS** | context-switcher: 81/178 tests passing, 15/19 suites failing behaviorally |
 | `pnpm build` | ⏸️ **SKIPPED** | (deferred) |
+
+---
+
+## Status Update (2025-12-11)
+
+### ✅ **TypeScript Compilation Errors Resolved**
+
+**All context-switcher compilation errors fixed:**
+
+1. **Picker Component Props** (✅ Complete)
+   - Removed invalid `size` prop from Modal components (OrganisationPicker, ProjectPicker)
+   - Changed Stack `direction="vertical"` to `direction="column"` (11 instances)
+   - Changed Stack `spacing` prop to `gap` prop (11 instances)
+   - Updated gap values from semantic ("md", "xs") to numeric tokens ("4", "2")
+
+2. **VirtualizedList Type Issues** (✅ Complete)
+   - Fixed react-window List component type inference problems
+   - Removed ref forwarding (not supported by react-window)
+   - Cast List to any to bypass type definition issues
+   - All test suites now compile successfully
+
+3. **Test URL Normalization** (✅ Complete)
+   - Created shared `__tests__/testUtils/apiTestConfig.ts` with BASE_URL constants
+   - Updated 15+ test files to use absolute URLs for MSW 1.x compatibility
+   - Updated MSW handlers in test files
+   - Updated jest.config.js for vanilla-extract mocking
+
+**Test Progress**:
+- Before: 4/19 suites passing, 45/65 tests (compilation errors blocking 15 suites)
+- After: 4/19 suites passing, 81/178 tests (all suites compile and run)
+- Remaining: Behavioral test failures (not compilation errors)
+
+**Files Modified**:
+- `packages/context-switcher/src/components/OrganisationPicker.tsx`
+- `packages/context-switcher/src/components/ProjectPicker.tsx`
+- `packages/context-switcher/src/components/VirtualizedList.tsx`
+- `packages/context-switcher/__tests__/testUtils/apiTestConfig.ts` (NEW)
+- 15+ test files with URL normalization
 
 ---
 
