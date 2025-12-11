@@ -14,7 +14,7 @@ phase: "Phase 0 - Foundation"
 lane: "done"
 assignee: "copilot"
 agent: "claude-sonnet-4"
-shell_pid: ""
+shell_pid: "n/a"
 review_status: "approved without changes"
 reviewed_by: "claude-sonnet-4"
 history:

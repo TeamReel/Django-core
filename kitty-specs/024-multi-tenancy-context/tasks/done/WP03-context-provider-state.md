@@ -21,7 +21,7 @@ phase: "Phase 1 - Core Context & UI"
 lane: "done"
 assignee: "copilot"
 agent: "claude-sonnet-4"
-shell_pid: ""
+shell_pid: "n/a"
 review_status: "approved"
 reviewed_by: "claude-sonnet-4"
 history:
