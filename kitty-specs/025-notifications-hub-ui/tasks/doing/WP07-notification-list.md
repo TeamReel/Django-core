@@ -3,10 +3,10 @@ work_package_id: "WP07"
 subtasks: ["T039", "T040", "T041", "T042", "T043", "T049", "T050"]
 title: "Notification List & Skeleton Loading"
 phase: "Phase 3 - UI Components – Inbox Panel"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "21096"
 review_status: ""
 reviewed_by: ""
 history:
@@ -66,3 +66,4 @@ Unit tests for all components. Test rendering, actions, states.
 
 ## Activity Log
 - 2025-12-11T15:43:19Z – system – lane=planned – Prompt created
+- 2025-12-11T18:13:02Z – claude – shell_pid=21096 – lane=doing – Started implementation - notification list components
