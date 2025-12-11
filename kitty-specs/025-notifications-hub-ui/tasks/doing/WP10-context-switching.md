@@ -3,11 +3,11 @@ work_package_id: "WP10"
 subtasks: ["T057", "T058", "T059", "T060", "T061", "T062", "T063", "T064"]
 title: "Context Switching & Optimistic Updates"
 phase: "Phase 4 - UI Components – Badge & Context Integration"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: "claude-reviewer"
+agent: "claude"
 shell_pid: "26596"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-11T15:43:19Z"
@@ -126,3 +126,4 @@ Test: mark as read → UI updates immediately → API fails → state reverted �
 - 2025-12-11T19:13:41Z – claude – shell_pid=26596 – lane=for_review – Completed integration tests implementation - provider config issue noted for review
 - 2025-12-11T19:20:15Z – claude-reviewer – shell_pid=26596 – lane=planned – Code review complete: TestProviders uses incorrect provider APIs, tests cannot run
 - 2025-12-11T19:19:45Z – claude-reviewer – shell_pid=26596 – lane=planned – Code review complete: TestProviders uses incorrect provider APIs, tests cannot run
+- 2025-12-11T19:21:33Z – claude – shell_pid=26596 – lane=doing – Addressing review feedback - fixing provider configuration
