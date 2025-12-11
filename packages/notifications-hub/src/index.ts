@@ -12,6 +12,7 @@ export * from './components/ToastHost';
 export * from './components/NotificationList';
 export * from './components/NotificationPanel';
 export * from './components/UnreadBadge';
+export * from './components/ErrorBoundary';
 
 // Context (for provider)
 export { NotificationsProvider } from './context/NotificationsProvider';

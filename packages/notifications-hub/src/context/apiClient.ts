@@ -8,6 +8,7 @@
  */
 
 import { Notification } from '@/types';
+import { retryWithBackoff } from '@/utils/retryWithBackoff';
 
 export interface ApiError extends Error {
   status?: number;
@@ -79,47 +80,6 @@ async function createApiError(response: Response): Promise<ApiError> {
 }
 
 /**
- * Exponential backoff retry wrapper
- *
- * @param fn Function to retry
- * @param maxRetries Maximum number of retries (default 3)
- * @param baseDelay Base delay in ms (default 1000)
- */
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  maxRetries = 3,
-  baseDelay = 1000
-): Promise<T> {
-  let lastError: Error | undefined;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error as Error;
-
-      // Don't retry on client errors (4xx) except 429 (rate limit)
-      const apiError = error as ApiError;
-      if (apiError.status && apiError.status >= 400 && apiError.status < 500 && apiError.status !== 429) {
-        throw error;
-      }
-
-      // Don't retry on last attempt
-      if (attempt === maxRetries) {
-        break;
-      }
-
-      // Exponential backoff: 1s, 2s, 4s
-      const delay = baseDelay * Math.pow(2, attempt);
-      console.log(`[F04] Retrying after ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-  }
-
-  throw lastError;
-}
-
-/**
  * Make authenticated API request with CSRF token
  *
  * @param url API endpoint URL
@@ -184,7 +144,7 @@ export async function fetchNotifications(
 
   const url = `${baseUrl}/notifications?${queryParams}`;
 
-  return withRetry(() => apiRequest<PaginatedResponse<Notification>>(url));
+  return retryWithBackoff(() => apiRequest<PaginatedResponse<Notification>>(url));
 }
 
 /**
@@ -199,7 +159,7 @@ export async function updateReadStatus(
 ): Promise<{ id: string; read: boolean; updated_at: string }> {
   const url = `${baseUrl}/notifications/${id}/read`;
 
-  return withRetry(() =>
+  return retryWithBackoff(() =>
     apiRequest(
       url,
       {
@@ -222,7 +182,7 @@ export async function markAllRead(
 ): Promise<MarkAllReadResponse> {
   const url = `${baseUrl}/notifications/mark-all-read`;
 
-  return withRetry(() =>
+  return retryWithBackoff(() =>
     apiRequest(
       url,
       {
@@ -251,5 +211,5 @@ export async function getUnreadCount(
 
   const url = `${baseUrl}/notifications/unread-count?${queryParams}`;
 
-  return withRetry(() => apiRequest(url));
+  return retryWithBackoff(() => apiRequest(url));
 }

@@ -6,6 +6,8 @@ import { notificationsReducer, initialState } from './notificationsReducer';
 import { NotificationsConfig, NotificationTypeMapping } from '@/types';
 import { defaultNotificationMappings } from '@/config';
 import * as api from './apiClient';
+import { handleError, formatErrorForLogging, isAuthenticationError } from '@/utils/errorHandler';
+import { validateNotification } from '@/utils/validateNotification';
 
 interface NotificationsProviderProps {
   children: React.ReactNode;
@@ -50,17 +52,53 @@ export function NotificationsProvider({
         page_size: state.pagination.pageSize,
       });
 
+      // T069: Filter out malformed notifications
+      const validNotifications = response.results
+        .map(validateNotification)
+        .filter((n): n is NonNullable<typeof n> => n !== null);
+
       dispatch({
         type: 'FETCH_SUCCESS',
         payload: {
-          results: response.results,
-          count: response.count,
+          results: validNotifications,
+          count: validNotifications.length,
           page: state.pagination.page,
         },
       });
     } catch (error) {
-      console.error('[F04] Failed to fetch notifications:', error);
+      // T068: Observability - log structured error
+      const logData = formatErrorForLogging('fetch_notifications', error as Error);
+      console.error('[F04] Failed to fetch notifications:', logData);
+
+      // T066: User-friendly error handling
+      const userError = handleError(error as Error);
+
+      // T066: Special handling for 401 - trigger re-authentication
+      if (isAuthenticationError(error as Error)) {
+        console.warn('[F04] Authentication expired, user needs to re-authenticate');
+        // TODO: Trigger F02 re-auth flow when available
+        // For now, just show error in state
+      }
+
       dispatch({ type: 'FETCH_ERROR', payload: error as Error });
+
+      // Show user-friendly error toast
+      dispatch({
+        type: 'TOAST_ADD',
+        payload: {
+          toast: {
+            id: `error-${Date.now()}`,
+            type: 'system.error',
+            severity: 'ERROR',
+            title: 'Failed to load notifications',
+            message: userError.message,
+            timestamp: new Date().toISOString(),
+            read: false,
+            org_id: orgId || '',
+            metadata: { context: 'fetch_notifications' },
+          },
+        },
+      });
     }
   }, [config.apiBaseUrl, orgId, projectId, state.filters.status, state.filters.type, state.pagination.page, state.pagination.pageSize]);
 
@@ -83,11 +121,16 @@ export function NotificationsProvider({
         page_size: state.pagination.pageSize,
       });
 
+      // T069: Filter out malformed notifications
+      const validNotifications = response.results
+        .map(validateNotification)
+        .filter((n): n is NonNullable<typeof n> => n !== null);
+
       dispatch({
         type: 'LOAD_MORE_SUCCESS',
         payload: {
-          results: response.results,
-          count: response.count,
+          results: validNotifications,
+          count: validNotifications.length,
           page: nextPage,
         },
       });
@@ -124,11 +167,35 @@ export function NotificationsProvider({
       await api.updateReadStatus(config.apiBaseUrl, id, true);
       dispatch({ type: 'MARK_READ_SUCCESS', payload: { id } });
     } catch (error) {
-      console.error(`[F04] Failed to mark notification ${id} as read:`, error);
+      // T068: Observability - log structured error
+      const logData = formatErrorForLogging('mark_as_read', error as Error);
+      console.error(`[F04] Failed to mark notification ${id} as read:`, logData);
+
+      // T066: User-friendly error handling
+      const userError = handleError(error as Error);
+
       // Rollback optimistic update
       dispatch({
         type: 'MARK_READ_FAILED',
         payload: { id, previousRead, error: error as Error },
+      });
+
+      // Show error toast
+      dispatch({
+        type: 'TOAST_ADD',
+        payload: {
+          toast: {
+            id: `error-mark-read-${Date.now()}`,
+            type: 'system.error',
+            severity: 'ERROR',
+            title: 'Failed to mark as read',
+            message: userError.message,
+            timestamp: new Date().toISOString(),
+            read: false,
+            org_id: state.notifications[0]?.org_id || '',
+            metadata: { context: 'mark_as_read', notificationId: id },
+          },
+        },
       });
     }
   }, [config.apiBaseUrl, state.notifications]);
@@ -153,11 +220,35 @@ export function NotificationsProvider({
       await api.updateReadStatus(config.apiBaseUrl, id, false);
       dispatch({ type: 'MARK_READ_SUCCESS', payload: { id } });
     } catch (error) {
-      console.error(`[F04] Failed to mark notification ${id} as unread:`, error);
+      // T068: Observability - log structured error
+      const logData = formatErrorForLogging('mark_as_unread', error as Error);
+      console.error(`[F04] Failed to mark notification ${id} as unread:`, logData);
+
+      // T066: User-friendly error handling
+      const userError = handleError(error as Error);
+
       // Rollback optimistic update
       dispatch({
         type: 'MARK_READ_FAILED',
         payload: { id, previousRead, error: error as Error },
+      });
+
+      // Show error toast
+      dispatch({
+        type: 'TOAST_ADD',
+        payload: {
+          toast: {
+            id: `error-mark-unread-${Date.now()}`,
+            type: 'system.error',
+            severity: 'ERROR',
+            title: 'Failed to mark as unread',
+            message: userError.message,
+            timestamp: new Date().toISOString(),
+            read: false,
+            org_id: state.notifications[0]?.org_id || '',
+            metadata: { context: 'mark_as_unread', notificationId: id },
+          },
+        },
       });
     }
   }, [config.apiBaseUrl, state.notifications]);
