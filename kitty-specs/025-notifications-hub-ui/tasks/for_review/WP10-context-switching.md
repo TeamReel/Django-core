@@ -3,7 +3,7 @@ work_package_id: "WP10"
 subtasks: ["T057", "T058", "T059", "T060", "T061", "T062", "T063", "T064"]
 title: "Context Switching & Optimistic Updates"
 phase: "Phase 4 - UI Components – Badge & Context Integration"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "26596"
@@ -57,3 +57,4 @@ Test: mark as read → UI updates immediately → API fails → state reverted �
 ## Activity Log
 - 2025-12-11T15:43:19Z – system – lane=planned – Prompt created
 - 2025-12-11T19:05:17Z – claude – shell_pid=26596 – lane=doing – Started implementation of integration tests
+- 2025-12-11T19:13:41Z – claude – shell_pid=26596 – lane=for_review – Completed integration tests implementation - provider config issue noted for review
