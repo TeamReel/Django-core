@@ -9,7 +9,7 @@ subtasks:
   - "T006"
 title: "Package Bootstrap & Configuration"
 phase: "Phase 0 - Setup & Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: "GitHub Copilot (Claude)"
 agent: "claude"
 shell_pid: "21096"
@@ -571,6 +571,8 @@ Initialize the `@django-core/notifications-hub` package with all necessary confi
 
 - 2025-12-11T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-11T15:59:22Z – claude – shell_pid=21096 – lane=doing – Started implementation
+- 2025-12-11T16:06:40Z – claude – shell_pid=21096 – lane=doing – Completed all subtasks (T001-T006): package structure, TypeScript config, dependencies, type definitions, test infrastructure, default mappings. All validation passing.
+- 2025-12-11T16:06:40Z – claude – shell_pid=21096 – lane=for_review – Ready for review
 
 ---
 
