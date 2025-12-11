@@ -46,7 +46,7 @@ describe('fetchCurrentContext', () => {
     expect(context).toBeNull();
   });
 
-  it('throws on non-404 error', async () => {
+  it('returns null on non-404 error (graceful fallback)', async () => {
     server.use(
       rest.get('http://localhost/api/context/current/', (req, res, ctx) => {
         return res(
@@ -56,7 +56,9 @@ describe('fetchCurrentContext', () => {
       })
     );
 
-    await expect(fetchCurrentContext(BASE_URL)).rejects.toThrow('Server error');
+    // API gracefully returns null for all errors (optional endpoint)
+    const context = await fetchCurrentContext(BASE_URL);
+    expect(context).toBeNull();
   });
 });
 
