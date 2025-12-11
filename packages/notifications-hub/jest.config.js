@@ -5,8 +5,12 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.ts?(x)', '**/*.test.ts?(x)'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
   },
   setupFilesAfterEnv: ['<rootDir>/__tests__/setup/jest.setup.ts'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(msw)/)',
+  ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
