@@ -6,6 +6,9 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@django-core/design-system$': '<rootDir>/__tests__/setup/__mocks__/@django-core/design-system.tsx',
+    '^@django-core/auth-ui$': '<rootDir>/../auth/src/index.ts',
+    '^@django-core/context-switcher$': '<rootDir>/../context-switcher/src/index.ts',
+    '^@django-core/api-client$': '<rootDir>/../api-client/src/index.ts',
     '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
   },
   transform: {
