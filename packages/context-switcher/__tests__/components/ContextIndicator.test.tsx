@@ -84,9 +84,7 @@ describe('ContextIndicator', () => {
       buildPathForContext: jest.fn(),
     };
 
-    mockedApi.fetchProjects.mockResolvedValue({
-      data: { projects: [mockProject] },
-    });
+    mockedApi.fetchProjects.mockResolvedValue([mockProject]);
 
     render(
       <ContextSwitcherProvider

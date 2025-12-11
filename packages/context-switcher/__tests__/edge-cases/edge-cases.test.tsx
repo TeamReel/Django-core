@@ -6,7 +6,7 @@ import { OrganisationPicker } from '../../src/components/OrganisationPicker';
 import { ProjectPicker } from '../../src/components/ProjectPicker';
 import type { RouterAdapter } from '../../src/types';
 import { server } from '../mocks/server';
-import { http, HttpResponse } from 'msw';
+import { rest } from 'msw';
 
 // Mock router adapter
 const mockRouterAdapter: RouterAdapter = {
@@ -24,8 +24,8 @@ describe('Edge cases', () => {
   describe('Empty data scenarios', () => {
     it('handles empty organisation list', async () => {
       server.use(
-        http.get('/api/organisations/', () => {
-          return HttpResponse.json({ organisations: [] });
+        rest.get('/api/organisations/', (req, res, ctx) => {
+          return res(ctx.json({ organisations: [] }));
         })
       );
 
@@ -47,8 +47,8 @@ describe('Edge cases', () => {
 
     it('handles organisation with no projects', async () => {
       server.use(
-        http.get('/api/organisations/org_123/projects/', () => {
-          return HttpResponse.json({ projects: [] });
+        rest.get('/api/organisations/org_123/projects/', (req, res, ctx) => {
+          return res(ctx.json({ projects: [] }));
         })
       );
 
@@ -74,8 +74,8 @@ describe('Edge cases', () => {
       const longName = 'A'.repeat(150);
 
       server.use(
-        http.get('/api/organisations/', () => {
-          return HttpResponse.json({
+        rest.get('/api/organisations/', (req, res, ctx) => {
+          return res(ctx.json({
             organisations: [
               {
                 id: 'long_org',
@@ -85,7 +85,7 @@ describe('Edge cases', () => {
                 metadata: {},
               },
             ],
-          });
+          }));
         })
       );
 
@@ -109,8 +109,8 @@ describe('Edge cases', () => {
 
     it('handles special characters in names', async () => {
       server.use(
-        http.get('/api/organisations/', () => {
-          return HttpResponse.json({
+        rest.get('/api/organisations/', (req, res, ctx) => {
+          return res(ctx.json({
             organisations: [
               {
                 id: 'special_org',
@@ -120,7 +120,7 @@ describe('Edge cases', () => {
                 metadata: {},
               },
             ],
-          });
+          }));
         })
       );
 
@@ -152,8 +152,8 @@ describe('Edge cases', () => {
       }));
 
       server.use(
-        http.get('/api/organisations/', () => {
-          return HttpResponse.json({ organisations: largeOrgList });
+        rest.get('/api/organisations/', (req, res, ctx) => {
+          return res(ctx.json({ organisations: largeOrgList }));
         })
       );
 
@@ -186,8 +186,8 @@ describe('Edge cases', () => {
       }));
 
       server.use(
-        http.get('/api/organisations/org_123/projects/', () => {
-          return HttpResponse.json({ projects: largeProjectList });
+        rest.get('/api/organisations/org_123/projects/', (req, res, ctx) => {
+          return res(ctx.json({ projects: largeProjectList }));
         })
       );
 
@@ -249,11 +249,9 @@ describe('Edge cases', () => {
   describe('Error scenarios', () => {
     it('handles missing CSRF token gracefully', async () => {
       server.use(
-        http.post('/api/context/set/', () => {
-          return HttpResponse.json(
-            { detail: 'CSRF token missing or incorrect.' },
-            { status: 403 }
-          );
+        rest.post('/api/context/set/', (req, res, ctx) => {
+          return res(ctx.status(403), ctx.json(
+            { detail: 'CSRF token missing or incorrect.' }));
         })
       );
 
@@ -276,10 +274,10 @@ describe('Edge cases', () => {
 
     it('handles timeout gracefully', async () => {
       server.use(
-        http.get('/api/organisations/', async () => {
+        rest.get('/api/organisations/', async (req, res, ctx) => {
           // Simulate timeout
           await new Promise(resolve => setTimeout(resolve, 10000));
-          return HttpResponse.json({ organisations: [] });
+          return res(ctx.json({ organisations: [] }));
         })
       );
 
@@ -291,9 +289,9 @@ describe('Edge cases', () => {
       let callCount = 0;
 
       server.use(
-        http.get('/api/organisations/', () => {
+        rest.get('/api/organisations/', (req, res, ctx) => {
           callCount++;
-          return HttpResponse.json({
+          return res(ctx.json({
             organisations: [
               {
                 id: `org_${callCount}`,
@@ -303,7 +301,7 @@ describe('Edge cases', () => {
                 metadata: {},
               },
             ],
-          });
+          }));
         })
       );
 

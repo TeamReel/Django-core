@@ -80,7 +80,7 @@ export function useKeyboardShortcut(
   callback: (event: KeyboardEvent) => void
 ): void {
   useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
+    const handler = (event: KeyboardEvent): void => {
       // Check if the key matches
       if (event.key !== options.key) return;
 
@@ -103,7 +103,7 @@ export function useKeyboardShortcut(
     window.addEventListener('keydown', handler);
 
     // Clean up on unmount
-    return () => {
+    return (): void => {
       window.removeEventListener('keydown', handler);
     };
   }, [options, callback]);

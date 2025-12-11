@@ -4,7 +4,7 @@ import { ContextSwitcherProvider } from '../../src/context/ContextSwitcherProvid
 import { useContextSwitcher } from '../../src/hooks/useContextSwitcher';
 import type { RouterAdapter } from '../../src/types';
 import { server } from '../mocks/server';
-import { http, HttpResponse } from 'msw';
+import { rest } from 'msw';
 
 // Mock router adapter
 const mockRouterAdapter: RouterAdapter = {
@@ -39,7 +39,7 @@ const TestComponent: React.FC<{ onContextChange?: () => void }> = ({ onContextCh
       <button
         onClick={() => {
           const newOrg = organisations.find(o => o.id === 'org_456');
-          if (newOrg) switchContext(newOrg, null);
+          if (newOrg) switchContext(newOrg, undefined);
         }}
         data-testid="switch-org"
       >
@@ -131,11 +131,9 @@ describe('ContextSwitcherProvider', () => {
 
   it('handles API errors gracefully', async () => {
     server.use(
-      http.get('/api/organisations/', () => {
-        return HttpResponse.json(
-          { detail: 'Internal Server Error' },
-          { status: 500 }
-        );
+      rest.get('/api/organisations/', (req, res, ctx) => {
+        return res(ctx.status(500), ctx.json(
+          { detail: 'Internal Server Error' }));
       })
     );
 
@@ -160,8 +158,8 @@ describe('ContextSwitcherProvider', () => {
 
   it('clears project when switching to org with no projects', async () => {
     server.use(
-      http.get('/api/organisations/org_456/projects/', () => {
-        return HttpResponse.json({ projects: [] });
+      rest.get('/api/organisations/org_456/projects/', (req, res, ctx) => {
+        return res(ctx.json({ projects: [] }));
       })
     );
 

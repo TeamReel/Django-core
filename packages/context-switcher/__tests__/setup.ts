@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import 'whatwg-fetch'; // Polyfill fetch for MSW to intercept in Node.js
 import { server } from './mocks/server';
 
 // Establish API mocking before all tests

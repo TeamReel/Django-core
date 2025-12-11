@@ -15,19 +15,17 @@ export default {
       lines: 90,
     },
   },
-  testPathIgnorePatterns: ['/node_modules/', '__tests__/setup.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '__tests__/setup.ts', '__tests__/mocks/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@django-core/api-client$': '<rootDir>/../api-client/src/index.ts',
+    '^@django-core/design-system$': '<rootDir>/../design-system/src/index.ts',
   },
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',
       {
-        tsconfig: {
-          esModuleInterop: true,
-          allowSyntheticDefaultImports: true,
-        },
+        tsconfig: '<rootDir>/tsconfig.test.json',
       },
     ],
   },

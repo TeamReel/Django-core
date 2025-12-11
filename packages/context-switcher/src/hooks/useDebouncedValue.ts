@@ -36,7 +36,7 @@ export function useDebouncedValue<T>(value: T, delay: number = 300): T {
 
     // Clean up the timer if value changes before delay expires
     // This ensures only the last value update triggers after the delay
-    return () => {
+    return (): void => {
       clearTimeout(handler);
     };
   }, [value, delay]);

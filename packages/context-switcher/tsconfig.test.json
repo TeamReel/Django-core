@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest", "@testing-library/jest-dom", "node"],
+    "paths": {
+      "@django-core/api-client": ["../api-client/src/index.ts"],
+      "@django-core/design-system": ["../design-system/src/index.ts"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "__tests__/**/*"
+  ]
+}

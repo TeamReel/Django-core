@@ -4,7 +4,7 @@
  * @packageDocumentation
  */
 
-import { createApiClient } from '@django-core/api-client';
+import { createApiClient, isApiError, isApiSuccess } from '@django-core/api-client';
 import type { Organisation } from '../types';
 
 /**
@@ -34,9 +34,13 @@ export async function fetchOrganisations(
   const response =
     await client.get<OrganisationsResponse>('/organisations/');
 
-  if (response.error) {
+  if (isApiError(response)) {
     throw new Error(response.error.message);
   }
 
-  return response.data?.organisations || [];
+  if (isApiSuccess(response)) {
+    return response.data.organisations || [];
+  }
+
+  return [];
 }

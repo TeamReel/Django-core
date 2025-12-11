@@ -4,62 +4,71 @@
  * @packageDocumentation
  */
 
-import { http, HttpResponse } from 'msw';
+import { rest } from 'msw';
+
+// Use localhost URL for MSW 1.x compatibility with jsdom
+const BASE_URL = 'http://localhost';
 
 export const handlers = [
   // GET /api/organisations/
-  http.get('/api/organisations/', () => {
-    return HttpResponse.json({
-      organisations: [
-        {
-          id: 'org_123',
-          name: 'Acme Corp',
-          slug: 'acme-corp',
-          logo: null,
-          metadata: { isPinned: false },
-        },
-        {
-          id: 'org_456',
-          name: 'Beta Inc',
-          slug: 'beta-inc',
-          logo: null,
-          metadata: { isPinned: true },
-        },
-      ],
-    });
+  rest.get(`${BASE_URL}/api/organisations/`, (req, res, ctx) => {
+    return res(
+      ctx.json({
+        organisations: [
+          {
+            id: 'org_123',
+            name: 'Acme Corp',
+            slug: 'acme-corp',
+            logo: null,
+            metadata: { isPinned: false },
+          },
+          {
+            id: 'org_456',
+            name: 'Beta Inc',
+            slug: 'beta-inc',
+            logo: null,
+            metadata: { isPinned: true },
+          },
+        ],
+      })
+    );
   }),
 
   // GET /api/organisations/:id/projects/
-  http.get('/api/organisations/:orgId/projects/', ({ params }) => {
-    const { orgId } = params;
+  rest.get(`${BASE_URL}/api/organisations/:orgId/projects/`, (req, res, ctx) => {
+    const { orgId } = req.params;
 
     if (orgId === 'org_123') {
-      return HttpResponse.json({
-        projects: [
-          {
-            id: 'proj_789',
-            name: 'Website Redesign',
-            slug: 'website-redesign',
-            organisationId: 'org_123',
-            metadata: { isArchived: false },
-          },
-        ],
-      });
+      return res(
+        ctx.json({
+          projects: [
+            {
+              id: 'proj_789',
+              name: 'Website Redesign',
+              slug: 'website-redesign',
+              organisationId: 'org_123',
+              metadata: { isArchived: false },
+            },
+          ],
+        })
+      );
     }
 
-    return HttpResponse.json({ projects: [] });
+    return res(ctx.json({ projects: [] }));
   }),
 
   // GET /api/context/current/
-  http.get('/api/context/current/', () => {
-    return HttpResponse.json({
-      organisationId: 'org_123',
-      projectId: 'proj_789',
-    });
+  rest.get(`${BASE_URL}/api/context/current/`, (req, res, ctx) => {
+    return res(
+      ctx.json({
+        organisationId: 'org_123',
+        projectId: 'proj_789',
+      })
+    );
   }),
 
   // POST /api/context/set/
-  http.post('/api/context/set/', () => {
-    return HttpResponse.json({ success: true });
+  rest.post(`${BASE_URL}/api/context/set/`, (req, res, ctx) => {
+    return res(ctx.json({ success: true }));
   }),
 ];
