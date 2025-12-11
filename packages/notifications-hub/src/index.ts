@@ -7,6 +7,9 @@ export * from './config/types';
 // Hooks
 export * from './hooks';
 
+// Components
+export * from './components/ToastHost';
+
 // Context (for provider)
 export { NotificationsProvider } from './context/NotificationsProvider';
 export type { NotificationsContextValue, NotificationsState, NotificationsActions } from './context/NotificationsContext';
