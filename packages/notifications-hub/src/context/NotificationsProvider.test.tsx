@@ -3,27 +3,38 @@ import { renderHook, act } from '@testing-library/react';
 import { NotificationsProvider } from './NotificationsProvider';
 import { NotificationsContext } from './NotificationsContext';
 import { NotificationsConfig } from '@/types';
+import * as apiClient from './apiClient';
 
-// Mock F02 auth - will be properly integrated in WP04 when F02 is available
-const mockUseAuth = jest.fn(() => ({
-  isAuthenticated: true,
-  user: { id: 'user-123', email: 'test@example.com', displayName: 'Test User' },
-}));
+// Mock API client
+jest.mock('./apiClient');
+const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;
 
+// Mock F02 auth
 jest.mock('@django-core/auth-ui', () => ({
-  useAuth: mockUseAuth,
+  useAuth: jest.fn(() => ({
+    isAuthenticated: true,
+    user: { id: 'user-123', email: 'test@example.com', displayName: 'Test User' },
+  })),
 }), { virtual: true });
 
-// Mock F03 context switcher - will be properly integrated in WP04 when F03 is available
-const mockUseF03Context = jest.fn(() => ({
-  orgId: 'org-123',
-  projectId: undefined,
-  organisationName: 'Test Organisation',
-}));
-
+// Mock F03 context switcher
 jest.mock('@django-core/context-switcher', () => ({
-  useContext: mockUseF03Context,
+  useContext: jest.fn(() => ({
+    orgId: 'org-123',
+    projectId: undefined,
+    organisationName: 'Test Organisation',
+  })),
 }), { virtual: true });
+
+// Mock config module
+jest.mock('@/config');
+
+// Import mocked functions
+import { useAuth } from '@django-core/auth-ui';
+import { useContext as useF03Context } from '@django-core/context-switcher';
+
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+const mockUseF03Context = useF03Context as jest.MockedFunction<typeof useF03Context>;
 
 describe('NotificationsProvider', () => {
   const mockConfig: NotificationsConfig = {
@@ -39,6 +50,14 @@ describe('NotificationsProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+
+    // Setup default API mock responses
+    mockApiClient.fetchNotifications.mockResolvedValue({
+      results: [],
+      count: 0,
+      next: null,
+      previous: null,
+    });
   });
 
   afterEach(() => {

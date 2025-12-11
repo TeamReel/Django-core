@@ -5,6 +5,7 @@ import { NotificationsContext, NotificationsState } from './NotificationsContext
 import { notificationsReducer, initialState } from './notificationsReducer';
 import { NotificationsConfig, NotificationTypeMapping } from '@/types';
 import { defaultNotificationMappings } from '@/config';
+import * as api from './apiClient';
 
 interface NotificationsProviderProps {
   children: React.ReactNode;
@@ -27,31 +28,163 @@ export function NotificationsProvider({
   // F03 multi-tenancy context
   const { orgId, projectId } = useF03Context();
 
-  // Actions will be implemented in T017-T019 (WP04)
-  // Placeholder implementations for now
+  // T017: Fetch notifications from API
   const fetchNotifications = useCallback(async () => {
-    console.log('[F04] fetchNotifications called');
-  }, []);
+    if (!orgId) {
+      console.warn('[F04] Cannot fetch notifications: orgId is required');
+      return;
+    }
 
+    dispatch({ type: 'FETCH_START' });
+
+    try {
+      const response = await api.fetchNotifications(config.apiBaseUrl, {
+        org: orgId,
+        project: projectId,
+        status: state.filters.status,
+        type: state.filters.type,
+        page: state.pagination.page,
+        page_size: state.pagination.pageSize,
+      });
+
+      dispatch({
+        type: 'FETCH_SUCCESS',
+        payload: {
+          results: response.results,
+          count: response.count,
+          page: state.pagination.page,
+        },
+      });
+    } catch (error) {
+      console.error('[F04] Failed to fetch notifications:', error);
+      dispatch({ type: 'FETCH_ERROR', payload: error as Error });
+    }
+  }, [config.apiBaseUrl, orgId, projectId, state.filters.status, state.filters.type, state.pagination.page, state.pagination.pageSize]);
+
+  // Load more (pagination)
   const loadMore = useCallback(async () => {
-    console.log('[F04] loadMore called');
-  }, []);
+    if (!orgId || !state.pagination.hasMore || state.loadingMore) {
+      return;
+    }
 
+    dispatch({ type: 'LOAD_MORE_START' });
+
+    try {
+      const nextPage = state.pagination.page + 1;
+      const response = await api.fetchNotifications(config.apiBaseUrl, {
+        org: orgId,
+        project: projectId,
+        status: state.filters.status,
+        type: state.filters.type,
+        page: nextPage,
+        page_size: state.pagination.pageSize,
+      });
+
+      dispatch({
+        type: 'LOAD_MORE_SUCCESS',
+        payload: {
+          results: response.results,
+          count: response.count,
+          page: nextPage,
+        },
+      });
+    } catch (error) {
+      console.error('[F04] Failed to load more notifications:', error);
+      dispatch({ type: 'FETCH_ERROR', payload: error as Error });
+    }
+  }, [config.apiBaseUrl, orgId, projectId, state.filters.status, state.filters.type, state.pagination.page, state.pagination.pageSize, state.pagination.hasMore, state.loadingMore]);
+
+  // Refresh (reset to page 1)
   const refresh = useCallback(async () => {
-    console.log('[F04] refresh called');
-  }, []);
+    // Reset to page 1 and fetch
+    dispatch({ type: 'FILTER_CHANGE', payload: {} }); // Resets page to 1
+    await fetchNotifications();
+  }, [fetchNotifications]);
 
+  // T018: Optimistic mark as read with rollback on failure
   const markAsRead = useCallback(async (id: string) => {
-    console.log('[F04] markAsRead called', id);
-  }, []);
+    const notification = state.notifications.find(n => n.id === id);
+    if (!notification) {
+      console.warn(`[F04] Notification ${id} not found in local state`);
+      return;
+    }
 
+    const previousRead = notification.read;
+
+    // Optimistic update
+    dispatch({
+      type: 'MARK_READ_OPTIMISTIC',
+      payload: { id, previousRead },
+    });
+
+    try {
+      await api.updateReadStatus(config.apiBaseUrl, id, true);
+      dispatch({ type: 'MARK_READ_SUCCESS', payload: { id } });
+    } catch (error) {
+      console.error(`[F04] Failed to mark notification ${id} as read:`, error);
+      // Rollback optimistic update
+      dispatch({
+        type: 'MARK_READ_FAILED',
+        payload: { id, previousRead, error: error as Error },
+      });
+    }
+  }, [config.apiBaseUrl, state.notifications]);
+
+  // Mark as unread (similar to markAsRead but with read: false)
   const markAsUnread = useCallback(async (id: string) => {
-    console.log('[F04] markAsUnread called', id);
-  }, []);
+    const notification = state.notifications.find(n => n.id === id);
+    if (!notification) {
+      console.warn(`[F04] Notification ${id} not found in local state`);
+      return;
+    }
 
+    const previousRead = notification.read;
+
+    // Optimistic update (set to unread)
+    dispatch({
+      type: 'MARK_READ_OPTIMISTIC',
+      payload: { id, previousRead },
+    });
+
+    try {
+      await api.updateReadStatus(config.apiBaseUrl, id, false);
+      dispatch({ type: 'MARK_READ_SUCCESS', payload: { id } });
+    } catch (error) {
+      console.error(`[F04] Failed to mark notification ${id} as unread:`, error);
+      // Rollback optimistic update
+      dispatch({
+        type: 'MARK_READ_FAILED',
+        payload: { id, previousRead, error: error as Error },
+      });
+    }
+  }, [config.apiBaseUrl, state.notifications]);
+
+  // T019: Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
-    console.log('[F04] markAllAsRead called');
-  }, []);
+    if (!orgId) {
+      console.warn('[F04] Cannot mark all as read: orgId is required');
+      return;
+    }
+
+    try {
+      const response = await api.markAllRead(config.apiBaseUrl, {
+        org_id: orgId,
+        project_id: projectId,
+        filters: {
+          status: 'unread',
+          ...(state.filters.type && { type: state.filters.type }),
+        },
+      });
+
+      console.log(`[F04] Marked ${response.updated_count} notifications as read`);
+
+      // Refetch to get updated state
+      await fetchNotifications();
+    } catch (error) {
+      console.error('[F04] Failed to mark all as read:', error);
+      dispatch({ type: 'FETCH_ERROR', payload: error as Error });
+    }
+  }, [config.apiBaseUrl, orgId, projectId, state.filters.type, fetchNotifications]);
 
   const setFilters = useCallback((filters: Partial<NotificationsState['filters']>) => {
     dispatch({ type: 'FILTER_CHANGE', payload: filters });
