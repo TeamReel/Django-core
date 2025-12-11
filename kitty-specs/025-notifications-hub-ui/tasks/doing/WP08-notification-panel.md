@@ -3,10 +3,10 @@ work_package_id: "WP08"
 subtasks: ["T044", "T045", "T046", "T047", "T048", "T051", "T052"]
 title: "Notification Panel & Controls"
 phase: "Phase 3 - UI Components – Inbox Panel"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "21096"
 review_status: ""
 reviewed_by: ""
 history:
@@ -65,3 +65,4 @@ Unit tests for panel. Integration test for inbox interactions (open → filter �
 
 ## Activity Log
 - 2025-12-11T15:43:19Z – system – lane=planned – Prompt created
+- 2025-12-11T18:28:32Z – claude – shell_pid=21096 – lane=doing – Started implementation
