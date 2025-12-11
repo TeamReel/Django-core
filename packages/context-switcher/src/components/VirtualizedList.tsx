@@ -1,10 +1,10 @@
 import React from 'react';
-import { List } from 'react-window';
+import { List as ReactWindowList, RowComponentProps } from 'react-window';
 
-// Type for the props passed to each row component by react-window
-interface RowProps {
-  index: number;
-  style: React.CSSProperties;
+// Props passed to each row via rowProps
+interface RowProps<T> {
+  items: T[];
+  renderItem: (item: T, index: number) => React.ReactNode;
 }
 
 export interface VirtualizedListProps<T> {
@@ -69,25 +69,37 @@ function VirtualizedListInner<T>({
   height = 400,
   className,
 }: VirtualizedListProps<T>): React.ReactElement {
-  // Row renderer for react-window
-  // Each row is wrapped in a div with absolute positioning from react-window
-  const Row = ({ index, style }: RowProps): React.ReactElement => (
-    <div style={style}>{renderItem(items[index], index)}</div>
+  // Row renderer component for react-window v2
+  // Receives items and renderItem via rowProps
+  const RowComponent = React.useCallback(
+    ({ index, style, items: itemsList, renderItem: render }: RowComponentProps<RowProps<T>>) => {
+      const item = itemsList[index];
+
+      // Safety check for out-of-bounds access
+      if (!item) {
+        return <div style={style} />;
+      }
+
+      return <div style={style}>{render(item, index)}</div>;
+    },
+    []
   );
 
-  // Cast List to any to work around react-window type definition issues
-  const ListComponent = List as any;
+  // Stable rowProps to prevent unnecessary re-renders
+  const rowProps = React.useMemo<RowProps<T>>(
+    () => ({ items, renderItem }),
+    [items, renderItem]
+  );
 
   return (
-    <ListComponent
+    <ReactWindowList
+      style={{ height }}
+      rowCount={items.length}
+      rowHeight={itemHeight}
+      rowComponent={RowComponent}
+      rowProps={rowProps}
       className={className}
-      height={height}
-      itemCount={items.length}
-      itemSize={itemHeight}
-      width="100%"
-    >
-      {Row}
-    </ListComponent>
+    />
   );
 }
 
