@@ -232,13 +232,16 @@ describe('ContextIndicator', () => {
       expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
     });
 
-    const statusDiv = container.querySelector('[role="status"]');
-    expect(statusDiv).toBeInTheDocument();
-    expect(statusDiv).toHaveAttribute('aria-live', 'polite');
-    expect(statusDiv).toHaveAttribute(
-      'aria-label',
-      'Currently in Acme Corporation, Website Project project'
-    );
+    await waitFor(() => {
+      const statusDivs = screen.getAllByRole('status');
+      const indicatorDiv = statusDivs.find(div => div.getAttribute('aria-label')?.startsWith('Currently in'));
+      expect(indicatorDiv).toBeDefined();
+      expect(indicatorDiv).toHaveAttribute('aria-live', 'polite');
+      expect(indicatorDiv).toHaveAttribute(
+        'aria-label',
+        'Currently in Acme Corporation, Website Project project'
+      );
+    });
   });
 
   it('updates aria-label for org-only context', async () => {
@@ -257,10 +260,14 @@ describe('ContextIndicator', () => {
       expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
     });
 
-    const statusDiv = container.querySelector('[role="status"]');
-    expect(statusDiv).toHaveAttribute(
-      'aria-label',
-      'Currently in Acme Corporation'
-    );
+    await waitFor(() => {
+      const statusDivs = screen.getAllByRole('status');
+      const indicatorDiv = statusDivs.find(div => div.getAttribute('aria-label')?.startsWith('Currently in'));
+      expect(indicatorDiv).toBeDefined();
+      expect(indicatorDiv).toHaveAttribute(
+        'aria-label',
+        'Currently in Acme Corporation'
+      );
+    });
   });
 });

@@ -193,7 +193,6 @@ export function ContextSwitcherProvider({
     }
   }, [
     fetchOrganisations,
-    findOrganisation,
     fetchProjects,
     parseContextFromPath,
     onContextChanged,
