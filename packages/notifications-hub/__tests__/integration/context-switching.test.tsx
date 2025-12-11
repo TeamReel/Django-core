@@ -129,11 +129,12 @@ afterAll(() => server.close());
 // Test component that displays notifications and badge
 function TestComponent() {
   const { notifications, loading } = useNotifications();
-  const unreadCount = useUnreadCount();
+  const { count: unreadCount, loading: badgeLoading } = useUnreadCount();
 
   return (
     <div>
       <div data-testid="unread-badge">{unreadCount}</div>
+      <div data-testid="badge-loading">{badgeLoading ? 'badge-loading' : 'badge-loaded'}</div>
       <div data-testid="loading-state">{loading ? 'loading' : 'loaded'}</div>
       <div data-testid="notification-list">
         {notifications.length === 0 && !loading && <div>No notifications</div>}

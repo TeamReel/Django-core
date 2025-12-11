@@ -1,6 +1,6 @@
 import React, { useReducer, useCallback, useRef, useEffect } from 'react';
 import { useAuth } from '@django-core/auth-ui';
-import { useContext as useF03Context } from '@django-core/context-switcher';
+import { useContextSwitcher } from '@django-core/context-switcher';
 import { NotificationsContext, NotificationsState } from './NotificationsContext';
 import { notificationsReducer, initialState } from './notificationsReducer';
 import { NotificationsConfig, NotificationTypeMapping } from '@/types';
@@ -26,7 +26,9 @@ export function NotificationsProvider({
   const { isAuthenticated } = useAuth();
 
   // F03 multi-tenancy context
-  const { orgId, projectId } = useF03Context();
+  const { context } = useContextSwitcher();
+  const orgId = context.organisation?.id;
+  const projectId = context.project?.id;
 
   // T017: Fetch notifications from API
   const fetchNotifications = useCallback(async () => {
