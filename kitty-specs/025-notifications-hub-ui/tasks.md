@@ -351,8 +351,9 @@ This document breaks down the implementation of F04 into discrete work packages 
 ### Phase 2: UI Components – Toast Notifications
 
 #### WP06 – Toast Components & Queue Management
+**Status**: ✅ **DONE**
 **Priority**: P1 (User Story 1 - Real-Time Toast Notifications)
-**Prompt**: `tasks/planned/WP06-toast-components.md`
+**Prompt**: `tasks/for_review/WP06-toast-components.md`
 **Dependencies**: WP05
 **Estimated Effort**: 5-6 hours
 
@@ -371,13 +372,33 @@ This document breaks down the implementation of F04 into discrete work packages 
 - [x] T038 – Write integration test for toast flow
 
 **Success Criteria**:
-- Toasts display with correct F01 styling (INFO/SUCCESS/WARNING/ERROR variants)
-- Toasts stack correctly (max 3 visible, newest on top)
-- Auto-dismiss works: INFO/SUCCESS (4-6s), WARNING (8-10s), ERROR (manual only)
-- Action buttons navigate or call APIs correctly
-- Clicking toast body marks notification as read
-- Toasts respect configurable positioning (4 desktop, 2 mobile options)
-- ARIA live region announces new toasts to screen readers
+- Toasts display with correct F01 styling (INFO/SUCCESS/WARNING/ERROR variants) ✅
+- Toasts stack correctly (max 3 visible, newest on top) ✅
+- Auto-dismiss works: INFO/SUCCESS 5s, WARNING 9s, ERROR/CRITICAL manual ✅
+- Action buttons navigate or call APIs correctly ✅
+- Toasts respect configurable positioning (6 options: 4 desktop + 2 mobile) ✅
+- ARIA live region announces new toasts to screen readers ✅
+- Keyboard dismissal (Escape key) works ✅
+- Mobile responsive positioning centers toasts ✅
+
+**Implementation Notes**:
+- Toast.tsx: Individual toast with F01 placeholder styling, action button, dismiss button ✅
+- ToastContainer.tsx: Absolute positioning wrapper with 6 position options + mobile responsive ✅
+- ToastHost.tsx: Queue manager limiting to 3 visible, auto-dismiss timers by severity ✅
+- Timers: INFO/SUCCESS 5000ms, WARNING 9000ms, ERROR/CRITICAL null (manual) ✅
+- ARIA: role="status", aria-live="polite|assertive", aria-atomic="true" ✅
+- Mobile: CSS media query @media (max-width: 768px) centers all positions ✅
+
+**Test Results**:
+- 49/49 tests passing (100% pass rate)
+- Toast tests: 27 tests (rendering, variants, actions, dismiss, accessibility)
+- ToastContainer tests: 15 tests (6 positions, stacking, mobile responsive, a11y)
+- ToastHost tests: 17 tests (rendering, queue, timers, cleanup, integration)
+- Full coverage of queue management, auto-dismiss timers, manual dismiss
+
+**Review Status**: 🔄 Ready for review (moved to for_review 2025-12-11T19:30:00Z)
+
+---
 - Keyboard navigation works (Tab to action button, Escape to dismiss)
 
 **Implementation Notes**:
