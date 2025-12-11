@@ -27,6 +27,7 @@ Auto-generated from all feature plans. Last updated: 2025-11-23
 - N/A (frontend-only, no database) (022-frontend-design-system)
 - TypeScript 5.x + React 18.x (024-multi-tenancy-context)
 - N/A (frontend-only package; backend B06/B07 owns data) (024-multi-tenancy-context)
+- N/A (frontend-only, consumes B13/B16/B17 REST APIs) (025-notifications-hub-ui)
 
 ## Project Structure
 ```
@@ -51,9 +52,9 @@ Quick reminders:
 Python 3.12+: Follow standard conventions
 
 ## Recent Changes
+- 025-notifications-hub-ui: Added TypeScript 5.x, React 18.x
 - 024-multi-tenancy-context: Added TypeScript 5.x + React 18.x
 - 022-frontend-design-system: Added TypeScript 5.x, React 18.x + vanilla-extract 1.x, Vite 5.x, Storybook 8.x, Chromatic
-- 020-core-scaffolding-cli: Added Python 3.12+ + Django 5.1+, Jinja2 3.1+, Click 8.1+, PyYAML 6.0+, importlib.metadata (stdlib)
 
 <!-- MANUAL ADDITIONS START -->
 

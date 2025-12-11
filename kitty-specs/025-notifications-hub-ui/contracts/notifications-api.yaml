@@ -1,0 +1,535 @@
+openapi: 3.1.0
+info:
+  title: Notifications API
+  version: 1.0.0
+  description: |
+    REST API for notification delivery and management.
+
+    **Backend**: B13 (API foundation), B16 (Notifications persistence), B17 (Notifications hub)
+    **Consumer**: F04 (Notifications Hub UI)
+
+    **Authentication**: All endpoints require Bearer token via `Authorization` header.
+    **CSRF**: All mutating operations (POST/PATCH/DELETE) require `X-CSRFToken` header.
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production
+  - url: http://localhost:8000/api/v1
+    description: Local development
+
+security:
+  - BearerAuth: []
+  - CSRFToken: []
+
+tags:
+  - name: Notifications
+    description: Notification retrieval and management
+  - name: Actions
+    description: Bulk operations on notifications
+
+paths:
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: List notifications
+      description: |
+        Retrieve a paginated list of notifications for the authenticated user, filtered by organisation and/or project context.
+
+        **Permissions**: User must have access to specified organisation/project.
+        **Caching**: Responses may be cached for up to 30 seconds.
+      operationId: listNotifications
+      parameters:
+        - name: org
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Organisation ID to filter notifications
+        - name: project
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Project ID to filter notifications (omit for org-level)
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, read, unread]
+            default: all
+          description: Filter by read status
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by notification type (e.g., "job.completed")
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number (1-indexed)
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page
+      responses:
+        '200':
+          description: Successful response with paginated notifications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationList'
+              example:
+                results:
+                  - id: "550e8400-e29b-41d4-a716-446655440000"
+                    type: "job.completed"
+                    severity: "SUCCESS"
+                    title: "Data export completed"
+                    message: "Your export of 1,234 records is ready for download."
+                    timestamp: "2025-12-11T14:30:00Z"
+                    read: false
+                    org_id: "org-123"
+                    project_id: "proj-456"
+                    metadata:
+                      job_id: "export-789"
+                      record_count: 1234
+                    action:
+                      label: "Download"
+                      type: "navigate"
+                      target: "/exports/export-789"
+                count: 42
+                next: "/api/notifications?org=org-123&page=2&page_size=20"
+                previous: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notifications/{id}:
+    get:
+      tags:
+        - Notifications
+      summary: Get single notification
+      description: Retrieve a specific notification by ID
+      operationId: getNotification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Notification ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /notifications/{id}/read:
+    patch:
+      tags:
+        - Notifications
+      summary: Mark notification as read/unread
+      description: |
+        Update the read status of a notification.
+
+        **Optimistic updates**: Frontend should update UI immediately and revert on error.
+        **Idempotency**: Safe to call multiple times with same value.
+      operationId: updateReadStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Notification ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - read
+              properties:
+                read:
+                  type: boolean
+                  description: New read status
+            example:
+              read: true
+      responses:
+        '200':
+          description: Successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  read:
+                    type: boolean
+                  updated_at:
+                    type: string
+                    format: date-time
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                read: true
+                updated_at: "2025-12-11T14:35:00Z"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: Conflict - notification already in requested state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Notification already marked as read"
+                code: "already_in_state"
+
+  /notifications/mark-all-read:
+    post:
+      tags:
+        - Actions
+      summary: Mark all notifications as read
+      description: |
+        Bulk operation to mark all notifications matching filters as read.
+
+        **Scope**: Operates only on notifications in specified org/project context.
+        **Performance**: May be slow for large notification counts (>1000).
+      operationId: markAllRead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - org_id
+              properties:
+                org_id:
+                  type: string
+                  format: uuid
+                  description: Organisation context
+                project_id:
+                  type: string
+                  format: uuid
+                  description: Project context (optional)
+                filters:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      enum: [unread]
+                      default: unread
+                    type:
+                      type: string
+                      description: Filter by notification type
+            example:
+              org_id: "org-123"
+              project_id: "proj-456"
+              filters:
+                status: "unread"
+      responses:
+        '200':
+          description: Successfully marked all as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated_count:
+                    type: integer
+                    description: Number of notifications updated
+                  timestamp:
+                    type: string
+                    format: date-time
+              example:
+                updated_count: 17
+                timestamp: "2025-12-11T14:40:00Z"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notifications/unread-count:
+    get:
+      tags:
+        - Notifications
+      summary: Get unread notification count
+      description: |
+        Efficient endpoint to retrieve only the count of unread notifications without fetching full notification objects.
+
+        **Use case**: Updating badge counters without loading full list.
+        **Performance**: Optimized query, < 100ms typical response time.
+      operationId: getUnreadCount
+      parameters:
+        - name: org
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Organisation ID
+        - name: project
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Project ID (omit for org-level count)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    minimum: 0
+                  org_id:
+                    type: string
+                    format: uuid
+                  project_id:
+                    type: string
+                    format: uuid
+                    nullable: true
+                  last_updated:
+                    type: string
+                    format: date-time
+              example:
+                count: 5
+                org_id: "org-123"
+                project_id: "proj-456"
+                last_updated: "2025-12-11T14:45:00Z"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from F02 authentication
+    CSRFToken:
+      type: apiKey
+      in: header
+      name: X-CSRFToken
+      description: CSRF token for mutating operations
+
+  schemas:
+    Notification:
+      type: object
+      required:
+        - id
+        - type
+        - severity
+        - title
+        - message
+        - timestamp
+        - read
+        - org_id
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique notification identifier
+        type:
+          type: string
+          description: Notification type (dot-separated, e.g., "job.completed")
+          pattern: ^[a-z]+(\.[a-z_]+)+$
+          example: "job.completed"
+        severity:
+          type: string
+          enum: [INFO, SUCCESS, WARNING, ERROR, CRITICAL]
+          description: Notification severity level
+        category:
+          type: string
+          description: Optional grouping category
+          example: "system"
+        title:
+          type: string
+          maxLength: 200
+          description: Short notification summary
+          example: "Data export completed"
+        message:
+          type: string
+          maxLength: 1000
+          description: Detailed notification message
+          example: "Your export of 1,234 records is ready for download."
+        timestamp:
+          type: string
+          format: date-time
+          description: When notification was created (ISO 8601 UTC)
+          example: "2025-12-11T14:30:00Z"
+        read:
+          type: boolean
+          description: Has user acknowledged this notification?
+          default: false
+        org_id:
+          type: string
+          format: uuid
+          description: Organisation context
+        project_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Project context (null for org-level notifications)
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Arbitrary metadata (resource IDs, user references, etc.)
+          example:
+            job_id: "export-789"
+            record_count: 1234
+        action:
+          $ref: '#/components/schemas/NotificationAction'
+
+    NotificationAction:
+      type: object
+      required:
+        - label
+        - type
+        - target
+      properties:
+        label:
+          type: string
+          maxLength: 50
+          description: Button text for CTA
+          example: "View Details"
+        type:
+          type: string
+          enum: [navigate, api]
+          description: Action handler type
+        target:
+          type: string
+          description: URL path (for navigate) or API endpoint (for api)
+          example: "/exports/export-789"
+        method:
+          type: string
+          enum: [GET, POST, PATCH, DELETE]
+          description: HTTP method for api actions
+        body:
+          type: object
+          additionalProperties: true
+          description: Request body for api actions
+
+    NotificationList:
+      type: object
+      required:
+        - results
+        - count
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        count:
+          type: integer
+          minimum: 0
+          description: Total number of notifications across all pages
+        next:
+          type: string
+          format: uri
+          nullable: true
+          description: URL for next page (null if last page)
+        previous:
+          type: string
+          format: uri
+          nullable: true
+          description: URL for previous page (null if first page)
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+        code:
+          type: string
+          description: Machine-readable error code
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error context
+
+  responses:
+    UnauthorizedError:
+      description: Authentication failed or token expired
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Authentication credentials were not provided or are invalid"
+            code: "authentication_failed"
+
+    ForbiddenError:
+      description: User lacks permission to access resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "You do not have permission to view notifications for this organisation"
+            code: "permission_denied"
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Notification not found"
+            code: "not_found"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "An unexpected error occurred"
+            code: "internal_error"
