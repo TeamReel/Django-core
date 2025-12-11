@@ -10,6 +10,7 @@ export * from './hooks';
 // Components
 export * from './components/ToastHost';
 export * from './components/NotificationList';
+export * from './components/NotificationPanel';
 
 // Context (for provider)
 export { NotificationsProvider } from './context/NotificationsProvider';
