@@ -158,10 +158,9 @@ export function ProjectPicker({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        size={isMobile ? 'fullscreen' : 'medium'}
         title="Select Project"
       >
-        <Stack direction="vertical" spacing="md" align="center" style={{ padding: '24px' }}>
+        <Stack direction="column" gap="4" align="center" style={{ padding: '24px' }}>
           <Text size="md" weight="medium">
             No organisation selected
           </Text>
@@ -179,10 +178,9 @@ export function ProjectPicker({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        size={isMobile ? 'fullscreen' : 'medium'}
         title="Select Project"
       >
-        <Stack direction="vertical" spacing="md" align="center">
+        <Stack direction="column" gap="4" align="center">
           <Spinner size="md" />
           <Text size="md" color="tertiary">
             Loading projects...
@@ -196,7 +194,7 @@ export function ProjectPicker({
   const renderEmptyState = (): React.ReactElement | null => {
     if (searchQuery && searchQuery.length >= 3) {
       return (
-        <Stack direction="vertical" spacing="md" align="center" style={{ padding: '24px' }}>
+        <Stack direction="column" gap="4" align="center" style={{ padding: '24px' }}>
           <Text size="md" weight="medium">
             No projects found
           </Text>
@@ -209,7 +207,7 @@ export function ProjectPicker({
 
     if (projectsForCurrentOrg.length === 0) {
       return (
-        <Stack direction="vertical" spacing="md" align="center" style={{ padding: '24px' }}>
+        <Stack direction="column" gap="4" align="center" style={{ padding: '24px' }}>
           <Text size="md" weight="medium">
             No projects in this organisation
           </Text>
@@ -227,10 +225,9 @@ export function ProjectPicker({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size={isMobile ? 'fullscreen' : 'medium'}
       title="Select Project"
     >
-      <Stack direction="vertical" spacing="md" className={className}>
+      <Stack direction="column" gap="4" className={className}>
         {/* Search field */}
         <Input
           type="text"
@@ -313,7 +310,7 @@ export function ProjectPicker({
                 outline: 'none',
               }}
             >
-              <Stack direction="vertical" spacing="xs">
+              <Stack direction="column" gap="2">
                 {filteredProjects.map((project, index) => (
                   <button
                     key={project.id}

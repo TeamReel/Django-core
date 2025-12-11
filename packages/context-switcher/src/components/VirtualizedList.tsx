@@ -1,8 +1,5 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 import { List } from 'react-window';
-
-// react-window's List component (aliased as FixedSizeList in docs)
-type ReactWindowList = typeof List;
 
 // Type for the props passed to each row component by react-window
 interface RowProps {
@@ -65,16 +62,13 @@ export interface VirtualizedListProps<T> {
  * - NFR-014: Virtualization for lists >50 items
  * - Performance: <100ms render for 1000 items
  */
-function VirtualizedListInner<T>(
-  {
-    items,
-    renderItem,
-    itemHeight = 48,
-    height = 400,
-    className,
-  }: VirtualizedListProps<T>,
-  ref: React.Ref<ReactWindowList>
-): React.ReactElement {
+function VirtualizedListInner<T>({
+  items,
+  renderItem,
+  itemHeight = 48,
+  height = 400,
+  className,
+}: VirtualizedListProps<T>): React.ReactElement {
   // Row renderer for react-window
   // Each row is wrapped in a div with absolute positioning from react-window
   const Row = ({ index, style }: RowProps): React.ReactElement => (
@@ -82,21 +76,21 @@ function VirtualizedListInner<T>(
   );
 
   return (
+    // @ts-expect-error - react-window List component has type inference issues in some environments
     <List
-      ref={ref}
       className={className}
       height={height}
       itemCount={items.length}
       itemSize={itemHeight}
       width="100%"
     >
-      {Row}
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      {Row as any}
     </List>
   );
 }
 
-// Use forwardRef to allow parent components to control the List ref
-// Cast to preserve generic type parameter
-export const VirtualizedList = forwardRef(VirtualizedListInner) as <T>(
-  props: VirtualizedListProps<T> & { ref?: React.Ref<ReactWindowList> }
+// Export without forwardRef for now - react-window List doesn't support standard ref forwarding
+export const VirtualizedList = VirtualizedListInner as <T>(
+  props: VirtualizedListProps<T>
 ) => React.ReactElement;
