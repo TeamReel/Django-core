@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1765389830939" clover="3.2.0">
+  <project timestamp="1765389830940" name="All files">
+    <metrics statements="50" coveredstatements="50" conditionals="50" coveredconditionals="46" methods="16" coveredmethods="16" elements="116" coveredelements="112" complexity="0" loc="50" ncloc="50" packages="1" files="3" classes="3"/>
+    <file name="client.ts" path="C:\Users\brian\Documents\django-core\.worktrees\024-multi-tenancy-context\packages\api-client\src\client.ts">
+      <metrics statements="31" coveredstatements="31" conditionals="20" coveredconditionals="17" methods="8" coveredmethods="8"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="2" count="1" type="stmt"/>
+      <line num="5" count="1" type="cond" truecount="1" falsecount="0"/>
+      <line num="13" count="9" type="cond" truecount="2" falsecount="0"/>
+      <line num="14" count="9" type="cond" truecount="2" falsecount="0"/>
+      <line num="15" count="9" type="cond" truecount="2" falsecount="0"/>
+      <line num="17" count="9" type="stmt"/>
+      <line num="22" count="9" type="cond" truecount="1" falsecount="0"/>
+      <line num="25" count="9" type="stmt"/>
+      <line num="26" count="9" type="stmt"/>
+      <line num="27" count="1" type="stmt"/>
+      <line num="31" count="9" type="cond" truecount="1" falsecount="1"/>
+      <line num="32" count="9" type="cond" truecount="3" falsecount="0"/>
+      <line num="33" count="4" type="stmt"/>
+      <line num="34" count="4" type="cond" truecount="1" falsecount="0"/>
+      <line num="35" count="4" type="stmt"/>
+      <line num="40" count="9" type="stmt"/>
+      <line num="41" count="9" type="stmt"/>
+      <line num="48" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="49" count="8" type="stmt"/>
+      <line num="50" count="8" type="cond" truecount="2" falsecount="0"/>
+      <line num="53" count="8" type="cond" truecount="1" falsecount="0"/>
+      <line num="54" count="1" type="stmt"/>
+      <line num="55" count="1" type="stmt"/>
+      <line num="58" count="7" type="stmt"/>
+      <line num="61" count="1" type="stmt"/>
+      <line num="73" count="5" type="stmt"/>
+      <line num="76" count="1" type="stmt"/>
+      <line num="84" count="1" type="stmt"/>
+      <line num="92" count="1" type="stmt"/>
+      <line num="100" count="1" type="stmt"/>
+    </file>
+    <file name="csrfToken.ts" path="C:\Users\brian\Documents\django-core\.worktrees\024-multi-tenancy-context\packages\api-client\src\csrfToken.ts">
+      <metrics statements="3" coveredstatements="3" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+      <line num="5" count="2" type="stmt"/>
+      <line num="6" count="8" type="stmt"/>
+      <line num="7" count="8" type="cond" truecount="2" falsecount="0"/>
+    </file>
+    <file name="errorNormalizer.ts" path="C:\Users\brian\Documents\django-core\.worktrees\024-multi-tenancy-context\packages\api-client\src\errorNormalizer.ts">
+      <metrics statements="16" coveredstatements="16" conditionals="28" coveredconditionals="27" methods="7" coveredmethods="7"/>
+      <line num="9" count="2" type="stmt"/>
+      <line num="11" count="14" type="cond" truecount="1" falsecount="0"/>
+      <line num="18" count="5" type="stmt"/>
+      <line num="19" count="5" type="stmt"/>
+      <line num="29" count="9" type="stmt"/>
+      <line num="37" count="9" type="cond" truecount="9" falsecount="0"/>
+      <line num="39" count="1" type="stmt"/>
+      <line num="41" count="1" type="stmt"/>
+      <line num="43" count="1" type="stmt"/>
+      <line num="45" count="1" type="stmt"/>
+      <line num="47" count="1" type="stmt"/>
+      <line num="51" count="3" type="stmt"/>
+      <line num="53" count="1" type="stmt"/>
+      <line num="58" count="5" type="stmt"/>
+      <line num="61" count="1" type="cond" truecount="2" falsecount="0"/>
+      <line num="66" count="5" type="cond" truecount="2" falsecount="0"/>
+    </file>
+  </project>
+</coverage>

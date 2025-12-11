@@ -1,0 +1,26 @@
+{
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-12-11T08:38:44Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "24e354caa01055f99c6aa447c1c7a0a52bd8041f",
+      "branch": "024-multi-tenancy-context",
+      "mode": "pr",
+      "validation_commands": [
+        "pnpm test",
+        "pnpm lint",
+        "pnpm build"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-12-11T08:38:44Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "24e354caa01055f99c6aa447c1c7a0a52bd8041f",
+  "created_at": "2025-12-09T17:05:02Z",
+  "feature_number": "024",
+  "friendly_name": "Multi-Tenancy Context Switcher",
+  "slug": "024-multi-tenancy-context",
+  "source_description": "F03-multi-tenancy-context-switcher"
+}
