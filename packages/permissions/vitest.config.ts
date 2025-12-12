@@ -29,9 +29,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@django-core/api-client': path.resolve(__dirname, '../api-client/src/index.ts'),
-      '@django-core/auth-ui': path.resolve(__dirname, '../auth/src/index.ts'),
-      '@django-core/context-switcher': path.resolve(__dirname, '../context-switcher/src/index.ts'),
+      // Use test mocks for workspace packages during tests
+      '@django-core/api-client': path.resolve(__dirname, './src/test/__mocks__/@django-core/api-client.ts'),
+      '@django-core/auth-ui': path.resolve(__dirname, './src/test/__mocks__/@django-core/auth-ui.ts'),
+      '@django-core/context-switcher': path.resolve(__dirname, './src/test/__mocks__/@django-core/context-switcher.ts'),
     },
   },
 });

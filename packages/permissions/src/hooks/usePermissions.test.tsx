@@ -4,29 +4,22 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import React from 'react';
-import { usePermissions } from './usePermissions';
-import { PermissionsProvider } from '../provider/PermissionsProvider';
 import type { PermissionMap } from '../types';
 
-// Mock dependencies
-const mockFetchWithCSRF = vi.fn();
-const mockUseAuth = vi.fn();
-const mockUseMultiTenancyContext = vi.fn();
+// Import components and mocked dependencies
+import { usePermissions } from './usePermissions';
+import { PermissionsProvider } from '../provider/PermissionsProvider';
+import { fetchWithCSRF } from '@django-core/api-client';
+import { useAuth } from '@django-core/auth-ui';
+import { useContext as useMultiTenancyContext } from '@django-core/context-switcher';
 
-vi.mock('@django-core/api-client', () => ({
-  fetchWithCSRF: (...args: unknown[]) => mockFetchWithCSRF(...args),
-}));
-
-vi.mock('@django-core/auth-ui', () => ({
-  useAuth: () => mockUseAuth(),
-}));
-
-vi.mock('@django-core/context-switcher', () => ({
-  useContext: () => mockUseMultiTenancyContext(),
-}));
+// Get typed mock references
+const mockFetchWithCSRF = vi.mocked(fetchWithCSRF);
+const mockUseAuth = vi.mocked(useAuth);
+const mockUseMultiTenancyContext = vi.mocked(useMultiTenancyContext);
 
 describe('usePermissions', () => {
   const mockUser = { id: 'user-123', email: 'test@example.com' };
