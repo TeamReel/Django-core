@@ -1,11 +1,27 @@
-// Component exports (will be populated in later work packages)
+// Component exports
 export { Alert } from './components/Alert';
 export type { AlertProps } from './components/Alert';
 
-// Hook exports (will be populated in WP02, WP06)
-// export { useAlertDismissal } from './hooks/useAlertDismissal';
+// Hook exports
+export { useAlertDismissal } from './hooks/useAlertDismissal';
+export type {
+  AlertDismissalState,
+  UseAlertDismissalOptions,
+  UseAlertDismissalResult,
+} from './hooks/useAlertDismissal';
+
+// Hook exports (will be populated in WP06)
 // export { useResourceUsage } from './hooks/useResourceUsage';
 // export { useHealthStatus } from './hooks/useHealthStatus';
+
+// Utility exports
+export {
+  isLocalStorageAvailable,
+  getItem as getLocalStorageItem,
+  setItem as setLocalStorageItem,
+  removeItem as removeLocalStorageItem,
+  getAlertStorageKey,
+} from './utils/localStorage';
 
 // Type exports
 export type {

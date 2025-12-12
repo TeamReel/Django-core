@@ -17,7 +17,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build && tsc --emitDeclarationOnly",
+    "build": "vite build && tsc --emitDeclarationOnly --skipLibCheck",
     "dev": "vite",
     "test": "vitest run",
     "test:watch": "vitest",
