@@ -1,13 +1,15 @@
 ---
 work_package_id: WP03
 title: API Enforcement - B16 Notifications
-lane: planned
+lane: "doing"
 subtasks:
   - T015
   - T016
   - T017
   - T018
   - T019
+agent: "claude-implementer"
+shell_pid: "26336"
 history:
   - date: 2025-12-12
     action: created
@@ -306,3 +308,7 @@ def test_anonymous_user_cannot_list_notifications(self):
 ## Next Work Package
 
 After WP03 complete, proceed with **WP04 (B17 Routing Refactor)** or **WP05 (Settings ACL Enforcement)** in parallel.
+
+## Activity Log
+
+- 2025-12-12T13:15:21Z – claude-implementer – shell_pid=26336 – lane=doing – Started WP03 implementation - B16 Notifications ACL Enforcement
