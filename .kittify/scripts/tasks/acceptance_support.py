@@ -431,14 +431,23 @@ def collect_feature_summary(
                 metadata_issues.append(f"{wp_id}: missing shell_pid in frontmatter")
 
         if not entries:
-            activity_issues.append(f"{wp_id}: Activity Log missing entries")
+            activity_issues.append(
+                f"{wp_id}: Activity Log missing entries. "
+                "Add '## Activity Log' section with inline format entries. "
+                "See .kittify/scripts/tasks/ACTIVITY_LOG_FORMAT.md for correct format."
+            )
         else:
             if wp.current_lane not in lanes_logged:
                 activity_issues.append(
-                    f"{wp_id}: Activity Log missing entry for lane={wp.current_lane}"
+                    f"{wp_id}: Activity Log missing entry for lane={wp.current_lane}. "
+                    f"Add entry: '- <timestamp> – <agent> – shell_pid=<pid> – lane={wp.current_lane} – <note>'"
                 )
             if wp.current_lane == "done" and entries[-1]["lane"] != "done":
-                activity_issues.append(f"{wp_id}: latest Activity Log entry not lane=done")
+                latest = entries[-1]["lane"] if entries else "none"
+                activity_issues.append(
+                    f"{wp_id}: latest Activity Log entry not lane=done (found: lane={latest}). "
+                    "Ensure the last entry in ## Activity Log section has lane=done."
+                )
 
         work_packages.append(
             WorkPackageState(

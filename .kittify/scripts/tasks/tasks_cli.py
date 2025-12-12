@@ -36,6 +36,7 @@ from task_helpers import (  # noqa: E402
     detect_conflicting_wp_status,
     ensure_lane,
     find_repo_root,
+    format_activity_entry,
     git_status_lines,
     locate_work_package,
     normalize_note,
@@ -69,7 +70,8 @@ def stage_move(
     wp.frontmatter = set_scalar(wp.frontmatter, "agent", agent)
     if shell_pid:
         wp.frontmatter = set_scalar(wp.frontmatter, "shell_pid", shell_pid)
-    log_entry = f"- {timestamp} – {agent} – shell_pid={shell_pid} – lane={target_lane} – {note}"
+    # Use helper function to ensure correct inline format
+    log_entry = format_activity_entry(timestamp, agent, target_lane, note, shell_pid)
     new_body = append_activity_log(wp.body, log_entry)
 
     new_content = build_document(wp.frontmatter, new_body, wp.padding)

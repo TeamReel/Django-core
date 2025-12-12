@@ -229,7 +229,49 @@ def append_activity_log(body: str, entry: str) -> str:
     return body[: match.start(1)] + section + body[match.end(1) :]
 
 
+def format_activity_entry(
+    timestamp: str,
+    agent: str,
+    lane: str,
+    note: str,
+    shell_pid: str = "",
+) -> str:
+    """Format an activity log entry in the correct inline dash-separated format.
+
+    The Activity Log section in work packages MUST use this inline format:
+    - TIMESTAMP – AGENT – shell_pid=VALUE – lane=LANE – Note text
+
+    Example:
+        - 2025-12-12T13:05:00Z – claude-reviewer – shell_pid=26336 – lane=done – Approved
+
+    DO NOT use YAML multi-line format:
+        - date: 2025-12-12T13:05:00Z    # WRONG!
+          action: moved_to_done          # WRONG!
+          lane: done                     # WRONG!
+
+    Args:
+        timestamp: ISO 8601 timestamp ending with Z (e.g., "2025-12-12T13:05:00Z")
+        agent: Agent name (e.g., "claude-reviewer", "copilot")
+        lane: Target lane (must be one of: planned, doing, for_review, done)
+        note: Description of the activity
+        shell_pid: Optional shell process ID
+
+    Returns:
+        Formatted activity log entry string
+    """
+    shell_part = f"shell_pid={shell_pid} – " if shell_pid else "shell_pid= – "
+    return f"- {timestamp} – {agent} – {shell_part}lane={lane} – {note}"
+
+
 def activity_entries(body: str) -> List[Dict[str, str]]:
+    """Parse activity log entries from work package body.
+
+    Expects entries in inline dash-separated format:
+    - TIMESTAMP – AGENT – shell_pid=VALUE – lane=LANE – Note text
+
+    YAML-formatted entries in frontmatter history are NOT parsed.
+    Only the ## Activity Log section in the body is parsed.
+    """
     # Match both en-dash (–) and hyphen (-) as separators
     # The separator is always surrounded by whitespace, so we match non-whitespace for fields
     pattern = re.compile(
