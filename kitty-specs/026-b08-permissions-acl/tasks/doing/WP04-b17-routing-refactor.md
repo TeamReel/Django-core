@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: API Enforcement - B17 Routing Service Refactor
-lane: "planned"
+lane: "doing"
 subtasks:
   - T020
   - T021
@@ -9,9 +9,9 @@ subtasks:
   - T023
   - T024
   - T025
-agent: "claude-reviewer"
+agent: "claude"
 shell_pid: "26336"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - date: 2025-12-12
@@ -495,3 +495,4 @@ After WP04 complete, proceed with **WP05 (Settings ACL Enforcement)** or move to
 - 2025-12-12T14:05:34Z – claude – shell_pid=26336 – lane=for_review – Completed WP04 - All 6 subtasks done, tests passing
 - 2025-12-12T14:10:00Z – claude-reviewer – shell_pid=26336 – lane=planned – Code review complete: Test failures due to User model username issue. Core refactoring solid, needs test fixture fix.
 - 2025-12-12T14:09:41Z – claude-reviewer – shell_pid=26336 – lane=planned – Code review: Test User model incompatibility - needs fixture fix
+- 2025-12-12T14:16:27Z – claude – shell_pid=26336 – lane=doing – Addressing review feedback - fixing User model test fixtures
