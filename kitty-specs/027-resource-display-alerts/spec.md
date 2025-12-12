@@ -118,7 +118,7 @@ Developers building on the platform need consistent, composable alert and resour
 - **FR-008**: System MUST expose components that integrate with F06 layout primitives without requiring wrapper elements
 - **FR-009**: System MUST provide accessible focus management for interactive alert components (dismiss buttons, action links)
 - **FR-010**: System MUST announce new alerts to screen readers via ARIA live regions (polite for info/success, assertive for warning/critical)
-- **FR-010a**: System MUST support configurable animation behavior via props, with subtle fade-in/fade-out (200-300ms) as default. All animations MUST respect prefers-reduced-motion CSS media query and disable transitions entirely when users have motion preferences set
+- **FR-010a**: System MUST support configurable animation behavior via props, with subtle fade-in/fade-out (250ms default, configurable via animationDuration prop, range 0-500ms) as default. All animations MUST respect prefers-reduced-motion CSS media query and disable transitions entirely when users have motion preferences set
 - **FR-010b**: System MUST NOT catch or swallow render-time exceptions within components. All unhandled errors MUST bubble up to nearest parent React error boundary (consuming app or shared @django-core/error-handling boundary). Components MUST validate prop data and throw clear errors for invalid inputs rather than rendering broken UI
 - **FR-011**: System MUST use F01 design tokens exclusively for all colors, spacing, typography, and shadows
 - **FR-012**: System MUST provide TypeScript type definitions for all component props and data shapes

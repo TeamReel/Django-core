@@ -135,7 +135,7 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 
 **Included Subtasks**:
 - [ ] T015: Create ResourceUsageBar component with props interface
-- [ ] T016: Implement percentage calculation and severity mapping (low/medium/high)
+- [ ] T016: Implement percentage calculation logic (component accepts severity as explicit prop; optional calculateSeverityFromUsage helper utility for convenience)
 - [ ] T017: Style with F01 tokens (colors from severity, spacingVars for padding)
 - [ ] T018: Add ARIA attributes (aria-valuenow, aria-valuemin, aria-valuemax, role="progressbar")
 - [ ] T019: Write unit tests (percentage calc, color mapping, edge cases)
@@ -255,8 +255,8 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 **Independent Test**: Call useResourceUsage with mock API endpoint, verify polling occurs at specified interval and data updates component props.
 
 **Included Subtasks**:
-- [ ] T034: Implement useResourceUsage hook (polling with configurable interval)
-- [ ] T035: Implement useHealthStatus hook (polling with configurable interval)
+- [ ] T034: Implement useResourceUsage hook (polling with configurable interval, default: 30000ms/30s)
+- [ ] T035: Implement useHealthStatus hook (polling with configurable interval, default: 30000ms/30s)
 - [ ] T036: Use @django-core/api-client for CSRF-protected fetches
 - [ ] T037: Add error handling and loading states to hooks
 - [ ] T038: Write unit tests with mocked fetch/timers
