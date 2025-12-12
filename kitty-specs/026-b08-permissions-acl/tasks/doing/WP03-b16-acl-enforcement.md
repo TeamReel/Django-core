@@ -1,16 +1,16 @@
 ---
 work_package_id: WP03
 title: API Enforcement - B16 Notifications
-lane: "planned"
+lane: "doing"
 subtasks:
   - T015
   - T016
   - T017
   - T018
   - T019
-agent: "claude-reviewer"
+agent: "claude-implementer"
 shell_pid: "26336"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - date: 2025-12-12
@@ -396,3 +396,4 @@ After WP03 complete, proceed with **WP04 (B17 Routing Refactor)** or **WP05 (Set
 - 2025-12-12T13:22:27Z – claude-implementer – shell_pid=26336 – lane=for_review – Moved to for_review
 - 2025-12-12T13:25:00Z – claude-reviewer – shell_pid=26336 – lane=planned – Code review completed: Architectural mismatch between spec and B16 model identified - spec assumes org/project ForeignKeys that don't exist. Implementation is correct for current user-scoped architecture but needs documentation updates to match reality.
 - 2025-12-12T13:26:04Z – claude-reviewer – shell_pid=26336 – lane=planned – Code review complete: Architectural mismatch identified
+- 2025-12-12T13:29:47Z – claude-implementer – shell_pid=26336 – lane=doing – Addressing review feedback - documenting architecture decisions
