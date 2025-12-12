@@ -4,6 +4,9 @@ DRF permission classes for permissions API.
 This module provides custom Django REST Framework permission classes
 that integrate with the hierarchical access control system.
 
+All permission checks go through evaluate_permission() for comprehensive
+audit logging and ACL bypass prevention (WP01-T008).
+
 Usage Examples:
 
     Basic usage in a ViewSet:
@@ -39,14 +42,17 @@ Usage Examples:
             # ... implementation
 """
 
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
-from permissions.evaluator import check_permission
+from permissions.audit import evaluate_permission
 
 
 class HasPermission(BasePermission):
     """
     DRF permission class that checks if user has specific permission.
+
+    Uses evaluate_permission() for comprehensive audit logging.
 
     Usage:
         class MyViewSet(viewsets.ModelViewSet):
@@ -83,44 +89,192 @@ class HasPermission(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
-        # Check permission using evaluator
-        has_perm = check_permission(
-            request.user.id,
-            self.permission,
-            None,
-            "generic",  # Generic permission check (not resource-specific)
-        )
+        # Use centralized evaluator for audit logging (WP01-T008)
+        try:
+            has_perm = evaluate_permission(
+                user=request.user,
+                permission=self.permission,
+                resource=None,
+                context={
+                    "scope": "GENERIC",
+                    "request_id": request.META.get("HTTP_X_REQUEST_ID"),
+                },
+            )
+        except Exception:
+            # Fail closed on evaluation errors
+            has_perm = False
 
         if not has_perm:
-            # Set custom error message
-            self.message = f"Permission denied: '{self.permission}' required"
+            # Raise structured 403 response (WP06-T035)
+            raise PermissionDenied(
+                {
+                    "error": "forbidden",
+                    "permission": self.permission,
+                    "detail": f"Permission denied: '{self.permission}' required",
+                    "scope": "GENERIC",
+                }
+            )
 
         return has_perm
 
-    def has_object_permission(self, request, view, obj):
+
+class HasOrganizationPermission(BasePermission):
+    """
+    DRF permission class for organization-scoped permission checks.
+
+    Expects view to have 'required_permission' attribute and
+    'organization_id' in URL kwargs or request data.
+
+    Uses evaluate_permission() for comprehensive audit logging.
+
+    Usage:
+        class OrganizationBalanceView(APIView):
+            permission_classes = [HasOrganizationPermission]
+            required_permission = "organization.view_balance"
+
+            def get(self, request, organization_id):
+                # Permission already checked
+                ...
+    """
+
+    def has_permission(self, request, view):
         """
-        Check if request user has permission on specific object.
+        Check if user has organization-scoped permission.
 
         Args:
             request: DRF request object
-            view: DRF view object
-            obj: Object being accessed
+            view: DRF view object (must have required_permission attribute)
 
         Returns:
-            True if user has permission on object, False otherwise
+            True if user has permission, False otherwise
         """
         if not request.user or not request.user.is_authenticated:
             return False
 
-        # Determine resource type from object
-        resource_type = obj.__class__.__name__.lower()
-        resource_id = obj.id if hasattr(obj, "id") else None
+        # Get required permission from view
+        permission = getattr(view, "required_permission", None)
+        if not permission:
+            raise AttributeError(
+                f"{view.__class__.__name__} must define 'required_permission' attribute"
+            )
 
-        has_perm = check_permission(request.user.id, self.permission, resource_id, resource_type)
+        # Extract organization_id from URL kwargs or request data
+        organization_id = view.kwargs.get("organization_id") or request.data.get("organization_id")
+        if not organization_id:
+            # Fail closed if organization context missing
+            return False
+
+        # Prepare context for evaluator
+        context = {
+            "scope": "ORGANIZATION",
+            "organization_id": organization_id,
+            "request_id": request.META.get("HTTP_X_REQUEST_ID"),
+        }
+
+        # Use centralized evaluator for audit logging
+        try:
+            has_perm = evaluate_permission(
+                user=request.user,
+                permission=permission,
+                resource=None,
+                context=context,
+            )
+        except Exception:
+            # Fail closed on evaluation errors
+            has_perm = False
 
         if not has_perm:
-            self.message = (
-                f"Permission denied: '{self.permission}' required for this {resource_type}"
+            # Raise structured 403 response (WP06-T035)
+            detail = (
+                f"Permission denied: '{permission}' required " f"for organization {organization_id}"
+            )
+            raise PermissionDenied(
+                {
+                    "error": "forbidden",
+                    "permission": permission,
+                    "detail": detail,
+                    "scope": "ORGANIZATION",
+                }
+            )
+
+        return has_perm
+
+
+class HasProjectPermission(BasePermission):
+    """
+    DRF permission class for project-scoped permission checks.
+
+    Expects view to have 'required_permission' attribute and
+    'project_id' in URL kwargs or request data.
+
+    Uses evaluate_permission() for comprehensive audit logging.
+
+    Usage:
+        class ProjectBalanceView(APIView):
+            permission_classes = [HasProjectPermission]
+            required_permission = "project.view_balance"
+
+            def get(self, request, project_id):
+                # Permission already checked
+                ...
+    """
+
+    def has_permission(self, request, view):
+        """
+        Check if user has project-scoped permission.
+
+        Args:
+            request: DRF request object
+            view: DRF view object (must have required_permission attribute)
+
+        Returns:
+            True if user has permission, False otherwise
+        """
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Get required permission from view
+        permission = getattr(view, "required_permission", None)
+        if not permission:
+            raise AttributeError(
+                f"{view.__class__.__name__} must define 'required_permission' attribute"
+            )
+
+        # Extract project_id from URL kwargs or request data
+        project_id = view.kwargs.get("project_id") or request.data.get("project_id")
+        if not project_id:
+            # Fail closed if project context missing
+            return False
+
+        # Prepare context for evaluator
+        context = {
+            "scope": "PROJECT",
+            "project_id": project_id,
+            "request_id": request.META.get("HTTP_X_REQUEST_ID"),
+        }
+
+        # Use centralized evaluator for audit logging
+        try:
+            has_perm = evaluate_permission(
+                user=request.user,
+                permission=permission,
+                resource=None,
+                context=context,
+            )
+        except Exception:
+            # Fail closed on evaluation errors
+            has_perm = False
+
+        if not has_perm:
+            # Raise structured 403 response (WP06-T035)
+            detail = f"Permission denied: '{permission}' required for project {project_id}"
+            raise PermissionDenied(
+                {
+                    "error": "forbidden",
+                    "permission": permission,
+                    "detail": detail,
+                    "scope": "PROJECT",
+                }
             )
 
         return has_perm

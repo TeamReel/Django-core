@@ -143,6 +143,86 @@ def handle_audit_failure(sender, event_type, exception, event_data, **kwargs):
 - **Overhead**: <10ms per audit_log.record() call
 - **Search**: <2s for queries on 100k+ events (GIN indexed metadata)
 
+## B08 Integration (Permissions & Access Control)
+
+B09 automatically captures all permission decisions made through `evaluate_permission()`. Audit events include:
+
+- **Event Type**: `permission.granted` or `permission.denied`
+- **User ID**: User requesting permission
+- **Permission Code**: Specific permission checked (e.g., `organization.view_balance`)
+- **Scope**: GLOBAL, ORGANIZATION, or PROJECT
+- **Outcome**: "allowed" or "denied"
+- **Metadata**: Resource type, resource ID, request ID
+
+### Audit Event Schema
+
+```python
+{
+    "event_type": "permission.granted",
+    "user_id": 123,
+    "organization_id": 456,
+    "project_id": null,
+    "permission": "organization.view_balance",
+    "outcome": "allowed",
+    "scope": "ORGANIZATION",
+    "metadata": {
+        "request_id": "req-abc123",
+        "resource_type": "Organization",
+        "resource_id": 456
+    },
+    "timestamp": "2025-12-12T10:30:00Z"
+}
+```
+
+### Automatic Permission Audit Logging
+
+When using B08's `evaluate_permission()`, audit events are automatically created:
+
+```python
+from permissions.audit import evaluate_permission
+
+# This automatically logs a permission.granted or permission.denied event
+granted = evaluate_permission(
+    user=request.user,
+    permission='organization.view_balance',
+    context={'scope': 'ORGANIZATION', 'organization_id': org_id}
+)
+```
+
+### Querying Audit Events
+
+```python
+from audit.models import AuditEvent
+
+# Find all denied permission attempts
+denied_events = AuditEvent.objects.filter(
+    event_type="permission.denied",
+    user_id=user_id
+).order_by("-timestamp")
+
+# Find permission checks for specific resource
+org_permission_events = AuditEvent.objects.filter(
+    permission__startswith="organization.",
+    organization_id=org_id
+)
+
+# Find all permission grants for a specific user
+granted_events = AuditEvent.objects.filter(
+    event_type="permission.granted",
+    user_id=user_id
+).order_by("-timestamp")[:10]
+```
+
+### Fallback Behavior
+
+When B09 is unavailable, permission checks fall back to Django logging:
+
+- **Warning logged** about B09 unavailability
+- **Permission decision logged** to `permissions.audit` logger
+- **Permission check continues** (not blocked by B09 failure)
+
+This fail-safe design ensures that permission checks never break due to audit system failures.
+
 ## Best Practices
 
 1. **Always use request parameter**: Auto-captures IP and user agent

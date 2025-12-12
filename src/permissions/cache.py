@@ -106,7 +106,7 @@ def invalidate_user_cache(user_id: UUID) -> None:
     Invalidate all cached evaluations for a user.
 
     Uses Redis SCAN pattern matching to find and delete all keys
-    matching: perms:{user_id}:*
+    matching: perms:{user_id}:* and permissions:user:{user_id}
 
     Args:
         user_id: UUID of user whose cache to invalidate
@@ -115,13 +115,18 @@ def invalidate_user_cache(user_id: UUID) -> None:
         prefix = getattr(settings, "PERMISSIONS_CACHE_PREFIX", "perms")
         pattern = f"{prefix}:{user_id}:*"
 
-        # Django cache doesn't have scan, so use delete_pattern if available
-        # (requires django-redis backend)
+        # Invalidate permission evaluator cache
         if hasattr(cache, "delete_pattern"):
             count = cache.delete_pattern(pattern)
-            logger.info(f"Invalidated {count} cache entries for user {user_id}")
+            logger.info(f"Invalidated {count} evaluator cache entries for user {user_id}")
         else:
-            logger.warning("delete_pattern not available, cache invalidation skipped")
+            logger.warning("delete_pattern not available, evaluator cache invalidation skipped")
+
+        # Also invalidate permissions current endpoint cache
+        permissions_key = f"permissions:user:{user_id}"
+        cache.delete(permissions_key)
+        logger.info(f"Invalidated permissions current cache for user {user_id}")
+
     except Exception as e:
         logger.error(f"Cache invalidation failed for user {user_id}: {e}")
 

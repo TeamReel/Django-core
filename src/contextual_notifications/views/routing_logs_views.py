@@ -53,7 +53,7 @@ class RoutingDecisionLogViewSet(viewsets.ReadOnlyModelViewSet):
         Return routing decision audit events.
 
         Filters to notification_routing_decision events.
-        Org admins see only their org's events.
+        Org admins see only their org's events (ACL-enforced via B06 service layer).
         Superusers see all events.
         """
         user = self.request.user
@@ -66,12 +66,16 @@ class RoutingDecisionLogViewSet(viewsets.ReadOnlyModelViewSet):
             return queryset
 
         # Org admins see only their organization's routing decisions
-        # Get all organizations where user has admin role
-        from organisations.models import OrganisationUser
+        # Use B06 service layer (calls evaluate_permission() internally)
+        from organisations.services import get_user_organizations
 
-        admin_org_ids = OrganisationUser.objects.filter(
-            user=user, role__in=["admin", "owner"]
-        ).values_list("organisation_id", flat=True)
+        admin_orgs = get_user_organizations(
+            user=user,
+            permission="organization.view_routing_logs",
+            role_filter=["admin", "owner"],
+        )
+
+        admin_org_ids = list(admin_orgs.values_list("id", flat=True))
 
         if admin_org_ids:
             return queryset.filter(organization_id__in=admin_org_ids)
