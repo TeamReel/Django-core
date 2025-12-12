@@ -26,13 +26,7 @@ history:
     by: claude-reviewer
     review_status: "approved without changes"
     notes: "Backend tasks (T033-T039) complete and production-ready. Frontend tasks (T031-T032) deferred to api-client package."
-  - date: 2025-12-12T15:30:00Z
-    action: moved_to_done
-    by: claude-reviewer
-    agent: claude-reviewer
-    shell_pid: 26752
-    lane: done
-    note: "WP06 approved without changes and moved to done lane"
+- 2025-12-12T15:30:00Z – claude-reviewer – shell_pid=26752 – lane=done – WP06 approved without changes and moved to done lane
 ---
 
 ## Review Feedback

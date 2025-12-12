@@ -35,13 +35,7 @@ history:
     agent: claude-reviewer
     shell_pid: 21584
     note: "Code review complete: APPROVED with minor notes"
-  - date: 2025-12-12T21:35:00Z
-    action: moved_to_done
-    by: claude-reviewer
-    agent: claude-reviewer
-    shell_pid: 21584
-    lane: done
-    note: "WP09 approved with minor notes and moved to done lane"
+- 2025-12-12T21:35:00Z – claude-reviewer – shell_pid=21584 – lane=done – WP09 approved with minor notes and moved to done lane
 ---
 
 ## Review Feedback
