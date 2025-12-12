@@ -138,6 +138,13 @@ class Command(BaseCommand):
                 "View project transaction balance",
                 False,
             ),
+            # Notification permissions (1)
+            (
+                "notifications.view",
+                "generic",
+                "View notifications for accessible resources",
+                False,
+            ),
             # Permission management permissions (5)
             (
                 "permissions.create_role",

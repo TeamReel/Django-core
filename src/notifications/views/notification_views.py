@@ -4,6 +4,7 @@ from django.db.models import Count
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from permissions.audit import evaluate_permission
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +18,46 @@ from notifications.serializers import (
     NotificationListSerializer,
     NotificationSerializer,
 )
+
+
+class HasNotificationPermission(IsAuthenticated):
+    """
+    Custom permission class for notification endpoints.
+
+    Integrates with B08 hierarchical ACL via evaluate_permission()
+    for comprehensive audit logging and ACL bypass prevention (WP03).
+
+    Checks 'notifications.view' permission for all read operations.
+    """
+
+    required_permission = "notifications.view"
+
+    def has_permission(self, request, view):
+        """Check if user has notification view permission."""
+        # First verify authentication
+        if not super().has_permission(request, view):
+            return False
+
+        # Use centralized evaluator for audit logging (WP01)
+        try:
+            has_perm = evaluate_permission(
+                user=request.user,
+                permission=self.required_permission,
+                resource=None,
+                context={
+                    "scope": "USER",
+                    "request_id": request.META.get("HTTP_X_REQUEST_ID"),
+                    "endpoint": f"{view.__class__.__name__}.{view.action or 'list'}",
+                },
+            )
+        except Exception:
+            # Fail closed on evaluation errors
+            has_perm = False
+
+        if not has_perm:
+            self.message = f"Permission denied: '{self.required_permission}' required"
+
+        return has_perm
 
 
 @extend_schema_view(
@@ -91,11 +132,12 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     - Filtering by status, type, date_range, recipient
     - Pagination (50/page, max 100)
     - Query optimization (select_related, prefetch_related)
+    - ACL enforcement via HasNotificationPermission (WP03)
     """
 
     queryset = Notification.objects.all()
     pagination_class = NotificationPagination
-    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = [HasNotificationPermission, IsOwnerOrAdmin]  # ✅ ACL enforcement
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = NotificationFilter
     ordering_fields = ["created_at", "updated_at", "status"]
