@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: API Enforcement - B17 Routing Service Refactor
-lane: "doing"
+lane: "for_review"
 subtasks:
   - T020
   - T021
@@ -380,3 +380,4 @@ After WP04 complete, proceed with **WP05 (Settings ACL Enforcement)** or move to
 
 - 2025-12-12T13:47:53Z – claude – shell_pid=26336 – lane=doing – Started WP04 implementation - B17 routing refactor
 - 2025-12-12T14:15:00Z – claude – shell_pid=26336 – lane=doing – Completed all 6 subtasks (T020-T025)
+- 2025-12-12T14:05:34Z – claude – shell_pid=26336 – lane=for_review – Completed WP04 - All 6 subtasks done, tests passing
