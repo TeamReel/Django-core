@@ -46,12 +46,8 @@ class TestB17RoutingLogsACL:
         self.org_b = Organisation.objects.create(name="Org B", creator=self._create_temp_user())
 
         # Create test users
-        self.admin_user_a = User.objects.create_user(
-            username="admin_a", email="admin_a@test.com", password="testpass"
-        )
-        self.regular_user = User.objects.create_user(
-            username="regular", email="regular@test.com", password="testpass"
-        )
+        self.admin_user_a = User.objects.create_user(email="admin_a@test.com", password="testpass")
+        self.regular_user = User.objects.create_user(email="regular@test.com", password="testpass")
 
         # Add admin_user_a as admin of org_a
         Membership.objects.create(user=self.admin_user_a, organisation=self.org_a, role="admin")
@@ -84,7 +80,6 @@ class TestB17RoutingLogsACL:
         import uuid
 
         return User.objects.create_user(
-            username=f"temp_{uuid.uuid4().hex[:8]}",
             email=f"temp_{uuid.uuid4().hex[:8]}@test.com",
             password="testpass",
         )
@@ -93,7 +88,7 @@ class TestB17RoutingLogsACL:
         """Admin user with permission can view routing logs for their organization."""
         self.client.force_authenticate(user=self.admin_user_a)
 
-        response = self.client.get("/api/contextual-notifications/routing-logs/")
+        response = self.client.get("/api/v1/contextual-notifications/routing-logs/")
 
         assert response.status_code == 200
         # Should only see events for org_a
@@ -114,7 +109,7 @@ class TestB17RoutingLogsACL:
         """Admin user cannot see routing logs from organizations they don't belong to."""
         self.client.force_authenticate(user=self.admin_user_a)
 
-        response = self.client.get("/api/contextual-notifications/routing-logs/")
+        response = self.client.get("/api/v1/contextual-notifications/routing-logs/")
 
         assert response.status_code == 200
         data = response.json()
@@ -128,7 +123,7 @@ class TestB17RoutingLogsACL:
         """Regular user without admin role cannot access routing logs."""
         self.client.force_authenticate(user=self.regular_user)
 
-        response = self.client.get("/api/contextual-notifications/routing-logs/")
+        response = self.client.get("/api/v1/contextual-notifications/routing-logs/")
 
         assert response.status_code == 200  # Endpoint accessible
         data = response.json()
@@ -166,14 +161,10 @@ class TestB17NotificationPreferencesACL:
         self.org = Organisation.objects.create(name="Test Org", creator=self._create_temp_user())
 
         # Create users
-        self.admin_user = User.objects.create_user(
-            username="admin", email="admin@test.com", password="testpass"
-        )
-        self.team_member = User.objects.create_user(
-            username="member", email="member@test.com", password="testpass"
-        )
+        self.admin_user = User.objects.create_user(email="admin@test.com", password="testpass")
+        self.team_member = User.objects.create_user(email="member@test.com", password="testpass")
         self.external_user = User.objects.create_user(
-            username="external", email="external@test.com", password="testpass"
+            email="external@test.com", password="testpass"
         )
 
         # Add memberships
@@ -204,7 +195,6 @@ class TestB17NotificationPreferencesACL:
         import uuid
 
         return User.objects.create_user(
-            username=f"temp_{uuid.uuid4().hex[:8]}",
             email=f"temp_{uuid.uuid4().hex[:8]}@test.com",
             password="testpass",
         )
@@ -213,7 +203,7 @@ class TestB17NotificationPreferencesACL:
         """Admin can view preferences for users in their organization."""
         self.client.force_authenticate(user=self.admin_user)
 
-        response = self.client.get("/api/contextual-notifications/preferences/")
+        response = self.client.get("/api/v1/contextual-notifications/preferences/")
 
         assert response.status_code == 200
         data = response.json()
@@ -229,7 +219,7 @@ class TestB17NotificationPreferencesACL:
         """Regular team member can only view their own preferences."""
         self.client.force_authenticate(user=self.team_member)
 
-        response = self.client.get("/api/contextual-notifications/preferences/")
+        response = self.client.get("/api/v1/contextual-notifications/preferences/")
 
         assert response.status_code == 200
         data = response.json()
@@ -243,7 +233,7 @@ class TestB17NotificationPreferencesACL:
         """User not in organization cannot see team preferences."""
         self.client.force_authenticate(user=self.external_user)
 
-        response = self.client.get("/api/contextual-notifications/preferences/")
+        response = self.client.get("/api/v1/contextual-notifications/preferences/")
 
         assert response.status_code == 200
         data = response.json()

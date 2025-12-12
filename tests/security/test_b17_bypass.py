@@ -31,12 +31,8 @@ class TestB17BypassAttempts:
         self.org_b = Organisation.objects.create(name="Org B", creator=self._create_temp_user())
 
         # Create users
-        self.user_org_a = User.objects.create_user(
-            username="user_a", email="user_a@test.com", password="testpass"
-        )
-        self.user_org_b = User.objects.create_user(
-            username="user_b", email="user_b@test.com", password="testpass"
-        )
+        self.user_org_a = User.objects.create_user(email="user_a@test.com", password="testpass")
+        self.user_org_b = User.objects.create_user(email="user_b@test.com", password="testpass")
 
         # Create memberships (non-admin)
         Membership.objects.create(user=self.user_org_a, organisation=self.org_a, role="member")
@@ -71,7 +67,6 @@ class TestB17BypassAttempts:
         import uuid
 
         return User.objects.create_user(
-            username=f"temp_{uuid.uuid4().hex[:8]}",
             email=f"temp_{uuid.uuid4().hex[:8]}@test.com",
             password="testpass",
         )
@@ -81,7 +76,7 @@ class TestB17BypassAttempts:
         self.client.force_authenticate(user=self.user_org_a)
 
         # Try to list all routing logs
-        response = self.client.get("/api/contextual-notifications/routing-logs/")
+        response = self.client.get("/api/v1/contextual-notifications/routing-logs/")
 
         assert response.status_code == 200
         data = response.json()
@@ -95,7 +90,7 @@ class TestB17BypassAttempts:
 
         # Try to directly access org_b log by ID
         response_direct = self.client.get(
-            f"/api/contextual-notifications/routing-logs/{self.log_org_b.id}/"
+            f"/api/v1/contextual-notifications/routing-logs/{self.log_org_b.id}/"
         )
 
         # Should return 404 or 403 (depending on view implementation)
@@ -108,7 +103,7 @@ class TestB17BypassAttempts:
         """User from Org A cannot view preferences of users in Org B."""
         self.client.force_authenticate(user=self.user_org_a)
 
-        response = self.client.get("/api/contextual-notifications/preferences/")
+        response = self.client.get("/api/v1/contextual-notifications/preferences/")
 
         assert response.status_code == 200
         data = response.json()
@@ -125,14 +120,14 @@ class TestB17BypassAttempts:
     def test_anonymous_user_cannot_access_routing_logs(self):
         """Anonymous (unauthenticated) user cannot access routing logs."""
         # Do not authenticate
-        response = self.client.get("/api/contextual-notifications/routing-logs/")
+        response = self.client.get("/api/v1/contextual-notifications/routing-logs/")
 
         # Should return 401 Unauthorized or 403 Forbidden
         assert response.status_code in [401, 403], "Anonymous users should be blocked"
 
     def test_anonymous_user_cannot_access_preferences(self):
         """Anonymous user cannot access notification preferences."""
-        response = self.client.get("/api/contextual-notifications/preferences/")
+        response = self.client.get("/api/v1/contextual-notifications/preferences/")
 
         assert response.status_code in [401, 403], "Anonymous users should be blocked"
 
@@ -198,7 +193,7 @@ class TestB17BypassAttempts:
         AuditEvent.objects.filter(user=self.user_org_a).exclude(id=self.log_org_a.id).delete()
 
         # Attempt to access routing logs (will be filtered by ACL)
-        response = self.client.get("/api/contextual-notifications/routing-logs/")
+        response = self.client.get("/api/v1/contextual-notifications/routing-logs/")
         assert response.status_code == 200
 
         # Note: Audit events depend on evaluate_permission() implementation
@@ -211,13 +206,11 @@ class TestB17BypassAttempts:
     def test_superuser_isolation_from_regular_acl(self):
         """Verify superusers bypass ACL but regular users don't."""
         # Create superuser
-        superuser = User.objects.create_superuser(
-            username="superadmin", email="super@test.com", password="testpass"
-        )
+        superuser = User.objects.create_superuser(email="super@test.com", password="testpass")
 
         # Superuser can see all routing logs
         self.client.force_authenticate(user=superuser)
-        response = self.client.get("/api/contextual-notifications/routing-logs/")
+        response = self.client.get("/api/v1/contextual-notifications/routing-logs/")
 
         assert response.status_code == 200
         data = response.json()
@@ -229,7 +222,7 @@ class TestB17BypassAttempts:
 
         # Regular user should be restricted
         self.client.force_authenticate(user=self.user_org_a)
-        response_regular = self.client.get("/api/contextual-notifications/routing-logs/")
+        response_regular = self.client.get("/api/v1/contextual-notifications/routing-logs/")
 
         data_regular = response_regular.json()
         results_regular = data_regular.get("results", [])
