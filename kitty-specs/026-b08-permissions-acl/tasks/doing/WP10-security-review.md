@@ -1,7 +1,9 @@
 ---
 work_package_id: WP10
 title: Security Review & CI Validation
-lane: planned
+lane: doing
+agent: claude
+shell_pid: $PID
 subtasks:
   - T060
   - T061
@@ -11,6 +13,10 @@ history:
   - date: 2025-12-12
     action: created
     by: spec-kitty-tasks
+  - date: 2025-12-12T21:35:00Z
+    action: started
+    by: claude
+    note: "Started WP10: Security Review & CI Validation work package"
 ---
 
 # WP10: Security Review & CI Validation
