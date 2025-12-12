@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 title: API Enforcement - B16 Notifications
-lane: "doing"
+lane: "for_review"
 subtasks:
   - T015
   - T016
@@ -312,3 +312,4 @@ After WP03 complete, proceed with **WP04 (B17 Routing Refactor)** or **WP05 (Set
 ## Activity Log
 
 - 2025-12-12T13:15:21Z – claude-implementer – shell_pid=26336 – lane=doing – Started WP03 implementation - B16 Notifications ACL Enforcement
+- 2025-12-12T13:22:27Z – claude-implementer – shell_pid=26336 – lane=for_review – Moved to for_review
