@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "22128"
 ---
@@ -738,3 +738,4 @@ Add to `.storybook/main.ts`:
 ## Activity Log
 
 - 2025-12-12T21:51:19Z – claude – shell_pid=22128 – lane=doing – Started implementation
+- 2025-12-12T21:57:15Z – claude – shell_pid=22128 – lane=for_review – All subtasks complete
