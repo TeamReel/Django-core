@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: API Enforcement - B11 Transactions/Credits
-lane: planned
+lane: "doing"
 subtasks:
   - T009
   - T010
@@ -9,6 +9,8 @@ subtasks:
   - T012
   - T013
   - T014
+agent: "claude-implementer"
+shell_pid: "26336"
 history:
   - date: 2025-12-12
     action: created
@@ -360,3 +362,7 @@ def test_cannot_view_project_balance_without_org_access(self):
 ## Next Work Package
 
 After WP02 complete, proceed with **WP03 (B16 ACL Enforcement)**, **WP04 (B17 Routing Refactor)**, or **WP05 (Settings ACL Enforcement)** in parallel (all follow same pattern).
+
+## Activity Log
+
+- 2025-12-12T12:50:59Z – claude-implementer – shell_pid=26336 – lane=doing – Started WP02 implementation - B11 ACL Enforcement
