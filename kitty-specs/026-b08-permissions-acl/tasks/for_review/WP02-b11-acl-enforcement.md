@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: API Enforcement - B11 Transactions/Credits
-lane: "for_review"
+lane: "planned"
 subtasks:
   - T009
   - T010
@@ -11,11 +11,39 @@ subtasks:
   - T014
 agent: "claude-implementer"
 shell_pid: "26336"
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 history:
   - date: 2025-12-12
     action: created
     by: spec-kitty-tasks
 ---
+
+## Review Feedback
+
+**Status**: ⚠️ **Needs Minor Fix**
+
+**Key Issues**:
+1. **Dead code bug in `HasProjectPermission.has_object_permission()`** - This method references `self.permission` which doesn't exist in `HasProjectPermission` or `HasOrganizationPermission` classes (only exists in `HasPermission`). Since the balance views use `APIView` and not viewsets, this method is never called, but it's still a code quality issue.
+
+**What Was Done Well**:
+- ✅ **Excellent permission class design**: `HasOrganizationPermission` and `HasProjectPermission` properly integrate with `evaluate_permission()` from WP01
+- ✅ **Views correctly updated**: Both balance views now enforce ACL with proper `permission_classes` and `required_permission` attributes
+- ✅ **Comprehensive test coverage**: 6 integration tests + 9 security tests, all verifying B09 audit events
+- ✅ **Security-focused**: Tests explicitly attempt bypass scenarios (cross-org, cross-project, anonymous, etc.)
+- ✅ **Permission codes added**: Both `organization.view_balance` and `project.view_balance` added to seed command
+- ✅ **Clean code**: Views use service layer functions, proper error handling, good docstrings
+
+**Action Items** (must complete before re-review):
+- [ ] **Remove `has_object_permission` method** from both `HasOrganizationPermission` and `HasProjectPermission` classes - This method is unused for `APIView`-based views and contains a bug (`self.permission` doesn't exist). If object-level permissions are needed in the future, they can be added properly when needed.
+
+**Why This Matters**:
+The bug doesn't affect current functionality (the method is never called), but leaving it creates technical debt and could cause runtime errors if someone tries to use these permission classes with viewsets in the future.
+
+**References**:
+- File: `src/permissions/api/permissions.py`, lines ~257-306 (end of HasProjectPermission class)
+- The `has_object_permission` method should only exist in `HasPermission` class (which has `self.permission` from `__init__`)
+
 
 # WP02: API Enforcement - B11 Transactions/Credits
 
@@ -367,3 +395,4 @@ After WP02 complete, proceed with **WP03 (B16 ACL Enforcement)**, **WP04 (B17 Ro
 
 - 2025-12-12T12:50:59Z – claude-implementer – shell_pid=26336 – lane=doing – Started WP02 implementation - B11 ACL Enforcement
 - 2025-12-12T12:59:10Z – claude-implementer – shell_pid=26336 – lane=for_review – Completed WP02: B11 ACL enforcement with org/project balance permissions, integration tests, and security tests
+- 2025-12-12T13:05:00Z – claude-reviewer – shell_pid=26336 – lane=planned – Code review complete: Minor fix needed - remove unused has_object_permission methods from HasOrganizationPermission and HasProjectPermission classes (dead code with bug)
