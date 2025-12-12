@@ -283,12 +283,12 @@ def evaluate_permission(
     from permissions.evaluator import check_permission
 
     # Prepare context data
-    scope = context.get("scope", "UNKNOWN")
-    organization_id = context.get("organization_id")
-    project_id = context.get("project_id")
-    request_id = context.get("request_id")
+    scope: str = context.get("scope", "UNKNOWN")
+    organization_id: Optional[int] = context.get("organization_id")
+    project_id: Optional[int] = context.get("project_id")
+    request_id: Optional[str] = context.get("request_id")
 
-    # Determine resource type and ID
+    # Determine resource type and ID from resource object
     resource_type: Optional[str] = None
     resource_id: Optional[int] = None
 
@@ -298,22 +298,24 @@ def evaluate_permission(
 
     # Evaluate permission using existing evaluator
     # Convert User instance to UUID for evaluator (if user has uuid field)
-    user_uuid = getattr(user, "uuid", None) or user.id
-    resource_uuid = getattr(resource, "uuid", None) if resource else None
+    # Fallback to user.id if uuid not present
+    user_uuid: Any = getattr(user, "uuid", None) or user.id
+    resource_uuid: Optional[Any] = getattr(resource, "uuid", None) if resource else None
 
     # Call existing check_permission function
-    granted = check_permission(
+    # This performs the actual permission resolution via role assignments
+    granted: bool = check_permission(
         user_id=user_uuid,
         permission=permission,
         resource_id=resource_uuid,
         resource_type=resource_type or "generic",
     )
 
-    # Prepare audit event data
-    event_type = "permission.granted" if granted else "permission.denied"
-    outcome = "allowed" if granted else "denied"
+    # Prepare audit event data with structured fields (FR-002)
+    event_type: str = "permission.granted" if granted else "permission.denied"
+    outcome: str = "allowed" if granted else "denied"
 
-    audit_data = {
+    audit_data: Dict[str, Any] = {
         "event_type": event_type,
         "user": user,
         "organization": None,
