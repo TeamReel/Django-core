@@ -7,6 +7,7 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema
 from permissions.audit import evaluate_permission
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -55,7 +56,15 @@ class HasNotificationPermission(IsAuthenticated):
             has_perm = False
 
         if not has_perm:
-            self.message = f"Permission denied: '{self.required_permission}' required"
+            # Raise structured 403 response (WP06-T036)
+            raise PermissionDenied(
+                {
+                    "error": "forbidden",
+                    "permission": self.required_permission,
+                    "detail": f"Permission denied: '{self.required_permission}' required",
+                    "scope": "USER",
+                }
+            )
 
         return has_perm
 

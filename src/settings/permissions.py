@@ -1,6 +1,7 @@
 """Scope-aware permission classes for Settings & Feature Flags."""
 
 from permissions.audit import evaluate_permission
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
 from .models import ScopeType
@@ -27,13 +28,36 @@ class ScopeAwarePermission(BasePermission):
         # Get scope info from request
         scope_info = self._get_scope_from_request(request, view)
 
-        return self._check_scope_permission(
+        has_perm = self._check_scope_permission(
             request.user,
             permission_code,
             scope_info["scope_type"],
             scope_info.get("resource_id"),
             scope_info.get("resource_type"),
         )
+
+        if not has_perm:
+            # Raise structured 403 response (WP06-T038)
+            # Convert ScopeType enum to string (e.g., ScopeType.ORGANISATION -> "ORGANISATION")
+            scope_name = (
+                scope_info["scope_type"].name
+                if hasattr(scope_info["scope_type"], "name")
+                else str(scope_info["scope_type"])
+            )
+            detail = (
+                f"Permission denied: '{permission_code}' required "
+                f"for {scope_info['resource_type']} scope"
+            )
+            raise PermissionDenied(
+                {
+                    "error": "forbidden",
+                    "permission": permission_code,
+                    "detail": detail,
+                    "scope": scope_name,
+                }
+            )
+
+        return has_perm
 
     def has_object_permission(self, request, view, obj):
         """Check if user has permission for specific object."""
@@ -48,7 +72,16 @@ class ScopeAwarePermission(BasePermission):
 
         # USER scope: users can only manage their own settings
         if obj.scope_type == ScopeType.USER:
-            return obj.user_id == request.user.id
+            if obj.user_id != request.user.id:
+                raise PermissionDenied(
+                    {
+                        "error": "forbidden",
+                        "permission": permission_code,
+                        "detail": "You can only manage your own user-scoped settings",
+                        "scope": "USER",
+                    }
+                )
+            return True
 
         # Get scope from object for other scopes
         if obj.scope_type == ScopeType.GLOBAL:
@@ -70,13 +103,35 @@ class ScopeAwarePermission(BasePermission):
                 "resource_type": "project",
             }
 
-        return self._check_scope_permission(
+        has_perm = self._check_scope_permission(
             request.user,
             permission_code,
             scope_info["scope_type"],
             scope_info.get("resource_id"),
             scope_info.get("resource_type"),
         )
+
+        if not has_perm:
+            # Raise structured 403 response (WP06-T038)
+            scope_name = (
+                scope_info["scope_type"].name
+                if hasattr(scope_info["scope_type"], "name")
+                else str(scope_info["scope_type"])
+            )
+            detail = (
+                f"Permission denied: '{permission_code}' required "
+                f"for {scope_info['resource_type']} scope"
+            )
+            raise PermissionDenied(
+                {
+                    "error": "forbidden",
+                    "permission": permission_code,
+                    "detail": detail,
+                    "scope": scope_name,
+                }
+            )
+
+        return has_perm
 
     def _get_permission_for_method(self, method):
         """Determine permission code based on HTTP method."""

@@ -1,7 +1,7 @@
 ---
 work_package_id: WP06
 title: 403 Standardization & Permissions Endpoint
-lane: planned
+lane: "doing"
 subtasks:
   - T031
   - T032
@@ -12,6 +12,7 @@ subtasks:
   - T037
   - T038
   - T039
+agent: "system"
 history:
   - date: 2025-12-12
     action: created
@@ -554,3 +555,7 @@ def test_permissions_endpoint_returns_cached_data(self):
 ## Next Work Package
 
 After WP06 complete, proceed to **WP07 (Frontend Package - Core Implementation)** to build React primitives that consume the permissions endpoint.
+
+## Activity Log
+
+- 2025-12-12T15:01:58Z – system – shell_pid= – lane=doing – Started WP06 implementation - 403 Standardization

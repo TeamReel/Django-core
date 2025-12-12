@@ -42,6 +42,7 @@ Usage Examples:
             # ... implementation
 """
 
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
 from permissions.audit import evaluate_permission
@@ -104,8 +105,15 @@ class HasPermission(BasePermission):
             has_perm = False
 
         if not has_perm:
-            # Set custom error message
-            self.message = f"Permission denied: '{self.permission}' required"
+            # Raise structured 403 response (WP06-T035)
+            raise PermissionDenied(
+                {
+                    "error": "forbidden",
+                    "permission": self.permission,
+                    "detail": f"Permission denied: '{self.permission}' required",
+                    "scope": "GENERIC",
+                }
+            )
 
         return has_perm
 
@@ -176,8 +184,17 @@ class HasOrganizationPermission(BasePermission):
             has_perm = False
 
         if not has_perm:
-            self.message = (
-                f"Permission denied: '{permission}' required for organization {organization_id}"
+            # Raise structured 403 response (WP06-T035)
+            detail = (
+                f"Permission denied: '{permission}' required " f"for organization {organization_id}"
+            )
+            raise PermissionDenied(
+                {
+                    "error": "forbidden",
+                    "permission": permission,
+                    "detail": detail,
+                    "scope": "ORGANIZATION",
+                }
             )
 
         return has_perm
@@ -249,6 +266,15 @@ class HasProjectPermission(BasePermission):
             has_perm = False
 
         if not has_perm:
-            self.message = f"Permission denied: '{permission}' required for project {project_id}"
+            # Raise structured 403 response (WP06-T035)
+            detail = f"Permission denied: '{permission}' required for project {project_id}"
+            raise PermissionDenied(
+                {
+                    "error": "forbidden",
+                    "permission": permission,
+                    "detail": detail,
+                    "scope": "PROJECT",
+                }
+            )
 
         return has_perm
