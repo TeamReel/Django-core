@@ -11,7 +11,7 @@ subtasks:
   - T014
 agent: "claude-implementer"
 shell_pid: "26336"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - date: 2025-12-12
@@ -35,7 +35,7 @@ history:
 - ✅ **Clean code**: Views use service layer functions, proper error handling, good docstrings
 
 **Action Items** (must complete before re-review):
-- [ ] **Remove `has_object_permission` method** from both `HasOrganizationPermission` and `HasProjectPermission` classes - This method is unused for `APIView`-based views and contains a bug (`self.permission` doesn't exist). If object-level permissions are needed in the future, they can be added properly when needed.
+- [x] **Remove `has_object_permission` method** from both `HasOrganizationPermission` and `HasProjectPermission` classes - This method is unused for `APIView`-based views and contains a bug (`self.permission` doesn't exist). If object-level permissions are needed in the future, they can be added properly when needed.
 
 **Why This Matters**:
 The bug doesn't affect current functionality (the method is never called), but leaving it creates technical debt and could cause runtime errors if someone tries to use these permission classes with viewsets in the future.
