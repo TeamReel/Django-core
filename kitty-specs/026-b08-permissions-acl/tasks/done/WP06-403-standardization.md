@@ -2,6 +2,7 @@
 work_package_id: WP06
 title: 403 Standardization & Permissions Endpoint
 lane: "done"
+assignee: "claude"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
 subtasks:

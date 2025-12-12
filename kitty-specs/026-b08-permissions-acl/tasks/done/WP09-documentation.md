@@ -2,6 +2,7 @@
 work_package_id: WP09
 title: Documentation & Developer Guides
 lane: done
+assignee: "claude-reviewer"
 agent: claude-reviewer
 shell_pid: 21584
 review_status: "approved with minor notes"

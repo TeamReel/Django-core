@@ -2,6 +2,7 @@
 work_package_id: WP03
 title: API Enforcement - B16 Notifications
 lane: "done"
+assignee: "claude"
 subtasks:
   - T015
   - T016

@@ -2,6 +2,7 @@
 work_package_id: WP02
 title: API Enforcement - B11 Transactions/Credits
 lane: "done"
+assignee: "claude"
 subtasks:
   - T009
   - T010

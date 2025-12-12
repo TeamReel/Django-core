@@ -2,6 +2,7 @@
 work_package_id: WP07
 title: Frontend Package - Core Implementation
 lane: "done"
+assignee: "copilot"
 agent: "copilot"
 shell_pid: "26336"
 review_status: approved_with_minor_notes

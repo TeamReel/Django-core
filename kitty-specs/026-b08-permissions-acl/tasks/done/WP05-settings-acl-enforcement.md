@@ -2,6 +2,7 @@
 work_package_id: WP05
 title: API Enforcement - Settings APIs
 lane: "done"
+assignee: "claude"
 review_status: "approved with minor notes"
 reviewed_by: "claude-reviewer"
 subtasks:

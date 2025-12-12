@@ -2,6 +2,7 @@
 work_package_id: WP04
 title: API Enforcement - B17 Routing Service Refactor
 lane: "done"
+assignee: "claude"
 subtasks:
   - T020
   - T021

@@ -2,6 +2,7 @@
 work_package_id: WP08
 title: Frontend Package - Testing & Integration
 lane: "done"
+assignee: "claude-reviewer"
 review_status: "approved with minor notes"
 reviewed_by: "claude-reviewer"
 subtasks:

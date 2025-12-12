@@ -2,6 +2,7 @@
 work_package_id: WP10
 title: Security Review & CI Validation
 lane: "done"
+assignee: "claude"
 agent: "claude"
 shell_pid: "$PID"
 review_status: "approved with notes"
