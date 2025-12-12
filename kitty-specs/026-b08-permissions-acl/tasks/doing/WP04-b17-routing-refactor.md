@@ -379,3 +379,4 @@ After WP04 complete, proceed with **WP05 (Settings ACL Enforcement)** or move to
 ## Activity Log
 
 - 2025-12-12T13:47:53Z – claude – shell_pid=26336 – lane=doing – Started WP04 implementation - B17 routing refactor
+- 2025-12-12T14:15:00Z – claude – shell_pid=26336 – lane=doing – Completed all 6 subtasks (T020-T025)
