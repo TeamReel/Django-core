@@ -4,6 +4,9 @@ DRF permission classes for permissions API.
 This module provides custom Django REST Framework permission classes
 that integrate with the hierarchical access control system.
 
+All permission checks go through evaluate_permission() for comprehensive
+audit logging and ACL bypass prevention (WP01-T008).
+
 Usage Examples:
 
     Basic usage in a ViewSet:
@@ -41,12 +44,14 @@ Usage Examples:
 
 from rest_framework.permissions import BasePermission
 
-from permissions.evaluator import check_permission
+from permissions.audit import evaluate_permission
 
 
 class HasPermission(BasePermission):
     """
     DRF permission class that checks if user has specific permission.
+
+    Uses evaluate_permission() for comprehensive audit logging.
 
     Usage:
         class MyViewSet(viewsets.ModelViewSet):
@@ -83,13 +88,20 @@ class HasPermission(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
-        # Check permission using evaluator
-        has_perm = check_permission(
-            request.user.id,
-            self.permission,
-            None,
-            "generic",  # Generic permission check (not resource-specific)
-        )
+        # Use centralized evaluator for audit logging (WP01-T008)
+        try:
+            has_perm = evaluate_permission(
+                user=request.user,
+                permission=self.permission,
+                resource=None,
+                context={
+                    "scope": "GENERIC",
+                    "request_id": request.META.get("HTTP_X_REQUEST_ID"),
+                },
+            )
+        except Exception:
+            # Fail closed on evaluation errors
+            has_perm = False
 
         if not has_perm:
             # Set custom error message
@@ -114,9 +126,30 @@ class HasPermission(BasePermission):
 
         # Determine resource type from object
         resource_type = obj.__class__.__name__.lower()
-        resource_id = obj.id if hasattr(obj, "id") else None
 
-        has_perm = check_permission(request.user.id, self.permission, resource_id, resource_type)
+        # Prepare context with resource information
+        context = {
+            "scope": resource_type.upper(),
+            "request_id": request.META.get("HTTP_X_REQUEST_ID"),
+        }
+
+        # Add organization/project IDs if available
+        if hasattr(obj, "organisation_id"):
+            context["organization_id"] = obj.organisation_id
+        if hasattr(obj, "project_id"):
+            context["project_id"] = obj.project_id
+
+        # Use centralized evaluator for audit logging (WP01-T008)
+        try:
+            has_perm = evaluate_permission(
+                user=request.user,
+                permission=self.permission,
+                resource=obj,
+                context=context,
+            )
+        except Exception:
+            # Fail closed on evaluation errors
+            has_perm = False
 
         if not has_perm:
             self.message = (
