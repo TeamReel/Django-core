@@ -94,7 +94,7 @@ Developers building on the platform need consistent, composable alert and resour
 - What happens when user has no localStorage available (privacy mode, disabled cookies)?
   - System gracefully degrades: alerts can still be dismissed for session, but "don't show again" functionality is disabled with appropriate inline message
 - What happens when resource data API returns error or no data?
-  - Components display loading skeleton or "unavailable" state with clear messaging, no broken UI elements
+  - Components handle expected empty/null/undefined data gracefully with loading skeleton or "unavailable" state with clear messaging. Unexpected render-time errors bubble to parent error boundary
 - What happens when user has multiple critical alerts (>5) simultaneously?
   - Alert stack limits visible alerts to 5 most recent/critical, with "View all alerts" link to modal or dedicated page
 - What happens when resource usage data becomes stale (last updated >5 minutes ago)?
@@ -108,18 +108,23 @@ Developers building on the platform need consistent, composable alert and resour
 
 - **FR-001**: System MUST provide a resource usage progress bar component that accepts current value, maximum value, and displays percentage with configurable warning thresholds (e.g., >80% = warning, >95% = critical)
 - **FR-002**: System MUST provide alert/banner components with four severity levels: info, success, warning, critical, each with distinct visual styling following F01 design system
+- **FR-002a**: System MUST treat severity as an explicit prop determined by consuming app. Components MUST NOT hardcode auto-escalation logic based on thresholds. Package MAY provide optional helper utilities (e.g., calculateSeverityFromUsage) for convenience, but core components remain product-agnostic
 - **FR-003**: System MUST allow alerts to be dismissed via close button, with state persisted in browser localStorage for current domain
 - **FR-004**: System MUST provide optional "Don't show again" checkbox for alerts, storing user preference in localStorage with unique alert identifier
 - **FR-005**: System MUST provide health status indicator component that accepts status enum (operational, degraded, down, unknown) and displays appropriate icon and label
 - **FR-006**: System MUST support stacking multiple alerts with automatic spacing and z-index management
+- **FR-006a**: System MUST support two alert positioning modes via props: page-level banner (top of main content area) and inline (within resource panels/sections). Floating toast-style alerts are explicitly out of scope for F05
 - **FR-007**: System MUST provide numeric badge component for displaying counts (e.g., "23 pending items") with optional color coding
 - **FR-008**: System MUST expose components that integrate with F06 layout primitives without requiring wrapper elements
 - **FR-009**: System MUST provide accessible focus management for interactive alert components (dismiss buttons, action links)
 - **FR-010**: System MUST announce new alerts to screen readers via ARIA live regions (polite for info/success, assertive for warning/critical)
+- **FR-010a**: System MUST support configurable animation behavior via props, with subtle fade-in/fade-out (200-300ms) as default. All animations MUST respect prefers-reduced-motion CSS media query and disable transitions entirely when users have motion preferences set
+- **FR-010b**: System MUST NOT catch or swallow render-time exceptions within components. All unhandled errors MUST bubble up to nearest parent React error boundary (consuming app or shared @django-core/error-handling boundary). Components MUST validate prop data and throw clear errors for invalid inputs rather than rendering broken UI
 - **FR-011**: System MUST use F01 design tokens exclusively for all colors, spacing, typography, and shadows
 - **FR-012**: System MUST provide TypeScript type definitions for all component props and data shapes
 - **FR-013**: System MUST support server-side rendering for all components without client-side JavaScript dependency for initial display
 - **FR-014**: System MUST provide data adapter interfaces for consuming B11 (credits/transactions) and B18 (health monitoring) API responses
+- **FR-014a**: System MUST keep visual components stateless by default (data passed via props), but MAY provide optional hooks (e.g., useResourceUsage, useHealthStatus) that implement simple polling using @django-core/api-client. WebSocket/SSE real-time updates are explicitly out of scope
 - **FR-015**: System MUST include Storybook stories demonstrating all component variants and states
 
 ### Key Entities
@@ -217,6 +222,16 @@ Developers building on the platform need consistent, composable alert and resour
 - Component library will be published as `@django-core/resource-alerts` npm package
 - Vitest and React Testing Library are standard testing tools
 - Chromatic is available for visual regression testing (already established in F01)
+
+## Clarifications
+
+### Session 2025-12-12
+
+- Q: Where should alerts be positioned on the page? → A: Multiple modes, but constrained. F05 should support a small set of positions controlled by props: page-level banners (top of main content) and inline alerts inside resource panels/sections. Floating toast-style alerts at bottom-right are out of scope for F05 and should remain the responsibility of the existing notifications hub (F04).
+- Q: How should resource usage data be refreshed/updated in the components? → A: Hybrid. F05 visual components should be stateless by default and receive resource data via props, but the package may provide optional hooks (e.g. useResourceUsage) that implement simple polling based on @django-core/api-client and B11/B18 endpoints. WebSocket/SSE real-time updates are out of scope for F05.
+- Q: How should alerts animate when appearing or being dismissed? → A: Configurable via prop, with a subtle fade-in/fade-out (around 200–300ms) as the default. All animations must respect prefers-reduced-motion and disable transitions for users who prefer no motion.
+- Q: What should happen if a component encounters an unhandled error during rendering (e.g., malformed data, JavaScript exception)? → A: Errors should bubble up to the nearest parent error boundary so the consuming app (or shared @django-core/error-handling boundary) can handle them. F05 components must not swallow render-time exceptions or hide them silently; fallback UI should be provided by the caller via an error boundary where needed.
+- Q: Should alert severity levels automatically escalate based on resource usage thresholds, or should severity always be explicitly passed by the consuming app? → A: Explicit only. F05 components should treat severity as an explicit prop (info|success|warning|critical etc.) determined by the consuming app. F05 may provide small helper utilities for mapping usage percentage to severity, but the core visual components must not hardcode auto-escalation logic so they remain product-agnostic.
 
 ## Dependencies
 
