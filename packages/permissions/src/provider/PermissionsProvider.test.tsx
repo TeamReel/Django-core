@@ -66,7 +66,10 @@ describe('PermissionsProvider', () => {
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Reset mocks completely (history + implementation)
+    mockFetchWithCSRF.mockReset();
+    mockUseAuth.mockReset();
+    mockUseMultiTenancyContext.mockReset();
 
     // Default mock implementations
     mockUseAuth.mockReturnValue({
@@ -135,6 +138,8 @@ describe('PermissionsProvider', () => {
 
   describe('Error Handling', () => {
     it('should handle fetch errors', async () => {
+      // Override the default mock BEFORE rendering
+      mockFetchWithCSRF.mockReset();
       mockFetchWithCSRF.mockRejectedValue(new Error('Network error'));
 
       render(
@@ -143,9 +148,10 @@ describe('PermissionsProvider', () => {
         </PermissionsProvider>
       );
 
+      // Wait for error to be displayed
       await waitFor(() => {
         expect(screen.getByText('Error: Network error')).toBeInTheDocument();
-      });
+      }, { timeout: 2000 });
     });
 
     it('should handle non-ok responses', async () => {

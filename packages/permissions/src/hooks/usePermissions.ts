@@ -68,15 +68,20 @@ export function usePermissions(): PermissionsContextValue {
       );
     }
 
+    // Define fail-closed functions (defined outside return for better coverage detection)
+    const failClosedHasPermission = (): boolean => false;
+
+    const failClosedRefetch = async (): Promise<void> => {
+      console.warn('[usePermissions] refetchPermissions called outside provider');
+    };
+
     // Return fail-closed defaults
     return {
       permissions: null,
       isLoading: false,
       error: null,
-      hasPermission: () => false,
-      refetchPermissions: async () => {
-        console.warn('[usePermissions] refetchPermissions called outside provider');
-      },
+      hasPermission: failClosedHasPermission,
+      refetchPermissions: failClosedRefetch,
     };
   }
 
