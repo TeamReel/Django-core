@@ -1,7 +1,7 @@
 """
 Audit logging integration for permissions system.
 
-Provides adapters for B09-audit-logging with graceful fallback to Django
+Provides integration with B09-audit-logging with graceful fallback to Django
 structured logging when B09 is unavailable.
 
 This module serves as the single source of truth for all permission evaluations,
@@ -15,9 +15,12 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Protocol
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger("permissions.audit")
+
+# Get the User model - supports custom user models
+User = get_user_model()
 
 
 class AuditBackend(Protocol):
@@ -269,7 +272,7 @@ def evaluate_permission(
         >>> assert granted == True
     """
     # Input validation
-    if not isinstance(user, User) or not user.is_authenticated:
+    if not hasattr(user, "is_authenticated") or not user.is_authenticated:
         raise TypeError("User must be an authenticated Django User instance")
 
     if not isinstance(permission, str):
@@ -315,51 +318,55 @@ def evaluate_permission(
     event_type: str = "permission.granted" if granted else "permission.denied"
     outcome: str = "allowed" if granted else "denied"
 
-    audit_data: Dict[str, Any] = {
-        "event_type": event_type,
-        "user": user,
-        "organization": None,
-        "project": None,
-        "metadata": {
-            "permission": permission,
-            "outcome": outcome,
-            "resource_type": resource_type,
-            "resource_id": resource_id,
-            "scope": scope,
-            "request_id": request_id,
-        },
-    }
+    # Fetch organization and project objects if IDs provided
+    organization = None
+    project = None
 
-    # Add organization/project to audit data if available
     if organization_id:
         # Import here to avoid circular dependency
         try:
             from organisations.models import Organisation
 
-            org = Organisation.objects.filter(id=organization_id).first()
-            audit_data["organization"] = org
-        except Exception:
-            pass  # Continue without organization context
+            organization = Organisation.objects.filter(id=organization_id).first()
+        except Exception as e:
+            # Continue without organization context (model may not exist or DB error)
+            logger.debug(f"Could not fetch organization {organization_id}: {e}")
 
     if project_id:
         # Import here to avoid circular dependency
         try:
             from projects.models import Project
 
-            proj = Project.objects.filter(id=project_id).first()
-            audit_data["project"] = proj
-        except Exception:
-            pass  # Continue without project context
+            project = Project.objects.filter(id=project_id).first()
+        except Exception as e:
+            # Continue without project context (model may not exist or DB error)
+            logger.debug(f"Could not fetch project {project_id}: {e}")
 
     # Emit audit event to B09 with Django logging fallback
+    # Use B09's actual API as specified in T002
     try:
-        from audit.api import audit_log
+        from audit.services import create_audit_event
 
-        audit_log.record(**audit_data)
-    except Exception as e:
-        # B09 unavailable, fall back to Django logging (FR-003)
+        # Call B09 with structured fields as individual kwargs (FR-002)
+        create_audit_event(
+            event_type=event_type,
+            user=user,
+            organization=organization,
+            project=project,
+            metadata={
+                "permission": permission,
+                "outcome": outcome,
+                "resource_type": resource_type,
+                "resource_id": resource_id,
+                "scope": scope,
+                "request_id": request_id,
+            },
+        )
+    except ImportError as e:
+        # B09 module not available - this is expected in some environments
+        # Fall back to Django logging (FR-003)
         logger.warning(
-            "B09 audit backend unavailable, falling back to Django logging",
+            "B09 audit backend unavailable (ImportError), falling back to Django logging",
             extra={
                 "audit_data": {
                     "event_type": event_type,
@@ -375,6 +382,34 @@ def evaluate_permission(
                 },
                 "error": str(e),
             },
+        )
+
+        # Log the actual permission decision
+        logger.info(
+            f"Permission {outcome}: user={user.id} permission={permission} "
+            f"scope={scope} resource_type={resource_type} resource_id={resource_id}"
+        )
+    except Exception as e:
+        # B09 available but failed - log error but don't block permission check
+        # This catches database errors, connection issues, etc.
+        logger.error(
+            "B09 audit event emission failed, falling back to Django logging",
+            extra={
+                "audit_data": {
+                    "event_type": event_type,
+                    "user_id": user.id,
+                    "permission": permission,
+                    "outcome": outcome,
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "scope": scope,
+                    "organization_id": organization_id,
+                    "project_id": project_id,
+                    "request_id": request_id,
+                },
+                "error": str(e),
+            },
+            exc_info=True,
         )
 
         # Log the actual permission decision

@@ -5,7 +5,7 @@ lane: "doing"
 assignee:
 agent: "claude-implementer"
 shell_pid: "26336"
-review_status: has_feedback
+review_status: acknowledged
 reviewed_by: claude-reviewer
 subtasks:
   - T001
@@ -44,6 +44,12 @@ history:
     agent: claude-reviewer
     shell_pid: current
     note: Code review identified critical issues with B09 integration, specification mismatches, and missing test coverage verification. Requires rework before approval.
+  - date: 2025-12-12T12:35:00Z
+    action: progress_update
+    by: claude-implementer
+    agent: claude-implementer
+    shell_pid: 26336
+    note: "Addressed feedback: Fixed B09 integration (audit.services.create_audit_event), corrected audit data structure, fixed User import (get_user_model), fixed logging serialization, added ImportError handling docs, marked T007 N/A"
 ---
 
 ## Review Feedback
@@ -96,13 +102,13 @@ history:
 
 **Action Items** (must complete before re-review):
 
-- [ ] **Fix B09 integration**: Replace `audit.api.audit_log.record()` with `audit.services.create_audit_event()` using spec's exact field structure
-- [ ] **Fix audit data structure**: Pass individual kwargs to `create_audit_event()`, not a nested dict. Use primitive IDs, not model objects
-- [ ] **Fix User import**: Change `from django.contrib.auth.models import User` to `from accounts.models import User` or use `get_user_model()`
-- [ ] **Resolve T007 decorator task**: Either update existing decorators, mark N/A if none exist, or clarify scope
+- [x] **Fix B09 integration**: Replace `audit.api.audit_log.record()` with `audit.services.create_audit_event()` using spec's exact field structure
+- [x] **Fix audit data structure**: Pass individual kwargs to `create_audit_event()`, not a nested dict. Use primitive IDs, not model objects
+- [x] **Fix User import**: Change `from django.contrib.auth.models import User` to `from accounts.models import User` or use `get_user_model()`
+- [x] **Resolve T007 decorator task**: Either update existing decorators, mark N/A if none exist, or clarify scope (RESOLVED: decorators.py doesn't exist, T007 is N/A)
 - [ ] **Verify test coverage**: Install pytest-cov, fix pyproject.toml conflicts, run coverage report, confirm ≥90%
-- [ ] **Fix Django logging serialization**: Convert model objects to IDs in fallback `extra` dict before passing to logger
-- [ ] **Document B09 unavailability**: Add comment explaining why we expect `ImportError` vs `Exception` in fallback (current code catches all exceptions which may hide bugs)
+- [x] **Fix Django logging serialization**: Convert model objects to IDs in fallback `extra` dict before passing to logger
+- [x] **Document B09 unavailability**: Add comment explaining why we expect `ImportError` vs `Exception` in fallback (current code catches all exceptions which may hide bugs)
 
 **References**:
 - Spec section T002 shows exact B09 integration code
