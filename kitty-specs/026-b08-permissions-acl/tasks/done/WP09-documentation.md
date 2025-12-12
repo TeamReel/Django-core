@@ -19,15 +19,28 @@ history:
   - date: 2025-12-12T20:45:00Z
     action: started
     by: claude
+    agent: claude
+    shell_pid: 21584
     note: "Started WP09: Documentation & Developer Guides work package"
   - date: 2025-12-12T21:15:00Z
     action: completed
     by: claude
+    agent: claude
+    shell_pid: 21584
     note: "Completed all documentation tasks (T055-T059), ready for review"
   - date: 2025-12-12T21:30:00Z
-    action: reviewed
+    action: code_review_approved
     by: claude-reviewer
+    agent: claude-reviewer
+    shell_pid: 21584
     note: "Code review complete: APPROVED with minor notes"
+  - date: 2025-12-12T21:35:00Z
+    action: moved_to_done
+    by: claude-reviewer
+    agent: claude-reviewer
+    shell_pid: 21584
+    lane: done
+    note: "WP09 approved with minor notes and moved to done lane"
 ---
 
 ## Review Feedback
