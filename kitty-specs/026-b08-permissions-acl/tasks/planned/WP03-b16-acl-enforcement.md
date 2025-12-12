@@ -1,0 +1,308 @@
+---
+work_package_id: WP03
+title: API Enforcement - B16 Notifications
+lane: planned
+subtasks:
+  - T015
+  - T016
+  - T017
+  - T018
+  - T019
+history:
+  - date: 2025-12-12
+    action: created
+    by: spec-kitty-tasks
+---
+
+# WP03: API Enforcement - B16 Notifications
+
+## Objective
+
+Add ACL checks to B16 notification API endpoints to prevent cross-organization notification access, ensuring users can only view notifications for organizations/projects they belong to.
+
+## Context
+
+**User Story**: Story 2 (Backend Developer: Apply ACL Checks Consistently - P1)
+
+**Why This Matters**:
+- B16 notification endpoints may lack tenant-scoping, allowing notification leakage across organizations
+- Notifications often contain sensitive project/organization data
+- Prevents unauthorized information disclosure
+
+**Success Criteria**:
+- SC-001: 100% of tenant-scoped endpoints enforce ACL checks
+- SC-006: Security tests confirm zero bypasses
+
+**Dependencies**: WP01 (requires centralized evaluator + DRF permission classes)
+
+---
+
+## Subtasks
+
+### T015: Add ACL Check to `NotificationViewSet.list()`
+
+**What to Do**:
+1. Open `src/notifications/api/views.py`
+2. Locate `NotificationViewSet` class
+3. Add permission class and override `get_queryset()`:
+```python
+from permissions.api.permissions import HasOrganizationPermission
+
+class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [HasOrganizationPermission]  # ✅ NEW
+    required_permission = "notifications.view"  # ✅ NEW
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        """Filter notifications to only those accessible by user"""
+        user = self.request.user
+
+        # Get all organizations user belongs to
+        user_org_ids = user.organization_memberships.values_list("organization_id", flat=True)
+
+        # Get all projects user belongs to
+        user_project_ids = user.project_memberships.values_list("project_id", flat=True)
+
+        # Filter notifications by accessible orgs/projects
+        return Notification.objects.filter(
+            Q(organization_id__in=user_org_ids) |
+            Q(project_id__in=user_project_ids) |
+            Q(user=user)  # Personal notifications
+        ).order_by("-created_at")
+```
+
+4. Verify `list()` endpoint returns only user's accessible notifications
+
+**Acceptance Criteria**:
+- `permission_classes` and `required_permission` added
+- `get_queryset()` filters by user's organization/project memberships
+- List endpoint (GET `/api/notifications/`) respects tenant boundaries
+- User cannot see notifications from organizations they don't belong to
+
+---
+
+### T016: Add ACL Check to `NotificationViewSet.retrieve()`
+
+**What to Do**:
+1. In same viewset, the `get_queryset()` override from T015 automatically applies to `retrieve()`
+2. Verify detail endpoint behavior:
+```python
+# No additional code needed - retrieve() uses get_queryset() automatically
+# DRF will return 404 if notification not in filtered queryset
+```
+
+3. Test behavior: requesting notification ID from different org returns 404 (not 403, per DRF convention)
+
+**Acceptance Criteria**:
+- Retrieve endpoint (GET `/api/notifications/{id}/`) returns 404 for inaccessible notifications
+- User can retrieve their own notifications successfully
+- No additional code needed (inherited from T015)
+
+**Parallelization**: Completes together with T015 (same file, same queryset filter)
+
+---
+
+### T017: Add `notifications.view` Permission Code to Fixtures
+
+**What to Do**:
+1. Open `src/permissions/fixtures/permissions.json`
+2. Add permission entry:
+```json
+{
+  "model": "permissions.permission",
+  "pk": "notifications.view",
+  "fields": {
+    "code": "notifications.view",
+    "name": "View Notifications",
+    "description": "Allows user to view notifications for accessible organizations/projects",
+    "scope": "ORGANIZATION",
+    "resource_type": "notification",
+    "action": "view"
+  }
+}
+```
+
+3. Run fixtures:
+```bash
+python manage.py loaddata permissions
+```
+
+**Acceptance Criteria**:
+- Permission code exists in fixtures
+- Database updated
+- Permission queryable via `Permission.objects.get(code="notifications.view")`
+
+---
+
+### T018: Write Integration Tests (Allowed/Denied Scenarios)
+
+**What to Do**:
+1. Create `tests/integration/test_b16_acl.py`
+
+2. Write test cases:
+
+**List Notifications - User Sees Only Their Orgs**:
+```python
+def test_list_notifications_filtered_by_organization(self):
+    """User sees only notifications from their organizations"""
+    user_a = self.create_user_in_organization("Org A")
+    user_b = self.create_user_in_organization("Org B")
+
+    # Create notifications for both orgs
+    notif_a = Notification.objects.create(organization=user_a.organizations.first(), message="Org A notification")
+    notif_b = Notification.objects.create(organization=user_b.organizations.first(), message="Org B notification")
+
+    self.client.force_authenticate(user=user_a)
+    response = self.client.get("/api/notifications/")
+
+    self.assertEqual(response.status_code, 200)
+    notification_ids = [n["id"] for n in response.data["results"]]
+    self.assertIn(notif_a.id, notification_ids)
+    self.assertNotIn(notif_b.id, notification_ids)  # ✅ Cross-org leak prevented
+```
+
+**Retrieve Notification - Allowed for Own Org**:
+```python
+def test_retrieve_notification_allowed(self):
+    """User can retrieve notification from their organization"""
+    user = self.create_user_with_permission("notifications.view")
+    org = user.organizations.first()
+    notif = Notification.objects.create(organization=org, message="Test")
+
+    self.client.force_authenticate(user=user)
+    response = self.client.get(f"/api/notifications/{notif.id}/")
+
+    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.data["message"], "Test")
+```
+
+**Retrieve Notification - Denied for Different Org**:
+```python
+def test_retrieve_notification_denied_cross_org(self):
+    """User cannot retrieve notification from different organization"""
+    user_a = self.create_user_in_organization("Org A")
+    org_b = Organization.objects.create(name="Org B")
+    notif_b = Notification.objects.create(organization=org_b, message="Org B notification")
+
+    self.client.force_authenticate(user=user_a)
+    response = self.client.get(f"/api/notifications/{notif_b.id}/")
+
+    self.assertEqual(response.status_code, 404)  # DRF returns 404, not 403
+```
+
+**Acceptance Criteria**:
+- 3+ integration tests pass (list filtered, retrieve allowed, retrieve denied)
+- Tests verify queryset filtering prevents cross-org leaks
+- Tests verify B09 audit events created (permission checks logged)
+
+---
+
+### T019: Write Security Tests (Cross-Org Access Attempts)
+
+**What to Do**:
+1. Create `tests/security/test_b16_bypass.py`
+
+2. Write explicit bypass scenarios:
+
+**Direct ID Enumeration Attack**:
+```python
+def test_cannot_enumerate_notification_ids_across_orgs(self):
+    """User cannot guess notification IDs from other organizations"""
+    user_a = self.create_user_in_organization("Org A")
+    org_b = Organization.objects.create(name="Org B")
+
+    # Create 10 notifications in Org B
+    notif_ids_b = [
+        Notification.objects.create(organization=org_b, message=f"Notif {i}").id
+        for i in range(10)
+    ]
+
+    self.client.force_authenticate(user=user_a)
+
+    # Attempt to retrieve all Org B notifications
+    for notif_id in notif_ids_b:
+        response = self.client.get(f"/api/notifications/{notif_id}/")
+        self.assertEqual(response.status_code, 404, f"Notification {notif_id} leaked!")
+```
+
+**Project Notification Without Org Access**:
+```python
+def test_cannot_view_project_notification_without_org_membership(self):
+    """User cannot view project notification if not in parent organization"""
+    user = self.create_user()
+    org = self.create_organization()
+    project = self.create_project(organization=org)
+    notif = Notification.objects.create(project=project, message="Project notification")
+
+    self.client.force_authenticate(user=user)
+    response = self.client.get(f"/api/notifications/{notif.id}/")
+
+    self.assertEqual(response.status_code, 404)
+```
+
+**Anonymous User Access**:
+```python
+def test_anonymous_user_cannot_list_notifications(self):
+    """Unauthenticated user cannot list notifications"""
+    response = self.client.get("/api/notifications/")
+    self.assertEqual(response.status_code, 401)
+```
+
+**Acceptance Criteria**:
+- 3+ security tests pass (ID enumeration, project-without-org, anonymous)
+- All bypass attempts result in 404 or 401
+- Audit events capture bypass attempts
+
+---
+
+## Definition of Done
+
+- [ ] `NotificationViewSet` has `permission_classes` and `required_permission`
+- [ ] `get_queryset()` filters by user's organization/project memberships
+- [ ] Permission code `notifications.view` in fixtures
+- [ ] 3+ integration tests pass (list filtered, retrieve allowed/denied)
+- [ ] 3+ security tests pass (bypass attempts blocked)
+- [ ] No cross-organization notification leaks
+- [ ] B09 audit events logged for permission checks
+- [ ] Code reviewed and approved
+
+---
+
+## Risks & Mitigations
+
+**Risk**: Queryset filtering misses edge cases (e.g., notifications with both org and project)
+**Mitigation**: Comprehensive security tests with combinatorial scenarios, manual review of filter logic
+
+**Risk**: N+1 query performance when fetching organization/project memberships
+**Mitigation**: Use `prefetch_related()` in queryset (deferred optimization if performance issues arise)
+
+**Risk**: Personal notifications (user-only) leaked to organization admins
+**Mitigation**: Ensure queryset includes `Q(user=user)` filter for personal notifications
+
+---
+
+## Reviewer Guidance
+
+**What to Verify**:
+1. `get_queryset()` includes filters for organizations, projects, AND personal notifications
+2. No raw `Notification.objects.all()` calls remain in views
+3. Integration tests verify list endpoint returns only user's accessible notifications
+4. Security tests explicitly enumerate IDs across organizations (bypass attempts)
+5. Audit events logged for permission checks (from WP01 evaluator)
+
+**Test Validation**:
+- Run: `pytest tests/integration/test_b16_acl.py tests/security/test_b16_bypass.py -v`
+- Check for any test failures indicating leaks
+
+**Manual Validation**:
+1. Create two organizations (Org A, Org B) with separate users
+2. Create notification in Org B
+3. Authenticate as Org A user
+4. GET `/api/notifications/` → Verify Org B notification NOT in list
+5. GET `/api/notifications/{org_b_notif_id}/` → Verify 404 returned
+
+---
+
+## Next Work Package
+
+After WP03 complete, proceed with **WP04 (B17 Routing Refactor)** or **WP05 (Settings ACL Enforcement)** in parallel.
