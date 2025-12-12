@@ -1,10 +1,12 @@
 ---
 work_package_id: WP01
 title: Backend Foundation - Centralized Evaluator
-lane: for_review
-assignee: claude-agent
-agent: claude
-shell_pid: 26596
+lane: "planned"
+assignee:
+agent: "claude"
+shell_pid: "26596"
+review_status: has_feedback
+reviewed_by: claude-reviewer
 subtasks:
   - T001
   - T002
@@ -36,7 +38,77 @@ history:
     agent: claude
     shell_pid: 26596
     note: Completed T005-T008. All subtasks done - evaluate_permission() implemented with comprehensive tests and DRF integration. Ready for review.
+  - date: 2025-12-12T12:15:00Z
+    action: review_feedback
+    by: claude-reviewer
+    agent: claude-reviewer
+    shell_pid: current
+    note: Code review identified critical issues with B09 integration, specification mismatches, and missing test coverage verification. Requires rework before approval.
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Key Issues**:
+
+1. **B09 Integration Mismatch (T002)** - The spec requires using `audit.services.create_audit_event` and `audit.models.AuditEvent`, but the implementation uses `audit.api.audit_log.record()`. This violates FR-002 specification and creates dependency confusion. The spec explicitly shows:
+   ```python
+   from audit.services import create_audit_event
+   from audit.models import AuditEvent
+   ```
+   But implementation uses a completely different API. Need to align with B09's actual interface.
+
+2. **Incorrect Audit Data Structure (T002)** - The spec requires structured fields directly as kwargs to `create_audit_event()`:
+   ```python
+   create_audit_event(
+       event_type="permission.granted",
+       user_id=user.id,
+       organization_id=context.get("organization_id"),
+       permission=permission,
+       outcome="allowed",
+       metadata={...}
+   )
+   ```
+   But implementation wraps everything in a dict and uses different field names (`user` object vs `user_id`, `organization` object vs `organization_id`). This breaks structured querying in B09.
+
+3. **Function Signature Type Mismatch (T001/T004)** - The spec requires `from django.contrib.auth.models import User` but the actual User model in this project is `accounts.models.User` (a custom user model). The type hints are technically wrong, though they may work at runtime. Need to use `from accounts.models import User` or use `settings.AUTH_USER_MODEL` abstraction.
+
+4. **Missing Decorator Implementation (T007)** - The spec explicitly requires updating existing decorators in `src/permissions/decorators.py`, but this file doesn't exist. Either:
+   - Task is N/A (no decorators exist to update) - mark complete with note
+   - Decorators exist elsewhere - need to find and update them
+   - Task misunderstood scope - clarify with spec author
+
+5. **Test Coverage Not Verified (T006)** - The spec requires running `pytest ... --cov=src/permissions/audit --cov-report=term` and achieving ≥90% coverage, but:
+   - Pytest is not installed in the environment
+   - pyproject.toml has conflicting addopts that prevent coverage runs
+   - No coverage report was generated to verify SC-004
+   - Cannot approve without confirmed coverage metrics
+
+6. **Incomplete Django Logging Fallback (T003)** - The fallback logging creates a serialization issue. The `audit_data` dict contains Django model objects (`user`, `organization`, `project`) which are passed to `logger.warning(extra={...})`. Django loggers expect JSON-serializable data, but model objects will fail. Need to serialize models to IDs before logging.
+
+**What Was Done Well**:
+- ✅ Comprehensive test suite with good edge case coverage (T005)
+- ✅ DRF permission class integration is clean and well-documented (T008)
+- ✅ Error handling in evaluate_permission() is robust
+- ✅ Type hints are generally well-applied (with noted exception)
+- ✅ Module docstring clearly explains centralized evaluator pattern
+
+**Action Items** (must complete before re-review):
+
+- [ ] **Fix B09 integration**: Replace `audit.api.audit_log.record()` with `audit.services.create_audit_event()` using spec's exact field structure
+- [ ] **Fix audit data structure**: Pass individual kwargs to `create_audit_event()`, not a nested dict. Use primitive IDs, not model objects
+- [ ] **Fix User import**: Change `from django.contrib.auth.models import User` to `from accounts.models import User` or use `get_user_model()`
+- [ ] **Resolve T007 decorator task**: Either update existing decorators, mark N/A if none exist, or clarify scope
+- [ ] **Verify test coverage**: Install pytest-cov, fix pyproject.toml conflicts, run coverage report, confirm ≥90%
+- [ ] **Fix Django logging serialization**: Convert model objects to IDs in fallback `extra` dict before passing to logger
+- [ ] **Document B09 unavailability**: Add comment explaining why we expect `ImportError` vs `Exception` in fallback (current code catches all exceptions which may hide bugs)
+
+**References**:
+- Spec section T002 shows exact B09 integration code
+- FR-002: Structured audit fields specification
+- FR-003: Fallback behavior (must not block permission checks)
+- SC-004: 90% coverage requirement
 
 # WP01: Backend Foundation - Centralized Evaluator
 
@@ -490,3 +562,7 @@ class HasOrganizationPermission(BasePermission):
 ## Next Work Package
 
 After WP01 complete, proceed with **WP02 (B11 ACL Enforcement)** or parallelize WP02-WP05 (all API enforcement packages).
+
+## Activity Log
+
+- 2025-12-12T12:17:31Z – claude – shell_pid=26596 – lane=planned – Code review complete: B09 integration mismatch, audit data structure issues, coverage not verified
