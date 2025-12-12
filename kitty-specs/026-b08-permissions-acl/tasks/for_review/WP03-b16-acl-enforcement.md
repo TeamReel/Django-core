@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 title: API Enforcement - B16 Notifications
-lane: "doing"
+lane: "for_review"
 subtasks:
   - T015
   - T016
@@ -423,3 +423,4 @@ After WP03 complete, proceed with **WP04 (B17 Routing Refactor)** or **WP05 (Set
 - 2025-12-12T13:26:04Z – claude-reviewer – shell_pid=26336 – lane=planned – Code review complete: Architectural mismatch identified
 - 2025-12-12T13:29:47Z – claude-implementer – shell_pid=26336 – lane=doing – Addressing review feedback - documenting architecture decisions
 - 2025-12-12T13:32:00Z – claude-implementer – shell_pid=26336 – lane=doing – All feedback addressed: (1) Added comprehensive architecture documentation to notification_views.py explaining user-scoped design, (2) Updated T015 spec with architectural note and corrected code example, (3) Verified tests are correctly structured for user-scoped model, (4) Confirmed metadata field not used for tenant context, (5) Updated Definition of Done to match reality
+- 2025-12-12T13:35:15Z – claude-implementer – shell_pid=26336 – lane=for_review – All review feedback addressed
