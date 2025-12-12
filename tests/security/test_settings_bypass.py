@@ -95,7 +95,7 @@ def test_admin_cannot_view_other_org_settings(setup_two_orgs):
     # Admin from Org A tries to access it
     client = APIClient()
     client.force_authenticate(user=admin_a)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 403
 
@@ -118,7 +118,7 @@ def test_admin_cannot_edit_other_org_settings(setup_two_orgs):
     client = APIClient()
     client.force_authenticate(user=admin_a)
     response = client.patch(
-        f"/api/v1/settings/{setting.id}/",
+        f"/api/v1/settings/settings/{setting.id}/",
         {"value": "hacked"},
         format="json",
     )
@@ -145,7 +145,7 @@ def test_member_cannot_view_other_org_feature_flags(setup_two_orgs):
     # Member from Org A tries to access it
     client = APIClient()
     client.force_authenticate(user=member_a)
-    response = client.get(f"/api/v1/feature-flags/{flag.id}/")
+    response = client.get(f"/api/v1/settings/feature-flags/{flag.id}/")
 
     assert response.status_code == 403
 
@@ -168,7 +168,7 @@ def test_admin_cannot_delete_other_org_settings(setup_two_orgs):
     # Admin from Org A tries to delete it
     client = APIClient()
     client.force_authenticate(user=admin_a)
-    response = client.delete(f"/api/v1/settings/{setting_id}/")
+    response = client.delete(f"/api/v1/settings/settings/{setting_id}/")
 
     assert response.status_code == 403
     assert Setting.objects.filter(id=setting_id).exists()  # Still exists
@@ -194,7 +194,7 @@ def test_anonymous_cannot_view_settings(setup_two_orgs):
 
     # Anonymous user tries to access it
     client = APIClient()
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code in [401, 403]  # Unauthorized or Forbidden
 
@@ -220,7 +220,7 @@ def test_anonymous_cannot_list_settings(setup_two_orgs):
 
     # Anonymous user tries to list
     client = APIClient()
-    response = client.get("/api/v1/settings/")
+    response = client.get("/api/v1/settings/settings/")
 
     assert response.status_code in [401, 403]
 
@@ -233,7 +233,7 @@ def test_anonymous_cannot_create_settings(setup_two_orgs):
     # Anonymous user tries to create setting
     client = APIClient()
     response = client.post(
-        "/api/v1/settings/",
+        "/api/v1/settings/settings/",
         {
             "key": "malicious.setting",
             "value": "hacked",
@@ -277,7 +277,7 @@ def test_member_cannot_view_other_org_project_settings(setup_two_orgs):
     # Member from Org A tries to access it
     client = APIClient()
     client.force_authenticate(user=member_a)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 403
 
@@ -304,7 +304,7 @@ def test_user_cannot_view_other_user_settings(setup_two_orgs):
     # Member A tries to access it
     client = APIClient()
     client.force_authenticate(user=member_a)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 403
 
@@ -326,7 +326,7 @@ def test_admin_cannot_view_other_user_settings(setup_two_orgs):
     # Admin tries to access it
     client = APIClient()
     client.force_authenticate(user=admin_a)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 403
 
@@ -345,7 +345,7 @@ def test_member_cannot_escalate_to_global_scope(setup_two_orgs):
     client = APIClient()
     client.force_authenticate(user=member_a)
     response = client.post(
-        "/api/v1/settings/",
+        "/api/v1/settings/settings/",
         {
             "key": "global.hack",
             "value": "escalated",
@@ -367,7 +367,7 @@ def test_admin_cannot_escalate_to_global_scope(setup_two_orgs):
     client = APIClient()
     client.force_authenticate(user=admin_a)
     response = client.post(
-        "/api/v1/settings/",
+        "/api/v1/settings/settings/",
         {
             "key": "global.hack",
             "value": "escalated",
@@ -409,7 +409,7 @@ def test_member_only_sees_own_org_settings(setup_two_orgs):
     # Member A lists settings
     client = APIClient()
     client.force_authenticate(user=member_a)
-    response = client.get("/api/v1/settings/")
+    response = client.get("/api/v1/settings/settings/")
 
     if response.status_code == 200:
         # Should only see Org A's settings
@@ -442,7 +442,7 @@ def test_viewer_cannot_see_global_settings_in_list(setup_two_orgs):
     # Member A lists settings
     client = APIClient()
     client.force_authenticate(user=member_a)
-    response = client.get("/api/v1/settings/")
+    response = client.get("/api/v1/settings/settings/")
 
     if response.status_code == 200:
         # Should not see global settings
@@ -473,7 +473,7 @@ def test_failed_access_attempts_create_audit_events(setup_two_orgs):
     # Admin from Org A tries to access it
     client = APIClient()
     client.force_authenticate(user=admin_a)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 403
 

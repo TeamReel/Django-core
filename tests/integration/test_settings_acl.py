@@ -100,7 +100,7 @@ def test_org_admin_can_view_org_settings(setup_org_and_users):
 
     client = APIClient()
     client.force_authenticate(user=admin)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 200
     assert response.data["key"] == "test.setting"
@@ -123,7 +123,7 @@ def test_org_admin_can_edit_org_settings(setup_org_and_users):
     client = APIClient()
     client.force_authenticate(user=admin)
     response = client.patch(
-        f"/api/v1/settings/{setting.id}/",
+        f"/api/v1/settings/settings/{setting.id}/",
         {"value": "new_value"},
         format="json",
     )
@@ -149,7 +149,7 @@ def test_org_member_can_view_org_settings(setup_org_and_users):
 
     client = APIClient()
     client.force_authenticate(user=member)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 200
     assert response.data["key"] == "test.setting"
@@ -172,7 +172,7 @@ def test_org_member_can_edit_org_settings(setup_org_and_users):
     client = APIClient()
     client.force_authenticate(user=member)
     response = client.patch(
-        f"/api/v1/settings/{setting.id}/",
+        f"/api/v1/settings/settings/{setting.id}/",
         {"value": "new_value"},
         format="json",
     )
@@ -198,7 +198,7 @@ def test_org_viewer_can_view_org_settings(setup_org_and_users):
 
     client = APIClient()
     client.force_authenticate(user=viewer)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 200
     assert response.data["key"] == "test.setting"
@@ -221,7 +221,7 @@ def test_org_viewer_cannot_edit_org_settings(setup_org_and_users):
     client = APIClient()
     client.force_authenticate(user=viewer)
     response = client.patch(
-        f"/api/v1/settings/{setting.id}/",
+        f"/api/v1/settings/settings/{setting.id}/",
         {"value": "new_value"},
         format="json",
     )
@@ -245,7 +245,7 @@ def test_external_user_cannot_view_org_settings(setup_org_and_users):
 
     client = APIClient()
     client.force_authenticate(user=external)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 403
 
@@ -271,7 +271,7 @@ def test_org_admin_can_view_project_settings(setup_project):
 
     client = APIClient()
     client.force_authenticate(user=admin)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 200
     assert response.data["key"] == "test.setting"
@@ -294,7 +294,7 @@ def test_org_admin_can_edit_project_settings(setup_project):
     client = APIClient()
     client.force_authenticate(user=admin)
     response = client.patch(
-        f"/api/v1/settings/{setting.id}/",
+        f"/api/v1/settings/settings/{setting.id}/",
         {"value": "new_value"},
         format="json",
     )
@@ -325,7 +325,7 @@ def test_org_admin_can_view_feature_flags(setup_org_and_users):
 
     client = APIClient()
     client.force_authenticate(user=admin)
-    response = client.get(f"/api/v1/feature-flags/{flag.id}/")
+    response = client.get(f"/api/v1/settings/feature-flags/{flag.id}/")
 
     assert response.status_code == 200
     assert response.data["key"] == "test.flag"
@@ -347,7 +347,7 @@ def test_org_viewer_can_view_feature_flags(setup_org_and_users):
 
     client = APIClient()
     client.force_authenticate(user=viewer)
-    response = client.get(f"/api/v1/feature-flags/{flag.id}/")
+    response = client.get(f"/api/v1/settings/feature-flags/{flag.id}/")
 
     assert response.status_code == 200
     assert response.data["key"] == "test.flag"
@@ -369,7 +369,7 @@ def test_external_user_cannot_view_feature_flags(setup_org_and_users):
 
     client = APIClient()
     client.force_authenticate(user=external)
-    response = client.get(f"/api/v1/feature-flags/{flag.id}/")
+    response = client.get(f"/api/v1/settings/feature-flags/{flag.id}/")
 
     assert response.status_code == 403
 
@@ -394,7 +394,7 @@ def test_user_can_view_own_settings(setup_org_and_users):
 
     client = APIClient()
     client.force_authenticate(user=member)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 200
     assert response.data["key"] == "user.preference"
@@ -417,7 +417,7 @@ def test_user_cannot_view_other_user_settings(setup_org_and_users):
     # Viewer tries to access member's setting
     client = APIClient()
     client.force_authenticate(user=viewer)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 403
 
@@ -443,7 +443,7 @@ def test_superuser_can_view_global_settings(setup_org_and_users):
 
     client = APIClient()
     client.force_authenticate(user=admin)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 200
     assert response.data["key"] == "global.config"
@@ -463,6 +463,6 @@ def test_org_admin_cannot_view_global_settings(setup_org_and_users):
 
     client = APIClient()
     client.force_authenticate(user=admin)
-    response = client.get(f"/api/v1/settings/{setting.id}/")
+    response = client.get(f"/api/v1/settings/settings/{setting.id}/")
 
     assert response.status_code == 403
