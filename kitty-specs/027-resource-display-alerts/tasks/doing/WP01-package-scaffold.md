@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "22128"
+---
 # WP01: Package Scaffold & Infrastructure
 
 ---
@@ -493,3 +498,7 @@ Verify TypeScript autocomplete works and no errors appear.
 ---
 
 **Next Work Package**: After WP01 completes, WP02/WP03/WP04 can proceed in parallel.
+
+## Activity Log
+
+- 2025-12-12T21:29:02Z – claude – shell_pid=22128 – lane=doing – Started implementation
