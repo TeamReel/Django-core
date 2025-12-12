@@ -9,7 +9,7 @@ subtasks:
   - T023
   - T024
   - T025
-agent: "claude"
+agent: "claude-reviewer"
 shell_pid: "26336"
 review_status: "has_feedback"
 reviewed_by: "claude-reviewer"
@@ -494,3 +494,4 @@ After WP04 complete, proceed with **WP05 (Settings ACL Enforcement)** or move to
 - 2025-12-12T14:15:00Z – claude – shell_pid=26336 – lane=doing – Completed all 6 subtasks (T020-T025)
 - 2025-12-12T14:05:34Z – claude – shell_pid=26336 – lane=for_review – Completed WP04 - All 6 subtasks done, tests passing
 - 2025-12-12T14:10:00Z – claude-reviewer – shell_pid=26336 – lane=planned – Code review complete: Test failures due to User model username issue. Core refactoring solid, needs test fixture fix.
+- 2025-12-12T14:09:41Z – claude-reviewer – shell_pid=26336 – lane=planned – Code review: Test User model incompatibility - needs fixture fix
