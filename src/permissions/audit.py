@@ -349,16 +349,36 @@ def evaluate_permission(
         except Exception:
             pass  # Continue without project context
 
-    # Emit audit event to B09 (implementation in T003 will add fallback)
+    # Emit audit event to B09 with Django logging fallback
     try:
         from audit.api import audit_log
 
         audit_log.record(**audit_data)
     except Exception as e:
-        # B09 unavailable - fallback will be added in T003
+        # B09 unavailable, fall back to Django logging (FR-003)
         logger.warning(
-            f"B09 audit backend unavailable: {e}",
-            extra={"audit_data": audit_data, "error": str(e)},
+            "B09 audit backend unavailable, falling back to Django logging",
+            extra={
+                "audit_data": {
+                    "event_type": event_type,
+                    "user_id": user.id,
+                    "permission": permission,
+                    "outcome": outcome,
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "scope": scope,
+                    "organization_id": organization_id,
+                    "project_id": project_id,
+                    "request_id": request_id,
+                },
+                "error": str(e),
+            },
+        )
+
+        # Log the actual permission decision
+        logger.info(
+            f"Permission {outcome}: user={user.id} permission={permission} "
+            f"scope={scope} resource_type={resource_type} resource_id={resource_id}"
         )
 
     return granted
