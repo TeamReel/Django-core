@@ -5,6 +5,7 @@ from io import StringIO
 
 from django.http import StreamingHttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from permissions.api.permissions import HasOrganizationPermission, HasProjectPermission
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -226,7 +227,8 @@ class OrganizationBalanceView(APIView):
     Endpoint: GET /organizations/{organization_id}/balance/
     """
 
-    permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
+    permission_classes = [HasOrganizationPermission]
+    required_permission = "organization.view_balance"
 
     def get(self, request: Request, organization_id: str) -> Response:
         """Get organization balance with aggregate stats."""
@@ -240,7 +242,7 @@ class OrganizationBalanceView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # TODO: Check user has access to this organization (B08 permissions)
+        # Permission check automatically enforced by DRF + HasOrganizationPermission
 
         # Compute balance via service layer (uses cache)
         balance_data = get_organization_balance(organization.id)
@@ -256,7 +258,8 @@ class ProjectBalanceView(APIView):
     Endpoint: GET /projects/{project_id}/balance/
     """
 
-    permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
+    permission_classes = [HasProjectPermission]
+    required_permission = "project.view_balance"
 
     def get(self, request: Request, project_id: int) -> Response:  # project_id is integer
         """Get project balance with aggregate stats."""
@@ -270,7 +273,7 @@ class ProjectBalanceView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # TODO: Check user has access to this project (B08 permissions)
+        # Permission check automatically enforced by DRF + HasProjectPermission
 
         # Compute balance via service layer (uses cache)
         balance_data = get_project_balance(project.id)

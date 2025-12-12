@@ -1,10 +1,92 @@
-# Hierarchical Access Control System
+# B08: Hierarchical Access Control System
 
 Role-based access control with three scope levels (Global, Organization, Project) and additive inheritance.
 
+## Overview
+
+B08 provides centralized permission evaluation with audit logging integration. All permission checks must go through the `evaluate_permission()` function to ensure consistent ACL enforcement and comprehensive audit trails.
+
+### Key Components
+
+- **Permission Model**: Stores permission codes (e.g., `organization.view`, `project.edit`)
+- **Role Model**: Groups permissions into reusable roles
+- **RoleAssignment Model**: Links users to roles with scope (GLOBAL, ORGANIZATION, PROJECT)
+- **Centralized Evaluator**: `evaluate_permission()` function in `permissions/audit.py`
+
 ## Quick Start
 
-### Basic Permission Checks
+### Centralized Permission Evaluator (Recommended)
+
+**All permission checks MUST go through `evaluate_permission()`** for audit logging and security:
+
+```python
+from permissions.audit import evaluate_permission
+from rest_framework.exceptions import PermissionDenied
+
+# In your view or service function
+def my_view_logic(request, organization_id):
+    # Check permission before accessing sensitive data
+    granted = evaluate_permission(
+        user=request.user,
+        permission='organization.view_balance',
+        context={'scope': 'ORGANIZATION', 'organization_id': organization_id}
+    )
+
+    if not granted:
+        # Permission denied - automatically logged to B09 audit
+        raise PermissionDenied({
+            'error': 'forbidden',
+            'permission': 'organization.view_balance',
+            'detail': 'You do not have permission to view this organization\'s balance'
+        })
+
+    # Permission granted - proceed with business logic
+    organization = Organization.objects.get(id=organization_id)
+    balance = organization.get_balance()
+    return balance
+```
+
+**Parameters**:
+- `user`: Django User instance (from `request.user`)
+- `permission`: Permission code string (e.g., `"organization.view_balance"`)
+- `context`: Dict with `{scope, organization_id?, project_id?, request_id?}`
+
+**Return Value**:
+- `True` if permission granted
+- `False` if permission denied
+- **Side Effect**: Emits B09 audit event (or logs to Django if B09 unavailable)
+
+### DRF Permission Classes (Preferred for API Views)
+
+For Django REST Framework views, use permission classes that internally call `evaluate_permission()`:
+
+```python
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from permissions.api.permissions import HasOrganizationPermission
+
+class OrganizationBalanceView(APIView):
+    permission_classes = [HasOrganizationPermission]
+    required_permission = 'organization.view_balance'  # Custom attribute
+
+    def get(self, request, organization_id):
+        organization = get_object_or_404(Organization, pk=organization_id)
+
+        # Permission already checked by HasOrganizationPermission
+        # (calls evaluate_permission() internally with audit logging)
+        balance = organization.get_balance()
+
+        return Response({'balance': balance})
+```
+
+**Available Permission Classes**:
+- `HasOrganizationPermission`: Checks org-scoped permission
+- `HasProjectPermission`: Checks project-scoped permission
+- `HasGlobalPermission`: Checks global-scoped permission
+
+### Low-Level Permission Checks (Legacy - Use evaluate_permission() Instead)
+
+**Note**: Direct calls to `check_permission()` do NOT emit audit events. Use `evaluate_permission()` for production code.
 
 ```python
 from permissions.evaluator import check_permission

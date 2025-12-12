@@ -43,7 +43,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Default permissions and roles seeded successfully!"))
 
     def seed_permissions(self):
-        """Create the 17 base permissions required by the system.
+        """Create the 19 base permissions required by the system.
 
         Sensitive permissions (is_sensitive=True) trigger audit logging for security-critical
         operations like user removal, role assignments, and deletions.
@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
         # Define permissions: (permission_string, resource_type, description, is_sensitive)
         permissions = [
-            # Organisation permissions (6)
+            # Organisation permissions (8) - Added 2 for WP04
             (
                 "org.invite_users",
                 "org",
@@ -89,7 +89,19 @@ class Command(BaseCommand):
                 "Delete the organisation",
                 True,
             ),
-            # Project permissions (6)
+            (
+                "organization.view_balance",
+                "organization",
+                "View organisation transaction balance",
+                False,
+            ),
+            (
+                "organization.view_routing_logs",
+                "organization",
+                "View notification routing decision logs for organisation",
+                False,
+            ),
+            # Project permissions (7)
             (
                 "projects.create",
                 "project",
@@ -125,6 +137,32 @@ class Command(BaseCommand):
                 "project",
                 "Assign roles to project members",
                 True,
+            ),
+            (
+                "project.view_balance",
+                "project",
+                "View project transaction balance",
+                False,
+            ),
+            # Notification permissions (1)
+            (
+                "notifications.view",
+                "generic",
+                "View notifications for accessible resources",
+                False,
+            ),
+            # Settings permissions (2) - Added for WP05
+            (
+                "settings.view",
+                "generic",
+                "View settings and feature flags",
+                False,
+            ),
+            (
+                "settings.edit",
+                "generic",
+                "Create, update, and delete settings and feature flags",
+                False,
             ),
             # Permission management permissions (5)
             (
@@ -224,7 +262,10 @@ class Command(BaseCommand):
             },
         )
         if created or force:
-            org_perms = Permission.objects.filter(resource_type__in=["org", "project"])
+            # Include all org + project permissions plus settings.edit
+            org_perms = Permission.objects.filter(
+                resource_type__in=["org", "project"]
+            ) | Permission.objects.filter(permission__in=["settings.view", "settings.edit"])
             org_admin.permissions.set(org_perms)
             status = "Created" if created else "Updated"
             self.stdout.write(
@@ -235,7 +276,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.WARNING("  [=] Role already exists: Organization Admin"))
 
-        # T023: Organization Member - view org, create/view/update projects
+        # T023: Organization Member - view org, create/view/update projects, view/edit settings
         org_member, created = Role.objects.get_or_create(
             name="Organization Member",
             defaults={
@@ -250,6 +291,8 @@ class Command(BaseCommand):
                     "projects.create",
                     "projects.view",
                     "projects.update",
+                    "settings.view",
+                    "settings.edit",
                 ]
             )
             org_member.permissions.set(member_perms)
@@ -272,7 +315,7 @@ class Command(BaseCommand):
         )
         if created or force:
             viewer_perms = Permission.objects.filter(
-                permission__in=["org.view_members", "projects.view"]
+                permission__in=["org.view_members", "projects.view", "settings.view"]
             )
             org_viewer.permissions.set(viewer_perms)
             status = "Created" if created else "Updated"

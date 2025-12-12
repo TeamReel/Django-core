@@ -1,8 +1,11 @@
 """
 Audit logging integration for permissions system.
 
-Provides adapters for B09-audit-logging with graceful fallback to Django
+Provides integration with B09-audit-logging with graceful fallback to Django
 structured logging when B09 is unavailable.
+
+This module serves as the single source of truth for all permission evaluations,
+ensuring comprehensive audit logging for security investigations and compliance.
 """
 
 import importlib.util
@@ -12,8 +15,12 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Protocol
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger("permissions.audit")
+
+# Get the User model - supports custom user models
+User = get_user_model()
 
 
 class AuditBackend(Protocol):
@@ -221,3 +228,194 @@ def emit_role_modification_audit(
             "changes": changes,
         },
     )
+
+
+def evaluate_permission(
+    user: User,
+    permission: str,
+    resource: Optional[Any] = None,
+    context: Optional[Dict[str, Any]] = None,
+) -> bool:
+    """
+    Evaluate permission and emit audit event.
+
+    This function serves as the single source of truth for all permission checks
+    in the system, ensuring comprehensive audit logging and preventing ACL bypass.
+
+    Args:
+        user: Django User instance requesting permission
+        permission: Permission code (e.g., "organization.view_balance")
+        resource: Optional resource being accessed (for scoping, e.g., Organization instance)
+        context: Optional context dict with {scope, organization_id, project_id, request_id}
+
+    Returns:
+        True if permission granted, False if denied
+
+    Side Effects:
+        - Emits B09 audit event (or Django log if B09 unavailable)
+        - Increments django-prometheus permission check counter (if configured)
+
+    Raises:
+        TypeError: If user is not authenticated or permission is not a string
+
+    Example:
+        >>> from django.contrib.auth import get_user_model
+        >>> User = get_user_model()
+        >>> user = User.objects.get(email="admin@example.com")
+        >>> org = Organization.objects.get(id=42)
+        >>> granted = evaluate_permission(
+        ...     user=user,
+        ...     permission="organization.view_balance",
+        ...     resource=org,
+        ...     context={"scope": "ORGANIZATION", "organization_id": org.id}
+        ... )
+        >>> assert granted == True
+    """
+    # Input validation
+    if not hasattr(user, "is_authenticated") or not user.is_authenticated:
+        raise TypeError("User must be an authenticated Django User instance")
+
+    if not isinstance(permission, str):
+        raise TypeError("Permission must be a string")
+
+    # Ensure context dict exists
+    if context is None:
+        context = {}
+
+    # Import here to avoid circular dependency
+    from permissions.evaluator import check_permission
+
+    # Prepare context data
+    scope: str = context.get("scope", "UNKNOWN")
+    organization_id: Optional[int] = context.get("organization_id")
+    project_id: Optional[int] = context.get("project_id")
+    request_id: Optional[str] = context.get("request_id")
+
+    # Determine resource type and ID from resource object
+    resource_type: Optional[str] = None
+    resource_id: Optional[int] = None
+
+    if resource is not None:
+        resource_type = resource.__class__.__name__
+        resource_id = getattr(resource, "id", None)
+
+    # Evaluate permission using existing evaluator
+    # Convert User instance to UUID for evaluator (if user has uuid field)
+    # Fallback to user.id if uuid not present
+    user_uuid: Any = getattr(user, "uuid", None) or user.id
+    resource_uuid: Optional[Any] = getattr(resource, "uuid", None) if resource else None
+
+    # Call existing check_permission function
+    # This performs the actual permission resolution via role assignments
+    granted: bool = check_permission(
+        user_id=user_uuid,
+        permission=permission,
+        resource_id=resource_uuid,
+        resource_type=resource_type or "generic",
+    )
+
+    # Prepare audit event data with structured fields (FR-002)
+    event_type: str = "permission.granted" if granted else "permission.denied"
+    outcome: str = "allowed" if granted else "denied"
+
+    # Fetch organization and project objects if IDs provided
+    organization = None
+    project = None
+
+    if organization_id:
+        # Import here to avoid circular dependency
+        try:
+            from organisations.models import Organisation
+
+            organization = Organisation.objects.filter(id=organization_id).first()
+        except Exception as e:
+            # Continue without organization context (model may not exist or DB error)
+            logger.debug(f"Could not fetch organization {organization_id}: {e}")
+
+    if project_id:
+        # Import here to avoid circular dependency
+        try:
+            from projects.models import Project
+
+            project = Project.objects.filter(id=project_id).first()
+        except Exception as e:
+            # Continue without project context (model may not exist or DB error)
+            logger.debug(f"Could not fetch project {project_id}: {e}")
+
+    # Emit audit event to B09 with Django logging fallback
+    # Use B09's actual API as specified in T002
+    try:
+        from audit.services import create_audit_event
+
+        # Call B09 with structured fields as individual kwargs (FR-002)
+        create_audit_event(
+            event_type=event_type,
+            user=user,
+            organization=organization,
+            project=project,
+            metadata={
+                "permission": permission,
+                "outcome": outcome,
+                "resource_type": resource_type,
+                "resource_id": resource_id,
+                "scope": scope,
+                "request_id": request_id,
+            },
+        )
+    except ImportError as e:
+        # B09 module not available - this is expected in some environments
+        # Fall back to Django logging (FR-003)
+        logger.warning(
+            "B09 audit backend unavailable (ImportError), falling back to Django logging",
+            extra={
+                "audit_data": {
+                    "event_type": event_type,
+                    "user_id": user.id,
+                    "permission": permission,
+                    "outcome": outcome,
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "scope": scope,
+                    "organization_id": organization_id,
+                    "project_id": project_id,
+                    "request_id": request_id,
+                },
+                "error": str(e),
+            },
+        )
+
+        # Log the actual permission decision
+        logger.info(
+            f"Permission {outcome}: user={user.id} permission={permission} "
+            f"scope={scope} resource_type={resource_type} resource_id={resource_id}"
+        )
+    except Exception as e:
+        # B09 available but failed - log error but don't block permission check
+        # This catches database errors, connection issues, etc.
+        logger.error(
+            "B09 audit event emission failed, falling back to Django logging",
+            extra={
+                "audit_data": {
+                    "event_type": event_type,
+                    "user_id": user.id,
+                    "permission": permission,
+                    "outcome": outcome,
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "scope": scope,
+                    "organization_id": organization_id,
+                    "project_id": project_id,
+                    "request_id": request_id,
+                },
+                "error": str(e),
+            },
+            exc_info=True,
+        )
+
+        # Log the actual permission decision
+        logger.info(
+            f"Permission {outcome}: user={user.id} permission={permission} "
+            f"scope={scope} resource_type={resource_type} resource_id={resource_id}"
+        )
+
+    return granted

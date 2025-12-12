@@ -39,7 +39,7 @@ class NotificationPreferenceViewSet(viewsets.ModelViewSet):
         Return preferences visible to the user.
 
         Regular users see only their own preferences.
-        Org admins see preferences for users in their organization.
+        Org admins see preferences for users in their organization (ACL-enforced via B06).
         Superusers see all preferences.
         """
         user = self.request.user
@@ -48,19 +48,32 @@ class NotificationPreferenceViewSet(viewsets.ModelViewSet):
         if user.is_superuser:
             return NotificationPreference.objects.all().select_related("user")
 
-        # Org admins see preferences for users in their organization
-        from organisations.models import OrganisationUser
+        # Org admins see preferences for users in their organizations
+        # Use B06 service layer (calls evaluate_permission() internally)
+        from organisations.services import get_user_organizations
 
-        # Single optimized query: get user IDs from orgs where current user is admin
-        org_user_ids = OrganisationUser.objects.filter(
-            organisation__organisationuser__user=user,
-            organisation__organisationuser__role__in=["admin", "owner"],
-        ).values_list("user_id", flat=True)
+        # Get all organizations where user has admin role
+        admin_orgs = get_user_organizations(
+            user=user,
+            permission="organization.view_members",
+            role_filter=["admin", "owner"],
+        )
+
+        # For each org, get all member user IDs
+        org_user_ids = set()
+        for org in admin_orgs:
+            # Get members for this organization (already ACL-checked)
+            from organisations.models import Membership
+
+            memberships = Membership.objects.filter(
+                organisation=org, is_active=True
+            ).select_related("user")
+            org_user_ids.update(m.user.id for m in memberships if m.user.is_active)
 
         if org_user_ids:
-            return NotificationPreference.objects.filter(
-                user_id__in=org_user_ids
-            ).select_related("user")
+            return NotificationPreference.objects.filter(user_id__in=org_user_ids).select_related(
+                "user"
+            )
 
         # Regular users see only their own preferences
         return NotificationPreference.objects.filter(user=user).select_related("user")

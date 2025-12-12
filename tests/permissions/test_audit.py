@@ -11,6 +11,7 @@ from permissions.audit import (
     DjangoLoggingBackend,
     emit_role_assignment_audit,
     emit_role_modification_audit,
+    evaluate_permission,
     get_audit_backend,
 )
 from permissions.evaluator import check_permission
@@ -363,3 +364,168 @@ class TestAuditPerformance:
 
         # Should complete in less than 100ms (0.1 seconds)
         assert elapsed_time < 0.1, f"Permission check took {elapsed_time * 1000}ms"
+
+
+@pytest.mark.django_db
+class TestEvaluatePermission:
+    """Test evaluate_permission() function (T005 requirements)."""
+
+    def test_evaluate_permission_granted(self, user, global_role, sensitive_permission):
+        """Test permission granted path with B09 audit event."""
+        # Assign role to user
+        RoleAssignment.objects.create(user=user, role=global_role, scope=ScopeChoices.GLOBAL)
+
+        # Mock B09 audit using correct API (audit.services.create_audit_event)
+        with patch("permissions.audit.create_audit_event") as mock_create_audit_event:
+            result = evaluate_permission(
+                user=user,
+                permission="projects.delete",
+                resource=None,
+                context={"scope": "GLOBAL", "request_id": "test-123"},
+            )
+
+            # Assert permission granted
+            assert result is True
+
+            # Verify B09 audit event created with structured fields
+            mock_create_audit_event.assert_called_once()
+            call_args = mock_create_audit_event.call_args[1]
+            assert call_args["event_type"] == "permission.granted"
+            assert call_args["user"] == user
+            assert call_args["metadata"]["permission"] == "projects.delete"
+            assert call_args["metadata"]["outcome"] == "allowed"
+            assert call_args["metadata"]["scope"] == "GLOBAL"
+            assert call_args["metadata"]["request_id"] == "test-123"
+
+    def test_evaluate_permission_denied(self, user, sensitive_permission):
+        """Test permission denied path with B09 audit event."""
+        # User has no role assignments, should be denied
+
+        # Mock B09 audit using correct API
+        with patch("permissions.audit.create_audit_event") as mock_create_audit_event:
+            result = evaluate_permission(
+                user=user,
+                permission="projects.delete",
+                resource=None,
+                context={"scope": "PROJECT", "project_id": 42},
+            )
+
+            # Assert permission denied
+            assert result is False
+
+            # Verify B09 audit event created with denied outcome
+            mock_create_audit_event.assert_called_once()
+            call_args = mock_create_audit_event.call_args[1]
+            assert call_args["event_type"] == "permission.denied"
+            assert call_args["user"] == user
+            assert call_args["metadata"]["outcome"] == "denied"
+            assert call_args["metadata"]["project_id"] == 42
+
+    def test_evaluate_permission_b09_unavailable_fallback(
+        self, user, global_role, sensitive_permission
+    ):
+        """Test Django logging fallback when B09 unavailable (FR-003)."""
+        RoleAssignment.objects.create(user=user, role=global_role, scope=ScopeChoices.GLOBAL)
+
+        # Mock B09 to raise ImportError (module not available)
+        with patch("permissions.audit.create_audit_event") as mock_create_audit_event:
+            mock_create_audit_event.side_effect = ImportError("No module named 'audit'")
+
+            # Mock logger to verify fallback
+            with patch("permissions.audit.logger") as mock_logger:
+                result = evaluate_permission(
+                    user=user,
+                    permission="projects.delete",
+                    resource=None,
+                    context={"scope": "GLOBAL"},
+                )
+
+                # Permission check still succeeds
+                assert result is True
+
+                # Verify warning logged about B09 unavailability
+                assert mock_logger.warning.called
+                warning_call = mock_logger.warning.call_args[0][0]
+                assert "B09 audit backend unavailable" in warning_call
+
+                # Verify info log with permission decision
+                assert mock_logger.info.called
+                info_call = mock_logger.info.call_args[0][0]
+                assert "Permission allowed" in info_call
+                assert f"user={user.id}" in info_call
+
+    def test_evaluate_permission_unauthenticated_user_raises(self):
+        """Test that unauthenticated user raises TypeError."""
+        from accounts.models import User
+
+        unauthenticated_user = User()  # Not authenticated
+
+        with pytest.raises(TypeError, match="authenticated Django User"):
+            evaluate_permission(
+                user=unauthenticated_user,
+                permission="projects.delete",
+            )
+
+    def test_evaluate_permission_invalid_permission_type_raises(self, user):
+        """Test that non-string permission raises TypeError."""
+        with pytest.raises(TypeError, match="Permission must be a string"):
+            evaluate_permission(
+                user=user,
+                permission=123,  # Invalid type
+            )
+
+    def test_evaluate_permission_with_resource_context(
+        self, user, global_role, sensitive_permission
+    ):
+        """Test evaluate_permission with resource object and full context."""
+        RoleAssignment.objects.create(user=user, role=global_role, scope=ScopeChoices.GLOBAL)
+
+        # Create mock resource (e.g., organization)
+        class MockOrganization:
+            id = 42
+            uuid = "org-uuid-123"
+            __class__.__name__ = "Organisation"
+
+        org = MockOrganization()
+
+        with patch("permissions.audit.create_audit_event") as mock_create_audit_event:
+            with patch("permissions.audit.Organisation") as mock_org_model:
+                mock_org_model.objects.filter.return_value.first.return_value = org
+
+                result = evaluate_permission(
+                    user=user,
+                    permission="organization.view",
+                    resource=org,
+                    context={
+                        "scope": "ORGANIZATION",
+                        "organization_id": 42,
+                        "request_id": "req-456",
+                    },
+                )
+
+                assert result is True
+
+                # Verify audit data includes resource info
+                call_args = mock_create_audit_event.call_args[1]
+                assert call_args["metadata"]["resource_type"] == "MockOrganization"
+                assert call_args["metadata"]["resource_id"] == 42
+
+    def test_evaluate_permission_none_context_handled(
+        self, user, global_role, sensitive_permission
+    ):
+        """Test evaluate_permission handles None context gracefully."""
+        RoleAssignment.objects.create(user=user, role=global_role, scope=ScopeChoices.GLOBAL)
+
+        with patch("permissions.audit.create_audit_event") as mock_create_audit_event:
+            result = evaluate_permission(
+                user=user,
+                permission="projects.delete",
+                resource=None,
+                context=None,  # None context should be handled
+            )
+
+            assert result is True
+
+            # Verify default scope is UNKNOWN
+            call_args = mock_create_audit_event.call_args[1]
+            assert call_args["metadata"]["scope"] == "UNKNOWN"

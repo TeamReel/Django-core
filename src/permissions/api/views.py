@@ -2,9 +2,12 @@
 DRF viewsets for permissions API.
 """
 
+from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from permissions.api.permissions import HasPermission
 from permissions.api.serializers import RoleAssignmentSerializer, RoleSerializer
@@ -115,4 +118,125 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
             target_project_id=(
                 str(instance.target_project_id) if instance.target_project_id else None
             ),
+            action="created",
         )
+
+
+class PermissionsCurrentView(APIView):
+    """
+    Return hierarchical permission structure for the current authenticated user.
+
+    Response format:
+    {
+        "global": ["permission.code", ...],
+        "organizations": {
+            "<org_id>": {
+                "name": "Org Name",
+                "permissions": ["org.permission", ...],
+                "projects": {
+                    "<project_id>": {
+                        "name": "Project Name",
+                        "permissions": ["project.permission", ...]
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Return hierarchical permission structure for current user."""
+        user = request.user
+        cache_key = f"permissions:user:{user.id}"
+
+        # Check cache first
+        cached_data = cache.get(cache_key)
+        if cached_data is not None:
+            return Response(cached_data)
+
+        # Build hierarchical structure
+        permissions_data = {
+            "global": self._get_global_permissions(user),
+            "organizations": self._get_organization_permissions(user),
+        }
+
+        # Cache for 5 minutes (300 seconds)
+        cache.set(cache_key, permissions_data, timeout=300)
+
+        return Response(permissions_data)
+
+    def _get_global_permissions(self, user):
+        """Get user's global-scoped permissions."""
+        assignments = RoleAssignment.objects.filter(
+            user=user, scope="GLOBAL", organization__isnull=True, project__isnull=True
+        ).select_related("role")
+
+        permissions = set()
+        for assignment in assignments:
+            permissions.update(assignment.role.permissions.values_list("permission", flat=True))
+
+        return sorted(permissions)
+
+    def _get_organization_permissions(self, user):
+        """Get user's organization-scoped permissions with nested project permissions."""
+        # Import here to avoid circular dependency
+        from organisations.models import Organisation
+        from projects.models import Project
+
+        # Get all organizations where user has role assignments
+        org_ids = (
+            RoleAssignment.objects.filter(user=user, scope="ORGANIZATION")
+            .values_list("organization_id", flat=True)
+            .distinct()
+        )
+
+        orgs = Organisation.objects.filter(id__in=org_ids)
+
+        result = {}
+        for org in orgs:
+            # Get organization-level permissions
+            org_assignments = RoleAssignment.objects.filter(
+                user=user, scope="ORGANIZATION", organization=org
+            ).select_related("role")
+
+            org_permissions = set()
+            for assignment in org_assignments:
+                org_permissions.update(
+                    assignment.role.permissions.values_list("permission", flat=True)
+                )
+
+            # Get projects within this organization
+            project_ids = (
+                RoleAssignment.objects.filter(user=user, scope="PROJECT", project__organisation=org)
+                .values_list("project_id", flat=True)
+                .distinct()
+            )
+
+            projects = Project.objects.filter(id__in=project_ids)
+
+            project_data = {}
+            for project in projects:
+                project_assignments = RoleAssignment.objects.filter(
+                    user=user, scope="PROJECT", project=project
+                ).select_related("role")
+
+                project_permissions = set()
+                for assignment in project_assignments:
+                    project_permissions.update(
+                        assignment.role.permissions.values_list("permission", flat=True)
+                    )
+
+                project_data[str(project.id)] = {
+                    "name": project.name,
+                    "permissions": sorted(project_permissions),
+                }
+
+            result[str(org.id)] = {
+                "name": org.name,
+                "permissions": sorted(org_permissions),
+                "projects": project_data,
+            }
+
+        return result
