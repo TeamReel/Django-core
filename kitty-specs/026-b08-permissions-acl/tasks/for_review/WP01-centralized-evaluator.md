@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Backend Foundation - Centralized Evaluator
-lane: doing
+lane: for_review
 assignee: claude-agent
 agent: claude
 shell_pid: 26596
@@ -30,6 +30,12 @@ history:
     agent: claude
     shell_pid: 26596
     note: Completed T001-T004 (function signature, B09 integration, fallback, type hints). Core evaluate_permission() fully implemented with audit logging.
+  - date: 2025-12-12T17:15:00Z
+    action: completed
+    by: claude
+    agent: claude
+    shell_pid: 26596
+    note: Completed T005-T008. All subtasks done - evaluate_permission() implemented with comprehensive tests and DRF integration. Ready for review.
 ---
 
 # WP01: Backend Foundation - Centralized Evaluator
