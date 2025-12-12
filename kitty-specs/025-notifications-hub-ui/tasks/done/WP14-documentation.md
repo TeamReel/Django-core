@@ -6,7 +6,7 @@ phase: "Phase 6 - Documentation & Polish"
 lane: "done"
 assignee: "claude"
 agent: "claude-reviewer"
-shell_pid: ""
+shell_pid: "21096"
 review_status: "approved with minor notes"
 reviewed_by: "claude-reviewer"
 history:

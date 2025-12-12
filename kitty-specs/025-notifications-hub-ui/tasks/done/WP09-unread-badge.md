@@ -4,7 +4,7 @@ subtasks: ["T053", "T054", "T055", "T056"]
 title: "Unread Badge Component"
 phase: "Phase 4 - UI Components – Badge & Context Integration"
 lane: "done"
-assignee: ""
+assignee: "claude"
 agent: "claude-reviewer"
 shell_pid: "26596"
 review_status: "approved without changes"

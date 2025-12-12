@@ -4,7 +4,7 @@ subtasks: ["T065", "T066", "T067", "T068", "T069", "T070"]
 title: "Error Handling & Observability"
 phase: "Phase 5 - Error Handling, Performance & Accessibility"
 lane: "done"
-assignee: ""
+assignee: "claude"
 agent: "claude-reviewer"
 shell_pid: "26596"
 review_status: "approved without changes"

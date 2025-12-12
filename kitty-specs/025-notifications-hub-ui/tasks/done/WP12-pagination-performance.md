@@ -4,7 +4,7 @@ subtasks: ["T071", "T072", "T073", "T074", "T075"]
 title: "Pagination & Performance Optimization"
 phase: "Phase 5 - Error Handling, Performance & Accessibility"
 lane: "done"
-assignee: ""
+assignee: "claude"
 agent: "claude-reviewer"
 shell_pid: "26596"
 review_status: "approved without changes"

@@ -4,7 +4,7 @@ subtasks: ["T057", "T058", "T059", "T060", "T061", "T062", "T063", "T064"]
 title: "Context Switching & Optimistic Updates"
 phase: "Phase 4 - UI Components – Badge & Context Integration"
 lane: "done"
-assignee: ""
+assignee: "claude"
 agent: "claude-reviewer"
 shell_pid: "26596"
 review_status: "approved without changes"
