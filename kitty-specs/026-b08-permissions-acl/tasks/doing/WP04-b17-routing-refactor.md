@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: API Enforcement - B17 Routing Service Refactor
-lane: planned
+lane: "doing"
 subtasks:
   - T020
   - T021
@@ -9,6 +9,8 @@ subtasks:
   - T023
   - T024
   - T025
+agent: "claude"
+shell_pid: "26336"
 history:
   - date: 2025-12-12
     action: created
@@ -373,3 +375,7 @@ def test_no_direct_organization_queries_in_routing(self):
 ## Next Work Package
 
 After WP04 complete, proceed with **WP05 (Settings ACL Enforcement)** or move to **WP06 (403 Standardization)** if WP02-WP05 done.
+
+## Activity Log
+
+- 2025-12-12T13:47:53Z – claude – shell_pid=26336 – lane=doing – Started WP04 implementation - B17 routing refactor
