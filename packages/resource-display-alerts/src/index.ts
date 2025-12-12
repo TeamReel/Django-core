@@ -2,6 +2,9 @@
 export { Alert } from './components/Alert';
 export type { AlertProps } from './components/Alert';
 
+export { ResourceUsageBar } from './components/ResourceUsageBar';
+export type { ResourceUsageBarProps } from './components/ResourceUsageBar';
+
 // Hook exports
 export { useAlertDismissal } from './hooks/useAlertDismissal';
 export type {
