@@ -4,6 +4,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { OrganisationPicker } from '../../src/components/OrganisationPicker';
 import { ContextSwitcherProvider } from '../../src/context/ContextSwitcherProvider';
 import type { ContextSwitcherConfig, Organisation } from '../../src/types';
+import { API_BASE_URL } from '../testUtils/apiTestConfig';
 
 expect.extend(toHaveNoViolations);
 
@@ -41,7 +42,7 @@ const mockConfig: ContextSwitcherConfig = {
     buildPathForContext: () => '/test-path',
     navigateTo: jest.fn(),
   },
-  apiBaseUrl: '/api/v1',
+  apiBaseUrl: API_BASE_URL,
 };
 
 function renderWithProvider(ui: React.ReactElement, config = mockConfig) {

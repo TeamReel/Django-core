@@ -1,5 +1,5 @@
 /**
- * MSW server setup for Node.js test environment.
+ * MSW server setup for Node.js test environment (MSW v1.x).
  *
  * @packageDocumentation
  */

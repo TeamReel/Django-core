@@ -1,0 +1,27 @@
+{
+  "name": "django-core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Django Core monorepo with backend (Django) and frontend packages (React)",
+  "type": "module",
+  "scripts": {
+    "lint": "pnpm -r --parallel lint",
+    "test": "pnpm -r --parallel test",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "format": "pnpm -r --parallel format",
+    "format:check": "pnpm -r --parallel format:check",
+    "clean": "pnpm -r --parallel clean",
+    "dev": "pnpm -r --parallel dev",
+    "storybook": "pnpm --filter @django-core/design-system storybook",
+    "storybook:auth": "pnpm --filter @django-core/auth-ui storybook"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "devDependencies": {
+    "@mswjs/interceptors": "^0.40.0"
+  }
+}

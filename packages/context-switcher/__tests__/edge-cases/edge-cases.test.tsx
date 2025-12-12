@@ -6,7 +6,8 @@ import { OrganisationPicker } from '../../src/components/OrganisationPicker';
 import { ProjectPicker } from '../../src/components/ProjectPicker';
 import type { RouterAdapter } from '../../src/types';
 import { server } from '../mocks/server';
-import { http, HttpResponse } from 'msw';
+import { rest } from 'msw';
+import { API_BASE_URL, MSW_BASE_URL } from '../testUtils/apiTestConfig';
 
 // Mock router adapter
 const mockRouterAdapter: RouterAdapter = {
@@ -24,8 +25,8 @@ describe('Edge cases', () => {
   describe('Empty data scenarios', () => {
     it('handles empty organisation list', async () => {
       server.use(
-        http.get('/api/organisations/', () => {
-          return HttpResponse.json({ organisations: [] });
+        rest.get(`${MSW_BASE_URL}/api/organisations/`, (req, res, ctx) => {
+          return res(ctx.json({ organisations: [] }));
         })
       );
 
@@ -33,7 +34,7 @@ describe('Edge cases', () => {
         <ContextSwitcherProvider
           config={{
             routerAdapter: mockRouterAdapter,
-            apiBaseUrl: '/api',
+            apiBaseUrl: API_BASE_URL,
           }}
         >
           <OrganisationPicker isOpen={true} onClose={() => {}} />
@@ -47,8 +48,8 @@ describe('Edge cases', () => {
 
     it('handles organisation with no projects', async () => {
       server.use(
-        http.get('/api/organisations/org_123/projects/', () => {
-          return HttpResponse.json({ projects: [] });
+        rest.get(`${MSW_BASE_URL}/api/organisations/org_123/projects/`, (req, res, ctx) => {
+          return res(ctx.json({ projects: [] }));
         })
       );
 
@@ -56,7 +57,7 @@ describe('Edge cases', () => {
         <ContextSwitcherProvider
           config={{
             routerAdapter: mockRouterAdapter,
-            apiBaseUrl: '/api',
+            apiBaseUrl: API_BASE_URL,
           }}
         >
           <ProjectPicker isOpen={true} onClose={() => {}} />
@@ -74,8 +75,8 @@ describe('Edge cases', () => {
       const longName = 'A'.repeat(150);
 
       server.use(
-        http.get('/api/organisations/', () => {
-          return HttpResponse.json({
+        rest.get(`${MSW_BASE_URL}/api/organisations/`, (req, res, ctx) => {
+          return res(ctx.json({
             organisations: [
               {
                 id: 'long_org',
@@ -85,7 +86,7 @@ describe('Edge cases', () => {
                 metadata: {},
               },
             ],
-          });
+          }));
         })
       );
 
@@ -93,7 +94,7 @@ describe('Edge cases', () => {
         <ContextSwitcherProvider
           config={{
             routerAdapter: mockRouterAdapter,
-            apiBaseUrl: '/api',
+            apiBaseUrl: API_BASE_URL,
           }}
         >
           <OrganisationPicker isOpen={true} onClose={() => {}} />
@@ -109,8 +110,8 @@ describe('Edge cases', () => {
 
     it('handles special characters in names', async () => {
       server.use(
-        http.get('/api/organisations/', () => {
-          return HttpResponse.json({
+        rest.get(`${MSW_BASE_URL}/api/organisations/`, (req, res, ctx) => {
+          return res(ctx.json({
             organisations: [
               {
                 id: 'special_org',
@@ -120,7 +121,7 @@ describe('Edge cases', () => {
                 metadata: {},
               },
             ],
-          });
+          }));
         })
       );
 
@@ -128,7 +129,7 @@ describe('Edge cases', () => {
         <ContextSwitcherProvider
           config={{
             routerAdapter: mockRouterAdapter,
-            apiBaseUrl: '/api',
+            apiBaseUrl: API_BASE_URL,
           }}
         >
           <OrganisationPicker isOpen={true} onClose={() => {}} />
@@ -152,8 +153,8 @@ describe('Edge cases', () => {
       }));
 
       server.use(
-        http.get('/api/organisations/', () => {
-          return HttpResponse.json({ organisations: largeOrgList });
+        rest.get(`${MSW_BASE_URL}/api/organisations/`, (req, res, ctx) => {
+          return res(ctx.json({ organisations: largeOrgList }));
         })
       );
 
@@ -163,7 +164,7 @@ describe('Edge cases', () => {
         <ContextSwitcherProvider
           config={{
             routerAdapter: mockRouterAdapter,
-            apiBaseUrl: '/api',
+            apiBaseUrl: API_BASE_URL,
           }}
         >
           <OrganisationPicker isOpen={true} onClose={() => {}} />
@@ -186,8 +187,8 @@ describe('Edge cases', () => {
       }));
 
       server.use(
-        http.get('/api/organisations/org_123/projects/', () => {
-          return HttpResponse.json({ projects: largeProjectList });
+        rest.get(`${MSW_BASE_URL}/api/organisations/org_123/projects/`, (req, res, ctx) => {
+          return res(ctx.json({ projects: largeProjectList }));
         })
       );
 
@@ -197,7 +198,7 @@ describe('Edge cases', () => {
         <ContextSwitcherProvider
           config={{
             routerAdapter: mockRouterAdapter,
-            apiBaseUrl: '/api',
+            apiBaseUrl: API_BASE_URL,
           }}
         >
           <ProjectPicker isOpen={true} onClose={() => {}} />
@@ -217,7 +218,7 @@ describe('Edge cases', () => {
         <ContextSwitcherProvider
           config={{
             routerAdapter: mockRouterAdapter,
-            apiBaseUrl: '/api',
+            apiBaseUrl: API_BASE_URL,
           }}
         >
           <ContextSwitcher />
@@ -231,7 +232,7 @@ describe('Edge cases', () => {
           <ContextSwitcherProvider
             config={{
               routerAdapter: mockRouterAdapter,
-              apiBaseUrl: '/api',
+              apiBaseUrl: API_BASE_URL,
             }}
           >
             <ContextSwitcher />
@@ -249,11 +250,9 @@ describe('Edge cases', () => {
   describe('Error scenarios', () => {
     it('handles missing CSRF token gracefully', async () => {
       server.use(
-        http.post('/api/context/set/', () => {
-          return HttpResponse.json(
-            { detail: 'CSRF token missing or incorrect.' },
-            { status: 403 }
-          );
+        rest.post(`${MSW_BASE_URL}/api/context/set/`, (req, res, ctx) => {
+          return res(ctx.status(403), ctx.json(
+            { detail: 'CSRF token missing or incorrect.' }));
         })
       );
 
@@ -262,7 +261,7 @@ describe('Edge cases', () => {
         <ContextSwitcherProvider
           config={{
             routerAdapter: mockRouterAdapter,
-            apiBaseUrl: '/api',
+            apiBaseUrl: API_BASE_URL,
           }}
         >
           <ContextSwitcher />
@@ -276,10 +275,10 @@ describe('Edge cases', () => {
 
     it('handles timeout gracefully', async () => {
       server.use(
-        http.get('/api/organisations/', async () => {
+        rest.get(`${MSW_BASE_URL}/api/organisations/`, async (req, res, ctx) => {
           // Simulate timeout
           await new Promise(resolve => setTimeout(resolve, 10000));
-          return HttpResponse.json({ organisations: [] });
+          return res(ctx.json({ organisations: [] }));
         })
       );
 
@@ -291,9 +290,9 @@ describe('Edge cases', () => {
       let callCount = 0;
 
       server.use(
-        http.get('/api/organisations/', () => {
+        rest.get(`${MSW_BASE_URL}/api/organisations/`, (req, res, ctx) => {
           callCount++;
-          return HttpResponse.json({
+          return res(ctx.json({
             organisations: [
               {
                 id: `org_${callCount}`,
@@ -303,7 +302,7 @@ describe('Edge cases', () => {
                 metadata: {},
               },
             ],
-          });
+          }));
         })
       );
 
@@ -312,7 +311,7 @@ describe('Edge cases', () => {
         <ContextSwitcherProvider
           config={{
             routerAdapter: mockRouterAdapter,
-            apiBaseUrl: '/api',
+            apiBaseUrl: API_BASE_URL,
           }}
         >
           <ContextSwitcher />
@@ -324,7 +323,7 @@ describe('Edge cases', () => {
           <ContextSwitcherProvider
             config={{
               routerAdapter: mockRouterAdapter,
-              apiBaseUrl: '/api',
+              apiBaseUrl: API_BASE_URL,
             }}
           >
             <ContextSwitcher />
@@ -354,7 +353,7 @@ describe('Edge cases', () => {
         <ContextSwitcherProvider
           config={{
             routerAdapter: mockRouterAdapter,
-            apiBaseUrl: '/api',
+            apiBaseUrl: API_BASE_URL,
           }}
         >
           <ContextSwitcher />

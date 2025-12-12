@@ -1,0 +1,1 @@
+export { defaultNotificationMappings } from './defaultNotificationMappings';

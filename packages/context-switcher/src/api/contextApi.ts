@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import { createApiClient } from '@django-core/api-client';
+import { createApiClient, isApiError, isApiSuccess } from '@django-core/api-client';
 
 /**
  * Response envelope for current context endpoint.
@@ -42,7 +42,7 @@ export async function fetchCurrentContext(
     const response =
       await client.get<CurrentContextResponse>('/context/current/');
 
-    if (response.error) {
+    if (isApiError(response)) {
       // Endpoint may not exist (optional)
       if (response.error.code === 404) {
         return null;
@@ -50,7 +50,11 @@ export async function fetchCurrentContext(
       throw new Error(response.error.message);
     }
 
-    return response.data || null;
+    if (isApiSuccess(response)) {
+      return response.data;
+    }
+
+    return null;
   } catch {
     // Graceful fallback if endpoint doesn't exist
     return null;
@@ -84,7 +88,7 @@ export async function setCurrentContext(
       projectId,
     });
 
-    if (response.error) {
+    if (isApiError(response)) {
       // Endpoint may not exist (optional)
       if (response.error.code === 404) {
         return;

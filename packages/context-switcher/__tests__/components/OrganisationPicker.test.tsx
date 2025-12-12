@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { OrganisationPicker } from '../../src/components/OrganisationPicker';
 import { ContextSwitcherProvider } from '../../src/context/ContextSwitcherProvider';
 import type { ContextSwitcherConfig, Organisation } from '../../src/types';
+import { API_BASE_URL } from '../testUtils/apiTestConfig';
 
 // Mock design system components
 jest.mock('@django-core/design-system', () => ({
@@ -41,7 +42,7 @@ const mockConfig: ContextSwitcherConfig = {
     buildPathForContext: () => '/test-path',
     navigateTo: jest.fn(),
   },
-  apiBaseUrl: '/api/v1',
+  apiBaseUrl: API_BASE_URL,
 };
 
 // Helper to render with provider

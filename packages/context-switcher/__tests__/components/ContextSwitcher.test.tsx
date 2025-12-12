@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ContextSwitcher } from '../../src/components/ContextSwitcher';
 import { ContextSwitcherProvider } from '../../src/context/ContextSwitcherProvider';
 import type { RouterAdapter } from '../../src/types';
+import { API_BASE_URL } from '../testUtils/apiTestConfig';
 
 // Mock router adapter
 const mockRouterAdapter: RouterAdapter = {
@@ -54,7 +55,7 @@ const renderWithProvider = (ui: React.ReactElement) => {
     <ContextSwitcherProvider
       config={{
         routerAdapter: mockRouterAdapter,
-        apiBaseUrl: '/api/v1',
+        apiBaseUrl: API_BASE_URL,
       }}
     >
       {ui}

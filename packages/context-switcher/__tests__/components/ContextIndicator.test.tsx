@@ -10,6 +10,7 @@ import { ContextSwitcherProvider } from '../../src/context/ContextSwitcherProvid
 import type { RouterAdapter } from '../../src/types/router';
 import type { Organisation, Project } from '../../src/types';
 import * as api from '../../src/api';
+import { API_BASE_URL } from '../testUtils/apiTestConfig';
 
 // Mock the design system components
 jest.mock('@django-core/design-system', () => ({
@@ -60,7 +61,7 @@ describe('ContextIndicator', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -84,15 +85,13 @@ describe('ContextIndicator', () => {
       buildPathForContext: jest.fn(),
     };
 
-    mockedApi.fetchProjects.mockResolvedValue({
-      data: { projects: [mockProject] },
-    });
+    mockedApi.fetchProjects.mockResolvedValue([mockProject]);
 
     render(
       <ContextSwitcherProvider
         config={{
           routerAdapter: routerWithProject,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -113,7 +112,7 @@ describe('ContextIndicator', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -132,7 +131,7 @@ describe('ContextIndicator', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -162,7 +161,7 @@ describe('ContextIndicator', () => {
             ...mockRouterAdapter,
             getCurrentPath: () => `/${longOrg.slug}`,
           },
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -194,7 +193,7 @@ describe('ContextIndicator', () => {
             ...mockRouterAdapter,
             getCurrentPath: () => '/acme-corp/website',
           },
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -222,7 +221,7 @@ describe('ContextIndicator', () => {
             ...mockRouterAdapter,
             getCurrentPath: () => '/acme-corp/website',
           },
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -233,13 +232,16 @@ describe('ContextIndicator', () => {
       expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
     });
 
-    const statusDiv = container.querySelector('[role="status"]');
-    expect(statusDiv).toBeInTheDocument();
-    expect(statusDiv).toHaveAttribute('aria-live', 'polite');
-    expect(statusDiv).toHaveAttribute(
-      'aria-label',
-      'Currently in Acme Corporation, Website Project project'
-    );
+    await waitFor(() => {
+      const statusDivs = screen.getAllByRole('status');
+      const indicatorDiv = statusDivs.find(div => div.getAttribute('aria-label')?.startsWith('Currently in'));
+      expect(indicatorDiv).toBeDefined();
+      expect(indicatorDiv).toHaveAttribute('aria-live', 'polite');
+      expect(indicatorDiv).toHaveAttribute(
+        'aria-label',
+        'Currently in Acme Corporation, Website Project project'
+      );
+    });
   });
 
   it('updates aria-label for org-only context', async () => {
@@ -247,7 +249,7 @@ describe('ContextIndicator', () => {
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
-          apiBaseUrl: '/api',
+          apiBaseUrl: API_BASE_URL,
         }}
       >
         <ContextIndicator />
@@ -258,10 +260,14 @@ describe('ContextIndicator', () => {
       expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
     });
 
-    const statusDiv = container.querySelector('[role="status"]');
-    expect(statusDiv).toHaveAttribute(
-      'aria-label',
-      'Currently in Acme Corporation'
-    );
+    await waitFor(() => {
+      const statusDivs = screen.getAllByRole('status');
+      const indicatorDiv = statusDivs.find(div => div.getAttribute('aria-label')?.startsWith('Currently in'));
+      expect(indicatorDiv).toBeDefined();
+      expect(indicatorDiv).toHaveAttribute(
+        'aria-label',
+        'Currently in Acme Corporation'
+      );
+    });
   });
 });

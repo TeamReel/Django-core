@@ -1,13 +1,10 @@
-import React, { forwardRef } from 'react';
-import { List } from 'react-window';
+import React from 'react';
+import { List as ReactWindowList, RowComponentProps } from 'react-window';
 
-// react-window's List component (aliased as FixedSizeList in docs)
-type ReactWindowList = typeof List;
-
-// Type for the props passed to each row component by react-window
-interface RowProps {
-  index: number;
-  style: React.CSSProperties;
+// Props passed to each row via rowProps
+interface RowProps<T> {
+  items: T[];
+  renderItem: (item: T, index: number) => React.ReactNode;
 }
 
 export interface VirtualizedListProps<T> {
@@ -65,38 +62,48 @@ export interface VirtualizedListProps<T> {
  * - NFR-014: Virtualization for lists >50 items
  * - Performance: <100ms render for 1000 items
  */
-function VirtualizedListInner<T>(
-  {
-    items,
-    renderItem,
-    itemHeight = 48,
-    height = 400,
-    className,
-  }: VirtualizedListProps<T>,
-  ref: React.Ref<ReactWindowList>
-): React.ReactElement {
-  // Row renderer for react-window
-  // Each row is wrapped in a div with absolute positioning from react-window
-  const Row = ({ index, style }: RowProps): React.ReactElement => (
-    <div style={style}>{renderItem(items[index], index)}</div>
+function VirtualizedListInner<T>({
+  items,
+  renderItem,
+  itemHeight = 48,
+  height = 400,
+  className,
+}: VirtualizedListProps<T>): React.ReactElement {
+  // Row renderer component for react-window v2
+  // Receives items and renderItem via rowProps
+  const RowComponent = React.useCallback(
+    ({ index, style, items: itemsList, renderItem: render }: RowComponentProps<RowProps<T>>) => {
+      const item = itemsList[index];
+
+      // Safety check for out-of-bounds access
+      if (!item) {
+        return <div style={style} />;
+      }
+
+      return <div style={style}>{render(item, index)}</div>;
+    },
+    []
+  );
+
+  // Stable rowProps to prevent unnecessary re-renders
+  const rowProps = React.useMemo<RowProps<T>>(
+    () => ({ items, renderItem }),
+    [items, renderItem]
   );
 
   return (
-    <List
-      ref={ref}
+    <ReactWindowList
+      style={{ height }}
+      rowCount={items.length}
+      rowHeight={itemHeight}
+      rowComponent={RowComponent}
+      rowProps={rowProps}
       className={className}
-      height={height}
-      itemCount={items.length}
-      itemSize={itemHeight}
-      width="100%"
-    >
-      {Row}
-    </List>
+    />
   );
 }
 
-// Use forwardRef to allow parent components to control the List ref
-// Cast to preserve generic type parameter
-export const VirtualizedList = forwardRef(VirtualizedListInner) as <T>(
-  props: VirtualizedListProps<T> & { ref?: React.Ref<ReactWindowList> }
+// Export without forwardRef for now - react-window List doesn't support standard ref forwarding
+export const VirtualizedList = VirtualizedListInner as <T>(
+  props: VirtualizedListProps<T>
 ) => React.ReactElement;

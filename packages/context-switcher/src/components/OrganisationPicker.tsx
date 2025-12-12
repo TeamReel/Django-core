@@ -143,10 +143,9 @@ export function OrganisationPicker({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        size={isMobile ? 'fullscreen' : 'medium'}
         title="Select Organisation"
       >
-        <Stack direction="vertical" spacing="md" align="center">
+        <Stack direction="column" gap="4" align="center">
           <Spinner size="md" />
           <Text size="md" color="tertiary">
             Loading organisations...
@@ -160,7 +159,7 @@ export function OrganisationPicker({
   const renderEmptyState = (): React.ReactElement | null => {
     if (searchQuery && searchQuery.length >= 3) {
       return (
-        <Stack direction="vertical" spacing="md" align="center" style={{ padding: '24px' }}>
+        <Stack direction="column" gap="4" align="center" style={{ padding: '24px' }}>
           <Text size="md" weight="medium">
             No organisations found
           </Text>
@@ -173,7 +172,7 @@ export function OrganisationPicker({
 
     if (organisations.length === 0) {
       return (
-        <Stack direction="vertical" spacing="md" align="center" style={{ padding: '24px' }}>
+        <Stack direction="column" gap="4" align="center" style={{ padding: '24px' }}>
           <Text size="md" weight="medium">
             No organisations available
           </Text>
@@ -191,10 +190,9 @@ export function OrganisationPicker({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size={isMobile ? 'fullscreen' : 'medium'}
       title="Select Organisation"
     >
-      <Stack direction="vertical" spacing="md" className={className}>
+      <Stack direction="column" gap="4" className={className}>
         {/* Search field */}
         <Input
           type="text"
@@ -277,7 +275,7 @@ export function OrganisationPicker({
                 outline: 'none',
               }}
             >
-              <Stack direction="vertical" spacing="xs">
+              <Stack direction="column" gap="2">
                 {filteredOrgs.map((org, index) => (
                   <button
                     key={org.id}
