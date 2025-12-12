@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "027",
+    "slug":  "027-resource-display-alerts",
+    "friendly_name":  "Resource Display \u0026 Alerts",
+    "source_description":  "Provide generic UI patterns for displaying key resource states (usage, credits, limits, health) and surfacing alerts and warnings.",
+    "created_at":  "2025-12-12T20:28:08Z"
+}
