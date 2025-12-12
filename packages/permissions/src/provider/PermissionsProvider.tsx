@@ -221,16 +221,17 @@ export function PermissionsProvider({
 
   /**
    * Context value (memoized)
+   * Note: isLoading includes both auth loading and permissions loading
    */
   const contextValue = useMemo(
     () => ({
       permissions,
-      isLoading,
+      isLoading: authLoading || isLoading,
       error,
       hasPermission,
       refetchPermissions,
     }),
-    [permissions, isLoading, error, hasPermission, refetchPermissions]
+    [permissions, authLoading, isLoading, error, hasPermission, refetchPermissions]
   );
 
   return (

@@ -211,10 +211,12 @@ describe('PermissionGate', () => {
   });
 
   describe('Loading State', () => {
-    it('should show loading component when provided', () => {
-      mockFetchWithCSRF.mockImplementation(
-        () => new Promise(() => {}) // Never resolves
-      );
+    it('should show loading component when provided', async () => {
+      // Mock auth to be loading initially
+      mockUseAuth.mockReturnValue({
+        user: mockUser,
+        isLoading: true, // Auth still loading
+      });
 
       render(
         <PermissionsProvider>
@@ -227,14 +229,17 @@ describe('PermissionGate', () => {
         </PermissionsProvider>
       );
 
+      // Should show loading component
       expect(screen.getByText('Loading permissions...')).toBeInTheDocument();
       expect(screen.queryByText('Edit Project')).not.toBeInTheDocument();
     });
 
-    it('should not show loading when loadingComponent not provided', () => {
-      mockFetchWithCSRF.mockImplementation(
-        () => new Promise(() => {}) // Never resolves
-      );
+    it('should not show loading when loadingComponent not provided', async () => {
+      // Mock auth to be loading initially
+      mockUseAuth.mockReturnValue({
+        user: mockUser,
+        isLoading: true, // Auth still loading
+      });
 
       render(
         <PermissionsProvider>
@@ -244,8 +249,9 @@ describe('PermissionGate', () => {
         </PermissionsProvider>
       );
 
-      // Should fail-closed (render nothing)
+      // Should fail-closed (render nothing without loadingComponent)
       expect(screen.queryByText('Edit Project')).not.toBeInTheDocument();
+      expect(screen.queryByText('Loading permissions...')).not.toBeInTheDocument();
     });
   });
 
