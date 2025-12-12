@@ -364,16 +364,16 @@ def test_anonymous_user_cannot_list_notifications(self):
 
 ## Definition of Done
 
-- [ ] `NotificationViewSet` has `HasNotificationPermission` in `permission_classes`
-- [ ] Permission check integrates with WP01's `evaluate_permission()` for audit logging
-- [ ] Existing `get_queryset()` filters by `recipient_user` for user-scoped isolation
-- [ ] Architecture decision documented in code explaining user-scoped (not org/project) design
-- [ ] Permission code `notifications.view` in seed command (not fixtures)
-- [ ] 3+ integration tests pass (list filtered, retrieve allowed/denied)
-- [ ] 3+ security tests pass (bypass attempts blocked)
-- [ ] No cross-organization notification leaks
-- [ ] B09 audit events logged for permission checks
-- [ ] Code reviewed and approved
+- [x] `NotificationViewSet` has `HasNotificationPermission` in `permission_classes`
+- [x] Permission check integrates with WP01's `evaluate_permission()` for audit logging
+- [x] Existing `get_queryset()` filters by `recipient_user` for user-scoped isolation
+- [x] Architecture decision documented in code explaining user-scoped (not org/project) design
+- [x] Permission code `notifications.view` in seed command (not fixtures)
+- [x] 3+ integration tests pass (list filtered, retrieve allowed/denied)
+- [x] 3+ security tests pass (bypass attempts blocked)
+- [x] No cross-organization notification leaks
+- [x] B09 audit events logged for permission checks
+- [x] Code reviewed and approved
 
 ---
 

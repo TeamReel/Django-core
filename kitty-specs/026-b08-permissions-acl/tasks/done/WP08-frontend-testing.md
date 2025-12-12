@@ -662,14 +662,14 @@ All files      |   87.5  |   85.2   |   90.1  |   88.3  |
 
 ## Definition of Done
 
-- [ ] Unit tests for checkPermission() cover all scope combinations (10+ tests)
-- [ ] Unit tests for cache module cover TTL, LRU, invalidation (5+ tests)
-- [ ] Component tests for PermissionGate cover hide/disable/loading (6+ tests)
-- [ ] Hook tests for usePermissions() cover hierarchical resolution (4+ tests)
-- [ ] Integration tests for PermissionsProvider cover F02/F03 (3+ tests)
-- [ ] Jest coverage report shows ≥85% line and branch coverage
-- [ ] All tests pass in CI pipeline
-- [ ] Code reviewed and approved
+- [x] Unit tests for checkPermission() cover all scope combinations (10+ tests)
+- [x] Unit tests for cache module cover TTL, LRU, invalidation (5+ tests)
+- [x] Component tests for PermissionGate cover hide/disable/loading (6+ tests)
+- [x] Hook tests for usePermissions() cover hierarchical resolution (4+ tests)
+- [x] Integration tests for PermissionsProvider cover F02/F03 (3+ tests)
+- [x] Jest coverage report shows ≥85% line and branch coverage
+- [x] All tests pass in CI pipeline
+- [x] Code reviewed and approved
 
 ---
 

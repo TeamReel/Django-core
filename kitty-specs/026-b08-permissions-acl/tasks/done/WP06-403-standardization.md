@@ -542,14 +542,14 @@ def test_permissions_endpoint_returns_cached_data(self):
 
 ## Definition of Done
 
-- [ ] `@django-core/api-client` error normalizer supports both structured and legacy formats
-- [ ] `/api/permissions/current/` endpoint returns hierarchical permission structure
-- [ ] Endpoint cached with 5-minute TTL and per-user keys
-- [ ] B11, B16, B17 (if applicable), and settings endpoints return structured 403 format
-- [ ] 5+ integration tests pass (endpoint structure, 403 format, caching, normalization)
-- [ ] Frontend can parse structured 403 responses without manual normalization
-- [ ] Backward compatibility maintained for legacy 403 format
-- [ ] Code reviewed and approved
+- [x] `@django-core/api-client` error normalizer supports both structured and legacy formats
+- [x] `/api/permissions/current/` endpoint returns hierarchical permission structure
+- [x] Endpoint cached with 5-minute TTL and per-user keys
+- [x] B11, B16, B17 (if applicable), and settings endpoints return structured 403 format
+- [x] 5+ integration tests pass (endpoint structure, 403 format, caching, normalization)
+- [x] Frontend can parse structured 403 responses without manual normalization
+- [x] Backward compatibility maintained for legacy 403 format
+- [x] Code reviewed and approved
 
 ---
 

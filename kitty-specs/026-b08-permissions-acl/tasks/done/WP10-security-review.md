@@ -413,15 +413,15 @@ npm run lint
 
 ## Definition of Done
 
-- [ ] Manual security review checklist complete (all items PASS)
-- [ ] Source code audit confirms no residual bypasses
-- [ ] B08 `audit.py` coverage ≥90% (SC-004)
-- [ ] Frontend package coverage ≥85% (SC-005)
-- [ ] All security tests pass (SC-006)
-- [ ] All integration tests pass
-- [ ] All CI checks pass (Black, Ruff, mypy, pytest, Jest, ESLint, TypeScript)
-- [ ] CI summary report created
-- [ ] Code reviewed and approved for merge
+- [x] Manual security review checklist complete (all items PASS)
+- [x] Source code audit confirms no residual bypasses
+- [x] B08 `audit.py` coverage ≥90% (SC-004)
+- [x] Frontend package coverage ≥85% (SC-005)
+- [x] All security tests pass (SC-006)
+- [x] All integration tests pass
+- [x] All CI checks pass (Black, Ruff, mypy, pytest, Jest, ESLint, TypeScript)
+- [x] CI summary report created
+- [x] Code reviewed and approved for merge
 
 ---
 

@@ -650,13 +650,13 @@ No frontend changes required for migration!
 
 ## Definition of Done
 
-- [ ] quickstart.md guide validated by developer (integration time ≤30 minutes)
-- [ ] B08 README updated with evaluate_permission() usage and extension points
-- [ ] B09 README updated with B08 integration pattern and audit event schema
-- [ ] @django-core/permissions README includes installation, usage, API reference, troubleshooting
-- [ ] 403 migration guide documents timeline, migration steps, testing checklist
-- [ ] All code examples tested and runnable
-- [ ] Documentation reviewed and approved
+- [x] quickstart.md guide validated by developer (integration time ≤30 minutes)
+- [x] B08 README updated with evaluate_permission() usage and extension points
+- [x] B09 README updated with B08 integration pattern and audit event schema
+- [x] @django-core/permissions README includes installation, usage, API reference, troubleshooting
+- [x] 403 migration guide documents timeline, migration steps, testing checklist
+- [x] All code examples tested and runnable
+- [x] Documentation reviewed and approved
 
 ---
 

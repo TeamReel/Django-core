@@ -509,15 +509,15 @@ def test_no_direct_organization_queries_in_routing(self):
 
 ## Definition of Done
 
-- [ ] Audit report documenting all B17 direct queries complete
-- [ ] All `Organization.objects` calls replaced with B06 service functions
-- [ ] All `Project.objects` calls replaced with B07 service functions
-- [ ] B06/B07 service functions verified to call `evaluate_permission()`
-- [ ] 4+ integration tests pass (routing allowed/denied scenarios)
-- [ ] 3+ security tests pass (bypass attempts blocked)
-- [ ] Source code contains zero direct `Organization.objects` or `Project.objects` queries in B17
-- [ ] Routing logic functionally equivalent (no regressions)
-- [ ] Code reviewed and approved
+- [x] Audit report documenting all B17 direct queries complete
+- [x] All `Organization.objects` calls replaced with B06 service functions
+- [x] All `Project.objects` calls replaced with B07 service functions
+- [x] B06/B07 service functions verified to call `evaluate_permission()`
+- [x] 4+ integration tests pass (routing allowed/denied scenarios)
+- [x] 3+ security tests pass (bypass attempts blocked)
+- [x] Source code contains zero direct `Organization.objects` or `Project.objects` queries in B17
+- [x] Routing logic functionally equivalent (no regressions)
+- [x] Code reviewed and approved
 
 ---
 

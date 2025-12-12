@@ -340,15 +340,15 @@ def test_cannot_view_project_balance_without_org_access(self):
 
 ## Definition of Done
 
-- [ ] `OrganizationBalanceView` uses `HasOrganizationPermission` class
-- [ ] `ProjectBalanceView` uses `HasProjectPermission` class
-- [ ] Both views have `required_permission` attributes
-- [ ] Permission codes `organization.view_balance` and `project.view_balance` in fixtures
-- [ ] 4 integration tests pass (allowed/denied for org + project)
-- [ ] 3+ security tests pass (bypass attempts all blocked)
-- [ ] All tests verify B09 audit events created
-- [ ] No regressions in existing B11 tests
-- [ ] Code reviewed and approved
+- [x] `OrganizationBalanceView` uses `HasOrganizationPermission` class
+- [x] `ProjectBalanceView` uses `HasProjectPermission` class
+- [x] Both views have `required_permission` attributes
+- [x] Permission codes `organization.view_balance` and `project.view_balance` in fixtures
+- [x] 4 integration tests pass (allowed/denied for org + project)
+- [x] 3+ security tests pass (bypass attempts all blocked)
+- [x] All tests verify B09 audit events created
+- [x] No regressions in existing B11 tests
+- [x] Code reviewed and approved
 
 ---
 

@@ -672,16 +672,16 @@ export function checkPermission(
 
 ## Definition of Done
 
-- [ ] Package scaffolded with correct structure and dependencies
-- [ ] All TypeScript types defined and exported
-- [ ] PermissionsProvider integrates F02 (auth) and F03 (context switcher)
-- [ ] Context-aware cache implemented with TTL and LRU eviction
-- [ ] usePermissions() hook provides checkPermission with hierarchical resolution
-- [ ] PermissionGate supports both hide and disable modes
-- [ ] checkPermission() utility is framework-agnostic
-- [ ] Package builds successfully (`npm run build`)
-- [ ] TypeScript strict mode passes
-- [ ] Code reviewed and approved
+- [x] Package scaffolded with correct structure and dependencies
+- [x] All TypeScript types defined and exported
+- [x] PermissionsProvider integrates F02 (auth) and F03 (context switcher)
+- [x] Context-aware cache implemented with TTL and LRU eviction
+- [x] usePermissions() hook provides checkPermission with hierarchical resolution
+- [x] PermissionGate supports both hide and disable modes
+- [x] checkPermission() utility is framework-agnostic
+- [x] Package builds successfully (`npm run build`)
+- [x] TypeScript strict mode passes
+- [x] Code reviewed and approved
 
 ---
 

@@ -474,14 +474,14 @@ def test_org_admin_cannot_edit_global_settings(self):
 
 ## Definition of Done
 
-- [ ] GET `/api/settings/{key}/` enforces `settings.view` permission
-- [ ] PUT `/api/settings/{key}/` enforces `settings.edit` permission
-- [ ] Permission codes `settings.view` and `settings.edit` in fixtures
-- [ ] Scope enforcement works (org/project/global)
-- [ ] 8+ integration tests pass (view/edit allowed/denied, all scopes)
-- [ ] 4+ security tests pass (cross-org, privilege escalation, global escalation)
-- [ ] B09 audit events logged for all permission checks
-- [ ] Code reviewed and approved
+- [x] GET `/api/settings/{key}/` enforces `settings.view` permission
+- [x] PUT `/api/settings/{key}/` enforces `settings.edit` permission
+- [x] Permission codes `settings.view` and `settings.edit` in fixtures
+- [x] Scope enforcement works (org/project/global)
+- [x] 8+ integration tests pass (view/edit allowed/denied, all scopes)
+- [x] 4+ security tests pass (cross-org, privilege escalation, global escalation)
+- [x] B09 audit events logged for all permission checks
+- [x] Code reviewed and approved
 
 ---
 

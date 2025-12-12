@@ -534,17 +534,17 @@ class HasOrganizationPermission(BasePermission):
 
 ## Definition of Done
 
-- [ ] `src/permissions/audit.py` exists with complete implementation
-- [ ] `evaluate_permission()` function signature matches spec (typed, documented)
-- [ ] B09 audit emission works with structured fields (FR-002)
-- [ ] Django logging fallback works when B09 unavailable (FR-003)
-- [ ] Unit tests pass (happy, denied, B09 unavailable, edge cases)
-- [ ] Test coverage ≥90% for `audit.py` module (SC-004)
-- [ ] All existing B08 decorators use `evaluate_permission()`
-- [ ] All existing DRF permission classes use `evaluate_permission()`
-- [ ] mypy type checking passes with `--strict`
-- [ ] Existing tests still pass (no regressions)
-- [ ] Code reviewed and approved
+- [x] `src/permissions/audit.py` exists with complete implementation
+- [x] `evaluate_permission()` function signature matches spec (typed, documented)
+- [x] B09 audit emission works with structured fields (FR-002)
+- [x] Django logging fallback works when B09 unavailable (FR-003)
+- [x] Unit tests pass (happy, denied, B09 unavailable, edge cases)
+- [x] Test coverage ≥90% for `audit.py` module (SC-004)
+- [x] All existing B08 decorators use `evaluate_permission()`
+- [x] All existing DRF permission classes use `evaluate_permission()`
+- [x] mypy type checking passes with `--strict`
+- [x] Existing tests still pass (no regressions)
+- [x] Code reviewed and approved
 
 ---
 
