@@ -275,6 +275,90 @@ def evaluate_permission(
     if not isinstance(permission, str):
         raise TypeError("Permission must be a string")
 
-    # Implementation will be added in T002-T003
-    # For now, return False as fail-closed default
-    return False
+    # Ensure context dict exists
+    if context is None:
+        context = {}
+
+    # Import here to avoid circular dependency
+    from permissions.evaluator import check_permission
+
+    # Prepare context data
+    scope = context.get("scope", "UNKNOWN")
+    organization_id = context.get("organization_id")
+    project_id = context.get("project_id")
+    request_id = context.get("request_id")
+
+    # Determine resource type and ID
+    resource_type: Optional[str] = None
+    resource_id: Optional[int] = None
+
+    if resource is not None:
+        resource_type = resource.__class__.__name__
+        resource_id = getattr(resource, "id", None)
+
+    # Evaluate permission using existing evaluator
+    # Convert User instance to UUID for evaluator (if user has uuid field)
+    user_uuid = getattr(user, "uuid", None) or user.id
+    resource_uuid = getattr(resource, "uuid", None) if resource else None
+
+    # Call existing check_permission function
+    granted = check_permission(
+        user_id=user_uuid,
+        permission=permission,
+        resource_id=resource_uuid,
+        resource_type=resource_type or "generic",
+    )
+
+    # Prepare audit event data
+    event_type = "permission.granted" if granted else "permission.denied"
+    outcome = "allowed" if granted else "denied"
+
+    audit_data = {
+        "event_type": event_type,
+        "user": user,
+        "organization": None,
+        "project": None,
+        "metadata": {
+            "permission": permission,
+            "outcome": outcome,
+            "resource_type": resource_type,
+            "resource_id": resource_id,
+            "scope": scope,
+            "request_id": request_id,
+        },
+    }
+
+    # Add organization/project to audit data if available
+    if organization_id:
+        # Import here to avoid circular dependency
+        try:
+            from organisations.models import Organisation
+
+            org = Organisation.objects.filter(id=organization_id).first()
+            audit_data["organization"] = org
+        except Exception:
+            pass  # Continue without organization context
+
+    if project_id:
+        # Import here to avoid circular dependency
+        try:
+            from projects.models import Project
+
+            proj = Project.objects.filter(id=project_id).first()
+            audit_data["project"] = proj
+        except Exception:
+            pass  # Continue without project context
+
+    # Emit audit event to B09 (implementation in T003 will add fallback)
+    try:
+        from audit.api import audit_log
+
+        audit_log.record(**audit_data)
+    except Exception as e:
+        # B09 unavailable - fallback will be added in T003
+        logger.warning(
+            f"B09 audit backend unavailable: {e}",
+            extra={"audit_data": audit_data, "error": str(e)},
+        )
+
+    return granted
