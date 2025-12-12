@@ -109,6 +109,150 @@ class HasPermission(BasePermission):
 
         return has_perm
 
+
+class HasOrganizationPermission(BasePermission):
+    """
+    DRF permission class for organization-scoped permission checks.
+
+    Expects view to have 'required_permission' attribute and
+    'organization_id' in URL kwargs or request data.
+
+    Uses evaluate_permission() for comprehensive audit logging.
+
+    Usage:
+        class OrganizationBalanceView(APIView):
+            permission_classes = [HasOrganizationPermission]
+            required_permission = "organization.view_balance"
+
+            def get(self, request, organization_id):
+                # Permission already checked
+                ...
+    """
+
+    def has_permission(self, request, view):
+        """
+        Check if user has organization-scoped permission.
+
+        Args:
+            request: DRF request object
+            view: DRF view object (must have required_permission attribute)
+
+        Returns:
+            True if user has permission, False otherwise
+        """
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Get required permission from view
+        permission = getattr(view, "required_permission", None)
+        if not permission:
+            raise AttributeError(
+                f"{view.__class__.__name__} must define 'required_permission' attribute"
+            )
+
+        # Extract organization_id from URL kwargs or request data
+        organization_id = view.kwargs.get("organization_id") or request.data.get("organization_id")
+        if not organization_id:
+            # Fail closed if organization context missing
+            return False
+
+        # Prepare context for evaluator
+        context = {
+            "scope": "ORGANIZATION",
+            "organization_id": organization_id,
+            "request_id": request.META.get("HTTP_X_REQUEST_ID"),
+        }
+
+        # Use centralized evaluator for audit logging
+        try:
+            has_perm = evaluate_permission(
+                user=request.user,
+                permission=permission,
+                resource=None,
+                context=context,
+            )
+        except Exception:
+            # Fail closed on evaluation errors
+            has_perm = False
+
+        if not has_perm:
+            self.message = (
+                f"Permission denied: '{permission}' required for organization {organization_id}"
+            )
+
+        return has_perm
+
+
+class HasProjectPermission(BasePermission):
+    """
+    DRF permission class for project-scoped permission checks.
+
+    Expects view to have 'required_permission' attribute and
+    'project_id' in URL kwargs or request data.
+
+    Uses evaluate_permission() for comprehensive audit logging.
+
+    Usage:
+        class ProjectBalanceView(APIView):
+            permission_classes = [HasProjectPermission]
+            required_permission = "project.view_balance"
+
+            def get(self, request, project_id):
+                # Permission already checked
+                ...
+    """
+
+    def has_permission(self, request, view):
+        """
+        Check if user has project-scoped permission.
+
+        Args:
+            request: DRF request object
+            view: DRF view object (must have required_permission attribute)
+
+        Returns:
+            True if user has permission, False otherwise
+        """
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Get required permission from view
+        permission = getattr(view, "required_permission", None)
+        if not permission:
+            raise AttributeError(
+                f"{view.__class__.__name__} must define 'required_permission' attribute"
+            )
+
+        # Extract project_id from URL kwargs or request data
+        project_id = view.kwargs.get("project_id") or request.data.get("project_id")
+        if not project_id:
+            # Fail closed if project context missing
+            return False
+
+        # Prepare context for evaluator
+        context = {
+            "scope": "PROJECT",
+            "project_id": project_id,
+            "request_id": request.META.get("HTTP_X_REQUEST_ID"),
+        }
+
+        # Use centralized evaluator for audit logging
+        try:
+            has_perm = evaluate_permission(
+                user=request.user,
+                permission=permission,
+                resource=None,
+                context=context,
+            )
+        except Exception:
+            # Fail closed on evaluation errors
+            has_perm = False
+
+        if not has_perm:
+            self.message = f"Permission denied: '{permission}' required for project {project_id}"
+
+        return has_perm
+
     def has_object_permission(self, request, view, obj):
         """
         Check if request user has permission on specific object.

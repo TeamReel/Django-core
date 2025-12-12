@@ -89,7 +89,13 @@ class Command(BaseCommand):
                 "Delete the organisation",
                 True,
             ),
-            # Project permissions (6)
+            (
+                "organization.view_balance",
+                "organization",
+                "View organisation transaction balance",
+                False,
+            ),
+            # Project permissions (7)
             (
                 "projects.create",
                 "project",
@@ -125,6 +131,12 @@ class Command(BaseCommand):
                 "project",
                 "Assign roles to project members",
                 True,
+            ),
+            (
+                "project.view_balance",
+                "project",
+                "View project transaction balance",
+                False,
             ),
             # Permission management permissions (5)
             (
