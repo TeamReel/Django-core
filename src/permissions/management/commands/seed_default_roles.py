@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
         # Define permissions: (permission_string, resource_type, description, is_sensitive)
         permissions = [
-            # Organisation permissions (6)
+            # Organisation permissions (8) - Added 2 for WP04
             (
                 "org.invite_users",
                 "org",
@@ -93,6 +93,12 @@ class Command(BaseCommand):
                 "organization.view_balance",
                 "organization",
                 "View organisation transaction balance",
+                False,
+            ),
+            (
+                "organization.view_routing_logs",
+                "organization",
+                "View notification routing decision logs for organisation",
                 False,
             ),
             # Project permissions (7)
