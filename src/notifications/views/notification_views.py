@@ -153,10 +153,32 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         """
         Optimize queries with select_related and prefetch_related.
 
+        ARCHITECTURAL NOTE (WP03):
+        B16 notifications use USER-SCOPED isolation, not org/project-scoped.
+
+        The Notification model only has a `recipient_user` ForeignKey - it does NOT
+        have `organization` or `project` ForeignKey fields. This architectural decision
+        means notifications are personal to individual users, not shared at the
+        organization or project level.
+
+        Tenant isolation strategy:
+        - In-app notifications: Filtered by `recipient_user=request.user`
+        - Users can ONLY see their own notifications (strict user-scoping)
+        - Staff/superuser bypass is intentional for admin operations
+
+        Why user-scoped (not org/project-scoped)?
+        1. Notifications represent personal delivery events (email sent, webhook fired)
+        2. No business requirement for shared/organization-wide notification viewing
+        3. Simpler data model aligns with notification service architecture
+        4. If org/project context is needed, it's stored in `metadata` JSONField
+
+        Security: User-scoping provides complete tenant isolation - users cannot
+        enumerate or access other users' notifications even if they share an organization.
+
+        Query optimizations:
         - select_related: type, type.retry_policy (1 JOIN)
         - prefetch_related: delivery_attempts (detail view only)
         - annotate: attempts_count (list view)
-        - Filter by user: Only show user's own in-app notifications unless admin
         """
         queryset = super().get_queryset()
 
