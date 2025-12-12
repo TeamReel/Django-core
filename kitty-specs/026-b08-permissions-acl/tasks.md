@@ -40,94 +40,94 @@ This security-focused refactor eliminates ACL bypass vulnerabilities across B11,
 
 ### Milestone 1: Backend Foundation (WP01)
 
-- [ ] **T001**: Create `src/permissions/audit.py` with `evaluate_permission()` function signature
-- [ ] **T002**: Implement B09 audit event emission logic with structured fields AND update B08 settings.AUDIT_BACKEND to use B09Backend as default (FR-004)
-- [ ] **T003**: Implement Django logging fallback for B09 unavailability
-- [ ] **T004**: Add type hints (User, str, Optional[Any], Optional[Dict]) and docstrings
-- [ ] **T005**: Write unit tests for evaluator (happy path, denied path, B09 unavailable)
-- [ ] **T006**: Achieve 90%+ test coverage for `audit.py` module
-- [ ] **T007**: Update existing B08 decorators (`@permission_required`) to call `evaluate_permission()`
-- [ ] **T008**: Update existing DRF permission classes to call `evaluate_permission()`
+- [x] **T001**: Create `src/permissions/audit.py` with `evaluate_permission()` function signature
+- [x] **T002**: Implement B09 audit event emission logic with structured fields AND update B08 settings.AUDIT_BACKEND to use B09Backend as default (FR-004)
+- [x] **T003**: Implement Django logging fallback for B09 unavailability
+- [x] **T004**: Add type hints (User, str, Optional[Any], Optional[Dict]) and docstrings
+- [x] **T005**: Write unit tests for evaluator (happy path, denied path, B09 unavailable)
+- [x] **T006**: Achieve 90%+ test coverage for `audit.py` module
+- [x] **T007**: Update existing B08 decorators (`@permission_required`) to call `evaluate_permission()`
+- [x] **T008**: Update existing DRF permission classes to call `evaluate_permission()`
 
 ### Milestone 2: API Enforcement (WP02-WP05)
 
 **WP02: B11 Transactions/Credits**
-- [ ] **T009**: Replace `AllowAny` with `HasOrganizationPermission` in `OrganizationBalanceView`
-- [ ] **T010**: Replace `AllowAny` with `HasProjectPermission` in `ProjectBalanceView`
-- [ ] **T011**: Add permission code `organization.view_balance` to B08 fixtures (if missing)
-- [ ] **T012**: Add permission code `project.view_balance` to B08 fixtures (if missing)
-- [ ] **T013**: Write integration tests for B11 (allowed/denied scenarios)
-- [ ] **T014**: Write security tests for B11 (wrong org/project bypass attempts)
+- [x] **T009**: Replace `AllowAny` with `HasOrganizationPermission` in `OrganizationBalanceView`
+- [x] **T010**: Replace `AllowAny` with `HasProjectPermission` in `ProjectBalanceView`
+- [x] **T011**: Add permission code `organization.view_balance` to B08 fixtures (if missing)
+- [x] **T012**: Add permission code `project.view_balance` to B08 fixtures (if missing)
+- [x] **T013**: Write integration tests for B11 (allowed/denied scenarios)
+- [x] **T014**: Write security tests for B11 (wrong org/project bypass attempts)
 
 **WP03: B16 Notifications**
-- [ ] **T015**: Add ACL check to `NotificationViewSet.list()` method
-- [ ] **T016**: Add ACL check to `NotificationViewSet.retrieve()` method
-- [ ] **T017**: Add permission code `notifications.view` to B08 fixtures (if missing)
-- [ ] **T018**: Write integration tests for B16 (allowed/denied scenarios)
-- [ ] **T019**: Write security tests for B16 (cross-org notification access attempts)
+- [x] **T015**: Add ACL check to `NotificationViewSet.list()` method
+- [x] **T016**: Add ACL check to `NotificationViewSet.retrieve()` method
+- [x] **T017**: Add permission code `notifications.view` to B08 fixtures (if missing)
+- [x] **T018**: Write integration tests for B16 (allowed/denied scenarios)
+- [x] **T019**: Write security tests for B16 (cross-org notification access attempts)
 
 **WP04: B17 Routing Service**
-- [ ] **T020**: Audit B17 routing service for direct database queries (identify all locations)
-- [ ] **T021**: Refactor B17 to use B06 organization service layer functions (or implement if missing per FR-008)
-- [ ] **T022**: Refactor B17 to use B07 project service layer functions (or implement if missing per FR-008)
-- [ ] **T023**: Verify B06/B07 service functions enforce ACL internally
-- [ ] **T024**: Write integration tests for B17 (verify ACL enforcement through service layer)
-- [ ] **T025**: Write security tests for B17 (attempt to access unauthorized projects/orgs)
+- [x] **T020**: Audit B17 routing service for direct database queries (identify all locations)
+- [x] **T021**: Refactor B17 to use B06 organization service layer functions (or implement if missing per FR-008)
+- [x] **T022**: Refactor B17 to use B07 project service layer functions (or implement if missing per FR-008)
+- [x] **T023**: Verify B06/B07 service functions enforce ACL internally
+- [x] **T024**: Write integration tests for B17 (verify ACL enforcement through service layer)
+- [x] **T025**: Write security tests for B17 (attempt to access unauthorized projects/orgs)
 
 **WP05: Settings APIs**
-- [ ] **T026**: Add ACL checks to settings API views (GET `/api/settings/{key}/`)
-- [ ] **T027**: Add ACL checks to settings API views (PUT `/api/settings/{key}/`)
-- [ ] **T028**: Add permission codes `settings.view` and `settings.edit` to B08 fixtures
-- [ ] **T029**: Write integration tests for settings APIs (org/project scoped scenarios)
-- [ ] **T030**: Write security tests for settings APIs (cross-scope access attempts)
+- [x] **T026**: Add ACL checks to settings API views (GET `/api/settings/{key}/`)
+- [x] **T027**: Add ACL checks to settings API views (PUT `/api/settings/{key}/`)
+- [x] **T028**: Add permission codes `settings.view` and `settings.edit` to B08 fixtures
+- [x] **T029**: Write integration tests for settings APIs (org/project scoped scenarios)
+- [x] **T030**: Write security tests for settings APIs (cross-scope access attempts)
 
 ### Milestone 3: 403 Standardization (WP06)
 
-- [ ] **T031**: Update `@django-core/api-client` error normalizer to detect 403 format (check for `permission` field)
-- [ ] **T032**: Implement legacy format normalization (transform to `{error, permission: "unknown", detail}`)
-- [ ] **T033**: Create `/api/permissions/current/` endpoint with hierarchical response serializer
-- [ ] **T034**: Add server-side caching (5-minute TTL) for permissions endpoint
-- [ ] **T035**: Update B11 endpoints to return structured 403 format
-- [ ] **T036**: Update B16 endpoints to return structured 403 format
-- [ ] **T037**: Update B17 endpoints to return structured 403 format (where applicable)
-- [ ] **T038**: Update settings endpoints to return structured 403 format
-- [ ] **T039**: Write integration tests for 403 format (end-to-end: API → api-client normalizer → frontend)
+- [x] **T031**: Update `@django-core/api-client` error normalizer to detect 403 format (check for `permission` field)
+- [x] **T032**: Implement legacy format normalization (transform to `{error, permission: "unknown", detail}`)
+- [x] **T033**: Create `/api/permissions/current/` endpoint with hierarchical response serializer
+- [x] **T034**: Add server-side caching (5-minute TTL) for permissions endpoint
+- [x] **T035**: Update B11 endpoints to return structured 403 format
+- [x] **T036**: Update B16 endpoints to return structured 403 format
+- [x] **T037**: Update B17 endpoints to return structured 403 format (where applicable)
+- [x] **T038**: Update settings endpoints to return structured 403 format
+- [x] **T039**: Write integration tests for 403 format (end-to-end: API → api-client normalizer → frontend)
 
 ### Milestone 4: Frontend Package (WP07-WP08)
 
 **WP07: Core Implementation**
-- [ ] **T040**: Scaffold `@django-core/permissions` package (`package.json`, `tsconfig.json`, `src/`, `tests/`)
-- [ ] **T041**: Create TypeScript types (`PermissionData`, `PermissionState`, `PermissionGateProps`, `ForbiddenError`)
-- [ ] **T042**: Implement `PermissionsProvider` component with F02 auth context integration
-- [ ] **T043**: Implement `PermissionsProvider` with F03 context switcher integration
-- [ ] **T044**: Implement context-aware cache with hybrid invalidation (per-context TTL, LRU eviction)
-- [ ] **T045**: Implement `usePermissions()` hook with hierarchical resolution
-- [ ] **T046**: Implement `PermissionGate` component with `mode="hide"` (default)
-- [ ] **T047**: Implement `PermissionGate` component with `mode="disable"` (clone children, inject disabled prop)
-- [ ] **T048**: Implement `checkPermission()` standalone utility (framework-agnostic)
+- [x] **T040**: Scaffold `@django-core/permissions` package (`package.json`, `tsconfig.json`, `src/`, `tests/`)
+- [x] **T041**: Create TypeScript types (`PermissionData`, `PermissionState`, `PermissionGateProps`, `ForbiddenError`)
+- [x] **T042**: Implement `PermissionsProvider` component with F02 auth context integration
+- [x] **T043**: Implement `PermissionsProvider` with F03 context switcher integration
+- [x] **T044**: Implement context-aware cache with hybrid invalidation (per-context TTL, LRU eviction)
+- [x] **T045**: Implement `usePermissions()` hook with hierarchical resolution
+- [x] **T046**: Implement `PermissionGate` component with `mode="hide"` (default)
+- [x] **T047**: Implement `PermissionGate` component with `mode="disable"` (clone children, inject disabled prop)
+- [x] **T048**: Implement `checkPermission()` standalone utility (framework-agnostic)
 
 **WP08: Testing & Integration**
-- [ ] **T049**: Write unit tests for `checkPermission()` utility (all scope combinations)
-- [ ] **T050**: Write unit tests for cache module (TTL, LRU eviction, invalidation)
-- [ ] **T051**: Write component tests for `PermissionGate` (hide mode, disable mode, loading state)
-- [ ] **T052**: Write hook tests for `usePermissions()` (hierarchical resolution, refetch)
-- [ ] **T053**: Write integration tests for `PermissionsProvider` (with mocked F02/F03 contexts)
-- [ ] **T054**: Achieve 85%+ test coverage for frontend package
+- [x] **T049**: Write unit tests for `checkPermission()` utility (all scope combinations)
+- [x] **T050**: Write unit tests for cache module (TTL, LRU eviction, invalidation)
+- [x] **T051**: Write component tests for `PermissionGate` (hide mode, disable mode, loading state)
+- [x] **T052**: Write hook tests for `usePermissions()` (hierarchical resolution, refetch)
+- [x] **T053**: Write integration tests for `PermissionsProvider` (with mocked F02/F03 contexts)
+- [x] **T054**: Achieve 85%+ test coverage for frontend package
 
 ### Milestone 5: Documentation & Review (WP09-WP10)
 
 **WP09: Documentation**
-- [ ] **T055**: Write "Adding Permission Checks to New Features" guide (quickstart.md - already created, validate with new developer test per SC-007)
-- [ ] **T056**: Update B08 README with `evaluate_permission()` usage and extension points
-- [ ] **T057**: Update B09 README with B08 integration pattern and audit event format
-- [ ] **T058**: Write `@django-core/permissions` package README with usage examples
-- [ ] **T059**: Write 403 response format migration notes (document timeline, dual format support per FR-012)
+- [x] **T055**: Write "Adding Permission Checks to New Features" guide (quickstart.md - already created, validate with new developer test per SC-007)
+- [x] **T056**: Update B08 README with `evaluate_permission()` usage and extension points
+- [x] **T057**: Update B09 README with B08 integration pattern and audit event format
+- [x] **T058**: Write `@django-core/permissions` package README with usage examples
+- [x] **T059**: Write 403 response format migration notes (document timeline, dual format support per FR-012)
 
 **WP10: Security Review & CI**
-- [ ] **T060**: Conduct manual security review (pen test checklist: bypass attempts, error message review)
-- [ ] **T061**: Run full backend test suite (pytest, verify 90%+ coverage for B08 audit.py)
-- [ ] **T062**: Run full frontend test suite (Jest, verify 85%+ coverage for permissions package)
-- [ ] **T063**: Verify all CI checks pass (Black, Ruff, mypy, pytest, Jest, no new violations)
+- [x] **T060**: Conduct manual security review (pen test checklist: bypass attempts, error message review)
+- [x] **T061**: Run full backend test suite (pytest, verify 90%+ coverage for B08 audit.py)
+- [x] **T062**: Run full frontend test suite (Jest, verify 85%+ coverage for permissions package)
+- [x] **T063**: Verify all CI checks pass (Black, Ruff, mypy, pytest, Jest, no new violations)
 
 ---
 
