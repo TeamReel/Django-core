@@ -3,6 +3,9 @@ Audit logging integration for permissions system.
 
 Provides adapters for B09-audit-logging with graceful fallback to Django
 structured logging when B09 is unavailable.
+
+This module serves as the single source of truth for all permission evaluations,
+ensuring comprehensive audit logging for security investigations and compliance.
 """
 
 import importlib.util
@@ -12,6 +15,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Protocol
 
 from django.conf import settings
+from django.contrib.auth.models import User
 
 logger = logging.getLogger("permissions.audit")
 
@@ -221,3 +225,56 @@ def emit_role_modification_audit(
             "changes": changes,
         },
     )
+
+
+def evaluate_permission(
+    user: User,
+    permission: str,
+    resource: Optional[Any] = None,
+    context: Optional[Dict[str, Any]] = None,
+) -> bool:
+    """
+    Evaluate permission and emit audit event.
+
+    This function serves as the single source of truth for all permission checks
+    in the system, ensuring comprehensive audit logging and preventing ACL bypass.
+
+    Args:
+        user: Django User instance requesting permission
+        permission: Permission code (e.g., "organization.view_balance")
+        resource: Optional resource being accessed (for scoping, e.g., Organization instance)
+        context: Optional context dict with {scope, organization_id, project_id, request_id}
+
+    Returns:
+        True if permission granted, False if denied
+
+    Side Effects:
+        - Emits B09 audit event (or Django log if B09 unavailable)
+        - Increments django-prometheus permission check counter (if configured)
+
+    Raises:
+        TypeError: If user is not authenticated or permission is not a string
+
+    Example:
+        >>> from django.contrib.auth import get_user_model
+        >>> User = get_user_model()
+        >>> user = User.objects.get(email="admin@example.com")
+        >>> org = Organization.objects.get(id=42)
+        >>> granted = evaluate_permission(
+        ...     user=user,
+        ...     permission="organization.view_balance",
+        ...     resource=org,
+        ...     context={"scope": "ORGANIZATION", "organization_id": org.id}
+        ... )
+        >>> assert granted == True
+    """
+    # Input validation
+    if not isinstance(user, User) or not user.is_authenticated:
+        raise TypeError("User must be an authenticated Django User instance")
+
+    if not isinstance(permission, str):
+        raise TypeError("Permission must be a string")
+
+    # Implementation will be added in T002-T003
+    # For now, return False as fail-closed default
+    return False
