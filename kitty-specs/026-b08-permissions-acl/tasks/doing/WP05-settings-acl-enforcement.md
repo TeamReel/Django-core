@@ -1,13 +1,15 @@
 ---
 work_package_id: WP05
 title: API Enforcement - Settings APIs
-lane: planned
+lane: "doing"
 subtasks:
   - T026
   - T027
   - T028
   - T029
   - T030
+agent: "claude"
+shell_pid: "26336"
 history:
   - date: 2025-12-12
     action: created
@@ -410,3 +412,7 @@ def test_org_admin_cannot_edit_global_settings(self):
 ## Next Work Package
 
 After WP05 complete, proceed to **WP06 (403 Standardization)** to implement structured error responses and permissions endpoint.
+
+## Activity Log
+
+- 2025-12-12T14:32:53Z – claude – shell_pid=26336 – lane=doing – Started WP05 implementation - Settings ACL enforcement
