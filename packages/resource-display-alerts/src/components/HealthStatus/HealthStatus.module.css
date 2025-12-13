@@ -1,0 +1,86 @@
+/**
+ * HealthStatus styles
+ * Uses F01 design system tokens for colors, spacing, and typography
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* F01 spacing-2 */
+  padding: 12px; /* F01 spacing-3 */
+  border: 1px solid var(--color-neutral-200, #e5e7eb);
+  border-radius: 4px; /* F01 border-radius-sm */
+  background-color: var(--color-white, #ffffff);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* F01 spacing-2 */
+}
+
+.icon {
+  font-size: 1.25rem; /* 20px */
+  font-weight: bold;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.name {
+  font-size: 14px; /* F01 font-size-sm */
+  font-weight: 500; /* F01 font-weight-medium */
+  color: var(--color-neutral-900, #111827);
+  flex-grow: 1;
+}
+
+.status {
+  font-size: 13px; /* F01 font-size-xs */
+  font-weight: 600; /* F01 font-weight-semibold */
+}
+
+.details {
+  font-size: 13px; /* F01 font-size-xs */
+  color: var(--color-neutral-600, #6b7280);
+  padding-left: calc(1.25rem + 8px); /* Align with text, icon width + gap */
+}
+
+.timestamp {
+  font-size: 12px; /* F01 font-size-xxs */
+  color: var(--color-neutral-500, #9ca3af);
+  padding-left: calc(1.25rem + 8px);
+}
+
+/* Size variants */
+.small {
+  padding: 8px; /* F01 spacing-2 */
+  gap: 4px; /* F01 spacing-1 */
+}
+
+.small .icon {
+  font-size: 1rem; /* 16px */
+}
+
+.small .name {
+  font-size: 13px;
+}
+
+.small .status {
+  font-size: 12px;
+}
+
+.large {
+  padding: 16px; /* F01 spacing-4 */
+  gap: 12px; /* F01 spacing-3 */
+}
+
+.large .icon {
+  font-size: 1.5rem; /* 24px */
+}
+
+.large .name {
+  font-size: 16px;
+}
+
+.large .status {
+  font-size: 14px;
+}

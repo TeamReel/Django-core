@@ -5,6 +5,12 @@ export type { AlertProps } from './components/Alert';
 export { ResourceUsageBar } from './components/ResourceUsageBar';
 export type { ResourceUsageBarProps } from './components/ResourceUsageBar';
 
+export { HealthStatus } from './components/HealthStatus';
+export type { HealthStatusProps, HealthStatusType } from './components/HealthStatus';
+
+export { Badge } from './components/Badge';
+export type { BadgeProps } from './components/Badge';
+
 // Hook exports
 export { useAlertDismissal } from './hooks/useAlertDismissal';
 export type {
