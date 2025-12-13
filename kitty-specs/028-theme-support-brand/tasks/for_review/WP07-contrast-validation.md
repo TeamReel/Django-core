@@ -12,7 +12,7 @@ subtasks:
   - "T064"
 title: "Contrast Validation & Accessibility"
 phase: "Phase 2 - Advanced Features"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "33848"
@@ -628,3 +628,4 @@ history:
 
 - 2025-12-13T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-13T15:13:49Z – claude – shell_pid=33848 – lane=doing – Started implementation
+- 2025-12-13T17:20:41Z – claude – shell_pid=33848 – lane=for_review – Ready for review. T060 deferred, 2 test fixes needed for border contrast.
