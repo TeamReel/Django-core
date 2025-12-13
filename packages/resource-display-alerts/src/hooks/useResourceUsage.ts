@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createApiClient } from '@django-core/api-client';
-import type { CreditUsageResponse } from '../../kitty-specs/027-resource-display-alerts/contracts/B11-billing-credits';
+import type { CreditUsageResponse } from '../types/contracts/B11-billing-credits';
 
 // Create singleton API client instance
 const apiClient = createApiClient();

@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createApiClient } from '@django-core/api-client';
-import type { HealthStatusResponse } from '../../kitty-specs/027-resource-display-alerts/contracts/B18-health-status';
+import type { HealthStatusResponse } from '../types/contracts/B18-health-status';
 
 // Create singleton API client instance
 const apiClient = createApiClient();
