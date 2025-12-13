@@ -1,12 +1,12 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "system"
 ---
 # WP06: Optional Data Hooks & TypeScript Contracts
 
 ---
 **work_package_id**: WP06
-**status**: planned
+**status**: for_review
 **priority**: P2 (Optional feature, enhances integration)
 **subtasks**: [T034, T035, T036, T037, T038]
 **dependencies**: WP01 (package scaffold), contracts already defined in Phase 1
@@ -797,3 +797,15 @@ worker.start();
 ## Activity Log
 
 - 2025-12-13T08:30:09Z – system – shell_pid= – lane=doing – Started implementation of data hooks
+- 2025-12-13T09:42:56Z – system – shell_pid= – lane=doing – Completed implementation
+  - Created useResourceUsage hook (130 lines, polling B11 credit data)
+  - Created useHealthStatus hook (132 lines, polling B18 health data)
+  - Implemented CSRF-protected API calls via createApiClient() singleton
+  - Added comprehensive error handling (try/catch, Error normalization, console logging)
+  - Implemented loading states and refetch() function
+  - Created useResourceUsage.test.tsx (200+ lines, 14 test cases)
+  - Created useHealthStatus.test.tsx (220+ lines, 15 test cases)
+  - All 40 tests passing (29 hook tests + 11 existing useAlertDismissal tests)
+  - Fixed fake timers + waitFor compatibility issues
+  - Updated index.ts with hook exports and TypeScript types
+  - Minor act() warnings expected for async state updates (non-blocking)

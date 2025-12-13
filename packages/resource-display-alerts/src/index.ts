@@ -31,9 +31,17 @@ export type {
   UseAlertDismissalResult,
 } from './hooks/useAlertDismissal';
 
-// Hook exports (will be populated in WP06)
-// export { useResourceUsage } from './hooks/useResourceUsage';
-// export { useHealthStatus } from './hooks/useHealthStatus';
+export { useResourceUsage } from './hooks/useResourceUsage';
+export type {
+  UseResourceUsageOptions,
+  UseResourceUsageResult,
+} from './hooks/useResourceUsage';
+
+export { useHealthStatus } from './hooks/useHealthStatus';
+export type {
+  UseHealthStatusOptions,
+  UseHealthStatusResult,
+} from './hooks/useHealthStatus';
 
 // Utility exports
 export {
