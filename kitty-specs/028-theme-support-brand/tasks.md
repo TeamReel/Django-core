@@ -302,18 +302,18 @@
 **Goal**: Build optional ThemeToggle UI component with full accessibility support
 **Priority**: P1 (User Story 1 - theme selection UI)
 **Independent Test**: ThemeToggle renders, switches themes, meets WCAG 2.1 AA, keyboard accessible
-**Prompt**: `kitty-specs/028-theme-support-brand/tasks/planned/WP06-theme-toggle.md`
+**Prompt**: `kitty-specs/028-theme-support-brand/tasks/done/WP06-theme-toggle.md` ✅
 
 ### Included Subtasks
-- [ ] **T047** Create ThemeToggle component (components/ThemeToggle.tsx)
-- [ ] **T048** Implement accessibility (ARIA labels, keyboard navigation, focus management)
-- [ ] **T049** Add reduced-motion transitions
-- [ ] **T050** Support configuration props (showLabel, position, variants)
-- [ ] **T051** Style using F01 components (Button from design-system)
-- [ ] **T052** Write unit tests (user interactions, accessibility)
-- [ ] **T053** Write accessibility tests (axe-core integration)
-- [ ] **T054** Add Storybook stories (all configurations, keyboard demo)
-- [ ] **T055** Run Chromatic visual regression tests
+- [x] **T047** Create ThemeToggle component (components/ThemeToggle.tsx)
+- [x] **T048** Implement accessibility (ARIA labels, keyboard navigation, focus management)
+- [x] **T049** Add reduced-motion transitions
+- [x] **T050** Support configuration props (showLabel, position, variants)
+- [x] **T051** Style using F01 components (Button from design-system)
+- [x] **T052** Write unit tests (user interactions, accessibility)
+- [x] **T053** Write accessibility tests (axe-core integration)
+- [x] **T054** Add Storybook stories (all configurations, keyboard demo)
+- [x] **T055** Run Chromatic visual regression tests
 
 ### Constitutional Alignment
 - **Principle IV**: Accessibility tests with axe-core (WCAG 2.1 AA)
