@@ -117,7 +117,7 @@ As a user visiting a server-rendered page, I want to see the correct theme immed
 - **FR-001**: System MUST provide a `ThemeProvider` component that establishes theme context for all descendant components
 - **FR-002**: System MUST provide a `useTheme()` hook that returns current theme state (mode, brand) and theme manipulation functions
 - **FR-003**: System MUST define semantic theme tokens organized by category: background (canvas, surface, overlay), text (primary, secondary, muted, disabled), border (subtle, default, strong), state (success, warning, error, info), and accent (primary, secondary)
-- **FR-004**: System MUST support at minimum two theme modes: "light" and "dark"
+- **FR-004**: System MUST support at minimum two modes: "light" and "dark"
 - **FR-005**: System MUST support brand variants that can be applied independently of mode (e.g., `{mode: 'dark', brand: 'brandX'}`)
 
 #### Theme Token Architecture
@@ -125,7 +125,7 @@ As a user visiting a server-rendered page, I want to see the correct theme immed
 - **FR-006**: Semantic theme tokens MUST map to F01 primitive tokens (e.g., `text.primary` → `color.gray.900` in light mode, `color.gray.50` in dark mode)
 - **FR-007**: Brand variants MUST support hierarchical inheritance by default, overriding only accent/brand-specific tokens while inheriting base mode tokens
 - **FR-008**: Brand variants MUST support full token override as an escape hatch for advanced customization scenarios
-- **FR-009**: Theme token resolution MUST merge brand tokens onto mode tokens in a predictable order: base primitives → mode tokens → brand tokens → brand overrides
+- **FR-009**: Token resolution MUST merge brand tokens onto mode tokens in a predictable order: base primitives → mode tokens → brand tokens → brand overrides
 - **FR-010**: System MUST expose theme tokens as CSS custom properties (e.g., `--theme-background-surface`) for use in component styles
 
 #### Theme Persistence and Resolution
@@ -173,6 +173,7 @@ As a user visiting a server-rendered page, I want to see the correct theme immed
   - Serialized to/from cookie as JSON (e.g., `{"mode":"dark","brand":"default"}`)
 
 - **Theme Token Map**: Defines the complete set of semantic tokens for a specific theme (mode × brand combination)
+  - TypeScript type automatically generated from vanilla-extract theme contract (see data-model.md for complete structure definition)
   - `background`: Object with `canvas`, `surface`, `overlay` properties mapping to F01 color primitives
   - `text`: Object with `primary`, `secondary`, `muted`, `disabled` properties
   - `border`: Object with `subtle`, `default`, `strong` properties
