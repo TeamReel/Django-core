@@ -157,13 +157,13 @@ export function ThemeProvider({
   );
 
   /**
-   * Toggle between light and dark modes.
-   * If current mode is 'system', switches to explicit light/dark based on resolved value.
+   * Toggle between light, dark, and system modes in cycle.
+   * Cycles through: light → dark → system → light
    */
   const toggleMode = useCallback(() => {
-    const newMode = resolvedMode === 'light' ? 'dark' : 'light';
-    setTheme({ mode: newMode });
-  }, [resolvedMode, setTheme]);
+    const nextMode = mode === 'light' ? 'dark' : mode === 'dark' ? 'system' : 'light';
+    setTheme({ mode: nextMode });
+  }, [mode, setTheme]);
 
   const contextValue = useMemo<ThemeContextValue>(
     () => ({
