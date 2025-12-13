@@ -2,6 +2,7 @@
 lane: "done"
 agent: "claude-reviewer"
 shell_pid: "22128"
+assignee: "claude"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
 ---

@@ -50,14 +50,14 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 **Independent Test**: `pnpm build` succeeds and generates dist/ with type definitions.
 
 **Included Subtasks**:
-- [ ] T001: Create package directory structure (`packages/resource-display-alerts/`)
-- [ ] T002: Set up package.json with dependencies (React 18, F01, api-client)
-- [ ] T003: Configure Vite for library mode with ESM/CJS outputs
-- [ ] T004: Set up TypeScript (tsconfig.json with strict mode)
-- [ ] T005: Configure Vitest + React Testing Library
-- [ ] T006: Set up Storybook configuration (reuse F01 shared config)
-- [ ] T007: Create src/index.ts with barrel exports
-- [ ] T008: Add package to monorepo workspace (pnpm-workspace.yaml)
+- [x] T001: Create package directory structure (`packages/resource-display-alerts/`)
+- [x] T002: Set up package.json with dependencies (React 18, F01, api-client)
+- [x] T003: Configure Vite for library mode with ESM/CJS outputs
+- [x] T004: Set up TypeScript (tsconfig.json with strict mode)
+- [x] T005: Configure Vitest + React Testing Library
+- [x] T006: Set up Storybook configuration (reuse F01 shared config)
+- [x] T007: Create src/index.ts with barrel exports
+- [x] T008: Add package to monorepo workspace (pnpm-workspace.yaml)
 
 **Implementation Sketch**:
 1. Create directory: `packages/resource-display-alerts/`
@@ -92,12 +92,12 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 **Independent Test**: Render Alert, click dismiss, verify it disappears and preference is saved to localStorage. Reload page, verify alert stays hidden.
 
 **Included Subtasks**:
-- [ ] T009: Re-export F01 Alert component from F05 package
-- [ ] T010: Create localStorage utility module (getItem/setItem/removeItem with error handling)
-- [ ] T011: Implement useAlertDismissal hook (isDismissed, dismiss, dismissForever, reset)
-- [ ] T012: Write unit tests for localStorage utilities (100% coverage)
-- [ ] T013: Write integration test for alert dismissal flow
-- [ ] T014: Create Storybook stories (dismissible, never show again, localStorage demo)
+- [x] T009: Re-export F01 Alert component from F05 package
+- [x] T010: Create localStorage utility module (getItem/setItem/removeItem with error handling)
+- [x] T011: Implement useAlertDismissal hook (isDismissed, dismiss, dismissForever, reset)
+- [x] T012: Write unit tests for localStorage utilities (100% coverage)
+- [x] T013: Write integration test for alert dismissal flow
+- [x] T014: Create Storybook stories (dismissible, never show again, localStorage demo)
 
 **Implementation Sketch**:
 1. Create `src/components/Alert/index.ts` that re-exports F01's Alert
@@ -134,12 +134,12 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 **Independent Test**: Render ResourceUsageBar with value=85, max=100, verify warning-level color and "85%" label displayed.
 
 **Included Subtasks**:
-- [ ] T015: Create ResourceUsageBar component with props interface
-- [ ] T016: Implement percentage calculation logic (component accepts severity as explicit prop; optional calculateSeverityFromUsage helper utility for convenience)
-- [ ] T017: Style with F01 tokens (colors from severity, spacingVars for padding)
-- [ ] T018: Add ARIA attributes (aria-valuenow, aria-valuemin, aria-valuemax, role="progressbar")
-- [ ] T019: Write unit tests (percentage calc, color mapping, edge cases)
-- [ ] T020: Create Storybook stories (low/medium/high usage, edge cases: 0%, 100%, >100%)
+- [x] T015: Create ResourceUsageBar component with props interface
+- [x] T016: Implement percentage calculation logic (component accepts severity as explicit prop; optional calculateSeverityFromUsage helper utility for convenience)
+- [x] T017: Style with F01 tokens (colors from severity, spacingVars for padding)
+- [x] T018: Add ARIA attributes (aria-valuenow, aria-valuemin, aria-valuemax, role="progressbar")
+- [x] T019: Write unit tests (percentage calc, color mapping, edge cases)
+- [x] T020: Create Storybook stories (low/medium/high usage, edge cases: 0%, 100%, >100%)
 
 **Implementation Sketch**:
 1. Create `src/components/ResourceUsageBar/ResourceUsageBar.tsx`
@@ -174,12 +174,12 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 **Independent Test**: Render HealthStatus with status="degraded", verify yellow icon and "Degraded" label appear.
 
 **Included Subtasks**:
-- [ ] T021: Create HealthStatus component with status enum (healthy/degraded/unhealthy/unknown)
-- [ ] T022: Map status to F01 color tokens (success/warning/error/neutral)
-- [ ] T023: Add status icons (checkmark, warning, error, question mark)
-- [ ] T024: Create Badge component (count display with optional color variant)
-- [ ] T025: Write unit tests for both components
-- [ ] T026: Create Storybook stories (all health states, badge variants)
+- [x] T021: Create HealthStatus component with status enum (healthy/degraded/unhealthy/unknown)
+- [x] T022: Map status to F01 color tokens (success/warning/error/neutral)
+- [x] T023: Add status icons (checkmark, warning, error, question mark)
+- [x] T024: Create Badge component (count display with optional color variant)
+- [x] T025: Write unit tests for both components
+- [x] T026: Create Storybook stories (all health states, badge variants)
 
 **Implementation Sketch**:
 1. Create `src/components/HealthStatus/HealthStatus.tsx`
@@ -214,13 +214,13 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 **Independent Test**: Render ResourceCard with Header/Body/Footer children, verify layout structure and compound component context works.
 
 **Included Subtasks**:
-- [ ] T027: Create ResourceCard compound component with React.createContext
-- [ ] T028: Implement ResourceCard.Header/Body/Footer subcomponents
-- [ ] T029: Style with F01 spacing and Card tokens
-- [ ] T030: Create AlertStack component (limit to 5 visible, auto-spacing)
-- [ ] T031: Implement z-index management for stacked alerts
-- [ ] T032: Write unit tests for compound component pattern + AlertStack
-- [ ] T033: Create Storybook stories (composition patterns, stacked alerts)
+- [x] T027: Create ResourceCard compound component with React.createContext
+- [x] T028: Implement ResourceCard.Header/Body/Footer subcomponents
+- [x] T029: Style with F01 spacing and Card tokens
+- [x] T030: Create AlertStack component (limit to 5 visible, auto-spacing)
+- [x] T031: Implement z-index management for stacked alerts
+- [x] T032: Write unit tests for compound component pattern + AlertStack
+- [x] T033: Create Storybook stories (composition patterns, stacked alerts)
 
 **Implementation Sketch**:
 1. Create `src/components/ResourceCard/ResourceCard.tsx`:
@@ -255,12 +255,12 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 **Independent Test**: Call useResourceUsage with mock API endpoint, verify polling occurs at specified interval and data updates component props.
 
 **Included Subtasks**:
-- [ ] T034: Implement useResourceUsage hook (polling with configurable interval, default: 30000ms/30s)
-- [ ] T035: Implement useHealthStatus hook (polling with configurable interval, default: 30000ms/30s)
-- [ ] T036: Use @django-core/api-client for CSRF-protected fetches
-- [ ] T037: Add error handling and loading states to hooks
-- [ ] T038: Write unit tests with mocked fetch/timers
-- [ ] T039: Create Storybook stories demonstrating hook usage with mock API
+- [x] T034: Implement useResourceUsage hook (polling with configurable interval, default: 30000ms/30s)
+- [x] T035: Implement useHealthStatus hook (polling with configurable interval, default: 30000ms/30s)
+- [x] T036: Use @django-core/api-client for CSRF-protected fetches
+- [x] T037: Add error handling and loading states to hooks
+- [x] T038: Write unit tests with mocked fetch/timers
+- [x] T039: Create Storybook stories demonstrating hook usage with mock API
 
 **Implementation Sketch**:
 1. Create `src/hooks/useResourceUsage.ts`:
@@ -297,13 +297,13 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 **Independent Test**: Run axe-core on all Storybook stories, verify zero critical violations. Test with screen reader, verify ARIA announcements work.
 
 **Included Subtasks**:
-- [ ] T040: Write comprehensive package README.md (installation, usage, API reference)
-- [ ] T041: Create Storybook "Getting Started" documentation page
-- [ ] T042: Add composition pattern stories (ResourceCard with multiple components)
-- [ ] T043: Run axe-core accessibility audits on all components
-- [ ] T044: Add ARIA labels, live regions, keyboard navigation where missing
-- [ ] T045: Verify prefers-reduced-motion CSS works (test animations disable)
-- [ ] T046: Create troubleshooting guide (localStorage issues, TypeScript errors)
+- [x] T040: Write comprehensive package README.md (installation, usage, API reference)
+- [x] T041: Create Storybook "Getting Started" documentation page
+- [x] T042: Add composition pattern stories (ResourceCard with multiple components)
+- [x] T043: Run axe-core accessibility audits on all components
+- [x] T044: Add ARIA labels, live regions, keyboard navigation where missing
+- [x] T045: Verify prefers-reduced-motion CSS works (test animations disable)
+- [x] T046: Create troubleshooting guide (localStorage issues, TypeScript errors)
 
 **Implementation Sketch**:
 1. Write README.md covering:
@@ -376,35 +376,35 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 
 ### Pre-Implementation
 - [x] All Phases 0-2 complete (research, contracts, agent context)
-- [ ] Work package prompts generated (see tasks/planned/)
-- [ ] Team assigned to work packages
+- [x] Work package prompts generated (see tasks/planned/)
+- [x] Team assigned to work packages
 
 ### Implementation Gates
-- [ ] WP01 complete → pnpm build succeeds, tests run
-- [ ] WP02-WP04 complete → Core components render + pass tests
-- [ ] WP05 complete → Compound components work in Storybook
-- [ ] WP06 complete → Hooks fetch data correctly
+- [x] WP01 complete → pnpm build succeeds, tests run
+- [x] WP02-WP04 complete → Core components render + pass tests
+- [x] WP05 complete → Compound components work in Storybook
+- [x] WP06 complete → Hooks fetch data correctly
 System.Func`2[System.Text.RegularExpressions.Match,System.String]
 
 ### Quality Gates
-- [ ] All unit tests pass (>90% coverage)
-- [ ] All Chromatic snapshots approved
-- [ ] Zero critical axe-core violations
-- [ ] Bundle size <20KB gzipped
-- [ ] TypeScript compiles with zero errors (strict mode)
-- [ ] All ESLint + Prettier checks pass
+- [x] All unit tests pass (>90% coverage)
+- [x] All Chromatic snapshots approved
+- [x] Zero critical axe-core violations
+- [x] Bundle size <20KB gzipped
+- [x] TypeScript compiles with zero errors (strict mode)
+- [x] All ESLint + Prettier checks pass
 
 ### Documentation Gates
-- [ ] README.md complete with usage examples
-- [ ] All Storybook stories published
-- [ ] quickstart.md validated against actual package
-- [ ] Integration guide for B11/B18 verified
+- [x] README.md complete with usage examples
+- [x] All Storybook stories published
+- [x] quickstart.md validated against actual package
+- [x] Integration guide for B11/B18 verified
 
 ### Deployment
-- [ ] Package published to npm (or internal registry)
-- [ ] Version tagged in git (e.g., v1.0.0)
-- [ ] CHANGELOG.md updated
-- [ ] Documentation site updated (if applicable)
+- [x] Package published to npm (or internal registry)
+- [x] Version tagged in git (e.g., v1.0.0)
+- [x] CHANGELOG.md updated
+- [x] Documentation site updated (if applicable)
 
 ---
 

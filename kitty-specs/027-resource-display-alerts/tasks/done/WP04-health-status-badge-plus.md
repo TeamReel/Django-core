@@ -2,6 +2,7 @@
 lane: "done"
 agent: "claude-reviewer"
 shell_pid: "review-session-2025-12-13"
+assignee: "claude"
 review_status: "approved with minor notes"
 reviewed_by: "claude-reviewer"
 reviewed_at: "2025-12-13T09:05:00Z"
