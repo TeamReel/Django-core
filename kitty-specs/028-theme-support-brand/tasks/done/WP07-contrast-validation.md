@@ -13,7 +13,7 @@ subtasks:
 title: "Contrast Validation & Accessibility"
 phase: "Phase 2 - Advanced Features"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude-reviewer"
 shell_pid: "33848"
 review_status: "approved with minor notes"

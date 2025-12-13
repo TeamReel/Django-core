@@ -85,14 +85,14 @@
 **Prompt**: `kitty-specs/028-theme-support-brand/tasks/planned/WP02-theme-contracts.md`
 
 ### Included Subtasks
-- [ ] **T012** Define ThemeConfiguration and ThemeTokenMap TypeScript types (types/theme.ts)
-- [ ] **T013** Create theme contract (themes/contract.css.ts) with semantic token structure
-- [ ] **T014** [P] Implement light theme (themes/light.css.ts) mapping to F01 primitives
-- [ ] **T015** [P] Implement dark theme (themes/dark.css.ts) mapping to F01 primitives
-- [ ] **T016** Create brand inheritance helper utilities (themes/brand-helpers.ts)
-- [ ] **T017** Export themeVars for component consumption (src/index.ts)
-- [ ] **T018** Write unit tests for brand-helpers.ts (inheritance, merging, type safety)
-- [ ] **T019** Add Storybook story demonstrating all tokens in light/dark modes
+- [x] **T012** Define ThemeConfiguration and ThemeTokenMap TypeScript types (types/theme.ts)
+- [x] **T013** Create theme contract (themes/contract.css.ts) with semantic token structure
+- [x] **T014** [P] Implement light theme (themes/light.css.ts) mapping to F01 primitives
+- [x] **T015** [P] Implement dark theme (themes/dark.css.ts) mapping to F01 primitives
+- [x] **T016** Create brand inheritance helper utilities (themes/brand-helpers.ts)
+- [x] **T017** Export themeVars for component consumption (src/index.ts)
+- [x] **T018** Write unit tests for brand-helpers.ts (inheritance, merging, type safety)
+- [x] **T019** Add Storybook story demonstrating all tokens in light/dark modes
 
 ### Constitutional Alignment
 - **Principle II**: Stable APIs (theme contract), minimal dependencies (F01 only)
@@ -359,15 +359,15 @@
 **Prompt**: `kitty-specs/028-theme-support-brand/tasks/planned/WP07-contrast-validation.md`
 
 ### Included Subtasks
-- [ ] **T056** Implement WCAG contrast calculation (validation/wcag-utils.ts)
-- [ ] **T057** Create validateThemeContrast() function (validation/validateContrast.ts)
-- [ ] **T058** Define semantic token pair rules (which combinations to check)
-- [ ] **T059** Implement CI validation script (scripts/validate-themes.ts)
-- [ ] **T060** Add development-mode console warnings in ThemeProvider
-- [ ] **T061** Write unit tests for contrast calculations (edge cases, color formats)
-- [ ] **T062** Write integration tests (validate light/dark themes pass)
-- [ ] **T063** Add CI workflow step for theme validation
-- [ ] **T064** Document validation utility usage for products in README
+- [x] **T056** Implement WCAG contrast calculation (validation/wcag-utils.ts)
+- [x] **T057** Create validateThemeContrast() function (validation/validateContrast.ts)
+- [x] **T058** Define semantic token pair rules (which combinations to check)
+- [x] **T059** Implement CI validation script (scripts/validate-themes.ts)
+- [x] **T060** Add development-mode console warnings in ThemeProvider
+- [x] **T061** Write unit tests for contrast calculations (edge cases, color formats)
+- [x] **T062** Write integration tests (validate light/dark themes pass)
+- [x] **T063** Add CI workflow step for theme validation
+- [x] **T064** Document validation utility usage for products in README
 
 ### Constitutional Alignment
 - **Principle IV**: Comprehensive testing (contrast edge cases)

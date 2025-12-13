@@ -12,7 +12,7 @@ subtasks:
 title: "SSR Support & Zero-Flash Initialization"
 phase: "Phase 2 - Advanced Features"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude-reviewer"
 shell_pid: "24476"
 review_status: "approved without changes"

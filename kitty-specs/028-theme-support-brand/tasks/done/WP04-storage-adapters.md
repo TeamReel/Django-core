@@ -14,7 +14,7 @@ subtasks:
 title: "Storage Adapters (Cookie, LocalStorage, B12)"
 phase: "Phase 1 - Core Theme System"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude-reviewer"
 shell_pid: "19776"
 review_status: "approved without changes"

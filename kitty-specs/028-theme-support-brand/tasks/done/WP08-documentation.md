@@ -16,7 +16,7 @@ subtasks:
 title: "Documentation & Examples"
 phase: "Phase 3 - Polish & Release"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "claude-code-reviewer"
 shell_pid: "$PID"
 review_status: "approved without changes"
