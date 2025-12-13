@@ -52,11 +52,74 @@ Quick reminders:
 Python 3.12+: Follow standard conventions
 
 ## Recent Changes
+- 028-theme-support-brand: Added TypeScript 5.x, React 18.x, vanilla-extract (@vanilla-extract/css), Vitest + React Testing Library, Chromatic
 - 025-notifications-hub-ui: Added TypeScript 5.x, React 18.x
 - 024-multi-tenancy-context: Added TypeScript 5.x + React 18.x
-- 022-frontend-design-system: Added TypeScript 5.x, React 18.x + vanilla-extract 1.x, Vite 5.x, Storybook 8.x, Chromatic
 
 <!-- MANUAL ADDITIONS START -->
+
+## F07: Theme Support & Brand Variants (028-theme-support-brand)
+
+**New Package**: `@django-core/theme-system`
+
+**Core Technologies**:
+- vanilla-extract (theme contracts, zero-runtime CSS custom properties)
+- TypeScript 5.x strict mode (100% type coverage for public APIs)
+- React 18.x (ThemeProvider context, hooks)
+- Vitest + React Testing Library (unit/integration tests)
+- Chromatic (visual regression testing)
+- axe-core (accessibility validation)
+
+**Dependencies**:
+- `@django-core/design-system` (F01) - primitive tokens foundation (critical)
+- `@django-core/api-client` (optional, for B12 integration)
+
+**Key Architecture Patterns**:
+- **Token System**: Semantic tokens (background.surface, text.primary, state.error) map to F01 primitives via vanilla-extract theme contracts
+- **Theme Switching**: `data-theme` and `data-brand` attributes on `<html>`, CSS variable scoping, zero React re-renders
+- **Brand Variants**: Hierarchical inheritance via typed helpers, brands override accent tokens while inheriting base mode tokens
+- **Storage**: `ThemeStorage` interface abstraction with cookie (SSR), localStorage (fallback), and optional B12 adapter
+- **SSR**: Inline boot script sets theme attributes before React hydration, prevents visual flash
+- **Accessibility**: Pre-compilation `validateThemeContrast()` validates WCAG 2.1 AA compliance, fails CI if core themes don't meet 4.5:1 (normal text) or 3:1 (large text/UI)
+
+**Package Structure**:
+```
+packages/theme-system/
+├── src/
+│   ├── components/        # ThemeProvider, ThemeToggle
+│   ├── hooks/             # useTheme, useThemeStorage
+│   ├── themes/            # light.css.ts, dark.css.ts, contract.css.ts, brand-helpers.ts
+│   ├── storage/           # ThemeStorage interface, adapters (Cookie, LocalStorage, B12, Composed)
+│   ├── validation/        # validateContrast.ts, WCAG utilities
+│   ├── ssr/               # boot-script.ts, getServerTheme.ts
+│   └── types/             # TypeScript definitions
+├── tests/
+│   ├── unit/              # Hooks, storage, validation
+│   ├── integration/       # Theme switching, persistence, SSR
+│   └── visual/            # Chromatic stories
+└── scripts/
+    └── validate-themes.ts # CI script for contrast validation
+```
+
+**Performance Constraints**:
+- Core bundle <10KB gzipped
+- Theme switching <100ms (no forced reflows)
+- Build-time contrast validation <5 seconds
+- Zero runtime overhead (CSS custom properties only)
+
+**Integration Points**:
+- F01 components should migrate to semantic tokens (e.g., `themeVars.background.surface` instead of `primitives.color.white`)
+- F05 resource display components use semantic state tokens (success/warning/error)
+- F06 layouts provide optional theme toggle slot
+- B12 backend (optional): `GET/POST /api/preferences/theme` for server-side persistence
+
+**Key Rules**:
+- All core themes (light/default, dark/default) MUST meet WCAG 2.1 AA (enforced in CI)
+- Public API follows semver; breaking changes require major version bump
+- Storage failures are non-blocking (graceful degradation: cookie→B12→localStorage→system→default)
+- Theme preference is non-sensitive data (no PII, safe to log mode/brand)
+
+<!-- MANUAL ADDITIONS END -->
 
 ## F03: Multi-Tenancy Context Switcher (024-multi-tenancy-context)
 
