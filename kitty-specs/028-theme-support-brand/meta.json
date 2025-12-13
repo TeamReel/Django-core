@@ -1,7 +1,24 @@
 {
-  "feature_number": "028",
-  "feature_name": "Theme Support & Brand Variants",
-  "feature_slug": "028-theme-support-brand",
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-12-13T19:00:08Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "5c87cec8003a591ca7a0c9b100a0bb860ed997a0",
+      "branch": "028-theme-support-brand",
+      "mode": "pr",
+      "validation_commands": [
+        "pnpm test"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-12-13T19:00:08Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "5c87cec8003a591ca7a0c9b100a0bb860ed997a0",
   "created_at": "2025-12-13",
+  "feature_name": "Theme Support & Brand Variants",
+  "feature_number": "028",
+  "feature_slug": "028-theme-support-brand",
   "status": "draft"
 }
