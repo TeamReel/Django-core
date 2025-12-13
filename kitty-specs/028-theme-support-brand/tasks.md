@@ -36,17 +36,17 @@
 **Prompt**: `kitty-specs/028-theme-support-brand/tasks/planned/WP01-package-scaffold.md`
 
 ### Included Subtasks
-- [ ] **T001** Create `packages/theme-system/` directory structure per plan.md
-- [ ] **T002** [P] Initialize package.json with dependencies (vanilla-extract, React 18, TypeScript 5)
-- [ ] **T003** [P] Configure TypeScript (strict mode, tsconfig.json)
-- [ ] **T004** [P] Configure Vite build (vanilla-extract plugin, library mode, CSS output)
-- [ ] **T005** [P] Setup ESLint + Prettier (inherit from F01/F05 config)
-- [ ] **T006** [P] Configure Vitest (test setup, React Testing Library, jsdom)
-- [ ] **T007** Create src/index.ts with empty exports
-- [ ] **T008** Create README.md stub with package purpose
-- [ ] **T009** Setup Storybook 8.x configuration
-- [ ] **T010** Configure Chromatic for visual regression testing
-- [ ] **T011** Add CI workflow (lint, typecheck, test, build)
+- [x] **T001** Create `packages/theme-system/` directory structure per plan.md
+- [x] **T002** [P] Initialize package.json with dependencies (vanilla-extract, React 18, TypeScript 5)
+- [x] **T003** [P] Configure TypeScript (strict mode, tsconfig.json)
+- [x] **T004** [P] Configure Vite build (vanilla-extract plugin, library mode, CSS output)
+- [x] **T005** [P] Setup ESLint + Prettier (inherit from F01/F05 config)
+- [x] **T006** [P] Configure Vitest (test setup, React Testing Library, jsdom)
+- [x] **T007** Create src/index.ts with empty exports
+- [x] **T008** Create README.md stub with package purpose
+- [x] **T009** Setup Storybook 8.x configuration
+- [x] **T010** Configure Chromatic for visual regression testing
+- [x] **T011** Add CI workflow (lint, typecheck, test, build)
 
 ### Constitutional Alignment
 - **Principle III**: TypeScript strict mode, ESLint, Prettier, curated dependencies
