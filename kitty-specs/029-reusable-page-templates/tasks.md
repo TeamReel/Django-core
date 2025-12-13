@@ -46,12 +46,12 @@ This document breaks down the implementation of F08 Reusable Page Templates into
 - ESLint and Prettier configured and passing
 
 **Subtasks**:
-- [ ] T001: Create `packages/page-templates/` directory structure with src/, tests/, stories/
-- [ ] T002: Initialize package.json with dependencies (React 18, TypeScript 5, Vite, Vitest, Storybook 8)
-- [ ] T003: Configure TypeScript (tsconfig.json with strict mode, React JSX)
-- [ ] T004: Configure Vite build (vite.config.ts for library mode)
-- [ ] T005: Configure Vitest (vitest.config.ts with React Testing Library)
-- [ ] T006: Configure Storybook 8 (.storybook/main.ts, preview.ts with F01/F07 theme integration)
+- [X] T001: Create `packages/page-templates/` directory structure with src/, tests/, stories/
+- [X] T002: Initialize package.json with dependencies (React 18, TypeScript 5, Vite, Vitest, Storybook 8)
+- [X] T003: Configure TypeScript (tsconfig.json with strict mode, React JSX)
+- [X] T004: Configure Vite build (vite.config.ts for library mode)
+- [X] T005: Configure Vitest (vitest.config.ts with React Testing Library)
+- [X] T006: Configure Storybook 8 (.storybook/main.ts, preview.ts with F01/F07 theme integration)
 
 **Implementation Notes**:
 - Package must be added to monorepo pnpm workspace
@@ -79,14 +79,14 @@ This document breaks down the implementation of F08 Reusable Page Templates into
 - 80%+ test coverage for hooks and state components
 
 **Subtasks**:
-- [ ] T007: Create common TypeScript types (src/types/index.ts: `TemplateLoadingState`, `StateRenderProps`, `ResponsiveProps`, `A11yProps`)
-- [ ] T008 [P]: Implement `useControlledState` hook with tests (src/hooks/useControlledState.ts)
-- [ ] T009 [P]: Implement `useResponsive` hook with F06 breakpoint integration (src/hooks/useResponsive.ts)
-- [ ] T010 [P]: Implement `useKeyboardNavigation` hook for list/settings (src/hooks/useKeyboardNavigation.ts)
-- [ ] T011 [P]: Create `DefaultLoading` component (src/components/states/DefaultLoading.tsx)
-- [ ] T012 [P]: Create `DefaultEmpty` component with action slot (src/components/states/DefaultEmpty.tsx)
-- [ ] T013 [P]: Create `DefaultError` component with retry button (src/components/states/DefaultError.tsx)
-- [ ] T014 [P]: Create `DefaultPermissionDenied` component (src/components/states/DefaultPermissionDenied.tsx)
+- [X] T007: Create common TypeScript types (src/types/index.ts: `TemplateLoadingState`, `StateRenderProps`, `ResponsiveProps`, `A11yProps`)
+- [X] T008 [P]: Implement `useControlledState` hook with tests (src/hooks/useControlledState.ts)
+- [X] T009 [P]: Implement `useResponsive` hook with F06 breakpoint integration (src/hooks/useResponsive.ts)
+- [X] T010 [P]: Implement `useKeyboardNavigation` hook for list/settings (src/hooks/useKeyboardNavigation.ts)
+- [X] T011 [P]: Create `DefaultLoading` component (src/components/states/DefaultLoading.tsx)
+- [X] T012 [P]: Create `DefaultEmpty` component with action slot (src/components/states/DefaultEmpty.tsx)
+- [X] T013 [P]: Create `DefaultError` component with retry button (src/components/states/DefaultError.tsx)
+- [X] T014 [P]: Create `DefaultPermissionDenied` component (src/components/states/DefaultPermissionDenied.tsx)
 
 **Implementation Notes**:
 - All default state components must use ONLY F01 primitives
@@ -124,13 +124,13 @@ This document breaks down the implementation of F08 Reusable Page Templates into
 - Unit tests achieve 80%+ coverage
 
 **Subtasks**:
-- [ ] T015: Create Dashboard main component with compound component pattern (src/components/Dashboard/Dashboard.tsx)
-- [ ] T016: Create DashboardHeader sub-component (src/components/Dashboard/DashboardHeader.tsx)
-- [ ] T017: Create DashboardGrid sub-component with F06 Grid integration (src/components/Dashboard/DashboardGrid.tsx)
-- [ ] T018: Create DashboardFilterBar sub-component with collapsible mobile behavior (src/components/Dashboard/DashboardFilterBar.tsx)
-- [ ] T019: Wire up state management (loading, empty, error props with render prop overrides)
-- [ ] T020: Write unit tests for Dashboard components (Dashboard.test.tsx, co-located tests)
-- [ ] T021: Create Storybook stories (stories/Dashboard.stories.tsx: basic, states, responsive, customization)
+- [X] T015: Create Dashboard main component with compound component pattern (src/components/Dashboard/Dashboard.tsx)
+- [X] T016: Create DashboardHeader sub-component (src/components/Dashboard/DashboardHeader.tsx)
+- [X] T017: Create DashboardGrid sub-component with F06 Grid integration (src/components/Dashboard/DashboardGrid.tsx)
+- [X] T018: Create DashboardFilterBar sub-component with collapsible mobile behavior (src/components/Dashboard/DashboardFilterBar.tsx)
+- [X] T019: Wire up state management (loading, empty, error props with render prop overrides)
+- [X] T020: Write unit tests for Dashboard components (Dashboard.test.tsx, co-located tests)
+- [X] T021: Create Storybook stories (stories/Dashboard.stories.tsx: basic, states, responsive, customization)
 
 **Implementation Notes**:
 - Compound component pattern:
@@ -166,13 +166,13 @@ This document breaks down the implementation of F08 Reusable Page Templates into
 - Unit + integration tests achieve 80%+ coverage
 
 **Subtasks**:
-- [ ] T022: Create ListDetail main component with split layout (src/components/ListDetail/ListDetail.tsx)
-- [ ] T023: Create ListDetailList sub-component with search support (src/components/ListDetail/ListDetailList.tsx)
-- [ ] T024: Create ListDetailDetail sub-component with back button (src/components/ListDetail/ListDetailDetail.tsx)
-- [ ] T025: Implement selection state management with `useControlledState` (selectedId, onSelectedIdChange)
-- [ ] T026: Implement mobile layout switching (overlay/stack modes) with responsive hooks
-- [ ] T027: Write unit tests for ListDetail components
-- [ ] T028: Create Storybook stories + integration test for list→detail→list flow (tests/integration/list-detail-flow.test.tsx)
+- [X] T022: Create ListDetail main component with split layout (src/components/ListDetail/ListDetail.tsx)
+- [X] T023: Create ListDetailList sub-component with search support (src/components/ListDetail/ListDetailList.tsx)
+- [X] T024: Create ListDetailDetail sub-component with back button (src/components/ListDetail/ListDetailDetail.tsx)
+- [X] T025: Implement selection state management with `useControlledState` (selectedId, onSelectedIdChange)
+- [X] T026: Implement mobile layout switching (overlay/stack modes) with responsive hooks
+- [X] T027: Write unit tests for ListDetail components
+- [X] T028: Create Storybook stories + integration test for list→detail→list flow (tests/integration/list-detail-flow.test.tsx)
 
 **Implementation Notes**:
 - Split ratio prop: `splitRatio={[1, 2]}` = 33% list, 67% detail
@@ -206,14 +206,14 @@ This document breaks down the implementation of F08 Reusable Page Templates into
 - 100% test coverage for navigation logic
 
 **Subtasks**:
-- [ ] T029: Create Wizard main component with step configuration (src/components/Wizard/Wizard.tsx)
-- [ ] T030: Create WizardStep sub-component (content container) (src/components/Wizard/WizardStep.tsx)
-- [ ] T031: Create WizardStepIndicator sub-component with 3 variants (dots, numbers, labels) (src/components/Wizard/WizardStepIndicator.tsx)
-- [ ] T032: Create WizardNavigation sub-component (prev/next/cancel/finish buttons) (src/components/Wizard/WizardNavigation.tsx)
-- [ ] T033: Implement step state management with `useControlledState` (stepIndex, onStepIndexChange)
-- [ ] T034: Implement focus management (focus first interactive element on step change)
-- [ ] T035: Write unit tests for Wizard components
-- [ ] T036: Create Storybook stories + integration test for wizard-navigation flow (tests/integration/wizard-navigation.test.tsx)
+- [X] T029: Create Wizard main component with step configuration (src/components/Wizard/Wizard.tsx)
+- [X] T030: Create WizardStep sub-component (content container) (src/components/Wizard/WizardStep.tsx)
+- [X] T031: Create WizardStepIndicator sub-component with 3 variants (dots, numbers, labels) (src/components/Wizard/WizardStepIndicator.tsx)
+- [X] T032: Create WizardNavigation sub-component (prev/next/cancel/finish buttons) (src/components/Wizard/WizardNavigation.tsx)
+- [X] T033: Implement step state management with `useControlledState` (stepIndex, onStepIndexChange)
+- [X] T034: Implement focus management (focus first interactive element on step change)
+- [X] T035: Write unit tests for Wizard components
+- [X] T036: Create Storybook stories + integration test for wizard-navigation flow (tests/integration/wizard-navigation.test.tsx)
 
 **Implementation Notes**:
 - Step configuration type:
@@ -253,12 +253,12 @@ This document breaks down the implementation of F08 Reusable Page Templates into
 - 80%+ test coverage
 
 **Subtasks**:
-- [ ] T037: Create Settings main component with section configuration (src/components/Settings/Settings.tsx)
-- [ ] T038: Create SettingsSection sub-component (content container) (src/components/Settings/SettingsSection.tsx)
-- [ ] T039: Create SettingsNavigation sub-component with responsive modes (src/components/Settings/SettingsNavigation.tsx)
-- [ ] T040: Implement section state management with `useControlledState` (activeSection, onActiveSectionChange)
-- [ ] T041: Write unit tests for Settings components
-- [ ] T042: Create Storybook stories + integration test for settings-navigation flow (tests/integration/settings-navigation.test.tsx)
+- [X] T037: Create Settings main component with section configuration (src/components/Settings/Settings.tsx)
+- [X] T038: Create SettingsSection sub-component (content container) (src/components/Settings/SettingsSection.tsx)
+- [X] T039: Create SettingsNavigation sub-component with responsive modes (src/components/Settings/SettingsNavigation.tsx)
+- [X] T040: Implement section state management with `useControlledState` (activeSection, onActiveSectionChange)
+- [X] T041: Write unit tests for Settings components
+- [X] T042: Create Storybook stories + integration test for settings-navigation flow (tests/integration/settings-navigation.test.tsx)
 
 **Implementation Notes**:
 - Section configuration type:
@@ -301,10 +301,10 @@ This document breaks down the implementation of F08 Reusable Page Templates into
 - Storybook stories demonstrate overrides for each template
 
 **Subtasks**:
-- [ ] T043: Validate render prop pattern consistency across all templates (renderLoading, renderEmpty, renderError, renderPermissionDenied)
-- [ ] T044: Create comprehensive Storybook stories showing state overrides for each template
-- [ ] T045: Write integration tests for state override behavior (custom content renders correctly)
-- [ ] T046: Document state override patterns in quickstart.md and Storybook
+- [X] T043: Validate render prop pattern consistency across all templates (renderLoading, renderEmpty, renderError, renderPermissionDenied)
+- [X] T044: Create comprehensive Storybook stories showing state overrides for each template
+- [X] T045: Write integration tests for state override behavior (custom content renders correctly)
+- [X] T046: Document state override patterns in quickstart.md and Storybook
 
 **Implementation Notes**:
 - Render props should return `React.ReactNode` (null, string, element, fragment all valid)
@@ -340,12 +340,12 @@ This document breaks down the implementation of F08 Reusable Page Templates into
 - Bundle size <15KB gzipped verified
 
 **Subtasks**:
-- [ ] T047: Create example app in examples/page-templates-demo/ with all 4 templates
-- [ ] T048: Write comprehensive package README.md (quick start, API reference, F01/F06 integration)
-- [ ] T049: Configure Chromatic for visual regression testing
-- [ ] T050: Add CI pipeline checks (GitHub Actions or existing CI: TypeScript, ESLint, Vitest, bundle size)
-- [ ] T051: Validate bundle size <15KB gzipped (analyze with rollup-plugin-visualizer)
-- [ ] T052: Final documentation review and Storybook polish (consistent story formatting, accessibility notes)
+- [X] T047: Create example app in examples/page-templates-demo/ with all 4 templates
+- [X] T048: Write comprehensive package README.md (quick start, API reference, F01/F06 integration)
+- [X] T049: Configure Chromatic for visual regression testing
+- [X] T050: Add CI pipeline checks (GitHub Actions or existing CI: TypeScript, ESLint, Vitest, bundle size)
+- [X] T051: Validate bundle size <15KB gzipped (analyze with rollup-plugin-visualizer)
+- [X] T052: Final documentation review and Storybook polish (consistent story formatting, accessibility notes)
 
 **Implementation Notes**:
 - Example app should use Next.js or Vite for realistic SPA environment

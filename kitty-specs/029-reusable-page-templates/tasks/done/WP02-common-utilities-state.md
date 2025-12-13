@@ -13,6 +13,7 @@ subtasks:
   - T014
 priority: P0
 depends_on: [WP01]
+assignee: "github-copilot"
 agent: "github-copilot-reviewer"
 shell_pid: "7216"
 reviewed_by: "github-copilot-reviewer"
@@ -790,3 +791,6 @@ After completing WP02:
 2. Move this prompt to `tasks/done/WP02-common-utilities-state.md`
 3. Templates can now be built in parallel (WP03, WP04, WP05, WP06)
 4. Suggested command: `/spec-kitty.implement WP03` (Dashboard template - P1)
+## Activity Log
+
+- 2025-12-13T21:47:00Z – github-copilot – shell_pid=7216 – lane=done – Completed and approved

@@ -7,6 +7,7 @@ reviewed_by: "github-copilot-reviewer"
 subtasks: [T022, T023, T024, T025, T026, T027, T028]
 priority: P1
 depends_on: [WP02]
+assignee: "github-copilot"
 agent: "github-copilot-reviewer"
 shell_pid: "7216"
 history:

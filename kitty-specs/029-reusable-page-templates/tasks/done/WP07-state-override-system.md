@@ -5,6 +5,7 @@ lane: "done"
 subtasks: [T043, T044, T045, T046]
 priority: P3
 depends_on: [WP03, WP04, WP05, WP06]
+assignee: "github-copilot"
 agent: "claude-reviewer"
 shell_pid: "$PID"
 review_status: "approved without changes"
