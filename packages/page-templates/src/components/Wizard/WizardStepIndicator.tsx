@@ -42,11 +42,7 @@ export const WizardStepIndicator: React.FC<WizardStepIndicatorProps> = ({
         height: '12px',
         borderRadius: '50%',
         backgroundColor:
-          state === 'completed'
-            ? '#4caf50'
-            : state === 'current'
-            ? '#2196f3'
-            : '#e0e0e0',
+          state === 'completed' ? '#4caf50' : state === 'current' ? '#2196f3' : '#e0e0e0',
         transition: 'background-color 0.2s',
       };
 
@@ -74,17 +70,9 @@ export const WizardStepIndicator: React.FC<WizardStepIndicatorProps> = ({
         borderRadius: '50%',
         border: '2px solid',
         borderColor:
-          state === 'completed'
-            ? '#4caf50'
-            : state === 'current'
-            ? '#2196f3'
-            : '#e0e0e0',
+          state === 'completed' ? '#4caf50' : state === 'current' ? '#2196f3' : '#e0e0e0',
         backgroundColor:
-          state === 'completed'
-            ? '#4caf50'
-            : state === 'current'
-            ? '#2196f3'
-            : 'white',
+          state === 'completed' ? '#4caf50' : state === 'current' ? '#2196f3' : 'white',
         color: state === 'upcoming' ? '#666' : 'white',
         fontWeight: state === 'current' ? 600 : 400,
         fontSize: '14px',
@@ -127,12 +115,7 @@ export const WizardStepIndicator: React.FC<WizardStepIndicatorProps> = ({
       const labelTextStyle: React.CSSProperties = {
         fontSize: '14px',
         fontWeight: state === 'current' ? 600 : 400,
-        color:
-          state === 'completed'
-            ? '#4caf50'
-            : state === 'current'
-            ? '#2196f3'
-            : '#999',
+        color: state === 'completed' ? '#4caf50' : state === 'current' ? '#2196f3' : '#999',
         marginTop: '0.5rem',
         textAlign: 'center',
       };
@@ -157,17 +140,9 @@ export const WizardStepIndicator: React.FC<WizardStepIndicatorProps> = ({
                 borderRadius: '50%',
                 border: '2px solid',
                 borderColor:
-                  state === 'completed'
-                    ? '#4caf50'
-                    : state === 'current'
-                    ? '#2196f3'
-                    : '#e0e0e0',
+                  state === 'completed' ? '#4caf50' : state === 'current' ? '#2196f3' : '#e0e0e0',
                 backgroundColor:
-                  state === 'completed'
-                    ? '#4caf50'
-                    : state === 'current'
-                    ? '#2196f3'
-                    : 'white',
+                  state === 'completed' ? '#4caf50' : state === 'current' ? '#2196f3' : 'white',
                 color: state === 'upcoming' ? '#666' : 'white',
                 fontSize: '12px',
                 fontWeight: 600,

@@ -73,7 +73,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             title
           )}
           {subtitle && (
-            <div style={{ marginTop: '0.25rem', fontSize: '0.875rem', color: 'var(--color-text-secondary, #666)' }}>
+            <div
+              style={{
+                marginTop: '0.25rem',
+                fontSize: '0.875rem',
+                color: 'var(--color-text-secondary, #666)',
+              }}
+            >
               {subtitle}
             </div>
           )}

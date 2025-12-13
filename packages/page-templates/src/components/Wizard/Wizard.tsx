@@ -1,9 +1,5 @@
 import * as React from 'react';
-import type {
-  WizardProps,
-  WizardComponent,
-  WizardStepConfig,
-} from '../../types';
+import type { WizardProps, WizardComponent, WizardStepConfig } from '../../types';
 import { useControlledState } from '../../hooks/useControlledState';
 import { WizardStep } from './WizardStep';
 import { WizardNavigation } from './WizardNavigation';
@@ -80,7 +76,7 @@ const WizardFC: React.FC<WizardProps> = ({
     }
 
     // Check for unique step IDs
-    const ids = steps.map(s => s.id);
+    const ids = steps.map((s) => s.id);
     const uniqueIds = new Set(ids);
     if (ids.length !== uniqueIds.size) {
       console.error('Wizard step IDs must be unique');
@@ -168,17 +164,17 @@ const WizardFC: React.FC<WizardProps> = ({
 
   // 4. Empty state
   if (isEmpty) {
-    return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No wizard steps configured" />;
+    return renderEmpty ? (
+      <>{renderEmpty()}</>
+    ) : (
+      <DefaultEmpty message="No wizard steps configured" />
+    );
   }
 
   // 5. Success state - render wizard
   return (
     <WizardContext.Provider value={contextValue}>
-      <div
-        className={className}
-        aria-label={ariaLabel}
-        {...props}
-      >
+      <div className={className} aria-label={ariaLabel} {...props}>
         {/* Step Indicator */}
         {showStepIndicator && (
           <WizardStepIndicator

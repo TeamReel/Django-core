@@ -302,7 +302,9 @@ describe('WizardNavigation', () => {
   });
 
   it('shows loading state during async operations', async () => {
-    const handleComplete = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+    const handleComplete = vi
+      .fn()
+      .mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
     render(
       <Wizard steps={mockSteps} defaultStepIndex={2} onComplete={handleComplete}>

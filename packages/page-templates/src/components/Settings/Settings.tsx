@@ -1,9 +1,5 @@
 import * as React from 'react';
-import type {
-  SettingsProps,
-  SettingsComponent,
-  SettingsSectionConfig,
-} from '../../types';
+import type { SettingsProps, SettingsComponent, SettingsSectionConfig } from '../../types';
 import { useControlledState } from '../../hooks/useControlledState';
 import { SettingsSection } from './SettingsSection';
 import { SettingsNavigation } from './SettingsNavigation';
@@ -72,7 +68,7 @@ const SettingsFC: React.FC<SettingsProps> = ({
     }
 
     // Check for unique section IDs
-    const ids = sections.map(s => s.id);
+    const ids = sections.map((s) => s.id);
     const uniqueIds = new Set(ids);
     if (ids.length !== uniqueIds.size) {
       console.error('Settings section IDs must be unique');
@@ -92,9 +88,11 @@ const SettingsFC: React.FC<SettingsProps> = ({
 
   // Validate active section exists
   const validActiveSectionId = React.useMemo(() => {
-    const exists = sections.some(s => s.id === activeSectionId);
+    const exists = sections.some((s) => s.id === activeSectionId);
     if (!exists) {
-      console.warn(`Active section "${activeSectionId}" not found, defaulting to "${firstSectionId}"`);
+      console.warn(
+        `Active section "${activeSectionId}" not found, defaulting to "${firstSectionId}"`
+      );
       return firstSectionId;
     }
     return activeSectionId;
@@ -135,7 +133,11 @@ const SettingsFC: React.FC<SettingsProps> = ({
 
   // 4. Empty state
   if (isEmpty) {
-    return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No settings sections configured" />;
+    return renderEmpty ? (
+      <>{renderEmpty()}</>
+    ) : (
+      <DefaultEmpty message="No settings sections configured" />
+    );
   }
 
   // 5. Success state - render settings
@@ -154,7 +156,13 @@ const SettingsFC: React.FC<SettingsProps> = ({
         {...props}
       >
         {/* Navigation Sidebar */}
-        <div style={{ position: sidebarLayout === 'sticky' ? 'sticky' : 'relative', top: sidebarLayout === 'sticky' ? '1rem' : '0', height: 'fit-content' }}>
+        <div
+          style={{
+            position: sidebarLayout === 'sticky' ? 'sticky' : 'relative',
+            top: sidebarLayout === 'sticky' ? '1rem' : '0',
+            height: 'fit-content',
+          }}
+        >
           <SettingsNavigation
             sections={sections}
             activeSection={validActiveSectionId}
@@ -163,9 +171,7 @@ const SettingsFC: React.FC<SettingsProps> = ({
         </div>
 
         {/* Content Area */}
-        <div>
-          {children}
-        </div>
+        <div>{children}</div>
       </div>
     </SettingsContext.Provider>
   );

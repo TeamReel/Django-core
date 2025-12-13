@@ -24,7 +24,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
   }
 
   // Get section config for title/description defaults
-  const sectionConfig = sections.find(s => s.id === sectionId);
+  const sectionConfig = sections.find((s) => s.id === sectionId);
   const displayTitle = title || sectionConfig?.label || '';
   const displayDescription = description || sectionConfig?.description;
 
@@ -38,9 +38,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
       {/* Section Header */}
       {displayTitle && (
         <div style={{ marginBottom: '1.5rem' }}>
-          <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>
-            {displayTitle}
-          </h2>
+          <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>{displayTitle}</h2>
           {displayDescription && (
             <p style={{ margin: '0.5rem 0 0', color: '#666', fontSize: '0.875rem' }}>
               {displayDescription}

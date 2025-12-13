@@ -327,9 +327,7 @@ describe('SettingsNavigation', () => {
 
   it('renders section icons when provided', () => {
     const IconComponent = () => <svg data-testid="test-icon" />;
-    const sectionsWithIcons = [
-      { id: 'profile', label: 'Profile', icon: IconComponent },
-    ];
+    const sectionsWithIcons = [{ id: 'profile', label: 'Profile', icon: IconComponent }];
 
     render(
       <Settings sections={sectionsWithIcons}>

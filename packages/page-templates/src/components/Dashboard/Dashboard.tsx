@@ -57,16 +57,16 @@ const DashboardFC: React.FC<DashboardProps> = ({
 
   // 4. Empty state
   if (isEmpty) {
-    return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No dashboard widgets to display" />;
+    return renderEmpty ? (
+      <>{renderEmpty()}</>
+    ) : (
+      <DefaultEmpty message="No dashboard widgets to display" />
+    );
   }
 
   // 5. Success state - render children
   return (
-    <main
-      className={className}
-      style={style}
-      aria-label={ariaLabel}
-    >
+    <main className={className} style={style} aria-label={ariaLabel}>
       {children}
     </main>
   );

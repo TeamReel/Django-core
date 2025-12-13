@@ -69,7 +69,12 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   };
 
   return (
-    <div className={className} style={containerStyle} role="navigation" aria-label="Wizard navigation">
+    <div
+      className={className}
+      style={containerStyle}
+      role="navigation"
+      aria-label="Wizard navigation"
+    >
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         {/* Cancel Button */}
         <button

@@ -39,12 +39,8 @@ export const DefaultEmpty: React.FC<DefaultEmptyProps> = ({
       >
         📭
       </div>
-      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', fontWeight: 600 }}>
-        {title}
-      </h3>
-      <p style={{ margin: '0 0 1.5rem 0', color: '#666', maxWidth: '400px' }}>
-        {message}
-      </p>
+      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', fontWeight: 600 }}>{title}</h3>
+      <p style={{ margin: '0 0 1.5rem 0', color: '#666', maxWidth: '400px' }}>{message}</p>
       {action && <div>{action}</div>}
     </div>
   );

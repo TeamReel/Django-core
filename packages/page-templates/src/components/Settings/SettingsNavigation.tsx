@@ -19,10 +19,11 @@ export const SettingsNavigation: React.FC<SettingsNavigationProps> = ({
         onSectionChange(sectionId);
       } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
-        const currentIndex = sections.findIndex(s => s.id === sectionId);
-        const nextIndex = e.key === 'ArrowDown'
-          ? (currentIndex + 1) % sections.length
-          : (currentIndex - 1 + sections.length) % sections.length;
+        const currentIndex = sections.findIndex((s) => s.id === sectionId);
+        const nextIndex =
+          e.key === 'ArrowDown'
+            ? (currentIndex + 1) % sections.length
+            : (currentIndex - 1 + sections.length) % sections.length;
         onSectionChange(sections[nextIndex].id);
       }
     },
@@ -97,11 +98,7 @@ export const SettingsNavigation: React.FC<SettingsNavigationProps> = ({
   };
 
   return (
-    <nav
-      className={className}
-      role="navigation"
-      aria-label="Settings navigation"
-    >
+    <nav className={className} role="navigation" aria-label="Settings navigation">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
         {sections.map(renderSectionItem)}
       </div>

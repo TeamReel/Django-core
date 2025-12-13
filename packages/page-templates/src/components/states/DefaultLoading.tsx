@@ -10,9 +10,7 @@ export interface DefaultLoadingProps {
  *
  * TODO: Replace with F01 design system loading component when available
  */
-export const DefaultLoading: React.FC<DefaultLoadingProps> = ({
-  message = 'Loading...',
-}) => {
+export const DefaultLoading: React.FC<DefaultLoadingProps> = ({ message = 'Loading...' }) => {
   return (
     <div
       style={{

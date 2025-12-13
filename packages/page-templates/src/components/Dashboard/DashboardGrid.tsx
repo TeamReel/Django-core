@@ -6,11 +6,13 @@ export interface DashboardGridProps {
   children: React.ReactNode;
 
   /** Number of columns (responsive) */
-  columns?: number | {
-    mobile?: number;
-    tablet?: number;
-    desktop?: number;
-  };
+  columns?:
+    | number
+    | {
+        mobile?: number;
+        tablet?: number;
+        desktop?: number;
+      };
 
   /** Gap between widgets (in spacing units) */
   gap?: 'sm' | 'md' | 'lg';

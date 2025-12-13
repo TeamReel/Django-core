@@ -1,8 +1,5 @@
 import * as React from 'react';
-import type {
-  ListDetailProps,
-  ListDetailComponent,
-} from '../../types';
+import type { ListDetailProps, ListDetailComponent } from '../../types';
 import { useControlledState } from '../../hooks/useControlledState';
 import { useResponsive } from '../../hooks/useResponsive';
 import { ListDetailList } from './ListDetailList';

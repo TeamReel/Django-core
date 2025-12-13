@@ -90,7 +90,12 @@ export const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
           }}
         >
           <span>Filters</span>
-          <span style={{ transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>
+          <span
+            style={{
+              transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+              transition: 'transform 0.2s',
+            }}
+          >
             ▼
           </span>
         </button>
