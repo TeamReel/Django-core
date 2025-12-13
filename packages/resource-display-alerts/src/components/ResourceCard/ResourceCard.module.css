@@ -1,0 +1,120 @@
+/**
+ * Styles for ResourceCard Compound Component
+ *
+ * Uses F01 design tokens for spacing, colors, borders, and shadows.
+ * Supports default, compact, and bordered variants.
+ */
+
+/* Card container */
+.card {
+  background-color: var(--color-neutral-0);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Variant: default (with shadow) */
+.default {
+  /* Already applied above */
+}
+
+/* Variant: compact (tighter spacing) */
+.compact .header,
+.compact .body,
+.compact .footer {
+  padding: var(--spacing-3);
+}
+
+/* Variant: bordered (no shadow, border instead) */
+.bordered {
+  box-shadow: none;
+  border: 1px solid var(--color-neutral-300);
+}
+
+/* Header */
+.header {
+  padding: var(--spacing-4);
+  border-bottom: 1px solid var(--color-neutral-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-default {
+  /* Inherits .header styles */
+}
+
+.header-compact {
+  /* Padding override in .compact selector */
+}
+
+.header-bordered {
+  /* Inherits .header styles */
+}
+
+/* Body */
+.body {
+  padding: var(--spacing-4);
+  flex: 1;
+}
+
+.body-default {
+  /* Inherits .body styles */
+}
+
+.body-compact {
+  /* Padding override in .compact selector */
+}
+
+.body-bordered {
+  /* Inherits .body styles */
+}
+
+/* Footer */
+.footer {
+  padding: var(--spacing-4);
+  border-top: 1px solid var(--color-neutral-200);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+}
+
+.footer-default {
+  /* Inherits .footer styles */
+}
+
+.footer-compact {
+  /* Padding override in .compact selector */
+}
+
+.footer-bordered {
+  /* Inherits .footer styles */
+}
+
+/* Optional: Header without border if Body is empty */
+.card:has(.body:empty) .header {
+  border-bottom: none;
+}
+
+/* Optional: Footer without border if Body is empty */
+.card:has(.body:empty) .footer {
+  border-top: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .header,
+  .body,
+  .footer {
+    padding: var(--spacing-3);
+  }
+
+  .compact .header,
+  .compact .body,
+  .compact .footer {
+    padding: var(--spacing-2);
+  }
+}

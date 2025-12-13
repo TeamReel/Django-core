@@ -1,0 +1,283 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Getting Started" />
+
+# Getting Started with Resource Alerts
+
+This package provides React components for displaying resource usage and system alerts.
+
+## Installation
+
+Install via pnpm (or npm/yarn):
+
+```bash
+pnpm add @django-core/resource-alerts @django-core/design-system
+```
+
+## Basic Usage
+
+### 1. Import Components
+
+```tsx
+import {
+  Alert,
+  ResourceUsageBar,
+  HealthStatus,
+} from '@django-core/resource-alerts';
+```
+
+### 2. Use in Your App
+
+```tsx
+function Dashboard() {
+  return (
+    <div>
+      {/* Alert for low credits */}
+      <Alert title="Low Credits" severity="warning">
+        You have 150 credits remaining. Upgrade to add more.
+      </Alert>
+
+      {/* Resource usage bar */}
+      <ResourceUsageBar
+        value={850}
+        max={1000}
+        label="API Credits"
+        unit="credits"
+      />
+
+      {/* Health status indicator */}
+      <HealthStatus
+        name="Database"
+        status="healthy"
+      />
+    </div>
+  );
+}
+```
+
+## Core Components
+
+### Alert Component
+
+Display important messages to users with support for different severity levels and dismissal.
+
+**Key Features:**
+- Four severity levels: info, success, warning, error
+- Dismissible with localStorage persistence
+- ARIA live regions for accessibility
+- Actions support for custom buttons
+
+**When to use:**
+- System notifications
+- Error messages
+- Success confirmations
+- Informational updates
+
+### ResourceUsageBar Component
+
+Visualize resource consumption with a progress bar.
+
+**Key Features:**
+- Automatic severity colors based on usage
+- Customizable thresholds
+- Optional percentage display
+- Accessible with ARIA progressbar role
+
+**When to use:**
+- API credit usage
+- Storage capacity
+- Rate limit tracking
+- Any numeric resource with a maximum
+
+### HealthStatus Component
+
+Display service health with color-coded indicators.
+
+**Key Features:**
+- Four status types: healthy, degraded, unhealthy, unknown
+- Optional details text
+- Last checked timestamp
+- Three size variants
+
+**When to use:**
+- Service dashboards
+- System health monitoring
+- Dependency status
+- Uptime indicators
+
+### Badge Component
+
+Display counts or status with color-coded badges.
+
+**Key Features:**
+- Five color variants
+- Three size variants
+- Flexible content (numbers or text)
+
+**When to use:**
+- Notification counts
+- Status indicators
+- Category labels
+- Counts or metrics
+
+### ResourceCard Component (Compound)
+
+Flexible card component for composing complex layouts.
+
+**Key Features:**
+- Compound component pattern (Header, Body, Footer)
+- Semantic HTML structure
+- Works with any children
+- No custom CSS required
+
+**When to use:**
+- Dashboard cards
+- Resource summaries
+- Multi-component layouts
+- Structured information display
+
+### AlertStack Component
+
+Manage multiple alerts with automatic visibility control.
+
+**Key Features:**
+- Visibility limits with "View all" button
+- Two positioning modes: inline or top-center
+- Automatic spacing
+- Keyboard accessible
+
+**When to use:**
+- Multiple simultaneous alerts
+- Notification centers
+- Alert queues
+- Toast-style messages
+
+## Advanced Patterns
+
+### Dismissible Alerts with Persistence
+
+Use the `useAlertDismissal` hook to save dismissal preferences:
+
+```tsx
+import { Alert, useAlertDismissal } from '@django-core/resource-alerts';
+
+function PersistentAlert() {
+  const { isVisible, dismiss, dismissForever } = useAlertDismissal({
+    alertId: 'feature-announcement',
+  });
+
+  if (!isVisible) return null;
+
+  return (
+    <Alert
+      title="New Feature Available"
+      severity="info"
+      onClose={dismiss}
+      actions={
+        <button onClick={dismissForever}>
+          Don't show again
+        </button>
+      }
+    >
+      Check out our new API dashboard!
+    </Alert>
+  );
+}
+```
+
+### Polling Backend APIs
+
+Use the optional data hooks to poll backend services:
+
+```tsx
+import { useResourceUsage, ResourceUsageBar } from '@django-core/resource-alerts';
+
+function CreditUsage() {
+  const { data, isLoading, error } = useResourceUsage({
+    endpoint: '/api/billing/credits/usage',
+    pollInterval: 30000, // Poll every 30 seconds
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <Alert severity="error" title="Failed to load credits" />;
+  if (!data) return null;
+
+  return (
+    <ResourceUsageBar
+      value={data.used}
+      max={data.limit}
+      label="API Credits"
+      unit="credits"
+    />
+  );
+}
+```
+
+### Composing with ResourceCard
+
+Build complex layouts using the compound component pattern:
+
+```tsx
+import {
+  ResourceCard,
+  HealthStatus,
+  ResourceUsageBar,
+  Badge,
+} from '@django-core/resource-alerts';
+
+function ServiceDashboard() {
+  return (
+    <ResourceCard>
+      <ResourceCard.Header>
+        <HealthStatus name="API Service" status="healthy" size="small" />
+        <Badge variant="success">OK</Badge>
+      </ResourceCard.Header>
+
+      <ResourceCard.Body>
+        <ResourceUsageBar
+          value={750}
+          max={1000}
+          label="Requests Today"
+          unit="requests"
+        />
+      </ResourceCard.Body>
+
+      <ResourceCard.Footer>
+        <button>View Details</button>
+      </ResourceCard.Footer>
+    </ResourceCard>
+  );
+}
+```
+
+## Next Steps
+
+- Browse [Components](/?path=/docs/components-alert--docs) for detailed API docs
+- See [Hooks](/?path=/docs/hooks-usealertdismissal--docs) for data fetching examples
+- Check [Composition Patterns](/?path=/docs/composition-patterns--docs) for advanced usage
+- Review [Troubleshooting](/?path=/docs/troubleshooting--docs) for common issues
+
+## TypeScript Support
+
+All components are fully typed with TypeScript. Import types alongside components:
+
+```tsx
+import { Alert, type AlertProps } from '@django-core/resource-alerts';
+
+const MyAlert: React.FC<AlertProps> = (props) => {
+  return <Alert {...props} />;
+};
+```
+
+## Accessibility
+
+All components meet WCAG 2.1 AA standards:
+- Keyboard navigation support
+- ARIA labels and roles
+- Screen reader compatible
+- Color contrast compliant
+- Motion sensitivity support
+
+## Questions?
+
+See the [README](https://github.com/your-org/django-core/blob/main/packages/resource-display-alerts/README.md) or [Troubleshooting Guide](/?path=/docs/troubleshooting--docs).

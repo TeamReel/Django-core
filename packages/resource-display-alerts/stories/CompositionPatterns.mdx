@@ -1,0 +1,365 @@
+import { Meta, Story, Canvas } from '@storybook/blocks';
+import { ResourceCard } from '../src/components/ResourceCard';
+import { HealthStatus } from '../src/components/HealthStatus';
+import { ResourceUsageBar } from '../src/components/ResourceUsageBar';
+import { AlertStack } from '../src/components/AlertStack';
+import { Alert } from '../src/components/Alert';
+import { Badge } from '../src/components/Badge';
+
+<Meta title="Composition Patterns" />
+
+# Composition Patterns
+
+This package is designed for flexible composition. Here are common patterns for building complex UIs.
+
+## Pattern 1: Resource Dashboard Card
+
+Combine HealthStatus, ResourceUsageBar, and Badge in a ResourceCard for a comprehensive resource display.
+
+**Use Case:** Service dashboards, API usage tracking, system monitoring
+
+```tsx
+<ResourceCard>
+  <ResourceCard.Header>
+    <HealthStatus name="API Service" status="healthy" size="small" />
+    <Badge variant="success">OK</Badge>
+  </ResourceCard.Header>
+
+  <ResourceCard.Body>
+    <ResourceUsageBar
+      value={750}
+      max={1000}
+      label="API Calls (Today)"
+      unit="calls"
+    />
+    <ResourceUsageBar
+      value={250}
+      max={1000}
+      label="Remaining"
+      unit="calls"
+    />
+  </ResourceCard.Body>
+
+  <ResourceCard.Footer>
+    <button>View Usage Details</button>
+  </ResourceCard.Footer>
+</ResourceCard>
+```
+
+**Key Benefits:**
+- Semantic HTML structure
+- Self-contained resource display
+- Easy to scan visually
+- Accessible card layout
+
+---
+
+## Pattern 2: Multi-Service Health Dashboard
+
+Show health status for multiple services in a vertically stacked layout.
+
+**Use Case:** Infrastructure monitoring, dependency health checks, system status pages
+
+```tsx
+<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+  <HealthStatus
+    name="Database"
+    status="healthy"
+    details="Avg response: 12ms"
+    lastChecked={new Date().toISOString()}
+  />
+  <HealthStatus
+    name="API Server"
+    status="degraded"
+    details="High load detected"
+    lastChecked={new Date().toISOString()}
+  />
+  <HealthStatus
+    name="Cache"
+    status="healthy"
+    details="Hit rate: 95%"
+    lastChecked={new Date().toISOString()}
+  />
+  <HealthStatus
+    name="Background Worker"
+    status="unknown"
+    details="No recent activity"
+    lastChecked={new Date().toISOString()}
+  />
+</div>
+```
+
+**Key Benefits:**
+- Quick visual scan of all services
+- Color-coded status at a glance
+- Detailed information on hover/focus
+- Timestamp for staleness detection
+
+---
+
+## Pattern 3: Stacked Alerts with Limits
+
+Use AlertStack to manage multiple alerts without overwhelming the UI.
+
+**Use Case:** Notification centers, system alerts, toast notifications
+
+```tsx
+<AlertStack maxVisible={3} position="top-center">
+  <Alert title="Low Credits" severity="warning">
+    You have 150 credits remaining.
+  </Alert>
+  <Alert title="Scheduled Maintenance" severity="info">
+    System will be down on Saturday from 2-4 AM.
+  </Alert>
+  <Alert title="Payment Failed" severity="error">
+    Update your payment method to continue service.
+  </Alert>
+  <Alert title="New Feature Available" severity="success">
+    Check out our new API dashboard!
+  </Alert>
+</AlertStack>
+```
+
+**Key Benefits:**
+- Prevents alert overload
+- "View all" button for hidden alerts
+- Automatic spacing and positioning
+- Keyboard accessible
+
+---
+
+## Pattern 4: Inline Alerts with Resource Usage
+
+Combine alerts and usage bars for contextual warnings that appear when thresholds are crossed.
+
+**Use Case:** Credit warnings, quota notifications, usage alerts
+
+```tsx
+function ResourceWithAlert({ value, max }: { value: number; max: number }) {
+  const percentage = (value / max) * 100;
+  const isHighUsage = percentage >= 85;
+
+  return (
+    <div>
+      <ResourceUsageBar
+        value={value}
+        max={max}
+        label="API Credits"
+        unit="credits"
+      />
+
+      {isHighUsage && (
+        <Alert
+          title="Credit Usage High"
+          severity="warning"
+          style={{ marginTop: '8px' }}
+        >
+          You're at {percentage.toFixed(0)}% of your credit limit. Consider upgrading.
+        </Alert>
+      )}
+    </div>
+  );
+}
+
+// Usage
+<ResourceWithAlert value={950} max={1000} />
+```
+
+**Key Benefits:**
+- Contextual alerts appear only when needed
+- Visual connection between metric and alert
+- Reduces alert fatigue
+- Clear call-to-action
+
+---
+
+## Pattern 5: Badge-Enhanced Health Status
+
+Combine Badge with HealthStatus for additional metadata display.
+
+**Use Case:** Service counts, instance counts, version labels
+
+```tsx
+<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+  <HealthStatus name="Database Cluster" status="healthy" />
+  <Badge variant="info">3 instances</Badge>
+  <Badge variant="neutral">v2.4.1</Badge>
+</div>
+```
+
+**Key Benefits:**
+- Additional context without clutter
+- Color-coded metadata
+- Compact information display
+- Easy to scan
+
+---
+
+## Pattern 6: Nested ResourceCard Grid
+
+Create dashboard layouts with multiple ResourceCards in a grid.
+
+**Use Case:** Multi-resource dashboards, admin panels, monitoring views
+
+```tsx
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+  gap: '16px'
+}}>
+  <ResourceCard>
+    <ResourceCard.Header>
+      <HealthStatus name="API" status="healthy" size="small" />
+    </ResourceCard.Header>
+    <ResourceCard.Body>
+      <ResourceUsageBar value={750} max={1000} label="Requests" />
+    </ResourceCard.Body>
+  </ResourceCard>
+
+  <ResourceCard>
+    <ResourceCard.Header>
+      <HealthStatus name="Storage" status="degraded" size="small" />
+    </ResourceCard.Header>
+    <ResourceCard.Body>
+      <ResourceUsageBar value={850} max={1000} label="GB Used" />
+    </ResourceCard.Body>
+  </ResourceCard>
+
+  <ResourceCard>
+    <ResourceCard.Header>
+      <HealthStatus name="Database" status="healthy" size="small" />
+    </ResourceCard.Header>
+    <ResourceCard.Body>
+      <ResourceUsageBar value={200} max={1000} label="Queries" />
+    </ResourceCard.Body>
+  </ResourceCard>
+</div>
+```
+
+**Key Benefits:**
+- Responsive grid layout
+- Consistent card structure
+- Easy to add/remove resources
+- Scales well for many resources
+
+---
+
+## Pattern 7: Alert with Custom Actions
+
+Add custom action buttons to alerts for immediate user action.
+
+**Use Case:** Actionable notifications, confirmation prompts, upgrade prompts
+
+```tsx
+<Alert
+  title="Credit Limit Reached"
+  severity="error"
+  actions={
+    <>
+      <button onClick={() => console.log('Upgrade clicked')}>
+        Upgrade Plan
+      </button>
+      <button onClick={() => console.log('Contact clicked')}>
+        Contact Sales
+      </button>
+    </>
+  }
+>
+  You've used all 1,000 credits. Upgrade to continue using the API.
+</Alert>
+```
+
+**Key Benefits:**
+- Clear call-to-action
+- Multiple action options
+- Reduces navigation steps
+- Improves conversion
+
+---
+
+## Pattern 8: Dynamic Severity Calculation
+
+Automatically adjust alert severity based on resource usage levels.
+
+**Use Case:** Adaptive warnings, threshold-based alerts, progressive notifications
+
+```tsx
+function DynamicResourceAlert({ value, max }: { value: number; max: number }) {
+  const percentage = (value / max) * 100;
+
+  let severity: 'info' | 'warning' | 'error' = 'info';
+  let title = 'Resource Usage';
+  let message = `You're using ${value} of ${max}.`;
+
+  if (percentage >= 95) {
+    severity = 'error';
+    title = 'Critical: Resource Limit Reached';
+    message = `You're at ${percentage.toFixed(0)}% capacity. Immediate action required.`;
+  } else if (percentage >= 85) {
+    severity = 'warning';
+    title = 'Warning: High Resource Usage';
+    message = `You're at ${percentage.toFixed(0)}% capacity. Consider upgrading soon.`;
+  }
+
+  return (
+    <>
+      <ResourceUsageBar value={value} max={max} label="Usage" />
+      {percentage >= 85 && (
+        <Alert title={title} severity={severity}>
+          {message}
+        </Alert>
+      )}
+    </>
+  );
+}
+```
+
+**Key Benefits:**
+- Progressive warnings
+- Prevents alert fatigue
+- Clear escalation path
+- User-friendly thresholds
+
+---
+
+## Tips for Composition
+
+1. **ResourceCard works with any children** - Don't limit yourself to F05 components. Any React component can go inside.
+
+2. **AlertStack automatically spaces alerts** - Use F01 design tokens for consistent spacing. No custom CSS needed.
+
+3. **Compound components provide flexible layout** - ResourceCard.Header/Body/Footer can be used in any order or omitted entirely.
+
+4. **Use semantic HTML** - All components use proper semantic elements (`<header>`, `<main>`, `<footer>`, `<article>`, etc.).
+
+5. **Combine with F01 design system** - All components are designed to work seamlessly with F01's color tokens, spacing, and typography.
+
+6. **Think in terms of user tasks** - Group related information together (e.g., health status + usage bar + actions).
+
+7. **Progressive disclosure** - Start with summary views (badges, status), provide details on interaction (tooltips, modals).
+
+8. **Responsive by default** - All components adapt to container width. Use CSS Grid/Flexbox for layouts.
+
+## Accessibility Considerations
+
+All composition patterns maintain WCAG 2.1 AA compliance:
+
+- **Keyboard navigation**: Tab through all interactive elements
+- **Screen reader support**: Proper ARIA labels and roles
+- **Color contrast**: All text meets 4.5:1 ratio
+- **Focus management**: Visible focus indicators
+- **Motion sensitivity**: Animations respect `prefers-reduced-motion`
+
+## Performance Tips
+
+- **Tree-shaking**: Import only components you use
+- **Lazy loading**: Use React.lazy() for less-common components
+- **Memoization**: Wrap expensive compositions in React.memo()
+- **Avoid deep nesting**: Keep component trees shallow for better performance
+
+## Related Documentation
+
+- [Components](/?path=/docs/components-alert--docs) - Individual component APIs
+- [Hooks](/?path=/docs/hooks-usealertdismissal--docs) - Data fetching and state management
+- [Getting Started](/?path=/docs/getting-started--docs) - Basic usage guide
+- [Troubleshooting](/?path=/docs/troubleshooting--docs) - Common issues and solutions
