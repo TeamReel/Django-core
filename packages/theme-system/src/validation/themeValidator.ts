@@ -63,7 +63,7 @@ export function validateTheme(theme: Record<string, unknown>): ValidationReport 
           required: result.required
         });
       }
-    } catch (error) {
+    } catch {
       // If color parsing fails, treat as error
       errors.push({
         pair: name,
