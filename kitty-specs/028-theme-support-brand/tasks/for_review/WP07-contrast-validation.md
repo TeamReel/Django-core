@@ -12,7 +12,7 @@ subtasks:
   - "T064"
 title: "Contrast Validation & Accessibility"
 phase: "Phase 2 - Advanced Features"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "33848"
@@ -712,3 +712,4 @@ criticalPairs.forEach(({ name, fg, bg }) => {
 - 2025-12-13T17:20:41Z – claude – shell_pid=33848 – lane=for_review – Ready for review. T060 deferred, 2 test fixes needed for border contrast.
 - 2025-12-13T17:26:49Z – claude – shell_pid=33848 – lane=planned – Review: Border validation uses 4.5:1 text threshold instead of 3:1 UI component threshold. 2 test failures indicate production bug (not fixture issue). Fix: Pass textSize='large' for border pairs in validateTheme(). All other aspects excellent.
 - 2025-12-13T17:30:15Z – claude – shell_pid=33848 – lane=doing – Addressing review feedback: Fix border validation to use 3:1 UI component threshold
+- 2025-12-13T17:32:51Z – claude – shell_pid=33848 – lane=for_review – Fixed border validation bug - all tests passing (204/204)
