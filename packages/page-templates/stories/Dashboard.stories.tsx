@@ -82,7 +82,8 @@ export const Error: Story = {
   ),
 };
 
-export const CustomEmpty: Story = {
+export const CustomEmptyState: Story = {
+  name: 'Custom Empty State',
   render: () => (
     <Dashboard
       isEmpty
