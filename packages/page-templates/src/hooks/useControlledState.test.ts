@@ -6,7 +6,7 @@ describe('useControlledState', () => {
   describe('uncontrolled mode', () => {
     it('should use default value initially', () => {
       const { result } = renderHook(() =>
-        useControlledState(undefined, 'default')
+        useControlledState<string>(undefined, 'default')
       );
 
       expect(result.current[0]).toBe('default');
@@ -14,7 +14,7 @@ describe('useControlledState', () => {
 
     it('should update internal state when setValue is called', () => {
       const { result } = renderHook(() =>
-        useControlledState(undefined, 'default')
+        useControlledState<string>(undefined, 'default')
       );
 
       act(() => {
@@ -27,7 +27,7 @@ describe('useControlledState', () => {
     it('should call onChange when provided', () => {
       const onChange = vi.fn();
       const { result } = renderHook(() =>
-        useControlledState(undefined, 'default', onChange)
+        useControlledState<string>(undefined, 'default', onChange)
       );
 
       act(() => {
@@ -41,7 +41,7 @@ describe('useControlledState', () => {
   describe('controlled mode', () => {
     it('should use controlled value', () => {
       const { result } = renderHook(() =>
-        useControlledState('controlled', 'default')
+        useControlledState<string>('controlled', 'default')
       );
 
       expect(result.current[0]).toBe('controlled');
@@ -49,7 +49,7 @@ describe('useControlledState', () => {
 
     it('should not update internal state when setValue is called', () => {
       const { result } = renderHook(() =>
-        useControlledState('controlled', 'default')
+        useControlledState<string>('controlled', 'default')
       );
 
       act(() => {
@@ -63,7 +63,7 @@ describe('useControlledState', () => {
     it('should call onChange when setValue is called', () => {
       const onChange = vi.fn();
       const { result } = renderHook(() =>
-        useControlledState('controlled', 'default', onChange)
+        useControlledState<string>('controlled', 'default', onChange)
       );
 
       act(() => {
@@ -75,8 +75,8 @@ describe('useControlledState', () => {
 
     it('should update when controlled value changes', () => {
       const { result, rerender } = renderHook(
-        ({ value }) => useControlledState(value, 'default'),
-        { initialProps: { value: 'controlled1' } }
+        ({ value }) => useControlledState<string>(value, 'default'),
+        { initialProps: { value: 'controlled1' as string | undefined } }
       );
 
       expect(result.current[0]).toBe('controlled1');
@@ -92,8 +92,8 @@ describe('useControlledState', () => {
       const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const { rerender } = renderHook(
-        ({ value }) => useControlledState(value, 'default'),
-        { initialProps: { value: undefined } }
+        ({ value }) => useControlledState<string>(value, 'default'),
+        { initialProps: { value: undefined as string | undefined } }
       );
 
       rerender({ value: 'controlled' });
@@ -109,8 +109,8 @@ describe('useControlledState', () => {
       const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const { rerender } = renderHook(
-        ({ value }) => useControlledState(value, 'default'),
-        { initialProps: { value: 'controlled' } }
+        ({ value }) => useControlledState<string>(value, 'default'),
+        { initialProps: { value: 'controlled' as string | undefined } }
       );
 
       rerender({ value: undefined });
