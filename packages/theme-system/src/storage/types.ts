@@ -42,4 +42,10 @@ export interface ThemeStorage {
    * @param theme - Theme preference to persist
    */
   setTheme(theme: ThemePreference): Promise<void>;
+
+  /**
+   * Clear stored theme preference.
+   * Resets to default (no stored preference).
+   */
+  clearTheme(): Promise<void>;
 }

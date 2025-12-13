@@ -17,3 +17,16 @@ export type { BrandVariant, BrandVariantDefinition, BrandConfig } from './types/
 // Context (for advanced use cases)
 export { ThemeContext } from './context/ThemeContext';
 export type { ThemeContextValue } from './context/ThemeContext';
+
+// Storage adapters
+export {
+  CookieStorage,
+  LocalStorageAdapter,
+  B12Adapter,
+  ComposedStorage,
+} from './storage';
+export type {
+  ThemeStorage,
+  CookieStorageOptions,
+  B12AdapterOptions,
+} from './storage';
