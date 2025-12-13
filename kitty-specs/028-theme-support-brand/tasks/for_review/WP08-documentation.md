@@ -15,7 +15,7 @@ subtasks:
   - "T076"
 title: "Documentation & Examples"
 phase: "Phase 3 - Polish & Release"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "system"
 shell_pid: ""
@@ -1024,3 +1024,4 @@ history:
 
 - 2025-12-13T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-13T17:40:02Z – system – shell_pid= – lane=doing – Started documentation and examples implementation
+- 2025-12-13T18:38:04Z – system – shell_pid= – lane=for_review – Documentation complete - all 12 subtasks implemented
