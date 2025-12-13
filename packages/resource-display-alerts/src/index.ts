@@ -6,7 +6,7 @@ export { ResourceUsageBar } from './components/ResourceUsageBar';
 export type { ResourceUsageBarProps } from './components/ResourceUsageBar';
 
 export { HealthStatus } from './components/HealthStatus';
-export type { HealthStatusProps, HealthStatusType } from './components/HealthStatus';
+export type { HealthStatusProps } from './components/HealthStatus';
 
 export { Badge } from './components/Badge';
 export type { BadgeProps } from './components/Badge';
