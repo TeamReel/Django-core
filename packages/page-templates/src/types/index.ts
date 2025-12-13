@@ -131,3 +131,55 @@ export interface ListDetailComponent extends React.FC<ListDetailProps> {
   List: React.FC<ListDetailListProps>;
   Detail: React.FC<ListDetailDetailProps>;
 }
+
+// Wizard types
+export interface WizardStepConfig {
+  id: string;
+  label: string;
+  description?: string;
+  optional?: boolean;
+  validate?: (data: unknown) => boolean | Promise<boolean>;
+  icon?: React.ComponentType<{ size?: number }>;
+}
+
+export interface WizardProps extends A11yProps, StateRenderProps {
+  steps: WizardStepConfig[];
+  children: React.ReactNode;
+  defaultStepIndex?: number;
+  stepIndex?: number;
+  onStepIndexChange?: (index: number) => void;
+  onComplete?: (data: unknown) => void | Promise<void>;
+  onCancel?: () => void;
+  showStepIndicator?: boolean;
+  stepIndicatorVariant?: 'dots' | 'numbers' | 'labels';
+  allowFreeNavigation?: boolean;
+  className?: string;
+}
+
+export interface WizardStepProps extends A11yProps {
+  stepId: string;
+  children: React.ReactNode;
+  className?: string;
+}
+
+export interface WizardNavigationProps {
+  currentStep: number;
+  totalSteps: number;
+  canGoPrevious: boolean;
+  canGoNext: boolean;
+  isLastStep: boolean;
+  onPrevious: () => void;
+  onNext: () => void;
+  onCancel: () => void;
+  onFinish: () => void;
+  previousLabel?: string;
+  nextLabel?: string;
+  cancelLabel?: string;
+  finishLabel?: string;
+  className?: string;
+}
+
+export interface WizardComponent extends React.FC<WizardProps> {
+  Step: React.FC<WizardStepProps>;
+  Navigation: React.FC<WizardNavigationProps>;
+}

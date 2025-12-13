@@ -17,3 +17,6 @@ export * from './components/Dashboard';
 
 // Export ListDetail template
 export * from './components/ListDetail';
+
+// Export Wizard template
+export * from './components/Wizard';
