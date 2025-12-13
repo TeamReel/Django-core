@@ -1,48 +1,11 @@
 import React from 'react';
+import type { DashboardProps, DashboardComponent } from '../../types';
 import { DashboardHeader } from './DashboardHeader';
 import { DashboardGrid } from './DashboardGrid';
 import { DashboardFilterBar } from './DashboardFilterBar';
 import { DefaultLoading } from '../states/DefaultLoading';
 import { DefaultEmpty } from '../states/DefaultEmpty';
 import { DefaultError } from '../states/DefaultError';
-
-export interface DashboardProps {
-  /** Child components (Header, FilterBar, Grid) */
-  children: React.ReactNode;
-
-  /** Loading state (controls default loading UI) */
-  loading?: boolean;
-
-  /** Error state (shows error UI if provided) */
-  error?: Error | null;
-
-  /** Empty state (shows empty UI if true and no children) */
-  isEmpty?: boolean;
-
-  /** Override default loading UI */
-  renderLoading?: () => React.ReactNode;
-
-  /** Override default empty UI */
-  renderEmpty?: () => React.ReactNode;
-
-  /** Override default error UI */
-  renderError?: (error: Error) => React.ReactNode;
-
-  /** ARIA label for the main region */
-  'aria-label'?: string;
-
-  /** Additional CSS class name */
-  className?: string;
-
-  /** Additional inline styles */
-  style?: React.CSSProperties;
-}
-
-export interface DashboardComponent extends React.FC<DashboardProps> {
-  Header: typeof DashboardHeader;
-  Grid: typeof DashboardGrid;
-  FilterBar: typeof DashboardFilterBar;
-}
 
 /**
  * Dashboard template component for displaying application dashboards with widgets.
@@ -61,7 +24,7 @@ export interface DashboardComponent extends React.FC<DashboardProps> {
  * </Dashboard>
  * ```
  */
-export const Dashboard: DashboardComponent = ({
+const DashboardFC: React.FC<DashboardProps> = ({
   children,
   loading = false,
   error = null,
@@ -101,9 +64,9 @@ export const Dashboard: DashboardComponent = ({
   );
 };
 
-// Attach sub-components to create compound component pattern
+// Create compound component by attaching sub-components
+export const Dashboard = DashboardFC as DashboardComponent;
 Dashboard.Header = DashboardHeader;
 Dashboard.Grid = DashboardGrid;
 Dashboard.FilterBar = DashboardFilterBar;
-
 Dashboard.displayName = 'Dashboard';

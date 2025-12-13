@@ -1,5 +1,7 @@
 // Common TypeScript types for page templates
 
+import * as React from 'react';
+
 /**
  * Page loading states
  */
@@ -53,4 +55,79 @@ export interface ControlledStateProps<T> {
   value?: T;
   defaultValue?: T;
   onChange?: (value: T) => void;
+}
+
+// Dashboard types
+export interface DashboardProps extends A11yProps, StateRenderProps {
+  children: React.ReactNode;
+  loading?: boolean;
+  error?: Error;
+  isEmpty?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+export interface DashboardHeaderProps extends A11yProps {
+  title: string | React.ReactNode;
+  subtitle?: string | React.ReactNode;
+  actions?: React.ReactNode;
+  breadcrumbs?: React.ReactNode;
+  className?: string;
+}
+
+export interface DashboardGridProps extends A11yProps {
+  children: React.ReactNode;
+  columns?: number | { mobile?: number; tablet?: number; desktop?: number };
+  gap?: 'sm' | 'md' | 'lg';
+  className?: string;
+}
+
+export interface DashboardFilterBarProps extends A11yProps {
+  children: React.ReactNode;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
+  className?: string;
+}
+
+export interface DashboardComponent extends React.FC<DashboardProps> {
+  Header: React.FC<DashboardHeaderProps>;
+  Grid: React.FC<DashboardGridProps>;
+  FilterBar: React.FC<DashboardFilterBarProps>;
+}
+
+// ListDetail types
+export interface ListDetailProps extends A11yProps, StateRenderProps, ResponsiveProps {
+  children: React.ReactNode;
+  defaultSelectedId?: string | number | null;
+  selectedId?: string | number | null;
+  onSelectedIdChange?: (id: string | number | null) => void;
+  splitRatio?: [number, number];
+  listMinWidth?: number;
+  mobileLayout?: 'stack' | 'overlay';
+  className?: string;
+}
+
+export interface ListDetailListProps extends A11yProps {
+  children: React.ReactNode;
+  showSearch?: boolean;
+  searchPlaceholder?: string;
+  onSearchChange?: (query: string) => void;
+  loading?: boolean;
+  isEmpty?: boolean;
+  className?: string;
+}
+
+export interface ListDetailDetailProps extends A11yProps {
+  children: React.ReactNode;
+  showBackButton?: boolean;
+  onBack?: () => void;
+  loading?: boolean;
+  className?: string;
+}
+
+export interface ListDetailComponent extends React.FC<ListDetailProps> {
+  List: React.FC<ListDetailListProps>;
+  Detail: React.FC<ListDetailDetailProps>;
 }

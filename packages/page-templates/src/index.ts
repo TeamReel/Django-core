@@ -14,3 +14,6 @@ export * from './components/states';
 
 // Export Dashboard template
 export * from './components/Dashboard';
+
+// Export ListDetail template
+export * from './components/ListDetail';
