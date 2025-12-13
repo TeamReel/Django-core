@@ -1,0 +1,27 @@
+/**
+ * Badge styles
+ * Uses F01 design system tokens for spacing and typography
+ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px; /* F01 spacing-1 spacing-2 */
+  border-radius: 9999px; /* F01 border-radius-full - pill shape */
+  font-size: 12px; /* F01 font-size-xs */
+  font-weight: 600; /* F01 font-weight-semibold */
+  line-height: 1;
+  white-space: nowrap;
+  /* background-color and color set inline via style prop */
+}
+
+.small {
+  padding: 2px 6px; /* F01 spacing-0-5 spacing-1-5 */
+  font-size: 11px; /* F01 font-size-xxs */
+}
+
+.large {
+  padding: 6px 12px; /* F01 spacing-1-5 spacing-3 */
+  font-size: 14px; /* F01 font-size-sm */
+}

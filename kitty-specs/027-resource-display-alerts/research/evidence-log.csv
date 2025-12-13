@@ -1,0 +1,29 @@
+timestamp,research_area,finding,source_id,confidence,decision_impact
+2025-12-12T14:00:00Z,F01 Integration,F01 provides complete semantic token system (colors/spacing/motion),F01-tokens,high,critical
+2025-12-12T14:05:00Z,F01 Integration,Alert severity colors map to colorVars.background.[severity] + colorVars.palette.[severity],F01-tokens,high,critical
+2025-12-12T14:10:00Z,F01 Integration,Spacing scale: 0-24 with 4px increments (spacingVars),F01-tokens,high,high
+2025-12-12T14:15:00Z,F01 Integration,Motion tokens: fast(100ms)/normal(200ms)/slow(300ms) with easing variants,F01-tokens,high,high
+2025-12-12T14:20:00Z,F01 Alert,F01 Alert already implements WCAG 2.1 AA compliance with proper ARIA attributes,F01-alert,high,critical
+2025-12-12T14:25:00Z,F01 Alert,F01 Alert uses role=alert for error/warning and role=status for info/success,F01-alert,high,critical
+2025-12-12T14:30:00Z,F01 Alert,Decision: Re-export F01 Alert instead of replacing to avoid duplication,F01-alert,high,critical
+2025-12-12T14:35:00Z,localStorage,localStorage API: getItem/setItem/removeItem with QuotaExceededError handling,MDN-localStorage,high,high
+2025-12-12T14:40:00Z,localStorage,JSON serialization pattern with try/catch for corrupted data,MDN-localStorage,high,medium
+2025-12-12T14:45:00Z,localStorage,Graceful degradation acceptable for non-critical UI preferences,MDN-localStorage,high,medium
+2025-12-12T14:50:00Z,localStorage,Key namespacing: django_core_alert_${alertId},MDN-localStorage,high,medium
+2025-12-12T14:55:00Z,ARIA,aria-live=polite for info/success (non-intrusive announcements),ARIA-practices,high,critical
+2025-12-12T15:00:00Z,ARIA,aria-live=assertive for error/warning (immediate announcements),ARIA-practices,high,critical
+2025-12-12T15:05:00Z,ARIA,role=alert implies aria-live=assertive + aria-atomic=true,ARIA-practices,high,critical
+2025-12-12T15:10:00Z,ARIA,role=status implies aria-live=polite + aria-atomic=true,ARIA-practices,high,critical
+2025-12-12T15:15:00Z,ARIA,WCAG 2.1 4.1.3 Status Messages satisfied by role attributes,WCAG-2.1,high,critical
+2025-12-12T15:20:00Z,prefers-reduced-motion,CSS media query @media (prefers-reduced-motion: reduce) disables animations,MDN-prefers-reduced-motion,high,high
+2025-12-12T15:25:00Z,prefers-reduced-motion,vanilla-extract @media support for media queries,vanilla-extract,high,high
+2025-12-12T15:30:00Z,prefers-reduced-motion,Decision: CSS-only approach (no React hook) for simplicity,MDN-prefers-reduced-motion,high,medium
+2025-12-12T15:35:00Z,Compound Components,React.createContext pattern for compound components (Header/Body/Footer),React-context,high,high
+2025-12-12T15:40:00Z,Compound Components,TypeScript intersection type for main + sub-components,React-context,high,medium
+2025-12-12T15:45:00Z,Compound Components,Error if sub-components used outside parent context,React-context,high,medium
+2025-12-12T15:50:00Z,Compound Components,Decision: Only ResourceCard uses compound pattern (Alert/Badge/etc use props),React-context,high,high
+2025-12-12T15:55:00Z,Chromatic,Chromatic already configured for F01 Storybook instance,F01-readme,medium,medium
+2025-12-12T16:00:00Z,Chromatic,CI runs Chromatic on every PR with visual diff approval workflow,Chromatic-docs,medium,medium
+2025-12-12T16:05:00Z,Chromatic,Decision: Reuse F01 Chromatic setup (single Storybook for all design system),Chromatic-docs,high,high
+2025-12-12T16:10:00Z,API Contracts,B11/B18 response shapes to be defined in Phase 1 contracts/,internal,low,high
+2025-12-12T16:15:00Z,API Contracts,Components accept normalized data (not raw API responses) for product-agnostic principle,internal,high,critical

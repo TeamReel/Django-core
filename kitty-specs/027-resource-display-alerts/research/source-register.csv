@@ -1,0 +1,11 @@
+source_id,source_type,title,author,url,access_date,notes
+F01-tokens,internal,F01 Design System Token Definitions,TeamReel,packages/design-system/src/tokens/,2025-12-12,Color/spacing/motion token system
+F01-alert,internal,F01 Alert Component Implementation,TeamReel,packages/design-system/src/components/Alert/,2025-12-12,Existing Alert component with ARIA compliance
+F01-readme,internal,F01 Design System README,TeamReel,packages/design-system/README.md,2025-12-12,Installation and usage patterns
+MDN-localStorage,external,MDN Web Docs - Web Storage API,Mozilla,https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API,2025-12-12,localStorage best practices and API reference
+MDN-prefers-reduced-motion,external,MDN - prefers-reduced-motion,Mozilla,https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion,2025-12-12,CSS media query for motion preferences
+WCAG-2.1,external,Web Content Accessibility Guidelines 2.1,W3C,https://www.w3.org/WAI/WCAG21/quickref/,2025-12-12,Accessibility standards (Level AA)
+ARIA-practices,external,ARIA Authoring Practices Guide,W3C,https://www.w3.org/WAI/ARIA/apg/,2025-12-12,aria-live regions and role attributes
+React-context,external,React Context API Documentation,Meta,https://react.dev/reference/react/createContext,2025-12-12,Compound component pattern implementation
+vanilla-extract,external,vanilla-extract Documentation,Vanilla Extract,https://vanilla-extract.style/documentation/,2025-12-12,Zero-runtime CSS-in-TypeScript
+Chromatic-docs,external,Chromatic Documentation,Chromatic,https://www.chromatic.com/docs/,2025-12-12,Visual regression testing setup

@@ -1,0 +1,487 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Troubleshooting" />
+
+# Troubleshooting Guide
+
+Common issues and solutions when working with `@django-core/resource-alerts`.
+
+---
+
+## localStorage Unavailable
+
+**Symptom**: Alerts don't stay dismissed after page reload.
+
+**Cause**: Browser private mode, localStorage disabled, or storage quota exceeded.
+
+**Solution**: Components gracefully degrade. Alerts are still dismissible within the current session but won't persist across page reloads. No action needed.
+
+**Code Example**:
+```tsx
+// Components handle localStorage errors automatically
+<Alert title="Warning" dismissible />
+```
+
+**Technical Details**:
+- The package uses `isLocalStorageAvailable()` utility to detect localStorage availability
+- When unavailable, `useAlertDismissal` falls back to React state
+- No console errors or exceptions are thrown
+- User experience is preserved (alerts can still be dismissed temporarily)
+
+**Verification**:
+```tsx
+import { isLocalStorageAvailable } from '@django-core/resource-alerts';
+
+console.log('localStorage available:', isLocalStorageAvailable());
+```
+
+---
+
+## TypeScript Errors: "Cannot find module '@django-core/design-system'"
+
+**Symptom**: TypeScript compilation error when importing components.
+
+```
+error TS2307: Cannot find module '@django-core/design-system' or its corresponding type declarations.
+```
+
+**Cause**: Missing peer dependency.
+
+**Solution**: Install `@django-core/design-system`:
+
+```bash
+pnpm add @django-core/design-system
+```
+
+**Why This Happens**:
+- `@django-core/resource-alerts` depends on F01 (design system) for UI components
+- Peer dependencies must be installed separately
+- This ensures you control the design system version
+
+**Related Issues**:
+- If using npm/yarn, also install `react` and `react-dom` as peer dependencies
+- Check `package.json` `peerDependencies` for exact version requirements
+
+---
+
+## Bundle Size Too Large
+
+**Symptom**: Build output exceeds 50KB gzipped.
+
+**Cause**: Importing entire package instead of individual components.
+
+**Solution**: Use tree-shaking by importing only what you need:
+
+```tsx
+// ✅ Good: Only imports Alert
+import { Alert } from '@django-core/resource-alerts';
+
+// ❌ Bad: Imports entire package
+import * as ResourceAlerts from '@django-core/resource-alerts';
+```
+
+**Bundle Size Breakdown** (approximate, gzipped):
+- `Alert`: ~2KB
+- `ResourceUsageBar`: ~3KB
+- `HealthStatus`: ~2KB
+- `Badge`: ~1KB
+- `ResourceCard`: ~3KB
+- `AlertStack`: ~2KB
+- `useAlertDismissal`: ~1KB
+- `useResourceUsage`: ~2KB
+- `useHealthStatus`: ~2KB
+
+**Optimization Tips**:
+1. Import only components you use
+2. Use dynamic imports for less-common components:
+   ```tsx
+   const AlertStack = lazy(() => import('@django-core/resource-alerts').then(m => ({ default: m.AlertStack })));
+   ```
+3. Check your bundle analyzer for duplicates
+
+**Verification**:
+```bash
+# Build and analyze bundle size
+pnpm build
+du -sh dist/*
+```
+
+---
+
+## Components Don't Use F01 Colors
+
+**Symptom**: Components have default gray colors instead of brand colors.
+
+**Cause**: F01 design system global styles not imported in app.
+
+**Solution**: Import F01 global styles in your app entry point:
+
+```tsx
+// App.tsx or index.tsx
+import '@django-core/design-system/styles.css';
+import { Alert } from '@django-core/resource-alerts';
+
+function App() {
+  return <Alert title="Test" severity="warning" />;
+}
+```
+
+**Alternative**: If using vanilla-extract (F01's CSS-in-JS solution):
+
+```tsx
+import { themeClass } from '@django-core/design-system/theme.css';
+
+function App() {
+  return (
+    <div className={themeClass}>
+      <Alert title="Test" severity="warning" />
+    </div>
+  );
+}
+```
+
+**Why This Happens**:
+- F01 design tokens are defined in global CSS or vanilla-extract theme
+- Components reference these tokens via CSS variables
+- Without F01 styles, CSS variables are undefined
+
+---
+
+## ARIA Violations in Storybook
+
+**Symptom**: axe-core reports violations in Accessibility tab.
+
+**Cause**: Missing ARIA attributes or incorrect roles.
+
+**Solution**: Check specific violation message. Common fixes:
+
+### Missing aria-label on buttons
+```tsx
+// ❌ Before
+<button onClick={onClose}>×</button>
+
+// ✅ After
+<button onClick={onClose} aria-label="Close alert">
+  ×
+</button>
+```
+
+### Incorrect ARIA role
+```tsx
+// ❌ Before
+<div className={styles.progressBar}>...</div>
+
+// ✅ After
+<div
+  role="progressbar"
+  aria-valuenow={value}
+  aria-valuemin={0}
+  aria-valuemax={max}
+>
+  ...
+</div>
+```
+
+### Color contrast issues
+```tsx
+// ❌ Before: 3:1 ratio (fails WCAG AA)
+<span style={{ color: '#999', background: '#fff' }}>Low contrast</span>
+
+// ✅ After: 4.5:1 ratio (passes WCAG AA)
+<span style={{ color: '#666', background: '#fff' }}>Good contrast</span>
+```
+
+**Verification**:
+1. Open Storybook
+2. Navigate to story
+3. Open "Accessibility" tab in addon panel
+4. Check for violations
+5. Use browser DevTools Color Picker to verify contrast ratios
+
+---
+
+## Hook Polling Causes Performance Issues
+
+**Symptom**: High CPU usage, battery drain on mobile, or slow UI.
+
+**Cause**: Polling interval too short or too many concurrent polls.
+
+**Solution 1**: Increase polling interval:
+
+```tsx
+// ❌ Before: Poll every 5 seconds (too frequent)
+const { data } = useResourceUsage({
+  endpoint: '/api/credits',
+  pollInterval: 5000,
+});
+
+// ✅ After: Poll every 60 seconds
+const { data } = useResourceUsage({
+  endpoint: '/api/credits',
+  pollInterval: 60000,
+});
+```
+
+**Solution 2**: Disable polling (manual refresh only):
+
+```tsx
+const { data, refetch } = useResourceUsage({
+  endpoint: '/api/credits',
+  pollInterval: 0, // No polling
+});
+
+// Manual refresh on button click
+<button onClick={refetch}>Refresh</button>
+```
+
+**Solution 3**: Use `enabled` flag to conditionally poll:
+
+```tsx
+const [isActive, setIsActive] = useState(false);
+
+const { data } = useResourceUsage({
+  endpoint: '/api/credits',
+  pollInterval: 30000,
+  enabled: isActive, // Only poll when active
+});
+```
+
+**Performance Targets**:
+- Polling interval: ≥30 seconds for normal use cases
+- Polling interval: ≥60 seconds for mobile devices
+- Max concurrent polls: ≤3 per page
+- Disable polling when tab is inactive (use `document.hidden`)
+
+**Verification**:
+```tsx
+useEffect(() => {
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      // Tab inactive, pause polling
+    }
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+}, []);
+```
+
+---
+
+## Alerts Not Dismissing
+
+**Symptom**: Click dismiss button, but alert stays visible.
+
+**Cause**: Missing `onClose` handler or controlled component issue.
+
+**Solution 1**: Ensure `onClose` prop is provided:
+
+```tsx
+// ❌ Before: No onClose handler
+<Alert title="Warning" dismissible />
+
+// ✅ After: onClose handler provided
+const [isVisible, setIsVisible] = useState(true);
+
+<Alert
+  title="Warning"
+  dismissible
+  onClose={() => setIsVisible(false)}
+/>
+```
+
+**Solution 2**: For persistent dismissal, use `useAlertDismissal`:
+
+```tsx
+const { isVisible, dismiss } = useAlertDismissal({
+  alertId: 'my-alert',
+});
+
+if (!isVisible) return null;
+
+<Alert
+  title="Warning"
+  dismissible
+  onClose={dismiss}
+/>
+```
+
+**Why This Happens**:
+- Alert component is controlled (visibility managed externally)
+- Clicking dismiss button calls `onClose` callback
+- Parent component must update state to hide alert
+
+---
+
+## ResourceUsageBar Not Showing Progress
+
+**Symptom**: Progress bar always empty or always full.
+
+**Cause**: Incorrect `value` or `max` prop values.
+
+**Solution**: Verify prop values are numbers (not strings):
+
+```tsx
+// ❌ Before: String values
+<ResourceUsageBar value="850" max="1000" />
+
+// ✅ After: Number values
+<ResourceUsageBar value={850} max={1000} />
+```
+
+**Common Mistakes**:
+1. **value > max**: Progress bar shows 100%
+2. **value < 0**: Progress bar shows 0%
+3. **max = 0**: Division by zero, shows 0%
+4. **String props**: Type coercion may fail
+
+**Verification**:
+```tsx
+console.log('value:', value, 'type:', typeof value);
+console.log('max:', max, 'type:', typeof max);
+console.log('percentage:', (value / max) * 100);
+```
+
+---
+
+## TypeScript Type Errors with Compound Components
+
+**Symptom**: TypeScript error when using ResourceCard compound components.
+
+```
+error TS2339: Property 'Header' does not exist on type ...
+```
+
+**Cause**: Incorrect import or missing type definitions.
+
+**Solution**: Import the full ResourceCard namespace:
+
+```tsx
+// ❌ Before: Destructured import
+import { ResourceCardHeader } from '@django-core/resource-alerts';
+
+// ✅ After: Namespace import
+import { ResourceCard } from '@django-core/resource-alerts';
+
+<ResourceCard>
+  <ResourceCard.Header>...</ResourceCard.Header>
+  <ResourceCard.Body>...</ResourceCard.Body>
+</ResourceCard>
+```
+
+**Why This Happens**:
+- Compound components use namespace pattern (`ResourceCard.Header`)
+- TypeScript requires importing the parent component
+- Subcomponents are not exported separately
+
+---
+
+## Storybook Not Loading Stories
+
+**Symptom**: Storybook shows "No stories found" or blank page.
+
+**Cause**: Stories glob pattern misconfigured or build error.
+
+**Solution 1**: Check `.storybook/main.ts` stories pattern:
+
+```typescript
+// .storybook/main.ts
+export default {
+  stories: [
+    '../stories/**/*.mdx',
+    '../stories/**/*.stories.@(js|jsx|ts|tsx)',
+  ],
+  // ...
+};
+```
+
+**Solution 2**: Check for console errors in browser DevTools.
+
+**Solution 3**: Rebuild Storybook:
+
+```bash
+rm -rf node_modules/.cache
+pnpm storybook
+```
+
+**Verification**:
+```bash
+# List all story files
+find stories -name "*.stories.*" -o -name "*.mdx"
+```
+
+---
+
+## Components Render Incorrectly in Tests
+
+**Symptom**: Components fail tests or render differently than expected.
+
+**Cause**: Missing test environment setup or incomplete mocks.
+
+**Solution 1**: Ensure jsdom is configured in Vitest:
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./tests/setup.ts'],
+  },
+});
+```
+
+**Solution 2**: Mock localStorage in tests:
+
+```typescript
+// tests/setup.ts
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+global.localStorage = localStorageMock as any;
+```
+
+**Solution 3**: Mock F01 components if needed:
+
+```typescript
+vi.mock('@django-core/design-system', () => ({
+  Alert: ({ children }: any) => <div data-testid="alert">{children}</div>,
+}));
+```
+
+---
+
+## Still Having Issues?
+
+If your issue isn't listed here:
+
+1. **Check the README**: [View README](https://github.com/your-org/django-core/blob/main/packages/resource-display-alerts/README.md)
+2. **Search GitHub Issues**: [View Issues](https://github.com/your-org/django-core/issues)
+3. **Ask in Slack**: #frontend channel
+4. **Check F01 docs**: Many issues are related to the design system
+5. **Enable debug logging**:
+   ```tsx
+   import { setDebugMode } from '@django-core/resource-alerts';
+   setDebugMode(true);
+   ```
+
+## Debug Checklist
+
+When reporting an issue, please include:
+
+- [ ] Package version (`pnpm list @django-core/resource-alerts`)
+- [ ] React version (`pnpm list react`)
+- [ ] F01 version (`pnpm list @django-core/design-system`)
+- [ ] Browser and version
+- [ ] Minimal reproduction (CodeSandbox or GitHub repo)
+- [ ] Console errors (if any)
+- [ ] Expected vs actual behavior
+
+## Related Documentation
+
+- [Getting Started](/?path=/docs/getting-started--docs) - Basic usage guide
+- [Components](/?path=/docs/components-alert--docs) - Component API reference
+- [Composition Patterns](/?path=/docs/composition-patterns--docs) - Advanced patterns
+- [F01 Design System](https://storybook.f01.django-core.dev) - Design system docs
