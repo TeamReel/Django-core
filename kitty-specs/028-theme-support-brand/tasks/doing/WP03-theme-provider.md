@@ -12,10 +12,10 @@ subtasks:
   - "T028"
 title: "ThemeProvider Context & Hooks"
 phase: "Phase 1 - Core Theme System"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "28624"
 review_status: ""
 reviewed_by: ""
 history:
@@ -538,3 +538,4 @@ history:
 ## Activity Log
 
 - 2025-12-13T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-13T13:08:49Z – claude – shell_pid=28624 – lane=doing – Started WP03 implementation: ThemeProvider & hooks
