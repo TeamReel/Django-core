@@ -12,7 +12,7 @@ subtasks:
   - "T028"
 title: "ThemeProvider Context & Hooks"
 phase: "Phase 1 - Core Theme System"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "28624"
@@ -540,3 +540,4 @@ history:
 - 2025-12-13T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-13T13:08:49Z – claude – shell_pid=28624 – lane=doing – Started WP03 implementation: ThemeProvider & hooks
 - 2025-12-13T14:17:03Z – claude – shell_pid=28624 – lane=doing – Completed T020-T028: ThemeProvider, useTheme, system preference detection, comprehensive tests (40/40), matchMedia mock added. Quality gates: typecheck ✅, lint ✅, test ✅, build ✅
+- 2025-12-13T13:19:39Z – claude – shell_pid=28624 – lane=for_review – Ready for review: ThemeProvider context & hooks complete
