@@ -12,18 +12,33 @@ subtasks:
   - "T055"
 title: "ThemeToggle Component & Storybook"
 phase: "Phase 2 - Advanced Features"
-lane: "for_review"
+lane: "planned"
 assignee: ""
 agent: "claude"
 shell_pid: "19776"
-review_status: ""
-reviewed_by: ""
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-13T00:00:00Z"
     lane: "planned"
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-13T13:59:03Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "19776"
+    action: "Started WP06 implementation: ThemeToggle Component & Storybook"
+  - timestamp: "2025-12-13T14:10:04Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "19776"
+    action: "Ready for review: ThemeToggle component complete with all variants, comprehensive tests, and keyboard accessibility"
+  - timestamp: "2025-12-13T15:42:00Z"
+    lane: "planned"
+    agent: "claude-reviewer"
+    shell_pid: ""
+    action: "NEEDS CHANGES - Critical deviation: Implementation uses inline styles instead of required F01 design system components (Button, Switch, DropdownMenu). Must refactor to use 100% F01 components per Definition of Done. Testing and accessibility work is exemplary."
 ---
 
 # Work Package Prompt: WP06 – ThemeToggle Component & Storybook
@@ -40,7 +55,115 @@ history:
 
 ## Review Feedback
 
-*[This section is empty initially. Reviewers will populate it if work needs changes.]*
+### ❌ NEEDS CHANGES - Critical Deviation from Requirements
+
+**Reviewed by**: claude-reviewer
+**Review date**: 2025-12-13
+**Status**: Changes Required
+
+#### Critical Issue: F01 Component Requirement Not Met
+
+**Problem**: The prompt explicitly requires **"100% F01 design tokens (zero custom CSS)"** and shows implementation using F01 components (Button, Switch, DropdownMenu) throughout T048-T050. However, the actual implementation uses **inline styles exclusively** with no F01 component imports.
+
+**Evidence**:
+- Prompt T048: `import { Button } from '@django-core/design-system'` - NOT IMPLEMENTED
+- Prompt T049: `import { Switch } from '@django-core/design-system'` - NOT IMPLEMENTED
+- Prompt T050: `import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@django-core/design-system'` - NOT IMPLEMENTED
+- Actual code: All variants use inline `style={{}}` objects with hardcoded values
+- No imports from `@django-core/design-system` found in ThemeToggle.tsx
+
+**Impact**:
+- ❌ Violates Definition of Done: "100% F01 components (zero custom CSS)"
+- ❌ Breaks consistency with F01 design system (which is a stated Constitutional Principle VII)
+- ❌ Creates maintenance burden (duplicated button/switch/dropdown logic)
+- ❌ Misses F01 accessibility features already built-in
+- ❌ Visual inconsistency with other F01-based components
+
+**Required Fix**:
+1. Install `@django-core/design-system` as dependency (if not already present)
+2. Refactor **IconVariant** to use `<Button variant="ghost" size="icon">` from F01
+3. Refactor **SwitchVariant** to use `<Switch>` component from F01
+4. Refactor **DropdownVariant** to use F01 dropdown components (`DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem`)
+5. Remove all inline `style={{}}` objects
+6. Update tests if F01 component structure changes DOM (verify 182 tests still pass)
+
+#### Secondary Issues
+
+**1. Incorrect Subtask Mapping**
+- Prompt shows T047-T055 (9 subtasks)
+- Actual implementation: T047 (interface), T048 (icon), T049 (switch), T050 (dropdown), T051 (stories), T052 (chromatic), T053 (unit tests), T054 (accessibility), T055 (keyboard) = 9 subtasks ✅
+- **Issue**: Prompt T048-T050 were about F01 integration, T051-T055 about documentation/testing
+- Implementation treated T048-T050 as variant implementation (correct scope) but used wrong approach (inline styles vs F01)
+
+**2. Definition of Done Checklist - Update Required**
+Current prompt checklist shows:
+```
+- [ ] 100% F01 components (zero custom CSS)
+```
+This must remain **unchecked** until F01 components are integrated.
+
+#### What Was Done Well ✅
+
+Despite the F01 deviation, the implementation shows strong quality:
+
+1. **Comprehensive Testing** (58 new tests):
+   - ✅ 22 unit tests covering all variants
+   - ✅ 19 accessibility tests with jest-axe (WCAG 2.1 AA validation)
+   - ✅ 17 keyboard navigation tests (Enter/Space/Arrow/Escape/Tab)
+   - ✅ All 182 tests passing
+
+2. **Excellent Accessibility** (even without F01):
+   - ✅ Proper ARIA attributes (role, aria-label, aria-checked, aria-expanded, aria-haspopup)
+   - ✅ 44×44px touch targets enforced
+   - ✅ Icons marked aria-hidden="true"
+   - ✅ Full keyboard navigation (Arrow Up/Down with wrap, Escape, Tab blur detection)
+   - ✅ Focus management with refs and useEffect
+
+3. **Complete Feature Set**:
+   - ✅ Three variants working (icon cycling, switch toggle, dropdown menu)
+   - ✅ Optional labels (`showLabel` prop)
+   - ✅ Custom aria-label support
+   - ✅ Checkmark indicator in dropdown for current mode
+
+4. **Documentation**:
+   - ✅ 8 Storybook stories covering all variants and states
+   - ✅ Chromatic CI job configured (visual regression)
+   - ✅ Comprehensive JSDoc comments in code
+
+5. **Quality Gates**:
+   - ✅ TypeScript strict mode passing
+   - ✅ ESLint passing (fixed jsx-a11y violations)
+   - ✅ All tests passing (182/182)
+   - ✅ Build successful
+
+#### Action Items
+
+**MUST FIX** (Blocking):
+1. [ ] Refactor to use F01 Button component (IconVariant)
+2. [ ] Refactor to use F01 Switch component (SwitchVariant)
+3. [ ] Refactor to use F01 DropdownMenu components (DropdownVariant)
+4. [ ] Verify all 182 tests still pass after refactor
+5. [ ] Update Definition of Done checklist to check "100% F01 components"
+
+**SHOULD FIX** (Non-blocking but important):
+1. [ ] Add `.gitignore` entry for `storybook-static/` (currently committed, 69K+ insertions)
+2. [ ] Document why one test was removed (full cycle timing issue) in test file comment
+3. [ ] Consider if `toggleMode` hook method should cycle system→light or system→system (currently cycles)
+
+**NICE TO HAVE**:
+1. [ ] Add Storybook story showing reduced-motion support (T049 mentions this)
+2. [ ] Document prefers-reduced-motion handling (if implemented, not clearly visible)
+3. [ ] Add story demonstrating mobile viewport (44×44px touch targets)
+
+---
+
+### Review Decision: ⏸️ NEEDS CHANGES
+
+**Rationale**: Implementation demonstrates excellent engineering practices (comprehensive tests, accessibility, keyboard nav, documentation) but fundamentally deviates from the architectural requirement to use F01 design system components. This violates the Definition of Done and creates technical debt.
+
+**Recommendation**: Refactor to use F01 components as specified in prompt, then re-review. The test suite and accessibility work are exemplary and should survive the refactor with minimal changes.
+
+**Estimated Fix Time**: 2-3 hours (refactor to F01 components, verify tests still pass)
 
 ---
 
