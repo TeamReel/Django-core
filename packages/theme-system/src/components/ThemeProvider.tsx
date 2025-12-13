@@ -61,11 +61,31 @@ export function ThemeProvider({
   defaultMode = 'system',
   defaultBrand = 'default',
 }: ThemeProviderProps) {
-  const [mode, setMode] = useState<ThemeMode>(defaultMode);
-  const [brand, setBrand] = useState<BrandVariant>(defaultBrand);
-  const [resolvedMode, setResolvedMode] = useState<'light' | 'dark'>(() =>
-    resolveThemeMode(defaultMode)
-  );
+  // Initialize from existing data attributes (set by SSR inline script)
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    // Check if SSR script already set theme
+    const ssrTheme = document.documentElement.getAttribute('data-theme');
+    if (ssrTheme === 'light' || ssrTheme === 'dark') {
+      // If SSR set explicit theme, use it; assume non-system mode
+      return ssrTheme;
+    }
+    return defaultMode;
+  });
+
+  const [brand, setBrand] = useState<BrandVariant>(() => {
+    // Check if SSR script already set brand
+    const ssrBrand = document.documentElement.getAttribute('data-brand');
+    return (ssrBrand as BrandVariant) || defaultBrand;
+  });
+
+  const [resolvedMode, setResolvedMode] = useState<'light' | 'dark'>(() => {
+    // Check SSR-set theme first
+    const ssrTheme = document.documentElement.getAttribute('data-theme');
+    if (ssrTheme === 'light' || ssrTheme === 'dark') {
+      return ssrTheme;
+    }
+    return resolveThemeMode(defaultMode);
+  });
 
   // Load persisted preference on mount
   useEffect(() => {
