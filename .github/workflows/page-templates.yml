@@ -158,8 +158,7 @@ jobs:
   chromatic:
     name: Visual Regression (Chromatic)
     runs-on: ubuntu-latest
-    if: false  # Temporarily disabled due to Storybook build issues
-    # if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
