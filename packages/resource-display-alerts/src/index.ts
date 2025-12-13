@@ -11,6 +11,18 @@ export type { HealthStatusProps } from './components/HealthStatus';
 export { Badge } from './components/Badge';
 export type { BadgeProps } from './components/Badge';
 
+export { ResourceCard, useResourceCardContext } from './components/ResourceCard';
+export type {
+  ResourceCardProps,
+  ResourceCardContextValue,
+  ResourceCardHeaderProps,
+  ResourceCardBodyProps,
+  ResourceCardFooterProps,
+} from './components/ResourceCard';
+
+export { AlertStack } from './components/AlertStack';
+export type { AlertStackProps } from './components/AlertStack';
+
 // Hook exports
 export { useAlertDismissal } from './hooks/useAlertDismissal';
 export type {

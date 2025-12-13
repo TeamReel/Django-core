@@ -1,0 +1,83 @@
+/**
+ * Styles for AlertStack Component
+ *
+ * Manages spacing, positioning, and z-index for stacked alerts.
+ * Supports inline and top-center (fixed) positioning.
+ */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+/* Inline positioning (default) */
+.inline {
+  width: 100%;
+}
+
+/* Top-center positioning (page-level banner) */
+.top-center {
+  position: fixed;
+  top: var(--spacing-4);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
+  z-index: 1000;
+  pointer-events: none;
+  padding: 0 var(--spacing-4);
+}
+
+.top-center .item {
+  pointer-events: all;
+}
+
+.item {
+  /* No additional styles needed, alert manages own appearance */
+}
+
+.viewAll {
+  padding: var(--spacing-2) var(--spacing-4);
+  background-color: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-neutral-700);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.viewAll:hover {
+  background-color: var(--color-neutral-200);
+}
+
+.viewAll:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.viewAll:active {
+  background-color: var(--color-neutral-300);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .top-center {
+    max-width: 100%;
+    padding: 0 var(--spacing-2);
+  }
+
+  .stack {
+    gap: var(--spacing-2);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .viewAll {
+    transition: none;
+  }
+}
