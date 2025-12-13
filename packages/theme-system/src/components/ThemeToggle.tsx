@@ -11,6 +11,8 @@
 
 import React from 'react';
 import { SunIcon, MoonIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline';
+import { Button } from '@django-core/design-system';
+import { themeVars } from '@django-core/design-system';
 import { useTheme } from '../hooks/useTheme';
 import type { ThemeMode } from '../types/theme';
 
@@ -47,7 +49,7 @@ export interface ThemeToggleProps {
 }
 
 /**
- * Icon variant - Simple button with sun/moon/system icon
+ * Icon variant - Simple button with sun/moon/system icon using F01 Button component
  */
 function IconVariant({
   showLabel,
@@ -63,36 +65,29 @@ function IconVariant({
   };
 
   const Icon = icons[mode];
-
   const nextMode = mode === 'light' ? 'dark' : mode === 'dark' ? 'system' : 'light';
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="md"
       onClick={toggleMode}
       aria-label={ariaLabel ?? `Switch to ${nextMode} mode`}
       className={className}
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        padding: showLabel ? '0.5rem 1rem' : '0.5rem',
         minWidth: '44px',
         minHeight: '44px',
-        border: 'none',
-        background: 'transparent',
-        cursor: 'pointer',
-        borderRadius: '0.25rem',
+        padding: showLabel ? `${themeVars.spacing['2']} ${themeVars.spacing['4']}` : themeVars.spacing['2'],
       }}
     >
       <Icon style={{ width: '1.25rem', height: '1.25rem' }} aria-hidden="true" />
-      {showLabel && <span>{mode}</span>}
-    </button>
+      {showLabel && <span style={{ marginLeft: themeVars.spacing['2'] }}>{mode}</span>}
+    </Button>
   );
 }
 
 /**
- * Switch variant - Toggle for light/dark only
+ * Switch variant - Toggle for light/dark only using F01 design tokens
  */
 function SwitchVariant({
   showLabel,
@@ -107,10 +102,14 @@ function SwitchVariant({
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '0.5rem',
+        gap: themeVars.spacing['2'],
       }}
     >
-      {showLabel && <span style={{ fontSize: '0.875rem' }}>Dark mode</span>}
+      {showLabel && (
+        <span style={{ fontSize: themeVars.typography.fontSize.sm }}>
+          Dark mode
+        </span>
+      )}
       <button
         type="button"
         role="switch"
@@ -124,11 +123,13 @@ function SwitchVariant({
           display: 'inline-block',
           width: '44px',
           height: '24px',
-          backgroundColor: isDark ? '#3b82f6' : '#e5e7eb',
-          borderRadius: '12px',
+          backgroundColor: isDark
+            ? themeVars.color.interactive.primary
+            : themeVars.color.background.secondary,
+          borderRadius: themeVars.radius.full,
           border: 'none',
           cursor: 'pointer',
-          transition: 'background-color 0.2s',
+          transition: `background-color ${themeVars.motion.duration.fast} ${themeVars.motion.easing.default}`,
         }}
       >
         <span
@@ -138,9 +139,9 @@ function SwitchVariant({
             left: isDark ? '22px' : '2px',
             width: '20px',
             height: '20px',
-            backgroundColor: 'white',
-            borderRadius: '50%',
-            transition: 'left 0.2s',
+            backgroundColor: themeVars.color.text.inverse,
+            borderRadius: themeVars.radius.full,
+            transition: `left ${themeVars.motion.duration.fast} ${themeVars.motion.easing.default}`,
           }}
         />
       </button>
@@ -149,7 +150,7 @@ function SwitchVariant({
 }
 
 /**
- * Dropdown variant - Full menu with all mode options
+ * Dropdown variant - Full menu with all mode options using F01 Button and design tokens
  */
 function DropdownVariant({
   'aria-label': ariaLabel,
@@ -207,9 +208,10 @@ function DropdownVariant({
 
   return (
     <div style={{ position: 'relative' }} className={className} onBlur={handleBlur}>
-      <button
+      <Button
         ref={buttonRef}
-        type="button"
+        variant="ghost"
+        size="md"
         onClick={() => {
           setIsOpen(!isOpen);
           setFocusedIndex(modes.findIndex((m) => m.value === mode));
@@ -218,20 +220,13 @@ function DropdownVariant({
         aria-expanded={isOpen}
         aria-haspopup="true"
         style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '0.5rem',
           minWidth: '44px',
           minHeight: '44px',
-          border: 'none',
-          background: 'transparent',
-          cursor: 'pointer',
-          borderRadius: '0.25rem',
+          padding: themeVars.spacing['2'],
         }}
       >
         <CurrentIcon style={{ width: '1.25rem', height: '1.25rem' }} aria-hidden="true" />
-      </button>
+      </Button>
 
       {isOpen && (
         <>
@@ -246,7 +241,7 @@ function DropdownVariant({
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 10,
+              zIndex: themeVars.zIndex.dropdown,
               border: 'none',
               background: 'transparent',
               cursor: 'default',
@@ -256,19 +251,20 @@ function DropdownVariant({
           <div
             ref={menuRef}
             role="menu"
+            tabIndex={-1}
             onKeyDown={handleKeyDown}
             style={{
               position: 'absolute',
               top: '100%',
               right: 0,
-              marginTop: '0.25rem',
+              marginTop: themeVars.spacing['1'],
               minWidth: '150px',
-              backgroundColor: 'var(--background, white)',
-              border: '1px solid var(--border, #e5e7eb)',
-              borderRadius: '0.375rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              padding: '0.25rem',
-              zIndex: 20,
+              backgroundColor: themeVars.color.background.primary,
+              border: `1px solid ${themeVars.color.border.primary}`,
+              borderRadius: themeVars.radius.md,
+              boxShadow: themeVars.shadow.lg,
+              padding: themeVars.spacing['1'],
+              zIndex: themeVars.zIndex.dropdown + 10,
             }}
           >
             {modes.map(({ value, label, icon: Icon }, index) => (
@@ -285,18 +281,20 @@ function DropdownVariant({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
+                  gap: themeVars.spacing['2'],
                   width: '100%',
-                  padding: '0.5rem 0.75rem',
+                  padding: `${themeVars.spacing['2']} ${themeVars.spacing['3']}`,
                   border: 'none',
                   background: 'transparent',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  borderRadius: '0.25rem',
-                  fontSize: '0.875rem',
+                  borderRadius: themeVars.radius.sm,
+                  fontSize: themeVars.typography.fontSize.sm,
+                  color: themeVars.color.text.primary,
+                  transition: `background-color ${themeVars.motion.duration.fast} ${themeVars.motion.easing.default}`,
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--accent, #f3f4f6)';
+                  e.currentTarget.style.backgroundColor = themeVars.color.background.secondary;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
