@@ -2,6 +2,8 @@
 work_package_id: WP06
 title: Settings Template (User Story 4)
 lane: "done"
+review_status: "approved without changes"
+reviewed_by: "github-copilot-reviewer"
 subtasks: [T037, T038, T039, T040, T041, T042]
 priority: P2
 depends_on: [WP02]
