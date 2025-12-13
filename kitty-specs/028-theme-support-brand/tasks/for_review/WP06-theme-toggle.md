@@ -12,7 +12,7 @@ subtasks:
   - "T055"
 title: "ThemeToggle Component & Storybook"
 phase: "Phase 2 - Advanced Features"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "19776"
@@ -648,3 +648,4 @@ history:
 
 - 2025-12-13T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-13T13:59:03Z – claude – shell_pid=19776 – lane=doing – Started WP06 implementation: ThemeToggle Component & Storybook
+- 2025-12-13T14:10:04Z – claude – shell_pid=19776 – lane=for_review – Ready for review: ThemeToggle component complete with all variants, comprehensive tests, and keyboard accessibility
