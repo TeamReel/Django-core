@@ -127,23 +127,24 @@
 
 ---
 
-## Work Package WP03: ThemeProvider & Core Hooks
+## Work Package WP03: ThemeProvider & Core Hooks ✅
 
 **Goal**: Implement React context, useTheme hook, and HTML attribute synchronization
 **Priority**: P1 (Core Infrastructure - User Story 1 & 3 foundation)
 **Independent Test**: ThemeProvider applies data-theme attribute, useTheme returns state
-**Prompt**: `kitty-specs/028-theme-support-brand/tasks/planned/WP03-theme-provider.md`
+**Prompt**: `kitty-specs/028-theme-support-brand/tasks/done/WP03-theme-provider.md`
+**Status**: ✅ **COMPLETE** - Approved without changes (40/40 tests passing)
 
 ### Included Subtasks
-- [ ] **T020** Create ThemeContext with mode/brand state (components/ThemeProvider.tsx)
-- [ ] **T021** Implement useTheme hook (hooks/useTheme.ts) with setMode/setBrand
-- [ ] **T022** Implement HTML attribute synchronization (data-theme, data-brand on <html>)
-- [ ] **T023** Add system preference detection (prefers-color-scheme media query)
-- [ ] **T024** Integrate default theme resolution (storage → system → default)
-- [ ] **T025** Handle reduced-motion preference (prefers-reduced-motion)
-- [ ] **T026** Write unit tests for useTheme hook (state management, setters)
-- [ ] **T027** Write integration tests (ThemeProvider → HTML attributes)
-- [ ] **T028** Add Storybook story for ThemeProvider with theme switching demo
+- [x] **T020** Create ThemeContext with mode/brand state (components/ThemeProvider.tsx)
+- [x] **T021** Implement useTheme hook (hooks/useTheme.ts) with setMode/setBrand
+- [x] **T022** Implement HTML attribute synchronization (data-theme, data-brand on <html>)
+- [x] **T023** Add system preference detection (prefers-color-scheme media query)
+- [x] **T024** Integrate default theme resolution (storage → system → default)
+- [x] **T025** Handle reduced-motion preference (prefers-reduced-motion)
+- [x] **T026** Write unit tests for useTheme hook (state management, setters)
+- [x] **T027** Write integration tests (ThemeProvider → HTML attributes)
+- [x] **T028** Add Storybook story for ThemeProvider with theme switching demo
 
 ### Constitutional Alignment
 - **Principle II**: Single responsibility (ThemeProvider manages state only)
