@@ -20,3 +20,6 @@ export * from './components/ListDetail';
 
 // Export Wizard template
 export * from './components/Wizard';
+
+// Export Settings template
+export * from './components/Settings';

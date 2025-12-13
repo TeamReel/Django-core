@@ -183,3 +183,48 @@ export interface WizardComponent extends React.FC<WizardProps> {
   Step: React.FC<WizardStepProps>;
   Navigation: React.FC<WizardNavigationProps>;
 }
+
+// ============================================================================
+// Settings Template Types
+// ============================================================================
+
+export interface SettingsSectionConfig {
+  id: string;
+  label: string;
+  description?: string;
+  icon?: React.ComponentType<{ size?: number }>;
+  requiredPermission?: string;
+}
+
+export interface SettingsProps extends A11yProps, StateRenderProps, ResponsiveProps {
+  sections: SettingsSectionConfig[];
+  children: React.ReactNode;
+  defaultActiveSection?: string;
+  activeSection?: string;
+  onActiveSectionChange?: (sectionId: string) => void;
+  sidebarLayout?: 'sticky' | 'scrollable';
+  mobileLayout?: 'tabs' | 'dropdown';
+  showSectionActions?: boolean;
+  className?: string;
+}
+
+export interface SettingsSectionProps extends A11yProps {
+  sectionId: string;
+  children: React.ReactNode;
+  title?: string;
+  description?: string;
+  showDivider?: boolean;
+  className?: string;
+}
+
+export interface SettingsNavigationProps {
+  sections: SettingsSectionConfig[];
+  activeSection: string;
+  onSectionChange: (sectionId: string) => void;
+  className?: string;
+}
+
+export interface SettingsComponent extends React.FC<SettingsProps> {
+  Section: React.FC<SettingsSectionProps>;
+  Navigation: React.FC<SettingsNavigationProps>;
+}
