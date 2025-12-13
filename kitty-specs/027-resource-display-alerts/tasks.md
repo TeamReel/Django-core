@@ -384,7 +384,7 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 - [ ] WP02-WP04 complete → Core components render + pass tests
 - [ ] WP05 complete → Compound components work in Storybook
 - [ ] WP06 complete → Hooks fetch data correctly
-- [ ] WP07 complete → All accessibility checks pass
+System.Func`2[System.Text.RegularExpressions.Match,System.String]
 
 ### Quality Gates
 - [ ] All unit tests pass (>90% coverage)
