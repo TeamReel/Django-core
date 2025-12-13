@@ -48,6 +48,7 @@
     "@storybook/addon-a11y": "^8.3.5",
     "@storybook/addon-essentials": "^8.3.5",
     "@storybook/react": "^8.3.5",
+    "@storybook/react-dom-shim": "^8.3.5",
     "@storybook/react-vite": "^8.3.5",
     "chalk": "^5.3.0",
     "colorjs.io": "^0.5.0",
