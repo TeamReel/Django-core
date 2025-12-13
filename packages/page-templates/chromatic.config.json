@@ -7,8 +7,5 @@
   "skip": "dependabot/**",
   "exitZeroOnChanges": true,
   "exitOnceUploaded": true,
-  "diagnostics": false,
-  "autoAcceptChanges": "main",
-  "diffThreshold": 0.005,
-  "diffsOnly": true
+  "autoAcceptChanges": "main"
 }
