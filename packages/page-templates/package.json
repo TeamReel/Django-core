@@ -27,7 +27,9 @@
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "chromatic": "chromatic --exit-zero-on-changes",
+    "analyze": "vite build --mode analyze && node scripts/bundle-report.js"
   },
   "peerDependencies": {
     "@django-core/design-system": "workspace:*",
@@ -49,7 +51,9 @@
     "@typescript-eslint/parser": "^6.15.0",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitest/coverage-v8": "^1.0.4",
+    "chromatic": "^11.0.0",
     "eslint": "^8.56.0",
+    "rollup-plugin-visualizer": "^5.12.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "jsdom": "^23.0.1",

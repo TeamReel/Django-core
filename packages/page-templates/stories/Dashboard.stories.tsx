@@ -2,11 +2,34 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Dashboard } from '../src/components/Dashboard';
 import React from 'react';
 
+/**
+ * Dashboard Template
+ *
+ * A flexible dashboard layout for analytics, metrics, and overview pages.
+ *
+ * ## Features
+ * - Responsive grid system with mobile/tablet/desktop breakpoints
+ * - Built-in state management (loading, error, empty, permission denied)
+ * - Customizable state renderers
+ * - Header with breadcrumbs and action buttons
+ * - Optional filter bar
+ *
+ * ## Accessibility
+ * - WCAG 2.1 AA compliant
+ * - Keyboard navigation support
+ * - Screen reader tested
+ * - Semantic HTML structure
+ */
 const meta = {
   title: 'Templates/Dashboard',
   component: Dashboard,
   parameters: {
     layout: 'fullscreen',
+    docs: {
+      description: {
+        component: 'Production-ready dashboard template with responsive grid, state management, and accessibility built-in.',
+      },
+    },
   },
   tags: ['autodocs'],
 } satisfies Meta<typeof Dashboard>;
@@ -344,12 +367,56 @@ export const CustomPermissionDeniedState: Story = {
               cursor: 'pointer',
             }}
           >
-            Request Access
+          Request Access
           </button>
         </div>
       )}
     >
       <Dashboard.Header title="Analytics Dashboard" />
+    </Dashboard>
+  ),
+};
+
+/**
+ * Accessibility Example
+ *
+ * Demonstrates best practices for accessibility:
+ * - Semantic aria-label for context
+ * - Screen reader description
+ * - Keyboard-accessible actions
+ * - High contrast colors
+ */
+export const Accessibility: Story = {
+  name: 'Accessibility Example',
+  render: () => (
+    <Dashboard aria-label="Sales analytics dashboard">
+      <div id="dashboard-description" style={{ position: 'absolute', left: '-10000px' }}>
+        View real-time sales metrics including revenue, users, and conversion rates
+      </div>
+      <Dashboard.Header
+        title="Sales Analytics"
+        subtitle="Real-time performance metrics"
+        actions={
+          <button
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '0.375rem',
+              border: '1px solid #d1d5db',
+              backgroundColor: '#fff',
+              cursor: 'pointer',
+            }}
+            aria-label="Refresh dashboard data"
+          >
+            Refresh
+          </button>
+        }
+      />
+      <Dashboard.Grid columns={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">
+        <Widget title="Revenue" value="$45,231" trend="↑ 12% from last month" />
+        <Widget title="Users" value="1,234" trend="↑ 8% from last month" />
+        <Widget title="Conversion" value="12.5%" trend="↓ 2% from last month" />
+        <Widget title="Avg Order" value="$36.70" trend="↑ 5% from last month" />
+      </Dashboard.Grid>
     </Dashboard>
   ),
 };
