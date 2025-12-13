@@ -388,3 +388,138 @@ export const CustomSplit: Story = {
     );
   },
 };
+
+// ============================================================================
+// State Override Stories
+// ============================================================================
+
+export const CustomLoadingState: Story = {
+  name: 'Custom Loading State',
+  render: () => (
+    <div style={{ height: '600px' }}>
+      <ListDetail
+        loading
+        renderLoading={() => (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
+              <p style={{ color: '#6b7280' }}>Loading projects...</p>
+            </div>
+          </div>
+        )}
+      >
+        <ListDetail.List>{/* Content */}</ListDetail.List>
+        <ListDetail.Detail>{/* Content */}</ListDetail.Detail>
+      </ListDetail>
+    </div>
+  ),
+};
+
+export const CustomEmptyState: Story = {
+  name: 'Custom Empty State',
+  render: () => (
+    <div style={{ height: '600px' }}>
+      <ListDetail
+        isEmpty
+        renderEmpty={() => (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📁</div>
+              <h3 style={{ marginBottom: '0.5rem' }}>No Projects Yet</h3>
+              <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+                Create your first project to get started with your work.
+              </p>
+              <button
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  backgroundColor: '#3b82f6',
+                  color: '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                Create Project
+              </button>
+            </div>
+          </div>
+        )}
+      >
+        <ListDetail.List>{/* Content */}</ListDetail.List>
+        <ListDetail.Detail>{/* Content */}</ListDetail.Detail>
+      </ListDetail>
+    </div>
+  ),
+};
+
+export const CustomErrorState: Story = {
+  name: 'Custom Error State',
+  render: () => (
+    <div style={{ height: '600px' }}>
+      <ListDetail
+        error={new Error('Failed to fetch projects')}
+        renderError={(error) => (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❌</div>
+              <h3 style={{ marginBottom: '0.5rem', color: '#dc2626' }}>Error Loading Projects</h3>
+              <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+                {error?.message || 'An unexpected error occurred'}
+              </p>
+              <button
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #d1d5db',
+                  backgroundColor: '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        )}
+      >
+        <ListDetail.List>{/* Content */}</ListDetail.List>
+        <ListDetail.Detail>{/* Content */}</ListDetail.Detail>
+      </ListDetail>
+    </div>
+  ),
+};
+
+export const CustomPermissionDeniedState: Story = {
+  name: 'Custom Permission Denied State',
+  render: () => (
+    <div style={{ height: '600px' }}>
+      <ListDetail
+        permissionDenied
+        renderPermissionDenied={() => (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔐</div>
+              <h3 style={{ marginBottom: '0.5rem' }}>Access Denied</h3>
+              <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+                You need elevated permissions to view projects. Contact your team administrator.
+              </p>
+              <button
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #d1d5db',
+                  backgroundColor: '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                Request Access
+              </button>
+            </div>
+          </div>
+        )}
+      >
+        <ListDetail.List>{/* Content */}</ListDetail.List>
+        <ListDetail.Detail>{/* Content */}</ListDetail.Detail>
+      </ListDetail>
+    </div>
+  ),
+};

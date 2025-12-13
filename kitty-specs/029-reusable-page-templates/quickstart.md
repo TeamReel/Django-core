@@ -705,11 +705,270 @@ function OptimizedList() {
 
 ---
 
+## State Override System
+
+All templates support customizing loading, empty, error, and permission-denied states through render props. This allows you to match state UI to your application's design language while maintaining consistent behavior.
+
+### When to Override vs Use Defaults
+
+**Use Defaults When**:
+- You want consistent state UI across your application
+- Your design matches generic SaaS patterns
+- You're prototyping or building MVPs quickly
+
+**Override When**:
+- Brand-specific messaging is required
+- You need custom actions (e.g., "Contact Support", "Upgrade Plan")
+- State content varies by context (e.g., different empty messages per template instance)
+- Accessibility requires specific ARIA labels or focus management
+
+### Render Prop Pattern
+
+All templates support four render props with consistent naming:
+
+```tsx
+interface StateRenderProps {
+  renderLoading?: () => React.ReactNode;
+  renderEmpty?: () => React.ReactNode;
+  renderError?: (error: Error) => React.ReactNode;
+  renderPermissionDenied?: () => React.ReactNode;
+}
+```
+
+### Basic Examples
+
+#### Custom Loading State
+
+```tsx
+<Dashboard
+  loading={isLoading}
+  renderLoading={() => (
+    <div className="custom-loader">
+      <Spinner size="large" />
+      <p>Loading your dashboard data...</p>
+    </div>
+  )}
+>
+  <Dashboard.Header title="Analytics" />
+</Dashboard>
+```
+
+#### Custom Empty State with Actions
+
+```tsx
+<ListDetail
+  isEmpty={projects.length === 0}
+  renderEmpty={() => (
+    <EmptyState
+      icon={<FolderIcon />}
+      title="No Projects Yet"
+      description="Create your first project to get started"
+      actions={
+        <button onClick={handleCreateProject}>
+          Create Project
+        </button>
+      }
+    />
+  )}
+>
+  <ListDetail.List>{/* ... */}</ListDetail.List>
+  <ListDetail.Detail>{/* ... */}</ListDetail.Detail>
+</ListDetail>
+```
+
+#### Custom Error State with Retry
+
+```tsx
+<Wizard
+  steps={steps}
+  error={error}
+  renderError={(error) => (
+    <ErrorState
+      title="Setup Failed"
+      message={error.message}
+      actions={
+        <>
+          <button onClick={handleRetry}>Try Again</button>
+          <button onClick={handleContactSupport}>Contact Support</button>
+        </>
+      }
+    />
+  )}
+>
+  {/* Wizard steps */}
+</Wizard>
+```
+
+#### Custom Permission Denied State
+
+```tsx
+<Settings
+  sections={adminSections}
+  permissionDenied={!isAdmin}
+  renderPermissionDenied={() => (
+    <PermissionDenied
+      title="Admin Access Required"
+      description="Contact your administrator to request elevated permissions"
+      actions={<button onClick={handleRequestAccess}>Request Access</button>}
+    />
+  )}
+>
+  {/* Settings sections */}
+</Settings>
+```
+
+### State Priority
+
+Templates apply states in the following priority order:
+
+1. **Loading** (highest priority) - blocks all other states
+2. **Permission Denied** - takes priority over error/empty
+3. **Error** - takes priority over empty
+4. **Empty** - displayed when no error and data is empty
+5. **Success** (default) - renders children when no state flags are set
+
+**Example**:
+```tsx
+// Only loading state renders even though error is also set
+<Dashboard loading={true} error={new Error()} isEmpty={true}>
+  {/* This content is NOT rendered */}
+</Dashboard>
+```
+
+### Accessibility Guidelines for Custom States
+
+When overriding states, maintain accessibility:
+
+#### 1. Loading States
+- **Use `aria-live="polite"`** for loading announcements
+- **Include visible text** ("Loading...") not just spinners
+- **Preserve focus** - don't trap or lose focus during loading
+
+```tsx
+renderLoading={() => (
+  <div role="status" aria-live="polite" aria-atomic="true">
+    <Spinner aria-hidden="true" />
+    <span>Loading dashboard data</span>
+  </div>
+)}
+```
+
+#### 2. Error States
+- **Use `role="alert"`** for critical errors
+- **Include actionable next steps** (Retry, Contact Support)
+- **Provide error details** for screen readers
+
+```tsx
+renderError={(error) => (
+  <div role="alert" aria-live="assertive">
+    <h2>Error Loading Data</h2>
+    <p>{error.message}</p>
+    <button onClick={handleRetry}>Retry</button>
+  </div>
+)}
+```
+
+#### 3. Empty States
+- **Use clear, descriptive text** explaining why empty
+- **Provide primary action** to resolve empty state
+- **Ensure buttons have sufficient contrast** (WCAG AA minimum)
+
+```tsx
+renderEmpty={() => (
+  <div role="status">
+    <h2>No Data Available</h2>
+    <p>Get started by adding your first item</p>
+    <button>Add Item</button>
+  </div>
+)}
+```
+
+#### 4. Permission Denied States
+- **Explain the requirement** clearly
+- **Provide contact/escalation path** if applicable
+- **Use appropriate ARIA roles** (`role="status"` or `role="alert"`)
+
+```tsx
+renderPermissionDenied={() => (
+  <div role="status">
+    <h2>Access Restricted</h2>
+    <p>This page requires administrator permissions</p>
+    <button onClick={handleContactAdmin}>Contact Admin</button>
+  </div>
+)}
+```
+
+### Layout Preservation
+
+Override content **replaces the template entirely**—no wrapper elements are added. Ensure your custom state content:
+
+- Is styled consistently (use F01 design system components)
+- Handles responsive breakpoints appropriately
+- Maintains minimum height for good UX (e.g., 300-400px for centered states)
+
+**Example**:
+```tsx
+renderEmpty={() => (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '400px',
+      padding: '2rem',
+    }}
+  >
+    {/* Centered empty state */}
+  </div>
+)}
+```
+
+### Partial Overrides
+
+You can override only specific states while using defaults for others:
+
+```tsx
+<Dashboard
+  loading={isLoading}
+  isEmpty={widgets.length === 0}
+  error={error}
+  // Only override empty, use defaults for loading/error
+  renderEmpty={() => <CustomEmptyDashboard />}
+>
+  {/* Dashboard content */}
+</Dashboard>
+```
+
+### Testing State Overrides
+
+Verify custom state rendering in unit tests:
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { Dashboard } from '@django-core/page-templates';
+
+it('renders custom loading state', () => {
+  render(
+    <Dashboard
+      loading
+      renderLoading={() => <div data-testid="custom-loader">Loading</div>}
+    >
+      <Dashboard.Header title="Test" />
+    </Dashboard>
+  );
+
+  expect(screen.getByTestId('custom-loader')).toBeInTheDocument();
+  expect(screen.queryByText('Test')).not.toBeInTheDocument();
+});
+```
+
+---
+
 ## Next Steps
 
 - **API Reference**: See [data-model.md](data-model.md) for complete TypeScript interfaces
 - **Examples**: Browse `examples/page-templates/` for full working examples
-- **Storybook**: Run `pnpm storybook` to explore interactive component demos
+- **Storybook**: Run `pnpm storybook` to explore interactive component demos (including state override stories)
 - **Testing**: See [testing guide](../../docs/TESTING_GUIDE.md) for testing patterns
 
 ---

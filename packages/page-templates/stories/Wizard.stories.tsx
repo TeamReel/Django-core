@@ -529,3 +529,141 @@ export const NoIndicator: Story = {
     </Wizard>
   ),
 };
+
+// ============================================================================
+// State Override Stories
+// ============================================================================
+
+export const CustomLoadingState: Story = {
+  name: 'Custom Loading State',
+  args: {
+    steps: [
+      { id: 'step1', label: 'Setup' },
+      { id: 'step2', label: 'Configure' },
+      { id: 'step3', label: 'Review' },
+    ],
+    loading: true,
+    renderLoading: () => (
+      <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
+        <h3>Preparing Wizard...</h3>
+        <p style={{ color: '#6b7280' }}>Setting up your configuration flow</p>
+      </div>
+    ),
+  },
+  render: (args) => (
+    <Wizard {...args}>
+      <Wizard.Step stepId="step1"><div style={{ padding: '1rem' }}>Content</div></Wizard.Step>
+      <Wizard.Step stepId="step2"><div style={{ padding: '1rem' }}>Content</div></Wizard.Step>
+      <Wizard.Step stepId="step3"><div style={{ padding: '1rem' }}>Content</div></Wizard.Step>
+    </Wizard>
+  ),
+};
+
+export const CustomEmptyState: Story = {
+  name: 'Custom Empty State',
+  args: {
+    steps: [],
+    isEmpty: true,
+    renderEmpty: () => (
+      <div style={{ textAlign: 'center', padding: '4rem 2rem', maxWidth: '400px', margin: '0 auto' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📝</div>
+        <h3>No Steps Configured</h3>
+        <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+          This wizard needs at least one step to function. Configure your steps to get started.
+        </p>
+        <button
+          style={{
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            border: 'none',
+            backgroundColor: '#3b82f6',
+            color: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          Configure Steps
+        </button>
+      </div>
+    ),
+  },
+  render: (args) => <Wizard {...args}>{/* No steps */}</Wizard>,
+};
+
+export const CustomErrorState: Story = {
+  name: 'Custom Error State',
+  args: {
+    steps: [
+      { id: 'step1', label: 'Setup' },
+      { id: 'step2', label: 'Configure' },
+    ],
+    error: new Error('Validation failed'),
+    renderError: (error) => (
+      <div style={{ textAlign: 'center', padding: '4rem 2rem', maxWidth: '400px', margin: '0 auto' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem', color: '#dc2626' }}>⚠️</div>
+        <h3 style={{ color: '#dc2626' }}>Wizard Error</h3>
+        <p style={{ color: '#6b7280', marginBottom: '0.5rem' }}>
+          {error?.message || 'An error occurred during wizard setup'}
+        </p>
+        <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginBottom: '1.5rem' }}>
+          Please restart the wizard or contact support.
+        </p>
+        <button
+          style={{
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            border: '1px solid #d1d5db',
+            backgroundColor: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          Restart Wizard
+        </button>
+      </div>
+    ),
+  },
+  render: (args) => (
+    <Wizard {...args}>
+      <Wizard.Step stepId="step1"><div>Content</div></Wizard.Step>
+      <Wizard.Step stepId="step2"><div>Content</div></Wizard.Step>
+    </Wizard>
+  ),
+};
+
+export const CustomPermissionDeniedState: Story = {
+  name: 'Custom Permission Denied State',
+  args: {
+    steps: [
+      { id: 'step1', label: 'Account' },
+      { id: 'step2', label: 'Billing' },
+    ],
+    permissionDenied: true,
+    renderPermissionDenied: () => (
+      <div style={{ textAlign: 'center', padding: '4rem 2rem', maxWidth: '400px', margin: '0 auto' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+        <h3>Premium Feature</h3>
+        <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+          This wizard is only available to premium users. Upgrade your account to access this feature.
+        </p>
+        <button
+          style={{
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            border: 'none',
+            backgroundColor: '#3b82f6',
+            color: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          Upgrade Now
+        </button>
+      </div>
+    ),
+  },
+  render: (args) => (
+    <Wizard {...args}>
+      <Wizard.Step stepId="step1"><div>Content</div></Wizard.Step>
+      <Wizard.Step stepId="step2"><div>Content</div></Wizard.Step>
+    </Wizard>
+  ),
+};

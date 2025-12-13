@@ -7,6 +7,10 @@ import type {
 import { useControlledState } from '../../hooks/useControlledState';
 import { SettingsSection } from './SettingsSection';
 import { SettingsNavigation } from './SettingsNavigation';
+import { DefaultLoading } from '../states/DefaultLoading';
+import { DefaultEmpty } from '../states/DefaultEmpty';
+import { DefaultError } from '../states/DefaultError';
+import { DefaultPermissionDenied } from '../states/DefaultPermissionDenied';
 
 interface SettingsContextValue {
   sections: SettingsSectionConfig[];
@@ -50,10 +54,40 @@ const SettingsFC: React.FC<SettingsProps> = ({
   sidebarLayout = 'sticky',
   mobileLayout = 'dropdown',
   showSectionActions = false,
+  loading = false,
+  error = null,
+  isEmpty = false,
+  permissionDenied = false,
+  renderLoading,
+  renderEmpty,
+  renderError,
+  renderPermissionDenied,
   className,
   'aria-label': ariaLabel = 'Settings',
   ...props
 }) => {
+  // State rendering priority:
+  // 1. Loading state
+  if (loading) {
+    return renderLoading ? <>{renderLoading()}</> : <DefaultLoading />;
+  }
+
+  // 2. Permission denied state
+  if (permissionDenied) {
+    return renderPermissionDenied ? <>{renderPermissionDenied()}</> : <DefaultPermissionDenied />;
+  }
+
+  // 3. Error state
+  if (error) {
+    return renderError ? <>{renderError(error)}</> : <DefaultError error={error} />;
+  }
+
+  // 4. Empty state
+  if (isEmpty) {
+    return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No settings sections configured" />;
+  }
+
+  // 5. Success state - render settings
   // Validate sections configuration
   React.useEffect(() => {
     if (!sections || sections.length === 0) {

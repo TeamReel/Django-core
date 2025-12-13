@@ -63,6 +63,7 @@ export interface DashboardProps extends A11yProps, StateRenderProps {
   loading?: boolean;
   error?: Error;
   isEmpty?: boolean;
+  permissionDenied?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -106,6 +107,10 @@ export interface ListDetailProps extends A11yProps, StateRenderProps, Responsive
   splitRatio?: [number, number];
   listMinWidth?: number;
   mobileLayout?: 'stack' | 'overlay';
+  loading?: boolean;
+  error?: Error;
+  isEmpty?: boolean;
+  permissionDenied?: boolean;
   className?: string;
 }
 
@@ -153,6 +158,10 @@ export interface WizardProps extends A11yProps, StateRenderProps {
   showStepIndicator?: boolean;
   stepIndicatorVariant?: 'dots' | 'numbers' | 'labels';
   allowFreeNavigation?: boolean;
+  loading?: boolean;
+  error?: Error;
+  isEmpty?: boolean;
+  permissionDenied?: boolean;
   className?: string;
 }
 
@@ -205,6 +214,10 @@ export interface SettingsProps extends A11yProps, StateRenderProps, ResponsivePr
   sidebarLayout?: 'sticky' | 'scrollable';
   mobileLayout?: 'tabs' | 'dropdown';
   showSectionActions?: boolean;
+  loading?: boolean;
+  error?: Error;
+  isEmpty?: boolean;
+  permissionDenied?: boolean;
   className?: string;
 }
 

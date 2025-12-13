@@ -225,3 +225,130 @@ export const ComplexLayout: Story = {
     </Dashboard>
   ),
 };
+
+// ============================================================================
+// State Override Stories
+// ============================================================================
+
+export const CustomLoadingState: Story = {
+  name: 'Custom Loading State',
+  render: () => (
+    <Dashboard
+      loading
+      renderLoading={() => (
+        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              border: '4px solid #e5e7eb',
+              borderTopColor: '#3b82f6',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 1.5rem',
+            }}
+          />
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+            Loading Dashboard...
+          </h3>
+          <p style={{ color: '#6b7280' }}>
+            Fetching your latest analytics data
+          </p>
+          <style>
+            {`
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+            `}
+          </style>
+        </div>
+      )}
+    >
+      <Dashboard.Header title="Analytics Dashboard" />
+    </Dashboard>
+  ),
+};
+
+export const CustomErrorState: Story = {
+  name: 'Custom Error State',
+  render: () => (
+    <Dashboard
+      error={new Error('API rate limit exceeded')}
+      renderError={(error) => (
+        <div style={{ textAlign: 'center', padding: '4rem 2rem', maxWidth: '500px', margin: '0 auto' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem', color: '#dc2626' }}>
+            Unable to Load Dashboard
+          </h3>
+          <p style={{ color: '#6b7280', marginBottom: '0.5rem' }}>
+            {error?.message || 'An unexpected error occurred'}
+          </p>
+          <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginBottom: '1.5rem' }}>
+            Please try again in a few moments or contact support if the problem persists.
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+            <button
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                border: '1px solid #d1d5db',
+                backgroundColor: '#fff',
+                cursor: 'pointer',
+              }}
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </button>
+            <button
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                border: 'none',
+                backgroundColor: '#3b82f6',
+                color: '#fff',
+                cursor: 'pointer',
+              }}
+            >
+              Contact Support
+            </button>
+          </div>
+        </div>
+      )}
+    >
+      <Dashboard.Header title="Analytics Dashboard" />
+    </Dashboard>
+  ),
+};
+
+export const CustomPermissionDeniedState: Story = {
+  name: 'Custom Permission Denied State',
+  render: () => (
+    <Dashboard
+      permissionDenied
+      renderPermissionDenied={() => (
+        <div style={{ textAlign: 'center', padding: '4rem 2rem', maxWidth: '500px', margin: '0 auto' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+            Access Restricted
+          </h3>
+          <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+            You don't have permission to view this dashboard. Please contact your administrator to request access.
+          </p>
+          <button
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '0.375rem',
+              border: '1px solid #d1d5db',
+              backgroundColor: '#fff',
+              cursor: 'pointer',
+            }}
+          >
+            Request Access
+          </button>
+        </div>
+      )}
+    >
+      <Dashboard.Header title="Analytics Dashboard" />
+    </Dashboard>
+  ),
+};

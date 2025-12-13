@@ -435,3 +435,139 @@ export const DeepLink: Story = {
     </Settings>
   ),
 };
+
+// ============================================================================
+// State Override Stories
+// ============================================================================
+
+export const CustomLoadingState: Story = {
+  name: 'Custom Loading State',
+  args: {
+    sections: [
+      { id: 'profile', label: 'Profile' },
+      { id: 'security', label: 'Security' },
+    ],
+    loading: true,
+    renderLoading: () => (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⚙️</div>
+          <h3>Loading Settings...</h3>
+          <p style={{ color: '#6b7280' }}>Fetching your preferences</p>
+        </div>
+      </div>
+    ),
+  },
+  render: (args) => (
+    <Settings {...args}>
+      <Settings.Section sectionId="profile"><div>Content</div></Settings.Section>
+      <Settings.Section sectionId="security"><div>Content</div></Settings.Section>
+    </Settings>
+  ),
+};
+
+export const CustomEmptyState: Story = {
+  name: 'Custom Empty State',
+  args: {
+    sections: [],
+    isEmpty: true,
+    renderEmpty: () => (
+      <div style={{ textAlign: 'center', padding: '4rem 2rem', maxWidth: '400px', margin: '0 auto' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔧</div>
+        <h3>No Settings Available</h3>
+        <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+          Settings sections haven't been configured yet. Contact your administrator.
+        </p>
+        <button
+          style={{
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            border: '1px solid #d1d5db',
+            backgroundColor: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          Go Back
+        </button>
+      </div>
+    ),
+  },
+  render: (args) => <Settings {...args}>{/* No sections */}</Settings>,
+};
+
+export const CustomErrorState: Story = {
+  name: 'Custom Error State',
+  args: {
+    sections: [
+      { id: 'profile', label: 'Profile' },
+      { id: 'security', label: 'Security' },
+    ],
+    error: new Error('Failed to load settings'),
+    renderError: (error) => (
+      <div style={{ textAlign: 'center', padding: '4rem 2rem', maxWidth: '400px', margin: '0 auto' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem', color: '#dc2626' }}>❗</div>
+        <h3 style={{ color: '#dc2626' }}>Settings Unavailable</h3>
+        <p style={{ color: '#6b7280', marginBottom: '0.5rem' }}>
+          {error?.message || 'Could not load settings'}
+        </p>
+        <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginBottom: '1.5rem' }}>
+          Your changes may not be saved. Please try again.
+        </p>
+        <button
+          style={{
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            border: '1px solid #d1d5db',
+            backgroundColor: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    ),
+  },
+  render: (args) => (
+    <Settings {...args}>
+      <Settings.Section sectionId="profile"><div>Content</div></Settings.Section>
+      <Settings.Section sectionId="security"><div>Content</div></Settings.Section>
+    </Settings>
+  ),
+};
+
+export const CustomPermissionDeniedState: Story = {
+  name: 'Custom Permission Denied State',
+  args: {
+    sections: [
+      { id: 'billing', label: 'Billing' },
+      { id: 'team', label: 'Team' },
+    ],
+    permissionDenied: true,
+    renderPermissionDenied: () => (
+      <div style={{ textAlign: 'center', padding: '4rem 2rem', maxWidth: '400px', margin: '0 auto' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚫</div>
+        <h3>Admin Only</h3>
+        <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+          These settings are restricted to account administrators. Contact your admin to make changes.
+        </p>
+        <button
+          style={{
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            border: '1px solid #d1d5db',
+            backgroundColor: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          Contact Admin
+        </button>
+      </div>
+    ),
+  },
+  render: (args) => (
+    <Settings {...args}>
+      <Settings.Section sectionId="billing"><div>Content</div></Settings.Section>
+      <Settings.Section sectionId="team"><div>Content</div></Settings.Section>
+    </Settings>
+  ),
+};

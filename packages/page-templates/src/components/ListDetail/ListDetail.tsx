@@ -7,6 +7,10 @@ import { useControlledState } from '../../hooks/useControlledState';
 import { useResponsive } from '../../hooks/useResponsive';
 import { ListDetailList } from './ListDetailList';
 import { ListDetailDetail } from './ListDetailDetail';
+import { DefaultLoading } from '../states/DefaultLoading';
+import { DefaultEmpty } from '../states/DefaultEmpty';
+import { DefaultError } from '../states/DefaultError';
+import { DefaultPermissionDenied } from '../states/DefaultPermissionDenied';
 
 interface ListDetailContextValue {
   selectedId: string | number | null;
@@ -52,6 +56,14 @@ const ListDetailFC = React.forwardRef<HTMLDivElement, ListDetailProps>(
       splitRatio = [1, 2],
       listMinWidth = 300,
       mobileLayout = 'overlay',
+      loading = false,
+      error = null,
+      isEmpty = false,
+      permissionDenied = false,
+      renderLoading,
+      renderEmpty,
+      renderError,
+      renderPermissionDenied,
       className,
       'aria-label': ariaLabel = 'List-Detail Layout',
       ...props
@@ -60,6 +72,28 @@ const ListDetailFC = React.forwardRef<HTMLDivElement, ListDetailProps>(
   ) => {
     const { isMobile } = useResponsive();
 
+    // State rendering priority:
+    // 1. Loading state
+    if (loading) {
+      return renderLoading ? <>{renderLoading()}</> : <DefaultLoading />;
+    }
+
+    // 2. Permission denied state
+    if (permissionDenied) {
+      return renderPermissionDenied ? <>{renderPermissionDenied()}</> : <DefaultPermissionDenied />;
+    }
+
+    // 3. Error state
+    if (error) {
+      return renderError ? <>{renderError(error)}</> : <DefaultError error={error} />;
+    }
+
+    // 4. Empty state
+    if (isEmpty) {
+      return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No items to display" />;
+    }
+
+    // 5. Success state - render children
     // Selection state (controlled/uncontrolled)
     const [selectedId, setSelectedId] = useControlledState(
       controlledSelectedId,

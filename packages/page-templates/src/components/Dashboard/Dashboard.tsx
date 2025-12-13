@@ -6,6 +6,7 @@ import { DashboardFilterBar } from './DashboardFilterBar';
 import { DefaultLoading } from '../states/DefaultLoading';
 import { DefaultEmpty } from '../states/DefaultEmpty';
 import { DefaultError } from '../states/DefaultError';
+import { DefaultPermissionDenied } from '../states/DefaultPermissionDenied';
 
 /**
  * Dashboard template component for displaying application dashboards with widgets.
@@ -29,9 +30,11 @@ const DashboardFC: React.FC<DashboardProps> = ({
   loading = false,
   error = null,
   isEmpty = false,
+  permissionDenied = false,
   renderLoading,
   renderEmpty,
   renderError,
+  renderPermissionDenied,
   'aria-label': ariaLabel = 'Dashboard',
   className,
   style,
@@ -42,17 +45,22 @@ const DashboardFC: React.FC<DashboardProps> = ({
     return renderLoading ? <>{renderLoading()}</> : <DefaultLoading />;
   }
 
-  // 2. Error state
+  // 2. Permission denied state
+  if (permissionDenied) {
+    return renderPermissionDenied ? <>{renderPermissionDenied()}</> : <DefaultPermissionDenied />;
+  }
+
+  // 3. Error state
   if (error) {
     return renderError ? <>{renderError(error)}</> : <DefaultError error={error} />;
   }
 
-  // 3. Empty state
+  // 4. Empty state
   if (isEmpty) {
     return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No dashboard widgets to display" />;
   }
 
-  // 4. Success state - render children
+  // 5. Success state - render children
   return (
     <main
       className={className}
