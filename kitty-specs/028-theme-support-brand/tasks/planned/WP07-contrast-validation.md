@@ -12,12 +12,12 @@ subtasks:
   - "T064"
 title: "Contrast Validation & Accessibility"
 phase: "Phase 2 - Advanced Features"
-lane: "for_review"
+lane: "planned"
 assignee: ""
 agent: "claude"
 shell_pid: "33848"
-review_status: ""
-reviewed_by: ""
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-13T00:00:00Z"
     lane: "planned"
@@ -40,7 +40,88 @@ history:
 
 ## Review Feedback
 
-*[This section is empty initially. Reviewers will populate it if work needs changes.]*
+**Reviewed by**: claude-reviewer
+**Date**: 2025-12-13
+**Status**: Changes Required ⚠️
+
+### Critical Issue: Border Contrast Validation Logic
+
+**Problem**: The theme validator validates borders using the **4.5:1 text threshold** instead of the **3:1 UI component threshold** per WCAG 2.1.
+
+**Evidence**:
+- Test failures: 2/8 tests in `themeValidator.test.ts` fail
+  * "should pass for valid theme"
+  * "should handle nested color structure"
+- Border `#666666` on `#ffffff` = **4.54:1 ratio**
+- Should **pass** (4.54 > 3.0 required for UI components)
+- Actually **fails** (4.54 < 4.5 required for normal text)
+
+**Root Cause**:
+`src/validation/themeValidator.ts` line 51:
+```typescript
+const { result } = validateColorPair(name, fgColor, bgColor);
+// Uses default parameters: AA level, 'normal' text size → 4.5:1
+```
+
+**Required Fix**:
+Borders must be validated with `textSize: 'large'` (which uses 3:1 for AA):
+
+```typescript
+criticalPairs.forEach(({ name, fg, bg }) => {
+  const fgColor = getNestedValue(theme, fg);
+  const bgColor = getNestedValue(theme, bg);
+
+  if (!fgColor || !bgColor) {
+    warnings.push({ ... });
+    return;
+  }
+
+  // Use 'large' text size for borders (3:1 ratio for UI components)
+  const isBorder = name.includes('Border');
+  const textSize = isBorder ? 'large' : 'normal';
+  const result = checkContrast(fgColor, bgColor, 'AA', textSize);
+
+  if (!result.passes) {
+    errors.push({
+      pair: name,
+      foreground: fgColor,
+      background: bgColor,
+      ratio: result.ratio,
+      required: result.required
+    });
+  }
+});
+```
+
+**Validation Steps**:
+1. Update `validateTheme()` to pass `textSize: 'large'` for border pairs
+2. Run tests: `pnpm vitest run themeValidator.test.ts`
+3. Expected: 8/8 tests passing
+4. Verify border validation with CLI: `pnpm validate-theme <theme-with-border-3.1-ratio.json>`
+
+### Quality Gates Results
+
+**Lint**: ✅ Clean (0 errors, 0 warnings)
+**TypeCheck**: ⚠️ 6 errors in `design-system` package (pre-existing, not WP07's issue)
+**Tests**: ⚠️ 202/204 passing (98.5%) - **2 failures require fix**
+
+### What's Excellent (No Changes Needed)
+
+- ✅ Contrast checker implementation solid (14/14 tests passing)
+- ✅ CLI tool well-designed with colored output and clear error messages
+- ✅ Documentation comprehensive and actionable (`contrast-fixing-guide.md`)
+- ✅ TypeScript types properly defined (no `any`, good use of `Record<string, unknown>`)
+- ✅ Error handling robust (validateColorPair catches parsing errors)
+- ✅ T060 deferral reasonable (build integration needs actual theme data)
+- ✅ Code structure clean with separation of concerns
+
+### Next Steps
+
+1. **Fix the border validation logic** as specified above
+2. **Run full test suite**: `pnpm vitest run` → expect 204/204 passing
+3. **Update review_status**: Set `review_status: "acknowledged"` in frontmatter
+4. **Move to doing**: Use `tasks-move-to-lane.ps1 -TaskId WP07 -TargetLane doing`
+5. **Re-submit for review**: After fix, move to `for_review` lane
 
 ---
 
@@ -629,3 +710,4 @@ history:
 - 2025-12-13T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2025-12-13T15:13:49Z – claude – shell_pid=33848 – lane=doing – Started implementation
 - 2025-12-13T17:20:41Z – claude – shell_pid=33848 – lane=for_review – Ready for review. T060 deferred, 2 test fixes needed for border contrast.
+- 2025-12-13T17:26:49Z – claude – shell_pid=33848 – lane=planned – Review: Border validation uses 4.5:1 text threshold instead of 3:1 UI component threshold. 2 test failures indicate production bug (not fixture issue). Fix: Pass textSize='large' for border pairs in validateTheme(). All other aspects excellent.
