@@ -1,4 +1,4 @@
-import { validateColorPair } from './contrast';
+import { checkContrast } from './contrast';
 
 export interface ValidationError {
   pair: string;
@@ -46,15 +46,31 @@ export function validateTheme(theme: Record<string, unknown>): ValidationReport 
       return;
     }
 
-    const { result } = validateColorPair(name, fgColor, bgColor);
+    // Use 'large' text size for borders (3:1 ratio for UI components)
+    // Text elements use 'normal' size (4.5:1 ratio for AA compliance)
+    const isBorder = name.includes('Border');
+    const textSize = isBorder ? 'large' : 'normal';
 
-    if (!result.passes) {
+    try {
+      const result = checkContrast(fgColor, bgColor, 'AA', textSize);
+
+      if (!result.passes) {
+        errors.push({
+          pair: name,
+          foreground: fgColor,
+          background: bgColor,
+          ratio: result.ratio,
+          required: result.required
+        });
+      }
+    } catch (error) {
+      // If color parsing fails, treat as error
       errors.push({
         pair: name,
         foreground: fgColor,
         background: bgColor,
-        ratio: result.ratio,
-        required: result.required
+        ratio: 0,
+        required: textSize === 'large' ? 3 : 4.5
       });
     }
   });

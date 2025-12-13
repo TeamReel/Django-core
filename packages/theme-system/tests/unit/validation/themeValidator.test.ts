@@ -15,12 +15,12 @@ describe('validateTheme', () => {
           secondary: '#f5f5f5'
         },
         border: {
-          primary: '#666666' // Changed from #cccccc to ensure 3:1 ratio
+          primary: '#666666' // 4.54:1 - passes 3:1 for UI components
         },
         state: {
           error: { text: '#cc0000' },
-          success: { text: '#008000' },
-          warning: { text: '#ff8c00' }
+          success: { text: '#006600' }, // Changed to pass 4.5:1
+          warning: { text: '#995500' }  // Changed to pass 4.5:1
         }
       }
     };
@@ -118,12 +118,12 @@ describe('validateTheme', () => {
           secondary: '#eeeeee'
         },
         border: {
-          primary: '#666666' // Changed from #cccccc to ensure 3:1 ratio
+          primary: '#666666' // 4.54:1 - passes 3:1 for UI components
         },
         state: {
           error: { text: '#d32f2f' },
-          success: { text: '#388e3c' },
-          warning: { text: '#f57c00' }
+          success: { text: '#2e7d32' }, // Changed to pass 4.5:1
+          warning: { text: '#c65100' }  // Changed to pass 4.5:1 (darker orange)
         }
       }
     };
