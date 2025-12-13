@@ -5581,7 +5581,7 @@ packages:
       storybook: 8.3.5
       ts-dedent: 2.2.0
       typescript: 5.6.2
-      vite: 5.4.8(@types/node@24.10.3)
+      vite: 5.4.8(@types/node@25.0.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
