@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: Wizard Template (User Story 3)
-lane: "doing"
+lane: "for_review"
 subtasks: [T029, T030, T031, T032, T033, T034, T035, T036]
 priority: P2
 depends_on: [WP02]
@@ -128,3 +128,4 @@ After WP05: Can proceed to WP06 (Settings), WP07 (State Overrides), or WP08 (Int
 ## Activity Log
 
 - 2025-12-13T21:10:34Z – github-copilot – shell_pid=7216 – lane=doing – Started WP05 implementation (Wizard Template)
+- 2025-12-13T21:18:53Z – github-copilot – shell_pid=7216 – lane=for_review – Completed WP05 implementation (Wizard Template) with all components, 20 unit tests, and 6 Storybook stories. All 76 tests passing.
