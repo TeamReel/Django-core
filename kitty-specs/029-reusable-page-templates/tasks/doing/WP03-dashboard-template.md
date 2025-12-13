@@ -1,10 +1,12 @@
 ---
 work_package_id: WP03
 title: Dashboard Template (User Story 1)
-lane: planned
+lane: "doing"
 subtasks: [T015, T016, T017, T018, T019, T020, T021]
 priority: P1
 depends_on: [WP02]
+agent: "github-copilot"
+shell_pid: "7216"
 history:
   - date: 2025-12-13
     action: created
@@ -114,3 +116,7 @@ Dashboard.FilterBar = DashboardFilterBar;
 ## Next Steps
 
 After WP03: Can proceed to WP04 (List-Detail) or WP05 (Wizard) in parallel.
+
+## Activity Log
+
+- 2025-12-13T20:50:34Z – github-copilot – shell_pid=7216 – lane=doing – Started WP03 implementation (Dashboard Template)
