@@ -1,10 +1,12 @@
 ---
 work_package_id: WP05
 title: Wizard Template (User Story 3)
-lane: planned
+lane: "doing"
 subtasks: [T029, T030, T031, T032, T033, T034, T035, T036]
 priority: P2
 depends_on: [WP02]
+agent: "github-copilot"
+shell_pid: "7216"
 history:
   - date: 2025-12-13
     action: created
@@ -122,3 +124,7 @@ const handlePrevious = () => {
 ## Next Steps
 
 After WP05: Can proceed to WP06 (Settings), WP07 (State Overrides), or WP08 (Integration).
+
+## Activity Log
+
+- 2025-12-13T21:10:34Z – github-copilot – shell_pid=7216 – lane=doing – Started WP05 implementation (Wizard Template)
