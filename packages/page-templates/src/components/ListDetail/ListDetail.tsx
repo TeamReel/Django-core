@@ -72,29 +72,7 @@ const ListDetailFC = React.forwardRef<HTMLDivElement, ListDetailProps>(
   ) => {
     const { isMobile } = useResponsive();
 
-    // State rendering priority:
-    // 1. Loading state
-    if (loading) {
-      return renderLoading ? <>{renderLoading()}</> : <DefaultLoading />;
-    }
-
-    // 2. Permission denied state
-    if (permissionDenied) {
-      return renderPermissionDenied ? <>{renderPermissionDenied()}</> : <DefaultPermissionDenied />;
-    }
-
-    // 3. Error state
-    if (error) {
-      return renderError ? <>{renderError(error)}</> : <DefaultError error={error} />;
-    }
-
-    // 4. Empty state
-    if (isEmpty) {
-      return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No items to display" />;
-    }
-
-    // 5. Success state - render children
-    // Selection state (controlled/uncontrolled)
+    // Selection state (controlled/uncontrolled) - must be before conditional returns
     const [selectedId, setSelectedId] = useControlledState(
       controlledSelectedId,
       defaultSelectedId,
@@ -123,6 +101,28 @@ const ListDetailFC = React.forwardRef<HTMLDivElement, ListDetailProps>(
       [selectedId, setSelectedId, isMobile, mobileLayout, showDetail, setShowDetail]
     );
 
+    // State rendering priority after hooks:
+    // 1. Loading state
+    if (loading) {
+      return renderLoading ? <>{renderLoading()}</> : <DefaultLoading />;
+    }
+
+    // 2. Permission denied state
+    if (permissionDenied) {
+      return renderPermissionDenied ? <>{renderPermissionDenied()}</> : <DefaultPermissionDenied />;
+    }
+
+    // 3. Error state
+    if (error) {
+      return renderError ? <>{renderError(error)}</> : <DefaultError error={error} />;
+    }
+
+    // 4. Empty state
+    if (isEmpty) {
+      return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No items to display" />;
+    }
+
+    // 5. Success state - render children
     // Calculate list/detail widths
     const [listFlex, detailFlex] = splitRatio;
     const listFlexBasis = `calc(${(listFlex / (listFlex + detailFlex)) * 100}%)`;

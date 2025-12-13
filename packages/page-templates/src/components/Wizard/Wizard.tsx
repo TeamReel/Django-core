@@ -57,7 +57,6 @@ const WizardFC: React.FC<WizardProps> = ({
   onCancel,
   showStepIndicator = true,
   stepIndicatorVariant = 'numbers',
-  allowFreeNavigation = false,
   loading = false,
   error = null,
   isEmpty = false,
@@ -70,28 +69,7 @@ const WizardFC: React.FC<WizardProps> = ({
   'aria-label': ariaLabel = 'Multi-step wizard',
   ...props
 }) => {
-  // State rendering priority:
-  // 1. Loading state
-  if (loading) {
-    return renderLoading ? <>{renderLoading()}</> : <DefaultLoading />;
-  }
-
-  // 2. Permission denied state
-  if (permissionDenied) {
-    return renderPermissionDenied ? <>{renderPermissionDenied()}</> : <DefaultPermissionDenied />;
-  }
-
-  // 3. Error state
-  if (error) {
-    return renderError ? <>{renderError(error)}</> : <DefaultError error={error} />;
-  }
-
-  // 4. Empty state
-  if (isEmpty) {
-    return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No wizard steps configured" />;
-  }
-
-  // 5. Success state - render wizard
+  // All hooks must be called before conditional returns
   // Validate steps configuration
   React.useEffect(() => {
     if (!steps || steps.length < 2) {
@@ -172,6 +150,28 @@ const WizardFC: React.FC<WizardProps> = ({
     }
   }, [validStepIndex]);
 
+  // State rendering priority after hooks:
+  // 1. Loading state
+  if (loading) {
+    return renderLoading ? <>{renderLoading()}</> : <DefaultLoading />;
+  }
+
+  // 2. Permission denied state
+  if (permissionDenied) {
+    return renderPermissionDenied ? <>{renderPermissionDenied()}</> : <DefaultPermissionDenied />;
+  }
+
+  // 3. Error state
+  if (error) {
+    return renderError ? <>{renderError(error)}</> : <DefaultError error={error} />;
+  }
+
+  // 4. Empty state
+  if (isEmpty) {
+    return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No wizard steps configured" />;
+  }
+
+  // 5. Success state - render wizard
   return (
     <WizardContext.Provider value={contextValue}>
       <div

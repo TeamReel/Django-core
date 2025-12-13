@@ -52,8 +52,6 @@ const SettingsFC: React.FC<SettingsProps> = ({
   activeSection: controlledActiveSection,
   onActiveSectionChange,
   sidebarLayout = 'sticky',
-  mobileLayout = 'dropdown',
-  showSectionActions = false,
   loading = false,
   error = null,
   isEmpty = false,
@@ -66,28 +64,7 @@ const SettingsFC: React.FC<SettingsProps> = ({
   'aria-label': ariaLabel = 'Settings',
   ...props
 }) => {
-  // State rendering priority:
-  // 1. Loading state
-  if (loading) {
-    return renderLoading ? <>{renderLoading()}</> : <DefaultLoading />;
-  }
-
-  // 2. Permission denied state
-  if (permissionDenied) {
-    return renderPermissionDenied ? <>{renderPermissionDenied()}</> : <DefaultPermissionDenied />;
-  }
-
-  // 3. Error state
-  if (error) {
-    return renderError ? <>{renderError(error)}</> : <DefaultError error={error} />;
-  }
-
-  // 4. Empty state
-  if (isEmpty) {
-    return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No settings sections configured" />;
-  }
-
-  // 5. Success state - render settings
+  // All hooks must be called before conditional returns
   // Validate sections configuration
   React.useEffect(() => {
     if (!sections || sections.length === 0) {
@@ -140,6 +117,28 @@ const SettingsFC: React.FC<SettingsProps> = ({
     [setActiveSectionId]
   );
 
+  // State rendering priority after hooks:
+  // 1. Loading state
+  if (loading) {
+    return renderLoading ? <>{renderLoading()}</> : <DefaultLoading />;
+  }
+
+  // 2. Permission denied state
+  if (permissionDenied) {
+    return renderPermissionDenied ? <>{renderPermissionDenied()}</> : <DefaultPermissionDenied />;
+  }
+
+  // 3. Error state
+  if (error) {
+    return renderError ? <>{renderError(error)}</> : <DefaultError error={error} />;
+  }
+
+  // 4. Empty state
+  if (isEmpty) {
+    return renderEmpty ? <>{renderEmpty()}</> : <DefaultEmpty message="No settings sections configured" />;
+  }
+
+  // 5. Success state - render settings
   return (
     <SettingsContext.Provider value={contextValue}>
       <div
