@@ -13,10 +13,10 @@ subtasks:
   - "T038"
 title: "Storage Adapters (Cookie, LocalStorage, B12)"
 phase: "Phase 1 - Core Theme System"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "19776"
 review_status: ""
 reviewed_by: ""
 history:
@@ -642,3 +642,4 @@ history:
 ## Activity Log
 
 - 2025-12-13T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-13T13:31:31Z – claude – shell_pid=19776 – lane=doing – Started WP04 implementation: Storage adapters
