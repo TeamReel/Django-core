@@ -1,2 +1,4 @@
-// Validation utilities - will be implemented in WP07
-export * from './contrast';
+export { checkContrast, validateColorPair } from './contrast';
+export type { ContrastResult } from './contrast';
+export { validateTheme } from './themeValidator';
+export type { ValidationError, ValidationReport } from './themeValidator';
