@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: List-Detail Template (User Story 2)
-lane: "doing"
+lane: "for_review"
 subtasks: [T022, T023, T024, T025, T026, T027, T028]
 priority: P1
 depends_on: [WP02]
@@ -111,3 +111,4 @@ After WP04: Can proceed to WP05 (Wizard) or WP06 (Settings) in parallel.
 ## Activity Log
 
 - 2025-12-13T20:57:33Z – github-copilot – shell_pid=7216 – lane=doing – Started WP04 implementation (List-Detail Template)
+- 2025-12-13T21:07:04Z – github-copilot – shell_pid=7216 – lane=for_review – Completed WP04 implementation (List-Detail Template)
