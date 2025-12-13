@@ -1,18 +1,82 @@
 ---
-lane: "for_review"
+lane: "planned"
 agent: "system"
+review_status: "has_feedback"
+reviewed_by: "claude-code-reviewer"
 ---
 # WP06: Optional Data Hooks & TypeScript Contracts
 
 ---
 **work_package_id**: WP06
-**status**: for_review
+**status**: planned
 **priority**: P2 (Optional feature, enhances integration)
 **subtasks**: [T034, T035, T036, T037, T038]
 **dependencies**: WP01 (package scaffold), contracts already defined in Phase 1
 **parallel**: Can run in parallel with WP05, WP07
 **history**:
   - 2025-12-12: Created task prompt from Phase 3 breakdown
+
+---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Reviewed**: 2025-12-13T09:46:00Z by claude-code-reviewer
+
+### Critical Issues (Must Fix Before Approval):
+
+1. **TypeScript Compilation Errors** (BLOCKING)
+   - **Problem**: Contract imports use incorrect path `../../kitty-specs/027-resource-display-alerts/contracts/`
+   - **Impact**: Package build fails with TS2307 errors, cannot be published
+   - **Fix**: Contracts should be copied to `src/types/contracts/` during build, or imported from a shared package
+   - **Files affected**:
+     - `src/hooks/useResourceUsage.ts:8`
+     - `src/hooks/useHealthStatus.ts:8`
+   - **Recommended approach**: Create `src/types/contracts/` directory and copy contract files there
+
+2. **Missing NodeJS Type Definitions**
+   - **Problem**: `NodeJS.Timeout` type not available (TS2503 errors)
+   - **Impact**: TypeScript compilation fails
+   - **Fix**: Add `@types/node` to devDependencies in `package.json`
+   - **Command**: `pnpm add -D @types/node`
+
+3. **Definition of Done Not Met - Missing Storybook Stories (T039)**
+   - **Problem**: No Storybook stories created for hooks despite task requirement
+   - **Impact**: Cannot demo hooks or test with MSW mocks visually
+   - **Fix**: Create stories in `src/hooks/useResourceUsage.stories.tsx` and `src/hooks/useHealthStatus.stories.tsx`
+   - **Requirements**: Use MSW to mock B11/B18 API responses, show loading/error/success states
+
+### What Was Done Excellently:
+
+- ✅ **Comprehensive test coverage**: 29 hook tests (14 useResourceUsage, 15 useHealthStatus), all passing
+- ✅ **Proper error handling**: try/catch blocks, Error normalization, console logging with [F05] prefix
+- ✅ **Memory leak prevention**: Intervals cleaned up properly on unmount (verified in tests)
+- ✅ **CSRF protection**: Uses createApiClient() singleton correctly
+- ✅ **Polling implementation**: Configurable interval, enabled/disabled state, manual refetch
+- ✅ **Hook patterns**: Uses useCallback for stable fetchData reference, useRef for interval tracking
+- ✅ **Test quality**: Fake timers implemented correctly, edge cases covered (disabled, pollInterval<=0, unmount cleanup)
+- ✅ **Code documentation**: JSDoc comments with usage examples
+
+### Action Items (Must Complete Before Re-review):
+
+- [ ] **Fix TypeScript compilation**: Copy contracts to `src/types/contracts/` and update imports
+- [ ] **Add @types/node**: Install missing type definitions
+- [ ] **Create Storybook stories (T039)**: Both hooks need stories with MSW mocks
+- [ ] **Verify build passes**: Run `pnpm build` - must complete with zero errors
+- [ ] **Verify Storybook launches**: Run `pnpm storybook` - must launch without errors
+- [ ] **Update exports if needed**: Ensure contract types are re-exported from package
+
+### Test Results:
+- ✅ All 210 tests passing (29 hook tests + 181 existing tests)
+- ❌ TypeScript compilation: 4 errors in 2 files
+- ⚠️ act() warnings present but acceptable (async state updates, non-blocking)
+
+### Next Steps:
+1. Address the 3 critical issues listed above
+2. Run `pnpm build` to verify TypeScript compilation
+3. Run `pnpm storybook` to verify stories work
+4. Move task back to for_review when all issues resolved
 
 ---
 
@@ -809,3 +873,8 @@ worker.start();
   - Fixed fake timers + waitFor compatibility issues
   - Updated index.ts with hook exports and TypeScript types
   - Minor act() warnings expected for async state updates (non-blocking)
+- 2025-12-13T09:46:00Z – claude-code-reviewer – shell_pid= – lane=for_review → planned – Code review complete: Needs changes
+  - Critical issue: TypeScript compilation errors (contract imports, missing @types/node)
+  - Missing: Storybook stories (T039 not implemented)
+  - Excellent: Test coverage (210 passing), error handling, memory cleanup
+  - Action required: Fix contract imports, add @types/node, create Storybook stories
