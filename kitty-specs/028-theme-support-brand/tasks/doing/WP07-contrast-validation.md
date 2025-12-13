@@ -16,7 +16,7 @@ lane: "doing"
 assignee: ""
 agent: "claude"
 shell_pid: "33848"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2025-12-13T00:00:00Z"
