@@ -11,11 +11,11 @@ subtasks:
   - "T019"
 title: "Theme Contracts & Token Definition"
 phase: "Phase 1 - Core Theme System"
-lane: "doing"
+lane: "for_review"
 assignee: "Claude"
 agent: "claude"
 shell_pid: "29516"
-review_status: ""
+review_status: "pending"
 reviewed_by: ""
 history:
   - timestamp: "2025-12-13T00:00:00Z"
@@ -517,3 +517,5 @@ history:
 ## Activity Log
 
 - 2025-12-13T00:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2025-12-13T20:00:00Z – claude – lane=doing – Started WP02 implementation
+- 2025-12-13T22:00:00Z – claude – lane=doing – Completed T012-T019: theme contracts, light/dark themes, brand types, exports, tests. Quality gates: typecheck ✅, lint ✅, test ✅ (11/11), build ✅. Moving to for_review

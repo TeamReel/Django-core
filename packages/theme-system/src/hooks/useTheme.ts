@@ -1,10 +1,10 @@
-import type { ThemeMode, ThemeBrand } from '../types/theme';
+import type { ThemeMode } from '../types/theme';
 
 export interface UseThemeReturn {
   mode: ThemeMode;
-  brand: ThemeBrand;
+  brand: string;
   setMode: (mode: ThemeMode) => void;
-  setBrand: (brand: ThemeBrand) => void;
+  setBrand: (brand: string) => void;
 }
 
 // Placeholder - will be implemented in WP03

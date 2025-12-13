@@ -12,4 +12,4 @@ export type { UseThemeReturn } from './hooks/useTheme';
 export { themeVars } from './themes';
 
 // Types
-export type { ThemeConfiguration, ThemeMode, ThemeBrand, ThemeTokenMap } from './types/theme';
+export type { ThemeConfiguration, ThemeMode, ThemeTokenMap, ThemePreference } from './types/theme';
