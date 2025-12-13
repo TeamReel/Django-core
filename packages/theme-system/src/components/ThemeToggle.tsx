@@ -93,8 +93,8 @@ function SwitchVariant({
   showLabel,
   className,
 }: Pick<ThemeToggleProps, 'showLabel' | 'className'>) {
-  const { resolvedMode, setTheme } = useTheme();
-  const isDark = resolvedMode === 'dark';
+  const { mode, setTheme } = useTheme();
+  const isDark = mode === 'dark';
 
   return (
     <div
