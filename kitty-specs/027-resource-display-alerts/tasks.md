@@ -27,9 +27,9 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 
 | ID | Title | Priority | User Story | Subtasks | Prompt |
 |----|-------|----------|------------|----------|--------|
-| WP01 | Package Scaffold & Infrastructure | P0 (Setup) | - | 8 | [WP01-package-scaffold.md](tasks/planned/WP01-package-scaffold.md) |
-| WP02 | Alert Component & localStorage Integration | P1 | US2 | 6 | [WP02-alert-component.md](tasks/planned/WP02-alert-component.md) |
-| WP03 | Resource Usage Bar Component | P1 | US1 | 5 | [WP03-resource-usage-bar.md](tasks/planned/WP03-resource-usage-bar.md) |
+| WP01 | Package Scaffold & Infrastructure | P0 (Setup) | - | 8 | ✅ [WP01-package-scaffold.md](tasks/done/WP01-package-scaffold.md) |
+| WP02 | Alert Component & localStorage Integration | P1 | US2 | 6 | ✅ [WP02-alert-component.md](tasks/done/WP02-alert-component.md) |
+| WP03 | Resource Usage Bar Component | P1 | US1 | 5 | ✅ [WP03-resource-usage-bar.md](tasks/done/WP03-resource-usage-bar.md) |
 | WP04 | Health Status & Badge Components | P2 | US3 | 6 | [WP04-health-status-badge.md](tasks/planned/WP04-health-status-badge.md) |
 | WP05 | Compound ResourceCard & AlertStack | P2 | US5 | 7 | [WP05-compound-components.md](tasks/planned/WP05-compound-components.md) |
 | WP06 | Optional Data Hooks & TypeScript Contracts | P2 | - | 5 | [WP06-data-hooks.md](tasks/planned/WP06-data-hooks.md) |
@@ -159,7 +159,7 @@ This document breaks down the implementation of F05 Resource Display & Alerts in
 **Risks**:
 - Color-only severity may not be accessible - **Mitigation**: US4 requires icons/patterns in addition to color (WP07 will add)
 
-**Prompt**: See [tasks/planned/WP03-resource-usage-bar.md](tasks/planned/WP03-resource-usage-bar.md)
+**Prompt**: See [tasks/done/WP03-resource-usage-bar.md](tasks/done/WP03-resource-usage-bar.md) ✅ **DONE**
 
 ---
 
