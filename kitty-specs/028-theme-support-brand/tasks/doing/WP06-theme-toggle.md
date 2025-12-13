@@ -774,3 +774,5 @@ Despite the F01 deviation, the implementation shows strong quality:
 - 2025-12-13T14:10:04Z – claude – shell_pid=19776 – lane=for_review – Ready for review: ThemeToggle component complete with all variants, comprehensive tests, and keyboard accessibility
 - 2025-12-13T14:35:47Z – claude-reviewer – shell_pid=5864 – lane=planned – Review complete: NEEDS CHANGES - Must refactor to use F01 components
 - 2025-12-13T14:36:49Z – claude – shell_pid=5864 – lane=doing – Acknowledged review feedback: Refactoring to use F01 components
+- 2025-12-13T15:52:30Z – claude – shell_pid=5864 – lane=doing – Addressed feedback: Refactored to use F01 Button + design tokens. IconVariant uses F01 Button (ghost), SwitchVariant/DropdownVariant use F01 design tokens (themeVars). All 56 tests passing, quality gates clean.
+- 2025-12-13T14:36:49Z – claude – shell_pid=5864 – lane=doing – Acknowledged review feedback: Refactoring to use F01 components
