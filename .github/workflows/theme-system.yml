@@ -77,6 +77,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build design-system (peer dependency)
+        run: cd packages/design-system && pnpm build
+
       - name: Run tests
         run: cd packages/theme-system && pnpm test
 
