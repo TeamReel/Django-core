@@ -1,17 +1,40 @@
 ---
 work_package_id: WP07
 title: State Override System (User Story 5)
-lane: "for_review"
+lane: "planned"
 subtasks: [T043, T044, T045, T046]
 priority: P3
 depends_on: [WP03, WP04, WP05, WP06]
 agent: "claude"
 shell_pid: "31144"
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 history:
   - date: 2025-12-13
     action: created
     by: spec-kitty.tasks
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Key Issues**:
+1. **Storybook Story Naming Inconsistency** - Dashboard stories use `CustomEmpty` while ListDetail, Wizard, and Settings use `CustomEmptyState`. This breaks the naming pattern and makes the stories harder to discover. The convention across the other 3 templates is to use the "State" suffix consistently.
+
+**What Was Done Well**:
+- ✅ All 4 templates implement consistent state priority logic (Loading → Permission Denied → Error → Empty → Success)
+- ✅ All templates have identical render prop interfaces (renderLoading, renderEmpty, renderError, renderPermissionDenied)
+- ✅ TypeScript types are consistent across all templates via StateRenderProps interface
+- ✅ Integration tests are comprehensive (25 tests covering all templates, consistency, and state priority)
+- ✅ Documentation is thorough in both quickstart.md and StateOverrides.mdx
+- ✅ All tests passing (124/124), build successful
+- ✅ State override content correctly replaces entire template (no wrapper elements)
+- ✅ Default state components imported and used consistently
+
+**Action Items** (must complete before re-review):
+- [ ] Rename Dashboard story `CustomEmpty` to `CustomEmptyState` for consistency with other templates
+- [ ] Verify all 4 templates have exactly 4 custom state stories with consistent naming: CustomLoadingState, CustomEmptyState, CustomErrorState, CustomPermissionDeniedState
 
 # Work Package: State Override System (User Story 5)
 
@@ -106,3 +129,4 @@ After WP07: Proceed to WP08 (Integration, Examples & Documentation) for final po
   - T046: Documented state override patterns in quickstart.md and StateOverrides.mdx
 - 2025-12-13T22:45:00Z – claude – shell_pid=31144 – lane=doing – All tests passing (124/124), build successful
 - 2025-12-13T21:44:25Z – claude – shell_pid=31144 – lane=for_review – Completed State Override System implementation
+- 2025-12-13T22:49:00Z – claude-reviewer – shell_pid=$PID – lane=planned – Code review complete: Found Storybook story naming inconsistency in Dashboard (CustomEmpty should be CustomEmptyState)
