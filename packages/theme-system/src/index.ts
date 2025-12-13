@@ -6,10 +6,14 @@ export type { ThemeToggleProps } from './components/ThemeToggle';
 
 // Hooks
 export { useTheme } from './hooks/useTheme';
-export type { UseThemeReturn } from './hooks/useTheme';
 
 // Themes
-export { themeVars } from './themes';
+export { themeVars, lightTheme, darkTheme, brandConfig } from './themes';
 
 // Types
 export type { ThemeConfiguration, ThemeMode, ThemeTokenMap, ThemePreference } from './types/theme';
+export type { BrandVariant, BrandVariantDefinition, BrandConfig } from './types/brand';
+
+// Context (for advanced use cases)
+export { ThemeContext } from './context/ThemeContext';
+export type { ThemeContextValue } from './context/ThemeContext';
