@@ -1,3 +1,7 @@
+---
+lane: "doing"
+agent: "system"
+---
 # WP06: Optional Data Hooks & TypeScript Contracts
 
 ---
@@ -789,3 +793,7 @@ worker.start();
 ---
 
 **Next Work Package**: WP07 (Documentation & Accessibility Polish) is final step.
+
+## Activity Log
+
+- 2025-12-13T08:30:09Z – system – shell_pid= – lane=doing – Started implementation of data hooks
