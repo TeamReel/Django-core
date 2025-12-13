@@ -18,6 +18,13 @@
   /* background-color set inline via style prop */
 }
 
+/* Respect user motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    transition: none;
+  }
+}
+
 .label {
   font-size: 14px; /* F01 font-size-sm */
   font-weight: 500; /* F01 font-weight-medium */
