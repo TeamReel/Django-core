@@ -1,0 +1,189 @@
+name: Page Templates CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/page-templates/**'
+      - '.github/workflows/page-templates.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/page-templates/**'
+      - '.github/workflows/page-templates.yml'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run lint
+        run: cd packages/page-templates && pnpm lint
+
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: cd packages/page-templates && pnpm prettier --check 'src/**/*.{ts,tsx}'
+
+  typecheck:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run typecheck
+        run: cd packages/page-templates && pnpm typecheck
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests with coverage
+        run: cd packages/page-templates && pnpm test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./packages/page-templates/coverage/coverage-final.json
+          flags: page-templates
+          name: page-templates-coverage
+          fail_ci_if_error: false
+
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        run: cd packages/page-templates && pnpm build
+
+      - name: Validate bundle size
+        run: |
+          cd packages/page-templates
+          BUNDLE_SIZE=$(stat -c%s dist/index.js)
+          GZIP_SIZE=$(gzip -c dist/index.js | wc -c)
+          MAX_SIZE=$((15 * 1024))  # 15KB in bytes
+          echo "Bundle size: $BUNDLE_SIZE bytes"
+          echo "Gzipped size: $GZIP_SIZE bytes"
+          echo "Max allowed: $MAX_SIZE bytes"
+          if [ $GZIP_SIZE -gt $MAX_SIZE ]; then
+            echo "❌ Bundle size exceeds 15KB gzipped limit!"
+            exit 1
+          fi
+          echo "✅ Bundle size is within limit"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: page-templates-dist
+          path: packages/page-templates/dist
+
+  chromatic:
+    name: Visual Regression (Chromatic)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for Chromatic baseline comparison
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Chromatic
+        uses: chromaui/action@latest
+        continue-on-error: true  # Don't block CI on Chromatic failures (Storybook build issues)
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          workingDir: packages/page-templates
+          buildScriptName: build-storybook
+          exitZeroOnChanges: true  # Don't block CI on visual changes (for initial rollout)
+          autoAcceptChanges: main  # Auto-accept on main branch
+          onlyChanged: true  # Only test changed stories

@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "029",
+    "slug":  "029-reusable-page-templates",
+    "friendly_name":  "Reusable Page Templates",
+    "source_description":  "Provide reusable, unbranded page templates for common SaaS patterns (dashboard, list-detail, settings, wizard) built on top of the core app shell/layouts and design system.",
+    "created_at":  "2025-12-13T19:57:26Z"
+}

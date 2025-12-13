@@ -1,0 +1,509 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Documentation/State Override System" />
+
+# State Override System
+
+All page templates in `@django-core/page-templates` support customizing loading, empty, error, and permission-denied states through a consistent render prop pattern.
+
+## Overview
+
+**Purpose**: Allow applications to customize state UI while maintaining consistent behavior and accessibility across all templates.
+
+**When to Override**:
+- Brand-specific messaging required
+- Custom actions needed (e.g., "Contact Support", "Upgrade Plan")
+- Context-specific content (e.g., different empty messages per template)
+- Accessibility requires specific ARIA handling
+
+**When to Use Defaults**:
+- Consistent state UI desired across application
+- Generic SaaS design patterns are sufficient
+- Rapid prototyping or MVP development
+
+---
+
+## Render Prop Pattern
+
+All four templates (Dashboard, ListDetail, Wizard, Settings) implement the same interface:
+
+```tsx
+interface StateRenderProps {
+  renderLoading?: () => React.ReactNode;
+  renderEmpty?: () => React.ReactNode;
+  renderError?: (error: Error) => React.ReactNode;
+  renderPermissionDenied?: () => React.ReactNode;
+}
+```
+
+### Key Characteristics
+
+1. **Return Type**: All render props return `React.ReactNode` (supports null, strings, elements, fragments)
+2. **Error Parameter**: `renderError` receives the `Error` object for display/logging
+3. **Complete Replacement**: Override content replaces the entire template—no wrapper elements added
+4. **Layout Preservation**: State content must handle its own styling/responsiveness
+
+---
+
+## State Priority
+
+Templates evaluate states in this priority order (highest to lowest):
+
+1. **Loading** → Blocks all other states during data fetch
+2. **Permission Denied** → Access control takes priority over data states
+3. **Error** → Error conditions override empty states
+4. **Empty** → Displayed when data is absent but no error
+5. **Success** → Default render when no state flags are active
+
+**Example**:
+```tsx
+// Only loading renders, error/empty are ignored
+<Dashboard loading={true} error={new Error()} isEmpty={true}>
+  {/* Not rendered */}
+</Dashboard>
+
+// Permission denied renders, error/empty are ignored
+<Dashboard permissionDenied={true} error={new Error()} isEmpty={true}>
+  {/* Not rendered */}
+</Dashboard>
+
+// Error renders, empty is ignored
+<Dashboard error={new Error()} isEmpty={true}>
+  {/* Not rendered */}
+</Dashboard>
+
+// Empty renders
+<Dashboard isEmpty={true}>
+  {/* Not rendered */}
+</Dashboard>
+
+// Success: children render
+<Dashboard>
+  <Dashboard.Header title="Analytics" />
+  {/* Rendered */}
+</Dashboard>
+```
+
+---
+
+## Usage Examples
+
+### Custom Loading State
+
+```tsx
+<Dashboard
+  loading={isLoading}
+  renderLoading={() => (
+    <div className="loading-container">
+      <Spinner size="large" />
+      <p>Fetching your dashboard data...</p>
+      <p className="loading-hint">This may take a few seconds</p>
+    </div>
+  )}
+>
+  <Dashboard.Header title="Analytics Dashboard" />
+</Dashboard>
+```
+
+### Custom Empty State with Actions
+
+```tsx
+<ListDetail
+  isEmpty={items.length === 0}
+  renderEmpty={() => (
+    <div className="empty-state">
+      <FolderIcon size={64} />
+      <h2>No Items Yet</h2>
+      <p>Get started by creating your first item</p>
+      <button onClick={handleCreateItem}>Create Item</button>
+    </div>
+  )}
+>
+  <ListDetail.List>{/* ... */}</ListDetail.List>
+  <ListDetail.Detail>{/* ... */}</ListDetail.Detail>
+</ListDetail>
+```
+
+### Custom Error State with Retry
+
+```tsx
+<Wizard
+  steps={steps}
+  error={error}
+  renderError={(err) => (
+    <div className="error-state">
+      <AlertIcon color="red" size={48} />
+      <h2>Wizard Setup Failed</h2>
+      <p className="error-message">{err.message}</p>
+      <p className="error-code">Error Code: {err.code}</p>
+      <div className="error-actions">
+        <button onClick={handleRetry}>Try Again</button>
+        <button onClick={handleContactSupport}>Contact Support</button>
+      </div>
+    </div>
+  )}
+>
+  {/* Wizard steps */}
+</Wizard>
+```
+
+### Custom Permission Denied State
+
+```tsx
+<Settings
+  sections={adminSections}
+  permissionDenied={!hasAdminRole}
+  renderPermissionDenied={() => (
+    <div className="permission-denied">
+      <LockIcon size={48} />
+      <h2>Administrator Access Required</h2>
+      <p>
+        This settings page is restricted to administrators. Contact your team lead
+        to request elevated permissions.
+      </p>
+      <button onClick={handleRequestAccess}>Request Access</button>
+    </div>
+  )}
+>
+  {/* Settings sections */}
+</Settings>
+```
+
+---
+
+## Accessibility Best Practices
+
+### Loading States
+
+**Requirements**:
+- Use `role="status"` or `aria-live="polite"` for screen reader announcements
+- Include visible text describing the loading action (not just spinners)
+- Preserve focus—don't trap keyboard users
+
+```tsx
+renderLoading={() => (
+  <div role="status" aria-live="polite" aria-atomic="true">
+    <Spinner aria-hidden="true" /> {/* Hide decorative spinner */}
+    <span>Loading dashboard data</span>
+  </div>
+)}
+```
+
+### Error States
+
+**Requirements**:
+- Use `role="alert"` for critical errors requiring immediate attention
+- Use `aria-live="assertive"` for dynamic error updates
+- Provide actionable next steps (retry button, support link)
+- Include error details accessible to screen readers
+
+```tsx
+renderError={(error) => (
+  <div role="alert" aria-live="assertive">
+    <h2 id="error-title">Failed to Load Data</h2>
+    <p id="error-message">{error.message}</p>
+    <button
+      onClick={handleRetry}
+      aria-describedby="error-title error-message"
+    >
+      Retry
+    </button>
+  </div>
+)}
+```
+
+### Empty States
+
+**Requirements**:
+- Use `role="status"` to announce empty state changes
+- Provide clear explanation of why content is empty
+- Offer primary action to resolve empty state
+- Ensure buttons meet WCAG AA color contrast (4.5:1 minimum)
+
+```tsx
+renderEmpty={() => (
+  <div role="status">
+    <h2>No Projects Found</h2>
+    <p>You haven't created any projects yet. Get started by adding one.</p>
+    <button>Create Your First Project</button>
+  </div>
+)}
+```
+
+### Permission Denied States
+
+**Requirements**:
+- Clearly explain access requirements
+- Provide escalation path (contact admin, request access)
+- Use `role="status"` for informational restrictions
+- Use `role="alert"` for critical security blocks
+
+```tsx
+renderPermissionDenied={() => (
+  <div role="status" aria-labelledby="perm-title">
+    <h2 id="perm-title">Premium Feature</h2>
+    <p>Upgrade to access this feature</p>
+    <button>View Pricing</button>
+  </div>
+)}
+```
+
+---
+
+## Layout & Styling Guidelines
+
+### 1. Complete Replacement
+
+Override content replaces the **entire template**. No wrapper elements are added automatically.
+
+**Correct**:
+```tsx
+renderEmpty={() => (
+  <div className="my-empty-state" style={{ padding: '2rem', textAlign: 'center' }}>
+    {/* Your content */}
+  </div>
+)}
+```
+
+**Incorrect** (assumes template provides outer container):
+```tsx
+renderEmpty={() => (
+  <>
+    <h2>Empty</h2> {/* No outer container—may not center/style correctly */}
+  </>
+)}
+```
+
+### 2. Responsive Design
+
+Handle breakpoints in your custom state content (use F01 responsive utilities or media queries).
+
+```tsx
+renderLoading={() => (
+  <div
+    style={{
+      padding: 'clamp(1rem, 5vw, 3rem)', // Responsive padding
+      minHeight: '400px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}
+  >
+    {/* Loading content */}
+  </div>
+)}
+```
+
+### 3. Minimum Heights
+
+Provide minimum heights (300-400px) to prevent layout shifts and ensure good UX.
+
+```tsx
+renderEmpty={() => (
+  <div style={{ minHeight: '400px', display: 'flex', alignItems: 'center' }}>
+    {/* Empty state */}
+  </div>
+)}
+```
+
+### 4. Use Design System Components
+
+Leverage `@django-core/design-system` (F01) for consistency:
+
+```tsx
+import { Button, Heading, Text, Stack } from '@django-core/design-system';
+
+renderEmpty={() => (
+  <Stack align="center" justify="center" minHeight="400px">
+    <Heading level={2}>No Data</Heading>
+    <Text>Create your first item to get started</Text>
+    <Button onClick={handleCreate}>Create Item</Button>
+  </Stack>
+)}
+```
+
+---
+
+## Testing State Overrides
+
+### Unit Tests
+
+Verify custom states render correctly and replace default content:
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { Dashboard } from '@django-core/page-templates';
+
+describe('Dashboard State Overrides', () => {
+  it('renders custom loading state', () => {
+    render(
+      <Dashboard
+        loading
+        renderLoading={() => <div data-testid="custom-loader">Loading</div>}
+      >
+        <Dashboard.Header title="Test" />
+      </Dashboard>
+    );
+
+    expect(screen.getByTestId('custom-loader')).toBeInTheDocument();
+    expect(screen.queryByText('Test')).not.toBeInTheDocument(); // Header not rendered
+  });
+
+  it('renders custom error with retry button', () => {
+    const handleRetry = vi.fn();
+    const error = new Error('API failed');
+
+    render(
+      <Dashboard
+        error={error}
+        renderError={(err) => (
+          <div>
+            <p>{err.message}</p>
+            <button onClick={handleRetry}>Retry</button>
+          </div>
+        )}
+      >
+        <Dashboard.Header title="Test" />
+      </Dashboard>
+    );
+
+    expect(screen.getByText('API failed')).toBeInTheDocument();
+
+    const retryButton = screen.getByRole('button', { name: 'Retry' });
+    retryButton.click();
+    expect(handleRetry).toHaveBeenCalledOnce();
+  });
+});
+```
+
+### Integration Tests
+
+Test state priority and transitions:
+
+```tsx
+it('loading takes priority over error', () => {
+  const { rerender } = render(
+    <Dashboard loading error={new Error()} renderLoading={() => <div>Loading</div>}>
+      <Dashboard.Header title="Test" />
+    </Dashboard>
+  );
+
+  expect(screen.getByText('Loading')).toBeInTheDocument();
+
+  // Remove loading, error should now render
+  rerender(
+    <Dashboard error={new Error('API Error')} renderError={(e) => <div>{e.message}</div>}>
+      <Dashboard.Header title="Test" />
+    </Dashboard>
+  );
+
+  expect(screen.queryByText('Loading')).not.toBeInTheDocument();
+  expect(screen.getByText('API Error')).toBeInTheDocument();
+});
+```
+
+---
+
+## Partial Overrides
+
+Override only specific states—use defaults for others:
+
+```tsx
+<Dashboard
+  loading={isLoading}
+  isEmpty={data.length === 0}
+  error={error}
+  // Only override empty, use defaults for loading/error
+  renderEmpty={() => <CustomEmptyState />}
+>
+  <Dashboard.Header title="Analytics" />
+</Dashboard>
+```
+
+**Use Cases**:
+- Brand-specific empty states, generic loading/error
+- Custom permission denied, default loading/empty/error
+- Context-specific overrides (dashboard vs settings)
+
+---
+
+## Common Patterns
+
+### 1. Retry with Exponential Backoff
+
+```tsx
+const [retryCount, setRetryCount] = useState(0);
+
+renderError={(error) => (
+  <div>
+    <p>Error: {error.message}</p>
+    {retryCount < 3 && (
+      <button onClick={() => {
+        setRetryCount(prev => prev + 1);
+        fetchData();
+      }}>
+        Retry ({3 - retryCount} attempts remaining)
+      </button>
+    )}
+    {retryCount >= 3 && (
+      <button onClick={handleContactSupport}>Contact Support</button>
+    )}
+  </div>
+)}
+```
+
+### 2. Contextual Empty States
+
+```tsx
+const emptyMessages = {
+  dashboard: "No widgets configured. Add your first widget to get started.",
+  projects: "You haven't created any projects yet.",
+  settings: "No settings available for your account type.",
+};
+
+renderEmpty={() => (
+  <div>
+    <h2>No Data</h2>
+    <p>{emptyMessages[pageType]}</p>
+  </div>
+)}
+```
+
+### 3. Loading with Progress
+
+```tsx
+const [progress, setProgress] = useState(0);
+
+renderLoading={() => (
+  <div>
+    <ProgressBar value={progress} max={100} />
+    <p>Loading... {progress}%</p>
+  </div>
+)}
+```
+
+---
+
+## Explore in Storybook
+
+See live examples of state overrides for each template:
+
+- **Dashboard** → "Custom Loading State", "Custom Error State", etc.
+- **ListDetail** → "Custom Empty State", "Custom Permission Denied State", etc.
+- **Wizard** → State override examples
+- **Settings** → State override examples
+
+Run `pnpm storybook` in the monorepo to explore interactive demos.
+
+---
+
+## Summary
+
+- **Consistent API**: All templates use the same 4 render props
+- **Priority Order**: Loading > Permission Denied > Error > Empty > Success
+- **Complete Replacement**: Overrides replace entire template (no wrappers)
+- **Accessibility First**: Follow WCAG AA guidelines for custom states
+- **Design System Integration**: Use F01 components for consistency
+- **Partial Overrides**: Mix custom and default states as needed
+
+**Next Steps**: Review the [Quick Start Guide](../../../kitty-specs/029-reusable-page-templates/quickstart.md) for integration examples, or browse Storybook for interactive demos.
