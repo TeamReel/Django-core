@@ -11,10 +11,10 @@ subtasks:
   - "T019"
 title: "Theme Contracts & Token Definition"
 phase: "Phase 1 - Core Theme System"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "Claude"
+agent: "claude"
+shell_pid: "29516"
 review_status: ""
 reviewed_by: ""
 history:
@@ -23,6 +23,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-13T20:00:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "29516"
+    action: "Started WP02 implementation: Theme contracts & token definition"
 ---
 
 # Work Package Prompt: WP02 – Theme Contracts & Token Definition
