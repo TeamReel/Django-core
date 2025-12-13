@@ -171,7 +171,7 @@ describe('ThemeToggle Accessibility', () => {
 
       const button = container.querySelector('button');
       const styles = window.getComputedStyle(button as Element);
-      
+
       // Switch button should meet minimum size
       expect(parseInt(styles.width)).toBeGreaterThanOrEqual(44);
       expect(parseInt(styles.height)).toBeGreaterThanOrEqual(24);
@@ -214,7 +214,7 @@ describe('ThemeToggle Accessibility', () => {
 
       const button = container.querySelector('button');
       button?.focus();
-      
+
       // Button should be focusable (browser will apply default focus styles)
       expect(document.activeElement).toBe(button);
     });

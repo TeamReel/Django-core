@@ -688,13 +688,13 @@ playName = '%s'.", Ie), me = !0);
         var me = _._result;
         return me === void 0 && X(`lazy: Expected the result of a dynamic import() call. Instead received: %s
 
-Your code should look like: 
+Your code should look like:
   const MyComponent = lazy(() => import('./MyComponent'))
 
 Did you accidentally put curly braces around the import?`, me), "default" in me || X(`lazy: Expected the result of a dynamic import() call. \
 Instead received: %s
 
-Your code should look like: 
+Your code should look like:
   const MyComponent = lazy(() => import('./MyComponent'))`, me), me.default;
       } else
         throw _._result;
@@ -26275,7 +26275,7 @@ function S3e(e) {
 }
 function E3e(e) {
   let t = e === null ? "null" : typeof e;
-  if (t !== "string" && t !== "object") return `Unexpected doc '${t}', 
+  if (t !== "string" && t !== "object") return `Unexpected doc '${t}',
 Expected it to be 'string' or 'object'.`;
   if (X7(e)) throw new Error("doc is valid.");
   let r = Object.prototype.toString.call(e);
@@ -29870,7 +29870,7 @@ function O4e(e) {
 }
 function I4e(e) {
   let t = e === null ? "null" : typeof e;
-  if (t !== "string" && t !== "object") return `Unexpected doc '${t}', 
+  if (t !== "string" && t !== "object") return `Unexpected doc '${t}',
 Expected it to be 'string' or 'object'.`;
   if ($c(e)) throw new Error("doc is valid.");
   let r = Object.prototype.toString.call(e);
@@ -48831,23 +48831,23 @@ var r7e = l1(), Kb = "data-scroll-locked", n7e = /* @__PURE__ */ a(function(e, t
     r === "padding" && "padding-right: ".concat(p, "px ").concat(o, ";")
   ].filter(Boolean).join(""), `
   }
-  
+
   .`).concat(Uc, ` {
     right: `).concat(p, "px ").concat(o, `;
   }
-  
+
   .`).concat(qc, ` {
     margin-right: `).concat(p, "px ").concat(o, `;
   }
-  
+
   .`).concat(Uc, " .").concat(Uc, ` {
     right: 0 `).concat(o, `;
   }
-  
+
   .`).concat(qc, " .").concat(qc, ` {
     margin-right: 0 `).concat(o, `;
   }
-  
+
   body[`).concat(Kb, `] {
     `).concat(XD, ": ").concat(p, `px;
   }
@@ -52513,7 +52513,7 @@ var DZ = /* @__PURE__ */ a((e) => ({ v: 5, entries: Object.entries(e).reduce(
         throw new Error(
           li`
           Invalid part '${B}', leading to id === parentId ('${ne}'), inside title '${F}'
-          
+
           Did you create a path that uses the separator char accidentally, such as 'Vue <docs/>' where '/' is a separator char? See https://github.com/storybookjs/storybook/issues/6128
           `
         );
