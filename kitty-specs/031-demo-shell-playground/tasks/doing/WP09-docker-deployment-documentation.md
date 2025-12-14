@@ -1,7 +1,7 @@
 ---
 work_package_id: WP09
 title: Docker Deployment Documentation
-lane: planned
+lane: "doing"
 subtasks:
   - T059
   - T060
@@ -20,6 +20,8 @@ dependencies:
   - WP06
   - WP07
   - WP08
+agent: "copilot"
+shell_pid: "32760"
 history:
   - date: 2025-12-14
     action: created
@@ -129,3 +131,7 @@ Update `examples/demo-shell/README.md` with:
 
 **Status**: Ready (blocked by WP01-WP08)
 **Lane**: `planned` → `doing` after WP08 → `for_review` → `done`
+
+## Activity Log
+
+- 2025-12-14T15:06:24Z – copilot – shell_pid=32760 – lane=doing – Started Docker deployment implementation
