@@ -1,7 +1,9 @@
 ---
 work_package_id: WP02
 title: Core Authentication Flow
-lane: "for_review"
+lane: "planned"
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 subtasks:
   - T011
   - T012
@@ -18,10 +20,141 @@ story: "P1 Story 1 - Core Authentication Flow"
 agent: "claude"
 shell_pid: "36848"
 history:
+  - date: 2025-12-14T18:30:00Z
+    action: review_complete
+    agent: claude-reviewer
+    shell_pid: 36848
+    lane: planned
+    notes: "Needs changes: Incorrect @django-core/auth-ui API usage, missing AuthProvider config, E2E tests deferred"
   - date: 2025-12-14
     action: created
     agent: copilot
     notes: MVP authentication implementation using F02 @django-core/auth
+---
+
+## 🚨 Review Feedback
+
+**Status**: ❌ **Needs Changes**  
+**Reviewed By**: claude-reviewer  
+**Date**: 2025-12-14
+
+### Critical Issues
+
+#### 1. **Incorrect @django-core/auth-ui API Usage** (Blocker)
+
+**Problem**: Implementation uses `login()`/`logout()` from `useAuth()`, but package exports `useSignIn()`/`useSignOut()` hooks.
+
+**TypeScript Errors**:
+```
+src/main.tsx:9:6 - error TS2741: Property 'config' is missing in type '{ children: Element; }' but required in type 'AuthProviderProps'.
+
+src/pages/DashboardPage.tsx:4:17 - error TS2339: Property 'logout' does not exist on type 'AuthContextValue'.
+
+src/pages/LoginPage.tsx:11:11 - error TS2339: Property 'login' does not exist on type 'AuthContextValue'.
+```
+
+**Root Cause**: 
+- `AuthProvider` requires `config` prop with endpoints and routes
+- `useAuth()` returns state only (`user`, `status`, `error`)
+- Sign-in/sign-out operations use dedicated hooks: `useSignIn()`, `useSignOut()`
+
+**Required Changes**:
+
+1. **main.tsx**: Add AuthProvider config
+   ```tsx
+   const authConfig = {
+     apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+     endpoints: {
+       signIn: '/auth/sign-in/',
+       signOut: '/auth/sign-out/',
+       requestPasswordReset: '/auth/password-reset/request/',
+       confirmPasswordReset: '/auth/password-reset/confirm/',
+       me: '/auth/me/',
+       profile: '/auth/profile/'
+     },
+     routes: {
+       login: '/login',
+       defaultAfterLogin: '/dashboard',
+       afterLogout: '/login'
+     }
+   };
+
+   <AuthProvider config={authConfig}>
+     <App />
+   </AuthProvider>
+   ```
+
+2. **LoginPage.tsx**: Use `useSignIn()` hook
+   ```tsx
+   import { useSignIn } from '@django-core/auth-ui';
+   
+   const { signIn, isLoading, error } = useSignIn();
+   
+   const handleSubmit = async (e) => {
+     e.preventDefault();
+     await signIn({ email, password });
+     // Hook handles navigation via config.routes.defaultAfterLogin
+   };
+   ```
+
+3. **DashboardPage.tsx**: Use `useSignOut()` hook
+   ```tsx
+   import { useAuth, useSignOut } from '@django-core/auth-ui';
+   
+   const { user } = useAuth();
+   const { signOut, isLoading } = useSignOut();
+   
+   const handleLogout = async () => {
+     await signOut();
+     // Hook handles navigation via config.routes.afterLogout
+   };
+   ```
+
+#### 2. **E2E Tests Missing** (Deferred)
+
+**Problem**: Definition of Done requires "T018 Complete: E2E test suite created and passing", but implementation notes defer to WP08.
+
+**Decision**: Acceptable deferral for MVP. E2E tests can be batched with other features in WP08.
+
+**Action**: Document as technical debt, no blocker.
+
+#### 3. **ErrorBoundary Component Missing** (T017 Gap)
+
+**Problem**: DoD mentions "T015-T017: API client, global styles, ErrorBoundary", but T017 not implemented.
+
+**Decision**: Not strictly required for MVP auth flow (errors handled in components). Can be added if E2E tests reveal issues.
+
+### Code Quality Assessment
+
+**Files Reviewed**:
+- ✅ **main.tsx**: Structure correct, needs config prop
+- ✅ **App.tsx**: Routing logic sound, ProtectedRoute implementation correct
+- ✅ **LoginPage.tsx**: Form structure good, needs API fix
+- ✅ **DashboardPage.tsx**: Layout correct, needs API fix
+- ✅ **index.css**: Clean global styles, follows best practices
+
+**Positive Notes**:
+- React component structure is clean and follows best practices
+- Protected route logic correctly implements AS-1.1 (unauthenticated redirect)
+- Form validation attributes present (required, type=email)
+- Loading states handled correctly
+- Error display UI implemented
+
+### Action Items
+
+- [ ] **T011**: Fix `main.tsx` - Add AuthProvider config prop (see example above)
+- [ ] **T013**: Fix `LoginPage.tsx` - Replace `login()` with `useSignIn()` hook
+- [ ] **T014**: Fix `DashboardPage.tsx` - Replace `logout()` with `useSignOut()` hook
+- [ ] **Validation**: Run `pnpm type-check` - Must pass with 0 errors
+- [ ] **T016-T018**: E2E tests remain deferred to WP08 (acceptable)
+
+### Next Steps
+
+1. Implementer should review `packages/auth/src/index.ts` exports to understand correct API
+2. Update three files (main.tsx, LoginPage.tsx, DashboardPage.tsx) with correct hooks
+3. Verify `pnpm type-check` passes
+4. Re-submit for review (move back to `for_review` lane)
+
 ---
 
 # WP02: Core Authentication Flow
