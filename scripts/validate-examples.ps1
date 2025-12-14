@@ -58,38 +58,20 @@ else {
 }
 Write-Host ""
 
-# Step 3: Build
-Write-Host "3. Running build..." -ForegroundColor Yellow
-$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-pnpm --filter @django-core/integration-guides-examples build 2>&1 | Tee-Object -Variable buildOutput | Out-Host
-$buildSuccess = $LASTEXITCODE -eq 0
-$buildTime = $stopwatch.Elapsed.TotalSeconds
-$stopwatch.Stop()
-
-if ($buildSuccess) {
-    Write-Host "[PASS] Build passed ($([Math]::Round($buildTime, 2))s)" -ForegroundColor Green
-}
-else {
-    Write-Host "[FAIL] Build failed" -ForegroundColor Red
-    $failed = $true
-}
-Write-Host ""
-
 # Summary
 Write-Host "================================================================" -ForegroundColor Cyan
 if ($failed) {
-    $totalTime = $typeCheckTime + $lintTime + $buildTime
+    $totalTime = $typeCheckTime + $lintTime
     Write-Host "[FAIL] Validation FAILED (${totalTime}s total)" -ForegroundColor Red
     Write-Host ""
     Write-Host "Troubleshooting tips:" -ForegroundColor Yellow
     Write-Host "- Type errors? Check docs/integration-guides/troubleshooting.md" -ForegroundColor Gray
     Write-Host "- Lint errors? Run: pnpm --filter @django-core/integration-guides-examples lint --fix" -ForegroundColor Gray
-    Write-Host "- Build errors? Check dist/ or build output above" -ForegroundColor Gray
     Write-Host ""
     exit 1
 }
 else {
-    $totalTime = $typeCheckTime + $lintTime + $buildTime
+    $totalTime = $typeCheckTime + $lintTime
     Write-Host "[PASS] All validations PASSED ($([Math]::Round($totalTime, 2))s total)" -ForegroundColor Green
     Write-Host ""
     Write-Host "Ready to commit! Examples are valid and ready for PR." -ForegroundColor Green

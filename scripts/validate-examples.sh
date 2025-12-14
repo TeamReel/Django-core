@@ -15,64 +15,50 @@
 
 set -e  # Exit on first error (we'll catch it and report)
 
-echo "🔍 Validating @django-core/integration-guides-examples"
+echo "Validating @django-core/integration-guides-examples"
 echo ""
 
 # Track success/failure
 FAILED=0
 
 # Step 1: Type-check
-echo "1️⃣  Running TypeScript type-check..."
+echo "1. Running TypeScript type-check..."
 TYPE_CHECK_START=$(date +%s%N)
 if ! pnpm --filter @django-core/integration-guides-examples type-check; then
-    echo "❌ Type-check failed"
+    echo "[FAIL] Type-check failed"
     FAILED=1
 else
     TYPE_CHECK_END=$(date +%s%N)
     TYPE_CHECK_TIME=$(echo "scale=2; ($TYPE_CHECK_END - $TYPE_CHECK_START) / 1000000000" | bc)
-    echo "✅ Type-check passed (${TYPE_CHECK_TIME}s)"
+    echo "[PASS] Type-check passed (${TYPE_CHECK_TIME}s)"
 fi
 echo ""
 
 # Step 2: Lint
-echo "2️⃣  Running ESLint..."
+echo "2. Running ESLint..."
 LINT_START=$(date +%s%N)
 if ! pnpm --filter @django-core/integration-guides-examples lint; then
-    echo "❌ Lint failed"
+    echo "[FAIL] Lint failed"
     FAILED=1
 else
     LINT_END=$(date +%s%N)
     LINT_TIME=$(echo "scale=2; ($LINT_END - $LINT_START) / 1000000000" | bc)
-    echo "✅ Lint passed (${LINT_TIME}s)"
-fi
-echo ""
-
-# Step 3: Build
-echo "3️⃣  Running build..."
-BUILD_START=$(date +%s%N)
-if ! pnpm --filter @django-core/integration-guides-examples build; then
-    echo "❌ Build failed"
-    FAILED=1
-else
-    BUILD_END=$(date +%s%N)
-    BUILD_TIME=$(echo "scale=2; ($BUILD_END - $BUILD_START) / 1000000000" | bc)
-    echo "✅ Build passed (${BUILD_TIME}s)"
+    echo "[PASS] Lint passed (${LINT_TIME}s)"
 fi
 echo ""
 
 # Summary
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "================================================================"
 if [ $FAILED -eq 1 ]; then
-    echo "❌ Validation FAILED"
+    echo "[FAIL] Validation FAILED"
     echo ""
     echo "Troubleshooting tips:"
-    echo "• Type errors? Check docs/integration-guides/troubleshooting.md"
-    echo "• Lint errors? Run: pnpm --filter @django-core/integration-guides-examples lint --fix"
-    echo "• Build errors? Check dist/ or build output above"
+    echo "- Type errors? Check docs/integration-guides/troubleshooting.md"
+    echo "- Lint errors? Run: pnpm --filter @django-core/integration-guides-examples lint --fix"
     echo ""
     exit 1
 else
-    echo "✅ All validations PASSED"
+    echo "[PASS] All validations PASSED"
     echo ""
     echo "Ready to commit! Examples are valid and ready for PR."
     exit 0

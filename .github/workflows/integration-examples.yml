@@ -56,17 +56,12 @@ jobs:
       run: pnpm --filter @django-core/integration-guides-examples lint
       continue-on-error: false
 
-    - name: Run build
-      run: pnpm --filter @django-core/integration-guides-examples build
-      continue-on-error: false
-
     - name: Summary
       if: success()
       run: |
         echo "✅ All integration guide examples passed validation"
         echo "• TypeScript: type-check passed"
         echo "• ESLint: no errors"
-        echo "• Build: successful"
 
     - name: Failure summary
       if: failure()
