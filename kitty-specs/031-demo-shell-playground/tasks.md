@@ -63,11 +63,11 @@ This document breaks down the Demo Shell implementation into **8 work packages**
 - [x] **T032** Add route: `/403` → ForbiddenPage, update API error handler to redirect on 403 responses ✅ COMPLETE (WP04 - route added, E2E tests deferred to WP08)
 
 ### T033–T037: Page Templates (P2 Story 4)
-- [ ] **T033** → T019-T026 | Create `src/pages/resources/ResourceListPage.tsx` (demo list with filters, F06 ListLayout)
-- [ ] **T034** [P] Create `src/pages/resources/ResourceDetailPage.tsx` (demo detail view, F06 DetailLayout)
-- [ ] **T035** [P] Create `src/pages/SettingsPage.tsx` (demo settings form, F06 SettingsLayout)
-- [ ] **T036** [P] Add routes: `/resources` → ResourceListPage, `/resources/:id` → ResourceDetailPage, `/settings` → SettingsPage
-- [ ] **T037** Update `Sidebar.tsx`: Add nav links for Resources and Settings
+- [x] **T033** → T019-T026 | Create `src/pages/resources/ResourcesPage.tsx` (demo list+detail with filters, F06 ListDetail) ✅ COMPLETE (WP05)
+- [x] **T034** [P] Create `src/pages/SettingsPage.tsx` (demo settings form, F06 Settings template) ✅ COMPLETE (WP05)
+- [x] **T035** [P] Add DefaultEmpty components to OrganisationListPage and ProjectListPage ✅ COMPLETE (WP05)
+- [x] **T036** [P] Add routes: `/resources` → ResourcesPage, `/settings` → SettingsPage ✅ COMPLETE (WP05)
+- [x] **T037** Update `Sidebar.tsx`: Add nav links for Resources and Settings ✅ COMPLETE (WP05)
 
 ### T038–T041: Error States (P2 Story 5)
 - [ ] **T038** → T031 | Create `src/pages/errors/NotFoundPage.tsx` (404 error page, F01 components)
