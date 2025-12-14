@@ -1,11 +1,12 @@
-import { useAuth } from '@django-core/auth-ui';
+import { useAuth, useSignOut } from '@django-core/auth-ui';
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const { signOut, loading } = useSignOut();
 
   const handleLogout = async () => {
-    await logout();
-    // AuthProvider handles redirect to login page
+    await signOut();
+    // Navigation handled automatically by AuthProvider via config.routes.afterLogout
   };
 
   return (
@@ -14,18 +15,19 @@ export default function DashboardPage() {
         <h1>Welcome, {user?.first_name || user?.email}!</h1>
         <button
           onClick={handleLogout}
+          disabled={loading}
           style={{
             padding: '10px 20px',
-            backgroundColor: '#dc3545',
+            backgroundColor: loading ? '#6c757d' : '#dc3545',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: 'pointer'
+            cursor: loading ? 'not-allowed' : 'pointer'
           }}
         >
-          Log Out
+          {loading ? 'Logging out...' : 'Log Out'}
         </button>
       </header>
 

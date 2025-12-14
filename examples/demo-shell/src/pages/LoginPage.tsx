@@ -1,29 +1,16 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@django-core/auth-ui';
+import { useSignIn } from '@django-core/auth-ui';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { signIn, isLoading, error } = useSignIn();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      await login({ email, password });
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    await signIn(email, password);
+    // Navigation handled automatically by AuthProvider via config.routes.defaultAfterLogin
   };
 
   return (
@@ -34,7 +21,7 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '30px' }}>
         {error && (
           <div style={{ padding: '10px', backgroundColor: '#fee', border: '1px solid #fcc', borderRadius: '4px', color: '#c00' }}>
-            {error}
+            {error.formErrors[0] || 'Login failed. Please try again.'}
           </div>
         )}
 
@@ -72,19 +59,19 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isLoading}
           style={{
             padding: '12px',
-            backgroundColor: isSubmitting ? '#ccc' : '#007bff',
+            backgroundColor: isLoading ? '#ccc' : '#007bff',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
             fontSize: '16px',
             fontWeight: '500',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer'
+            cursor: isLoading ? 'not-allowed' : 'pointer'
           }}
         >
-          {isSubmitting ? 'Logging in...' : 'Log In'}
+          {isLoading ? 'Logging in...' : 'Log In'}
         </button>
       </form>
 

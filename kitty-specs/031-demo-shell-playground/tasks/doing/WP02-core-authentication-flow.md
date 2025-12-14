@@ -20,6 +20,18 @@ story: "P1 Story 1 - Core Authentication Flow"
 agent: "claude"
 shell_pid: "32760"
 history:
+  - date: 2025-12-14T13:45:00Z
+    action: fixes_complete
+    agent: claude
+    shell_pid: 32760
+    lane: doing
+    notes: "Addressed all review feedback: Fixed AuthProvider config, useSignIn/useSignOut API usage, added useSignOut export, type-check passes"
+  - date: 2025-12-14T13:36:19Z
+    action: started_fixes
+    agent: claude
+    shell_pid: 32760
+    lane: doing
+    notes: "Acknowledging review feedback, fixing auth-ui API usage"
   - date: 2025-12-14T18:30:00Z
     action: review_complete
     agent: claude-reviewer
@@ -142,10 +154,26 @@ src/pages/LoginPage.tsx:11:11 - error TS2339: Property 'login' does not exist on
 
 ### Action Items
 
-- [ ] **T011**: Fix `main.tsx` - Add AuthProvider config prop (see example above)
-- [ ] **T013**: Fix `LoginPage.tsx` - Replace `login()` with `useSignIn()` hook
-- [ ] **T014**: Fix `DashboardPage.tsx` - Replace `logout()` with `useSignOut()` hook
-- [ ] **Validation**: Run `pnpm type-check` - Must pass with 0 errors
+- [x] **T011**: Fix `main.tsx` - Add AuthProvider config prop ✅ COMPLETE
+- [x] **T013**: Fix `LoginPage.tsx` - Replace `login()` with `useSignIn()` hook ✅ COMPLETE
+- [x] **T014**: Fix `DashboardPage.tsx` - Replace `logout()` with `useSignOut()` hook ✅ COMPLETE
+- [x] **Validation**: Run `pnpm type-check` - Must pass with 0 errors ✅ COMPLETE
+- [x] **Bonus**: Added missing `useSignOut` export to `@django-core/auth-ui` package ✅ COMPLETE
+
+### Implementation Summary
+
+**Changes Made**:
+1. **main.tsx**: Added complete AuthProvider config with apiBaseUrl, endpoints, and routes
+2. **LoginPage.tsx**: Replaced `login()` with `useSignIn()` hook, fixed API signature (email, password as separate args), fixed error display (ApiError.formErrors)
+3. **DashboardPage.tsx**: Replaced `logout()` with `useSignOut()` hook, renamed `isLoading` to `loading`
+4. **packages/auth/src/index.ts**: Added missing `useSignOut` and `UseSignOutResult` exports
+5. **Rebuilt @django-core/auth-ui package** to include new exports
+
+**Validation Results**:
+- ✅ TypeScript type-check: 0 errors
+- ✅ All three files now use correct @django-core/auth-ui API
+- ✅ AuthProvider properly configured with endpoints and routes
+- ✅ Sign-in/sign-out hooks correctly integrated
 - [ ] **T016-T018**: E2E tests remain deferred to WP08 (acceptable)
 
 ### Next Steps

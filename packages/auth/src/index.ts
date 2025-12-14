@@ -37,10 +37,12 @@ export {
   useAuthStatus,
   useCurrentUser,
   useSignIn,
+  useSignOut,
   useRequestPasswordReset,
   useConfirmPasswordReset,
   type AuthStatusFlags,
   type UseSignInResult,
+  type UseSignOutResult,
   type UseRequestPasswordResetResult,
   type UseConfirmPasswordResetResult
 } from './hooks';
