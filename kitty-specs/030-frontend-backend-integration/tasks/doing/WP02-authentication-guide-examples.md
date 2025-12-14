@@ -10,10 +10,10 @@ subtasks:
   - "T015"
 title: "Authentication Guide & Examples"
 phase: "Phase 2 - Core Guides"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "GitHub Copilot"
+agent: "copilot"
+shell_pid: "36848"
 review_status: ""
 reviewed_by: ""
 history:
@@ -22,6 +22,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-14T10:00:00Z"
+    lane: "doing"
+    agent: "copilot"
+    shell_pid: "36848"
+    action: "Started implementation"
 ---
 
 # Work Package Prompt: WP02 – Authentication Guide & Examples
