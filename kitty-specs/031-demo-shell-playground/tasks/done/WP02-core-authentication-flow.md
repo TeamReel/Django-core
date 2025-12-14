@@ -1,8 +1,8 @@
 ---
 work_package_id: WP02
 title: Core Authentication Flow
-lane: "for_review"
-review_status: "acknowledged"
+lane: "done"
+review_status: "approved with minor notes (E2E tests deferred to WP08)"
 reviewed_by: "claude-reviewer"
 subtasks:
   - T011
@@ -17,9 +17,15 @@ priority: P1
 dependencies:
   - WP01
 story: "P1 Story 1 - Core Authentication Flow"
-agent: "claude"
+agent: "claude-reviewer"
 shell_pid: "32760"
 history:
+  - date: 2025-12-14T13:50:00Z
+    action: review_approved
+    agent: claude-reviewer
+    shell_pid: 32760
+    lane: done
+    notes: "Approved with minor notes: All feedback addressed, type-check passes, E2E tests acceptably deferred to WP08"
   - date: 2025-12-14T13:45:00Z
     action: fixes_complete
     agent: claude
