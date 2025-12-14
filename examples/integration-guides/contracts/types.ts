@@ -205,3 +205,19 @@ export interface CacheInvalidationOptions {
   /** Whether to invalidate exact match only */
   exact?: boolean;
 }
+
+// ============================================================================
+// Context Headers
+// ============================================================================
+
+/**
+ * Context propagation headers
+ *
+ * ApiClient implementations MUST inject these headers when context is available.
+ */
+export interface ContextHeaders {
+  /** Current organization ID (required for tenant-specific endpoints) */
+  'X-Organization-ID'?: string;
+  /** Current project ID (optional, for project-specific endpoints) */
+  'X-Project-ID'?: string;
+}

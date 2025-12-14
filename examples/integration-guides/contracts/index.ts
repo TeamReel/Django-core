@@ -19,6 +19,7 @@ export type {
   ApiResponse,
   CachedResponse,
   CacheInvalidationOptions,
+  ContextHeaders,
 } from './types';
 
 export {
@@ -35,7 +36,6 @@ export type { AuthProvider, UseAuth } from './auth';
 // Context management
 export type {
   ContextProvider,
-  ContextHeaders,
   UseContext,
 } from './context';
 

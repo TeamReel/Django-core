@@ -8,7 +8,7 @@
  * @packageDocumentation
  */
 
-import type { Organization, Project, RequestState } from './types';
+import type { Organization, Project } from './types';
 
 /**
  * Multi-tenancy context provider interface
@@ -177,17 +177,7 @@ export interface ContextProvider {
   restoreContext(): Promise<void>;
 }
 
-/**
- * Context propagation headers
- *
- * ApiClient implementations MUST inject these headers when context is available.
- */
-export interface ContextHeaders {
-  /** Current organization ID (required for tenant-specific endpoints) */
-  'X-Organization-ID'?: string;
-  /** Current project ID (optional, for project-specific endpoints) */
-  'X-Project-ID'?: string;
-}
+
 
 /**
  * Hook signature for React-based implementations

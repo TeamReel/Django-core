@@ -143,4 +143,80 @@ packages/theme-system/
 - Extract api-client utilities from `@django-core/auth` to shared package
 - Update F02 imports to use `@django-core/api-client`
 
+## F09: Frontend-Backend Integration Guides (030-frontend-backend-integration)
+
+**New Package**: `examples/integration-guides`
+
+**Core Technologies**:
+- TypeScript 5.x strict mode (type definitions for interface contracts)
+- MkDocs (documentation integration with existing site)
+- pnpm workspace (example implementations)
+- React 18.x (example code uses React, but patterns are framework-agnostic)
+
+**Dependencies**:
+- F01 (Design System) - UI components in examples
+- F02 (Auth UI) - authentication patterns
+- F03 (Context Switcher) - multi-tenancy context
+- F06 (Page Templates) - layout examples
+- F07 (Theme System) - theming integration
+- Backend: B04 (i18n), B05 (auth), B06 (orgs), B07 (projects), B08 (authorization), B13 (API baseline)
+
+**Key Architecture Patterns**:
+- **Interface Contracts**: TypeScript interfaces define patterns without framework lock-in
+  - `AuthProvider` - Authentication state + operations (login, logout, refresh, hasPermission)
+  - `ContextProvider` - Multi-tenancy context (currentOrg, currentProject, setOrg, setProject, clear)
+  - `ApiClient` - HTTP client (get, post, put, delete + interceptors) with CSRF, auth, context headers
+  - `CachePolicy` - Client-side caching (shouldCache, getCacheDuration, shouldRevalidate, invalidate)
+  - `RequestState<T>` - Discriminated union (idle | loading | success | error) for async ops
+- **Validation**: TypeScript type-check + ESLint + build validation in CI (no runtime checks)
+- **Cache Strategy**: HTTP Cache-Control headers + interface-based client-side policy
+- **Maintenance**: Feature teams own guides (Constitution P10), CI ensures currency
+
+**Documentation Structure**:
+```
+docs/integration-guides/
+├── auth-api.md              # Priority 1: Auth + authenticated API calls
+├── context-propagation.md   # Priority 2: Org/project context via headers
+├── data-fetching.md         # Priority 3: List→detail, pagination, caching
+├── error-handling.md        # Error boundaries, notifications
+├── form-validation.md       # Frontend validation + backend error mapping
+├── realtime.md              # WebSocket/polling patterns
+├── file-uploads.md          # Multipart, progress, chunked uploads
+├── theming.md               # F07 integration with backend preferences
+├── checklist.md             # Pre-deployment integration checklist
+├── decisions.md             # Architecture Decision Records
+├── anti-patterns.md         # Common mistakes to avoid
+└── troubleshooting.md       # Debug guide
+```
+
+**Contract Location**:
+```
+examples/integration-guides/
+├── contracts/               # TypeScript interface contracts (stable API)
+│   ├── types.ts            # RequestState, User, Organization, errors
+│   ├── auth.ts             # AuthProvider interface
+│   ├── context.ts          # ContextProvider interface
+│   ├── api-client.ts       # ApiClient interface + interceptors
+│   ├── cache.ts            # CachePolicy interface
+│   └── index.ts            # Barrel export
+├── auth-example/           # React Context-based AuthProvider
+├── context-example/        # React Context-based ContextProvider
+├── api-client-example/     # Fetch-based ApiClient with interceptors
+└── cache-example/          # SWR-based CachePolicy
+```
+
+**Integration Points**:
+- All frontend modules (F01-F08) use these patterns for backend communication
+- B13 API baseline provides OpenAPI specs that inform TypeScript types
+- B04 i18n patterns integrated into error messages
+- B08 authorization patterns drive `hasPermission()` checks
+
+**Key Rules**:
+- Interface contracts MUST remain framework-agnostic (no React/Vue/Angular specifics in types)
+- Examples use React but guides explain adaptation to other frameworks
+- All guides include TypeScript example code + anti-patterns section
+- Cache invalidation MUST occur after mutations (POST/PUT/DELETE)
+- CSRF tokens MUST be injected in all mutating requests
+- Context headers (X-Organization-ID, X-Project-ID) MUST propagate when context is set
+
 <!-- MANUAL ADDITIONS END -->

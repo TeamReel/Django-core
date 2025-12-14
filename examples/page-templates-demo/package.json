@@ -12,7 +12,6 @@
   "dependencies": {
     "@django-core/page-templates": "workspace:*",
     "@django-core/design-system": "workspace:*",
-    "@django-core/layouts": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0"

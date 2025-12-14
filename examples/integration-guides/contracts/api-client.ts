@@ -9,7 +9,7 @@
  */
 
 import type { AuthProvider } from './auth';
-import type { ContextProvider, ContextHeaders } from './context';
+import type { ContextProvider } from './context';
 import type { RequestOptions, ApiResponse } from './types';
 
 /**
