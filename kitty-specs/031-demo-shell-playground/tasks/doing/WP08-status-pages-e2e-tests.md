@@ -1,7 +1,10 @@
 ---
 work_package_id: WP08
 title: Status Pages & E2E Tests
-lane: planned
+lane: doing
+assignee: github-copilot
+agent: copilot
+shell_pid: 32760
 subtasks:
   - T046
   - T047
@@ -28,6 +31,11 @@ history:
     action: created
     agent: copilot
     notes: Health check page + comprehensive E2E test suite
+  - date: 2025-12-14T17:00:00Z
+    action: started
+    agent: copilot
+    shell_pid: 32760
+    notes: Started WP08 implementation - status pages and E2E test suite
 ---
 
 # WP08: Status Pages & E2E Tests
