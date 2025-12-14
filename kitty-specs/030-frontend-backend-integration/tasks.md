@@ -84,7 +84,7 @@ This feature delivers practical, executable integration guides showing how downs
 
 **Priority**: P0 (Foundational)
 **Status**: Planned
-**Prompt File**: [`tasks/planned/WP01-typescript-contracts-package-setup.md`](tasks/planned/WP01-typescript-contracts-package-setup.md)
+**Prompt File**: [`tasks/for_review/WP01-typescript-contracts-package-setup.md`](tasks/for_review/WP01-typescript-contracts-package-setup.md)
 
 ### Summary
 
