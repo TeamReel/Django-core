@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 title: Context Switching UI
-lane: planned
+lane: "doing"
 subtasks:
   - T019
   - T020
@@ -16,6 +16,8 @@ dependencies:
   - WP01
   - WP02
 story: "P1 Story 2 - Multi-Tenancy Context Switching"
+agent: "claude"
+shell_pid: "32760"
 history:
   - date: 2025-12-14
     action: created
@@ -753,3 +755,7 @@ Expected: 5 tests pass in ~20 seconds.
 **Status**: Ready for implementation (blocked by WP01, WP02)
 **Lane**: `planned`
 **Move to**: `doing` when WP01+WP02 complete, `for_review` when all DoD met, `done` after approval
+
+## Activity Log
+
+- 2025-12-14T13:45:06Z – claude – shell_pid=32760 – lane=doing – Started WP03: Context Switching UI implementation
