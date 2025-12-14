@@ -7,10 +7,10 @@ subtasks:
   - "T034"
 title: "Integration Checklist & Anti-Patterns"
 phase: "Phase 3 - Support & Polish"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "github-copilot-reviewer"
+shell_pid: "36848"
 review_status: ""
 reviewed_by: ""
 history:
@@ -80,3 +80,4 @@ Guide navigation, quick code examples, decision tree.
 ## Activity Log
 
 - 2025-12-14T08:32:00Z – system – lane=planned – Prompt created
+- 2025-12-14T08:36:12Z – github-copilot-reviewer – shell_pid=36848 – lane=doing – Started implementation
