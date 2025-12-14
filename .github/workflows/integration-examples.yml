@@ -1,0 +1,76 @@
+name: Validate Integration Guide Examples
+
+on:
+  push:
+    branches: [ main, develop, 'feature/*' ]
+    paths:
+      - 'examples/integration-guides/**'
+      - '.github/workflows/integration-examples.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'examples/integration-guides/**'
+      - '.github/workflows/integration-examples.yml'
+
+jobs:
+  validate-examples:
+    runs-on: ubuntu-latest
+    name: Type-check, Lint, and Build Examples
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - name: Get pnpm store directory
+      id: pnpm-cache
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Run TypeScript type-check
+      run: pnpm --filter @django-core/integration-guides-examples type-check
+      continue-on-error: false
+
+    - name: Run ESLint
+      run: pnpm --filter @django-core/integration-guides-examples lint
+      continue-on-error: false
+
+    - name: Run build
+      run: pnpm --filter @django-core/integration-guides-examples build
+      continue-on-error: false
+
+    - name: Summary
+      if: success()
+      run: |
+        echo "✅ All integration guide examples passed validation"
+        echo "• TypeScript: type-check passed"
+        echo "• ESLint: no errors"
+        echo "• Build: successful"
+
+    - name: Failure summary
+      if: failure()
+      run: |
+        echo "❌ Integration guide examples validation failed"
+        echo "For troubleshooting, see docs/integration-guides/troubleshooting.md"
+        exit 1

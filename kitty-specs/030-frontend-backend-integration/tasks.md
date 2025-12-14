@@ -350,9 +350,9 @@ Implement automated validation for example code (TypeScript type-check + lint + 
 
 ### Subtasks
 
-- [ ] T035: Create validation script (TypeScript type-check + lint + build)
-- [ ] T036: Integrate validation into pre-commit hooks
-- [ ] T037: Add CI workflow for example validation
+	- [x] T035: Create validation script (TypeScript type-check + lint + build)
+	- [x] T036: Integrate validation into pre-commit hooks
+	- [x] T037: Add CI workflow for example validation
 
 ### Implementation Sketch
 
@@ -420,8 +420,8 @@ Implement automated validation for example code (TypeScript type-check + lint + 
 
 **Last Updated**: 2025-12-14
 **Total Subtasks**: 37
-**Completed**: 32
-**In Progress**: 4 (WP05)
+	**Completed**: 35
+	**In Progress**: 0
 **Blocked**: 0
 
 Track progress by checking off subtasks above and moving work package prompts through task lanes:

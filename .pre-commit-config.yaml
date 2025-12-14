@@ -33,3 +33,16 @@ repos:
         args: ["--config-file=pyproject.toml"]
         additional_dependencies: [django-stubs==4.2.7, djangorestframework-stubs==3.14.5, django-environ==0.11.2, djangorestframework==3.14.0, pytest==7.4.3, pytest-django==4.7.0]
         files: '^(src/|tests/)'
+
+  # Custom hook for validating integration guide examples
+  - repo: local
+    hooks:
+      - id: validate-examples
+        name: Validate integration guide examples
+        description: Run TypeScript type-check, lint, and build on examples
+        entry: ./scripts/validate-examples.ps1
+        language: script
+        stages: [commit]
+        files: '^examples/integration-guides/.*\.(ts|tsx|json)$'
+        pass_filenames: false
+        verbose: true
