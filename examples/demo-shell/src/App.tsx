@@ -9,13 +9,15 @@ import ProjectDetailPage from './pages/projects/ProjectDetailPage';
 import ResourcesPage from './pages/resources/ResourcesPage';
 import SettingsPage from './pages/SettingsPage';
 import ForbiddenPage from './pages/errors/ForbiddenPage';
+import NotFoundPage from './pages/errors/NotFoundPage';
+import LoadingState from './components/LoadingState';
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingState message="Checking authentication..." />;
   }
 
   if (!user) {
@@ -105,9 +107,10 @@ export default function App() {
 
       {/* Error pages */}
       <Route path="/403" element={<ForbiddenPage />} />
+      <Route path="/404" element={<NotFoundPage />} />
 
-      {/* Catch-all: redirect to dashboard or login */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Catch-all: 404 for unknown routes */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

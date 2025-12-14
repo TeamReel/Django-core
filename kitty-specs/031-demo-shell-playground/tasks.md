@@ -70,10 +70,10 @@ This document breaks down the Demo Shell implementation into **8 work packages**
 - [x] **T037** Update `Sidebar.tsx`: Add nav links for Resources and Settings ✅ COMPLETE (WP05)
 
 ### T038–T041: Error States (P2 Story 5)
-- [ ] **T038** → T031 | Create `src/pages/errors/NotFoundPage.tsx` (404 error page, F01 components)
-- [ ] **T039** [P] Create `src/components/ErrorBoundary.tsx` (React error boundary for 500 errors)
-- [ ] **T040** [P] Create `src/components/LoadingState.tsx` (loading skeletons using F01 primitives)
-- [ ] **T041** Add routes: `/404` → NotFoundPage, catch-all `*` → NotFoundPage; wrap App in ErrorBoundary
+- [x] **T038** → T031 | Create `src/pages/errors/NotFoundPage.tsx` (404 error page, F01 components) ✅ COMPLETE (WP06)
+- [x] **T039** [P] Create `src/components/ErrorBoundary.tsx` (React error boundary for 500 errors) ✅ COMPLETE (WP06)
+- [x] **T040** [P] Create `src/components/LoadingState.tsx` (loading skeletons using F01 primitives) ✅ COMPLETE (WP06)
+- [x] **T041** Add routes: `/404` → NotFoundPage, catch-all `*` → NotFoundPage; wrap App in ErrorBoundary ✅ COMPLETE (WP06)
 
 ### T042–T045: Notifications & Alerts (P3 Story 6)
 - [ ] **T042** → T020 | Integrate F04 NotificationInbox in `TopNavigation.tsx` (badge with unread count)

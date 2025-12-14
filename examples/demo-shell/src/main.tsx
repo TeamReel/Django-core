@@ -8,6 +8,7 @@ import { ContextSwitcherProvider } from '@django-core/context-switcher';
 import type { ContextSwitcherConfig } from '@django-core/context-switcher';
 import { PermissionsProvider } from '@django-core/permissions';
 import { useReactRouterAdapter } from './adapters/reactRouterAdapter';
+import ErrorBoundary from './components/ErrorBoundary';
 import App from './App';
 import './index.css';
 
@@ -41,13 +42,15 @@ function AppWithProviders() {
   };
 
   return (
-    <AuthProvider config={authConfig}>
-      <ContextSwitcherProvider config={contextConfig}>
-        <PermissionsProvider>
-          <App />
-        </PermissionsProvider>
-      </ContextSwitcherProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider config={authConfig}>
+        <ContextSwitcherProvider config={contextConfig}>
+          <PermissionsProvider>
+            <App />
+          </PermissionsProvider>
+        </ContextSwitcherProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
