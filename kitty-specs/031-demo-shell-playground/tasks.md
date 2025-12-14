@@ -23,16 +23,16 @@ This document breaks down the Demo Shell implementation into **8 work packages**
 - `→ Txxx` = Depends on subtask Txxx completing first
 
 ### T001–T010: Setup & Infrastructure
-- [ ] **T001** [P] Create `examples/demo-shell/` directory structure (src/, tests/, public/)
-- [ ] **T002** [P] Initialize `package.json` with pnpm workspace member, scripts (dev, build, test:unit, test:e2e)
-- [ ] **T003** [P] Install frontend dependencies: vite, react, react-dom, react-router-dom, @playwright/test, vitest
-- [ ] **T004** [P] Install F01-F09 packages: @django-core/{design-system, auth, context-switcher, notifications-hub, resource-display-alerts, page-templates, theme-system}
-- [ ] **T005** Create `vite.config.ts` (React plugin, proxy /api → localhost:8000, alias @/ → src/)
-- [ ] **T006** Create `tsconfig.json` (strict mode, paths for @/ alias)
-- [ ] **T007** Create `index.html` (Vite entry point, root div)
-- [ ] **T008** [P] Create seed data script `src/core/management/commands/seed_demo_data.py` (5 users, 2 orgs, 6 projects total = 3 per org [TechCorp: Web Platform/Mobile App/Legacy API; DataLab: ML Pipeline/Data Warehouse/Analytics Dashboard], credits per data-model.md [TechCorp: 1000/5000, DataLab: 250/1000 = low-credit warning], notifications per AS-6.3 [alice: "Welcome", carol: "Low credits"])
-- [ ] **T009** [P] Create `.env.example` with API_BASE_URL, VITE_API_URL variables
-- [ ] **T010** [P] Create `examples/demo-shell/README.md` (setup instructions, usage, architecture)
+- [x] **T001** [P] Create `examples/demo-shell/` directory structure (src/, tests/, public/)
+- [x] **T002** [P] Initialize `package.json` with pnpm workspace member, scripts (dev, build, test:unit, test:e2e)
+- [x] **T003** [P] Install frontend dependencies: vite, react, react-dom, react-router-dom, @playwright/test, vitest
+- [x] **T004** [P] Install F01-F09 packages: @django-core/{design-system, auth, context-switcher, notifications-hub, resource-display-alerts, page-templates, theme-system}
+- [x] **T005** Create `vite.config.ts` (React plugin, proxy /api → localhost:8000, alias @/ → src/)
+- [x] **T006** Create `tsconfig.json` (strict mode, paths for @/ alias)
+- [x] **T007** Create `index.html` (Vite entry point, root div)
+- [x] **T008** [P] Create seed data script `src/core/management/commands/seed_demo_data.py` (5 users, 2 orgs, 6 projects total = 3 per org [TechCorp: Web Platform/Mobile App/Legacy API; DataLab: ML Pipeline/Data Warehouse/Analytics Dashboard], credits per data-model.md [TechCorp: 1000/5000, DataLab: 250/1000 = low-credit warning], notifications per AS-6.3 [alice: "Welcome", carol: "Low credits"])
+- [x] **T009** [P] Create `.env.example` with API_BASE_URL, VITE_API_URL variables
+- [x] **T010** [P] Create `examples/demo-shell/README.md` (setup instructions, usage, architecture)
 
 ### T011–T018: Auth Flow (P1 Story 1)
 - [ ] **T011** → T001-T007 | Create `src/main.tsx` (React root, providers setup)
