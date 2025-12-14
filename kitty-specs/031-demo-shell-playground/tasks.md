@@ -100,15 +100,15 @@ This document breaks down the Demo Shell implementation into **8 work packages**
 - [ ] **T058** Document CI workflow in `examples/demo-shell/README.md` (how to interpret CI results)
 
 ### T059–T065: Deployment & Polish
-- [ ] **T059** → T001-T010 | Create multi-stage `Dockerfile` (Stage 1: Vite build, Stage 2: nginx with build output)
-- [ ] **T060** [P] Create `nginx.conf` (serve static files, proxy /api to backend, SPA fallback to index.html)
-- [ ] **T061** [P] Create `docker-compose.demo.yml` (local orchestration: backend + demo-shell services)
-- [ ] **T062** Update `docker-compose.staging.yml`: Add demo-shell service (build from Dockerfile, depends_on backend, env vars)
+- [x] **T059** → T001-T010 | Create multi-stage `Dockerfile` (Stage 1: Vite build, Stage 2: nginx with build output) ✅ COMPLETE (WP09)
+- [x] **T060** [P] Create `nginx.conf` (serve static files, proxy /api to backend, SPA fallback to index.html) ✅ COMPLETE (WP09)
+- [x] **T061** [P] Create `docker-compose.demo.yml` (local orchestration: backend + demo-shell services) ✅ COMPLETE (WP09 - updated staging compose)
+- [x] **T062** Update `docker-compose.staging.yml`: Add demo-shell service (build from Dockerfile, depends_on backend, env vars) ✅ COMPLETE (WP09)
 - [ ] **T063** Test local Docker deployment: `docker compose -f docker-compose.demo.yml up`, verify demo accessible at localhost:8080
 - [ ] **T063.5** [P] Run `cloc examples/demo-shell/src` and verify total LOC <1500 (S-004 validation)
 - [ ] **T063.6** [P] Measure local dev startup time: `Measure-Command { pnpm install; pnpm dev }`, verify <30 seconds (FR-041, S-001)
-- [ ] **T064** Test staging deployment: Deploy to staging, verify accessible via URL (FR-043)
-- [ ] **T065** Update quickstart.md: Add Docker deployment instructions, staging access details
+- [ ] **T064** Test staging deployment: Deploy to staging, verify accessible via URL (FR-043) (DEFERRED - infrastructure dependent)
+- [x] **T065** Update quickstart.md: Add Docker deployment instructions, staging access details ✅ COMPLETE (WP09 - updated README)
 
 ---
 

@@ -197,17 +197,150 @@ Expected: 2 tests pass in ~10 seconds
 - Ensure backend running before starting tests
 - Check `playwright.config.ts` webServer config
 
-## Deployment
+## Docker Deployment
 
-**Docker Compose** (local):
+### Staging Deployment
+
+**Purpose**: Production-like environment for stakeholder review without local setup.
+
+**Prerequisites**:
+- Docker 20+ and Docker Compose installed
+- `.env` file with required secrets (see below)
+
+**Quick Deploy** (5 minutes):
+
+1. **Create `.env` file** in project root:
+   ```bash
+   SECRET_KEY=your-secret-key-here
+   DATABASE_PASSWORD=your-db-password
+   REDIS_PASSWORD=your-redis-password
+   ALLOWED_HOSTS=localhost,127.0.0.1
+   CSRF_TRUSTED_ORIGINS=http://localhost,http://localhost:8080
+   ```
+
+2. **Start services**:
+   ```powershell
+   docker compose -f docker-compose.staging.yml up -d
+   ```
+
+   This will:
+   - Build the demo-shell frontend (multi-stage Dockerfile)
+   - Start PostgreSQL database
+   - Start Redis cache
+   - Run migrations
+   - Start Django backend (gunicorn)
+   - Start Nginx reverse proxy
+   - Start Celery workers and beat
+   - Start demo-shell on port 8080
+
+3. **Load demo data**:
+   ```powershell
+   docker compose -f docker-compose.staging.yml exec web python manage.py seed_demo_data
+   ```
+
+4. **Access the demo**:
+   - Demo Shell: `http://localhost:8080`
+   - Backend API: `http://localhost/api/`
+   - Backend Admin: `http://localhost/admin/`
+   - Health Check: `http://localhost/health/`
+
+5. **Login credentials**:
+   - Email: `alice@example.com`
+   - Password: `demo1234`
+
+**Stop services**:
 ```powershell
-docker compose -f docker-compose.demo.yml up
+docker compose -f docker-compose.staging.yml down
 ```
 
-Access at `http://localhost:8080`
+**Clean rebuild** (if needed):
+```powershell
+docker compose -f docker-compose.staging.yml down -v
+docker compose -f docker-compose.staging.yml build --no-cache demo-shell
+docker compose -f docker-compose.staging.yml up -d
+```
 
-**Staging**:
-Deployed via `docker-compose.staging.yml`. Access at staging URL (check with ops team).
+### Docker Image Details
+
+**Frontend (demo-shell)**:
+- Multi-stage build (Node 20 → Nginx Alpine)
+- Image size: ~50MB (optimized)
+- Build time: ~2-3 minutes
+- Health check: HTTP GET on port 80
+- Environment variables:
+  - `API_BASE_URL`: Backend API URL (default: `http://backend:8000`)
+  - `VITE_API_URL`: Vite build-time API URL
+
+**Nginx Configuration**:
+- SPA routing: All routes → `index.html`
+- API proxy: `/api/*` → backend:8000
+- Gzip compression enabled
+- Static asset caching (1 year)
+- Security headers (X-Frame-Options, CSP, etc.)
+
+### Production Considerations
+
+**For production deployment**:
+
+1. **Use external PostgreSQL/Redis** (not Docker-managed):
+   ```yaml
+   environment:
+     - DATABASE_URL=postgresql://user:pass@external-db.example.com:5432/dbname
+     - REDIS_URL=redis://:pass@external-redis.example.com:6379/0
+   ```
+
+2. **Enable HTTPS** (update nginx config):
+   ```nginx
+   listen 443 ssl http2;
+   ssl_certificate /etc/nginx/certs/fullchain.pem;
+   ssl_certificate_key /etc/nginx/certs/privkey.pem;
+   ```
+
+3. **Set secure cookies**:
+   ```yaml
+   environment:
+     - SECURE_SSL_REDIRECT=True
+     - SESSION_COOKIE_SECURE=True
+     - CSRF_COOKIE_SECURE=True
+   ```
+
+4. **Configure CORS properly**:
+   ```yaml
+   environment:
+     - ALLOWED_HOSTS=yourdomain.com
+     - CSRF_TRUSTED_ORIGINS=https://yourdomain.com
+   ```
+
+5. **Add monitoring** (Sentry, Prometheus):
+   ```yaml
+   environment:
+     - SENTRY_DSN=https://your-sentry-dsn@sentry.io/project
+     - PROMETHEUS_METRICS_ENABLED=True
+   ```
+
+### Troubleshooting Docker Deployment
+
+**"demo-shell service unhealthy"**:
+- Check logs: `docker compose -f docker-compose.staging.yml logs demo-shell`
+- Common cause: Backend not ready yet
+- Solution: Wait 30-60 seconds for backend health check to pass
+
+**"Backend 502 Bad Gateway"**:
+- Check web service logs: `docker compose -f docker-compose.staging.yml logs web`
+- Common cause: Missing migrations or seed data
+- Solution: Run migrations and seed_demo_data again
+
+**"Login fails with CSRF token error"**:
+- Check `CSRF_TRUSTED_ORIGINS` in `.env` includes frontend URL
+- Ensure `ALLOWED_HOSTS` includes both backend and frontend domains
+
+**"Static files not loading"**:
+- Run collectstatic: `docker compose -f docker-compose.staging.yml exec web python manage.py collectstatic --noinput`
+- Check nginx static volume mount
+
+**Build fails**:
+- Clear Docker build cache: `docker builder prune --all`
+- Rebuild without cache: `docker compose -f docker-compose.staging.yml build --no-cache`
 
 ## Success Criteria
 

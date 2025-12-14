@@ -109,6 +109,27 @@ services:
       retries: 3
     restart: unless-stopped
 
+  # Demo Shell Frontend (staging)
+  demo-shell:
+    build:
+      context: ./examples/demo-shell
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      - API_BASE_URL=http://backend:8000
+      - VITE_API_URL=http://backend:8000
+    depends_on:
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
   # Celery Worker (staging)
   celery-worker:
     image: ${DOCKER_IMAGE:-django-core:latest}
@@ -169,4 +190,10 @@ volumes:
 # - Full observability: health checks, metrics, structured logging
 # - Optional Prometheus for testing B18 integration
 # - Migration runs as separate service before web starts
+# - Demo Shell frontend runs on port 8080 (http://localhost:8080)
 # - Requires .env file with: SECRET_KEY, DATABASE_PASSWORD, REDIS_PASSWORD
+
+# Demo Shell Access:
+# - URL: http://localhost:8080
+# - Demo credentials: alice@example.com / demo1234
+# - Seed data required: python manage.py seed_demo_data (run after migration)
