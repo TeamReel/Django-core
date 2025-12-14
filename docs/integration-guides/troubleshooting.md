@@ -457,6 +457,116 @@ await apiClient.request('/api/projects', { params });
 
 ---
 
+## CORS and Preflight Failures
+
+### Symptoms
+- Network shows OPTIONS request blocked
+- "No 'Access-Control-Allow-Origin' header" error
+- Preflight request returns 403 or 404
+- Works in Postman but not in browser
+
+### Diagnostic Steps
+
+1. **Check browser console error**
+   ```
+   Access to XMLHttpRequest at 'http://backend:8000/api/resource' from origin
+   'http://localhost:3000' has been blocked by CORS policy
+   ```
+
+2. **Inspect OPTIONS preflight request**
+   - DevTools Network tab
+   - Look for OPTIONS request before your actual request
+   - Check Response Headers:
+     - `Access-Control-Allow-Origin: *` or specific origin
+     - `Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS`
+     - `Access-Control-Allow-Headers: Content-Type, X-CSRFToken, X-Organization-ID`
+
+3. **Check backend configuration**
+   ```bash
+   # Test preflight with curl
+   curl -i -X OPTIONS http://localhost:8000/api/resource \
+     -H "Origin: http://localhost:3000" \
+     -H "Access-Control-Request-Method: POST"
+
+   # Should return 200 with CORS headers
+   ```
+
+### Solutions
+
+**Backend not sending CORS headers:**
+```python
+# Django: Install django-cors-headers
+pip install django-cors-headers
+
+# In settings.py
+INSTALLED_APPS = [
+    'corsheaders',
+]
+
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+]
+
+# Configure allowed origins
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'https://app.example.com',
+]
+
+# Allow specific headers
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'x-csrftoken',
+    'x-organization-id',
+    'x-project-id',
+    'authorization',
+]
+```
+
+**Custom headers not allowed:**
+```python
+# Backend: Explicitly allow custom headers
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'x-organization-id',
+    'x-project-id',
+    'x-csrftoken',
+]
+```
+
+**Frontend sending custom headers without declaring them:**
+```typescript
+// ✅ Backend must allow these headers in CORS policy
+const headers = {
+  'X-Organization-ID': org.id,
+  'X-Project-ID': project.id,
+  'X-CSRFToken': csrfToken,
+};
+
+// Backend CORS_ALLOW_HEADERS must include these
+```
+
+**Preflight request fails (returns non-200):**
+```typescript
+// ✅ Check OPTIONS endpoint is accessible
+// Backend should allow OPTIONS on all endpoints
+// Django: Should be handled by middleware automatically
+
+// If custom OPTIONS handler:
+if request.method == 'OPTIONS':
+    return Response('OK', status=200)
+```
+
+### Prevention
+- Test CORS with curl before integration
+- Configure CORS headers in backend middleware
+- Allow all custom headers your frontend uses (CSRF, context, auth)
+- Test OPTIONS preflight separately
+- Check browser console for CORS errors immediately
+- Use CORS debugging tools (browser extensions)
+
+---
+
 ## Partial API Responses (HTTP 206)
 
 ### Symptoms
@@ -779,6 +889,7 @@ contextProvider.on('change', (context) => {
 | Context drift | Headers not injected | Add to ApiClient interceptor |
 | Stale cache | No invalidation | Invalidate after mutations |
 | Slow requests | No timeout | Add timeout, show spinner |
+| CORS failures | Headers not configured | Configure backend CORS middleware, allow custom headers |
 | 206 responses | Partial content | Implement retry or chunking |
 | Token refresh | Multiple refreshes | Queue requests, proactive refresh |
 | Multi-tab conflicts | No sync | Listen to storage events |
