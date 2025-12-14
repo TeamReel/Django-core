@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Hierarchical Permissions Integration
-lane: "doing"
+lane: "for_review"
 subtasks:
   - T027
   - T028
@@ -111,3 +111,4 @@ const { hasPermission } = usePermissions();
 ## Activity Log
 
 - 2025-12-14T14:02:14Z – claude – shell_pid=32760 – lane=doing – Started WP04: Hierarchical Permissions Integration implementation
+- 2025-12-14T14:06:18Z – claude – shell_pid=32760 – lane=for_review – WP04 complete: Permissions integration with edit/delete buttons, type-check passes

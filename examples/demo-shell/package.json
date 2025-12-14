@@ -21,6 +21,7 @@
     "@django-core/design-system": "workspace:*",
     "@django-core/notifications-hub": "workspace:*",
     "@django-core/page-templates": "workspace:*",
+    "@django-core/permissions": "workspace:*",
     "@django-core/resource-alerts": "workspace:*",
     "@django-core/theme-system": "workspace:*",
     "react": "^18.2.0",

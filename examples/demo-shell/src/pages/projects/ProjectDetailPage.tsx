@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { usePermissions } from '@django-core/permissions';
 import AppShell from '../../components/AppShell';
 
 interface Project {
@@ -18,6 +19,7 @@ export default function ProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { context, switchProject } = useContextSwitcher();
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     if (!orgSlug || !projectSlug) return;
@@ -134,6 +136,51 @@ export default function ProjectDetailPage() {
           >
             View Organisation
           </Link>
+          
+          {/* Permission-gated action buttons */}
+          {hasPermission('projects.edit', {
+            organizationId: context.organisation?.id,
+            projectId: project.id
+          }) && (
+            <button
+              onClick={() => alert('Edit functionality not yet implemented')}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              ✏️ Edit Project
+            </button>
+          )}
+          
+          {hasPermission('projects.delete', {
+            organizationId: context.organisation?.id,
+            projectId: project.id
+          }) && (
+            <button
+              onClick={() => {
+                if (confirm(`Are you sure you want to delete "${project.name}"?`)) {
+                  alert('Delete functionality not yet implemented');
+                }
+              }}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#dc3545',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              🗑️ Delete Project
+            </button>
+          )}
         </div>
 
         <div style={{ 

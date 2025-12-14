@@ -66,6 +66,9 @@ importers:
       '@django-core/page-templates':
         specifier: workspace:*
         version: link:../../packages/page-templates
+      '@django-core/permissions':
+        specifier: workspace:*
+        version: link:../../packages/permissions
       '@django-core/resource-alerts':
         specifier: workspace:*
         version: link:../../packages/resource-display-alerts
@@ -7938,7 +7941,7 @@ packages:
       std-env: 3.10.0
       strip-literal: 2.1.1
       test-exclude: 6.0.0
-      vitest: 1.6.1(jsdom@23.2.0)
+      vitest: 1.6.1(@types/node@20.19.26)(jsdom@23.2.0)
     transitivePeerDependencies:
       - supports-color
     dev: true

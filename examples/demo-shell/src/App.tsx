@@ -6,6 +6,7 @@ import OrganisationListPage from './pages/organisations/OrganisationListPage';
 import OrganisationDetailPage from './pages/organisations/OrganisationDetailPage';
 import ProjectListPage from './pages/projects/ProjectListPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
+import ForbiddenPage from './pages/errors/ForbiddenPage';
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -81,6 +82,9 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* Error pages */}
+      <Route path="/403" element={<ForbiddenPage />} />
 
       {/* Catch-all: redirect to dashboard or login */}
       <Route path="*" element={<Navigate to="/" replace />} />
