@@ -82,16 +82,16 @@ This document breaks down the Demo Shell implementation into **8 work packages**
 - [x] **T045** Verify TypeScript compilation passes ✅ COMPLETE (WP07)
 
 ### T046–T049: Status Pages (P3 Story 7)
-- [ ] **T046** → T041 | Create `src/pages/status/HealthStatusPage.tsx` (GET /health/, display JSON in readable format)
-- [ ] **T047** [P] Create `src/pages/status/PermissionsStatusPage.tsx` (display current permissions matrix from /api/permissions/current/)
-- [ ] **T048** [P] Add routes: `/status/health` → HealthStatusPage, `/status/permissions` → PermissionsStatusPage (both protected)
-- [ ] **T049** Update `Sidebar.tsx`: Add "Status" submenu with Health and Permissions links (dev mode only)
+- [x] **T046** → T041 | Create `src/pages/status/HealthStatusPage.tsx` (GET /health/, display JSON in readable format) ✅ COMPLETE (WP08)
+- [x] **T047** [P] Create `src/pages/status/PermissionsStatusPage.tsx` (display current permissions matrix from /api/permissions/current/) ✅ COMPLETE (WP08)
+- [x] **T048** [P] Add routes: `/status/health` → HealthStatusPage, `/status/permissions` → PermissionsStatusPage (both protected) ✅ COMPLETE (WP08)
+- [x] **T049** Update `Sidebar.tsx`: Add "Status" submenu with Health and Permissions links (dev mode only) ✅ COMPLETE (WP08)
 
 ### T050–T058: E2E Smoke Tests
-- [ ] **T050** → T018 | Create `playwright.config.ts` (baseURL, retries=0, trace on failure, Chromium only, webServer config)
-- [ ] **T051** [P] Create `tests/e2e/auth-flow.spec.ts` (P1 Story 1: redirect to login, valid login → dashboard, logout → login)
-- [ ] **T052** [P] Create `tests/e2e/context-permissions.spec.ts` (P1 Story 2: switch org, select project, verify context in UI)
-- [ ] **T053** → T051-T052 | Run `pnpm test:e2e` locally, verify both tests pass
+- [x] **T050** → T018 | Create `playwright.config.ts` (baseURL, retries=0, trace on failure, Chromium only, webServer config) ✅ COMPLETE (WP08)
+- [x] **T051** [P] Create `tests/e2e/auth-flow.spec.ts` (P1 Story 1: redirect to login, valid login → dashboard, logout → login) ✅ COMPLETE (WP08)
+- [x] **T052** [P] Create `tests/e2e/context-permissions.spec.ts` (P1 Story 2: switch org, select project, verify context in UI) ✅ COMPLETE (WP08)
+- [ ] **T053** → T051-T052 | Run `pnpm test:e2e` locally, verify both tests pass (DEFERRED - requires backend running)
 - [ ] **T054** [P] Create `.github/workflows/ci-demo-smoke.yml` (install deps, start backend, start frontend via Playwright webServer, run tests)
 - [ ] **T055** [P] Update CI workflow: Upload trace artifacts on failure for debugging
 - [ ] **T056** [P] Update CI workflow: Fail build if smoke tests fail (FR-040)

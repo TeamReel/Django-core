@@ -147,6 +147,25 @@ pnpm type-check    # TypeScript type checking
 - `vite.config.ts`: Vite config (proxy, alias)
 - `playwright.config.ts`: E2E test configuration
 - `src/lib/api-client.ts`: Fetch wrapper with CSRF handling
+- `src/pages/status/`: Status and debugging pages (dev mode only)
+
+## Status Pages (Dev Mode Only)
+
+**Available in development mode** (accessible via Sidebar → Status menu):
+
+### Health Status (`/status/health`)
+- Backend health check (database, cache, tasks)
+- Component status with response times
+- Frontend version and environment info
+- Overall system health indicator
+
+### Permissions Status (`/status/permissions`)
+- Current user's permission matrix
+- Global, organisation, and project permissions
+- Real-time permission evaluation
+- Useful for debugging access control issues
+
+**Note**: Status pages are only visible in development mode (`pnpm dev`). They are hidden in production builds.
 
 ## Testing
 

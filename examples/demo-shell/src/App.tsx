@@ -10,6 +10,8 @@ import ResourcesPage from './pages/resources/ResourcesPage';
 import SettingsPage from './pages/SettingsPage';
 import ForbiddenPage from './pages/errors/ForbiddenPage';
 import NotFoundPage from './pages/errors/NotFoundPage';
+import HealthStatusPage from './pages/status/HealthStatusPage';
+import PermissionsStatusPage from './pages/status/PermissionsStatusPage';
 import LoadingState from './components/LoadingState';
 
 // Protected Route wrapper
@@ -101,6 +103,25 @@ export default function App() {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Status pages (dev/debug) */}
+      <Route
+        path="/status/health"
+        element={
+          <ProtectedRoute>
+            <HealthStatusPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/status/permissions"
+        element={
+          <ProtectedRoute>
+            <PermissionsStatusPage />
           </ProtectedRoute>
         }
       />
