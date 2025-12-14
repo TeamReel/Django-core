@@ -74,9 +74,9 @@ This feature delivers practical, executable integration guides showing how downs
 - [x] T034: Create quickstart.md (guide navigation + quick start examples)
 
 ### Validation & CI (WP06)
-- [ ] T035: Create validation script (TypeScript type-check + lint + build)
-- [ ] T036: Integrate validation into pre-commit hooks
-- [ ] T037: Add CI workflow for example validation
+- [x] T035: Create validation script (TypeScript type-check + lint + build)
+- [x] T036: Integrate validation into pre-commit hooks
+- [x] T037: Add CI workflow for example validation
 
 ---
 
