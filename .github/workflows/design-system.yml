@@ -125,5 +125,5 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           workingDir: packages/design-system
           buildScriptName: build-storybook
-          exitZeroOnChanges: false  # Fail CI on visual changes (PRs only)
+          exitZeroOnChanges: true  # Don't fail CI on visual changes (review in Chromatic UI)
           autoAcceptChanges: main  # Auto-accept on main branch
