@@ -55,12 +55,12 @@ This document breaks down the Demo Shell implementation into **8 work packages**
 - [x] **T026** Create `src/pages/projects/ProjectDetailPage.tsx` (project details with breadcrumbs) ✅ COMPLETE (WP03) [E2E tests deferred to WP08]
 
 ### T027–T032: Permissions (P1 Story 3)
-- [ ] **T027** → T019-T026 | Check if `@django-core/permissions` package exists; if not, create minimal shim in `src/lib/permissions.ts`
-- [ ] **T028** [P] Create `src/hooks/usePermissions.ts` (wrapper around permissions package or shim)
-- [ ] **T029** [P] Create `src/components/PermissionGate.tsx` (conditional render based on hasPermission check)
-- [ ] **T030** Update `ProjectDetailPage.tsx`: Add Edit/Delete buttons wrapped in `<PermissionGate permission="projects.edit" />`
-- [ ] **T031** Create `src/pages/errors/ForbiddenPage.tsx` (403 error page, F01 error state components)
-- [ ] **T032** Add route: `/403` → ForbiddenPage, update API error handler to redirect on 403 responses
+- [x] **T027** → T019-T026 | Check if `@django-core/permissions` package exists; if not, create minimal shim in `src/lib/permissions.ts` ✅ COMPLETE (WP04)
+- [x] **T028** [P] Create `src/hooks/usePermissions.ts` (wrapper around permissions package or shim) ✅ COMPLETE (WP04 - used package directly)
+- [x] **T029** [P] Create `src/components/PermissionGate.tsx` (conditional render based on hasPermission check) ✅ COMPLETE (WP04 - used inline checks)
+- [x] **T030** Update `ProjectDetailPage.tsx`: Add Edit/Delete buttons wrapped in `<PermissionGate permission="projects.edit" />` ✅ COMPLETE (WP04)
+- [x] **T031** Create `src/pages/errors/ForbiddenPage.tsx` (403 error page, F01 error state components) ✅ COMPLETE (WP04)
+- [x] **T032** Add route: `/403` → ForbiddenPage, update API error handler to redirect on 403 responses ✅ COMPLETE (WP04 - route added, E2E tests deferred to WP08)
 
 ### T033–T037: Page Templates (P2 Story 4)
 - [ ] **T033** → T019-T026 | Create `src/pages/resources/ResourceListPage.tsx` (demo list with filters, F06 ListLayout)
