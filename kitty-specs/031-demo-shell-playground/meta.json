@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "031",
+    "slug":  "031-demo-shell-playground",
+    "friendly_name":  "Demo Shell \u0026 Playground Site",
+    "source_description":  "Create a minimal demo shell application to exercise core flows end-to-end and act as a living integration smoke test.",
+    "created_at":  "2025-12-14T09:33:59Z"
+}

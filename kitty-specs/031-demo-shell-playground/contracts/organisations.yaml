@@ -1,0 +1,155 @@
+# Organisations API Contracts (B06)
+# Demo consumes for org list, detail, and context switching (FR-009-012)
+
+openapi: 3.0.3
+info:
+  title: Organisations API
+  version: 1.0.0
+  description: Organisation management endpoints from B06-organisations
+
+servers:
+  - url: http://localhost:8000/api
+    description: Local development
+
+paths:
+  /organisations/:
+    get:
+      summary: List user's organisations
+      operationId: listOrganisations
+      tags:
+        - Organisations
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of organisations user can access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Organisation'
+
+  /organisations/{org_slug}/:
+    get:
+      summary: Get organisation details
+      operationId: getOrganisation
+      tags:
+        - Organisations
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: org_slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: techcorp
+      responses:
+        '200':
+          description: Organisation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationDetail'
+        '403':
+          description: No access to this organisation
+        '404':
+          description: Organisation not found
+
+  /organisations/{org_slug}/projects/:
+    get:
+      summary: List projects in organisation
+      operationId: listOrganisationProjects
+      tags:
+        - Organisations
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: org_slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+
+components:
+  schemas:
+    Organisation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: TechCorp
+        slug:
+          type: string
+          example: techcorp
+        project_count:
+          type: integer
+          example: 3
+        created_at:
+          type: string
+          format: date-time
+
+    OrganisationDetail:
+      allOf:
+        - $ref: '#/components/schemas/Organisation'
+        - type: object
+          properties:
+            members:
+              type: array
+              items:
+                type: object
+                properties:
+                  user_email:
+                    type: string
+                  role:
+                    type: string
+                    enum: [admin, member]
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Web Platform
+        slug:
+          type: string
+          example: web-platform
+        status:
+          type: string
+          enum: [active, archived]
+        created_at:
+          type: string
+          format: date-time
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
