@@ -92,14 +92,14 @@ Establish the TypeScript contracts package with strict mode configuration and co
 
 ### Subtasks
 
-- [ ] T001: Create `examples/integration-guides/` package structure [P]
-- [ ] T002: Configure TypeScript strict mode + ESLint [P]
-- [ ] T003: Create contracts/types.ts (RequestState, User, Organization, errors)
-- [ ] T004: Create contracts/auth.ts (AuthProvider interface)
-- [ ] T005: Create contracts/context.ts (ContextProvider interface)
-- [ ] T006: Create contracts/api-client.ts (ApiClient interface)
-- [ ] T007: Create contracts/cache.ts (CachePolicy interface)
-- [ ] T008: Create contracts/index.ts (barrel export)
+- [x] T001: Create `examples/integration-guides/` package structure [P]
+- [x] T002: Configure TypeScript strict mode + ESLint [P]
+- [x] T003: Create contracts/types.ts (RequestState, User, Organization, errors)
+- [x] T004: Create contracts/auth.ts (AuthProvider interface)
+- [x] T005: Create contracts/context.ts (ContextProvider interface)
+- [x] T006: Create contracts/api-client.ts (ApiClient interface)
+- [x] T007: Create contracts/cache.ts (CachePolicy interface)
+- [x] T008: Create contracts/index.ts (barrel export)
 
 ### Implementation Sketch
 
@@ -119,10 +119,10 @@ None (foundational work package)
 
 ### Success Criteria
 
-- [ ] Package compiles with TypeScript strict mode (no errors)
-- [ ] All interface files include JSDoc examples
-- [ ] Barrel export works: `import { AuthProvider, ApiClient } from './contracts'`
-- [ ] No linting errors
+- [x] Package compiles with TypeScript strict mode (no errors)
+- [x] All interface files include JSDoc examples
+- [x] Barrel export works: `import { AuthProvider, ApiClient } from './contracts'`
+- [x] No linting errors
 
 ### Risks
 
@@ -142,13 +142,13 @@ Deliver comprehensive authentication integration guide covering login/logout flo
 
 ### Subtasks
 
-- [ ] T009: Create docs/integration-guides/auth-api.md (guide structure + overview)
-- [ ] T010: Document login/logout flows with CSRF protection
-- [ ] T011: Document 401/403 error handling patterns
-- [ ] T012: Document retry patterns + token refresh
-- [ ] T013: Create examples/auth-example/ vanilla TypeScript implementation
-- [ ] T014: Create examples/auth-example/ React Context implementation
-- [ ] T015: Document anti-patterns (token storage, credential leakage)
+- [x] T009: Create docs/integration-guides/auth-api.md (guide structure + overview)
+- [x] T010: Document login/logout flows with CSRF protection
+- [x] T011: Document 401/403 error handling patterns
+- [x] T012: Document retry patterns + token refresh
+- [x] T013: Create examples/auth-example/ vanilla TypeScript implementation
+- [x] T014: Create examples/auth-example/ React Context implementation
+- [x] T015: Document anti-patterns (token storage, credential leakage)
 
 ### Implementation Sketch
 
@@ -169,11 +169,11 @@ Deliver comprehensive authentication integration guide covering login/logout flo
 
 ### Success Criteria
 
-- [ ] Guide covers all FR-007 to FR-013 requirements
-- [ ] Examples compile and type-check successfully
-- [ ] Examples demonstrate CSRF protection with concrete code
-- [ ] Anti-patterns section includes at least 5 concrete examples
-- [ ] Guide includes copy-paste checklist
+- [x] Guide covers all FR-007 to FR-013 requirements
+- [x] Examples compile and type-check successfully
+- [x] Examples demonstrate CSRF protection with concrete code
+- [x] Anti-patterns section includes at least 5 concrete examples
+- [x] Guide includes copy-paste checklist
 
 ### Risks
 
@@ -193,13 +193,13 @@ Deliver context propagation guide showing how to maintain and inject organizatio
 
 ### Subtasks
 
-- [ ] T016: Create docs/integration-guides/context-propagation.md (guide structure)
-- [ ] T017: Document organization/project context representation
-- [ ] T018: Document context persistence patterns (localStorage, cookies)
-- [ ] T019: Document context validation and error handling
-- [ ] T020: Create examples/context-example/ vanilla TypeScript implementation
-- [ ] T021: Create examples/context-example/ React Context implementation
-- [ ] T022: Document anti-patterns (context drift, manual propagation)
+- [x] T016: Create docs/integration-guides/context-propagation.md (guide structure)
+- [x] T017: Document organization/project context representation
+- [x] T018: Document context persistence patterns (localStorage, cookies)
+- [x] T019: Document context validation and error handling
+- [x] T020: Create examples/context-example/ vanilla TypeScript implementation
+- [x] T021: Create examples/context-example/ React Context implementation
+- [x] T022: Document anti-patterns (context drift, manual propagation)
 
 ### Implementation Sketch
 
@@ -223,11 +223,11 @@ Deliver context propagation guide showing how to maintain and inject organizatio
 
 ### Success Criteria
 
-- [ ] Guide covers all FR-014 to FR-020 requirements
-- [ ] Examples demonstrate header injection with ApiClient integration
-- [ ] Context validation includes API calls to verify access
-- [ ] Anti-patterns section includes context drift scenarios
-- [ ] Guide includes copy-paste checklist
+- [x] Guide covers all FR-014 to FR-020 requirements
+- [x] Examples demonstrate header injection with ApiClient integration
+- [x] Context validation includes API calls to verify access
+- [x] Anti-patterns section includes context drift scenarios
+- [x] Guide includes copy-paste checklist
 
 ### Risks
 
@@ -247,14 +247,14 @@ Deliver comprehensive data fetching guide covering list→detail navigation, pag
 
 ### Subtasks
 
-- [ ] T023: Create docs/integration-guides/data-fetching.md (guide structure)
-- [ ] T024: Document list→detail navigation patterns
-- [ ] T025: Document pagination patterns (cursor vs offset)
-- [ ] T026: Document loading/error/empty state handling
-- [ ] T027: Document HTTP cache headers (Cache-Control, ETag, 304)
-- [ ] T028: Create examples/api-client-example/ fetch-based implementation
-- [ ] T029: Create examples/cache-example/ SWR-based CachePolicy
-- [ ] T030: Document anti-patterns (duplicate requests, N+1, cache inconsistencies)
+- [x] T023: Create docs/integration-guides/data-fetching.md (guide structure)
+- [x] T024: Document list→detail navigation patterns
+- [x] T025: Document pagination patterns (cursor vs offset)
+- [x] T026: Document loading/error/empty state handling
+- [x] T027: Document HTTP cache headers (Cache-Control, ETag, 304)
+- [x] T028: Create examples/api-client-example/ fetch-based implementation
+- [x] T029: Create examples/cache-example/ SWR-based CachePolicy
+- [x] T030: Document anti-patterns (duplicate requests, N+1, cache inconsistencies)
 
 ### Implementation Sketch
 
@@ -279,12 +279,12 @@ Deliver comprehensive data fetching guide covering list→detail navigation, pag
 
 ### Success Criteria
 
-- [ ] Guide covers all FR-021 to FR-031 requirements
-- [ ] ApiClient example demonstrates CSRF + auth + context header injection
-- [ ] CachePolicy example integrates with SWR (or similar library)
-- [ ] Guide shows concrete HTTP cache header usage
-- [ ] Anti-patterns section includes at least 6 concrete examples
-- [ ] Guide includes copy-paste checklist
+- [x] Guide covers all FR-021 to FR-031 requirements
+- [x] ApiClient example demonstrates CSRF + auth + context header injection
+- [x] CachePolicy example integrates with SWR (or similar library)
+- [x] Guide shows concrete HTTP cache header usage
+- [x] Anti-patterns section includes at least 6 concrete examples
+- [x] Guide includes copy-paste checklist
 
 ### Risks
 
@@ -305,10 +305,10 @@ Create consolidated integration checklist, anti-patterns guide, troubleshooting 
 
 ### Subtasks
 
-- [ ] T031: Create docs/integration-guides/checklist.md (deployment checklist)
-- [ ] T032: Create docs/integration-guides/anti-patterns.md (consolidated anti-patterns)
-- [ ] T033: Create docs/integration-guides/troubleshooting.md (debug guide)
-- [ ] T034: Create quickstart.md (guide navigation + quick start examples)
+- [x] T031: Create docs/integration-guides/checklist.md (deployment checklist)
+- [x] T032: Create docs/integration-guides/anti-patterns.md (consolidated anti-patterns)
+- [x] T033: Create docs/integration-guides/troubleshooting.md (debug guide)
+- [x] T034: Create quickstart.md (guide navigation + quick start examples)
 
 ### Implementation Sketch
 
@@ -327,10 +327,10 @@ Create consolidated integration checklist, anti-patterns guide, troubleshooting 
 
 ### Success Criteria
 
-- [ ] Checklist includes all critical integration points
-- [ ] Anti-patterns guide has at least 15 concrete examples
-- [ ] Troubleshooting guide addresses observed pain points
-- [ ] Quickstart provides clear navigation to all guides
+- [x] Checklist includes all critical integration points
+- [x] Anti-patterns guide has at least 15 concrete examples
+- [x] Troubleshooting guide addresses observed pain points
+- [x] Quickstart provides clear navigation to all guides
 
 ### Risks
 
@@ -370,10 +370,10 @@ Implement automated validation for example code (TypeScript type-check + lint + 
 
 ### Success Criteria
 
-- [ ] Validation script runs in <2 minutes
-- [ ] Pre-commit hook blocks commits with invalid examples
-- [ ] CI fails PRs with invalid examples
-- [ ] Validation output is clear and actionable
+- [x] Validation script runs in <2 minutes
+- [x] Pre-commit hook blocks commits with invalid examples
+- [x] CI fails PRs with invalid examples
+- [x] Validation output is clear and actionable
 
 ### Risks
 

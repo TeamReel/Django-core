@@ -7,7 +7,7 @@ subtasks:
 title: "CI Validation & Documentation"
 phase: "Phase 3 - Support & Polish"
 lane: "done"
-assignee: ""
+assignee: "copilot"
 agent: "github-copilot-reviewer"
 shell_pid: "36848"
 review_status: ""
