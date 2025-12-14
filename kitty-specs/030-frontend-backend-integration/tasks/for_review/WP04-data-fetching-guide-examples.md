@@ -11,11 +11,11 @@ subtasks:
   - "T030"
 title: "Data Fetching Guide & Examples"
 phase: "Phase 2 - Core Guides"
-lane: "doing"
+lane: "for_review"
 assignee: "GitHub Copilot"
 agent: "copilot"
 shell_pid: "36848"
-review_status: ""
+review_status: "ready_for_review"
 reviewed_by: ""
 history:
   - timestamp: "2025-12-14T08:32:00Z"
@@ -28,6 +28,11 @@ history:
     agent: "copilot"
     shell_pid: "36848"
     action: "Started implementation of data fetching guide"
+  - timestamp: "2025-12-14T11:45:00Z"
+    lane: "for_review"
+    agent: "copilot"
+    shell_pid: "36848"
+    action: "Completed WP04 implementation: 400+ line guide, ApiClient, CachePolicy, 7 anti-patterns. All validations passing."
 ---
 
 # Work Package Prompt: WP04 – Data Fetching Guide & Examples
