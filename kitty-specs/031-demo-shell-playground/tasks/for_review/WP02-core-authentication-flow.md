@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: Core Authentication Flow
-lane: "doing"
+lane: "for_review"
 subtasks:
   - T011
   - T012
@@ -747,3 +747,4 @@ Running 5 tests using 1 worker
 ## Activity Log
 
 - 2025-12-14T12:39:13Z – claude – shell_pid=36848 – lane=doing – Started WP02 implementation
+- 2025-12-14T13:22:40Z – claude – shell_pid=36848 – lane=for_review – WP02 complete: Auth flow implemented (T011-T015), manual testing required
