@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: Core Authentication Flow
-lane: planned
+lane: "doing"
 subtasks:
   - T011
   - T012
@@ -15,6 +15,8 @@ priority: P1
 dependencies:
   - WP01
 story: "P1 Story 1 - Core Authentication Flow"
+agent: "claude"
+shell_pid: "36848"
 history:
   - date: 2025-12-14
     action: created
@@ -741,3 +743,7 @@ Running 5 tests using 1 worker
 **Status**: Ready for implementation (blocked by WP01)
 **Lane**: `planned`
 **Move to**: `doing` when WP01 complete, `for_review` when all DoD met, `done` after approval
+
+## Activity Log
+
+- 2025-12-14T12:39:13Z – claude – shell_pid=36848 – lane=doing – Started WP02 implementation
