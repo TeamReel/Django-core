@@ -30,48 +30,48 @@ This feature delivers practical, executable integration guides showing how downs
 ## Subtask Register
 
 ### Foundational (WP01)
-- [ ] T001: Create `examples/integration-guides/` package structure [P]
-- [ ] T002: Configure TypeScript strict mode + ESLint [P]
-- [ ] T003: Create contracts/types.ts (RequestState, User, Organization, errors)
-- [ ] T004: Create contracts/auth.ts (AuthProvider interface)
-- [ ] T005: Create contracts/context.ts (ContextProvider interface)
-- [ ] T006: Create contracts/api-client.ts (ApiClient interface)
-- [ ] T007: Create contracts/cache.ts (CachePolicy interface)
-- [ ] T008: Create contracts/index.ts (barrel export)
+- [x] T001: Create `examples/integration-guides/` package structure [P]
+- [x] T002: Configure TypeScript strict mode + ESLint [P]
+- [x] T003: Create contracts/types.ts (RequestState, User, Organization, errors)
+- [x] T004: Create contracts/auth.ts (AuthProvider interface)
+- [x] T005: Create contracts/context.ts (ContextProvider interface)
+- [x] T006: Create contracts/api-client.ts (ApiClient interface)
+- [x] T007: Create contracts/cache.ts (CachePolicy interface)
+- [x] T008: Create contracts/index.ts (barrel export)
 
 ### Authentication (WP02)
-- [ ] T009: Create docs/integration-guides/auth-api.md (guide structure + overview)
-- [ ] T010: Document login/logout flows with CSRF protection
-- [ ] T011: Document 401/403 error handling patterns
-- [ ] T012: Document retry patterns + token refresh
-- [ ] T013: Create examples/auth-example/ vanilla TypeScript implementation
-- [ ] T014: Create examples/auth-example/ React Context implementation
-- [ ] T015: Document anti-patterns (token storage, credential leakage)
+- [x] T009: Create docs/integration-guides/auth-api.md (guide structure + overview)
+- [x] T010: Document login/logout flows with CSRF protection
+- [x] T011: Document 401/403 error handling patterns
+- [x] T012: Document retry patterns + token refresh
+- [x] T013: Create examples/auth-example/ vanilla TypeScript implementation
+- [x] T014: Create examples/auth-example/ React Context implementation
+- [x] T015: Document anti-patterns (token storage, credential leakage)
 
 ### Context Propagation (WP03)
-- [ ] T016: Create docs/integration-guides/context-propagation.md (guide structure)
-- [ ] T017: Document organization/project context representation
-- [ ] T018: Document context persistence patterns (localStorage, cookies)
-- [ ] T019: Document context validation and error handling
-- [ ] T020: Create examples/context-example/ vanilla TypeScript implementation
-- [ ] T021: Create examples/context-example/ React Context implementation
-- [ ] T022: Document anti-patterns (context drift, manual propagation)
+- [x] T016: Create docs/integration-guides/context-propagation.md (guide structure)
+- [x] T017: Document organization/project context representation
+- [x] T018: Document context persistence patterns (localStorage, cookies)
+- [x] T019: Document context validation and error handling
+- [x] T020: Create examples/context-example/ vanilla TypeScript implementation
+- [x] T021: Create examples/context-example/ React Context implementation
+- [x] T022: Document anti-patterns (context drift, manual propagation)
 
 ### Data Fetching (WP04)
-- [ ] T023: Create docs/integration-guides/data-fetching.md (guide structure)
-- [ ] T024: Document list→detail navigation patterns
-- [ ] T025: Document pagination patterns (cursor vs offset)
-- [ ] T026: Document loading/error/empty state handling
-- [ ] T027: Document HTTP cache headers (Cache-Control, ETag, 304)
-- [ ] T028: Create examples/api-client-example/ fetch-based implementation
-- [ ] T029: Create examples/cache-example/ SWR-based CachePolicy
-- [ ] T030: Document anti-patterns (duplicate requests, N+1, cache inconsistencies)
+- [x] T023: Create docs/integration-guides/data-fetching.md (guide structure)
+- [x] T024: Document list→detail navigation patterns
+- [x] T025: Document pagination patterns (cursor vs offset)
+- [x] T026: Document loading/error/empty state handling
+- [x] T027: Document HTTP cache headers (Cache-Control, ETag, 304)
+- [x] T028: Create examples/api-client-example/ fetch-based implementation
+- [x] T029: Create examples/cache-example/ SWR-based CachePolicy
+- [x] T030: Document anti-patterns (duplicate requests, N+1, cache inconsistencies)
 
 ### Integration Support (WP05)
-- [ ] T031: Create docs/integration-guides/checklist.md (deployment checklist)
-- [ ] T032: Create docs/integration-guides/anti-patterns.md (consolidated anti-patterns)
-- [ ] T033: Create docs/integration-guides/troubleshooting.md (debug guide)
-- [ ] T034: Create quickstart.md (guide navigation + quick start examples)
+- [x] T031: Create docs/integration-guides/checklist.md (deployment checklist)
+- [x] T032: Create docs/integration-guides/anti-patterns.md (consolidated anti-patterns)
+- [x] T033: Create docs/integration-guides/troubleshooting.md (debug guide)
+- [x] T034: Create quickstart.md (guide navigation + quick start examples)
 
 ### Validation & CI (WP06)
 - [ ] T035: Create validation script (TypeScript type-check + lint + build)
@@ -420,8 +420,8 @@ Implement automated validation for example code (TypeScript type-check + lint + 
 
 **Last Updated**: 2025-12-14
 **Total Subtasks**: 37
-**Completed**: 0
-**In Progress**: 0
+**Completed**: 32
+**In Progress**: 4 (WP05)
 **Blocked**: 0
 
 Track progress by checking off subtasks above and moving work package prompts through task lanes:
