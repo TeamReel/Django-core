@@ -1,0 +1,13 @@
+Source ID,Source Type,Title,URL/Path,Access Date,Reliability,Notes
+1,Repository File,MkDocs Configuration,mkdocs.yml,2025-12-14,High,Confirms existing MkDocs setup with extensions for code blocks and navigation
+2,Repository File,pnpm Workspace Configuration,pnpm-workspace.yaml,2025-12-14,High,Shows workspace includes packages/* and examples/* patterns
+3,Specification,Feature Specification,kitty-specs/030-frontend-backend-integration/spec.md,2025-12-14,High,Requirements FR-032/033/034 mandate TypeScript + lint + build validation
+4,Documentation,Copilot Instructions,.github/copilot-instructions.md,2025-12-14,High,Lists TypeScript 5.x + React 18.x for F01-F08 frontend modules
+5,Planning Session,Clarification Session 2025-12-14,In-memory conversation,2025-12-14,High,Validated cache policy scope (HTTP headers + CachePolicy interface)
+6,Planning Session,Planning Session 2025-12-14,In-memory conversation,2025-12-14,High,Confirmed central checklist.md approach for manual verification
+7,Planning Session,Planning Session 2025-12-14,In-memory conversation,2025-12-14,High,Validated guide maintenance workflow (feature teams update + CI enforces)
+8,Specification,User Story Pain Points,kitty-specs/030-frontend-backend-integration/spec.md,2025-12-14,High,User Story 1 identifies inconsistent 401/403 handling as key pain point
+9,Specification,User Story Pain Points,kitty-specs/030-frontend-backend-integration/spec.md,2025-12-14,High,User Story 2 identifies context drift and storage conflicts as major issues
+10,Specification,User Story Pain Points,kitty-specs/030-frontend-backend-integration/spec.md,2025-12-14,High,User Story 3 identifies fragmented state handling and duplicate calls
+11,Specification,Functional Requirements,kitty-specs/030-frontend-backend-integration/spec.md,2025-12-14,High,FR-005/FR-010/FR-015/FR-017 reference F01-F03 module integration
+12,Multiple,Tech Stack Validation,spec.md + copilot-instructions.md,2025-12-14,High,Confirms TypeScript 5.x + React 18.x as validated stack

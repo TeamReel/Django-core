@@ -1,0 +1,27 @@
+{
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-12-14T08:59:15Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "86e39e77386fe877d4498047a4ca3b0c80dae68f",
+      "branch": "030-frontend-backend-integration",
+      "mode": "pr",
+      "validation_commands": [
+        "pnpm --filter @django-core/integration-guides-examples lint",
+        "pnpm --filter @django-core/integration-guides-examples typecheck",
+        "pnpm --filter @django-core/integration-guides-examples build",
+        "mkdocs build"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-12-14T08:59:15Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "86e39e77386fe877d4498047a4ca3b0c80dae68f",
+  "created_at": "2025-12-13T22:54:32Z",
+  "feature_number": "030",
+  "friendly_name": "Frontend-Backend Integration Guides",
+  "slug": "030-frontend-backend-integration",
+  "source_description": "Provide practical, concrete integration guides that show how downstream products connect frontend modules (F01F08) to Core-App backend APIs and core modules, using repeatable patterns instead of product-specific logic."
+}

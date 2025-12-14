@@ -1,3 +1,4 @@
 # pnpm workspace configuration for django-core monorepo
 packages:
   - 'packages/*'
+  - 'examples/*'

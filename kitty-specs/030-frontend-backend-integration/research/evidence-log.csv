@@ -1,0 +1,19 @@
+Evidence ID,Source ID,Decision/Finding,Category,Evidence Text/Quote,Confidence,Date Recorded
+E001,1,Documentation tooling - MkDocs existing,Technical Decision,mkdocs.yml exists with nav structure and extensions configured,High,2025-12-14
+E002,2,Example code structure - pnpm workspace,Technical Decision,"packages: ['packages/*', 'examples/*'] in workspace config",High,2025-12-14
+E003,3,Validation scope - TypeScript + lint + build,Requirements,FR-032: TypeScript type-check mandatory; FR-033: lint mandatory; FR-034: build mandatory,High,2025-12-14
+E004,4,Reference stack versions,Technical Decision,F01-F08 use TypeScript 5.x + React 18.x per copilot-instructions.md,High,2025-12-14
+E005,5,Cache policy scope,Technical Decision,Interface + HTTP headers (Cache-Control ETag 304); optional reference impl,High,2025-12-14
+E006,6,Manual verification checklist location,Technical Decision,Central docs/integration-guides/checklist.md with guide-specific sections,High,2025-12-14
+E007,7,Guide maintenance workflow,Process Decision,Feature teams update guides; CI validates and blocks merge on failures,High,2025-12-14
+E008,8,Auth anti-pattern - 401/403 confusion,Pain Point,"inconsistent 401/403 handling (redirect vs silent fail)" from User Story 1,High,2025-12-14
+E009,9,Context anti-pattern - drift,Pain Point,"context drift between UI and API (wrong org or project in headers/params)" from User Story 2,High,2025-12-14
+E010,10,Data fetching anti-pattern - duplication,Pain Point,"versnipperde handling van loading/empty/error (elk team lost het anders op met dubbele calls en slechte retry)" from User Story 3,High,2025-12-14
+E011,11,F01-F03 integration requirements,Requirements,FR-010: React integration with F02 Auth UI; FR-017: React integration with F03 Context Switcher,High,2025-12-14
+E012,12,TypeScript strict mode enforcement,Technical Decision,TypeScript 5.x with strict mode for all examples ensures type safety,High,2025-12-14
+E013,3,OpenAPI validation deferred,Requirements,FR-035: OpenAPI/schema validation deferred until Core-App specs stable,High,2025-12-14
+E014,7,CI ticket automation conditional,Process Decision,Auto-ticket creation only if existing workflow supports it; otherwise CI just fails,High,2025-12-14
+E015,8,CSRF protection requirement,Security,FR-013 anti-patterns: CSRF bypass attempts; all guides must document CSRF token handling,High,2025-12-14
+E016,9,Context storage security,Security,FR-020 anti-patterns: context leakage between users; must clear context on logout,High,2025-12-14
+E017,10,Retry logic requirement,Reliability,FR-025: Document retry patterns with exponential backoff and user feedback,High,2025-12-14
+E018,11,Design system usage,Integration,FR-030: Provide React integration with F01 components (loading states error displays),High,2025-12-14
