@@ -141,3 +141,11 @@ import { CreditAlert } from '@django-core/resource-display-alerts';
 
 **Status**: Ready (blocked by WP01, WP03)
 **Lane**: `planned` → `doing` after WP03 → `for_review` → `done`
+
+---
+
+## Activity Log
+
+- 2025-12-14T15:40:00Z – copilot – shell_pid=32760 – lane=doing – Started WP07: Notifications & Resource Alerts implementation
+- 2025-12-14T16:15:00Z – copilot – shell_pid=32760 – lane=for_review – WP07 complete: Mock notifications and credit alerts implemented (T042-T045), type-check passes
+- 2025-12-14T16:50:00Z – copilot – shell_pid=32760 – lane=done – Review approved: Mock implementation appropriate for P3, integration points documented

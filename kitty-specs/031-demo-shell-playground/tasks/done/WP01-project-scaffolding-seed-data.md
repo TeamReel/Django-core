@@ -2,6 +2,7 @@
 work_package_id: WP01
 title: Project Scaffolding & Seed Data
 lane: "done"
+assignee: "copilot"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
 subtasks:

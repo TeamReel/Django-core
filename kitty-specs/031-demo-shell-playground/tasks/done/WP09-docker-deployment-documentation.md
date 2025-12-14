@@ -1,7 +1,8 @@
 ---
 work_package_id: WP09
-title: Docker Deployment Documentation
+title: Docker Deployment & Documentation
 lane: "done"
+assignee: "copilot"
 subtasks:
   - T059
   - T060

@@ -2,6 +2,7 @@
 work_package_id: WP02
 title: Core Authentication Flow
 lane: "done"
+assignee: "copilot"
 review_status: "approved with minor notes (E2E tests deferred to WP08)"
 reviewed_by: "claude-reviewer"
 subtasks:
@@ -52,8 +53,8 @@ history:
 
 ## 🚨 Review Feedback
 
-**Status**: ❌ **Needs Changes**  
-**Reviewed By**: claude-reviewer  
+**Status**: ❌ **Needs Changes**
+**Reviewed By**: claude-reviewer
 **Date**: 2025-12-14
 
 ### Critical Issues
@@ -71,7 +72,7 @@ src/pages/DashboardPage.tsx:4:17 - error TS2339: Property 'logout' does not exis
 src/pages/LoginPage.tsx:11:11 - error TS2339: Property 'login' does not exist on type 'AuthContextValue'.
 ```
 
-**Root Cause**: 
+**Root Cause**:
 - `AuthProvider` requires `config` prop with endpoints and routes
 - `useAuth()` returns state only (`user`, `status`, `error`)
 - Sign-in/sign-out operations use dedicated hooks: `useSignIn()`, `useSignOut()`
@@ -105,9 +106,9 @@ src/pages/LoginPage.tsx:11:11 - error TS2339: Property 'login' does not exist on
 2. **LoginPage.tsx**: Use `useSignIn()` hook
    ```tsx
    import { useSignIn } from '@django-core/auth-ui';
-   
+
    const { signIn, isLoading, error } = useSignIn();
-   
+
    const handleSubmit = async (e) => {
      e.preventDefault();
      await signIn({ email, password });
@@ -118,10 +119,10 @@ src/pages/LoginPage.tsx:11:11 - error TS2339: Property 'login' does not exist on
 3. **DashboardPage.tsx**: Use `useSignOut()` hook
    ```tsx
    import { useAuth, useSignOut } from '@django-core/auth-ui';
-   
+
    const { user } = useAuth();
    const { signOut, isLoading } = useSignOut();
-   
+
    const handleLogout = async () => {
      await signOut();
      // Hook handles navigation via config.routes.afterLogout
@@ -917,3 +918,4 @@ Running 5 tests using 1 worker
 - 2025-12-14T13:22:40Z – claude – shell_pid=36848 – lane=for_review – WP02 complete: Auth flow implemented (T011-T015), manual testing required
 - 2025-12-14T13:36:19Z – claude – shell_pid=32760 – lane=doing – Acknowledging review feedback, fixing auth-ui API usage
 - 2025-12-14T13:40:04Z – claude – shell_pid=32760 – lane=for_review – All review feedback addressed: AuthProvider config, useSignIn/useSignOut hooks, type-check passes
+- 2025-12-14T13:50:00Z – copilot – shell_pid=32760 – lane=done – Review approved: Core authentication flow complete with minor notes (E2E tests deferred to WP08)

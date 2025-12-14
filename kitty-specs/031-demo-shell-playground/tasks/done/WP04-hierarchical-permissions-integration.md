@@ -2,6 +2,7 @@
 work_package_id: WP04
 title: Hierarchical Permissions Integration
 lane: "done"
+assignee: "copilot"
 review_status: "approved with minor notes (E2E tests deferred to WP08)"
 reviewed_by: "claude"
 subtasks:
