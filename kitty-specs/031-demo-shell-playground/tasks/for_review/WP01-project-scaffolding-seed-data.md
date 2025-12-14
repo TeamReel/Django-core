@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Project Scaffolding & Seed Data
-lane: "doing"
+lane: "for_review"
 subtasks:
   - T001
   - T002
@@ -800,3 +800,4 @@ python manage.py shell
 ## Activity Log
 
 - 2025-12-14T11:22:10Z – claude – shell_pid=36848 – lane=doing – Started WP01 implementation
+- 2025-12-14T12:33:13Z – claude – shell_pid=36848 – lane=for_review – WP01 complete: All scaffolding and seed data tasks (T001-T010) implemented
