@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { DefaultEmpty } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 
 interface Project {
@@ -78,8 +79,11 @@ export default function ProjectListPage() {
           </div>
         )}
 
-        {!isLoading && projects.length === 0 && (
-          <p>No projects found in this organisation.</p>
+        {!isLoading && !error && projects.length === 0 && (
+          <DefaultEmpty 
+            title="No projects found"
+            message="This organisation doesn't have any projects yet. Create your first project to get started."
+          />
         )}
 
         <div style={{ 

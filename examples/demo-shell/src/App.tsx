@@ -6,6 +6,8 @@ import OrganisationListPage from './pages/organisations/OrganisationListPage';
 import OrganisationDetailPage from './pages/organisations/OrganisationDetailPage';
 import ProjectListPage from './pages/projects/ProjectListPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
+import ResourcesPage from './pages/resources/ResourcesPage';
+import SettingsPage from './pages/SettingsPage';
 import ForbiddenPage from './pages/errors/ForbiddenPage';
 
 // Protected Route wrapper
@@ -79,6 +81,24 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ProjectDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/resources"
+        element={
+          <ProtectedRoute>
+            <ResourcesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         }
       />

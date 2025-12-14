@@ -7,6 +7,8 @@ export default function Sidebar() {
     { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
     { path: '/organisations', label: 'Organisations', icon: '🏢' },
     { path: '/organisations/:slug/projects', label: 'Projects', icon: '📁' },
+    { path: '/resources', label: 'Resources', icon: '📦' },
+    { path: '/settings', label: 'Settings', icon: '⚙️' },
   ];
 
   return (

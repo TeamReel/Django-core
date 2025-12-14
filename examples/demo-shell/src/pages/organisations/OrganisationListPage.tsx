@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { DefaultEmpty } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 
 interface Organisation {
@@ -64,8 +65,11 @@ export default function OrganisationListPage() {
           </div>
         )}
 
-        {!isLoading && organisations.length === 0 && (
-          <p>No organisations found.</p>
+        {!isLoading && !error && organisations.length === 0 && (
+          <DefaultEmpty 
+            title="No organisations found"
+            message="You don't have access to any organisations yet. Contact your administrator to get started."
+          />
         )}
 
         <div style={{ 
