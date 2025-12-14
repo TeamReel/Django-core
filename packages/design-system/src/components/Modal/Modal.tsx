@@ -23,7 +23,7 @@ export function Modal({
   closeOnOverlayClick = true,
   closeOnEscape = true,
   className,
-}: ModalProps) {
+}: ModalProps): JSX.Element | null {
   // Handle Escape key
   useEffect(() => {
     if (!isOpen || !closeOnEscape) return;

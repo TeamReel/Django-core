@@ -1,39 +1,47 @@
-import { useAuth, useSignOut } from '@django-core/auth-ui';
+import { useAuth } from '@django-core/auth-ui';
+import { useContextSwitcher } from '@django-core/context-switcher';
+import { Link } from 'react-router-dom';
+import AppShell from '../components/AppShell';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { signOut, loading } = useSignOut();
-
-  const handleLogout = async () => {
-    await signOut();
-    // Navigation handled automatically by AuthProvider via config.routes.afterLogout
-  };
+  const { context } = useContextSwitcher();
 
   return (
-    <div>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', borderBottom: '1px solid #eee' }}>
+    <AppShell>
+      <div>
         <h1>Welcome, {user?.first_name || user?.email}!</h1>
-        <button
-          onClick={handleLogout}
-          disabled={loading}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: loading ? '#6c757d' : '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {loading ? 'Logging out...' : 'Log Out'}
-        </button>
-      </header>
-
-      <main style={{ padding: '20px' }}>
         <p>You are logged in to the Django Core-App Demo Shell.</p>
-        <p>Explore features using the navigation (coming in WP03).</p>
+
+        {context.organisation && (
+          <div style={{ 
+            marginTop: '24px', 
+            padding: '16px', 
+            backgroundColor: '#e7f3ff', 
+            border: '1px solid #b3d7ff',
+            borderRadius: '4px' 
+          }}>
+            <h3 style={{ marginTop: 0 }}>Current Context</h3>
+            <p><strong>Organisation:</strong> {context.organisation.name}</p>
+            {context.project && (
+              <p><strong>Project:</strong> {context.project.name}</p>
+            )}
+          </div>
+        )}
+
+        {!context.organisation && (
+          <div style={{ 
+            marginTop: '24px', 
+            padding: '16px', 
+            backgroundColor: '#fff3cd', 
+            border: '1px solid #ffc107',
+            borderRadius: '4px' 
+          }}>
+            <p style={{ margin: 0 }}>
+              No organisation selected. <Link to="/organisations">Browse organisations</Link> to get started.
+            </p>
+          </div>
+        )}
         
         <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
           <h2>Your Profile</h2>
@@ -41,7 +49,43 @@ export default function DashboardPage() {
           <p><strong>Name:</strong> {user?.first_name || 'Not set'}</p>
           <p><strong>User ID:</strong> {user?.id}</p>
         </div>
-      </main>
-    </div>
+
+        <div style={{ marginTop: '30px' }}>
+          <h2>Quick Links</h2>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <Link
+              to="/organisations"
+              style={{
+                display: 'inline-block',
+                padding: '10px 20px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '4px',
+                fontSize: '14px'
+              }}
+            >
+              Browse Organisations
+            </Link>
+            {context.organisation && (
+              <Link
+                to={`/organisations/${context.organisation.slug}/projects`}
+                style={{
+                  display: 'inline-block',
+                  padding: '10px 20px',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              >
+                View Projects
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </AppShell>
   );
 }
