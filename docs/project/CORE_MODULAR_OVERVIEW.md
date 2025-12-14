@@ -24,6 +24,7 @@ Deze pagina bevat:
 
 **Frontend Fase 12: Demo & Validation**
 - **Module 31**: F10 — Demo Shell & Playground Site
+- **Module 31.5**: 📋 Constitution Update Gate (Post Core v1 + Demo)
 
 **Platform Fase 13: Core v1 Hardening & Quality Gates**
 - **Module 32**: B40 — Repository Sanity Check Gate
@@ -32,6 +33,7 @@ Deze pagina bevat:
 
 **Backend Fase 14: Data Foundations**
 - **Module 35-42**: B22, B23, B30-B34, B39 — Data assets, ingestion, quality, schema, lineage, privacy, webhooks, secrets
+- **Module 42.5**: 📋 Constitution Update Gate (Post Data Foundations)
 
 **Backend Fase 15: Analytics & Reporting**
 - **Module 43-44**: B24-B25 — Analytics events, saved queries & reports
@@ -41,6 +43,7 @@ Deze pagina bevat:
 
 **Backend Fase 17: Agent Runtime Governance**
 - **Module 48-50**: B29, B37-B38 — Agent operations, vector search, evaluation & monitoring
+- **Module 50.5**: 📋 Constitution Update Gate (Post ML & Agent Governance)
 
 **Backend Fase 18: Integratie Ecosysteem**
 - **Module 51-52**: B35-B36 — Connector SDK, compliance exports
@@ -1535,9 +1538,55 @@ Non-goals:
 
 ---
 
+## 📋 Constitution Update Gate (Post Core v1 + Demo)
+
+**Doel**
+Update `constitution.md` om de demo shell als integratie smoke surface te formaliseren en te anticiperen op de upcoming platform waves (data, ML, agents).
+
+**Waarom nu**
+- Core v1 (B01-B21, F01-F09) is compleet
+- Demo shell (F10) valideert end-to-end integratie
+- Voor data/ML/agent modules starten, moeten governance-principes helder zijn
+
+**Wat moet er gebeuren**
+- **Demo shell discipline**: Formaliseer demo app als CI smoke test, blijft minimaal en test kerncontracts
+- **Adapter-first principe**: Voorkom vendor lock-in, externe systemen altijd achter interfaces
+- **Redaction by default**: Geen secrets of sensitive content in logs, traces, exports, tool-call logs
+- **Privacy en retention**: Classificatie, retention enforcement, safe export surfaces overal
+- **Quality gates**: Evaluaties en promotion gates voor models en agent templates
+- **Operational hardening cadence**: Definieer wanneer repository-wide sanity/refactor gates gebeuren
+- **CI determinisme**: Flaky tests en nondeterministische builds zijn blocking issues voor gate modules
+
+**Constitution Prompt**
+
+/spec-kitty.constitution update-post-core-v1
+
+[project summary]
+Update constitution.md to cover the demo shell integration surface and prepare for upcoming platform waves (data, ML, agents) while staying domain-agnostic and consistent with existing repository standards.
+
+[core principles to add or sharpen]
+- **Demo shell discipline**: Demo app stays minimal and acts as CI smoke test for core contracts
+- **Adapter-first**: Prevent vendor lock-in, keep external systems behind interfaces
+- **Redaction by default**: No secrets or sensitive content in logs, traces, exports, tool-call logs
+- **Privacy and retention**: Classification, retention enforcement, safe export surfaces everywhere
+- **Quality gates**: Evaluations and promotion gates for models and agent templates
+- **Operational hardening cadence**: Define when repository-wide refactor and sanity gates happen and what they must cover
+- **CI determinism**: Flaky tests and nondeterministic builds are treated as blocking issues for gate modules
+
+[non-goals]
+- No domain-specific rules or product-specific policies
+- No architectural rewrite of existing modules
+
+[acceptance criteria]
+- Constitution changes are small, explicit, and referenceable by review and accept phases
+- Checklist alignment: gate modules must reference the updated constitution sections
+- No breaking changes introduced solely by constitution text changes
+
+---
+
 ## Platform — Fase 13: Core v1 Hardening & Quality Gates
 
-### 33. B40 – Repository Sanity Check Gate (Core v1)
+### 32. B40 – Repository Sanity Check Gate (Core v1)
 
 **Doel**
 Korte stabilisatie- en opschoonsprint na de eerste complete core, inclusief demo-shell smoke checks.
@@ -1996,6 +2045,60 @@ Non-goals:
 
 ---
 
+## 📋 Constitution Update Gate (Post Data Foundations)
+
+**Doel**
+
+Update constitution.md to formalize data governance principles now that core data infrastructure (B15 exports, B16 lineage, B17 webhooks, B18 event bus, B19 batch jobs, B20 cron scheduling, B21 lifecycle hooks, B37 notification routing, B38 connector SDK, B39 secrets) is in place and before analytics/ML modules (B24-B34) depend on it.
+
+**Waarom nu**
+
+Data Foundations (modules 35-42) are complete: exports, lineage, webhooks, event bus, batch processing, cron scheduling, lifecycle hooks, notification routing, connector SDK, and secrets management. Next phase (Analytics & Reporting, modules 44-47) will generate insights from this data, and ML & Agent Governance (modules 48-50) will consume/transform it. We must formalize data governance *now* to prevent privacy leaks, retention violations, and compliance gaps before analytics and ML start operating on production data.
+
+**Wat moet er gebeuren**
+
+Add or sharpen these 7 core principles in constitution.md:
+
+1. **Privacy Classification Everywhere**: All data must have a privacy tier (public, internal, sensitive, restricted). Enforcement at query, export, and logging boundaries.
+2. **Retention Policies by Default**: Every data asset (tables, events, exports, webhook payloads) must declare retention. Automated purges per classification.
+3. **Lineage Capture**: B16 lineage tracking is mandatory for all transformations, exports, and cross-tenant data flows. Impact analysis before schema changes.
+4. **Export Safety and Redaction Hooks**: B15 exports must redact sensitive fields by default. Explicit opt-in for full data exports with audit logging.
+5. **Masking in Logs and Observability**: All logs, traces, and webhook payloads must mask PII/secrets by default (aligns with Gate 31.5 redaction principle).
+6. **Schema Contract Versioning**: Breaking schema changes require versioning and deprecation notices. Connectors and webhooks must declare supported versions.
+7. **Webhook Signing and Replay Safety**: All outbound webhooks (B17) must be signed (HMAC-SHA256) with replay protection (timestamp validation). Secrets via B39.
+
+**Constitution Prompt**
+
+```
+/spec-kitty.constitution update-post-data-foundations
+
+[project summary]
+Django-core platform with completed data foundations (exports, lineage, webhooks, event bus, batch jobs, cron scheduling, lifecycle hooks, notification routing, connector SDK, secrets management). Next: analytics, reporting, ML, and agent modules will generate insights and transformations. We need to formalize data governance principles now to prevent privacy leaks, retention violations, and compliance gaps.
+
+[core principles to add or sharpen]
+- Privacy Classification Everywhere: All data must have a privacy tier (public, internal, sensitive, restricted). Enforcement at query, export, and logging boundaries. No unclassified data in production.
+- Retention Policies by Default: Every data asset (tables, events, exports, webhook payloads) must declare retention period. Automated purges per classification tier. No indefinite storage without explicit justification.
+- Lineage Capture: B16 lineage tracking is mandatory for all transformations, exports, cross-tenant data flows. Impact analysis required before schema changes. Lineage visible in admin UI.
+- Export Safety and Redaction Hooks: B15 exports must redact sensitive fields by default. Explicit opt-in for full data exports with audit logging (B09). Export formats include redaction metadata.
+- Masking in Logs and Observability: All logs, traces, webhook payloads must mask PII/secrets by default (aligns with Gate 31.5 redaction principle). Structured logging with field-level classification.
+- Schema Contract Versioning: Breaking schema changes require versioning and deprecation notices. Connectors (B38) and webhooks (B17) must declare supported versions. Migrations include backward-compatibility period.
+- Webhook Signing and Replay Safety: All outbound webhooks must be signed (HMAC-SHA256) with replay protection (timestamp validation). Secrets via B39. Recipients verify signatures before processing.
+
+[non-goals]
+- Full DLP (Data Loss Prevention) suite - we rely on infrastructure controls
+- Legal compliance automation - classification informs compliance but doesn't guarantee it
+- Multi-region data residency - classification supports it but infrastructure handles enforcement
+
+[acceptance criteria]
+- Constitution section "Data Governance" exists with all 7 principles
+- Each principle has enforcement guidance (where/how/when checked)
+- Examples reference B15/B16/B17/B18/B39 modules
+- Cross-references to Gate 31.5 redaction principle
+- Checklist for data module implementations (B24-B34, B35-B43)
+```
+
+---
+
 ## Backend — Fase 15: Analytics & Reporting Capabilities
 
 ### 44. B24 – Analytics Events & Metrics (Product Analytics)
@@ -2324,6 +2427,61 @@ Non-goals:
 [constraints and assumptions]
 - Integrates with model registry and agent operations
 - Extensible evaluators via adapters
+
+---
+
+## 📋 Constitution Update Gate (Post ML & Agent Governance)
+
+**Doel**
+
+Update constitution.md to formalize ML and Agent governance principles now that core ML/Agent infrastructure (B27 model registry, B28 prompt templates, B29 agent operations, B30 prompt experiments, B31 agent job scheduling, B32 vector search, B33 structured output validation, B34 tool-call logging, B37 RAG pipelines, B38 evaluation & monitoring) is in place and before integration ecosystem (B35-B36) and platform extensions (B40-B43) depend on it.
+
+**Waarom nu**
+
+ML & Agent Governance (modules 48-50) are complete: model registry, prompt templates, agent operations, prompt experiments, agent job scheduling, vector search, structured output validation, tool-call logging, RAG pipelines, and evaluation/monitoring. Next phase (Integration Ecosystem, modules 52-53) will expose connectors and data ingestion that may invoke models/agents, and Platform Extensions (modules 54-56) will add billing and advanced features. We must formalize ML/Agent governance *now* to prevent quality regressions, privacy leaks via tool calls, and uncontrolled model usage before external integrations and billing start operating.
+
+**Wat moet er gebeuren**
+
+Add or sharpen these 7 core principles in constitution.md:
+
+1. **Evaluation Gates for Model Promotions**: No model/agent template promotion without passing B38 evaluation suite. Quality thresholds configurable per use case.
+2. **Agent Template Versioning and Approvals**: All prompt templates (B28) must be versioned. Production agent templates require approval workflow with audit trail (B09).
+3. **Vector Search Privacy and Tenant Isolation**: B32 vector embeddings must respect tenant boundaries and privacy classification (from Gate 42.5). No cross-tenant leakage in similarity search.
+4. **Tool-Call Logging with Redaction**: B34 tool-call logs must redact sensitive parameters by default (aligns with Gate 31.5 and 42.5 redaction principles). Full logs only in secure audit contexts.
+5. **Model Registry Stage Transitions**: B27 model registry enforces stage gates (dev→staging→production). No direct production deployments without staging validation.
+6. **Compute Job Resource Policies**: B31 agent job scheduling must enforce resource limits (CPU, memory, timeout) per tenant and job type. Prevent runaway compute costs.
+7. **Quality Monitoring and Drift Detection**: B38 evaluation monitoring must run continuously in production. Alert on quality degradation or distribution drift before user impact.
+
+**Constitution Prompt**
+
+```
+/spec-kitty.constitution update-post-ml-agent-governance
+
+[project summary]
+Django-core platform with completed ML & Agent Governance modules (model registry, prompt templates, agent operations, prompt experiments, agent job scheduling, vector search, structured output validation, tool-call logging, RAG pipelines, evaluation/monitoring). Next: integration ecosystem (connectors, data ingestion) and platform extensions (billing, advanced features) will expose models/agents to external systems. We need to formalize ML/Agent governance principles now to prevent quality regressions, privacy leaks via tool calls, and uncontrolled compute costs.
+
+[core principles to add or sharpen]
+- Evaluation Gates for Model Promotions: No model/agent template promotion without passing B38 evaluation suite. Quality thresholds configurable per use case. Regressions block deployment.
+- Agent Template Versioning and Approvals: All prompt templates (B28) must be versioned with semantic versioning. Production agent templates require approval workflow with audit trail (B09). No cowboy deployments.
+- Vector Search Privacy and Tenant Isolation: B32 vector embeddings must respect tenant boundaries and privacy classification (from Gate 42.5). No cross-tenant leakage in similarity search. Embeddings inherit data classification.
+- Tool-Call Logging with Redaction: B34 tool-call logs must redact sensitive parameters by default (aligns with Gate 31.5 and 42.5 redaction principles). Full logs only in secure audit contexts with explicit permission.
+- Model Registry Stage Transitions: B27 model registry enforces stage gates (dev→staging→production). No direct production deployments without staging validation. Rollback procedures documented.
+- Compute Job Resource Policies: B31 agent job scheduling must enforce resource limits (CPU, memory, timeout) per tenant and job type. Prevent runaway compute costs. Quotas in billing (B40).
+- Quality Monitoring and Drift Detection: B38 evaluation monitoring must run continuously in production. Alert on quality degradation or distribution drift before user impact. Automated rollback on severe regressions.
+
+[non-goals]
+- Full MLOps platform - we integrate with existing tools
+- One-size-fits-all evaluation methodology - evaluators are pluggable
+- Real-time drift detection - batch monitoring is sufficient for most use cases
+
+[acceptance criteria]
+- Constitution section "ML & Agent Governance" exists with all 7 principles
+- Each principle has enforcement guidance (where/how/when checked)
+- Examples reference B27/B28/B29/B31/B32/B34/B37/B38 modules
+- Cross-references to Gate 31.5 (redaction) and Gate 42.5 (privacy classification)
+- Checklist for ML/Agent module implementations
+- Integration with billing (B40) for compute quotas
+```
 
 ---
 
