@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Hierarchical Permissions Integration
-lane: planned
+lane: "doing"
 subtasks:
   - T027
   - T028
@@ -15,6 +15,8 @@ dependencies:
   - WP02
   - WP03
 story: "P1 Story 3 - Permissions & Access Control"
+agent: "claude"
+shell_pid: "32760"
 history:
   - date: 2025-12-14
     action: created
@@ -105,3 +107,7 @@ const { hasPermission } = usePermissions();
 
 **Status**: Ready (blocked by WP01-WP03)
 **Lane**: `planned` → `doing` after WP03 → `for_review` → `done`
+
+## Activity Log
+
+- 2025-12-14T14:02:14Z – claude – shell_pid=32760 – lane=doing – Started WP04: Hierarchical Permissions Integration implementation
