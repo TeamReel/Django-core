@@ -1,7 +1,10 @@
 ---
 work_package_id: WP07
 title: Notifications & Resource Alerts
-lane: planned
+lane: doing
+assignee: github-copilot
+agent: copilot
+shell_pid: 32760
 subtasks:
   - T042
   - T043
@@ -18,6 +21,11 @@ history:
     action: created
     agent: copilot
     notes: F04 notifications hub + F05 resource alerts integration
+  - date: 2025-12-14T15:40:00Z
+    action: started
+    agent: copilot
+    shell_pid: 32760
+    notes: Started WP07 implementation - notifications and resource alerts
 ---
 
 # WP07: Notifications & Resource Alerts
