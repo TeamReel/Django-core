@@ -19,6 +19,9 @@ const config: StorybookConfig = {
   core: {
     disableTelemetry: true,
   },
+  features: {
+    storyStoreV7: true,
+  },
 };
 
 export default config;
