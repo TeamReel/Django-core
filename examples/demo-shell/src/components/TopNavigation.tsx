@@ -21,6 +21,36 @@ export default function TopNavigation() {
 
       {user && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {/* Mock Notification Icon (F04 integration point) */}
+          <button
+            style={{
+              position: 'relative',
+              padding: '8px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '20px'
+            }}
+            title="Notifications (demo)"
+          >
+            🔔
+            {/* Unread badge */}
+            <span style={{
+              position: 'absolute',
+              top: '4px',
+              right: '4px',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              borderRadius: '10px',
+              padding: '2px 6px',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}>
+              1
+            </span>
+          </button>
+
           <span style={{ fontSize: '14px', color: '#666' }}>{user.email}</span>
           <button
             onClick={signOut}

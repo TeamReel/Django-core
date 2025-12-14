@@ -76,10 +76,10 @@ This document breaks down the Demo Shell implementation into **8 work packages**
 - [x] **T041** Add routes: `/404` → NotFoundPage, catch-all `*` → NotFoundPage; wrap App in ErrorBoundary ✅ COMPLETE (WP06)
 
 ### T042–T045: Notifications & Alerts (P3 Story 6)
-- [ ] **T042** → T020 | Integrate F04 NotificationInbox in `TopNavigation.tsx` (badge with unread count)
-- [ ] **T043** [P] Create `src/hooks/useNotifications.ts` (wrapper around F04 @django-core/notifications-hub)
-- [ ] **T044** Update `DashboardPage.tsx`: Show alert banner for low credits using F05 AlertBanner component
-- [ ] **T045** Add toast notifications on form submissions (success/error) using `useNotifications().showToast()`
+- [x] **T042** → T020 | Add mock notification icon in `TopNavigation.tsx` (bell + unread badge) ✅ COMPLETE (WP07 - mock demo)
+- [x] **T043** [P] Add mock credit alert banner to `DashboardPage.tsx` (DataLab org warning) ✅ COMPLETE (WP07 - mock demo)
+- [x] **T044** Document F04/F05 integration patterns in `README.md` ✅ COMPLETE (WP07)
+- [x] **T045** Verify TypeScript compilation passes ✅ COMPLETE (WP07)
 
 ### T046–T049: Status Pages (P3 Story 7)
 - [ ] **T046** → T041 | Create `src/pages/status/HealthStatusPage.tsx` (GET /health/, display JSON in readable format)

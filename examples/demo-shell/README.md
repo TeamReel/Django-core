@@ -58,8 +58,8 @@
 - **F01**: Design system primitives (buttons, inputs, alerts)
 - **F02**: Auth UI (login, logout, session)
 - **F03**: Context switcher (org/project selector)
-- **F04**: Notifications hub (inbox, toasts)
-- **F05**: Resource display & alerts (usage meters, banners)
+- **F04**: Notifications hub (inbox, toasts) - **Mock demo** (see below)
+- **F05**: Resource display & alerts (usage meters, banners) - **Mock demo** (see below)
 - **F06**: Page templates (layouts, list/detail patterns)
 - **F07**: Theme system (light/dark, brand variants)
 
@@ -70,6 +70,61 @@
 - **B08**: Permissions (/api/permissions/current/)
 - **B11**: Transactions/Credits (/api/organisations/{id}/credits/)
 - **B16/B17**: Notifications (/api/notifications/)
+
+### F04/F05 Integration (Mock Demonstration)
+
+**Current Implementation**: Simplified mock demonstration showing integration points for notifications (F04) and resource alerts (F05).
+
+**F04 Notifications Mock** (`TopNavigation.tsx`):
+- Bell icon (🔔) with unread badge showing "1"
+- Positioned between context switcher and user menu
+- **Production Integration**: Replace with `<NotificationsProvider>` wrapping the app:
+  ```tsx
+  import { NotificationsProvider, UnreadBadge } from '@django-core/notifications-hub';
+
+  // In App.tsx or main.tsx:
+  <NotificationsProvider>
+    <App />
+  </NotificationsProvider>
+
+  // In TopNavigation.tsx:
+  import { useNotifications } from '@django-core/notifications-hub';
+  const { unreadCount, openPanel } = useNotifications();
+
+  <button onClick={openPanel}>
+    🔔 <UnreadBadge count={unreadCount} />
+  </button>
+  ```
+
+**F05 Resource Alerts Mock** (`DashboardPage.tsx`):
+- Yellow warning banner for DataLab org (slug === 'datalab')
+- Shows "75% credit usage (250/1000 remaining)"
+- Mock data: DataLab org assumed to have low credits
+- **Production Integration**: Replace with real API data:
+  ```tsx
+  import { Alert, useResourceUsage } from '@django-core/resource-display-alerts';
+
+  // In DashboardPage.tsx:
+  const { data: credits, loading } = useResourceUsage(context.organisation?.id);
+  const showAlert = credits && (credits.used / credits.limit) >= 0.75;
+
+  {showAlert && (
+    <Alert
+      severity="warning"
+      title="Low Credits Warning"
+      dismissible
+      action={<button>Upgrade Plan</button>}
+    >
+      You're using {Math.round((credits.used / credits.limit) * 100)}% of your
+      credit limit ({credits.remaining}/{credits.limit} remaining).
+    </Alert>
+  )}
+  ```
+
+**Why Mock Approach**:
+- P3 priority task (nice-to-have demonstration)
+- Shows integration points without backend complexity
+- Full F04/F05 packages available in `packages/` for production use
 
 ## Available Scripts
 

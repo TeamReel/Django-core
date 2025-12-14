@@ -7,19 +7,56 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
 
+  // Mock: DataLab org has low credits (25% remaining = 250/1000)
+  const showLowCreditAlert = context.organisation?.slug === 'datalab';
+
   return (
     <AppShell>
       <div>
+        {/* Mock Credit Alert (F05 integration point) */}
+        {showLowCreditAlert && (
+          <div style={{
+            marginBottom: '24px',
+            padding: '16px',
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <span style={{ fontSize: '24px' }}>⚠️</span>
+            <div style={{ flex: 1 }}>
+              <strong>Low Credits Warning</strong>
+              <p style={{ margin: '4px 0 0 0', fontSize: '14px' }}>
+                You're using 75% of your credit limit (250/1000 remaining). Consider upgrading to avoid service interruptions.
+              </p>
+            </div>
+            <button style={{
+              padding: '8px 16px',
+              backgroundColor: '#ffc107',
+              color: '#000',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              fontWeight: 500
+            }}>
+              Upgrade Plan
+            </button>
+          </div>
+        )}
+
         <h1>Welcome, {user?.first_name || user?.email}!</h1>
         <p>You are logged in to the Django Core-App Demo Shell.</p>
 
         {context.organisation && (
-          <div style={{ 
-            marginTop: '24px', 
-            padding: '16px', 
-            backgroundColor: '#e7f3ff', 
+          <div style={{
+            marginTop: '24px',
+            padding: '16px',
+            backgroundColor: '#e7f3ff',
             border: '1px solid #b3d7ff',
-            borderRadius: '4px' 
+            borderRadius: '4px'
           }}>
             <h3 style={{ marginTop: 0 }}>Current Context</h3>
             <p><strong>Organisation:</strong> {context.organisation.name}</p>
@@ -30,19 +67,19 @@ export default function DashboardPage() {
         )}
 
         {!context.organisation && (
-          <div style={{ 
-            marginTop: '24px', 
-            padding: '16px', 
-            backgroundColor: '#fff3cd', 
+          <div style={{
+            marginTop: '24px',
+            padding: '16px',
+            backgroundColor: '#fff3cd',
             border: '1px solid #ffc107',
-            borderRadius: '4px' 
+            borderRadius: '4px'
           }}>
             <p style={{ margin: 0 }}>
               No organisation selected. <Link to="/organisations">Browse organisations</Link> to get started.
             </p>
           </div>
         )}
-        
+
         <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
           <h2>Your Profile</h2>
           <p><strong>Email:</strong> {user?.email}</p>
