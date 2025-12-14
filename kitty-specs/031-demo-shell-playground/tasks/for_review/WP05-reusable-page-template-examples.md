@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: Reusable Page Template Examples
-lane: "doing"
+lane: "for_review"
 subtasks:
   - T033
   - T034
@@ -91,3 +91,4 @@ import { ListPageTemplate } from '@django-core/page-templates';
 ## Activity Log
 
 - 2025-12-14T14:13:30Z – claude – shell_pid=32760 – lane=doing – Started WP05: Reusable Page Template Examples implementation
+- 2025-12-14T14:20:15Z – claude – shell_pid=32760 – lane=for_review – WP05 complete: F06 page templates integrated (ListDetail, Settings, Empty states), type-check passes
