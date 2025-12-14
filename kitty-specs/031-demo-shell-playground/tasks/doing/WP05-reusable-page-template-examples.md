@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: Reusable Page Template Examples
-lane: planned
+lane: "doing"
 subtasks:
   - T033
   - T034
@@ -14,6 +14,8 @@ dependencies:
   - WP02
   - WP03
 story: "P2 Story 4 - Reusable Page Templates"
+agent: "claude"
+shell_pid: "32760"
 history:
   - date: 2025-12-14
     action: created
@@ -85,3 +87,7 @@ import { ListPageTemplate } from '@django-core/page-templates';
 
 **Status**: Ready (blocked by WP03)
 **Lane**: `planned` → `doing` after WP03 → `for_review` → `done`
+
+## Activity Log
+
+- 2025-12-14T14:13:30Z – claude – shell_pid=32760 – lane=doing – Started WP05: Reusable Page Template Examples implementation
