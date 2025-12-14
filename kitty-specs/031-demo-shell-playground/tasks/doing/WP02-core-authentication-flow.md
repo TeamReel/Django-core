@@ -1,8 +1,8 @@
 ---
 work_package_id: WP02
 title: Core Authentication Flow
-lane: "planned"
-review_status: "has_feedback"
+lane: "doing"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 subtasks:
   - T011
@@ -18,7 +18,7 @@ dependencies:
   - WP01
 story: "P1 Story 1 - Core Authentication Flow"
 agent: "claude"
-shell_pid: "36848"
+shell_pid: "32760"
 history:
   - date: 2025-12-14T18:30:00Z
     action: review_complete
@@ -881,3 +881,4 @@ Running 5 tests using 1 worker
 
 - 2025-12-14T12:39:13Z – claude – shell_pid=36848 – lane=doing – Started WP02 implementation
 - 2025-12-14T13:22:40Z – claude – shell_pid=36848 – lane=for_review – WP02 complete: Auth flow implemented (T011-T015), manual testing required
+- 2025-12-14T13:36:19Z – claude – shell_pid=32760 – lane=doing – Acknowledging review feedback, fixing auth-ui API usage
