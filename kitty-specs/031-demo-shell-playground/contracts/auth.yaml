@@ -1,0 +1,202 @@
+# Authentication API Contracts (B05)
+# Demo consumes these endpoints for login/logout flows (FR-005-008)
+
+openapi: 3.0.3
+info:
+  title: Authentication API
+  version: 1.0.0
+  description: Core authentication endpoints from B05-core-accounts
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://staging.example.com
+    description: Staging environment
+
+paths:
+  /auth/login/:
+    post:
+      summary: Authenticate user
+      operationId: login
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: alice@example.com
+                password:
+                  type: string
+                  format: password
+                  example: "********"
+              additionalProperties: false
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    description: Session token or JWT (implementation-dependent)
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: Invalid request (missing fields, malformed email)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication failed (invalid credentials)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication failed"
+                detail: "Invalid email or password"
+        '429':
+          description: Rate limited (brute-force protection from B03)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Too many requests"
+                detail: "Please try again in 5 minutes"
+
+  /auth/logout/:
+    post:
+      summary: End user session
+      operationId: logout
+      tags:
+        - Authentication
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Logout successful (no content)
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/me/:
+    get:
+      summary: Get current authenticated user
+      operationId: getCurrentUser
+      tags:
+        - Authentication
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        email:
+          type: string
+          format: email
+          example: alice@example.com
+        first_name:
+          type: string
+          example: Alice
+          nullable: true
+        last_name:
+          type: string
+          example: Smith
+          nullable: true
+        is_active:
+          type: boolean
+          example: true
+        is_superuser:
+          type: boolean
+          example: false
+        date_joined:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00Z"
+        last_login:
+          type: string
+          format: date-time
+          example: "2025-12-14T10:30:00Z"
+          nullable: true
+      required:
+        - id
+        - email
+        - is_active
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error category (e.g., "Validation failed", "Not found")
+        detail:
+          type: string
+          description: Human-readable error message
+        field_errors:
+          type: object
+          description: Field-specific validation errors (optional)
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            email: ["This field is required."]
+            password: ["Password must be at least 8 characters."]
+      required:
+        - error
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+      description: Django session cookie (default auth mechanism)
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token (if B05 uses token authentication)
+
+# Demo Usage Notes:
+# - Login: POST /auth/login/ with {email, password} → Store token in AuthProvider
+# - Logout: POST /auth/logout/ → Clear AuthProvider state
+# - Protected routes: Check /auth/me/ on app load to restore session
+# - Error handling: 401 triggers redirect to /login, 429 shows rate-limit banner

@@ -1,0 +1,132 @@
+---
+work_package_id: WP08
+title: Status Pages & E2E Tests
+lane: planned
+subtasks:
+  - T046
+  - T047
+  - T048
+  - T049
+  - T050
+  - T051
+  - T052
+  - T053
+  - T054
+  - T055
+  - T056
+  - T057
+  - T058
+priority: P3
+dependencies:
+  - WP01
+  - WP02
+  - WP03
+  - WP04
+story: "P3 Story 7 - System Status & Health"
+history:
+  - date: 2025-12-14
+    action: created
+    agent: copilot
+    notes: Health check page + comprehensive E2E test suite
+---
+
+# WP08: Status Pages & E2E Tests
+
+## Objective
+
+Implement P3 Story 7 (System Status & Health): create `/status` page showing backend health, frontend version, and package statuses. Add comprehensive E2E test suite covering 2 critical journeys (auth → context → permissions; notifications → alerts). Ensure CI smoke tests <10 minutes (S-002).
+
+**Success Criterion**: `/status` page shows "Backend: Healthy ✅", "Frontend: v1.0.0", "Packages: 7/7 loaded". E2E suite (5 existing + 2 new = 7 tests) passes in <10 minutes.
+
+---
+
+## Context
+
+**User Story**: P3 Story 7
+**Priority**: P3 (Observability, CI validation)
+**Dependencies**: WP01-WP04 (all features implemented)
+
+**Why This Matters**: Status page enables quick health checks. E2E suite validates end-to-end integration. CI smoke tests ensure deployability.
+
+**Design Documents**:
+- `spec.md`: AS-7.1 through AS-7.3 (status page, E2E journeys, CI time)
+- `research.md`: Playwright config (retries=0, determinism)
+
+---
+
+## Detailed Guidance
+
+### T046-T048: Status Page
+
+Create `src/pages/StatusPage.tsx`:
+```typescript
+export default function StatusPage() {
+  const [health, setHealth] = useState(null);
+
+  useEffect(() => {
+    fetch('/health/')
+      .then(r => r.json())
+      .then(setHealth)
+      .catch(() => setHealth({ status: 'error' }));
+  }, []);
+
+  return (
+    <div>
+      <h1>System Status</h1>
+      <p>Backend: {health?.status === 'healthy' ? '✅ Healthy' : '❌ Error'}</p>
+      <p>Frontend: v{import.meta.env.VITE_APP_VERSION || '1.0.0'}</p>
+      <p>Packages: 7/7 loaded</p>
+    </div>
+  );
+}
+```
+
+### T049-T056: E2E Test Suite
+
+**Journey 1** (auth-context-permissions.spec.ts):
+1. Log in as alice
+2. Switch to TechCorp
+3. Navigate to projects
+4. Verify "Edit" button visible (admin permission)
+5. Log out, log in as bob
+6. Verify "Edit" button hidden (member permission)
+
+**Journey 2** (notifications-alerts.spec.ts):
+1. Log in as alice
+2. Verify notification icon shows unread count
+3. Click icon → inbox opens with "Welcome" message
+4. Switch to DataLab org
+5. Verify "Low credits" alert visible
+
+### T057-T058: CI Smoke Test Script
+
+Create `.github/workflows/smoke-test.yml`:
+```yaml
+name: Demo Shell Smoke Tests
+on: [push]
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: docker compose -f docker-compose.local.yml up -d
+      - run: cd examples/demo-shell && pnpm install
+      - run: pnpm test:e2e
+```
+
+**Constraint**: Must complete in <10 minutes (S-002).
+
+---
+
+## DoD
+
+- [ ] Status page accessible at `/status`, shows backend health
+- [ ] 7 E2E tests pass (5 existing from WP02/WP03 + 2 new journeys)
+- [ ] E2E test duration <10 minutes (local: ~2 min, CI: ~8 min with setup)
+- [ ] CI workflow runs smoke tests on push
+- [ ] All tests deterministic (0 retries, 0 flakes)
+
+---
+
+**Status**: Ready (blocked by WP01-WP04)
+**Lane**: `planned` → `doing` after WP04 → `for_review` → `done`
