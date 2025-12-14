@@ -45,14 +45,14 @@ This document breaks down the Demo Shell implementation into **8 work packages**
 - [ ] **T018** [DEFERRED to WP08] Create E2E test suite `tests/e2e/auth-flow.spec.ts` (Playwright tests for AS-1.1 through AS-1.5)
 
 ### T019–T026: Context Switching (P1 Story 2)
-- [ ] **T019** → T011-T018 | Create `src/hooks/useContext.ts` (thin wrapper around F03 @django-core/context-switcher)
-- [ ] **T020** [P] Create `src/components/layout/TopNavigation.tsx` (user menu, logout button, context switcher slot)
-- [ ] **T021** [P] Create `src/components/layout/Sidebar.tsx` (nav links: Dashboard, Organisations, Projects, Settings)
-- [ ] **T022** Create `src/components/layout/AppShell.tsx` (compose F06 AppShell with TopNavigation + Sidebar)
-- [ ] **T023** Create `src/pages/organisations/OrganisationListPage.tsx` (list orgs user can access, F06 ListLayout)
-- [ ] **T024** Create `src/pages/organisations/OrganisationDetailPage.tsx` (org details, members, projects, F06 DetailLayout)
-- [ ] **T025** Create `src/pages/projects/ProjectListPage.tsx` (list projects in current org, filter by status)
-- [ ] **T026** Create `src/pages/projects/ProjectDetailPage.tsx` (project details, breadcrumbs with org/project context)
+- [x] **T019** → T011-T018 | Create `src/adapters/reactRouterAdapter.ts` and integrate ContextSwitcherProvider in main.tsx ✅ COMPLETE (WP03)
+- [x] **T020** [P] Create `src/components/TopNavigation.tsx` (user menu, logout button, context switcher) ✅ COMPLETE (WP03)
+- [x] **T021** [P] Create `src/components/Sidebar.tsx` (nav links: Dashboard, Organisations, Projects) ✅ COMPLETE (WP03)
+- [x] **T022** Create `src/components/AppShell.tsx` (layout composition: TopNavigation + Sidebar + content) ✅ COMPLETE (WP03)
+- [x] **T023** Create `src/pages/organisations/OrganisationListPage.tsx` (list orgs with selection) ✅ COMPLETE (WP03)
+- [x] **T024** Create `src/pages/organisations/OrganisationDetailPage.tsx` (org details with context update) ✅ COMPLETE (WP03)
+- [x] **T025** Create `src/pages/projects/ProjectListPage.tsx` (list projects filtered by org) ✅ COMPLETE (WP03)
+- [x] **T026** Create `src/pages/projects/ProjectDetailPage.tsx` (project details with breadcrumbs) ✅ COMPLETE (WP03) [E2E tests deferred to WP08]
 
 ### T027–T032: Permissions (P1 Story 3)
 - [ ] **T027** → T019-T026 | Check if `@django-core/permissions` package exists; if not, create minimal shim in `src/lib/permissions.ts`
