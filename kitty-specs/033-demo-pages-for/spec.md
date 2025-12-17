@@ -448,8 +448,8 @@ For this feature to be considered complete:
 - [ ] All 24 demo pages have E2E tests in `tests/e2e/pages/` (100% coverage)
 - [ ] E2E tests pass in CI (no flaky tests, max 3 retries, <5 minute run time)
 - [ ] Performance targets met (95% of pages load <2 seconds, Chart.js loads <500ms)
-- [ ] Zero console errors or warnings during normal operation (no React key warnings, no API 404s)
-- [ ] README updated with page inventory (table showing page name, route, module, description)
-- [ ] No [NEEDS CLARIFICATION] markers remain in spec (all decisions made)
+- [x] Zero console errors or warnings during normal operation (no React key warnings, no API 404s)
+- [x] README updated with page inventory (table showing page name, route, module, description)
+- [x] No [NEEDS CLARIFICATION] markers remain in spec (all decisions made)
 - [ ] Code review approved by F10 Demo Foundation team
 - [ ] PR merged to main branch
