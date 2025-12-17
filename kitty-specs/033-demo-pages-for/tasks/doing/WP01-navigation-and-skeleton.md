@@ -8,11 +8,11 @@ subtasks:
   - "T005"
 title: "Navigation & Skeleton"
 phase: "Phase 0 - Scaffolding"
-lane: "planned"
+lane: "doing"
 assignee: "GitHub Copilot"
 agent: "Claude Haiku 4.5"
 shell_pid: "31680"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "Claude Haiku 4.5"
 history:
   - timestamp: "2025-12-17T00:00:00Z"
