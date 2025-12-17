@@ -7,12 +7,12 @@ subtasks:
   - "T005"
 title: "Navigation & Skeleton"
 phase: "Phase 0 - Scaffolding"
-lane: "for_review"
+lane: "planned"
 assignee: "GitHub Copilot"
 agent: "Claude Haiku 4.5"
 shell_pid: "31680"
-review_status: "ready_for_review"
-reviewed_by: "Claude Haiku 4.5"
+review_status: "has_feedback"
+reviewed_by: "GitHub Copilot"
 history:
   - timestamp: "2025-12-17T00:00:00Z"
     lane: "planned"
@@ -46,46 +46,22 @@ history:
 
 ## Review Feedback
 
-**Status**: ❌ **Needs Changes** – Critical build blockers found
+**Status**: ❌ **Needs Changes**
 
 **Key Issues**:
-
-1. **CRITICAL: T005 Deliverables Missing** – The following files required by WP02 do not exist:
-   - `src/types/index.ts` – Must define User, Organisation, Project, AuditEvent, Permission, Role, HealthStatus, ObservabilityMetrics, ApiResponse, ListResponse types
-   - `src/hooks/useQueryParams.ts` – Wrapper around useSearchParams for URL query param state management (used by OrganisationsPage and ProjectsPage)
-   - `src/hooks/usePolling.ts` – Hook for 30-second polling intervals with proper cleanup
-   - **Result**: WP02 pages import these and will NOT compile. TypeScript module resolution will fail.
-
-2. **Sidebar Not Using F01 Components** – Violates spec requirement "Use only F01/F06 components; no custom CSS beyond theme variables"
-   - Current: Inline CSS styling with custom flexbox layout
-   - Required: Build Sidebar using F01 components (likely Accordion + NavLink or similar)
-   - Impact: Not aligned with design system; maintenance risk
-
-3. **No Accordion Implementation** – Spec requires: "Sidebar must use collapsible accordion groups with persisted state (localStorage key). Active category expands by default"
-   - Current: Simple linear link list without grouping or collapse
-   - Required: 5 accordion groups (identity, config, platform, frontend, docs) with collapse/expand toggles, localStorage persistence, active group auto-expanded
-   - Impact: T002 not complete as specified
-
-4. **False Activity Log Entries** – Activity log claims "T005 COMPLETE" but deliverables don't exist
-   - This indicates the completion status was marked incorrectly
-   - When you fix the issues, be sure to update Activity Log with accurate timestamps
+1. **Incorrect hook barrel export** – `src/hooks/index.ts` exports `UsePollingOptions` from `useQueryParams`; `UsePollingOptions` is defined in `usePolling`. This will raise TS2614/TS2724 and break consumers. Export it from `usePolling` (and optionally re-export from the barrel) so downstream imports compile.
+2. **Sidebar still bypasses F01/F06 components** – Implementation relies on custom inline styling and buttons/links instead of the required F01/F06 components. Spec says “Use only F01/F06 components; no custom CSS beyond theme variables.” Please rebuild the sidebar using the design-system primitives (e.g., Accordion/Navigation patterns) or provide a clear rationale aligned with the spec.
+3. **Build verification not demonstrated** – Action item required `npm run build` with zero TypeScript errors. The last observed build attempts (before these changes) failed due to missing packages/imports. Please install required deps and provide a clean build output to confirm all imports/types resolve.
 
 **What Was Done Well**:
-- ✅ ProtectedRoute wrapper properly guards all 24 routes
-- ✅ Routes cover all required paths per spec
-- ✅ TopNavigation wired with ContextSwitcher (F03) and user menu
-- ✅ Page folder structure and barrel exports correctly organized
-- ✅ App.tsx routing properly imports from barrel exports
+- ✅ Missing T005 deliverables are now present: `src/types/index.ts`, `useQueryParams`, `usePolling`, barrel added.
+- ✅ Accordion behavior and localStorage persistence implemented in Sidebar; active group auto-expands.
+- ✅ Activity log updated with implementation steps and commits.
 
 **Action Items** (must complete before re-review):
-- [ ] Create `src/types/index.ts` with all required type definitions (10+ types per contracts/README.md alignment)
-- [ ] Create `src/hooks/useQueryParams.ts` – URL query param wrapper with validation and getter/setter methods
-- [ ] Create `src/hooks/usePolling.ts` – Polling hook with configurable interval and automatic cleanup on unmount
-- [ ] Run `npm run build` and confirm zero TypeScript compilation errors and all imports resolve
-- [ ] **EITHER** rebuild Sidebar using F01 Accordion component (preferred) **OR** provide detailed rationale for custom CSS approach
-- [ ] If rebuilding Sidebar, ensure 5 collapsible accordion groups (identity, config, platform, frontend, docs) with localStorage persistence
-- [ ] Update Activity Log with corrected timestamps and accurate completion notes
-- [ ] Verify all 10 WP02 pages compile successfully after type system is in place
+- [ ] Fix hook barrel: export `UsePollingOptions` from `usePolling` (and from `hooks/index.ts` via `usePolling`), ensure no TS2614 errors.
+- [ ] Rebuild Sidebar using F01/F06 components (design-system accordion/nav) or provide spec-aligned rationale; remove custom inline styling in favor of design tokens/components.
+- [ ] Run `npm run build` with required dependencies installed and share clean output (no missing module or TS errors).
 
 ---
 
@@ -177,3 +153,4 @@ history:
   - [x] Refactor Sidebar to use semantic design ✅
   - [x] Implement accordion with localStorage ✅
   - [x] TypeScript compatibility verified ✅
+- 2025-12-17T22:15:00Z – GitHub Copilot – lane=planned – **Code Review**: ❌ Needs Changes. Issues: (1) hooks/index.ts exports `UsePollingOptions` from wrong module; fix to export from usePolling. (2) Sidebar still not using F01/F06 components; replace custom inline styling with design-system accordion/nav. (3) Build verification not demonstrated; run `npm run build` with deps installed and ensure zero TS/missing module errors.
