@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "31232"
+---
 # WP04: SQLite Fallback Compatibility
 
 ## Objective
@@ -25,3 +30,7 @@ Ensure demo seed/validate/reset commands operate correctly on SQLite fallback (D
 
 ## Notes
 - Coordinate with WP02 to reuse validation/reset without branching logic.
+
+## Activity Log
+
+- 2025-12-17T13:00:34Z – claude – shell_pid=31232 – lane=doing – Started SQLite fallback implementation
