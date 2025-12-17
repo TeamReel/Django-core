@@ -5,22 +5,22 @@
 **Tests**: Include command-level pytest where noted; E2E reuse seed data (not scoped here).
 
 ## Subtasks
-- [ ] T001 [P] Seed scaffolding/helpers: constants, seeded randomness hook, base factories (timestamps last 30d)
-- [ ] T002 [P] Orgs/users/demo accounts/preferences: 5 orgs, 20 users, roles, preferences, passwords hashed
-- [ ] T003 [P] Projects: per-org counts (15/30/10/5/20), statuses, team assignments, permissions
-- [ ] T004 [P] Transactions: last 30 days, purchase/usage/refund mix, balances non-negative per org
-- [ ] T005 [P] Audit events: 200-300 seeded events, typed (auth/crud/financial/security), timestamps seeded
-- [ ] T006 [P] Notifications: 5-10 unread per demo account, 50+ read per org; channels/types
-- [ ] T007 [P] Feature flags & file metadata placeholders: org-scoped flags, B22 placeholders
-- [ ] T008 Seed idempotency & progress logging: name checks, rerun <5s when data exists, summary output
-- [ ] T009 Validate command checks: admins per org, balances non-negative, permissions valid, audit refs, notifications scoped
-- [ ] T010 Reset command: scoped wipe (demo data only) with --force, reseed end-to-end <60s
-- [ ] T011 Tests (pytest): seed idempotency, validation outcomes, reset flow happy path; performance smoke (<30s not enforced in CI but assert counts)
-- [ ] T012 Docker profiles/env: demo (auto-seed), demo-lite (manual); .env.demo example; entrypoint wiring
-- [ ] T013 SQLite fallback compatibility: DEMO_DATABASE switch, ORM-only code paths, smoke on sqlite
-- [ ] T014 Performance & observability: bulk_create/select_related/prefetch, timing/logging, --json outputs for commands
+- [X] T001 [P] Seed scaffolding/helpers: constants, seeded randomness hook, base factories (timestamps last 30d)
+- [X] T002 [P] Orgs/users/demo accounts/preferences: 5 orgs, 20 users, roles, preferences, passwords hashed
+- [X] T003 [P] Projects: per-org counts (15/30/10/5/20), statuses, team assignments, permissions
+- [X] T004 [P] Transactions: last 30 days, purchase/usage/refund mix, balances non-negative per org
+- [X] T005 [P] Audit events: 200-300 seeded events, typed (auth/crud/financial/security), timestamps seeded
+- [X] T006 [P] Notifications: 5-10 unread per demo account, 50+ read per org; channels/types
+- [X] T007 [P] Feature flags & file metadata placeholders: org-scoped flags, B22 placeholders
+- [X] T008 Seed idempotency & progress logging: name checks, rerun <5s when data exists, summary output
+- [X] T009 Validate command checks: admins per org, balances non-negative, permissions valid, audit refs, notifications scoped
+- [X] T010 Reset command: scoped wipe (demo data only) with --force, reseed end-to-end <60s
+- [X] T011 Tests (pytest): seed idempotency, validation outcomes, reset flow happy path; performance smoke (<30s not enforced in CI but assert counts)
+- [X] T012 Docker profiles/env: demo (auto-seed), demo-lite (manual); .env.demo example; entrypoint wiring
+- [X] T013 SQLite fallback compatibility: DEMO_DATABASE switch, ORM-only code paths, smoke on sqlite
+- [X] T014 Performance & observability: bulk_create/select_related/prefetch, timing/logging, --json outputs for commands
 - [X] T015 Documentation & verification: quickstart alignment, sample outputs, verification checklist adjustments
-- [ ] T016 PostgreSQL pooling readiness: pgbouncer-compatible settings documented and validated in demo profile
+- [X] T016 PostgreSQL pooling readiness: pgbouncer-compatible settings documented and validated in demo profile
 
 ---
 
@@ -86,13 +86,14 @@
 
 ---
 
-## Work Package WP04: SQLite Fallback Compatibility (Priority: P3)
+## Work Package WP04: SQLite Fallback Compatibility (Priority: P3) ✅ DONE
 **Goal**: Ensure DEMO_DATABASE=sqlite path works with same seed dataset and commands.
 **Independent Test**: `DEMO_DATABASE=sqlite python manage.py migrate && python manage.py seed_demo_data` succeeds; validate/reset pass on sqlite.
-**Prompt**: tasks/planned/WP04-sqlite-fallback.md
+**Prompt**: tasks/done/WP04-sqlite-fallback.md
+**Completed**: 2025-12-17 by copilot (all 6 test steps passing, reviewed and approved)
 
 ### Included Subtasks
-- [ ] T013
+- [X] T013
 
 ### Dependencies
 - Depends on WP01 (seed) and WP02 (validate/reset).

@@ -1,6 +1,7 @@
 ---
 lane: "done"
 agent: "claude-reviewer"
+assignee: "copilot"
 shell_pid: "31232"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
