@@ -233,7 +233,7 @@ export const AuditLogPage: React.FC = () => {
                 ),
                 resource: (
                   <span className="text-sm" data-testid={`audit-resource-${event.id}`}>
-                    {event.metadata?.resource_type || '-'}
+                    {String(event.metadata?.resource_type ?? '-')}
                   </span>
                 ),
                 status: (

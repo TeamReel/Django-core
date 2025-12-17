@@ -41,8 +41,8 @@ function AppWithProviders() {
   const contextConfig: ContextSwitcherConfig = {
     routerAdapter,
     apiBaseUrl: (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1',
-    onContextError: (error) => {
-      console.warn('Context switch error (non-critical):', error.message);
+    onContextError: (error: unknown) => {
+      console.warn('Context switch error (non-critical):', error);
       // Silently handle - context switching is optional
     },
   };

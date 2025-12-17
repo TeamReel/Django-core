@@ -24,6 +24,15 @@ import {
   PreferencesPage,
 } from './pages/config';
 
+// Platform pages
+import {
+  HealthCheckPage,
+  ConstitutionPage,
+  SecurityPage,
+  ObservabilityPage,
+  ApiDocsPage,
+} from './pages/platform';
+
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -151,6 +160,52 @@ export default function App() {
         element={
           <ProtectedRoute>
             <PreferencesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Platform routes */}
+      <Route
+        path="/health"
+        element={
+          <ProtectedRoute>
+            <HealthCheckPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/constitution"
+        element={
+          <ProtectedRoute>
+            <ConstitutionPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/security"
+        element={
+          <ProtectedRoute>
+            <SecurityPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/observability"
+        element={
+          <ProtectedRoute>
+            <ObservabilityPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/api-docs"
+        element={
+          <ProtectedRoute>
+            <ApiDocsPage />
           </ProtectedRoute>
         }
       />

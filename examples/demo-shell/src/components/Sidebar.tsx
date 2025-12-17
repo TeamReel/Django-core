@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Card } from '@django-core/design-system';
+import { Card, Button } from '@django-core/design-system';
 
-/**
- * Navigation structure organized by category
- */
 interface NavGroup {
   id: string;
   label: string;
@@ -18,16 +15,13 @@ interface NavItem {
 }
 
 /**
- * Sidebar component with collapsible accordion groups
- * Features:
- * - 5 collapsible accordion groups (identity, config, platform, frontend, docs)
- * - localStorage persistence for expanded/collapsed state
- * - Active category auto-expands on mount
- * - F01 design system components
+ * Sidebar using design-system primitives (Card, Button) with collapsible groups
+ * - 5 groups: identity, config, platform, frontend, docs
+ * - localStorage persistence of expanded groups
+ * - Auto-expands group containing the active route
  */
 export default function Sidebar() {
   const location = useLocation();
-  const isDev = import.meta.env.DEV;
   const STORAGE_KEY = 'demo_sidebar_expanded_groups';
 
   const navGroups: NavGroup[] = [
@@ -55,7 +49,10 @@ export default function Sidebar() {
       label: 'Platform Status',
       items: [
         { path: '/health', label: 'Health Status', icon: '❤️' },
+        { path: '/constitution', label: 'Constitution', icon: '📜' },
+        { path: '/security', label: 'Security', icon: '🔒' },
         { path: '/observability', label: 'Observability', icon: '📊' },
+        { path: '/api-docs', label: 'API Docs', icon: '🔌' },
       ],
     },
     {
@@ -80,222 +77,119 @@ export default function Sidebar() {
 
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
-  /**
-   * Load expanded groups from localStorage and auto-expand active group
-   */
   useEffect(() => {
-    // Load from storage
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
         setExpandedGroups(new Set(JSON.parse(stored)));
-      } catch (e) {
-        // Invalid storage, ignore
+      } catch {
+        // ignore malformed storage
       }
     }
 
-    // Auto-expand group containing active route
     for (const group of navGroups) {
       const hasActive = group.items.some(item =>
-        location.pathname === item.path ||
-        (item.path.length > 1 && location.pathname.startsWith(item.path))
+        location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
       );
-
       if (hasActive) {
-        setExpandedGroups(prev => {
-          const updated = new Set(prev);
-          updated.add(group.id);
-          return updated;
-        });
+        setExpandedGroups(prev => new Set([...prev, group.id]));
         break;
       }
     }
-  }, [location.pathname]);
+  }, [location.pathname, navGroups]);
 
-  /**
-   * Persist expanded groups to localStorage
-   */
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(expandedGroups)));
   }, [expandedGroups]);
 
-  /**
-   * Toggle accordion group
-   */
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => {
-      const updated = new Set(prev);
-      if (updated.has(groupId)) {
-        updated.delete(groupId);
+      const next = new Set(prev);
+      if (next.has(groupId)) {
+        next.delete(groupId);
       } else {
-        updated.add(groupId);
+        next.add(groupId);
       }
-      return updated;
+      return next;
     });
   };
 
-  /**
-   * Check if item is active
-   */
   const isItemActive = (path: string): boolean => {
-    return (
-      location.pathname === path ||
-      (path.length > 1 && location.pathname.startsWith(path))
-    );
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
   return (
-    <aside
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '280px',
-        minHeight: '100vh',
-        borderRight: '1px solid #e5e7eb',
-        backgroundColor: '#f9fafb',
-        overflow: 'auto',
-      }}
-      data-testid="sidebar"
-    >
-      <nav style={{ padding: '16px 0', flex: 1 }}>
+    <aside data-testid="sidebar" style={{ width: 280, minHeight: '100vh' }}>
+      <Card style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {navGroups.map(group => (
-          <div key={group.id} data-testid={`nav-group-${group.id}`}>
-            {/* Accordion header */}
-            <button
+          <Card key={group.id} data-testid={`nav-group-${group.id}`} style={{ padding: 8 }}>
+            <Button
+              variant="secondary"
+              size="md"
               onClick={() => toggleGroup(group.id)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                backgroundColor: 'transparent',
-                border: 'none',
-                borderBottom: '1px solid #e5e7eb',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#374151',
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.backgroundColor = '#f0f1f3';
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.backgroundColor = 'transparent';
-              }}
+              style={{ width: '100%' }}
               data-testid={`accordion-toggle-${group.id}`}
             >
-              <span>{group.label}</span>
-              <span
-                style={{
-                  transform: expandedGroups.has(group.id) ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s',
-                  fontSize: '12px',
-                }}
-              >
-                ▼
+              <span style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                <span>{group.label}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 12 }}>
+                  {expandedGroups.has(group.id) ? '▾' : '▸'}
+                </span>
               </span>
-            </button>
+            </Button>
 
-            {/* Accordion content */}
             {expandedGroups.has(group.id) && (
-              <div style={{ padding: '8px 0' }} data-testid={`accordion-content-${group.id}`}>
+              <div data-testid={`accordion-content-${group.id}`} style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {group.items.map(item => {
                   const active = isItemActive(item.path);
-
                   return (
                     <Link
                       key={item.path}
                       to={item.path}
+                      data-testid={`nav-link-${item.path}`}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '12px',
-                        padding: '8px 16px',
-                        marginLeft: '12px',
-                        marginRight: '8px',
-                        borderRadius: '4px',
-                        color: active ? '#2563eb' : '#6b7280',
-                        backgroundColor: active ? '#eff6ff' : 'transparent',
+                        gap: 8,
+                        padding: '8px 10px',
+                        borderRadius: 6,
                         textDecoration: 'none',
-                        fontSize: '14px',
-                        fontWeight: active ? 600 : 400,
-                        transition: 'all 0.2s',
+                        backgroundColor: active ? '#eff6ff' : 'transparent',
+                        color: active ? '#0f172a' : '#374151',
+                        fontWeight: active ? 600 : 500,
                       }}
-                      onMouseEnter={e => {
-                        const el = e.currentTarget as HTMLElement;
-                        if (!active) {
-                          el.style.backgroundColor = '#f3f4f6';
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        const el = e.currentTarget as HTMLElement;
-                        if (!active) {
-                          el.style.backgroundColor = 'transparent';
-                        }
-                      }}
-                      data-testid={`nav-link-${item.path}`}
                     >
-                      {item.icon && <span style={{ fontSize: '16px' }}>{item.icon}</span>}
+                      {item.icon && <span aria-hidden="true">{item.icon}</span>}
                       <span>{item.label}</span>
-                      {active && (
-                        <span
-                          style={{
-                            marginLeft: 'auto',
-                            width: '4px',
-                            height: '4px',
-                            borderRadius: '50%',
-                            backgroundColor: '#2563eb',
-                          }}
-                          data-testid={`active-indicator-${item.path}`}
-                        />
-                      )}
                     </Link>
                   );
                 })}
               </div>
             )}
-          </div>
+          </Card>
         ))}
 
-        {/* Dashboard shortcut (always visible) */}
-        <Link
-          to="/dashboard"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px 16px',
-            marginTop: '16px',
-            borderTop: '1px solid #e5e7eb',
-            color: isItemActive('/dashboard') ? '#2563eb' : '#6b7280',
-            backgroundColor: isItemActive('/dashboard') ? '#eff6ff' : 'transparent',
-            textDecoration: 'none',
-            fontSize: '14px',
-            fontWeight: isItemActive('/dashboard') ? 600 : 400,
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={e => {
-            const el = e.currentTarget as HTMLElement;
-            if (!isItemActive('/dashboard')) {
-              el.style.backgroundColor = '#f3f4f6';
-            }
-          }}
-          onMouseLeave={e => {
-            const el = e.currentTarget as HTMLElement;
-            if (!isItemActive('/dashboard')) {
-              el.style.backgroundColor = 'transparent';
-            }
-          }}
-          data-testid="nav-link-dashboard"
-        >
-          <span style={{ fontSize: '16px' }}>🏠</span>
-          <span>Dashboard</span>
-        </Link>
-      </nav>
+        <Card style={{ padding: 8 }}>
+          <Link
+            to="/dashboard"
+            data-testid="nav-link-dashboard"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '8px 10px',
+              borderRadius: 6,
+              textDecoration: 'none',
+              backgroundColor: isItemActive('/dashboard') ? '#eff6ff' : 'transparent',
+              color: isItemActive('/dashboard') ? '#0f172a' : '#374151',
+              fontWeight: isItemActive('/dashboard') ? 600 : 500,
+            }}
+          >
+            <span aria-hidden="true">🏠</span>
+            <span>Dashboard</span>
+          </Link>
+        </Card>
+      </Card>
     </aside>
   );
 }

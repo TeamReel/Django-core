@@ -2,8 +2,8 @@
  * Shared Hooks Barrel Export
  */
 
-export { useQueryParams, type UsePollingOptions } from './useQueryParams';
-export { usePolling } from './usePolling';
+export { useQueryParams } from './useQueryParams';
+export { usePolling, type UsePollingOptions, type UsePollingResult } from './usePolling';
 
 export default {
   useQueryParams: () => import('./useQueryParams').then(m => m.useQueryParams),

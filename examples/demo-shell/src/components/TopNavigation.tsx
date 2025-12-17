@@ -1,5 +1,6 @@
 import { useAuth, useSignOut } from '@django-core/auth-ui';
 import { ContextSwitcher, useContextSwitcher } from '@django-core/context-switcher';
+import type { Organisation } from '@django-core/context-switcher';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
@@ -16,7 +17,7 @@ export default function TopNavigation() {
       // Try to restore from localStorage first
       const savedOrgId = localStorage.getItem('demo_selected_org_id');
       if (savedOrgId) {
-        const org = organisations.find(o => o.id.toString() === savedOrgId);
+        const org = organisations.find((o: Organisation) => o.id.toString() === savedOrgId);
         if (org) {
           switchContext(org);
           setHasSelectedOrg(true);

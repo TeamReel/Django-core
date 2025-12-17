@@ -4,7 +4,6 @@ import {
   PageContent,
   Card,
   Button,
-  Input,
   Alert,
 } from '@django-core/design-system';
 

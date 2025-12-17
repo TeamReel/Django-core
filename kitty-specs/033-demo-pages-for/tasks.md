@@ -65,14 +65,14 @@ description: "Work packages for 033-demo-pages-for"
 
 **Goal**: Establish navigation shell, routing, and shared utilities so pages have consistent scaffolding.
 **Independent Test**: Sidebar accordion works with persistence; routes for all slugs resolve with F06 templates; context switcher and breadcrumbs render without data errors.
-**Prompt**: /tasks/planned/WP01-navigation-and-skeleton.md
+**Prompt**: /tasks/done/WP01-navigation-and-skeleton.md
 
 ### Included Subtasks
-- [ ] T001
-- [ ] T002
-- [ ] T003
-- [ ] T004
-- [ ] T005
+- [x] T001
+- [x] T002
+- [x] T003
+- [x] T004
+- [x] T005
 
 ### Implementation Sketch
 - Validate baseline setup, ensure pnpm deps installed and dev server runs.
@@ -97,19 +97,19 @@ description: "Work packages for 033-demo-pages-for"
 
 **Goal**: Deliver P1 demo pages showing identity, permissions, audit, flags, credits (no charts yet), and preferences with real data and permissions.
 **Independent Test**: Admin can view all identity/config pages with seed data; viewer sees scoped data and hidden admin actions; preferences persist theme/language.
-**Prompt**: /tasks/planned/WP02-identity-and-config-pages.md
+**Prompt**: /tasks/done/WP02-identity-and-config-pages.md
 
 ### Included Subtasks
-- [ ] T006
-- [ ] T007
-- [ ] T008
-- [ ] T009
-- [ ] T010
-- [ ] T011
-- [ ] T012
-- [ ] T013
-- [ ] T014
-- [ ] T015
+- [x] T006
+- [x] T007
+- [x] T008
+- [x] T009
+- [x] T010
+- [x] T011
+- [x] T012
+- [x] T013
+- [x] T014
+- [x] T015
 
 ### Implementation Sketch
 - Build list/detail pages for organisations/projects with context headers and query-driven filters.

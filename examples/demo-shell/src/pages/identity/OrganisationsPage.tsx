@@ -10,10 +10,8 @@ import {
   Table,
   Alert,
 } from '@django-core/design-system';
-import { useQueryParams } from '../../hooks/useQueryParams';
 import {
   Organisation,
-  ApiResponse,
   ListResponse,
 } from '../../types';
 

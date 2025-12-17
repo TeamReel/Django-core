@@ -5,7 +5,7 @@
  * Configurable interval, error handling, and automatic unmount cleanup.
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 
 /**
  * Options for the usePolling hook
@@ -17,53 +17,109 @@ export interface UsePollingOptions {
   enabled?: boolean;
   /** Callback to execute on error (default: logs to console) */
   onError?: (error: Error) => void;
+  /** LocalStorage key for caching data (optional) */
+  key?: string;
+  /** Dependencies array for useEffect (optional) */
+  dependencies?: unknown[];
 }
 
 /**
- * Custom hook for periodic polling with cleanup
+ * Return type for the usePolling hook with data fetching
+ */
+export interface UsePollingResult<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<T | undefined>;
+  start: () => void;
+  stop: () => void;
+  isPolling: () => boolean;
+}
+
+/**
+ * Custom hook for periodic polling with cleanup and data fetching
  *
- * @param callback - Function to execute on each poll interval
+ * @param url - URL to fetch from
  * @param options - Configuration options
  *
  * @example
- * // Simple polling
- * usePolling(() => {
- *   fetchLatestData();
- * }, { interval: 30000 });
- *
- * @example
- * // With control and error handling
- * const { start, stop, isPolling } = usePolling(
- *   async () => {
- *     const data = await fetchData();
- *     updateUI(data);
- *   },
- *   {
- *     interval: 30000,
- *     enabled: false,
- *     onError: (error) => console.error('Polling failed:', error)
- *   }
+ * // Fetch data every 30 seconds
+ * const { data, loading, error } = usePolling<ObservabilityMetrics>(
+ *   '/api/observability/metrics/',
+ *   { interval: 30000 }
  * );
- *
- * // Start manually
- * useEffect(() => {
- *   if (shouldPoll) {
- *     start();
- *   }
- * }, [shouldPoll, start]);
  */
-export function usePolling(
-  callback: () => void | Promise<void>,
+export function usePolling<T = unknown>(
+  url: string,
   options: UsePollingOptions = {}
-) {
+): UsePollingResult<T> {
   const {
     interval = 30000, // 30 seconds default
     enabled = true,
     onError = (error: Error) => console.error('Polling error:', error),
+    key,
+    dependencies = [],
   } = options;
+
+  const [data, setData] = useState<T | null>(() => {
+    if (key) {
+      try {
+        const cached = localStorage.getItem(key);
+        return cached ? JSON.parse(cached) : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const intervalIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPollingRef = useRef<boolean>(enabled);
+
+  /**
+   * Fetch data from URL
+   */
+  const fetchData = useCallback(async (): Promise<T | undefined> => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const result: T = await response.json();
+      setData(result);
+
+      if (key) {
+        try {
+          localStorage.setItem(key, JSON.stringify(result));
+        } catch {
+          // ignore localStorage errors
+        }
+      }
+
+      return result;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to fetch data';
+      setError(errorMsg);
+      onError(err instanceof Error ? err : new Error(errorMsg));
+      return undefined;
+    } finally {
+      setLoading(false);
+    }
+  }, [url, key, onError]);
 
   /**
    * Start polling
@@ -76,34 +132,17 @@ export function usePolling(
 
     isPollingRef.current = true;
 
-    // Execute callback immediately on start
-    try {
-      const result = callback();
-      // Handle async callbacks
-      if (result && typeof result === 'object' && 'catch' in result) {
-        (result as Promise<void>).catch(onError);
-      }
-    } catch (error) {
-      onError(error instanceof Error ? error : new Error(String(error)));
-    }
+    // Execute fetch immediately on start
+    fetchData();
 
     // Set up recurring interval
     intervalIdRef.current = setInterval(() => {
       if (!isPollingRef.current) {
         return;
       }
-
-      try {
-        const result = callback();
-        // Handle async callbacks
-        if (result && typeof result === 'object' && 'catch' in result) {
-          (result as Promise<void>).catch(onError);
-        }
-      } catch (error) {
-        onError(error instanceof Error ? error : new Error(String(error)));
-      }
+      fetchData();
     }, interval);
-  }, [callback, interval, onError]);
+  }, [fetchData, interval]);
 
   /**
    * Stop polling
@@ -134,13 +173,15 @@ export function usePolling(
     return () => {
       stop();
     };
-  }, [enabled, start, stop]);
+  }, [enabled, start, stop, ...dependencies]);
 
   return {
+    data,
+    loading,
+    error,
+    refetch: fetchData,
     start,
     stop,
     isPolling,
   };
 }
-
-export default usePolling;
