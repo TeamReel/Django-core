@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "31232"
 ---
@@ -46,3 +46,4 @@ Build deterministic, realistic seed data for demo mode: 5 orgs, 20 users, 80 pro
 ## Activity Log
 
 - 2025-12-17T10:58:59Z – claude – shell_pid=31232 – lane=doing – Started seed data generation implementation
+- 2025-12-17T11:10:00Z – claude – shell_pid=31232 – lane=for_review – Completed T001-T008 implementation (commit e44e0dbb)
