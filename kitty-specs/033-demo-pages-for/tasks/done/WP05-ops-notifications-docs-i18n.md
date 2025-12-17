@@ -9,7 +9,7 @@ subtasks:
 title: "Ops, Notifications, Docs, i18n"
 phase: "Phase 3 - Ops & Docs"
 lane: "done"
-assignee: ""
+assignee: "GitHub Copilot"
 agent: "GitHub Copilot"
 shell_pid: "31680"
 review_status: ""

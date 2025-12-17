@@ -167,13 +167,13 @@ description: "Work packages for 033-demo-pages-for"
 **Prompt**: /tasks/planned/WP04-frontend-showcase.md
 
 ### Included Subtasks
-- [ ] T022
-- [ ] T023
-- [ ] T024
-- [ ] T025
-- [ ] T026
-- [ ] T027
-- [ ] T028
+- [x] T022
+- [x] T023
+- [x] T024
+- [x] T025
+- [x] T026
+- [x] T027
+- [x] T028
 
 ### Implementation Sketch
 - Build gallery pages for design system, auth flows, context switcher demo, resource meters, templates, theme previews, and integration patterns.
@@ -197,11 +197,11 @@ description: "Work packages for 033-demo-pages-for"
 **Prompt**: /tasks/planned/WP05-ops-notifications-docs-i18n.md
 
 ### Included Subtasks
-- [ ] T029
-- [ ] T030
-- [ ] T031
-- [ ] T032
-- [ ] T033
+- [x] T029
+- [x] T030
+- [x] T031
+- [x] T032
+- [x] T033
 
 ### Implementation Sketch
 - Build tasks monitor with retry action; notifications list with mark-read and filtering.
@@ -252,14 +252,14 @@ description: "Work packages for 033-demo-pages-for"
 **Prompt**: /tasks/planned/WP07-e2e-and-performance.md
 
 ### Included Subtasks
-- [ ] T037
-- [ ] T038
-- [ ] T039
-- [ ] T040
-- [ ] T041
-- [ ] T042
-- [ ] T043
-- [ ] T044
+- [x] T037
+- [x] T038
+- [x] T039
+- [x] T040
+- [x] T041
+- [x] T042
+- [x] T043
+- [x] T044
 
 ### Implementation Sketch
 - Add shared fixtures for auth/context; write grouped test suites per page category plus chart-specific checks.

@@ -7,7 +7,7 @@ subtasks:
 title: "Charting Integration"
 phase: "Phase 4 - Charts"
 lane: "done"
-assignee: ""
+assignee: "GitHub Copilot"
 agent: "claude-reviewer"
 shell_pid: "10256"
 review_status: "approved without changes"
