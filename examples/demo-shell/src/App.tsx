@@ -2,19 +2,27 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import OrganisationListPage from './pages/organisations/OrganisationListPage';
-import OrganisationDetailPage from './pages/organisations/OrganisationDetailPage';
-import ProjectListPage from './pages/projects/ProjectListPage';
-import ProjectDetailPage from './pages/projects/ProjectDetailPage';
-import ResourcesPage from './pages/resources/ResourcesPage';
-import SettingsPage from './pages/SettingsPage';
-import NotificationsPage from './pages/NotificationsPage';
-import IntegrationStatusPage from './pages/IntegrationStatusPage';
 import ForbiddenPage from './pages/errors/ForbiddenPage';
 import NotFoundPage from './pages/errors/NotFoundPage';
-import HealthStatusPage from './pages/status/HealthStatusPage';
-import PermissionsStatusPage from './pages/status/PermissionsStatusPage';
 import LoadingState from './components/LoadingState';
+
+// Identity pages
+import {
+  OrganisationsPage,
+  OrganisationDetailPage,
+  ProjectsPage,
+  ProjectDetailPage,
+  PermissionsPage,
+  ProfilePage,
+} from './pages/identity';
+
+// Config pages
+import {
+  AuditLogPage,
+  FeatureFlagsPage,
+  CreditsPage,
+  PreferencesPage,
+} from './pages/config';
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -55,11 +63,12 @@ export default function App() {
         }
       />
 
+      {/* Identity routes */}
       <Route
         path="/organisations"
         element={
           <ProtectedRoute>
-            <OrganisationListPage />
+            <OrganisationsPage />
           </ProtectedRoute>
         }
       />
@@ -74,16 +83,16 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:orgId/projects"
+        path="/projects"
         element={
           <ProtectedRoute>
-            <ProjectListPage />
+            <ProjectsPage />
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/organisations/:orgId/projects/:projectId"
+        path="/projects/:id"
         element={
           <ProtectedRoute>
             <ProjectDetailPage />
@@ -92,56 +101,56 @@ export default function App() {
       />
 
       <Route
-        path="/resources"
+        path="/permissions"
         element={
           <ProtectedRoute>
-            <ResourcesPage />
+            <PermissionsPage />
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/settings"
+        path="/profile"
         element={
           <ProtectedRoute>
-            <SettingsPage />
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Config routes */}
+      <Route
+        path="/audit"
+        element={
+          <ProtectedRoute>
+            <AuditLogPage />
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/notifications"
+        path="/flags"
         element={
           <ProtectedRoute>
-            <NotificationsPage />
+            <FeatureFlagsPage />
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/integration-status"
+        path="/credits"
         element={
           <ProtectedRoute>
-            <IntegrationStatusPage />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Status pages (dev/debug) */}
-      <Route
-        path="/status/health"
-        element={
-          <ProtectedRoute>
-            <HealthStatusPage />
+            <CreditsPage />
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/status/permissions"
+        path="/preferences"
         element={
           <ProtectedRoute>
-            <PermissionsStatusPage />
+            <PreferencesPage />
           </ProtectedRoute>
         }
       />
