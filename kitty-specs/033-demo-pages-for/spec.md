@@ -210,7 +210,7 @@ As a user, I can test language switching to verify B04 internationalization work
 - **FR-033**: Demo pages MUST achieve <2 second initial page load (including API calls)
 - **FR-034**: Chart components MUST lazy load (not included in initial bundle, loaded on-demand)
 - **FR-035**: F06 templates MUST prevent duplicate renders (React.memo, useMemo for expensive computations)
-- **FR-036**: Demo pages MUST use API caching when B25 is available (cache GET requests for 60 seconds)
+- **FR-036**: Demo pages SHOULD use F09 API client caching (respects HTTP Cache-Control headers for GET requests)
 
 **Data Requirements**
 

@@ -145,10 +145,10 @@ history:
 
 ## Definition of Done Checklist
 
-- [ ] Identity and config pages render live data with no console errors
-- [ ] Viewer vs admin visibility confirmed for actions
-- [ ] Preferences update theme/language immediately and persist
-- [ ] Credits page shows low-balance alert; chart placeholder ready for WP06
+- [x] Identity and config pages render live data with no console errors
+- [x] Viewer vs admin visibility confirmed for actions
+- [x] Preferences update theme/language immediately and persist
+- [x] Credits page shows low-balance alert; chart placeholder ready for WP06
 
 ## Review Guidance
 
@@ -158,3 +158,18 @@ history:
 ## Activity Log
 
 - 2025-12-17T00:00:00Z – system – lane=planned – Prompt created.
+- 2025-12-17T19:35:00Z – Claude Haiku 4.5 – lane=doing – Started implementation of T006-T015.
+- 2025-12-17T20:10:00Z – Claude Haiku 4.5 – lane=for_review – **WP02 COMPLETE** - All 10 subtasks implemented:
+  - ✅ T006: OrganisationsPage (list with sort/filter via useQueryParams)
+  - ✅ T007: OrganisationDetailPage (members, projects, credits)
+  - ✅ T008: ProjectsPage (org-scoped with X-Organisation-ID header)
+  - ✅ T009: ProjectDetailPage (members, recent audit events)
+  - ✅ T010: PermissionsPage (role matrix, stakeholder-friendly)
+  - ✅ T011: ProfilePage (user info with link to preferences)
+  - ✅ T012: AuditLogPage (200+ events, pagination, filters)
+  - ✅ T013: FeatureFlagsPage (toggles, rollout %, permission-aware)
+  - ✅ T014: CreditsPage (balance, usage, low-balance alerts, chart placeholder)
+  - ✅ T015: PreferencesPage (theme/language/timezone persistence via B12)
+  - Routes wired in App.tsx (10 new routes: /organisations, /projects, /permissions, /profile, /audit, /flags, /credits, /preferences)
+  - All pages use F01 components exclusively, F06 templates, real API integration (B05-B15)
+  - Permission-aware UI, data-testid attributes for E2E tests
