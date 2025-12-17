@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "31232"
+---
 # WP02: Commands, Validation, Tests & Observability
 
 ## Objective
@@ -31,3 +36,7 @@ Implement validate and reset commands plus test coverage and logging/JSON output
 
 ## Notes
 - Align output schema with WP01 summary fields to avoid duplication.
+
+## Activity Log
+
+- 2025-12-17T11:50:48Z – claude – shell_pid=31232 – lane=doing – Started implementation of validate_demo_data and reset_demo_data commands with test coverage
