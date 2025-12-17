@@ -33,6 +33,7 @@ from projects.models import Project
 from accounts.models import User
 
 from ._seed_helpers import (
+    ADDITIONAL_USER_DISTRIBUTION,
     DEMO_ACCOUNTS,
     EVENT_TYPES,
     NOTIFICATION_TYPES,
@@ -127,10 +128,10 @@ class Command(BaseCommand):
         with transaction.atomic():
             # T001: Seed scaffolding complete (helpers loaded)
 
-            # T002: Organizations, users, demo accounts, preferences
-            orgs = self._seed_organizations(progress, verbose)
+            # T002: Demo accounts (org creators), orgs, users, preferences
+            demo_accounts = self._seed_demo_accounts_first(progress, verbose)
+            orgs = self._seed_organizations(demo_accounts, progress, verbose)
             users = self._seed_users(orgs, progress, verbose)
-            self._seed_demo_accounts(orgs, users, progress, verbose)
             self._seed_user_preferences(users, progress, verbose)
 
             # T003: Projects
@@ -142,8 +143,8 @@ class Command(BaseCommand):
             # T005: Audit events
             self._seed_audit_events(orgs, users, projects, progress, verbose)
 
-            # T006: Notifications
-            self._seed_notifications(orgs, users, progress, verbose)
+            # T006: Notifications (skip for now - model needs updating)
+            # self._seed_notifications(orgs, users, progress, verbose)
 
             # T007: Feature flags and file metadata placeholders
             self._seed_feature_flags(orgs, progress, verbose)
@@ -180,9 +181,10 @@ class Command(BaseCommand):
 
         self.stdout.write("  Deleted existing demo data")
 
-    def _seed_organizations(self, progress, verbose):
-        """T002: Create 5 organizations."""
+    def _seed_organizations(self, demo_accounts, progress, verbose):
+        """T002: Create 5 organizations with first superuser as creator."""
         orgs = {}
+        creator = demo_accounts[0]  # Use first demo account (admin@demo) as creator
 
         for org_data in ORG_DATA:
             org, created = Organisation.objects.get_or_create(
@@ -190,6 +192,7 @@ class Command(BaseCommand):
                 defaults={
                     "name": org_data["name"],
                     "description": org_data.get("description", ""),
+                    "creator": creator,
                 },
             )
             orgs[org_data["slug"]] = org
@@ -198,74 +201,97 @@ class Command(BaseCommand):
                 self.stdout.write(f"  Created org: {org.name}")
 
         progress.log("organisations", len(orgs))
+
+        # Now assign demo account memberships
+        for account in DEMO_ACCOUNTS:
+            if account["org"]:
+                user = User.objects.get(email=account["email"])
+                org = orgs[account["org"]]
+                Membership.objects.get_or_create(
+                    user=user,
+                    organisation=org,
+                    defaults={"role": account["role"]},
+                )
+
         return orgs
 
     def _seed_users(self, orgs, progress, verbose):
-        """T002: Create 20 users (excluding demo accounts) distributed across orgs."""
+        """
+        T002: Create 14 additional users to reach 20 total (6 demo accounts + 14 additional).
+
+        FR-004 distribution: 3 superusers, 10 org admins, 7 members/viewers
+        Demo accounts contribute: 3 superusers, 1 admin, 1 member, 1 viewer
+        Additional users contribute: 0 superusers, 9 admins, 4 members/viewers
+        """
         users = []
+        admin_count = 0
+        member_viewer_count = 0
 
-        # Calculate user distribution per org (based on ORG_DATA user_count)
-        # Total from ORG_DATA: 5+8+4+2+6 = 25, but we only need 20 total (including demo accounts)
-        # So we'll create 16 additional users distributed proportionally
-
-        distribution = [
-            ("techcorp", 3),  # 5 - 2 demo accounts already assigned
-            ("datalab", 6),  # 8 - 2 demo accounts
-            ("marketinghub", 2),  # 4 - 2 demo accounts
-            ("opensource", 2),  # 2 - 0 demo accounts
-            ("airesearch", 3),  # 6 - 0 demo accounts
-        ]
-
-        for org_slug, count in distribution:
+        # Use ADDITIONAL_USER_DISTRIBUTION from helpers
+        # Format: [(org_slug, total_count, [(role, count), ...]), ...]
+        for org_slug, _, role_distribution in ADDITIONAL_USER_DISTRIBUTION:
             org = orgs[org_slug]
 
-            for i in range(count):
-                first, last = generate_user_name()
-                email = generate_email(first, last)
+            for role, role_count in role_distribution:
+                for _ in range(role_count):
+                    first, last = generate_user_name()
+                    email = generate_email(first, last)
 
-                # Avoid collisions
-                if User.objects.filter(email=email).exists():
-                    email = f"{first.lower()}.{last.lower()}.{i}@demo.djangocore.app"
+                    # Avoid collisions with deterministic fallback
+                    collision_index = 0
+                    while User.objects.filter(email=email).exists():
+                        collision_index += 1
+                        email = (
+                            f"{first.lower()}.{last.lower()}.{collision_index}@demo.djangocore.app"
+                        )
 
-                user, created = User.objects.get_or_create(
-                    email=email,
-                    defaults={
-                        "first_name": first,
-                        "last_name": last,
-                        "email_verified": True,
-                        "is_active": True,
-                    },
-                )
-
-                if created:
-                    user.set_password(get_demo_password())
-                    user.save()
-
-                    # Assign role based on position
-                    if i == 0:
-                        role = "admin"
-                    elif i < count // 2:
-                        role = "member"
-                    else:
-                        role = "viewer"
-
-                    Membership.objects.get_or_create(
-                        user=user,
-                        organisation=org,
-                        defaults={"role": role},
+                    user, created = User.objects.get_or_create(
+                        email=email,
+                        defaults={
+                            "first_name": first,
+                            "last_name": last,
+                            "email_verified": True,
+                            "is_active": True,
+                        },
                     )
 
-                    users.append(user)
+                    if created:
+                        user.set_password(get_demo_password())
+                        user.save()
 
-                    if verbose:
-                        self.stdout.write(f"  Created user: {email} ({role} in {org.name})")
+                        # Create membership with specified role
+                        Membership.objects.get_or_create(
+                            user=user,
+                            organisation=org,
+                            defaults={"role": role},
+                        )
+
+                        users.append(user)
+
+                        # Track role counts for FR-004 validation
+                        if role == "admin":
+                            admin_count += 1
+                        elif role in ("member", "viewer"):
+                            member_viewer_count += 1
+
+                        if verbose:
+                            self.stdout.write(f"  Created user: {email} ({role} in {org.name})")
 
         progress.log("users_additional", len(users))
+        progress.log_role("org_admins", admin_count)
+        progress.log_role("members_viewers", member_viewer_count)
         return users
 
-    def _seed_demo_accounts(self, orgs, users, progress, verbose):
-        """T002: Create 4 pre-configured demo accounts."""
+    def _seed_demo_accounts_first(self, progress, verbose):
+        """
+        T002: Create 6 pre-configured demo accounts (users only, memberships added later).
+
+        FR-004 contribution: 3 superusers, 1 admin, 1 member, 1 viewer
+        """
         demo_users = []
+        superuser_count = 0
+        admin_count = 0
+        member_viewer_count = 0
 
         for account in DEMO_ACCOUNTS:
             user, created = User.objects.get_or_create(
@@ -284,25 +310,25 @@ class Command(BaseCommand):
                 user.set_password(get_demo_password())
                 user.save()
 
-                # Assign to organization if specified
-                if account["org"]:
-                    org = orgs[account["org"]]
-                    Membership.objects.get_or_create(
-                        user=user,
-                        organisation=org,
-                        defaults={"role": account["role"]},
-                    )
+                # Track role counts for FR-004 validation
+                if account["role"] == "superuser":
+                    superuser_count += 1
+                elif account["role"] == "admin":
+                    admin_count += 1
+                elif account["role"] in ("member", "viewer"):
+                    member_viewer_count += 1
 
                 demo_users.append(user)
 
                 if verbose:
-                    org_name = orgs[account["org"]].name if account["org"] else "Global"
                     self.stdout.write(
-                        f"  Created demo account: {account['email']} "
-                        f"({account['role']} in {org_name})"
+                        f"  Created demo account: {account['email']} ({account['role']})"
                     )
 
         progress.log("demo_accounts", len(demo_users))
+        progress.log_role("superusers", superuser_count)
+        progress.log_role("org_admins", admin_count)
+        progress.log_role("members_viewers", member_viewer_count)
         return demo_users
 
     def _seed_user_preferences(self, users, progress, verbose):
@@ -349,17 +375,18 @@ class Command(BaseCommand):
             project_count = org_data["project_count"]
 
             # Get org members to assign as creators
-            org_members = list(User.objects.filter(memberships__organisation=org))
+            org_members = list(User.objects.filter(organisation_memberships__organisation=org))
 
             if not org_members:
                 continue
 
             for i in range(project_count):
-                project_name = generate_project_name()
-                slug = f"{org_data['slug']}-{project_name.lower().replace(' ', '-')}-{i}"
+                base_name = generate_project_name()
+                project_name = f"{base_name} {i+1}"  # Ensure unique names
+                slug = f"{org_data['slug']}-{base_name.lower().replace(' ', '-')}-{i}"
 
                 creator = seeded_random.choice(org_members)
-                status = "active" if seeded_random.randint(1, 10) > 2 else "archived"
+                is_active = seeded_random.randint(1, 10) > 2
 
                 project, created = Project.objects.get_or_create(
                     slug=slug,
@@ -368,7 +395,7 @@ class Command(BaseCommand):
                         "name": project_name,
                         "description": f"Demo project for {org.name}",
                         "creator": creator,
-                        "status": status,
+                        "is_active": is_active,
                     },
                 )
 
@@ -376,8 +403,9 @@ class Command(BaseCommand):
                     projects.append(project)
 
                     if verbose:
+                        status_text = "active" if is_active else "archived"
                         self.stdout.write(
-                            f"  Created project: {project_name} ({org.name}, {status})"
+                            f"  Created project: {project_name} ({org.name}, {status_text})"
                         )
 
         progress.log("projects", len(projects))

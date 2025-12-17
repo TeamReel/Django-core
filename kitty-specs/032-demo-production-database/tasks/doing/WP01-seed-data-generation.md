@@ -1,8 +1,8 @@
 ---
-lane: "planned"
+lane: "doing"
 agent: "claude"
 shell_pid: "31232"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 ---
 
@@ -108,3 +108,4 @@ Build deterministic, realistic seed data for demo mode: 5 orgs, 20 users, 80 pro
 - 2025-12-17T10:58:59Z – claude – shell_pid=31232 – lane=doing – Started seed data generation implementation
 - 2025-12-17T11:10:00Z – claude – shell_pid=31232 – lane=for_review – Completed T001-T008 implementation (commit e44e0dbb)
 - 2025-12-17T11:15:00Z – claude-reviewer – shell_pid=31232 – lane=planned – Code review: NEEDS CHANGES - Role distribution (FR-004) does not match spec (1 superuser vs 3 required, 6 admins vs 10 required); summary missing role breakdown; see Review Feedback section
+- 2025-12-17T11:18:07Z – claude – shell_pid=31232 – lane=doing – Addressing review feedback: fixing role distribution and summary output

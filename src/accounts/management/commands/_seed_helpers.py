@@ -63,7 +63,9 @@ ORG_DATA = [
     },
 ]
 
-# Demo account definitions (4 pre-configured accounts)
+# Demo account definitions (6 pre-configured accounts)
+# FR-004 requires: 3 superusers, 10 org admins, 7 members/viewers (20 total)
+# These 6 accounts contribute: 3 superusers, 1 admin, 1 member, 1 viewer
 DEMO_ACCOUNTS = [
     {
         "email": "admin@demo.djangocore.app",
@@ -73,11 +75,18 @@ DEMO_ACCOUNTS = [
         "org": None,  # Global access
     },
     {
-        "email": "user@demo.djangocore.app",
-        "first_name": "Regular",
-        "last_name": "User",
-        "role": "member",
-        "org": "techcorp",
+        "email": "superadmin@demo.djangocore.app",
+        "first_name": "Super",
+        "last_name": "Admin",
+        "role": "superuser",
+        "org": None,  # Global access
+    },
+    {
+        "email": "sysadmin@demo.djangocore.app",
+        "first_name": "System",
+        "last_name": "Administrator",
+        "role": "superuser",
+        "org": None,  # Global access
     },
     {
         "email": "manager@demo.djangocore.app",
@@ -87,12 +96,30 @@ DEMO_ACCOUNTS = [
         "org": "datalab",
     },
     {
+        "email": "user@demo.djangocore.app",
+        "first_name": "Regular",
+        "last_name": "User",
+        "role": "member",
+        "org": "techcorp",
+    },
+    {
         "email": "viewer@demo.djangocore.app",
         "first_name": "View",
         "last_name": "Only",
         "role": "viewer",
         "org": "marketinghub",
     },
+]
+
+# Additional user distribution (14 users to reach 20 total)
+# Need: 9 more admins, 5 more members/viewers
+# Distribution across orgs: techcorp(3), datalab(5), marketinghub(2), opensource(2), airesearch(2)
+ADDITIONAL_USER_DISTRIBUTION = [
+    ("techcorp", 3, [("admin", 2), ("member", 1)]),  # 2 admins, 1 member
+    ("datalab", 5, [("admin", 3), ("viewer", 2)]),  # 3 admins, 2 viewers
+    ("marketinghub", 2, [("admin", 2)]),  # 2 admins
+    ("opensource", 2, [("admin", 1), ("viewer", 1)]),  # 1 admin, 1 viewer
+    ("airesearch", 2, [("admin", 1), ("member", 1)]),  # 1 admin, 1 member
 ]
 
 # Realistic first/last names (curated lists, no lorem ipsum)
@@ -348,6 +375,7 @@ class SeedProgress:
     def __init__(self, stdout):
         self.stdout = stdout
         self.counts = {}
+        self.role_counts = {"superusers": 0, "org_admins": 0, "members_viewers": 0}
 
     def log(self, entity: str, count: int, message: str = ""):
         """Log progress for entity."""
@@ -357,9 +385,16 @@ class SeedProgress:
         else:
             self.stdout.write(f"  Created {count} {entity}")
 
+    def log_role(self, role: str, count: int):
+        """Track role distribution (superusers, org_admins, members_viewers)."""
+        if role in self.role_counts:
+            self.role_counts[role] += count
+
     def summary(self) -> dict:
-        """Return summary counts."""
-        return self.counts.copy()
+        """Return summary counts including role breakdown."""
+        result = self.counts.copy()
+        result.update(self.role_counts)
+        return result
 
 
 def get_demo_password() -> str:
