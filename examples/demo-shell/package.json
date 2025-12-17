@@ -24,7 +24,9 @@
     "@django-core/permissions": "workspace:*",
     "@django-core/resource-alerts": "workspace:*",
     "@django-core/theme-system": "workspace:*",
+    "chart.js": "^4.4.0",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0"
   },

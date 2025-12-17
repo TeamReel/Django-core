@@ -36,5 +36,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Keep Chart.js in its own chunk for lazy loading
+          'chartjs-vendor': ['chart.js', 'react-chartjs-2'],
+        },
+      },
+    },
   },
 });

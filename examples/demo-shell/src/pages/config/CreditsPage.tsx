@@ -8,6 +8,8 @@ import {
   Table,
   Button,
 } from '@django-core/design-system';
+import { CreditsChart } from '../../components/CreditsChart';
+import type { CreditsTransaction } from '../../types/chart';
 
 /**
  * T014 - Credits Page
@@ -40,6 +42,15 @@ export const CreditsPage: React.FC = () => {
   const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Convert backend transactions to chart format
+  const chartTransactions: CreditsTransaction[] = transactions.map(tx => ({
+    id: tx.id,
+    date: tx.created_at,
+    amount: tx.amount,
+    type: tx.operation === 'use' ? 'usage' : tx.operation === 'add' ? 'purchase' : 'refund',
+    description: tx.reason,
+  }));
 
   useEffect(() => {
     const fetchCreditsData = async () => {
@@ -235,20 +246,13 @@ export const CreditsPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Chart placeholder */}
-        <Card className="mb-6 bg-gray-50">
+        {/* Usage Chart */}
+        <Card className="mb-6">
           <h3 className="text-lg font-semibold mb-4">Usage Trend (Last 30 Days)</h3>
-          <div
-            className="flex items-center justify-center py-16 text-gray-400 border-2 border-dashed border-gray-300 rounded"
-            data-testid="credits-chart-placeholder"
-          >
-            <div className="text-center">
-              <p className="mb-2">📊 Chart visualization</p>
-              <p className="text-sm">
-                Coming in WP06 - Chart.js integration
-              </p>
-            </div>
-          </div>
+          <CreditsChart
+            transactions={chartTransactions}
+            className="w-full"
+          />
         </Card>
 
         {/* Recent transactions */}

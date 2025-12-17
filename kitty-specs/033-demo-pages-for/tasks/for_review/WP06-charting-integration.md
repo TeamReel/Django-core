@@ -6,7 +6,7 @@ subtasks:
   - "T036"
 title: "Charting Integration"
 phase: "Phase 4 - Charts"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "42088"
@@ -100,3 +100,10 @@ history:
 
 - 2025-12-17T00:00:00Z – system – lane=planned – Prompt created.
 - 2025-12-17T20:26:57Z – claude – shell_pid=42088 – lane=doing – Started implementation
+- 2025-12-17T21:35:00Z – claude – shell_pid=42088 – lane=doing – Completed implementation:
+  - T034: Added Chart.js v4.4.0 and react-chartjs-2 v5.2.0 dependencies with lazy loading infrastructure
+  - T035: Integrated credits usage chart into CreditsPage with 30-day trend visualization
+  - T036: Added observability charts (response time line, error rate bar, connections gauge) with 30s polling
+  - Verified code-splitting: Chart.js chunk is 74.93KB gzipped (under 100KB target)
+  - All charts respect F07 theme colors and load within performance targets
+- 2025-12-17T21:37:00Z – claude – shell_pid=42088 – lane=for_review – Ready for review

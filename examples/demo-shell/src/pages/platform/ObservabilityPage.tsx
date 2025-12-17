@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   PageHeader,
   PageContent,
@@ -8,6 +8,8 @@ import {
   Alert,
 } from '@django-core/design-system';
 import { usePolling } from '../../hooks/usePolling';
+import { ObservabilityCharts } from '../../components/ObservabilityCharts';
+import type { ObservabilityMetrics } from '../../types/chart';
 
 /**
  * T019 - Observability Page
@@ -19,7 +21,7 @@ import { usePolling } from '../../hooks/usePolling';
  * - Manual refresh button
  */
 
-interface ObservabilityMetrics {
+interface BackendObservabilityMetrics {
   timestamp: string;
   response_time_p99?: number;
   response_time_p95?: number;
@@ -33,8 +35,10 @@ interface ObservabilityMetrics {
 
 export const ObservabilityPage: React.FC = () => {
   const [manualRefresh, setManualRefresh] = useState(0);
+  const [metricsHistory, setMetricsHistory] = useState<ObservabilityMetrics[]>([]);
+  const historyRef = useRef<ObservabilityMetrics[]>([]);
 
-  const { data: metrics, loading, error, refetch } = usePolling<ObservabilityMetrics>(
+  const { data: backendMetrics, loading, error, refetch } = usePolling<BackendObservabilityMetrics>(
     '/api/observability/metrics/',
     {
       interval: 30000,
@@ -42,6 +46,29 @@ export const ObservabilityPage: React.FC = () => {
       dependencies: [manualRefresh],
     }
   );
+
+  // Convert backend metrics to chart format
+  const currentMetrics: ObservabilityMetrics | null = backendMetrics ? {
+    timestamp: Date.now(),
+    responseTime: {
+      p50: backendMetrics.response_time_median || 0,
+      p95: backendMetrics.response_time_p95 || 0,
+      p99: backendMetrics.response_time_p99 || 0,
+    },
+    errorRate: (backendMetrics.error_rate_4xx || 0) + (backendMetrics.error_rate_5xx || 0),
+    activeConnections: backendMetrics.active_connections || 0,
+  } : null;
+
+  // Update metrics history when new data arrives
+  useEffect(() => {
+    if (currentMetrics) {
+      const newHistory = [...historyRef.current, currentMetrics];
+      // Keep only last 20 data points
+      const trimmedHistory = newHistory.slice(-20);
+      historyRef.current = trimmedHistory;
+      setMetricsHistory(trimmedHistory);
+    }
+  }, [currentMetrics]);
 
   const handleManualRefresh = async () => {
     setManualRefresh(prev => prev + 1);
@@ -68,8 +95,8 @@ export const ObservabilityPage: React.FC = () => {
     );
   }
 
-  const lastUpdated = metrics?.timestamp
-    ? new Date(metrics.timestamp).toLocaleTimeString()
+  const lastUpdated = backendMetrics?.timestamp
+    ? new Date(backendMetrics.timestamp).toLocaleTimeString()
     : 'Never';
 
   return (
@@ -102,8 +129,19 @@ export const ObservabilityPage: React.FC = () => {
           </div>
         </Card>
 
-        {metrics && (
+        {backendMetrics && (
           <>
+            {/* Charts Section */}
+            <Card className="mb-6" data-testid="observability-charts">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Metrics Visualization</h3>
+                <ObservabilityCharts
+                  metricsHistory={metricsHistory}
+                  currentMetrics={currentMetrics}
+                />
+              </div>
+            </Card>
+
             <Card data-testid="latency-metrics" className="mb-4">
               <div className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Response Latency</h3>
@@ -111,21 +149,21 @@ export const ObservabilityPage: React.FC = () => {
                   <div className="p-4 border rounded-lg bg-gray-50">
                     <div className="text-sm text-gray-600">p99 Latency</div>
                     <div className="text-2xl font-bold text-red-600 mt-2">
-                      {metrics.response_time_p99?.toFixed(0) || 'N/A'}
+                      {backendMetrics.response_time_p99?.toFixed(0) || 'N/A'}
                       <span className="text-sm font-normal text-gray-600">ms</span>
                     </div>
                   </div>
                   <div className="p-4 border rounded-lg bg-gray-50">
                     <div className="text-sm text-gray-600">p95 Latency</div>
                     <div className="text-2xl font-bold text-orange-600 mt-2">
-                      {metrics.response_time_p95?.toFixed(0) || 'N/A'}
+                      {backendMetrics.response_time_p95?.toFixed(0) || 'N/A'}
                       <span className="text-sm font-normal text-gray-600">ms</span>
                     </div>
                   </div>
                   <div className="p-4 border rounded-lg bg-gray-50">
                     <div className="text-sm text-gray-600">Median Latency</div>
                     <div className="text-2xl font-bold text-green-600 mt-2">
-                      {metrics.response_time_median?.toFixed(0) || 'N/A'}
+                      {backendMetrics.response_time_median?.toFixed(0) || 'N/A'}
                       <span className="text-sm font-normal text-gray-600">ms</span>
                     </div>
                   </div>
@@ -141,9 +179,9 @@ export const ObservabilityPage: React.FC = () => {
                     <div className="text-sm text-gray-600">4xx Error Rate</div>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="text-2xl font-bold text-yellow-600">
-                        {metrics.error_rate_4xx?.toFixed(2) || 'N/A'}%
+                        {backendMetrics.error_rate_4xx?.toFixed(2) || 'N/A'}%
                       </div>
-                      {metrics.error_rate_4xx && metrics.error_rate_4xx > 5 && (
+                      {backendMetrics.error_rate_4xx && backendMetrics.error_rate_4xx > 5 && (
                         <Badge type="warning">Elevated</Badge>
                       )}
                     </div>
@@ -152,9 +190,9 @@ export const ObservabilityPage: React.FC = () => {
                     <div className="text-sm text-gray-600">5xx Error Rate</div>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="text-2xl font-bold text-red-600">
-                        {metrics.error_rate_5xx?.toFixed(2) || 'N/A'}%
+                        {backendMetrics.error_rate_5xx?.toFixed(2) || 'N/A'}%
                       </div>
-                      {metrics.error_rate_5xx && metrics.error_rate_5xx > 1 && (
+                      {backendMetrics.error_rate_5xx && backendMetrics.error_rate_5xx > 1 && (
                         <Badge type="error">Critical</Badge>
                       )}
                     </div>
@@ -170,20 +208,20 @@ export const ObservabilityPage: React.FC = () => {
                   <div className="p-4 border rounded-lg bg-gray-50">
                     <div className="text-sm text-gray-600">Active Connections</div>
                     <div className="text-2xl font-bold text-blue-600 mt-2">
-                      {metrics.active_connections || 'N/A'}
+                      {backendMetrics.active_connections || 'N/A'}
                     </div>
                   </div>
                   <div className="p-4 border rounded-lg bg-gray-50">
                     <div className="text-sm text-gray-600">Database Latency</div>
                     <div className="text-2xl font-bold text-green-600 mt-2">
-                      {metrics.database_latency?.toFixed(1) || 'N/A'}
+                      {backendMetrics.database_latency?.toFixed(1) || 'N/A'}
                       <span className="text-sm font-normal text-gray-600">ms</span>
                     </div>
                   </div>
                   <div className="p-4 border rounded-lg bg-gray-50">
                     <div className="text-sm text-gray-600">Cache Hit Ratio</div>
                     <div className="text-2xl font-bold text-purple-600 mt-2">
-                      {metrics.cache_hit_ratio?.toFixed(1) || 'N/A'}%
+                      {backendMetrics.cache_hit_ratio?.toFixed(1) || 'N/A'}%
                     </div>
                   </div>
                 </div>
@@ -192,7 +230,7 @@ export const ObservabilityPage: React.FC = () => {
           </>
         )}
 
-        {loading && !metrics && (
+        {loading && !backendMetrics && (
           <Card>
             <div className="text-center py-8 text-gray-500">
               Loading observability metrics...
