@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, HTMLAttributes } from 'react';
 
 export interface BreadcrumbItem {
   label: string;
@@ -6,12 +6,11 @@ export interface BreadcrumbItem {
   current?: boolean;
 }
 
-export interface PageHeaderProps {
+export interface PageHeaderProps extends HTMLAttributes<HTMLDivElement> {
   title: string;
   subtitle?: string;
   breadcrumbs?: BreadcrumbItem[];
   actions?: ReactNode;
-  [key: string]: any;
 }
 
 /**

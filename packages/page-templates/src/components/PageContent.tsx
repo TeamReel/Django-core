@@ -1,8 +1,7 @@
-import { ReactNode } from 'react';
+import { ReactNode, HTMLAttributes } from 'react';
 
-export interface PageContentProps {
+export interface PageContentProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
-  [key: string]: any;
 }
 
 /**
