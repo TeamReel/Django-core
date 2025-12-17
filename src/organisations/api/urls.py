@@ -43,17 +43,17 @@ urlpatterns = router.urls + [
         name="organisation-projects-list",
     ),
     path(
-        "<uuid:organisation_id>/projects/<uuid:id>/",
+        "<uuid:organisation_id>/projects/<int:id>/",
         projects_detail,
         name="organisation-projects-detail",
     ),
     path(
-        "<uuid:organisation_id>/projects/<uuid:id>/archive/",
+        "<uuid:organisation_id>/projects/<int:id>/archive/",
         projects_archive,
         name="organisation-projects-archive",
     ),
     path(
-        "<uuid:organisation_id>/projects/<uuid:id>/restore/",
+        "<uuid:organisation_id>/projects/<int:id>/restore/",
         projects_restore,
         name="organisation-projects-restore",
     ),

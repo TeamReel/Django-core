@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third-party apps
+    "corsheaders",  # CORS headers for frontend dev
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",  # B13: JWT token blacklist
     "drf_spectacular",  # B13: OpenAPI documentation
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Must be first
+    "corsheaders.middleware.CorsMiddleware",  # CORS - must be before CommonMiddleware
     "observability.middleware.CorrelationIDMiddleware",  # WP02: Correlation ID extraction/generation
     "observability.middleware.HTTPMetricsMiddleware",  # WP03: HTTP request metrics (T038)
     "django.middleware.security.SecurityMiddleware",
@@ -64,6 +66,7 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",  # Language detection and activation
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "config.middleware.csrf.EnsureCSRFCookieMiddleware",  # Ensure CSRF cookie for SPA
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "i18n_preferences.middleware.PreferenceLocaleMiddleware",  # B12: User/org language activation
     "i18n_preferences.middleware.PreferenceTimezoneMiddleware",  # B12: User/org timezone activation
@@ -153,6 +156,14 @@ SESSION_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
 
 # Custom: Inactive timeout enforced via middleware (24 hours)
 SESSION_INACTIVITY_TIMEOUT = 86400  # 24 hours in seconds
+
+# CSRF Configuration
+# Ensure CSRF cookie is sent with every response for SPA compatibility
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF token
+CSRF_COOKIE_SAMESITE = "Lax"  # CSRF protection
+CSRF_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
+CSRF_USE_SESSIONS = False  # Use cookie-based CSRF tokens (not session)
+CSRF_COOKIE_NAME = "csrftoken"  # Default cookie name
 
 
 # Internationalization and Localization
@@ -357,53 +368,59 @@ OBSERVABILITY_HEALTH_CHECKS_ENABLED = True  # Enable /health/live and /health/re
 
 # Structured Logging (WP02)
 OBSERVABILITY_LOGGING_JSON = os.getenv("OBSERVABILITY_LOGGING_JSON", "true").lower() == "true"
-OBSERVABILITY_PII_REDACTION_ENABLED = os.getenv("OBSERVABILITY_PII_REDACTION_ENABLED", "true").lower() == "true"
+OBSERVABILITY_PII_REDACTION_ENABLED = (
+    os.getenv("OBSERVABILITY_PII_REDACTION_ENABLED", "true").lower() == "true"
+)
 
 # Metrics (WP03 - T043)
 OBSERVABILITY_METRICS_ENABLED = os.getenv("OBSERVABILITY_METRICS_ENABLED", "true").lower() == "true"
-OBSERVABILITY_METRICS_EXPORTER = os.getenv("OBSERVABILITY_METRICS_EXPORTER", "prometheus")  # Options: prometheus, statsd
+OBSERVABILITY_METRICS_EXPORTER = os.getenv(
+    "OBSERVABILITY_METRICS_EXPORTER", "prometheus"
+)  # Options: prometheus, statsd
 
 # Logging Configuration (T023-T025)
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'json': {
-            '()': 'observability.logging.JSONFormatter',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "()": "observability.logging.JSONFormatter",
         },
-        'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        "standard": {"format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"},
+    },
+    "filters": {
+        "correlation_id": {
+            "()": "observability.logging.CorrelationIDFilter",
+        },
+        "pii_redaction": {
+            "()": "observability.logging.PIIRedactionFilter",
         },
     },
-    'filters': {
-        'correlation_id': {
-            '()': 'observability.logging.CorrelationIDFilter',
-        },
-        'pii_redaction': {
-            '()': 'observability.logging.PIIRedactionFilter',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'json' if OBSERVABILITY_LOGGING_JSON else 'standard',
-            'filters': ['correlation_id', 'pii_redaction'] if OBSERVABILITY_PII_REDACTION_ENABLED else ['correlation_id'],
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json" if OBSERVABILITY_LOGGING_JSON else "standard",
+            "filters": (
+                ["correlation_id", "pii_redaction"]
+                if OBSERVABILITY_PII_REDACTION_ENABLED
+                else ["correlation_id"]
+            ),
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': os.getenv('LOG_LEVEL', 'INFO'),
+    "root": {
+        "handlers": ["console"],
+        "level": os.getenv("LOG_LEVEL", "INFO"),
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': os.getenv('SQL_LOG_LEVEL', 'WARNING'),
-            'propagate': False,
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": os.getenv("SQL_LOG_LEVEL", "WARNING"),
+            "propagate": False,
         },
     },
 }

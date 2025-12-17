@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useContextSwitcher } from '@django-core/context-switcher';
 import { DefaultEmpty } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 
@@ -15,12 +14,11 @@ export default function OrganisationListPage() {
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { switchContext } = useContextSwitcher();
 
   useEffect(() => {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-    
-    fetch(`${apiBaseUrl}/api/organisations/`, {
+
+    fetch(`${apiBaseUrl}/api/v1/organisations/`, {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -31,7 +29,21 @@ export default function OrganisationListPage() {
         return res.json();
       })
       .then(data => {
-        setOrganisations(data);
+        console.log('Organisations API response:', data);
+        // Handle various API response formats:
+        // 1. Array directly: [...]
+        // 2. B13 envelope: { data: [...] }
+        // 3. DRF pagination: { results: [...] }
+        let orgs = [];
+        if (Array.isArray(data)) {
+          orgs = data;
+        } else if (Array.isArray(data.data)) {
+          orgs = data.data;
+        } else if (Array.isArray(data.results)) {
+          orgs = data.results;
+        }
+
+        setOrganisations(orgs);
         setIsLoading(false);
       })
       .catch(err => {
@@ -40,9 +52,7 @@ export default function OrganisationListPage() {
       });
   }, []);
 
-  const handleSelectOrg = async (org: Organisation) => {
-    await switchContext(org);
-  };
+  // Context will be set automatically by OrganisationDetailPage after navigation
 
   return (
     <AppShell>
@@ -53,11 +63,11 @@ export default function OrganisationListPage() {
         {isLoading && <p>Loading organisations...</p>}
 
         {error && (
-          <div style={{ 
-            padding: '12px', 
-            backgroundColor: '#fee', 
-            border: '1px solid #fcc', 
-            borderRadius: '4px', 
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#fee',
+            border: '1px solid #fcc',
+            borderRadius: '4px',
             color: '#c00',
             marginBottom: '16px'
           }}>
@@ -66,16 +76,16 @@ export default function OrganisationListPage() {
         )}
 
         {!isLoading && !error && organisations.length === 0 && (
-          <DefaultEmpty 
+          <DefaultEmpty
             title="No organisations found"
             message="You don't have access to any organisations yet. Contact your administrator to get started."
           />
         )}
 
-        <div style={{ 
-          display: 'grid', 
-          gap: '20px', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' 
+        <div style={{
+          display: 'grid',
+          gap: '20px',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
         }}>
           {organisations.map(org => (
             <div
@@ -94,8 +104,7 @@ export default function OrganisationListPage() {
               )}
               <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                 <Link
-                  to={`/organisations/${org.slug}`}
-                  onClick={() => handleSelectOrg(org)}
+                  to={`/organisations/${org.id}`}
                   style={{
                     padding: '8px 16px',
                     backgroundColor: '#007bff',
@@ -108,8 +117,7 @@ export default function OrganisationListPage() {
                   View Details
                 </Link>
                 <Link
-                  to={`/organisations/${org.slug}/projects`}
-                  onClick={() => handleSelectOrg(org)}
+                  to={`/organisations/${org.id}/projects`}
                   style={{
                     padding: '8px 16px',
                     backgroundColor: '#6c757d',

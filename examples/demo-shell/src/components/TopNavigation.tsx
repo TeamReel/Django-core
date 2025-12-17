@@ -1,9 +1,37 @@
 import { useAuth, useSignOut } from '@django-core/auth-ui';
-import { ContextSwitcher } from '@django-core/context-switcher';
+import { ContextSwitcher, useContextSwitcher } from '@django-core/context-switcher';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 export default function TopNavigation() {
   const { user } = useAuth();
   const { signOut, loading } = useSignOut();
+  const navigate = useNavigate();
+  const { context, organisations, switchContext } = useContextSwitcher();
+  const [hasSelectedOrg, setHasSelectedOrg] = useState(false);
+
+  // Auto-select first org if none selected and orgs are available
+  useEffect(() => {
+    if (!hasSelectedOrg && !context.organisation && organisations.length > 0) {
+      // Try to restore from localStorage first
+      const savedOrgId = localStorage.getItem('demo_selected_org_id');
+      if (savedOrgId) {
+        const org = organisations.find(o => o.id.toString() === savedOrgId);
+        if (org) {
+          switchContext(org);
+          setHasSelectedOrg(true);
+        }
+      }
+    }
+  }, [organisations, context.organisation, hasSelectedOrg, switchContext]);
+
+  // Save selected org to localStorage
+  useEffect(() => {
+    if (context.organisation) {
+      localStorage.setItem('demo_selected_org_id', context.organisation.id.toString());
+      setHasSelectedOrg(true);
+    }
+  }, [context.organisation]);
 
   return (
     <header style={{
@@ -16,6 +44,7 @@ export default function TopNavigation() {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
         <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 600 }}>Django Core-App Demo</h1>
+        {/* Show context switcher on all authenticated pages for persistent context */}
         <ContextSwitcher variant="horizontal" />
       </div>
 
@@ -23,6 +52,7 @@ export default function TopNavigation() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {/* Mock Notification Icon (F04 integration point) */}
           <button
+            onClick={() => navigate('/notifications')}
             style={{
               position: 'relative',
               padding: '8px',

@@ -8,6 +8,8 @@ import ProjectListPage from './pages/projects/ProjectListPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
 import ResourcesPage from './pages/resources/ResourcesPage';
 import SettingsPage from './pages/SettingsPage';
+import NotificationsPage from './pages/NotificationsPage';
+import IntegrationStatusPage from './pages/IntegrationStatusPage';
 import ForbiddenPage from './pages/errors/ForbiddenPage';
 import NotFoundPage from './pages/errors/NotFoundPage';
 import HealthStatusPage from './pages/status/HealthStatusPage';
@@ -63,7 +65,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:slug"
+        path="/organisations/:id"
         element={
           <ProtectedRoute>
             <OrganisationDetailPage />
@@ -72,7 +74,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:orgSlug/projects"
+        path="/organisations/:orgId/projects"
         element={
           <ProtectedRoute>
             <ProjectListPage />
@@ -81,7 +83,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:orgSlug/projects/:projectSlug"
+        path="/organisations/:orgId/projects/:projectId"
         element={
           <ProtectedRoute>
             <ProjectDetailPage />
@@ -103,6 +105,24 @@ export default function App() {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/integration-status"
+        element={
+          <ProtectedRoute>
+            <IntegrationStatusPage />
           </ProtectedRoute>
         }
       />

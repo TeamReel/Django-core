@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from permissions.api.permissions import HasPermission
 from permissions.api.serializers import RoleAssignmentSerializer, RoleSerializer
 from permissions.audit import emit_role_assignment_audit, emit_role_modification_audit
-from permissions.models import Role, RoleAssignment
+from permissions.models import Role, RoleAssignment, ScopeChoices
 
 
 class RoleViewSet(viewsets.ModelViewSet):
@@ -152,9 +152,13 @@ class PermissionsCurrentView(APIView):
         cache_key = f"permissions:user:{user.id}"
 
         # Check cache first
-        cached_data = cache.get(cache_key)
-        if cached_data is not None:
-            return Response(cached_data)
+        try:
+            cached_data = cache.get(cache_key)
+            if cached_data is not None:
+                return Response(cached_data)
+        except Exception:
+            # If cache fails (e.g. Redis down), proceed without it
+            pass
 
         # Build hierarchical structure
         permissions_data = {
@@ -163,14 +167,21 @@ class PermissionsCurrentView(APIView):
         }
 
         # Cache for 5 minutes (300 seconds)
-        cache.set(cache_key, permissions_data, timeout=300)
+        try:
+            cache.set(cache_key, permissions_data, timeout=300)
+        except Exception:
+            # If cache fails, ignore
+            pass
 
         return Response(permissions_data)
 
     def _get_global_permissions(self, user):
         """Get user's global-scoped permissions."""
         assignments = RoleAssignment.objects.filter(
-            user=user, scope="GLOBAL", organization__isnull=True, project__isnull=True
+            user=user,
+            scope=ScopeChoices.GLOBAL,
+            target_organization__isnull=True,
+            target_project__isnull=True,
         ).select_related("role")
 
         permissions = set()
@@ -187,8 +198,8 @@ class PermissionsCurrentView(APIView):
 
         # Get all organizations where user has role assignments
         org_ids = (
-            RoleAssignment.objects.filter(user=user, scope="ORGANIZATION")
-            .values_list("organization_id", flat=True)
+            RoleAssignment.objects.filter(user=user, scope=ScopeChoices.ORGANIZATION)
+            .values_list("target_organization_id", flat=True)
             .distinct()
         )
 
@@ -198,7 +209,7 @@ class PermissionsCurrentView(APIView):
         for org in orgs:
             # Get organization-level permissions
             org_assignments = RoleAssignment.objects.filter(
-                user=user, scope="ORGANIZATION", organization=org
+                user=user, scope=ScopeChoices.ORGANIZATION, target_organization=org
             ).select_related("role")
 
             org_permissions = set()
@@ -209,8 +220,10 @@ class PermissionsCurrentView(APIView):
 
             # Get projects within this organization
             project_ids = (
-                RoleAssignment.objects.filter(user=user, scope="PROJECT", project__organisation=org)
-                .values_list("project_id", flat=True)
+                RoleAssignment.objects.filter(
+                    user=user, scope=ScopeChoices.PROJECT, target_project__organisation=org
+                )
+                .values_list("target_project_id", flat=True)
                 .distinct()
             )
 
@@ -219,7 +232,7 @@ class PermissionsCurrentView(APIView):
             project_data = {}
             for project in projects:
                 project_assignments = RoleAssignment.objects.filter(
-                    user=user, scope="PROJECT", project=project
+                    user=user, scope=ScopeChoices.PROJECT, target_project=project
                 ).select_related("role")
 
                 project_permissions = set()

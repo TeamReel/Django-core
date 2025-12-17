@@ -1,10 +1,10 @@
-import { useAuth, useSignOut, ProtectedRoute } from '@django-core/auth-ui';
+import { useAuth, useSignOut } from '@django-core/auth-ui';
 import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '../components/PageLayout';
 
-function DashboardContent() {
+export function DashboardPage() {
   const { user, status } = useAuth();
-  const { signOut, isLoading: isSigningOut } = useSignOut();
+  const { signOut } = useSignOut();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -18,6 +18,12 @@ function DashboardContent() {
 
   if (status === 'loading') {
     return <div style={{ textAlign: 'center', padding: '2rem' }}>Loading...</div>;
+  }
+
+  // Redirect to login if not authenticated
+  if (status === 'unauthenticated') {
+    navigate('/login');
+    return null;
   }
 
   return (
@@ -35,18 +41,17 @@ function DashboardContent() {
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button
             onClick={handleSignOut}
-            disabled={isSigningOut}
             style={{
               padding: '0.75rem 1.5rem',
               background: '#dc3545',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
-              cursor: isSigningOut ? 'not-allowed' : 'pointer',
+              cursor: 'pointer',
               fontSize: '1rem',
             }}
           >
-            {isSigningOut ? 'Signing Out...' : 'Sign Out'}
+            Sign Out
           </button>
         </div>
 
@@ -66,13 +71,5 @@ function DashboardContent() {
         </div>
       </div>
     </PageLayout>
-  );
-}
-
-export function DashboardPage() {
-  return (
-    <ProtectedRoute redirectTo="/login">
-      <DashboardContent />
-    </ProtectedRoute>
   );
 }

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ListDetail } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface Resource {
   id: string;
@@ -65,9 +66,30 @@ const MOCK_RESOURCES: Resource[] = [
 ];
 
 export default function ResourcesPage() {
-  const [selectedId, setSelectedId] = useState<string | number | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Initialize selectedId from URL hash or localStorage
+  const getInitialSelection = () => {
+    const hash = location.hash.replace('#', '');
+    if (hash) return hash;
+    return localStorage.getItem('demo_selected_resource') || null;
+  };
+
+  const [selectedId, setSelectedId] = useState<string | number | null>(getInitialSelection());
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
+
+  // Update URL hash when selection changes
+  useEffect(() => {
+    if (selectedId) {
+      navigate(`#${selectedId}`, { replace: true });
+      localStorage.setItem('demo_selected_resource', String(selectedId));
+    } else {
+      navigate('', { replace: true });
+      localStorage.removeItem('demo_selected_resource');
+    }
+  }, [selectedId, navigate]);
 
   // Filter resources based on search and type filter
   const filteredResources = MOCK_RESOURCES.filter(resource => {
@@ -170,9 +192,9 @@ export default function ResourcesPage() {
                     </div>
                   </div>
                 </div>
-                <p style={{ 
-                  margin: 0, 
-                  fontSize: '14px', 
+                <p style={{
+                  margin: 0,
+                  fontSize: '14px',
                   color: '#666',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -216,9 +238,9 @@ export default function ResourcesPage() {
                 </div>
 
                 {/* Usage Metrics */}
-                <div style={{ 
-                  border: '1px solid #ddd', 
-                  borderRadius: '8px', 
+                <div style={{
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
                   padding: '20px',
                   marginBottom: '24px',
                   backgroundColor: '#f8f9fa'
@@ -231,10 +253,10 @@ export default function ResourcesPage() {
                         {selectedResource.usage.current.toLocaleString()} / {selectedResource.usage.limit.toLocaleString()}
                       </span>
                     </div>
-                    <div style={{ 
-                      width: '100%', 
-                      height: '8px', 
-                      backgroundColor: '#e9ecef', 
+                    <div style={{
+                      width: '100%',
+                      height: '8px',
+                      backgroundColor: '#e9ecef',
                       borderRadius: '4px',
                       overflow: 'hidden'
                     }}>
@@ -252,9 +274,9 @@ export default function ResourcesPage() {
                 </div>
 
                 {/* Details */}
-                <div style={{ 
-                  border: '1px solid #ddd', 
-                  borderRadius: '8px', 
+                <div style={{
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
                   padding: '20px',
                   marginBottom: '24px'
                 }}>
@@ -264,9 +286,9 @@ export default function ResourcesPage() {
                       <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
                         Resource ID
                       </div>
-                      <code style={{ 
-                        backgroundColor: '#f8f9fa', 
-                        padding: '4px 8px', 
+                      <code style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '4px 8px',
                         borderRadius: '4px',
                         fontFamily: 'monospace',
                         fontSize: '14px'

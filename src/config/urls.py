@@ -17,11 +17,23 @@ Including another URLconf
 
 from common.health import health_check
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from observability.health import liveness_view, readiness_view
 
+
+def root_view(request):
+    return JsonResponse(
+        {
+            "status": "running",
+            "message": "Django Core API is active. Visit /api/docs/ for documentation or /ui/ for the web interface.",
+        }
+    )
+
+
 urlpatterns = [
+    path("", root_view, name="root"),
     # B18: Platform Observability Foundation - Health probes
     path("health/live", liveness_view, name="health_live"),
     path("health/ready", readiness_view, name="health_ready"),

@@ -72,20 +72,31 @@ export function ContextSwitcherProvider({
   } = config;
 
   /**
-   * Parse organisation and project slugs from current URL path.
+   * Parse organisation UUID and project ID from current URL path.
+   * Expected format: /organisations/{uuid} or /organisations/{uuid}/projects/{id}
    */
   const parseContextFromPath = useCallback((): {
-    orgSlug: string | null;
-    projectSlug: string | null;
+    orgId: string | null;
+    projectId: string | null;
   } => {
     const path = routerAdapter.getCurrentPath();
     const segments = path.split('/').filter(Boolean);
 
-    // Expected format: /org-slug or /org-slug/project-slug
-    const orgSlug = segments[0] || null;
-    const projectSlug = segments[1] || null;
+    // Expected format: /organisations/{uuid}/projects/{id}
+    let orgId: string | null = null;
+    let projectId: string | null = null;
 
-    return { orgSlug, projectSlug };
+    const orgIndex = segments.indexOf('organisations');
+    if (orgIndex !== -1 && segments.length > orgIndex + 1) {
+      orgId = segments[orgIndex + 1];
+    }
+
+    const projectIndex = segments.indexOf('projects');
+    if (projectIndex !== -1 && segments.length > projectIndex + 1) {
+      projectId = segments[projectIndex + 1];
+    }
+
+    return { orgId, projectId };
   }, [routerAdapter]);
 
   /**
@@ -127,10 +138,41 @@ export function ContextSwitcherProvider({
       setOrganisations(allOrgs);
 
       // Parse current context from URL
-      const { orgSlug, projectSlug } = parseContextFromPath();
+      const { orgId, projectId } = parseContextFromPath();
 
-      if (!orgSlug) {
-        // No context in URL
+      if (!orgId) {
+        // No context in URL - try to restore from localStorage
+        const storedOrgId = localStorage.getItem('django-core:currentOrgId');
+        const storedProjectId = localStorage.getItem('django-core:currentProjectId');
+
+        if (storedOrgId) {
+          const storedOrg = allOrgs.find(org => org.id === storedOrgId);
+          if (storedOrg) {
+            // Fetch projects for restored org
+            const orgProjects = await fetchProjects(storedOrg.id);
+            setProjects(orgProjects);
+
+            const storedProject = storedProjectId
+              ? orgProjects.find(p => String(p.id) === String(storedProjectId))
+              : null;
+
+            const restoredContext: UserContext = {
+              organisation: storedOrg,
+              project: storedProject || null,
+              isLoading: false,
+              error: null,
+            };
+
+            setContext(restoredContext);
+
+            if (onContextChanged) {
+              onContextChanged(restoredContext);
+            }
+            return;
+          }
+        }
+
+        // No stored context either
         setContext({
           organisation: null,
           project: null,
@@ -141,19 +183,19 @@ export function ContextSwitcherProvider({
         return;
       }
 
-      // Find organisation from fetched list (not state, since setState is async)
-      const organisation = allOrgs.find(org => org.slug === orgSlug) || null;
+      // Find organisation from fetched list by ID
+      const organisation = allOrgs.find(org => org.id === orgId) || null;
       if (!organisation) {
-        throw new Error(`Organisation not found: ${orgSlug}`);
+        throw new Error(`Organisation not found: ${orgId}`);
       }
 
       // Fetch projects for this organisation
       const orgProjects = await fetchProjects(organisation.id);
       setProjects(orgProjects);
 
-      // Find current project if specified
-      const project = projectSlug
-        ? orgProjects.find(p => p.slug === projectSlug) || null
+      // Find current project if specified (compare as strings since URL params are strings)
+      const project = projectId
+        ? orgProjects.find(p => String(p.id) === String(projectId)) || null
         : null;
 
       const newContext: UserContext = {
@@ -164,6 +206,19 @@ export function ContextSwitcherProvider({
       };
 
       setContext(newContext);
+
+      // Store context in localStorage for persistence
+      if (organisation) {
+        localStorage.setItem('django-core:currentOrgId', organisation.id);
+        if (project) {
+          localStorage.setItem('django-core:currentProjectId', String(project.id));
+        } else {
+          localStorage.removeItem('django-core:currentProjectId');
+        }
+      } else {
+        localStorage.removeItem('django-core:currentOrgId');
+        localStorage.removeItem('django-core:currentProjectId');
+      }
 
       if (onContextChanged) {
         onContextChanged(newContext);
@@ -178,15 +233,25 @@ export function ContextSwitcherProvider({
               details: err,
             };
 
+      // Clear context state on error
       setContext({
         organisation: null,
         project: null,
         isLoading: false,
-        error,
+        error: null, // Don't show error for auth failures (401/403)
       });
       setOrganisations([]);
       setProjects([]);
 
+      // Clear localStorage on auth errors (user logged out or unauthorized)
+      if (error.code === 401 || error.code === 403) {
+        localStorage.removeItem('django-core:currentOrgId');
+        localStorage.removeItem('django-core:currentProjectId');
+        // Don't call onContextError for expected auth failures
+        return;
+      }
+
+      // Only report non-auth errors
       if (onContextError) {
         onContextError(new Error(error.message));
       }
@@ -222,10 +287,19 @@ export function ContextSwitcherProvider({
         }
 
         // Build new path and navigate
+        // Use IDs instead of slugs for URL construction
         const newPath = routerAdapter.buildPathForContext(
-          { orgSlug: org.slug, projectSlug: project?.slug },
+          { orgSlug: org.id, projectSlug: project ? String(project.id) : undefined },
           { preservePath: true, fallbackPath: '/dashboard' }
         );
+
+        // Persist context to localStorage immediately
+        localStorage.setItem('django-core:currentOrgId', org.id);
+        if (project) {
+          localStorage.setItem('django-core:currentProjectId', String(project.id));
+        } else {
+          localStorage.removeItem('django-core:currentProjectId');
+        }
 
         // Persist context to backend (optional endpoint)
         await setCurrentContext(org.id, project?.id || null, apiBaseUrl);
@@ -278,6 +352,15 @@ export function ContextSwitcherProvider({
   useEffect(() => {
     void loadContext();
   }, [loadContext]);
+
+  // Reload context when URL path changes (for navigation)
+  // We track the path as a dependency by calling getCurrentPath on each render
+  const currentPath = routerAdapter.getCurrentPath();
+  useEffect(() => {
+    // Reload context whenever path changes
+    void loadContext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPath]); // Only depend on path, not loadContext to avoid infinite loops
 
   // Context value
   const contextValue = useMemo<ContextSwitcherContextValue>(

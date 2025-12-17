@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useContextSwitcher } from '@django-core/context-switcher';
+// import { useContextSwitcher } from '@django-core/context-switcher';
 import { DefaultEmpty } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 
@@ -13,18 +13,32 @@ interface Project {
 }
 
 export default function ProjectListPage() {
-  const { orgSlug } = useParams<{ orgSlug: string }>();
+  const { orgId } = useParams<{ orgId: string }>();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { context } = useContextSwitcher();
+  // const { context } = useContextSwitcher();
+  const [orgName, setOrgName] = useState<string>('');
 
+  // Fetch organisation name first
   useEffect(() => {
-    if (!orgSlug) return;
+    if (!orgId) return;
 
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-    
-    fetch(`${apiBaseUrl}/api/organisations/${orgSlug}/projects/`, {
+    fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/`, {
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then(data => setOrgName(data.name))
+      .catch(() => setOrgName('Organisation'));
+  }, [orgId]);
+
+  useEffect(() => {
+    if (!orgId) return;
+
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+    fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/projects/`, {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -35,24 +49,29 @@ export default function ProjectListPage() {
         return res.json();
       })
       .then(data => {
-        setProjects(data);
+        // Handle both paginated (DRF) and non-paginated responses
+        let projectsList = data;
+        if (data.results && Array.isArray(data.results)) {
+          projectsList = data.results;
+        }
+        setProjects(projectsList);
         setIsLoading(false);
       })
       .catch(err => {
         setError(err.message);
         setIsLoading(false);
       });
-  }, [orgSlug]);
+  }, [orgId]);
 
   return (
     <AppShell>
       <div>
         <nav style={{ marginBottom: '24px', fontSize: '14px', color: '#666' }}>
-          <Link to="/organisations">Organisations</Link> /
-          {context.organisation && (
+          <Link to="/organisations">Organisations</Link>
+          {orgId && orgName && (
             <>
-              {' '}<Link to={`/organisations/${context.organisation.slug}`}>
-                {context.organisation.name}
+              {' '}/ <Link to={`/organisations/${orgId}`}>
+                {orgName}
               </Link>
             </>
           )}
@@ -67,11 +86,11 @@ export default function ProjectListPage() {
         {isLoading && <p>Loading projects...</p>}
 
         {error && (
-          <div style={{ 
-            padding: '12px', 
-            backgroundColor: '#fee', 
-            border: '1px solid #fcc', 
-            borderRadius: '4px', 
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#fee',
+            border: '1px solid #fcc',
+            borderRadius: '4px',
             color: '#c00',
             marginBottom: '16px'
           }}>
@@ -80,16 +99,16 @@ export default function ProjectListPage() {
         )}
 
         {!isLoading && !error && projects.length === 0 && (
-          <DefaultEmpty 
+          <DefaultEmpty
             title="No projects found"
             message="This organisation doesn't have any projects yet. Create your first project to get started."
           />
         )}
 
-        <div style={{ 
-          display: 'grid', 
-          gap: '20px', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' 
+        <div style={{
+          display: 'grid',
+          gap: '20px',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
         }}>
           {projects.map(project => (
             <div
@@ -121,7 +140,7 @@ export default function ProjectListPage() {
                 <p style={{ color: '#666', fontSize: '14px' }}>{project.description}</p>
               )}
               <Link
-                to={`/organisations/${orgSlug}/projects/${project.slug}`}
+                to={`/organisations/${orgId}/projects/${project.id}`}
                 style={{
                   display: 'inline-block',
                   marginTop: '12px',

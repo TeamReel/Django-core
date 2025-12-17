@@ -6,21 +6,23 @@ import { AuthProvider } from '@django-core/auth-ui';
 import type { AuthConfig } from '@django-core/auth-ui';
 import { ContextSwitcherProvider } from '@django-core/context-switcher';
 import type { ContextSwitcherConfig } from '@django-core/context-switcher';
-import { PermissionsProvider } from '@django-core/permissions';
+// import { PermissionsProvider } from '@django-core/permissions';
+import { ThemeProvider } from '@django-core/design-system';
 import { useReactRouterAdapter } from './adapters/reactRouterAdapter';
 import ErrorBoundary from './components/ErrorBoundary';
 import App from './App';
 import './index.css';
+import '@django-core/design-system/tokens.css';
 
 const authConfig: AuthConfig = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '',
   endpoints: {
-    signIn: '/auth/sign-in/',
-    signOut: '/auth/sign-out/',
-    requestPasswordReset: '/auth/password-reset/request/',
-    confirmPasswordReset: '/auth/password-reset/confirm/',
-    me: '/auth/me/',
-    profile: '/auth/profile/'
+    signIn: '/api/v1/auth/login/',
+    signOut: '/api/v1/auth/logout/',
+    requestPasswordReset: '/api/v1/auth/password-reset/',
+    confirmPasswordReset: '/api/v1/auth/password-reset-confirm/',
+    me: '/api/v1/auth/me/',
+    profile: '/api/v1/auth/profile/'
   },
   routes: {
     login: '/login',
@@ -38,18 +40,22 @@ function AppWithProviders() {
 
   const contextConfig: ContextSwitcherConfig = {
     routerAdapter,
-    apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+    apiBaseUrl: (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1',
+    onContextError: (error) => {
+      console.warn('Context switch error (non-critical):', error.message);
+      // Silently handle - context switching is optional
+    },
   };
 
   return (
     <ErrorBoundary>
-      <AuthProvider config={authConfig}>
-        <ContextSwitcherProvider config={contextConfig}>
-          <PermissionsProvider>
+      <ThemeProvider>
+        <AuthProvider config={authConfig}>
+          <ContextSwitcherProvider config={contextConfig}>
             <App />
-          </PermissionsProvider>
-        </ContextSwitcherProvider>
-      </AuthProvider>
+          </ContextSwitcherProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

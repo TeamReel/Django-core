@@ -8,7 +8,7 @@ from projects.models import Project
 class OrganisationNestedSerializer(serializers.Serializer):
     """Nested organisation representation."""
 
-    id = serializers.IntegerField()
+    id = serializers.UUIDField()
     name = serializers.CharField()
     slug = serializers.CharField()
 

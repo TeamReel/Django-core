@@ -14,19 +14,30 @@ interface Project {
 }
 
 export default function ProjectDetailPage() {
-  const { orgSlug, projectSlug } = useParams<{ orgSlug: string; projectSlug: string }>();
+  const { orgId, projectId } = useParams<{ orgId: string; projectId: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { context, switchProject } = useContextSwitcher();
   const { hasPermission } = usePermissions();
+  const [orgName, setOrgName] = useState<string>('');
+
+  // Fetch organisation name
+  useEffect(() => {
+    if (!orgId) return;
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setOrgName(data.name))
+      .catch(() => setOrgName('Organisation'));
+  }, [orgId]);
 
   useEffect(() => {
-    if (!orgSlug || !projectSlug) return;
+    if (!orgId || !projectId) return;
 
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-    
-    fetch(`${apiBaseUrl}/api/organisations/${orgSlug}/projects/${projectSlug}/`, {
+
+    fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/projects/${projectId}/`, {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -45,24 +56,24 @@ export default function ProjectDetailPage() {
         setError(err.message);
         setIsLoading(false);
       });
-  }, [orgSlug, projectSlug, switchProject]);
+  }, [orgId, projectId]); // Remove switchProject from dependencies to prevent infinite loop
 
   if (isLoading) return <AppShell><p>Loading project...</p></AppShell>;
 
   if (error) {
     return (
       <AppShell>
-        <div style={{ 
-          padding: '12px', 
-          backgroundColor: '#fee', 
-          border: '1px solid #fcc', 
-          borderRadius: '4px', 
+        <div style={{
+          padding: '12px',
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          borderRadius: '4px',
           color: '#c00',
           marginBottom: '16px'
         }}>
           {error}
         </div>
-        <Link to={`/organisations/${orgSlug}/projects`}>Back to Projects</Link>
+        <Link to={`/organisations/${orgId}/projects`}>Back to Projects</Link>
       </AppShell>
     );
   }
@@ -73,15 +84,15 @@ export default function ProjectDetailPage() {
     <AppShell>
       <div>
         <nav style={{ marginBottom: '24px', fontSize: '14px', color: '#666' }}>
-          <Link to="/organisations">Organisations</Link> /
-          {context.organisation && (
+          <Link to="/organisations">Organisations</Link>
+          {orgId && orgName && (
             <>
-              {' '}<Link to={`/organisations/${context.organisation.slug}`}>
-                {context.organisation.name}
+              {' '}/ <Link to={`/organisations/${orgId}`}>
+                {orgName}
               </Link>
             </>
           )}
-          {' '}/ <Link to={`/organisations/${orgSlug}/projects`}>Projects</Link> / {project.name}
+          {' '}/ <Link to={`/organisations/${orgId}/projects`}>Projects</Link> / {project.name}
         </nav>
 
         <h1>{project.name}</h1>
@@ -109,7 +120,7 @@ export default function ProjectDetailPage() {
 
         <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
           <Link
-            to={`/organisations/${orgSlug}/projects`}
+            to={`/organisations/${orgId}/projects`}
             style={{
               display: 'inline-block',
               padding: '10px 20px',
@@ -123,7 +134,7 @@ export default function ProjectDetailPage() {
             ← Back to Projects
           </Link>
           <Link
-            to={`/organisations/${orgSlug}`}
+            to={`/organisations/${orgId}`}
             style={{
               display: 'inline-block',
               padding: '10px 20px',
@@ -136,7 +147,7 @@ export default function ProjectDetailPage() {
           >
             View Organisation
           </Link>
-          
+
           {/* Permission-gated action buttons */}
           {hasPermission('projects.edit', {
             organizationId: context.organisation?.id,
@@ -157,7 +168,7 @@ export default function ProjectDetailPage() {
               ✏️ Edit Project
             </button>
           )}
-          
+
           {hasPermission('projects.delete', {
             organizationId: context.organisation?.id,
             projectId: project.id
@@ -183,9 +194,9 @@ export default function ProjectDetailPage() {
           )}
         </div>
 
-        <div style={{ 
-          border: '1px solid #ddd', 
-          borderRadius: '8px', 
+        <div style={{
+          border: '1px solid #ddd',
+          borderRadius: '8px',
           padding: '24px',
           backgroundColor: '#f8f9fa'
         }}>
@@ -195,17 +206,17 @@ export default function ProjectDetailPage() {
               <strong>Name:</strong> {project.name}
             </div>
             <div>
-              <strong>Slug:</strong> <code style={{ 
-                backgroundColor: '#fff', 
-                padding: '2px 6px', 
+              <strong>Slug:</strong> <code style={{
+                backgroundColor: '#fff',
+                padding: '2px 6px',
                 borderRadius: '3px',
                 fontFamily: 'monospace'
               }}>{project.slug}</code>
             </div>
             <div>
-              <strong>ID:</strong> <code style={{ 
-                backgroundColor: '#fff', 
-                padding: '2px 6px', 
+              <strong>ID:</strong> <code style={{
+                backgroundColor: '#fff',
+                padding: '2px 6px',
                 borderRadius: '3px',
                 fontFamily: 'monospace'
               }}>{project.id}</code>

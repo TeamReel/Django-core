@@ -9,9 +9,11 @@ import type { Organisation } from '../types';
 
 /**
  * Response envelope for organisations list endpoint.
+ * Supports both direct array and DRF paginated format.
  */
 export interface OrganisationsResponse {
-  organisations: Organisation[];
+  organisations?: Organisation[];
+  results?: Organisation[]; // DRF paginated format
 }
 
 /**
@@ -35,11 +37,15 @@ export async function fetchOrganisations(
     await client.get<OrganisationsResponse>('/organisations/');
 
   if (isApiError(response)) {
-    throw new Error(response.error.message);
+    // Throw error with status code so caller can detect auth failures
+    const error = new Error(response.error.message) as Error & { code?: number };
+    error.code = response.error.code;
+    throw error;
   }
 
   if (isApiSuccess(response)) {
-    return response.data.organisations || [];
+    // Handle both DRF paginated format and direct array
+    return response.data.results || response.data.organisations || [];
   }
 
   return [];

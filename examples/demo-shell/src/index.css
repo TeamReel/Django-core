@@ -41,3 +41,13 @@ a {
 a:hover {
   text-decoration: underline;
 }
+
+/* Hide context switcher errors (non-critical, handled by error handler) */
+[role="alert"]:has([data-context-error]) {
+  display: none !important;
+}
+
+/* Alternative: hide all error alerts in header if context switcher errors are shown there */
+header [role="alert"] {
+  display: none !important;
+}

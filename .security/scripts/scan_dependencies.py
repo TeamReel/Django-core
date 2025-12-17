@@ -241,6 +241,11 @@ def generate_security_report(
         "passed_rules": [],
         "overall_status": overall_status,
         "owasp_asvs_coverage": {
+            "total_controls_checked": 1,
+            "level_1_coverage_percent": 0.0 if violations else 100.0,
+            "categories": {
+                "V14_Configuration": 1,
+            },
             "V14 - Configuration": {
                 "category": "V14 - Configuration",
                 "total_rules": 1,
@@ -248,7 +253,7 @@ def generate_security_report(
                 "failed_rules": 1 if violations else 0,
                 "coverage_percentage": 0.0 if violations else 100.0,
                 "violations": violations,
-            }
+            },
         },
         "execution_time_ms": 0,  # pip-audit doesn't provide timing
         "metadata": {

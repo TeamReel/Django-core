@@ -11,18 +11,18 @@ interface Organisation {
 }
 
 export default function OrganisationDetailPage() {
-  const { slug } = useParams<{ slug: string }>();
+  const { id } = useParams<{ id: string }>();
   const [organisation, setOrganisation] = useState<Organisation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { switchContext } = useContextSwitcher();
 
   useEffect(() => {
-    if (!slug) return;
+    if (!id) return;
 
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-    
-    fetch(`${apiBaseUrl}/api/organisations/${slug}/`, {
+
+    fetch(`${apiBaseUrl}/api/v1/organisations/${id}/`, {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -34,6 +34,7 @@ export default function OrganisationDetailPage() {
       })
       .then(async data => {
         setOrganisation(data);
+        // Update context without triggering navigation
         await switchContext(data);
         setIsLoading(false);
       })
@@ -41,7 +42,7 @@ export default function OrganisationDetailPage() {
         setError(err.message);
         setIsLoading(false);
       });
-  }, [slug, switchContext]);
+  }, [id]); // Remove switchContext from dependencies to prevent infinite loop
 
   if (isLoading) {
     return (
@@ -54,12 +55,12 @@ export default function OrganisationDetailPage() {
   if (error || !organisation) {
     return (
       <AppShell>
-        <div style={{ 
-          padding: '12px', 
-          backgroundColor: '#fee', 
-          border: '1px solid #fcc', 
-          borderRadius: '4px', 
-          color: '#c00' 
+        <div style={{
+          padding: '12px',
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          borderRadius: '4px',
+          color: '#c00'
         }}>
           {error || 'Organisation not found'}
         </div>
@@ -87,7 +88,7 @@ export default function OrganisationDetailPage() {
 
         <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
           <Link
-            to={`/organisations/${organisation.slug}/projects`}
+            to={`/organisations/${organisation.id}/projects`}
             style={{
               padding: '12px 24px',
               backgroundColor: '#007bff',
@@ -112,10 +113,10 @@ export default function OrganisationDetailPage() {
           <dl style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '12px' }}>
             <dt style={{ fontWeight: 600 }}>Name:</dt>
             <dd style={{ margin: 0 }}>{organisation.name}</dd>
-            
+
             <dt style={{ fontWeight: 600 }}>Slug:</dt>
             <dd style={{ margin: 0, fontFamily: 'monospace' }}>{organisation.slug}</dd>
-            
+
             <dt style={{ fontWeight: 600 }}>ID:</dt>
             <dd style={{ margin: 0, fontFamily: 'monospace' }}>{organisation.id}</dd>
           </dl>

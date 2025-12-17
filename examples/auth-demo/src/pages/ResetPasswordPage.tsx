@@ -1,4 +1,4 @@
-import { ResetPasswordPage as AuthResetPasswordPage } from '@django-core/auth-ui';
+import { ConfirmPasswordResetPage } from '@django-core/auth-ui';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { PageLayout } from '../components/PageLayout';
 
@@ -24,7 +24,7 @@ export function ResetPasswordPage() {
 
   return (
     <PageLayout title="Reset Password">
-      <AuthResetPasswordPage
+      <ConfirmPasswordResetPage
         uidb64={uidb64}
         token={token}
         onSuccess={() => {

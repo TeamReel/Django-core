@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@django-core/auth-ui';
+import { createApiClient } from '@django-core/api-client';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 
@@ -33,19 +34,30 @@ export default function PermissionsStatusPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/permissions/current/')
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data: PermissionsData) => {
-        setPermissions(data);
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    const client = createApiClient({ baseUrl: apiBaseUrl });
+
+    const fetchPermissions = async () => {
+      try {
+        // The client automatically handles auth headers if token is in storage
+        const response = await client.get<PermissionsData>('/api/v1/permissions/current/');
+
+        if (response.error) {
+          throw new Error(response.error.message || 'API request failed');
+        }
+
+        if (response.data) {
+          setPermissions(response.data);
+        }
         setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
+      } catch (err: any) {
+        console.error('Permissions fetch error:', err);
+        setError(err.message || 'Failed to fetch permissions');
         setLoading(false);
-      });
+      }
+    };
+
+    fetchPermissions();
   }, [context.organisation, context.project]);
 
   if (loading) {

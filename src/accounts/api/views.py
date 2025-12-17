@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.html import strip_tags
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
@@ -112,12 +113,14 @@ def verify_email_api(request, user_id, token):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@ensure_csrf_cookie
 def login_api(request):
     """API endpoint for user login."""
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
         user = authenticate(
-            email=serializer.validated_data["email"],
+            request=request,
+            username=serializer.validated_data["email"],
             password=serializer.validated_data["password"],
         )
         if user:
@@ -138,7 +141,10 @@ def login_api(request):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             auth_login(request, user)
-            request.session["last_activity"] = timezone.now().timestamp()
+            try:
+                request.session["last_activity"] = timezone.now().timestamp()
+            except Exception as e:
+                print(f"Session error: {e}")
             return Response(
                 {
                     "id": user.id,

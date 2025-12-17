@@ -44,6 +44,8 @@ export function OrganisationPicker({
   // trigger, // Reserved for future dropdown implementation
   className,
 }: OrganisationPickerProps): React.ReactElement {
+  console.log('OrganisationPicker render:', { isOpen });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { organisations, switchContext, isSwitching, context } = useContextSwitcher();

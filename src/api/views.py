@@ -1,5 +1,7 @@
 from typing import Any
 
+from django.conf import settings
+from django.contrib.auth import logout
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -116,32 +118,36 @@ class LogoutView(APIView):
     def post(self, request) -> Response:
         """
         Blacklist the provided refresh token to prevent future use.
+        Also performs session logout.
         """
         try:
+            # Handle JWT blacklist if token provided
             refresh_token = request.data.get("refresh")
-            if not refresh_token:
-                return Response(
-                    {
-                        "status": "error",
-                        "error": {
-                            "code": "missing_token",
-                            "message": "Refresh token required",
-                        },
-                    },
-                    status=400,
-                )
+            if refresh_token:
+                try:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except Exception:
+                    # Invalid token - ignore and proceed to session logout
+                    pass
 
-            token = RefreshToken(refresh_token)
-            token.blacklist()  # Adds to token_blacklist_blacklistedtoken table
+            # Handle session logout
+            logout(request)
 
-            return Response({"status": "success", "data": None})
-        except Exception:
+            response = Response({"status": "success", "data": None})
+
+            # Explicitly clear cookies to ensure logout works across all environments
+            response.delete_cookie(settings.SESSION_COOKIE_NAME)
+            response.delete_cookie(settings.CSRF_COOKIE_NAME)
+
+            return response
+        except Exception as e:
             return Response(
                 {
                     "status": "error",
                     "error": {
-                        "code": "invalid_token",
-                        "message": "Invalid or expired refresh token",
+                        "code": "logout_failed",
+                        "message": str(e),
                     },
                 },
                 status=400,

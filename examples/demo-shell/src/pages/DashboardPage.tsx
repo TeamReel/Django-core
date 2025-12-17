@@ -50,6 +50,24 @@ export default function DashboardPage() {
         <h1>Welcome, {user?.first_name || user?.email}!</h1>
         <p>You are logged in to the Django Core-App Demo Shell.</p>
 
+        <div style={{ marginTop: '20px', marginBottom: '32px' }}>
+          <Link
+            to="/integration-status"
+            style={{
+              display: 'inline-block',
+              padding: '12px 24px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '6px',
+              fontWeight: 600,
+              fontSize: '16px'
+            }}
+          >
+            🔬 View Integration Status Dashboard
+          </Link>
+        </div>
+
         {context.organisation && (
           <div style={{
             marginTop: '24px',
@@ -106,7 +124,7 @@ export default function DashboardPage() {
             </Link>
             {context.organisation && (
               <Link
-                to={`/organisations/${context.organisation.slug}/projects`}
+                to={`/organisations/${context.organisation.id}/projects`}
                 style={{
                   display: 'inline-block',
                   padding: '10px 20px',

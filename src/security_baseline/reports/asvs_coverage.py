@@ -28,7 +28,8 @@ class ASVSCoverageCalculator:
             violations: List of security rule violations found
 
         Returns:
-            Dictionary mapping ASVS category to coverage information
+            Dictionary with top-level fields (total_controls_checked, level_1_coverage_percent, categories)
+            plus per-category coverage information
         """
         # Group rules by ASVS category
         rules_by_category = self._group_rules_by_asvs_category(all_rules)
@@ -38,6 +39,10 @@ class ASVSCoverageCalculator:
 
         # Calculate coverage for each category
         coverage = {}
+        category_counts = {}
+        total_checked = 0
+        total_passed = 0
+
         for category, rules in rules_by_category.items():
             category_violations = violations_by_category.get(category, [])
 
@@ -55,6 +60,22 @@ class ASVSCoverageCalculator:
                 coverage_percentage=round(coverage_percentage, 2),
                 violations=category_violations,
             )
+
+            # Track totals for top-level fields
+            total_checked += total_rules
+            total_passed += passed_rules
+
+            # Build category counts dict (category_name -> count)
+            # Convert "V3 - Session Management" to "V3_Session_Management"
+            safe_category = category.replace(" - ", "_").replace(" ", "_")
+            category_counts[safe_category] = total_rules
+
+        # Add top-level summary fields required by schema
+        coverage["total_controls_checked"] = total_checked
+        coverage["level_1_coverage_percent"] = (
+            round((total_passed / total_checked * 100), 2) if total_checked > 0 else 0.0
+        )
+        coverage["categories"] = category_counts
 
         return coverage
 

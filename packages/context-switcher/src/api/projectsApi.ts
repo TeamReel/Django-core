@@ -9,9 +9,11 @@ import type { Project } from '../types';
 
 /**
  * Response envelope for projects list endpoint.
+ * Supports both direct array and DRF paginated format.
  */
 export interface ProjectsResponse {
-  projects: Project[];
+  projects?: Project[];
+  results?: Project[]; // DRF paginated format
 }
 
 /**
@@ -32,17 +34,44 @@ export async function fetchProjects(
   organisationId: string,
   apiBaseUrl: string = '/api'
 ): Promise<Project[]> {
+  console.log(`Fetching projects for org: ${organisationId} from ${apiBaseUrl}`);
   const client = createApiClient({ baseUrl: apiBaseUrl });
-  const response = await client.get<ProjectsResponse>(
-    `/organisations/${organisationId}/projects/`
-  );
+  try {
+    const response = await client.get<ProjectsResponse>(
+      `/organisations/${organisationId}/projects/`
+    );
+    console.log('Projects API response:', response);
 
-  if (isApiError(response)) {
-    throw new Error(response.error.message);
-  }
+    if (isApiError(response)) {
+      console.error('Projects API error:', response.error);
+      // Throw error with status code so caller can detect auth failures
+      const error = new Error(response.error.message) as Error & { code?: number };
+      error.code = response.error.code;
+      throw error;
+    }
 
-  if (isApiSuccess(response)) {
-    return response.data.projects || [];
+    if (isApiSuccess(response)) {
+      const rawResults = response.data.results || response.data.projects || [];
+      console.log('Parsed projects (raw):', rawResults);
+
+      // Map API response to Project interface
+      // API returns nested organisation object, but Project interface expects organisationId
+      const mappedResults = rawResults.map((item: any) => ({
+        id: String(item.id),
+        name: item.name,
+        slug: item.slug,
+        organisationId: item.organisation?.id || organisationId, // Fallback to requested org ID
+        metadata: {
+          description: item.description
+        }
+      }));
+
+      console.log('Mapped projects:', mappedResults);
+      return mappedResults;
+    }
+  } catch (e) {
+    console.error('Fetch projects exception:', e);
+    throw e;
   }
 
   return [];

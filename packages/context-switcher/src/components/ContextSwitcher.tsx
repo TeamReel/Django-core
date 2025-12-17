@@ -71,11 +71,13 @@ export function ContextSwitcher({
   };
 
   const buttonBaseStyle: React.CSSProperties = {
-    border: 'none',
-    background: 'transparent',
-    padding: '0',
+    border: '1px solid #ddd',
+    background: '#f8f9fa',
+    padding: '6px 12px',
     cursor: 'pointer',
     font: 'inherit',
+    borderRadius: '4px',
+    transition: 'background-color 0.2s',
   };
 
   const projectButtonStyle: React.CSSProperties = {
@@ -84,52 +86,34 @@ export function ContextSwitcher({
     opacity: projectPickerDisabled ? 0.5 : 1,
   };
 
+  const handleClick = () => {
+    // If project is selected, open project picker; otherwise org picker
+    if (context.project) {
+      setProjectPickerOpen(true);
+    } else {
+      setOrgPickerOpen(true);
+    }
+  };
+
   return (
     <div className={className} style={containerStyle}>
-      {/* Organisation indicator button */}
+      {/* Context indicator button - click to switch organisation or project */}
       <button
         type="button"
-        onClick={() => setOrgPickerOpen(true)}
-        aria-label="Change organisation"
+        onClick={handleClick}
+        aria-label={context.project ? 'Change project or organisation' : 'Change organisation'}
         aria-haspopup="dialog"
-        aria-expanded={orgPickerOpen}
-        style={buttonBaseStyle}
+        aria-expanded={orgPickerOpen || projectPickerOpen}
+        style={{
+          ...buttonBaseStyle,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}
+        title="Click to switch organisation or project"
       >
         <ContextIndicator />
-      </button>
-
-      {/* Visual separator (horizontal only) */}
-      {variant === 'horizontal' && (
-        <Text
-          size="sm"
-          color="tertiary"
-          style={{ userSelect: 'none' }}
-          aria-hidden="true"
-        >
-          /
-        </Text>
-      )}
-
-      {/* Project picker button */}
-      <button
-        type="button"
-        onClick={() => !projectPickerDisabled && setProjectPickerOpen(true)}
-        aria-label="Change project"
-        aria-haspopup="dialog"
-        aria-expanded={projectPickerOpen}
-        disabled={projectPickerDisabled}
-        style={projectButtonStyle}
-      >
-        <Text
-          size="sm"
-          color={projectPickerDisabled ? 'tertiary' : 'primary'}
-          style={{
-            textDecoration: 'underline',
-            textDecorationStyle: 'dotted',
-          }}
-        >
-          {context.project?.name || 'Select project'}
-        </Text>
+        <Text size="sm" color="tertiary" aria-hidden="true">▼</Text>
       </button>
 
       {/* Organisation picker modal */}

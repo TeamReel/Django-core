@@ -1,61 +1,94 @@
 # Django Core-App — Complete Modular Overview
 
-Deze pagina bevat:
-- De volledige fase- en moduleplanning (backend + frontend)
-- Per module: doel, waarom agnostisch, wat moet er gebeuren
-- Een kant-en-klare `/spec-kitty.specify`-prompt per module
+Deze pagina bevat een overzicht van alle 68 modules verspreid over 16 fases. Gedetailleerde specificaties per fase zijn te vinden in de fase-bestanden.
 
-## Overzicht Modules & Fases
+## Platform Stats
 
-### Modules 001-030 (Gereed)
-- **Backend Fase 1-5**: B01-B21 (Core fundament, identiteit, configuratie, interfaces, operationeel)
-- **Frontend Fase 6-11**: F01-F05, F06-F07, F09 (Design system, auth UI, context switcher, notifications, resources, page templates, theming, integratie guides)
-- **Backend Fase 3.5**: B08 (Permissions & ACL Refactor — module 26)
+**Total Modules**: 71 modules
+**Categories**: Backend (B01-B28), Frontend (F01-F15), Platform (P01-P05), Data (D01-D16), Integration (I01-I02), Operations (O01)
+**Demo Pages**: ~30+ fully functional demo pages in `examples/demo-shell/`
 
-**Geïmplementeerde features:**
-- Modules 001-004: B01-B04 ✅
-- Modules 005-012: B05-B12 ✅
-- Modules 013-021: B13-B21 ✅
-- Modules 022-025: F01-F04 ✅
-- Module 026: B08 Refactor ✅
-- Modules 027-030: F05, F07, F06, F09 ✅
+---
 
-### Modules 031-055 (Nieuwe geoptimaliseerde volgorde)
+## Fase Overzicht
 
-**Frontend Fase 12: Demo & Validation**
-- **Module 31**: F10 — Demo Shell & Playground Site
-- **Module 31.5**: 📋 Constitution Update Gate (Post Core v1 + Demo)
+### ✅ Fase 1-7: Foundation (Modules 001-030) — **Compleet**
 
-**Platform Fase 13: Core v1 Hardening & Quality Gates**
-- **Module 32**: B40 — Repository Sanity Check Gate
-- **Module 33**: B41 — ACL & Security Refactor Gate
-- **Module 34**: B42 — Release Readiness & Operational Hardening
+**Backend Core (B01-B21)**: 21 modules
+- Foundation, i18n, auth, multi-tenancy, audit, transactions, API, notifications, webhooks, background tasks, billing, CLI, observability, health checks
 
-**Backend Fase 14: Data Foundations**
-- **Module 35-42**: B22, B23, B30-B34, B39 — Data assets, ingestion, quality, schema, lineage, privacy, webhooks, secrets
-- **Module 42.5**: 📋 Constitution Update Gate (Post Data Foundations)
+**Frontend Core (F01-F07, F09)**: 9 modules
+- Design System, Auth UI, Context Switcher, Notifications Hub, Resource Display, Page Templates, Theme Support, Integration Guides
 
-**Backend Fase 15: Analytics & Reporting**
-- **Module 43-44**: B24-B25 — Analytics events, saved queries & reports
+#### 📂 Phase Files (COMPLETE):
+- 📄 [Fase 1: Foundation & Governance (B01-B04)](phases/done/fase-01-foundation-governance.md)
+- 📄 [Fase 2: Identity & Multi-Tenancy (B05-B08)](phases/done/fase-02-identity-multi-tenancy.md)
+- 📄 [Fase 3: Configuration, Audit & Transactions (B09-B12)](phases/done/fase-03-configuration-audit.md)
+- 📄 [Fase 4: Interfaces & Communication (B13-B17)](phases/done/fase-04-interfaces-communication.md)
+- 📄 [Fase 5: Operationalisation (B18-B21)](phases/done/fase-05-operationalisation.md)
+- 📄 [Fase 6: Frontend Foundations (F01-F04)](phases/done/fase-06-frontend-foundations.md)
+- 📄 [Fase 7: Frontend Resources & Integration (F05-F07, F09)](phases/done/fase-07-frontend-resources.md)
 
-**Backend Fase 16: DS & ML Governance**
-- **Module 45-47**: B26-B28 — Experiment tracking, model registry, compute job runner
+---
 
-**Backend Fase 17: Agent Runtime Governance**
-- **Module 48-50**: B29, B37-B38 — Agent operations, vector search, evaluation & monitoring
-- **Module 50.5**: 📋 Constitution Update Gate (Post ML & Agent Governance)
+### 🚧 Fase 8-18: Extensions (Modules 031-071) — **Roadmap**
 
-**Backend Fase 18: Integratie Ecosysteem**
-- **Module 51-52**: B35-B36 — Connector SDK, compliance exports
+#### 📦 [Fase 8: Demo Foundation (3 modules)](phases/planned/fase-08-demo-foundation.md)
+- F10: Demo Shell (Basic) ✅ COMPLETE
+- F10b-Database: Demo Production Database & Seed Data
+- F10b-Pages: 30+ Demo Pages voor alle modules 001-030
+- 📋 **Constitution Gate** (Post Demo Foundation)
 
-**Frontend Fase 19: Ops Console**
-- **Module 53**: F11 — Ops Console UI
+#### 📡 [Fase 9: Real-time, Search & Workflows (5 modules)](phases/planned/fase-09-realtime-search.md)
+- B23: Real-time Infrastructure (WebSocket/Channels)
+- B24: Full-text Search Foundation
+- F13: Rich Text Editor Component
+- B27: Workflow Engine & State Machine
+- B26: Payment Gateway Adapters
 
-**Frontend Fase 20: Frontend Hardening Gate**
-- **Module 54**: F12 — Frontend Packaging & Integration Hardening
+#### 🖥️ [Fase 10: Advanced UI & Documents (4 modules)](phases/planned/fase-10-advanced-ui.md)
+- B28: Document Generation (PDF/Excel)
+- F14: Admin Panel Components
+- F11: Operations Console UI
+- F12: Billing & Usage UI
 
-**Platform Fase 21: Extensions Sanity & Refactor Gate**
-- **Module 55**: B43 — Platform Extensions Sanity & Refactor
+#### 📊 [Fase 11: Data Foundations - Part 1 (5 modules)](phases/planned/fase-11-data-foundations-1.md)
+- D01: Data Storage Adapters
+- D02: ETL & Data Pipeline Foundation
+- D03: Dataset Management & Lineage
+- D04: Streaming Data Adapters
+- D05: Data Version Control
+
+#### 🧪 [Fase 12: Data Foundations - Part 2 (5 modules)](phases/planned/fase-12-data-foundations-2.md)
+- D06: Structured Output Validation
+- D07: Tool-Call Logging Infrastructure
+- D08: Prompt Experiment Tracking
+- D09: Evaluation & Metrics Framework
+- D10: Annotation & Labeling Tools
+
+#### 🤖 [Fase 13: ML/AI Platform (6 modules)](phases/planned/fase-13-ml-ai-platform.md)
+- D11: Feature Engineering Patterns
+- D12: Model Registry
+- D13: Prompt Template Library
+- D14: Agent Operations & Orchestration
+- D15: Vector Search & Retrieval Adapter
+- D16: Model Monitoring & Feedback Loop
+- 📋 **Constitution Gate** (Post ML & Agent Governance)
+
+#### ✅ [Fase 14: Platform Quality Gates (5 modules)](phases/planned/fase-14-quality-gates.md)
+- P01: Constitutional Enforcement Engine (Lightweight)
+- P02: Security Audit & ASVS Compliance (Lightweight)
+- P03: ML & Agent Governance Gate (Lightweight)
+- P04: Integration Security Audit (Lightweight)
+- P05: Stack & Dependency Validation (Lightweight)
+
+#### 🔌 [Fase 15: Integration Ecosystem (2 modules)](phases/planned/fase-15-integration.md)
+- I01: Connector Framework & SDK (Lightweight)
+- I02: Compliance Exports (Lightweight)
+
+#### 🛡️ [Fase 16: Operations & Resilience (1 module)](phases/planned/fase-16-operations.md)
+- O01: Resilience Testing & Health Validation (Lightweight)
+- 📋 **Constitution Gate** (Final Platform Validation)
 
 ---
 
@@ -1255,7 +1288,7 @@ Non-goals:
 
 ---
 
-## Backend — Fase 3.5: Security & ACL Hardening
+## Backend — Security & ACL Hardening (Module 26 within Fase 2)
 
 ### 26. B08 – Permissions & ACL Security Refactor
 
@@ -1493,9 +1526,11 @@ Non-goals:
 
 ---
 
-## Frontend — Fase 12: Demo & Validation
+## Frontend — Fase 8: Demo Foundation & File Management
 
-### 31. F10 – Demo Shell & Playground Site**Doel**
+### 31. F10 – Demo Shell & Development Dashboard
+
+**Doel**
 Een minimale demo-site om de Core end-to-end te kunnen zien en uitproberen, als integratie en smoke test.
 
 **Waarom agnostisch**
@@ -1541,7 +1576,7 @@ Non-goals:
 ## 📋 Constitution Update Gate (Post Core v1 + Demo)
 
 **Doel**
-Update `constitution.md` om de demo shell als integratie smoke surface te formaliseren en te anticiperen op de upcoming platform waves (data, ML, agents).
+Update `constitution.md` om de demo shell als integratie smoke surface te formaliseren en te anticiperen op de upcoming platform fases (Fase 9-13: data, ML, agents).
 
 **Waarom nu**
 - Core v1 (B01-B21, F01-F09) is compleet
@@ -1562,7 +1597,7 @@ Update `constitution.md` om de demo shell als integratie smoke surface te formal
 /spec-kitty.constitution update-post-core-v1
 
 [project summary]
-Update constitution.md to cover the demo shell integration surface and prepare for upcoming platform waves (data, ML, agents) while staying domain-agnostic and consistent with existing repository standards.
+Update constitution.md to cover the demo shell integration surface and prepare for upcoming platform phases (Fase 9-13: data, ML, agents) while staying domain-agnostic and consistent with existing repository standards.
 
 [core principles to add or sharpen]
 - **Demo shell discipline**: Demo app stays minimal and acts as CI smoke test for core contracts
@@ -1586,7 +1621,7 @@ Update constitution.md to cover the demo shell integration surface and prepare f
 
 ## Platform — Fase 13: Core v1 Hardening & Quality Gates
 
-### 32. B40 – Repository Sanity Check Gate (Core v1)
+### 32. P01 – Repository Sanity Check Gate (Core v1)
 
 **Doel**
 Korte stabilisatie- en opschoonsprint na de eerste complete core, inclusief demo-shell smoke checks.
@@ -1604,7 +1639,7 @@ Repo-hygiëne en engineering-kwaliteit, geen productlogica.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B40-repository-sanity-check-core-v1
+/spec-kitty.specify feature=P01-repository-sanity-check-core-v1
 
 [feature summary]
 Stabilise and refactor the repository after Core v1 to ensure consistency, maintainability, deterministic CI, and working demo-shell smoke flows.
@@ -1620,7 +1655,7 @@ Non-goals:
 - Large architectural rewrites
 
 [key user stories]
-- As a maintainer, I trust the repo before adding new waves.
+- As a maintainer, I trust the repo before adding new platform fases.
 - As a reviewer, I can confirm integration behaviour quickly via the demo.
 
 [constraints and assumptions]
@@ -1629,7 +1664,51 @@ Non-goals:
 
 ---
 
-### 34. B41 – ACL & Security Refactor Gate (Core v1)
+### 33. P02 – Testing & Coverage Gate (Core v1)
+
+**Doel**
+Verhoog test coverage en elimineer kritieke gaps voordat nieuwe platform-fases starten.
+
+**Waarom agnostisch**
+Test-kwaliteit is een platformfundament, niet domein-specifiek.
+
+**Wat moet er gebeuren**
+- Coverage target: ≥90% voor B01-B21 core modules, ≥85% voor F01-F10
+- Identificeer en fix kritieke test gaps (auth, ACL, audit, transactions)
+- Voeg edge-case tests toe voor multi-tenancy scenarios
+- Regression tests voor alle bekende bugs/fixes
+- Integration tests voor cross-module flows
+- Demo shell smoke tests als CI gate
+
+**Specify Prompt**
+
+/spec-kitty.specify feature=P02-testing-coverage-gate-core-v1
+
+[feature summary]
+Achieve comprehensive test coverage across Core v1 modules to ensure stability before adding new platform capabilities.
+
+[goals and non-goals]
+Goals:
+- Reach ≥90% coverage for backend core, ≥85% for frontend
+- Cover critical multi-tenancy and security scenarios
+- Establish regression test suite for known issues
+
+Non-goals:
+- Achieve 100% coverage at all costs
+- Add tests for experimental or deprecated code
+
+[key user stories]
+- As a maintainer, I trust core modules won't regress when adding features.
+- As a reviewer, I can verify behaviour via comprehensive test suite.
+
+[constraints and assumptions]
+- Must not break existing functionality
+- Tests must be fast and deterministic
+- Coverage reports integrated in CI
+
+---
+
+### 34. P03 – ACL & Security Refactor Gate (Core v1)
 
 **Doel**
 Herijking van permissions, tenancy-scoping en security-randen, gevalideerd via demo-shell scenario’s.
@@ -1647,7 +1726,7 @@ Tenant-isolatie en consistente denial-behaviour zijn platformfundamenten.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B41-acl-security-refactor-core-v1
+/spec-kitty.specify feature=P03-acl-security-refactor-core-v1
 
 [feature summary]
 Perform an ACL and security hardening pass to prevent cross-tenant leakage and permission drift, validated via demo-shell scenarios.
@@ -1672,7 +1751,7 @@ Non-goals:
 
 ---
 
-### 35. B42 – Release Readiness & Operational Hardening (Core v1)
+### 35. P04 – Release Readiness & Operational Hardening (Core v1)
 
 **Doel**
 Eind-tot-eind readiness check voor observability, deploy, docs en DX, met demo-shell „works as written”.
@@ -1690,7 +1769,7 @@ Operationalisatie en adoptie-kwaliteit zijn platformwaarden voor elk downstream 
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B42-release-readiness-operational-hardening-core-v1
+/spec-kitty.specify feature=P04-release-readiness-operational-hardening-core-v1
 
 [feature summary]
 Hardening gate to ensure the Core v1 platform is operationally ready, documented, stable for downstream adoption, and validated via demo-shell smoke flows.
@@ -1717,7 +1796,7 @@ Non-goals:
 
 ## Backend — Fase 14: Data Foundations
 
-### 36. B22 – Data Assets & Catalog
+### 36. D01 – Data Assets & Catalog
 
 **Doel**
 Catalogus voor data assets met metadata, ownership en lifecycle, scoped op org en project.
@@ -1734,7 +1813,7 @@ Metadata en governance zijn universeel; geen domeininhoud in de Core.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B22-data-assets-catalog
+/spec-kitty.specify feature=D01-data-assets-catalog
 
 [feature summary]
 Introduce a tenant-scoped Data Assets Catalog to register datasets/resources with governance metadata and lifecycle.
@@ -1758,7 +1837,7 @@ Non-goals:
 
 ---
 
-### 37. B23 – Ingestion & Connectors (Light)
+### 37. D02 – Ingestion & Connectors (Light)
 
 **Doel**
 Definieer ingests en runs (file, webhook, schedule) met status, fouten en retries.
@@ -1771,11 +1850,11 @@ Orchestratie is herbruikbaar; inhoudelijke ETL blijft downstream.
 - Triggers: file drop, webhook, scheduled pull
 - Async execution en retries via job patterns
 - Observability hooks en audit events
-- Credential references via B39
+- Credential references via D08
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B23-ingestion-connectors-light
+/spec-kitty.specify feature=D02-ingestion-connectors-light
 
 [feature summary]
 Provide a lightweight ingestion framework to define and run connector-based imports with consistent run tracking.
@@ -1794,12 +1873,12 @@ Non-goals:
 - As a product team, I can plug in connectors without core rewrites.
 
 [constraints and assumptions]
-- Secrets handled via B39 references
+- Secrets handled via D08 references
 - Must be safe and tenant-isolated by default
 
 ---
 
-### 38. B30 – Data Quality & Validation
+### 38. D03 – Data Quality & Validation
 
 **Doel**
 Configureerbare kwaliteitschecks met resultaten per ingest run.
@@ -1816,7 +1895,7 @@ Validatiepatronen zijn generiek; regels zijn configuratie.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B30-data-quality-validation
+/spec-kitty.specify feature=D03-data-quality-validation
 
 [feature summary]
 Add configurable data quality validation that runs alongside ingestion and asset workflows and produces auditable results.
@@ -1835,12 +1914,12 @@ Non-goals:
 - As an operator, I can monitor recurring failures.
 
 [constraints and assumptions]
-- Integrates with B23 run lifecycle and B22 assets
+- Integrates with D02 run lifecycle and D01 assets
 - Must be performant and fail-safe
 
 ---
 
-### 39. B31 – Schema Registry & Data Contracts
+### 39. D04 – Schema Registry & Data Contracts
 
 **Doel**
 Versiebeheer van schema’s en contracts met compatibiliteitschecks.
@@ -1857,7 +1936,7 @@ Contractbeheer is infrastructuur rond datastromen, niet domeinlogica.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B31-schema-registry-data-contracts
+/spec-kitty.specify feature=D04-schema-registry-data-contracts
 
 [feature summary]
 Introduce schema and data contract versioning to manage change safely across ingestion and consumers.
@@ -1881,7 +1960,7 @@ Non-goals:
 
 ---
 
-### 40. B32 – Lineage & Provenance
+### 40. D05 – Lineage & Provenance
 
 **Doel**
 Lineage vastleggen tussen inputs en outputs (datasets, reports, models, agents).
@@ -1898,7 +1977,7 @@ Herkomstregistratie is governance en auditability.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B32-lineage-provenance
+/spec-kitty.specify feature=D05-lineage-provenance
 
 [feature summary]
 Add a generic lineage graph to track provenance across ingestion, reporting, and ML/agent artifacts.
@@ -1922,7 +2001,7 @@ Non-goals:
 
 ---
 
-### 41. B33 – Privacy, Retention & Access Policies
+### 41. D06 – Privacy, Retention & Access Policies
 
 **Doel**
 Policies voor classificatie, retention, masking en veilige export/logging.
@@ -1939,7 +2018,7 @@ Privacy en retention zijn universele platformeisen.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B33-privacy-retention-access-policies
+/spec-kitty.specify feature=D06-privacy-retention-access-policies
 
 [feature summary]
 Provide tenant-scoped privacy and retention policies with masking/redaction across data and agent surfaces.
@@ -1963,7 +2042,7 @@ Non-goals:
 
 ---
 
-### 42. B34 – Webhooks & Outbox Events
+### 42. D07 – Webhooks & Outbox Events
 
 **Doel**
 Betrouwbare outbox en webhooks met retries, signing en replay.
@@ -1980,7 +2059,7 @@ Eventing is een generiek patroon voor plugbare integraties.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B34-webhooks-outbox-events
+/spec-kitty.specify feature=D07-webhooks-outbox-events
 
 [feature summary]
 Implement a reliable outbox and webhook delivery mechanism for integrations and platform extensibility.
@@ -1999,12 +2078,12 @@ Non-goals:
 - As an operator, I can replay failed deliveries safely.
 
 [constraints and assumptions]
-- Signing secrets via B39 references
+- Signing secrets via D08 references
 - Must be tenant scoped and permission governed
 
 ---
 
-### 43. B39 – Secrets & External Credentials Management
+### 43. D08 – Secrets & External Credentials Management
 
 **Doel**
 Credential governance (scopes, rotatie, audit) zonder zelf een vault te worden.
@@ -2021,7 +2100,7 @@ Iedere integratie heeft secrets; veilige omgang is platformbreed herbruikbaar.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B39-secrets-credentials-management
+/spec-kitty.specify feature=D08-secrets-credentials-management
 
 [feature summary]
 Add a secure, auditable credentials layer for external integrations with scoped access and rotation support.
@@ -2049,7 +2128,7 @@ Non-goals:
 
 **Doel**
 
-Update constitution.md to formalize data governance principles now that core data infrastructure (B15 exports, B16 lineage, B17 webhooks, B18 event bus, B19 batch jobs, B20 cron scheduling, B21 lifecycle hooks, B37 notification routing, B38 connector SDK, B39 secrets) is in place and before analytics/ML modules (B24-B34) depend on it.
+Update constitution.md to formalize data governance principles now that core data infrastructure (B15 exports, B16 lineage, B17 webhooks, B18 event bus, B19 batch jobs, B20 cron scheduling, B21 lifecycle hooks, D15 notification routing, I01 connector SDK, D08 secrets) is in place and before analytics/ML modules (D09-D16) depend on it.
 
 **Waarom nu**
 
@@ -2065,7 +2144,7 @@ Add or sharpen these 7 core principles in constitution.md:
 4. **Export Safety and Redaction Hooks**: B15 exports must redact sensitive fields by default. Explicit opt-in for full data exports with audit logging.
 5. **Masking in Logs and Observability**: All logs, traces, and webhook payloads must mask PII/secrets by default (aligns with Gate 31.5 redaction principle).
 6. **Schema Contract Versioning**: Breaking schema changes require versioning and deprecation notices. Connectors and webhooks must declare supported versions.
-7. **Webhook Signing and Replay Safety**: All outbound webhooks (B17) must be signed (HMAC-SHA256) with replay protection (timestamp validation). Secrets via B39.
+7. **Webhook Signing and Replay Safety**: All outbound webhooks (D07) must be signed (HMAC-SHA256) with replay protection (timestamp validation). Secrets via D08.
 
 **Constitution Prompt**
 
@@ -2081,8 +2160,8 @@ Django-core platform with completed data foundations (exports, lineage, webhooks
 - Lineage Capture: B16 lineage tracking is mandatory for all transformations, exports, cross-tenant data flows. Impact analysis required before schema changes. Lineage visible in admin UI.
 - Export Safety and Redaction Hooks: B15 exports must redact sensitive fields by default. Explicit opt-in for full data exports with audit logging (B09). Export formats include redaction metadata.
 - Masking in Logs and Observability: All logs, traces, webhook payloads must mask PII/secrets by default (aligns with Gate 31.5 redaction principle). Structured logging with field-level classification.
-- Schema Contract Versioning: Breaking schema changes require versioning and deprecation notices. Connectors (B38) and webhooks (B17) must declare supported versions. Migrations include backward-compatibility period.
-- Webhook Signing and Replay Safety: All outbound webhooks must be signed (HMAC-SHA256) with replay protection (timestamp validation). Secrets via B39. Recipients verify signatures before processing.
+- Schema Contract Versioning: Breaking schema changes require versioning and deprecation notices. Connectors (I01) and webhooks (B17) must declare supported versions. Migrations include backward-compatibility period.
+- Webhook Signing and Replay Safety: All outbound webhooks must be signed (HMAC-SHA256) with replay protection (timestamp validation). Secrets via D08. Recipients verify signatures before processing.
 
 [non-goals]
 - Full DLP (Data Loss Prevention) suite - we rely on infrastructure controls
@@ -2092,16 +2171,16 @@ Django-core platform with completed data foundations (exports, lineage, webhooks
 [acceptance criteria]
 - Constitution section "Data Governance" exists with all 7 principles
 - Each principle has enforcement guidance (where/how/when checked)
-- Examples reference B15/B16/B17/B18/B39 modules
+- Examples reference B15/B16/B17/B18/D08 modules
 - Cross-references to Gate 31.5 redaction principle
-- Checklist for data module implementations (B24-B34, B35-B43)
+- Checklist for data module implementations (D01-D16, I01-I02)
 ```
 
 ---
 
 ## Backend — Fase 15: Analytics & Reporting Capabilities
 
-### 44. B24 – Analytics Events & Metrics (Product Analytics)
+### 44. D09 – Analytics Events & Metrics (Product Analytics)
 
 **Doel**
 Event-schema en opslag voor product events, met export en privacy guardrails.
@@ -2118,7 +2197,7 @@ Events zijn generieke bouwstenen; dashboards blijven downstream.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B24-analytics-events-metrics
+/spec-kitty.specify feature=D09-analytics-events-metrics
 
 [feature summary]
 Provide a generic product analytics events pipeline for capturing and exporting events safely.
@@ -2136,12 +2215,12 @@ Non-goals:
 - As compliance, I control fields and retention.
 
 [constraints and assumptions]
-- Integrates with B33 retention/masking
+- Integrates with D06 retention/masking
 - Low overhead on user flows
 
 ---
 
-### 45. B25 – Saved Queries & Reports
+### 45. D10 – Saved Queries & Reports
 
 **Doel**
 Opslag van report definities met parameters, scheduling en export artifacts via adapters.
@@ -2158,7 +2237,7 @@ Core levert governance en workflow; execution engine is pluggable.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B25-saved-queries-reports
+/spec-kitty.specify feature=D10-saved-queries-reports
 
 [feature summary]
 Introduce scheduled reports with parameterisation, run tracking, and export artifacts via pluggable execution adapters.
@@ -2177,13 +2256,13 @@ Non-goals:
 
 [constraints and assumptions]
 - Uses job patterns and observability standards
-- Exports must respect B33 policies
+- Exports must respect D06 policies
 
 ---
 
 ## Backend — Fase 16: DS & ML Governance
 
-### 46. B26 – Experiment Tracking (Runs)
+### 46. D11 – Experiment Tracking (Runs)
 
 **Doel**
 Run tracking voor experiments: params, metrics en artifact references, gekoppeld aan assets en lineage.
@@ -2200,7 +2279,7 @@ Reproduceerbaarheid is generiek; compute en frameworks blijven extern.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B26-experiment-tracking-runs
+/spec-kitty.specify feature=D11-experiment-tracking-runs
 
 [feature summary]
 Add experiment run tracking with metrics, parameters, and artifact references linked to assets and lineage.
@@ -2223,7 +2302,7 @@ Non-goals:
 
 ---
 
-### 47. B27 – Model Registry & Releases
+### 47. D12 – Model Registry & Releases
 
 **Doel**
 Modelversies beheren met stages, approvals, rollbacks en rollout metadata.
@@ -2240,7 +2319,7 @@ Registratie en governance zijn generiek; model payload blijft pointer-based.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B27-model-registry-releases
+/spec-kitty.specify feature=D12-model-registry-releases
 
 [feature summary]
 Introduce a model registry with versioning, staging, approvals, and controlled release workflows.
@@ -2264,7 +2343,7 @@ Non-goals:
 
 ---
 
-### 48. B28 – Compute Job Runner (Training, Batch Inference)
+### 48. D13 – Compute Job Runner (Training, Batch Inference)
 
 **Doel**
 Generiek jobtype voor zware compute-runs via adapters, met status, retries en resource hints.
@@ -2277,11 +2356,11 @@ Orchestratie is platform; uitvoering draait extern.
 - Execution adapter interface
 - Retries, cancellation, idempotency
 - Observability: queue time, latency, failures
-- Credential access via B39 references
+- Credential access via D08 references
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B28-compute-job-runner
+/spec-kitty.specify feature=D13-compute-job-runner
 
 [feature summary]
 Provide a compute job abstraction for training and batch inference, executed via adapters with reliable tracking.
@@ -2307,7 +2386,7 @@ Non-goals:
 
 ## Backend — Fase 17: Agent Runtime Governance
 
-### 49. B29 – Agent Operations (AI Agents)
+### 49. D14 – Agent Operations (AI Agents)
 
 **Doel**
 Control plane voor agent runs: templates, sessions, tool-call logs, policies en rate limits.
@@ -2324,7 +2403,7 @@ Governance rond agents is generiek en provider-onafhankelijk.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B29-agent-operations
+/spec-kitty.specify feature=D14-agent-operations
 
 [feature summary]
 Add a vendor-agnostic agent operations control plane: templates, sessions, tool-call logs, and policy enforcement.
@@ -2348,7 +2427,7 @@ Non-goals:
 
 ---
 
-### 50. B37 – Vector Search & Retrieval Adapter
+### 50. D15 – Vector Search & Retrieval Adapter
 
 **Doel**
 Adapterlaag voor embeddings en vector search (RAG/semantic search), tenant-scoped.
@@ -2365,7 +2444,7 @@ Retrieval is capability; Core blijft adapter-only en voorkomt lock-in.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B37-vector-search-retrieval-adapter
+/spec-kitty.specify feature=D15-vector-search-retrieval-adapter
 
 [feature summary]
 Provide a vendor-agnostic retrieval adapter for embeddings and vector search with tenant isolation and policy enforcement.
@@ -2389,7 +2468,7 @@ Non-goals:
 
 ---
 
-### 51. B38 – Evaluation & Monitoring (Models & Agents)
+### 51. D16 – Evaluation & Monitoring (Models & Agents)
 
 **Doel**
 Evaluatiesets, regressie checks en quality gates voor model- en agentversies.
@@ -2406,7 +2485,7 @@ Kwaliteitsborging is generiek; evaluatiecontent is configureerbaar.
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B38-evaluation-monitoring
+/spec-kitty.specify feature=D16-evaluation-monitoring
 
 [feature summary]
 Introduce evaluation suites and quality gates for models and agent templates to prevent regressions.
@@ -2434,7 +2513,7 @@ Non-goals:
 
 **Doel**
 
-Update constitution.md to formalize ML and Agent governance principles now that core ML/Agent infrastructure (B27 model registry, B28 prompt templates, B29 agent operations, B30 prompt experiments, B31 agent job scheduling, B32 vector search, B33 structured output validation, B34 tool-call logging, B37 RAG pipelines, B38 evaluation & monitoring) is in place and before integration ecosystem (B35-B36) and platform extensions (B40-B43) depend on it.
+Update constitution.md to formalize ML and Agent governance principles now that core ML/Agent infrastructure (D12 model registry, D13 prompt templates, D14 agent operations, D11 prompt experiments, D13 agent job scheduling, D15 vector search, D06 structured output validation, D07 tool-call logging, D15 RAG pipelines, D16 evaluation & monitoring) is in place and before integration ecosystem (I01-I02) and platform extensions (P01-P04, O01) depend on it.
 
 **Waarom nu**
 
@@ -2444,13 +2523,13 @@ ML & Agent Governance (modules 48-50) are complete: model registry, prompt templ
 
 Add or sharpen these 7 core principles in constitution.md:
 
-1. **Evaluation Gates for Model Promotions**: No model/agent template promotion without passing B38 evaluation suite. Quality thresholds configurable per use case.
-2. **Agent Template Versioning and Approvals**: All prompt templates (B28) must be versioned. Production agent templates require approval workflow with audit trail (B09).
-3. **Vector Search Privacy and Tenant Isolation**: B32 vector embeddings must respect tenant boundaries and privacy classification (from Gate 42.5). No cross-tenant leakage in similarity search.
-4. **Tool-Call Logging with Redaction**: B34 tool-call logs must redact sensitive parameters by default (aligns with Gate 31.5 and 42.5 redaction principles). Full logs only in secure audit contexts.
-5. **Model Registry Stage Transitions**: B27 model registry enforces stage gates (dev→staging→production). No direct production deployments without staging validation.
-6. **Compute Job Resource Policies**: B31 agent job scheduling must enforce resource limits (CPU, memory, timeout) per tenant and job type. Prevent runaway compute costs.
-7. **Quality Monitoring and Drift Detection**: B38 evaluation monitoring must run continuously in production. Alert on quality degradation or distribution drift before user impact.
+1. **Evaluation Gates for Model Promotions**: No model/agent template promotion without passing D16 evaluation suite. Quality thresholds configurable per use case.
+2. **Agent Template Versioning and Approvals**: All prompt templates (D13) must be versioned. Production agent templates require approval workflow with audit trail (B09).
+3. **Vector Search Privacy and Tenant Isolation**: D15 vector embeddings must respect tenant boundaries and privacy classification (from Gate 42.5). No cross-tenant leakage in similarity search.
+4. **Tool-Call Logging with Redaction**: D07 tool-call logs must redact sensitive parameters by default (aligns with Gate 31.5 and 42.5 redaction principles). Full logs only in secure audit contexts.
+5. **Model Registry Stage Transitions**: D12 model registry enforces stage gates (dev→staging→production). No direct production deployments without staging validation.
+6. **Compute Job Resource Policies**: D13 agent job scheduling must enforce resource limits (CPU, memory, timeout) per tenant and job type. Prevent runaway compute costs.
+7. **Quality Monitoring and Drift Detection**: D16 evaluation monitoring must run continuously in production. Alert on quality degradation or distribution drift before user impact.
 
 **Constitution Prompt**
 
@@ -2461,13 +2540,13 @@ Add or sharpen these 7 core principles in constitution.md:
 Django-core platform with completed ML & Agent Governance modules (model registry, prompt templates, agent operations, prompt experiments, agent job scheduling, vector search, structured output validation, tool-call logging, RAG pipelines, evaluation/monitoring). Next: integration ecosystem (connectors, data ingestion) and platform extensions (billing, advanced features) will expose models/agents to external systems. We need to formalize ML/Agent governance principles now to prevent quality regressions, privacy leaks via tool calls, and uncontrolled compute costs.
 
 [core principles to add or sharpen]
-- Evaluation Gates for Model Promotions: No model/agent template promotion without passing B38 evaluation suite. Quality thresholds configurable per use case. Regressions block deployment.
-- Agent Template Versioning and Approvals: All prompt templates (B28) must be versioned with semantic versioning. Production agent templates require approval workflow with audit trail (B09). No cowboy deployments.
-- Vector Search Privacy and Tenant Isolation: B32 vector embeddings must respect tenant boundaries and privacy classification (from Gate 42.5). No cross-tenant leakage in similarity search. Embeddings inherit data classification.
-- Tool-Call Logging with Redaction: B34 tool-call logs must redact sensitive parameters by default (aligns with Gate 31.5 and 42.5 redaction principles). Full logs only in secure audit contexts with explicit permission.
-- Model Registry Stage Transitions: B27 model registry enforces stage gates (dev→staging→production). No direct production deployments without staging validation. Rollback procedures documented.
-- Compute Job Resource Policies: B31 agent job scheduling must enforce resource limits (CPU, memory, timeout) per tenant and job type. Prevent runaway compute costs. Quotas in billing (B40).
-- Quality Monitoring and Drift Detection: B38 evaluation monitoring must run continuously in production. Alert on quality degradation or distribution drift before user impact. Automated rollback on severe regressions.
+- Evaluation Gates for Model Promotions: No model/agent template promotion without passing D16 evaluation suite. Quality thresholds configurable per use case. Regressions block deployment.
+- Agent Template Versioning and Approvals: All prompt templates (D13) must be versioned with semantic versioning. Production agent templates require approval workflow with audit trail (B09). No cowboy deployments.
+- Vector Search Privacy and Tenant Isolation: D15 vector embeddings must respect tenant boundaries and privacy classification (from Gate 42.5). No cross-tenant leakage in similarity search. Embeddings inherit data classification.
+- Tool-Call Logging with Redaction: D07 tool-call logs must redact sensitive parameters by default (aligns with Gate 31.5 and 42.5 redaction principles). Full logs only in secure audit contexts with explicit permission.
+- Model Registry Stage Transitions: D12 model registry enforces stage gates (dev→staging→production). No direct production deployments without staging validation. Rollback procedures documented.
+- Compute Job Resource Policies: D13 agent job scheduling must enforce resource limits (CPU, memory, timeout) per tenant and job type. Prevent runaway compute costs. Quotas in billing (P01).
+- Quality Monitoring and Drift Detection: D16 evaluation monitoring must run continuously in production. Alert on quality degradation or distribution drift before user impact. Automated rollback on severe regressions.
 
 [non-goals]
 - Full MLOps platform - we integrate with existing tools
@@ -2477,17 +2556,17 @@ Django-core platform with completed ML & Agent Governance modules (model registr
 [acceptance criteria]
 - Constitution section "ML & Agent Governance" exists with all 7 principles
 - Each principle has enforcement guidance (where/how/when checked)
-- Examples reference B27/B28/B29/B31/B32/B34/B37/B38 modules
+- Examples reference D12/D13/D14/D04/D05/D07/D15/D16 modules
 - Cross-references to Gate 31.5 (redaction) and Gate 42.5 (privacy classification)
 - Checklist for ML/Agent module implementations
-- Integration with billing (B40) for compute quotas
+- Integration with billing (P01) for compute quotas
 ```
 
 ---
 
 ## Backend — Fase 18: Integratie Ecosysteem
 
-### 52. B35 – Connector SDK & Marketplace Registry
+### 52. I01 – Connector SDK & Marketplace Registry
 
 **Doel**
 Standaard contract om connectors te beschrijven, te versionen en te registreren.
@@ -2499,12 +2578,12 @@ Connectors zijn integratiebouwstenen; Core borgt governance en compatibiliteit.
 - Connector manifest schema en registry endpoints
 - Capability model (pull, push, webhook, file intake)
 - Health checks en smoke-test hooks
-- Integratie met B39 credentials en B23 ingestion
+- Integratie met D08 credentials en D02 ingestion
 - Documentatie en minimaal voorbeeldconnector contract
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B35-connector-sdk-marketplace-registry
+/spec-kitty.specify feature=I01-connector-sdk-marketplace-registry
 
 [feature summary]
 Provide a connector SDK contract and registry for managing integration connectors safely across tenants.
@@ -2524,11 +2603,11 @@ Non-goals:
 
 [constraints and assumptions]
 - Must enforce tenant isolation and permissions
-- Credentials handled via B39 references
+- Credentials handled via D08 references
 
 ---
 
-### 53. B36 – Compliance Exports (Audit, DSAR, Evidence Packs)
+### 53. I02 – Compliance Exports (Audit, DSAR, Evidence Packs)
 
 **Doel**
 Gestandaardiseerde exports voor compliance: audit bundles, config snapshots en evidence packs.
@@ -2539,13 +2618,13 @@ Compliance exportpatronen zijn generiek en herbruikbaar.
 **Wat moet er gebeuren**
 - Export job definitions en artifact references
 - Templates voor audit export en evidence packs
-- Masking/redaction via B33 policies
+- Masking/redaction via D06 policies
 - Approval hooks en secure access control
 - Testfixtures en docs voor compliance flows
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B36-compliance-exports
+/spec-kitty.specify feature=I02-compliance-exports
 
 [feature summary]
 Provide standardized compliance exports with policy-driven masking and auditable access controls.
@@ -2569,7 +2648,7 @@ Non-goals:
 
 ---
 
-## Frontend — Fase 19: Ops Console
+## Frontend — Fase 18: Integration & Operations
 
 ### 54. F11 – Ops Console UI (Jobs, Imports, Runs, Agents)
 
@@ -2612,7 +2691,7 @@ Non-goals:
 
 ---
 
-## Frontend — Fase 20: Frontend Hardening Gate
+## Frontend — Fase 19: Platform Hardening & Extensions
 
 ### 55. F12 – Frontend Packaging & Integration Hardening
 
@@ -2655,12 +2734,12 @@ Non-goals:
 
 ---
 
-## Platform — Fase 21: Extensions Sanity & Refactor Gate
+## Platform — Fase 19: Platform Hardening & Extensions (continued)
 
-### 56. B43 – Platform Extensions Sanity & Refactor (Post B22–B39)
+### 56. O01 – Platform Extensions Sanity & Refactor (Post D01–D08)
 
 **Doel**
-Consolideer en harden de extension-waves: policies, adapters, run tracking, lineage en exports.
+Consolideer en harden de extension-modules: policies, adapters, run tracking, lineage en exports.
 
 **Waarom agnostisch**
 Borgt dat de control plane stabiel blijft, zonder lock-in en zonder data-leakage.
@@ -2674,7 +2753,7 @@ Borgt dat de control plane stabiel blijft, zonder lock-in en zonder data-leakage
 
 **Specify Prompt**
 
-/spec-kitty.specify feature=B43-platform-extensions-hardening-gate
+/spec-kitty.specify feature=O01-platform-extensions-hardening-gate
 
 [feature summary]
 Consolidate and harden platform extension modules to ensure consistent governance, policy enforcement, and operational behaviour.

@@ -7,7 +7,7 @@ export default function Sidebar() {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
     { path: '/organisations', label: 'Organisations', icon: '🏢' },
-    { path: '/organisations/:slug/projects', label: 'Projects', icon: '📁' },
+    // Projects are contextual per organisation - access via organisation detail page
     { path: '/resources', label: 'Resources', icon: '📦' },
     { path: '/settings', label: 'Settings', icon: '⚙️' },
   ];

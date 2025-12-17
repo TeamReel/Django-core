@@ -1,16 +1,24 @@
-import { useState } from 'react';
-import { useSignIn } from '@django-core/auth-ui';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSignIn, useAuth } from '@django-core/auth-ui';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const { signIn, isLoading, error } = useSignIn();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await signIn(email, password);
-    // Navigation handled automatically by AuthProvider via config.routes.defaultAfterLogin
   };
 
   return (

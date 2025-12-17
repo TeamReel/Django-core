@@ -23,6 +23,8 @@ export {
 
 // Hooks
 export { useContextSwitcher } from './hooks';
+// Legacy alias for compatibility
+export { useContextSwitcher as useContext } from './hooks';
 export { useDebouncedValue } from './hooks/useDebouncedValue';
 export { useKeyboardShortcut } from './hooks/useKeyboardShortcut';
 export type { KeyboardShortcutOptions } from './hooks/useKeyboardShortcut';

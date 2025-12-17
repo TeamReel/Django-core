@@ -8,6 +8,30 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]  # For testing
 
+# CORS Configuration for frontend development
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "http://localhost:3003",
+    "http://127.0.0.1:3000",
+]
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF Trusted Origins (required for POST requests from frontend)
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "http://localhost:3003",
+    "http://127.0.0.1:3000",
+]
+
+# Disable throttling in local development (Redis not required)
+REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_CLASSES": [],  # Disable throttling locally
+}
+
 # WP08: Security enforcement mode for Constitutional Engine integration
 SECURITY_ENFORCEMENT_MODE = "advisory"
 

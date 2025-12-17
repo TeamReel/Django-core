@@ -1,8 +1,25 @@
 ﻿# django-core Development Guidelines
 *Path: [templates/agent-file-template.md](templates/agent-file-template.md)*
 
+Auto-generated from all feature plans. Last updated: 2025-12-15
 
-Auto-generated from all feature plans. Last updated: 2025-11-23
+## Stakeholder Profile
+
+**Primary User: Strategic Product Owner (Non-Technical)**
+- Knows the **big picture** and where the product should go
+- Understands **business value** and **user needs**
+- Does NOT know all technical implementation details of web applications
+- Needs **visual validation** to build confidence (hence demo-first approach)
+- Values **clear explanations** over technical jargon
+- Appreciates **concrete examples** and **visual feedback**
+
+**When communicating with this stakeholder:**
+- Explain **WHY** decisions matter in business terms
+- Show **visual demos** for every feature
+- Use **analogies** to explain technical concepts
+- Ask clarifying questions about **business goals**, not technical preferences
+- Provide **options** with clear trade-offs (not just technical details)
+- Confirm understanding with **examples** and **demos**
 
 ## Active Technologies
 - Python 3.12+ + Django 5.1+, gettext utilities (004-core-internationalization-base)
