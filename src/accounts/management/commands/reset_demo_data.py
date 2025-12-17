@@ -72,8 +72,11 @@ class Command(BaseCommand):
             if verbose:
                 self.stdout.write("\nReseeding demo data...")
 
-            # Call seed_demo_data with force
-            call_command("seed_demo_data", force=True, json=True, stdout=self.stdout)
+            # Call seed_demo_data with force (suppress JSON to avoid double output)
+            from io import StringIO
+
+            seed_out = StringIO() if json_output else self.stdout
+            call_command("seed_demo_data", force=True, json=False, stdout=seed_out)
 
             seed_time = time.time()
             seed_elapsed = round(seed_time - wipe_time, 2)

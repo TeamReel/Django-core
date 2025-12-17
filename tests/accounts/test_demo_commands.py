@@ -58,7 +58,7 @@ class TestSeedDemoDataCommand(TestCase):
         # Verify database state
         assert User.objects.count() == 20, "Must have 20 total users"
         assert Organisation.objects.count() == 5, "Must have 5 organisations"
-        assert Project.objects.count() == 80, "Must have 80 projects"
+        assert Project.all_objects.count() == 80, "Must have 80 projects"
 
         # Verify superuser count
         assert User.objects.filter(is_superuser=True).count() == 3
@@ -79,7 +79,7 @@ class TestSeedDemoDataCommand(TestCase):
 
         first_user_count = User.objects.count()
         first_org_count = Organisation.objects.count()
-        first_project_count = Project.objects.count()
+        first_project_count = Project.all_objects.count()
 
         # Second run without --force should skip
         out2 = StringIO()
@@ -91,7 +91,7 @@ class TestSeedDemoDataCommand(TestCase):
         # Counts should be unchanged
         assert User.objects.count() == first_user_count
         assert Organisation.objects.count() == first_org_count
-        assert Project.objects.count() == first_project_count
+        assert Project.all_objects.count() == first_project_count
 
     def test_seed_performance(self):
         """Test seed completes within performance target (<30s)."""
@@ -119,11 +119,12 @@ class TestSeedDemoDataCommand(TestCase):
         # Should parse as valid JSON
         result = json.loads(json_output)
 
-        # Should have required keys
-        assert "status" in result
+        # Should have required keys (seed outputs entity counts, not status)
         assert "superusers" in result
         assert "org_admins" in result
         assert "members_viewers" in result
+        assert "organisations" in result
+        assert "projects" in result
         assert "elapsed_seconds" in result
 
 
