@@ -4,9 +4,12 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+import environ
 from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parents[2]
+
+env = environ.Env()
 
 # Ensure logs directory exists
 LOGS_DIR = Path(BASE_DIR).parent / "logs"
@@ -49,17 +52,22 @@ INSTALLED_APPS = [
     "transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
     "api",  # B13: API Foundation & Standards
-    "tasks.apps.TasksConfig",  # B15: Tasks & Scheduling Foundation
-    "observability.apps.ObservabilityConfig",  # B18: Platform Observability Foundation
-    "notifications.apps.NotificationsConfig",  # B16: Notifications Baseline
-    "contextual_notifications.apps.ContextualNotificationsConfig",  # B17: Contextual Notification Service
+    "tasks.apps.TasksConfig",  # B15: Tasks & Scheduling
+    "observability.apps.ObservabilityConfig",  # B18: Observability
+    "notifications.apps.NotificationsConfig",  # B16: Notifications
+    # B17: Contextual Notification Service
+    "contextual_notifications.apps.ContextualNotificationsConfig",
 ]
 
 MIDDLEWARE = [
-    "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Must be first
-    "corsheaders.middleware.CorsMiddleware",  # CORS - must be before CommonMiddleware
-    "observability.middleware.CorrelationIDMiddleware",  # WP02: Correlation ID extraction/generation
-    "observability.middleware.HTTPMetricsMiddleware",  # WP03: HTTP request metrics (T038)
+    # Must be first
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    # CORS - must be before CommonMiddleware
+    "corsheaders.middleware.CorsMiddleware",
+    # WP02: Correlation ID extraction/generation
+    "observability.middleware.CorrelationIDMiddleware",
+    # WP03: HTTP request metrics (T038)
+    "observability.middleware.HTTPMetricsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "accounts.middleware.SessionInactivityMiddleware",  # Enforce inactivity timeout
@@ -100,10 +108,10 @@ ASGI_APPLICATION = "config.asgi.application"
 
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": env.db(
+        "DATABASE_URL",
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    )
 }
 
 
