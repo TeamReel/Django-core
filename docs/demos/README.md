@@ -71,6 +71,67 @@ Email: admin@demo.djangocore.app
 Password: Demo2024!
 ```
 
+## SQLite Usage (Local Development)
+
+For local development without Docker, you can use SQLite as a lightweight alternative:
+
+### Quick Start with SQLite
+
+```bash
+# 1. Set environment variables
+export DATABASE_URL="sqlite:///./data/demo.sqlite3"
+export DEMO_RANDOM_SEED=42
+
+# 2. Create data directory
+mkdir -p ./data
+
+# 3. Run migrations
+python manage.py migrate
+
+# 4. Seed demo data
+python manage.py seed_demo_data
+
+# 5. Validate data integrity
+python manage.py validate_demo_data
+
+# 6. Start development server
+python manage.py runserver
+```
+
+### SQLite Compatibility Testing
+
+Automated test script to verify all commands work with SQLite:
+
+```bash
+# Linux/macOS
+./scripts/test-sqlite-fallback.sh
+
+# Windows PowerShell
+.\scripts\test-sqlite-fallback.ps1
+```
+
+**Test Coverage**:
+- ✅ Migrations (schema creation)
+- ✅ Seed command (all 5 orgs, 20 users, 80 projects)
+- ✅ Validate command (all integrity checks)
+- ✅ Reset command (wipe + reseed)
+- ✅ Idempotency (rerun detection)
+- ✅ Entity counts verification
+
+### SQLite vs PostgreSQL
+
+| Feature | SQLite | PostgreSQL |
+|---------|--------|------------|
+| Setup | Zero config | Requires service |
+| Startup | Instant | ~10s |
+| File size | ~50MB | ~50MB |
+| Concurrency | Single writer | Multiple writers |
+| Full-text search | Limited | Advanced |
+| JSON queries | Basic | Advanced |
+| Use case | Local dev, CI | Production, demos |
+
+**Note**: All demo commands are database-agnostic and work identically on both databases.
+
 ## Configuration
 
 ### Environment Variables

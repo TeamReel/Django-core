@@ -1,5 +1,7 @@
 # Management Commands (Contracts)
 
+**Database Compatibility**: All commands are database-agnostic and work identically on PostgreSQL and SQLite. No database-specific features are used in the implementation (ORM-only code paths).
+
 ## seed_demo_data
 - **Purpose**: Create demo dataset (5 orgs, 20 users, 80 projects, audit events 200-300, transactions last 30 days, notifications 5-10 unread/account).
 - **Flags**:
@@ -9,7 +11,8 @@
 - **Behavior**:
   - Idempotent: Checks demo org names; skips if data exists (unless --force)
   - Uses seeded randomness (respects `DEMO_RANDOM_SEED` env var) for timestamp distribution and audit count sampling
-  - Completes <30s initial; rerun when data exists <5s
+  - Completes <30s initial on PostgreSQL; <20s on SQLite; rerun when data exists <5s
+  - **Database-agnostic**: Uses standard Django ORM; no raw SQL or database-specific features
 - **Output Formats**:
   - **Console (default)**: Human-readable summary with entity counts and elapsed time
   - **JSON (--json)**: Structured output with status, counts, and timing

@@ -13,12 +13,40 @@ Create `.env.demo.local` (or export env vars):
 - `DEMO_RANDOM_SEED=42` (optional for deterministic runs)
 
 ## Start
-```bash
-# Full demo (auto-seed)
-docker-compose --profile demo up --build
 
-# Lite demo (manual seed)
-docker-compose --profile demo-lite up --build
+### Docker Profiles
+```bash
+# Full demo (PostgreSQL + auto-seed)
+docker-compose -f docker-compose.demo.yml --profile demo up --build
+
+# Lite demo (SQLite + manual seed)
+docker-compose -f docker-compose.demo.yml --profile demo-lite up --build
+```
+
+### Local Development with SQLite
+```bash
+# Set SQLite database URL
+export DATABASE_URL="sqlite:///./data/demo.sqlite3"
+export DEMO_RANDOM_SEED=42
+
+# Run migrations
+python manage.py migrate
+
+# Seed demo data
+python manage.py seed_demo_data
+
+# Validate data
+python manage.py validate_demo_data
+
+# Run development server
+python manage.py runserver
+```
+
+### Test SQLite Compatibility
+```bash
+# Run automated SQLite compatibility test
+./scripts/test-sqlite-fallback.sh     # Linux/macOS
+.\scripts\test-sqlite-fallback.ps1   # Windows PowerShell
 ```
 
 ## Management Commands
