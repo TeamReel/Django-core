@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "31232"
+---
 # WP03: Docker Profiles & Auto-Seed
 
 ## Objective
@@ -32,3 +37,7 @@ Provide docker profiles for demo (auto-seed) and demo-lite (manual) with environ
 
 ## Notes
 - Reuse structured outputs from WP01/WP02 for health logging if available.
+
+## Activity Log
+
+- 2025-12-17T12:33:40Z – claude – shell_pid=31232 – lane=doing – Started implementation of Docker profiles and auto-seed
