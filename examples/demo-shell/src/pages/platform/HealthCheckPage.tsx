@@ -1,0 +1,180 @@
+import React, { useEffect, useState } from 'react';
+import {
+  PageHeader,
+  PageContent,
+  Card,
+  Badge,
+  Alert,
+} from '@django-core/design-system';
+import { HealthStatus } from '../../types';
+
+/**
+ * T016 - Health Check Page
+ *
+ * Purpose: Display system health status and versions
+ * - Shows health status for services: database, cache, api, django, python
+ * - Displays version information
+ * - Green indicators for healthy services
+ */
+export const HealthCheckPage: React.FC = () => {
+  const [health, setHealth] = useState<HealthStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchHealth = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch('/api/health/', {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const data: HealthStatus = await response.json();
+        setHealth(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch health status');
+        console.error('Health fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHealth();
+  }, []);
+
+  const getStatusBadge = (status: string) => {
+    if (status === 'healthy') {
+      return <Badge type="success">Healthy</Badge>;
+    } else if (status === 'degraded') {
+      return <Badge type="warning">Degraded</Badge>;
+    } else {
+      return <Badge type="error">Unhealthy</Badge>;
+    }
+  };
+
+  const getCheckStatus = (checked: boolean | undefined) => {
+    return checked ? (
+      <Badge type="success">✓ OK</Badge>
+    ) : (
+      <Badge type="error">✗ Failed</Badge>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div>
+        <PageHeader
+          title="System Health"
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Platform' },
+            { label: 'Health' },
+          ]}
+        />
+        <PageContent>
+          <Card>
+            <div className="text-center py-8 text-gray-500">
+              Loading health status...
+            </div>
+          </Card>
+        </PageContent>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="System Health"
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Platform' },
+            { label: 'Health' },
+          ]}
+        />
+        <PageContent>
+          <Alert type="error" data-testid="health-error">
+            {error}
+          </Alert>
+        </PageContent>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <PageHeader
+        title="System Health"
+        breadcrumbs={[
+          { label: 'Home', href: '/' },
+          { label: 'Platform' },
+          { label: 'Health' },
+        ]}
+      />
+      <PageContent>
+        <Card data-testid="health-status-card" className="mb-4">
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Overall Status</h2>
+              {health && getStatusBadge(health.status)}
+            </div>
+            {health && (
+              <div className="text-sm text-gray-600">
+                Last updated: {new Date(health.timestamp).toLocaleString()}
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {health?.checks && (
+          <Card data-testid="health-checks-card">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Service Checks</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(health.checks).map(([service, status]) => (
+                  <div key={service} className="flex justify-between items-center p-3 border rounded" data-testid={`check-${service}`}>
+                    <span className="font-medium capitalize">{service}</span>
+                    {getCheckStatus(status)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {health?.uptime && (
+          <Card data-testid="health-uptime-card" className="mt-4">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold mb-2">Uptime</h3>
+              <div className="text-2xl font-bold text-green-600">
+                {Math.floor(health.uptime / 3600)}h {Math.floor((health.uptime % 3600) / 60)}m
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {health?.details && (
+          <Card data-testid="health-details-card" className="mt-4">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold mb-2">Details</h3>
+              <p className="text-gray-700">{health.details}</p>
+            </div>
+          </Card>
+        )}
+      </PageContent>
+    </div>
+  );
+};
+
+export default HealthCheckPage;

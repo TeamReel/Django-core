@@ -12,6 +12,10 @@ export * from './hooks';
 // Export state components
 export * from './components/states';
 
+// Export PageHeader and PageContent
+export * from './components/PageHeader';
+export * from './components/PageContent';
+
 // Export Dashboard template
 export * from './components/Dashboard';
 

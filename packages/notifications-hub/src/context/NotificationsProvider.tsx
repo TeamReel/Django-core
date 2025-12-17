@@ -30,8 +30,8 @@ export function NotificationsProvider({
 
   // F03 multi-tenancy context
   const { context } = useContextSwitcher();
-  const orgId = context.organisation?.id;
-  const projectId = context.project?.id;
+  const orgId = context.organisation?.id?.toString();
+  const projectId = context.project?.id?.toString();
 
   // T017: Fetch notifications from API
   const fetchNotifications = useCallback(async () => {

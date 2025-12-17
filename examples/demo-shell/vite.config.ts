@@ -7,6 +7,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@django-core/design-system/tokens.css': path.resolve(__dirname, '../../packages/design-system/dist/tokens.css'),
+      '@django-core/design-system': path.resolve(__dirname, './src/shims/design-system'),
+      '@django-core/context-switcher': path.resolve(__dirname, './src/shims/context-switcher'),
+      '@django-core/page-templates': path.resolve(__dirname, './src/shims/page-templates'),
       // Force single React instance to avoid Context issues
       react: path.resolve(__dirname, './node_modules/react'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
@@ -32,5 +36,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Keep Chart.js in its own chunk for lazy loading
+          'chartjs-vendor': ['chart.js', 'react-chartjs-2'],
+        },
+      },
+    },
   },
 });

@@ -49,7 +49,9 @@ export default function ProjectDetailPage() {
       })
       .then(async data => {
         setProject(data);
-        await switchProject(data);
+        if (switchProject) {
+          await switchProject(data);
+        }
         setIsLoading(false);
       })
       .catch(err => {
@@ -150,7 +152,7 @@ export default function ProjectDetailPage() {
 
           {/* Permission-gated action buttons */}
           {hasPermission('projects.edit', {
-            organizationId: context.organisation?.id,
+            organizationId: context.organisation?.id?.toString(),
             projectId: project.id
           }) && (
             <button
@@ -170,7 +172,7 @@ export default function ProjectDetailPage() {
           )}
 
           {hasPermission('projects.delete', {
-            organizationId: context.organisation?.id,
+            organizationId: context.organisation?.id?.toString(),
             projectId: project.id
           }) && (
             <button
