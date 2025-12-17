@@ -62,7 +62,7 @@ export function usePolling(
     onError = (error: Error) => console.error('Polling error:', error),
   } = options;
 
-  const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPollingRef = useRef<boolean>(enabled);
 
   /**
@@ -80,8 +80,8 @@ export function usePolling(
     try {
       const result = callback();
       // Handle async callbacks
-      if (result instanceof Promise) {
-        result.catch(onError);
+      if (result && typeof result === 'object' && 'catch' in result) {
+        (result as Promise<void>).catch(onError);
       }
     } catch (error) {
       onError(error instanceof Error ? error : new Error(String(error)));
@@ -96,8 +96,8 @@ export function usePolling(
       try {
         const result = callback();
         // Handle async callbacks
-        if (result instanceof Promise) {
-          result.catch(onError);
+        if (result && typeof result === 'object' && 'catch' in result) {
+          (result as Promise<void>).catch(onError);
         }
       } catch (error) {
         onError(error instanceof Error ? error : new Error(String(error)));
