@@ -12,6 +12,9 @@ export * from './hooks';
 // Export state components
 export * from './components/states';
 
+// Export basic layout components
+export * from './components/PageLayoutComponents';
+
 // Export Dashboard template
 export * from './components/Dashboard';
 

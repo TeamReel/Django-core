@@ -60,8 +60,12 @@ export default function Sidebar() {
       label: 'Frontend Resources',
       items: [
         { path: '/design-system', label: 'Design System', icon: '🎨' },
+        { path: '/auth-flows', label: 'Auth Flows', icon: '🔐' },
+        { path: '/context', label: 'Context Switcher', icon: '🔀' },
+        { path: '/resources', label: 'Resources', icon: '📊' },
+        { path: '/templates', label: 'Templates', icon: '📄' },
         { path: '/theme', label: 'Theme Showcase', icon: '🎭' },
-        { path: '/components', label: 'Components', icon: '⚙️' },
+        { path: '/integration', label: 'Integration Patterns', icon: '🔗' },
       ],
     },
     {
@@ -69,8 +73,9 @@ export default function Sidebar() {
       label: 'Documentation',
       items: [
         { path: '/docs', label: 'Docs', icon: '📚' },
-        { path: '/integration', label: 'Integration Guides', icon: '🔗' },
-        { path: '/api-docs', label: 'API Docs', icon: '🔌' },
+        { path: '/tasks', label: 'Tasks', icon: '✓' },
+        { path: '/notifications', label: 'Notifications', icon: '🔔' },
+        { path: '/deployment', label: 'Deployment', icon: '🚀' },
       ],
     },
   ];
