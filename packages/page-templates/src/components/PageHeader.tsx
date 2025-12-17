@@ -17,13 +17,7 @@ export interface PageHeaderProps extends HTMLAttributes<HTMLDivElement> {
  * PageHeader - Simple header component for pages
  * Displays title, subtitle, breadcrumbs, and optional action buttons
  */
-export function PageHeader({
-  title,
-  subtitle,
-  breadcrumbs,
-  actions,
-  ...props
-}: PageHeaderProps) {
+export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: PageHeaderProps) {
   return (
     <div
       style={{
@@ -46,7 +40,12 @@ export function PageHeader({
           {breadcrumbs.map((crumb, index) => (
             <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {index > 0 && <span>/</span>}
-              <span style={{ color: crumb.current ? '#1f2937' : '#6b7280', fontWeight: crumb.current ? 600 : 400 }}>
+              <span
+                style={{
+                  color: crumb.current ? '#1f2937' : '#6b7280',
+                  fontWeight: crumb.current ? 600 : 400,
+                }}
+              >
                 {crumb.label}
               </span>
             </div>
