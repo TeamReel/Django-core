@@ -444,9 +444,11 @@ class Command(BaseCommand):
                     amount=abs(amount),
                     balance_after=current_balance,
                     description=f"Demo {transaction_type.value}",
-                    created_at=timestamps[i % len(timestamps)]
-                    if timestamps
-                    else random_datetime_last_30_days(),
+                    created_at=(
+                        timestamps[i % len(timestamps)]
+                        if timestamps
+                        else random_datetime_last_30_days()
+                    ),
                 )
                 transactions_created += 1
 
