@@ -1,0 +1,114 @@
+# Work Packages: Demo Production Database & Seed Data
+
+**Inputs**: spec.md, plan.md, research.md, data-model.md, contracts/, quickstart.md
+**Principles**: Constitution-aligned; no schema changes; PostgreSQL primary, SQLite fallback; auto-seed only in demo profile.
+**Tests**: Include command-level pytest where noted; E2E reuse seed data (not scoped here).
+
+## Subtasks
+- [ ] T001 [P] Seed scaffolding/helpers: constants, seeded randomness hook, base factories (timestamps last 30d)
+- [ ] T002 [P] Orgs/users/demo accounts/preferences: 5 orgs, 20 users, roles, preferences, passwords hashed
+- [ ] T003 [P] Projects: per-org counts (15/30/10/5/20), statuses, team assignments, permissions
+- [ ] T004 [P] Transactions: last 30 days, purchase/usage/refund mix, balances non-negative per org
+- [ ] T005 [P] Audit events: 200-300 seeded events, typed (auth/crud/financial/security), timestamps seeded
+- [ ] T006 [P] Notifications: 5-10 unread per demo account, 50+ read per org; channels/types
+- [ ] T007 [P] Feature flags & file metadata placeholders: org-scoped flags, B22 placeholders
+- [ ] T008 Seed idempotency & progress logging: name checks, rerun <5s when data exists, summary output
+- [ ] T009 Validate command checks: admins per org, balances non-negative, permissions valid, audit refs, notifications scoped
+- [ ] T010 Reset command: scoped wipe (demo data only) with --force, reseed end-to-end <60s
+- [ ] T011 Tests (pytest): seed idempotency, validation outcomes, reset flow happy path; performance smoke (<30s not enforced in CI but assert counts)
+- [ ] T012 Docker profiles/env: demo (auto-seed), demo-lite (manual); .env.demo example; entrypoint wiring
+- [ ] T013 SQLite fallback compatibility: DEMO_DATABASE switch, ORM-only code paths, smoke on sqlite
+- [ ] T014 Performance & observability: bulk_create/select_related/prefetch, timing/logging, --json outputs for commands
+- [ ] T015 Documentation & verification: quickstart alignment, sample outputs, verification checklist adjustments
+- [ ] T016 PostgreSQL pooling readiness: pgbouncer-compatible settings documented and validated in demo profile
+
+---
+
+## Work Package WP01: Seed Data Generation (Priority: P1)
+**Goal**: Generate deterministic-yet-realistic seed dataset (5 orgs, 20 users, 80 projects, 200-300 audits, transactions 30d, notifications 5-10 unread) with idempotent seed behavior.
+**Independent Test**: Run `python manage.py seed_demo_data` → completes <30s → rerun completes <5s with no duplicates → summary shows expected counts.
+**Prompt**: tasks/planned/WP01-seed-data-generation.md
+
+### Included Subtasks
+- [ ] T001
+- [ ] T002
+- [ ] T003
+- [ ] T004
+- [ ] T005
+- [ ] T006
+- [ ] T007
+- [ ] T008
+
+### Dependencies
+- None.
+
+### Parallel Opportunities
+- T001-T007 parallelizable by entity; coordinate shared helpers.
+
+---
+
+## Work Package WP02: Commands, Validation, Tests & Observability (Priority: P1)
+**Goal**: Implement validate/reset commands, JSON/log outputs, and pytest coverage for seed/reset/validate flows.
+**Independent Test**: `validate_demo_data --json` reports pass; `reset_demo_data --force` wipes/reseeds <60s; pytest suite passes with counts matching spec.
+**Prompt**: tasks/planned/WP02-commands-validation-tests.md
+
+### Included Subtasks
+- [ ] T009
+- [ ] T010
+- [ ] T011
+- [ ] T014
+
+### Dependencies
+- Depends on WP01 (data generation ready).
+
+### Parallel Opportunities
+- T009 validation logic can proceed while T010 reset wiring is drafted; tests (T011) follow after core logic.
+
+---
+
+## Work Package WP03: Docker Profiles & Auto-Seed (Priority: P1)
+**Goal**: Configure demo (auto-seed) and demo-lite (manual) profiles with env templates and entrypoint wiring.
+**Independent Test**: `docker-compose --profile demo up` auto-seeds; `docker-compose --profile demo-lite up` requires manual seed; both reach healthy state <60s/30s respectively.
+**Prompt**: tasks/planned/WP03-docker-profiles-auto-seed.md
+
+### Included Subtasks
+- [ ] T012
+- [ ] T016
+
+### Dependencies
+- Depends on WP01 (seed command available).
+
+### Parallel Opportunities
+- None beyond coordinating with seed command output format.
+
+---
+
+## Work Package WP04: SQLite Fallback Compatibility (Priority: P3)
+**Goal**: Ensure DEMO_DATABASE=sqlite path works with same seed dataset and commands.
+**Independent Test**: `DEMO_DATABASE=sqlite python manage.py migrate && python manage.py seed_demo_data` succeeds; validate/reset pass on sqlite.
+**Prompt**: tasks/planned/WP04-sqlite-fallback.md
+
+### Included Subtasks
+- [ ] T013
+
+### Dependencies
+- Depends on WP01 (seed) and WP02 (validate/reset).
+
+### Parallel Opportunities
+- None.
+
+---
+
+## Work Package WP05: Documentation & Verification (Priority: P2)
+**Goal**: Align quickstart/docs and verification steps with final seed outputs and commands.
+**Independent Test**: Quickstart followed end-to-end produces expected counts; verification checklist matches actual outputs.
+**Prompt**: tasks/planned/WP05-docs-verification.md
+
+### Included Subtasks
+- [ ] T015
+
+### Dependencies
+- Depends on WP01-WP03 outputs.
+
+### Parallel Opportunities
+- None.
