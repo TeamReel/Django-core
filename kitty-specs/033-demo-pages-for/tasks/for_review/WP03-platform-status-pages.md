@@ -9,7 +9,7 @@ subtasks:
   - "T021"
 title: "Platform Status Pages"
 phase: "Phase 2 - Platform"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "GitHub Copilot"
 shell_pid: "31680"
@@ -21,6 +21,16 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2025-12-17T00:00:00Z"
+    lane: "doing"
+    agent: "GitHub Copilot"
+    shell_pid: "31680"
+    action: "Started implementation"
+  - timestamp: "2025-12-17T00:00:00Z"
+    lane: "for_review"
+    agent: "GitHub Copilot"
+    shell_pid: "31680"
+    action: "Completed: All 6 platform pages implemented (T016-T021), routes wired, build passing, ready for review"
 ---
 *Path: [templates/task-prompt-template.md](templates/task-prompt-template.md)*
 
