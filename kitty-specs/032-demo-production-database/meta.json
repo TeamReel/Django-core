@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "032",
+    "slug":  "032-demo-production-database",
+    "friendly_name":  "Demo Production Database \u0026 Seed Data",
+    "source_description":  "Production-ready database setup + comprehensive seed data for fully functional demo app demonstrating all modules 001-030.",
+    "created_at":  "2025-12-17T10:02:18Z"
+}

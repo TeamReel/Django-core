@@ -1,0 +1,223 @@
+# Docker Compose - Demo & Demo-Lite Profiles
+# 032-demo-production-database (WP03)
+#
+# Purpose: Provide quick-start demo environments with seeded data
+# Profiles:
+#   - demo: PostgreSQL + auto-seed (full production-like experience, <60s startup)
+#   - demo-lite: SQLite + manual seed (faster startup, <30s without seed)
+#
+# Usage:
+#   docker-compose -f docker-compose.demo.yml --profile demo up
+#   docker-compose -f docker-compose.demo.yml --profile demo-lite up
+
+version: '3.9'
+
+services:
+  # PostgreSQL Database (demo profile only)
+  db-demo:
+    image: postgres:13-alpine
+    profiles: ["demo"]
+    environment:
+      POSTGRES_DB: ${DEMO_DB_NAME:-django_core_demo}
+      POSTGRES_USER: ${DEMO_DB_USER:-demo}
+      POSTGRES_PASSWORD: ${DEMO_DB_PASSWORD:-Demo2024!}
+      # pgbouncer-compatible connection settings
+      # Set max_connections to support pooling (default 100 is sufficient for demo)
+      POSTGRES_INITDB_ARGS: "-c max_connections=100"
+    ports:
+      - "${DEMO_DB_PORT:-5433}:5432"
+    volumes:
+      - postgres_demo_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DEMO_DB_USER:-demo}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    command: >
+      postgres
+      -c shared_buffers=128MB
+      -c max_connections=100
+      -c work_mem=4MB
+
+  # Redis Cache & Broker (both profiles)
+  redis-demo:
+    image: redis:6-alpine
+    profiles: ["demo", "demo-lite"]
+    ports:
+      - "${DEMO_REDIS_PORT:-6380}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  # Django Web Application - Demo Profile (PostgreSQL + auto-seed)
+  web-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder  # Use builder for development dependencies
+    profiles: ["demo"]
+    entrypoint: ["/app/scripts/docker/entrypoint-demo.sh"]
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - .:/app
+    ports:
+      - "${DEMO_WEB_PORT:-8080}:8000"
+    environment:
+      # Django settings
+      - DEBUG=${DEMO_DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-demo-secret-key-change-in-production}
+      - DJANGO_SETTINGS_MODULE=config.settings.local
+      - ALLOWED_HOSTS=localhost,127.0.0.1,web-demo
+
+      # Database configuration
+      - DATABASE_URL=postgresql://${DEMO_DB_USER:-demo}:${DEMO_DB_PASSWORD:-Demo2024!}@db-demo:5432/${DEMO_DB_NAME:-django_core_demo}
+
+      # Connection pooling (pgbouncer-ready)
+      - CONN_MAX_AGE=600
+      - DB_POOL_PRE_PING=True
+
+      # Redis configuration
+      - REDIS_URL=redis://redis-demo:6379/0
+      - CELERY_BROKER_URL=redis://redis-demo:6379/0
+      - CELERY_TASK_ALWAYS_EAGER=False
+
+      # Demo-specific settings
+      - DEMO_AUTO_SEED=${DEMO_AUTO_SEED:-true}
+      - DEMO_RESET_ON_START=${DEMO_RESET_ON_START:-false}
+      - DEMO_RANDOM_SEED=${DEMO_RANDOM_SEED:-12345}
+
+      # Observability
+      - LOGGING_LEVEL=${DEMO_LOGGING_LEVEL:-INFO}
+      - PROMETHEUS_METRICS_ENABLED=True
+    depends_on:
+      db-demo:
+        condition: service_healthy
+      redis-demo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # Django Web Application - Demo-Lite Profile (SQLite + manual seed)
+  web-demo-lite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    profiles: ["demo-lite"]
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - .:/app
+      - sqlite_demo_data:/app/data
+    ports:
+      - "${DEMO_LITE_WEB_PORT:-8081}:8000"
+    environment:
+      # Django settings
+      - DEBUG=${DEMO_DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-demo-lite-secret-key-change-in-production}
+      - DJANGO_SETTINGS_MODULE=config.settings.local
+      - ALLOWED_HOSTS=localhost,127.0.0.1,web-demo-lite
+
+      # SQLite configuration
+      - DATABASE_URL=sqlite:////app/data/db.sqlite3
+
+      # Redis configuration
+      - REDIS_URL=redis://redis-demo:6379/0
+      - CELERY_BROKER_URL=redis://redis-demo:6379/0
+      - CELERY_TASK_ALWAYS_EAGER=False
+
+      # Demo-lite: Manual seed required (auto-seed disabled)
+      - DEMO_AUTO_SEED=false
+      - DEMO_RANDOM_SEED=${DEMO_RANDOM_SEED:-12345}
+
+      # Observability
+      - LOGGING_LEVEL=${DEMO_LOGGING_LEVEL:-INFO}
+      - PROMETHEUS_METRICS_ENABLED=True
+    depends_on:
+      redis-demo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Celery Worker - Demo Profile
+  celery-worker-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    profiles: ["demo"]
+    command: celery -A config worker --loglevel=info --concurrency=2
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=${DEMO_DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-demo-secret-key-change-in-production}
+      - DJANGO_SETTINGS_MODULE=config.settings.local
+      - DATABASE_URL=postgresql://${DEMO_DB_USER:-demo}:${DEMO_DB_PASSWORD:-Demo2024!}@db-demo:5432/${DEMO_DB_NAME:-django_core_demo}
+      - REDIS_URL=redis://redis-demo:6379/0
+      - CELERY_BROKER_URL=redis://redis-demo:6379/0
+      - LOGGING_LEVEL=${DEMO_LOGGING_LEVEL:-INFO}
+      - CONN_MAX_AGE=600
+    depends_on:
+      - db-demo
+      - redis-demo
+      - web-demo
+
+  # Celery Worker - Demo-Lite Profile
+  celery-worker-demo-lite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    profiles: ["demo-lite"]
+    command: celery -A config worker --loglevel=info --concurrency=2
+    volumes:
+      - .:/app
+      - sqlite_demo_data:/app/data
+    environment:
+      - DEBUG=${DEMO_DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-demo-lite-secret-key-change-in-production}
+      - DJANGO_SETTINGS_MODULE=config.settings.local
+      - DATABASE_URL=sqlite:////app/data/db.sqlite3
+      - REDIS_URL=redis://redis-demo:6379/0
+      - CELERY_BROKER_URL=redis://redis-demo:6379/0
+      - LOGGING_LEVEL=${DEMO_LOGGING_LEVEL:-INFO}
+    depends_on:
+      - redis-demo
+      - web-demo-lite
+
+volumes:
+  postgres_demo_data:
+  sqlite_demo_data:
+
+# Demo Profile Notes:
+# - PostgreSQL on port 5433 (avoid conflict with local dev on 5432)
+# - Redis on port 6380 (avoid conflict with local dev on 6379)
+# - Web on port 8080 (demo) or 8081 (demo-lite)
+# - Auto-seed runs on first startup (demo only)
+# - Set DEMO_RESET_ON_START=true to wipe data on every restart (DANGEROUS)
+# - Connection pooling configured (CONN_MAX_AGE=600s, pgbouncer-ready)
+# - Health checks ensure dependencies ready before app starts
+#
+# pgbouncer Integration (Future):
+# - Add pgbouncer service between app and db-demo
+# - Set max_client_conn=100, default_pool_size=25
+# - Update DATABASE_URL to point to pgbouncer:6432
+# - Ensure server_reset_query='DISCARD ALL' for session pooling
+#
+# Read Replica Configuration (Future Production):
+# - Add read-replica DATABASE_URL_READONLY in environment
+# - Example: DATABASE_URL_READONLY=postgresql://demo_ro:password@db-replica:5432/django_core_demo
+# - Django DATABASES config will route reads to replica when available
+# - Not deployed in demo profile (settings-only template)
