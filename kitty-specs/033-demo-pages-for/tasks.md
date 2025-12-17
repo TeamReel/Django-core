@@ -218,16 +218,16 @@ description: "Work packages for 033-demo-pages-for"
 
 ---
 
-## Work Package WP06: Charting Integration (Priority: P3)
+## Work Package WP06: Charting Integration (Priority: P3) ✅ COMPLETE
 
 **Goal**: Add Chart.js visualizations to credits and observability pages with lazy loading and theme awareness.
 **Independent Test**: Chart.js chunk loads on-demand (<500ms), credits and observability charts render correct data, bundle increase <100KB.
-**Prompt**: /tasks/planned/WP06-charting-integration.md
+**Prompt**: /tasks/done/WP06-charting-integration.md
 
 ### Included Subtasks
-- [ ] T034
-- [ ] T035
-- [ ] T036
+- [x] T034
+- [x] T035
+- [x] T036
 
 ### Implementation Sketch
 - Add chart dependencies, configure Vite code-splitting, lazy load chart components.
@@ -319,9 +319,9 @@ description: "Work packages for 033-demo-pages-for"
 | T031 | Deployment status page | WP05 | P3 | Yes |
 | T032 | Documentation browser | WP05 | P3 | Yes |
 | T033 | I18n demo page | WP05 | P3 | Yes |
-| T034 | Add Chart.js deps + lazy-load infra | WP06 | P3 | No |
-| T035 | Credits chart integration | WP06 | P3 | No |
-| T036 | Observability charts integration | WP06 | P3 | No |
+| T034 | Add Chart.js deps + lazy-load infra | WP06 | P3 | Yes |
+| T035 | Credits chart integration | WP06 | P3 | Yes |
+| T036 | Observability charts integration | WP06 | P3 | Yes |
 | T037 | Playwright fixtures (roles/context) | WP07 | P1 | Yes |
 | T038 | E2E tests for P1 pages | WP07 | P1 | Yes |
 | T039 | E2E tests for platform pages | WP07 | P1 | Yes |
