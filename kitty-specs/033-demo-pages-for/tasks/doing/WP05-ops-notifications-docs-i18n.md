@@ -8,10 +8,10 @@ subtasks:
   - "T033"
 title: "Ops, Notifications, Docs, i18n"
 phase: "Phase 3 - Ops & Docs"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "GitHub Copilot"
+shell_pid: "31680"
 review_status: ""
 reviewed_by: ""
 history:
@@ -107,3 +107,4 @@ history:
 ## Activity Log
 
 - 2025-12-17T00:00:00Z – system – lane=planned – Prompt created.
+- 2025-12-17T20:03:31Z – GitHub Copilot – shell_pid=31680 – lane=doing – Started implementation - Building 5 ops/docs/i18n pages
