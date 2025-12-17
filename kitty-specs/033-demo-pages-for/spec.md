@@ -450,6 +450,6 @@ For this feature to be considered complete:
 - [ ] Performance targets met (95% of pages load <2 seconds, Chart.js loads <500ms)
 - [x] Zero console errors or warnings during normal operation (no React key warnings, no API 404s)
 - [x] README updated with page inventory (table showing page name, route, module, description)
-- [x] No [NEEDS CLARIFICATION] markers remain in spec (all decisions made)
+- [x] No clarification markers remain in spec (all decisions made)
 - [ ] Code review approved by F10 Demo Foundation team
 - [ ] PR merged to main branch
