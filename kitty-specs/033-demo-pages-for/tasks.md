@@ -133,15 +133,15 @@ description: "Work packages for 033-demo-pages-for"
 
 **Goal**: Build platform status dashboards (health, constitution, security, observability base, api-docs, dashboard) consuming B01-B13/B18 data.
 **Independent Test**: Each page loads live backend data without console errors; observability polls every 30s with updated metrics; Swagger UI embeds correctly.
-**Prompt**: /tasks/planned/WP03-platform-status-pages.md
+**Prompt**: /tasks/done/WP03-platform-status-pages.md
 
 ### Included Subtasks
-- [ ] T016
-- [ ] T017
-- [ ] T018
-- [ ] T019
-- [ ] T020
-- [ ] T021
+- [x] T016
+- [x] T017
+- [x] T018
+- [x] T019
+- [x] T020
+- [x] T021
 
 ### Implementation Sketch
 - Implement cards/tables for health, constitution, security events using F01/F06.
