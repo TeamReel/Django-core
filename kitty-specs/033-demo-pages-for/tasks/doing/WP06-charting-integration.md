@@ -6,10 +6,10 @@ subtasks:
   - "T036"
 title: "Charting Integration"
 phase: "Phase 4 - Charts"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "42088"
 review_status: ""
 reviewed_by: ""
 history:
@@ -99,3 +99,4 @@ history:
 ## Activity Log
 
 - 2025-12-17T00:00:00Z – system – lane=planned – Prompt created.
+- 2025-12-17T20:26:57Z – claude – shell_pid=42088 – lane=doing – Started implementation
