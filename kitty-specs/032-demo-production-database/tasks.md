@@ -19,7 +19,7 @@
 - [ ] T012 Docker profiles/env: demo (auto-seed), demo-lite (manual); .env.demo example; entrypoint wiring
 - [ ] T013 SQLite fallback compatibility: DEMO_DATABASE switch, ORM-only code paths, smoke on sqlite
 - [ ] T014 Performance & observability: bulk_create/select_related/prefetch, timing/logging, --json outputs for commands
-- [ ] T015 Documentation & verification: quickstart alignment, sample outputs, verification checklist adjustments
+- [X] T015 Documentation & verification: quickstart alignment, sample outputs, verification checklist adjustments
 - [ ] T016 PostgreSQL pooling readiness: pgbouncer-compatible settings documented and validated in demo profile
 
 ---
@@ -102,13 +102,14 @@
 
 ---
 
-## Work Package WP05: Documentation & Verification (Priority: P2)
+## Work Package WP05: Documentation & Verification (Priority: P2) ✅ DONE
 **Goal**: Align quickstart/docs and verification steps with final seed outputs and commands.
 **Independent Test**: Quickstart followed end-to-end produces expected counts; verification checklist matches actual outputs.
-**Prompt**: tasks/planned/WP05-docs-verification.md
+**Prompt**: tasks/done/WP05-docs-verification.md
+**Completed**: 2025-12-17 by claude-reviewer (all command flags documented, sample outputs accurate)
 
 ### Included Subtasks
-- [ ] T015
+- [X] T015
 
 ### Dependencies
 - Depends on WP01-WP03 outputs.
