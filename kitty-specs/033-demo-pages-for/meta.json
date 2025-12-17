@@ -1,7 +1,1 @@
-﻿{
-    "feature_number": "033",
-    "slug": "033-demo-pages-for",
-    "friendly_name": "Demo Pages for Modules 001-030",
-    "source_description": "30+ fully functional demo pages demonstrating all implemented modules (B01-B21, F01-F09) with real backend integration. Strategic Product Owner needs visual proof for every module with click-through experience using realistic demo data. Real backend integration (no mocks), consistent F06 templates, Chart.js for visualizations, Playwright E2E tests per page, <2s page load via lazy loading. 24 pages total: Core Foundation (B01-B04) 4 pages, Identity (B05-B08) 6 pages, Configuration (B09-B12) 4 pages, Platform (B13-B18) 6 pages, Frontend showcase (F01-F09) 6 pages minus F08, Docs (B19, B21) 2 pages. Navigation via sidebar grouped by category, React Router v6, protected routes, permission-based access via B08.",
-    "created_at": "2025-12-17T15:00:59Z"
-}
+{"feature_number":"033","slug":"033-demo-pages-for","friendly_name":"Demo Pages for Modules 001-030","source_description":"Demo pages for all modules","created_at":"2025-12-17T15:00:59Z"}
