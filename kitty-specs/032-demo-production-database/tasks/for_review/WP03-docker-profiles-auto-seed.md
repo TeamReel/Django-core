@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "31232"
 ---
@@ -41,3 +41,4 @@ Provide docker profiles for demo (auto-seed) and demo-lite (manual) with environ
 ## Activity Log
 
 - 2025-12-17T12:33:40Z – claude – shell_pid=31232 – lane=doing – Started implementation of Docker profiles and auto-seed
+- 2025-12-17T12:37:16Z – claude – shell_pid=31232 – lane=for_review – Implementation complete: Docker profiles (demo/demo-lite), entrypoint script, .env.demo template, comprehensive documentation. Commit: 1cd2f419
