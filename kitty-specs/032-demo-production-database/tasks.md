@@ -68,14 +68,15 @@
 
 ---
 
-## Work Package WP03: Docker Profiles & Auto-Seed (Priority: P1)
+## Work Package WP03: Docker Profiles & Auto-Seed (Priority: P1) ✅ DONE
 **Goal**: Configure demo (auto-seed) and demo-lite (manual) profiles with env templates and entrypoint wiring.
 **Independent Test**: `docker-compose --profile demo up` auto-seeds; `docker-compose --profile demo-lite up` requires manual seed; both reach healthy state <60s/30s respectively.
-**Prompt**: tasks/planned/WP03-docker-profiles-auto-seed.md
+**Prompt**: tasks/done/WP03-docker-profiles-auto-seed.md
+**Completed**: 2025-12-17 by claude-reviewer (pgbouncer readiness confirmed, comprehensive documentation)
 
 ### Included Subtasks
-- [ ] T012
-- [ ] T016
+- [X] T012
+- [X] T016
 
 ### Dependencies
 - Depends on WP01 (seed command available).
