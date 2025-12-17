@@ -4,6 +4,9 @@
 # Core Django framework
 Django==5.1.4
 
+# PostgreSQL database adapter
+psycopg2-binary==2.9.9
+
 # Django REST Framework for API development
 djangorestframework==3.14.0
 
