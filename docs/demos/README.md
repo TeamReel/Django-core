@@ -102,9 +102,15 @@ DEMO_REDIS_PORT=6380
 ## Management Commands
 
 ### Seed Data
+
+Create demo dataset with organizations, users, projects, and activity data.
+
 ```bash
 # Seed demo data (idempotent - safe to rerun)
 docker exec -it <container> python manage.py seed_demo_data
+
+# Force recreation (deletes existing demo data)
+docker exec -it <container> python manage.py seed_demo_data --force
 
 # Seed with JSON output (for automation)
 docker exec -it <container> python manage.py seed_demo_data --json
@@ -113,7 +119,47 @@ docker exec -it <container> python manage.py seed_demo_data --json
 docker exec -it <container> python manage.py seed_demo_data --verbose
 ```
 
+**Sample JSON Output**:
+```json
+{
+  "status": "success",
+  "organisations": 5,
+  "superusers": 3,
+  "org_admins": 10,
+  "members_viewers": 7,
+  "demo_accounts": 6,
+  "users_additional": 14,
+  "projects": 80,
+  "audit_events_count": 250,
+  "transactions_count": 150,
+  "notifications_count": 200,
+  "feature_flags_count": 15,
+  "elapsed_seconds": 12.5
+}
+```
+
+**Sample Console Output** (verbose):
+```
+Seeding demo production database...
+✓ Created 5 organisations (TechVentures, DataLab, DevOps Guild, CloudStream, Agile Consulting)
+✓ Created 3 superusers
+✓ Created 10 org admins across 5 organisations
+✓ Created 7 members/viewers
+✓ Created 6 demo accounts with password Demo2024!
+✓ Created 80 projects (15/30/10/5/20 per org)
+✓ Generated 250 audit events (last 30 days)
+✓ Generated 150 transactions (last 30 days)
+✓ Generated 200 notifications (5-10 unread per demo account)
+✓ Created 15 feature flags (org-scoped)
+
+Summary: 5 orgs, 20 users, 80 projects, 250 audits, 150 transactions, 200 notifications
+Elapsed: 12.5s
+```
+
 ### Validate Data
+
+Check data integrity and database health.
+
 ```bash
 # Check data integrity
 docker exec -it <container> python manage.py validate_demo_data
@@ -122,14 +168,122 @@ docker exec -it <container> python manage.py validate_demo_data
 docker exec -it <container> python manage.py validate_demo_data --json
 ```
 
+**Sample JSON Output** (pass):
+```json
+{
+  "status": "pass",
+  "violations_count": 0,
+  "violations": [],
+  "elapsed_seconds": 0.8,
+  "db_size_mb": 52
+}
+```
+
+**Sample JSON Output** (fail):
+```json
+{
+  "status": "fail",
+  "violations_count": 2,
+  "violations": [
+    {
+      "check": "org_admins",
+      "message": "Organisation 'TechCorp' has no admins"
+    },
+    {
+      "check": "credit_balances",
+      "message": "Organisation 'StartupLabs' has negative balance: -500"
+    }
+  ],
+  "elapsed_seconds": 1.2,
+  "db_size_mb": 52
+}
+```
+
+**Sample Console Output** (pass):
+```
+✓ Validation passed - all checks OK (0.8s)
+
+Database size: 52 MB
+Elapsed time: 0.8s
+```
+
+**Validation Checks**:
+1. **org_admins**: Each organization has ≥1 admin
+2. **credit_balances**: No negative credit balances
+3. **project_permissions**: Projects have valid role assignments
+4. **audit_references**: Audit events reference valid orgs/users
+5. **notification_scoping**: Notifications belong to valid users/orgs
+
 ### Reset Data
+
+Wipe demo data and optionally reseed. **⚠️ DESTRUCTIVE OPERATION**
+
 ```bash
 # ⚠️ DANGEROUS: Wipe and reseed demo data
 docker exec -it <container> python manage.py reset_demo_data --force
 
 # Reset without reseeding (wipe only)
 docker exec -it <container> python manage.py reset_demo_data --force --no-seed
+
+# Reset with JSON output
+docker exec -it <container> python manage.py reset_demo_data --force --json
+
+# Reset with verbose logging
+docker exec -it <container> python manage.py reset_demo_data --force --verbose
 ```
+
+**Sample JSON Output**:
+```json
+{
+  "status": "success",
+  "wipe": {
+    "deleted": {
+      "projects": 80,
+      "memberships": 20,
+      "users": 20,
+      "organisations": 5,
+      "audit_events": 250,
+      "transactions": 150,
+      "notifications": 200
+    },
+    "elapsed_seconds": 2.3
+  },
+  "seed": {
+    "skipped": false,
+    "elapsed_seconds": 12.1
+  },
+  "total_elapsed_seconds": 14.4
+}
+```
+
+**Sample Console Output** (verbose):
+```
+⚠️  Resetting demo production database (--force flag detected)
+
+Wiping demo data...
+  - Deleted 80 projects
+  - Deleted 20 memberships
+  - Deleted 20 users
+  - Deleted 5 organisations
+  - Deleted 250 audit events
+  - Deleted 150 transactions
+  - Deleted 200 notifications
+Wipe completed in 2.3s
+
+Reseeding demo data...
+✓ Created 5 organisations
+✓ Created 20 users
+✓ Created 80 projects
+... (seed output continues)
+
+Reset complete: 14.4s total (2.3s wipe + 12.1s seed)
+```
+
+**Safety Notes**:
+- `--force` flag required to prevent accidental data loss
+- Only deletes demo-scoped data (orgs matching seed data slugs)
+- `--no-seed` skips reseeding (useful for clean slate testing)
+- Exit code 1 if --force not provided
 
 ## Demo Accounts
 

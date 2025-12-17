@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "31232"
+---
 # WP05: Documentation & Verification
 
 ## Objective
@@ -25,3 +30,7 @@ Align quickstart/docs and verification steps with final demo seed outputs and co
 
 ## Notes
 - Borrow structured output examples from WP02 for accuracy.
+
+## Activity Log
+
+- 2025-12-17T12:47:06Z – claude – shell_pid=31232 – lane=doing – Started documentation verification and alignment
