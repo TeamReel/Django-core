@@ -34,3 +34,4 @@ Align quickstart/docs and verification steps with final demo seed outputs and co
 ## Activity Log
 
 - 2025-12-17T12:47:06Z – claude – shell_pid=31232 – lane=doing – Started documentation verification and alignment
+- 2025-12-17T13:15:00Z – claude – shell_pid=31232 – lane=doing – Completed documentation updates with comprehensive command examples and sample outputs
