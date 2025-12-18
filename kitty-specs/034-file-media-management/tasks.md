@@ -30,11 +30,11 @@
 **Priority**: P1 (Core Feature)
 **Independent Test**: Upload an image and verify thumbnail appears later; Soft delete a file and verify it's gone after cleanup task runs (mocked time).
 
-- [ ] **T011**: Configure Celery for `files` app (if not already global).
-- [ ] **T012**: Implement `generate_thumbnail` task using Pillow.
-- [ ] **T013**: Trigger thumbnail generation on file upload (view or signal).
-- [ ] **T014**: Implement `cleanup_deleted_files` task for soft-deleted assets.
-- [ ] **T015**: Write tests for tasks (mocking storage and Celery).
+- [x] **T011**: Configure Celery for `files` app (if not already global).
+- [x] **T012**: Implement `generate_thumbnail` task using Pillow.
+- [x] **T013**: Trigger thumbnail generation on file upload (view or signal).
+- [x] **T014**: Implement `cleanup_deleted_files` task for soft-deleted assets.
+- [x] **T015**: Write tests for tasks (mocking storage and Celery).
 
 ### WP04: Frontend Component
 **Goal**: Create a reusable, accessible file upload component in the Design System.
