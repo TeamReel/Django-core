@@ -10,25 +10,79 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name="activityevent",
-            name="project_id",
-            field=models.UUIDField(blank=True, help_text="Optional project context", null=True),
+        migrations.RunSQL(
+            sql="""
+            ALTER TABLE realtime_activity_event
+            ALTER COLUMN project_id TYPE uuid USING project_id::text::uuid;
+            """,
+            reverse_sql="""
+            ALTER TABLE realtime_activity_event
+            ALTER COLUMN project_id TYPE integer USING project_id::text::integer;
+            """,
+            state_operations=[
+                migrations.AlterField(
+                    model_name="activityevent",
+                    name="project_id",
+                    field=models.UUIDField(
+                        blank=True, help_text="Optional project context", null=True
+                    ),
+                ),
+            ],
         ),
-        migrations.AlterField(
-            model_name="activityevent",
-            name="resource_id",
-            field=models.UUIDField(help_text="ID of the affected resource"),
+        migrations.RunSQL(
+            sql="""
+            ALTER TABLE realtime_activity_event
+            ALTER COLUMN resource_id TYPE uuid USING resource_id::text::uuid;
+            """,
+            reverse_sql="""
+            ALTER TABLE realtime_activity_event
+            ALTER COLUMN resource_id TYPE integer USING resource_id::text::integer;
+            """,
+            state_operations=[
+                migrations.AlterField(
+                    model_name="activityevent",
+                    name="resource_id",
+                    field=models.UUIDField(help_text="ID of the affected resource"),
+                ),
+            ],
         ),
-        migrations.AlterField(
-            model_name="presencestatus",
-            name="project_id",
-            field=models.UUIDField(blank=True, help_text="Optional project scope", null=True),
+        migrations.RunSQL(
+            sql="""
+            ALTER TABLE realtime_presence_status
+            ALTER COLUMN project_id TYPE uuid USING project_id::text::uuid;
+            """,
+            reverse_sql="""
+            ALTER TABLE realtime_presence_status
+            ALTER COLUMN project_id TYPE integer USING project_id::text::integer;
+            """,
+            state_operations=[
+                migrations.AlterField(
+                    model_name="presencestatus",
+                    name="project_id",
+                    field=models.UUIDField(
+                        blank=True, help_text="Optional project scope", null=True
+                    ),
+                ),
+            ],
         ),
-        migrations.AlterField(
-            model_name="realtimemessage",
-            name="scope_id",
-            field=models.UUIDField(help_text="ID of the scope (user_id, org_id, project_id)"),
+        migrations.RunSQL(
+            sql="""
+            ALTER TABLE realtime_message
+            ALTER COLUMN scope_id TYPE uuid USING scope_id::text::uuid;
+            """,
+            reverse_sql="""
+            ALTER TABLE realtime_message
+            ALTER COLUMN scope_id TYPE integer USING scope_id::text::integer;
+            """,
+            state_operations=[
+                migrations.AlterField(
+                    model_name="realtimemessage",
+                    name="scope_id",
+                    field=models.UUIDField(
+                        help_text="ID of the scope (user_id, org_id, project_id)"
+                    ),
+                ),
+            ],
         ),
         migrations.AlterField(
             model_name="websocketconnection",

@@ -9,14 +9,38 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name="activityevent",
-            name="organization_id",
-            field=models.UUIDField(help_text="Organization context"),
+        migrations.RunSQL(
+            sql="""
+            ALTER TABLE realtime_activity_event
+            ALTER COLUMN organization_id TYPE uuid USING organization_id::text::uuid;
+            """,
+            reverse_sql="""
+            ALTER TABLE realtime_activity_event
+            ALTER COLUMN organization_id TYPE integer USING organization_id::text::integer;
+            """,
+            state_operations=[
+                migrations.AlterField(
+                    model_name="activityevent",
+                    name="organization_id",
+                    field=models.UUIDField(help_text="Organization context"),
+                ),
+            ],
         ),
-        migrations.AlterField(
-            model_name="presencestatus",
-            name="organization_id",
-            field=models.UUIDField(help_text="Organization scope for presence visibility"),
+        migrations.RunSQL(
+            sql="""
+            ALTER TABLE realtime_presence_status
+            ALTER COLUMN organization_id TYPE uuid USING organization_id::text::uuid;
+            """,
+            reverse_sql="""
+            ALTER TABLE realtime_presence_status
+            ALTER COLUMN organization_id TYPE integer USING organization_id::text::integer;
+            """,
+            state_operations=[
+                migrations.AlterField(
+                    model_name="presencestatus",
+                    name="organization_id",
+                    field=models.UUIDField(help_text="Organization scope for presence visibility"),
+                ),
+            ],
         ),
     ]
