@@ -4,7 +4,13 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.utils import timezone
 from organisations.models import Membership
+from projects.models import Project
 
+from .metrics import (
+    dec_websocket_connections,
+    inc_websocket_connections,
+    inc_websocket_messages_received,
+)
 from .models import PresenceStatus, WebSocketConnection
 
 logger = logging.getLogger(__name__)
@@ -17,6 +23,8 @@ class BaseConsumer(AsyncJsonWebsocketConsumer):
     - Error handling
     - JSON encoding/decoding
     """
+
+    consumer_type = "base"
 
     async def connect(self):
         """
@@ -33,6 +41,7 @@ class BaseConsumer(AsyncJsonWebsocketConsumer):
                 return
 
             await self.accept()
+            inc_websocket_connections(self.consumer_type)
             logger.info(f"Accepted connection for user {user.id}")
 
         except Exception as e:
@@ -43,13 +52,14 @@ class BaseConsumer(AsyncJsonWebsocketConsumer):
         """
         Handle disconnection.
         """
+        dec_websocket_connections(self.consumer_type)
         logger.info(f"Disconnected user {self.scope.get('user', 'unknown')} with code {close_code}")
 
     async def receive_json(self, content, **kwargs):
         """
         Handle incoming JSON messages.
         """
-        pass
+        inc_websocket_messages_received(self.consumer_type)
 
     async def send_error(self, code, message):
         """
@@ -63,6 +73,8 @@ class TestConsumer(BaseConsumer):
     Consumer for testing connectivity and auth.
     """
 
+    consumer_type = "test"
+
     async def connect(self):
         await super().connect()
         if self.scope.get("user") and self.scope["user"].is_authenticated:
@@ -74,6 +86,8 @@ class NotificationConsumer(BaseConsumer):
     Consumer for real-time notifications.
     Handles tenant-scoped broadcasting and connection management.
     """
+
+    consumer_type = "notification"
 
     async def connect(self):
         await super().connect()
@@ -304,3 +318,59 @@ class PresenceConsumer(BaseConsumer):
                 "last_seen": timezone.now(),
             },
         )
+
+
+class ActivityConsumer(BaseConsumer):
+    """
+    Consumer for project activity feeds.
+    """
+
+    consumer_type = "activity"
+
+    async def connect(self):
+        try:
+            user = self.scope.get("user")
+            if not user or not user.is_authenticated:
+                logger.warning(
+                    f"Rejected unauthenticated connection from {self.scope.get('client')}"
+                )
+                await self.close(code=4003)
+                return
+
+            self.user = user
+            self.project_id = self.scope["url_route"]["kwargs"].get("project_id")
+
+            if await self.check_project_access(self.project_id):
+                await self.accept()
+                inc_websocket_connections(self.consumer_type)
+                self.group_name = f"activity_project_{self.project_id}"
+                await self.channel_layer.group_add(self.group_name, self.channel_name)
+                logger.info(f"User {user.id} joined activity feed for project {self.project_id}")
+            else:
+                logger.warning(f"User {user.id} denied access to project {self.project_id}")
+                await self.close(code=4003)
+
+        except Exception as e:
+            logger.error(f"Error during connection: {str(e)}")
+            await self.close(code=4000)
+
+    async def disconnect(self, close_code):
+        if hasattr(self, "group_name"):
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        await super().disconnect(close_code)
+
+    async def activity_event(self, event):
+        """
+        Handle activity event broadcast.
+        """
+        await self.send_json(event["data"])
+
+    @database_sync_to_async
+    def check_project_access(self, project_id):
+        try:
+            project = Project.objects.get(id=project_id)
+            return Membership.objects.filter(
+                user=self.user, organisation=project.organisation, is_active=True
+            ).exists()
+        except Project.DoesNotExist:
+            return False

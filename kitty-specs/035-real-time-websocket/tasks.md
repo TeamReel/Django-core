@@ -137,16 +137,16 @@ This feature is broken down into 6 work packages that can be developed and deplo
 **Priority**: P2 (Enhanced)
 **Estimated Effort**: 2-3 days
 **Dependencies**: WP04 complete
-**Prompt**: [WP05-activity-feed-monitoring.md](tasks/planned/WP05-activity-feed-monitoring.md)
+**Prompt**: [WP05-activity-feed-monitoring.md](tasks/done/WP05-activity-feed-monitoring.md)
 
 **Goal**: Live activity stream with system monitoring and metrics integration.
 
 **Subtasks**:
-- [ ] **T024**: Create ActivityConsumer for live activity updates
-- [ ] **T025**: Implement activity event logging and broadcasting
-- [ ] **T026**: Add Prometheus metrics: websocket_connections_total, websocket_connections_active, websocket_messages_sent/received_total, websocket_message_delivery_seconds, websocket_errors_total, websocket_rate_limit_violations_total
-- [ ] **T027**: Create health check endpoints at /health/websocket with Redis connectivity and connection count status
-- [ ] **T028**: Build activity feed aggregation and filtering
+- [x] **T024**: Create ActivityConsumer for live activity updates
+- [x] **T025**: Implement activity event logging and broadcasting
+- [x] **T026**: Add Prometheus metrics: websocket_connections_total, websocket_connections_active, websocket_messages_sent/received_total, websocket_message_delivery_seconds, websocket_errors_total, websocket_rate_limit_violations_total
+- [x] **T027**: Create health check endpoints at /health/websocket with Redis connectivity and connection count status
+- [x] **T028**: Build activity feed aggregation and filtering
 
 **Success Criteria**:
 - Activity events stream in real-time to relevant users

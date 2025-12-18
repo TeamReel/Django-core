@@ -5,6 +5,8 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils import timezone
 
+from .metrics import inc_websocket_messages_sent
+
 logger = logging.getLogger(__name__)
 
 # In-memory queue for failed messages
@@ -79,6 +81,7 @@ class NotificationService:
             async_to_sync(self.channel_layer.group_send)(
                 group_name, {"type": "notification_message", "message": envelope}
             )
+            inc_websocket_messages_sent("notification")
             logger.debug(f"Sent {envelope['type']} to {group_name}")
 
         except Exception as e:
@@ -102,3 +105,50 @@ class NotificationService:
 
         for item in current_queue:
             self._send_to_group(item["group"], item["envelope"])
+
+
+class ActivityService:
+    """
+    Service for broadcasting activity events.
+    """
+
+    def __init__(self):
+        self.channel_layer = get_channel_layer()
+
+    def broadcast_activity(
+        self, project_id, action_type, resource_type, resource_id, actor_user, metadata=None
+    ):
+        """
+        Broadcast an activity event to a project group.
+        """
+        group_name = f"activity_project_{project_id}"
+
+        data = {
+            "id": str(uuid.uuid4()),
+            "type": "activity.event",
+            "timestamp": timezone.now().isoformat(),
+            "actor": {
+                "id": actor_user.id,
+                "email": actor_user.email,
+                "name": actor_user.get_full_name(),
+            },
+            "action": action_type,
+            "resource": {
+                "type": resource_type,
+                "id": resource_id,
+            },
+            "metadata": metadata or {},
+        }
+
+        try:
+            async_to_sync(self.channel_layer.group_send)(
+                group_name,
+                {
+                    "type": "activity.event",
+                    "data": data,
+                },
+            )
+            inc_websocket_messages_sent("activity")
+            logger.info(f"Broadcast activity {action_type} to {group_name}")
+        except Exception as e:
+            logger.error(f"Failed to broadcast activity: {e}")
