@@ -5,7 +5,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.utils import timezone
 from organisations.models import Membership
 
-from .models import WebSocketConnection
+from .models import PresenceStatus, WebSocketConnection
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +78,8 @@ class NotificationConsumer(BaseConsumer):
     async def connect(self):
         await super().connect()
 
-        # If connection was rejected by BaseConsumer, user won't be authenticated or connection closed
-        # But BaseConsumer.connect() doesn't return status.
+        # If connection was rejected by BaseConsumer, user won't be authenticated
+        # or connection closed. But BaseConsumer.connect() doesn't return status.
         # We check user auth again to be safe and ensure we only proceed if valid.
         user = self.scope.get("user")
         if user and user.is_authenticated:
@@ -97,11 +97,18 @@ class NotificationConsumer(BaseConsumer):
                 logger.info(f"Notification connection established for user {user.id}")
             except Exception as e:
                 logger.error(f"Error setting up notification connection: {e}")
+                if self.connection_record:
+                    await self.delete_connection_record()
                 await self.close(code=4000)
 
     async def disconnect(self, close_code):
-        await self.cleanup_connection()
-        await super().disconnect(close_code)
+        logger.info(f"NotificationConsumer.disconnect called with code {close_code}")
+        try:
+            await self.cleanup_connection()
+        except Exception as e:
+            logger.error(f"Error during disconnect cleanup: {e}")
+        finally:
+            await super().disconnect(close_code)
 
     @database_sync_to_async
     def create_connection_record(self):
@@ -137,10 +144,15 @@ class NotificationConsumer(BaseConsumer):
 
     async def cleanup_connection(self):
         """Remove from groups and delete connection record"""
-        logger.info(f"Cleaning up connection for user {self.user.id}")
+        if hasattr(self, "user"):
+            logger.info(f"Cleaning up connection for user {self.user.id}")
+
         if hasattr(self, "user_groups"):
             for group in self.user_groups:
-                await self.channel_layer.group_discard(group, self.channel_name)
+                try:
+                    await self.channel_layer.group_discard(group, self.channel_name)
+                except Exception as e:
+                    logger.error(f"Error discarding group {group}: {e}")
 
         await self.delete_connection_record()
 
@@ -167,3 +179,128 @@ class NotificationConsumer(BaseConsumer):
         """Handle notification messages from group broadcast"""
         # Send message to client
         await self.send_json(event["message"])
+
+
+class PresenceConsumer(BaseConsumer):
+    """
+    Consumer for real-time presence tracking.
+    Handles heartbeats, status updates, and location tracking.
+    """
+
+    async def connect(self):
+        """
+        Handle new WebSocket connection.
+        Validates authentication before accepting.
+        """
+        try:
+            user = self.scope.get("user")
+            if user and user.is_authenticated:
+                self.user = user
+                self.org_id = self.scope["url_route"]["kwargs"].get("org_id")
+
+                # Validate membership
+                if not await self.check_membership(self.org_id):
+                    logger.warning(f"User {user.id} is not a member of org {self.org_id}")
+                    await self.close(code=4003)
+                    return
+
+                self.connection_record = None
+
+                self.connection_record = await self.create_connection_record()
+                await self.set_status("online")
+                logger.info(
+                    f"Presence connection established for user {user.id} in org {self.org_id}"
+                )
+
+                await super().connect()
+            else:
+                await self.close(code=4001)
+        except Exception as e:
+            logger.error(f"Error setting up presence connection: {e}")
+            if self.connection_record:
+                await self.delete_connection_record()
+            await self.close(code=4000)
+
+    async def disconnect(self, close_code):
+        try:
+            if hasattr(self, "user") and self.user.is_authenticated:
+                await self.set_status("offline")
+                await self.delete_connection_record()
+        except Exception as e:
+            logger.error(f"Error during presence disconnect: {e}")
+        finally:
+            await super().disconnect(close_code)
+
+    async def receive_json(self, content, **kwargs):
+        """
+        Handle incoming presence messages.
+        Expected types: 'heartbeat', 'status_update', 'location_update'
+        """
+        msg_type = content.get("type")
+
+        if hasattr(self, "connection_record") and self.connection_record:
+            await self.update_heartbeat()
+
+        if msg_type == "heartbeat":
+            # Heartbeat already updated above
+            pass
+        elif msg_type == "status_update":
+            status = content.get("status")
+            if status in ["online", "away", "offline"]:
+                await self.set_status(status)
+        elif msg_type == "location_update":
+            location = content.get("location")
+            await self.update_location(location)
+
+    @database_sync_to_async
+    def check_membership(self, org_id):
+        return Membership.objects.filter(
+            user=self.user, organisation_id=org_id, is_active=True
+        ).exists()
+
+    @database_sync_to_async
+    def create_connection_record(self):
+        return WebSocketConnection.objects.create(
+            user=self.user,
+            channel_name=self.channel_name,
+            last_heartbeat=timezone.now(),
+        )
+
+    @database_sync_to_async
+    def delete_connection_record(self):
+        if hasattr(self, "connection_record") and self.connection_record:
+            self.connection_record.delete()
+
+    @database_sync_to_async
+    def update_heartbeat(self):
+        self.connection_record.last_heartbeat = timezone.now()
+        self.connection_record.save(update_fields=["last_heartbeat"])
+
+        # Also update PresenceStatus last_seen
+        PresenceStatus.objects.update_or_create(
+            user=self.user,
+            organization_id=self.org_id,
+            defaults={"last_seen": timezone.now()},
+        )
+
+    @database_sync_to_async
+    def set_status(self, status):
+        PresenceStatus.objects.update_or_create(
+            user=self.user,
+            organization_id=self.org_id,
+            defaults={
+                "status": status,
+                "last_seen": timezone.now(),
+            },
+        )
+
+    @database_sync_to_async
+    def update_location(self, location):
+        PresenceStatus.objects.update_or_create(
+            user=self.user,
+            organization_id=self.org_id,
+            defaults={
+                "current_location": location,
+                "last_seen": timezone.now(),
+            },
+        )

@@ -33,8 +33,11 @@ class WebSocketConnection(models.Model):
         unique=True,
         validators=[
             RegexValidator(
-                regex=r"^[a-zA-Z0-9\.\-_]+$",
-                message="Channel name must be alphanumeric with dots, hyphens, underscores",
+                regex=r"^[a-zA-Z0-9\.\-_!]+$",
+                message=(
+                    "Channel name must be alphanumeric with dots, hyphens, underscores, "
+                    "and exclamation marks"
+                ),
             )
         ],
         help_text="Django Channels channel name for message routing",
@@ -199,9 +202,7 @@ class PresenceStatus(models.Model):
         max_length=255, blank=True, null=True, help_text="Current page/project location"
     )
 
-    organization_id = models.PositiveIntegerField(
-        help_text="Organization scope for presence visibility"
-    )
+    organization_id = models.UUIDField(help_text="Organization scope for presence visibility")
 
     project_id = models.PositiveIntegerField(
         null=True, blank=True, help_text="Optional project scope"
@@ -246,7 +247,7 @@ class ActivityEvent(models.Model):
 
     resource_id = models.PositiveIntegerField(help_text="ID of the affected resource")
 
-    organization_id = models.PositiveIntegerField(help_text="Organization context")
+    organization_id = models.UUIDField(help_text="Organization context")
 
     project_id = models.PositiveIntegerField(
         null=True, blank=True, help_text="Optional project context"
