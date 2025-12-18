@@ -1,6 +1,7 @@
 ---
 lane: "doing"
 agent: "GitHub Copilot"
+shell_pid: "13484"
 ---
 # WP01: Backend Foundation
 *Tasks: T001, T002, T003, T004, T005*
