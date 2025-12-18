@@ -2,6 +2,7 @@
 work_package_id: "WP01"
 title: "Infrastructure Setup"
 lane: "done"
+assignee: "copilot"
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006"]
 priority: "P1"
 estimated_effort: "2-3 days"

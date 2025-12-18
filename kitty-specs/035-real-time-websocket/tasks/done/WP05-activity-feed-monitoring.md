@@ -2,6 +2,7 @@
 work_package_id: "WP05"
 title: "Activity Feed & Monitoring (User Story 3)"
 lane: "done"
+assignee: "copilot"
 subtasks: ["T024", "T025", "T026", "T027", "T028"]
 priority: "P2"
 estimated_effort: "2-3 days"

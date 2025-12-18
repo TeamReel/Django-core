@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+# ruff: noqa: S101, S106
 import pytest
 from channels.testing import WebsocketCommunicator
 from django.contrib.auth import get_user_model
@@ -23,7 +24,9 @@ async def test_activity_consumer_metrics(settings):
     }
     with patch("rtc_websockets.metrics.emit_metric") as mock_emit:
         # Setup
-        user = await User.objects.acreate(email="test_metrics@example.com", password="password")  # noqa: S106
+        user = await User.objects.acreate(
+            email="test_metrics@example.com", password="password"
+        )  # noqa: S106
         org = await Organisation.objects.acreate(
             name="Test Org Metrics", slug="test-org-metrics", creator=user
         )
@@ -96,7 +99,9 @@ async def test_activity_consumer_metrics(settings):
 @pytest.mark.django_db
 def test_activity_service_metrics():
     with patch("rtc_websockets.metrics.emit_metric") as mock_emit:
-        user = User.objects.create(email="sender_metrics@example.com", password="password")  # noqa: S106
+        user = User.objects.create(
+            email="sender_metrics@example.com", password="password"
+        )  # noqa: S106
         service = ActivityService()
 
         # Mock channel_layer to avoid actual sending

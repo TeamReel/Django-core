@@ -115,11 +115,11 @@ This feature is broken down into 6 work packages that can be developed and deplo
 **Goal**: Real-time user presence status with Page Visibility API integration.
 
 **Subtasks**:
-- [ ] **T019**: Create PresenceConsumer for status broadcasting
-- [ ] **T020**: Implement Page Visibility API detection
-- [ ] **T021**: Build presence update services and status management
-- [ ] **T022**: Add online user counting per organization
-- [ ] **T023**: Implement presence cleanup for disconnected users
+- [x] **T019**: Create PresenceConsumer for status broadcasting
+- [x] **T020**: Implement Page Visibility API detection
+- [x] **T021**: Build presence update services and status management
+- [x] **T022**: Add online user counting per organization
+- [x] **T023**: Implement presence cleanup for disconnected users
 
 **Success Criteria**:
 - User presence updates in real-time across organization
@@ -172,12 +172,12 @@ This feature is broken down into 6 work packages that can be developed and deplo
 **Goal**: Production-ready rate limiting with comprehensive demo interface.
 
 **Subtasks**:
-- [ ] **T029**: Implement rate limiting with Redis-based tracking
-- [ ] **T030**: Add throttling and warning message system
-- [ ] **T031**: Create comprehensive demo page at `/demo/realtime`
-- [ ] **T032**: Build connection testing and monitoring interface
-- [ ] **T033**: Add manual notification triggers for demonstration
-- [ ] **T034**: Implement error handling and connection recovery
+- [x] **T029**: Implement rate limiting with Redis-based tracking
+- [x] **T030**: Add throttling and warning message system
+- [x] **T031**: Create comprehensive demo page at `/demo/realtime`
+- [x] **T032**: Build connection testing and monitoring interface
+- [x] **T033**: Add manual notification triggers for demonstration
+- [x] **T034**: Implement error handling and connection recovery
 
 **Success Criteria**:
 - Rate limiting prevents abuse while maintaining usability

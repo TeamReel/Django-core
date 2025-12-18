@@ -2,6 +2,7 @@
 work_package_id: "WP03"
 title: "Real-time Notifications (User Story 1)"
 lane: "done"
+assignee: "copilot"
 subtasks: ["T013", "T014", "T015", "T016", "T017", "T018"]
 priority: "P1"
 estimated_effort: "3-4 days"

@@ -2,6 +2,7 @@ import logging
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.conf import settings
 from django.utils import timezone
 from organisations.models import Membership
 from projects.models import Project
@@ -10,8 +11,10 @@ from .metrics import (
     dec_websocket_connections,
     inc_websocket_connections,
     inc_websocket_messages_received,
+    inc_websocket_rate_limit_violations,
 )
 from .models import PresenceStatus, WebSocketConnection
+from .ratelimit import AsyncRateLimiter
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +25,16 @@ class BaseConsumer(AsyncJsonWebsocketConsumer):
     - Authentication check
     - Error handling
     - JSON encoding/decoding
+    - Rate limiting
     """
 
     consumer_type = "base"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        limit = getattr(settings, "WEBSOCKET_RATELIMIT_LIMIT", 60)
+        window = getattr(settings, "WEBSOCKET_RATELIMIT_WINDOW", 60)
+        self.rate_limiter = AsyncRateLimiter(limit=limit, window=window)
 
     async def connect(self):
         """
@@ -57,9 +67,32 @@ class BaseConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive_json(self, content, **kwargs):
         """
-        Handle incoming JSON messages.
+        Handle incoming JSON messages with rate limiting.
         """
+        # Rate limiting check
+        user_key = (
+            str(self.scope["user"].id)
+            if self.scope.get("user") and self.scope["user"].is_authenticated
+            else self.channel_name
+        )
+        is_allowed, remaining = await self.rate_limiter.check_limit(user_key)
+
+        if not is_allowed:
+            inc_websocket_rate_limit_violations(self.consumer_type)
+            await self.send_json(
+                {"type": "error", "code": 4029, "message": "Rate limit exceeded. Please slow down."}
+            )
+            return
+
         inc_websocket_messages_received(self.consumer_type)
+        await self.handle_json(content, **kwargs)
+
+    async def handle_json(self, content, **kwargs):
+        """
+        Hook for subclasses to handle JSON messages.
+        """
+        if content.get("type") == "ping":
+            await self.send_json({"type": "pong", "message": "pong"})
 
     async def send_error(self, code, message):
         """
@@ -178,7 +211,7 @@ class NotificationConsumer(BaseConsumer):
         else:
             logger.warning("No connection record to delete")
 
-    async def receive_json(self, content, **kwargs):
+    async def handle_json(self, content, **kwargs):
         """Handle incoming messages"""
         # Update heartbeat on any activity
         if hasattr(self, "connection_record") and self.connection_record:
@@ -245,7 +278,7 @@ class PresenceConsumer(BaseConsumer):
         finally:
             await super().disconnect(close_code)
 
-    async def receive_json(self, content, **kwargs):
+    async def handle_json(self, content, **kwargs):
         """
         Handle incoming presence messages.
         Expected types: 'heartbeat', 'status_update', 'location_update'

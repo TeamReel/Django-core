@@ -22,3 +22,7 @@ def inc_websocket_errors(consumer_type, error_type):
     emit_metric(
         "counter", "websocket_errors_total", 1, {"type": consumer_type, "error": error_type}
     )
+
+
+def inc_websocket_rate_limit_violations(consumer_type):
+    emit_metric("counter", "websocket_rate_limit_violations_total", 1, {"type": consumer_type})

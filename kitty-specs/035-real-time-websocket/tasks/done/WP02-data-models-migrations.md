@@ -2,6 +2,7 @@
 work_package_id: "WP02"
 title: "Data Models & Migrations"
 lane: "done"
+assignee: "copilot"
 subtasks: ["T007", "T008", "T009", "T010", "T011", "T012"]
 priority: "P1"
 estimated_effort: "1-2 days"

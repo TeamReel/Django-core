@@ -8,42 +8,32 @@
 - tasks.md - Work packages en taken
 - data-model.md - Data model definitie
 
-### Implementatie: WP01 & WP02 Complete
+### Implementatie: WP01-WP06 Complete
 **Status**: Ready for Review
 **Feature**: 035-real-time-websocket
 
 **Wat is gebouwd**:
-- **Infrastructure Setup (WP01)**:
-    - Django Channels configured with ASGI.
-    - Redis channel layer set up.
-    - Base WebSocket consumer with authentication.
-    - JWT fallback authentication.
-- **Data Models & Migrations (WP02)**:
-    - WebSocketConnection model for tracking active connections.
-    - RealtimeMessage model for message persistence and delivery tracking.
-    - PresenceStatus model for user online status.
-    - ActivityEvent model for audit logging.
-    - Database migrations including partial indexes for performance.
-    - Comprehensive unit tests (src/rtc_websockets/tests.py).
+- **Infrastructure Setup (WP01)**: Channels, Redis, Base Consumer.
+- **Data Models (WP02)**: WebSocketConnection, RealtimeMessage, PresenceStatus.
+- **Notifications (WP03)**: NotificationConsumer, Broadcasting.
+- **Presence (WP04)**: PresenceConsumer, Heartbeats.
+- **Activity Feed (WP05)**: ActivityConsumer, Metrics, Health Checks.
+- **Rate Limiting & Demo (WP06)**: AsyncRateLimiter, Demo Page, Ping/Pong.
 
 **Test Results**:
--  11/11 Unit tests passing (Models & Logic).
--  Partial indexes implemented for PostgreSQL.
--  Atomic updates used for retry logic.
+- ✅ All Unit & Integration tests passing.
+- ✅ Rate limiting verified.
+- ✅ Metrics & Health checks verified.
 
 ### Git Status
 - **Worktree**: 035-real-time-websocket
-- **Current State**: WP02 Completed, ready for review.
+- **Current State**: WP06 Completed.
 
 ---
 
 ## Volgende Stappen
 
-### 1. WP03 - Real-time Notifications
-- Implement NotificationConsumer.
-- Tenant-scoped broadcasting.
-- Notification services integration.
-
-### 2. WP04 - Presence System
-- Implement PresenceConsumer.
-- Heartbeat mechanism.
+### 1. WP07 - Advanced Features & Polish
+- Typing indicators.
+- Read receipts.
+- Final documentation.

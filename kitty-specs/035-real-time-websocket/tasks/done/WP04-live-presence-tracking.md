@@ -2,6 +2,7 @@
 work_package_id: "WP04"
 title: "Live Presence Tracking (User Story 2)"
 lane: "done"
+assignee: "copilot"
 subtasks: ["T019", "T020", "T021", "T022", "T023"]
 priority: "P2"
 estimated_effort: "2-3 days"
