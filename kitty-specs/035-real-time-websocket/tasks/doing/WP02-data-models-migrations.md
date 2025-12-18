@@ -1,11 +1,13 @@
 ---
 work_package_id: "WP02"
 title: "Data Models & Migrations"
-lane: "planned"
+lane: "doing"
 subtasks: ["T007", "T008", "T009", "T010", "T011", "T012"]
 priority: "P1"
 estimated_effort: "1-2 days"
 dependencies: ["WP01"]
+agent: "copilot"
+shell_pid: "47288"
 history:
   - action: "created"
     timestamp: "2025-12-18T15:30:00Z"
@@ -553,3 +555,7 @@ This work package builds on WP01's infrastructure setup and creates the persiste
 - [ ] Model __str__ methods provide useful representations
 - [ ] JSON fields accept valid structured data
 - [ ] Unique constraints work as expected
+
+## Activity Log
+
+- 2025-12-18T17:47:14Z – copilot – shell_pid=47288 – lane=doing – Started implementation of WP02
