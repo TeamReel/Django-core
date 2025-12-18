@@ -44,6 +44,14 @@ class FileAsset(models.Model):
     # Metadata for future extensibility (e.g. image dimensions)
     metadata = models.JSONField(default=dict, blank=True)
 
+    # Thumbnail path (WP03: Async Processing)
+    thumbnail_path = models.CharField(
+        max_length=1024,
+        null=True,
+        blank=True,
+        help_text=_("Path to the generated thumbnail image."),
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

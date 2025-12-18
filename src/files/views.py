@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from files.models import FileAsset
 from files.serializers import FileAssetSerializer, FileUploadSerializer
+from files.tasks import generate_thumbnail
 from files.utils import get_storage_backend
 
 
@@ -65,7 +66,9 @@ class FileViewSet(viewsets.ModelViewSet):
                 id=org_id, memberships__user=user, memberships__is_active=True
             )
         except (Organisation.DoesNotExist, ValidationError) as err:
-            raise PermissionDenied({"detail": "You do not have access to this organization."}) from err
+            raise PermissionDenied(
+                {"detail": "You do not have access to this organization."}
+            ) from err
 
         file_obj = serializer.validated_data["file"]
         is_public = serializer.validated_data.get("is_public", False)
@@ -79,7 +82,7 @@ class FileViewSet(viewsets.ModelViewSet):
         saved_path = backend.save(storage_path, file_obj)
 
         # Create FileAsset
-        FileAsset.objects.create(
+        file_asset = FileAsset.objects.create(
             id=file_uuid,
             organization=organization,
             uploaded_by=user,
@@ -89,6 +92,10 @@ class FileViewSet(viewsets.ModelViewSet):
             mime_type=file_obj.content_type or "application/octet-stream",
             is_public=is_public,
         )
+
+        # Trigger thumbnail generation for image files
+        if file_obj.content_type and file_obj.content_type.startswith("image/"):
+            generate_thumbnail.delay(str(file_asset.id))
 
     def perform_destroy(self, instance):
         """
@@ -107,8 +114,8 @@ class FileViewSet(viewsets.ModelViewSet):
         try:
             url = backend.url(instance.storage_path)
             return Response({"url": url, "expires_in": 3600})  # 1 hour default for signed URLs
-        except NotImplementedError as err:
+        except NotImplementedError:
             return Response(
                 {"detail": "Download URL generation not supported by current backend."},
                 status=status.HTTP_501_NOT_IMPLEMENTED,
-            ) from err
+            )
