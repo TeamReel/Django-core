@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP04"
 title: "Live Presence Tracking (User Story 2)"
-lane: "for_review"
+lane: "done"
 subtasks: ["T019", "T020", "T021", "T022", "T023"]
 priority: "P2"
 estimated_effort: "2-3 days"
@@ -44,3 +44,4 @@ Implement real-time user presence status with Page Visibility API integration fo
 ## Activity Log
 
 - 2025-12-18T19:22:09Z – GitHub Copilot – shell_pid=12345 – lane=for_review – Implementation complete, ready for review
+- 2025-12-18T19:26:54Z – GitHub Copilot – shell_pid=12345 – lane=done – Moved to done
