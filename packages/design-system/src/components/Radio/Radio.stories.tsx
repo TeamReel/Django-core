@@ -153,7 +153,7 @@ export const LargeSize: Story = {
 };
 
 export const AllStates: Story = {
-  args: {} as any,
+  args: {},
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <RadioGroup name="color1">
@@ -180,7 +180,7 @@ export const AllStates: Story = {
 };
 
 export const AllSizes: Story = {
-  args: {} as any,
+  args: {},
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <RadioGroup name="size1" size="sm">
@@ -202,7 +202,7 @@ export const AllSizes: Story = {
 };
 
 export const FormExample: Story = {
-  args: {} as any,
+  args: {},
   render: () => (
     <div style={{ maxWidth: '400px' }}>
       <h3 style={{ margin: 0, marginBottom: '16px' }}>Shipping Method</h3>
@@ -217,7 +217,7 @@ export const FormExample: Story = {
 };
 
 export const ControlledExample: Story = {
-  args: {} as any,
+  args: {},
   render: () => {
     const [value, setValue] = React.useState('blue');
 

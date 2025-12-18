@@ -124,7 +124,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
   (
     {
       onFilesChange,
-      onUpload,
+      onUpload: _onUpload,
       maxFiles = 10,
       maxSize,
       accept,
@@ -262,7 +262,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
               }
               // Set local ref
               if (inputRef && inputRef.current !== node) {
-                (inputRef as any).current = node;
+                (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
               }
             }}
             type="file"
