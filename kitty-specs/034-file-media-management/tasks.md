@@ -41,11 +41,11 @@
 **Priority**: P1 (UX)
 **Independent Test**: View component in Storybook, verify drag-and-drop and progress states.
 
-- [ ] **T016**: Scaffold `FileUpload` component in `@django-core/design-system`.
-- [ ] **T017**: Implement drag-and-drop zone with visual feedback.
-- [ ] **T018**: Implement file selection and progress bar state.
-- [ ] **T019**: Add Storybook stories for all states (idle, dragging, uploading, error, success).
-- [ ] **T020**: Write unit tests (Vitest) for component logic.
+- [x] **T016**: Scaffold `FileUpload` component in `@django-core/design-system`.
+- [x] **T017**: Implement drag-and-drop zone with visual feedback.
+- [x] **T018**: Implement file selection and progress bar state.
+- [x] **T019**: Add Storybook stories for all states (idle, dragging, uploading, error, success).
+- [x] **T020**: Write unit tests (Vitest) for component logic.
 
 ### WP05: Demo & Integration
 **Goal**: Prove the feature works end-to-end in the demo shell.
