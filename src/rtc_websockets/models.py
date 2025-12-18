@@ -119,9 +119,7 @@ class RealtimeMessage(models.Model):
         max_length=20, choices=SCOPE_TYPE_CHOICES, help_text="Broadcast scope level"
     )
 
-    scope_id = models.PositiveIntegerField(
-        help_text="ID of the scope (user_id, org_id, project_id)"
-    )
+    scope_id = models.UUIDField(help_text="ID of the scope (user_id, org_id, project_id)")
 
     sender_user = models.ForeignKey(
         User,
@@ -204,9 +202,7 @@ class PresenceStatus(models.Model):
 
     organization_id = models.UUIDField(help_text="Organization scope for presence visibility")
 
-    project_id = models.PositiveIntegerField(
-        null=True, blank=True, help_text="Optional project scope"
-    )
+    project_id = models.UUIDField(null=True, blank=True, help_text="Optional project scope")
 
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -245,13 +241,11 @@ class ActivityEvent(models.Model):
 
     resource_type = models.CharField(max_length=50, help_text="Type of resource affected")
 
-    resource_id = models.PositiveIntegerField(help_text="ID of the affected resource")
+    resource_id = models.UUIDField(help_text="ID of the affected resource")
 
     organization_id = models.UUIDField(help_text="Organization context")
 
-    project_id = models.PositiveIntegerField(
-        null=True, blank=True, help_text="Optional project context"
-    )
+    project_id = models.UUIDField(null=True, blank=True, help_text="Optional project context")
 
     occurred_at = models.DateTimeField(default=timezone.now, help_text="When the activity occurred")
 
