@@ -1,11 +1,18 @@
 ---
 work_package_id: "WP04"
 title: "Live Presence Tracking (User Story 2)"
-lane: "planned"
+lane: "doing"
 subtasks: ["T019", "T020", "T021", "T022", "T023"]
 priority: "P2"
 estimated_effort: "2-3 days"
 dependencies: ["WP03"]
+agent: "GitHub Copilot"
+shell_pid: "12345"
+history:
+  - action: "moved"
+    timestamp: "2025-12-18T16:00:00Z"
+    author: "GitHub Copilot"
+    note: "Started implementation"
 ---
 
 # WP04: Live Presence Tracking (User Story 2)

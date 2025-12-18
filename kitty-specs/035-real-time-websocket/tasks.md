@@ -81,17 +81,17 @@ This feature is broken down into 6 work packages that can be developed and deplo
 **Priority**: P1 (MVP Core)
 **Estimated Effort**: 3-4 days
 **Dependencies**: WP01, WP02 complete
-**Prompt**: [WP03-realtime-notifications.md](tasks/planned/WP03-realtime-notifications.md)
+**Prompt**: [WP03-realtime-notifications.md](tasks/done/WP03-realtime-notifications.md)
 
 **Goal**: Implement instant notification delivery system with tenant scoping and message queuing.
 
 **Subtasks**:
-- [ ] **T013**: Create NotificationConsumer with channel group management
-- [ ] **T014**: Implement tenant-scoped broadcasting (user/org/project)
-- [ ] **T015**: Build structured envelope message formatting
-- [ ] **T016**: Create notification services for triggering events
-- [ ] **T017**: Implement in-memory queuing for Redis failures
-- [ ] **T018**: Add connection state management and cleanup
+- [x] **T013**: Create NotificationConsumer with channel group management
+- [x] **T014**: Implement tenant-scoped broadcasting (user/org/project)
+- [x] **T015**: Build structured envelope message formatting
+- [x] **T016**: Create notification services for triggering events
+- [x] **T017**: Implement in-memory queuing for Redis failures
+- [x] **T018**: Add connection state management and cleanup
 
 **Success Criteria**:
 - Notifications deliver instantly without page refresh

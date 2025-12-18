@@ -145,3 +145,20 @@ class ActivityEventTests(TestCase):
         )
         self.assertIsNotNone(event.event_id)
         self.assertEqual(event.metadata["name"], "New Project")
+
+
+from .services import NotificationService
+
+
+class NotificationServiceTests(TestCase):
+    def setUp(self):
+        self.service = NotificationService()
+
+    def test_create_envelope(self):
+        envelope = self.service._create_envelope("test.type", {"foo": "bar"}, "user", "123")
+        self.assertIn("id", envelope)
+        self.assertEqual(envelope["type"], "test.type")
+        self.assertEqual(envelope["payload"], {"foo": "bar"})
+        self.assertEqual(envelope["meta"]["scope"], "user")
+        self.assertEqual(envelope["meta"]["target_id"], "123")
+        self.assertIn("timestamp", envelope)

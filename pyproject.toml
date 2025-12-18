@@ -43,6 +43,7 @@ markers = [
     "slow: Tests that take a long time to run",
     "security: Security-related tests",
     "celery: Tests requiring Celery worker",
+    "asyncio: Asyncio tests",
 ]
 
 [tool.black]
