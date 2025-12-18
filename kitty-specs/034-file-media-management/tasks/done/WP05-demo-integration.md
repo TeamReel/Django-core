@@ -117,6 +117,5 @@ We need to verify the entire feature works by building a demo page in the `demo-
 
 ### Final Status Update
 
-- 2024-12-18T12:52:00Z – claude – shell_pid=13484 – lane=done – WP05 Demo & Integration approved and accepted for merge
-
 - 2025-12-18T11:38:34Z – claude – shell_pid=13484 – lane=doing – Started implementation - Demo integration and E2E testing
+- 2024-12-18T12:52:00Z – claude – shell_pid=13484 – lane=done – WP05 Demo & Integration approved and accepted for merge
