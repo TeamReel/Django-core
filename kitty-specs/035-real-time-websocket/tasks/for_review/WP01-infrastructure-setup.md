@@ -1,12 +1,12 @@
 ---
 work_package_id: "WP01"
 title: "Infrastructure Setup"
-lane: "doing"
+lane: "for_review"
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006"]
 priority: "P1"
 estimated_effort: "2-3 days"
 dependencies: []
-agent: "claude"
+agent: "copilot"
 shell_pid: "47288"
 history:
   - action: "created"
@@ -473,3 +473,4 @@ This is the first work package in the WebSocket infrastructure implementation. I
 ## Activity Log
 
 - 2025-12-18T17:24:02Z – claude – shell_pid=47288 – lane=doing – Started implementation
+- 2025-12-18T17:48:11Z – copilot – shell_pid=47288 – lane=for_review – Completed implementation of WP01
