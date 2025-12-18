@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "034",
+    "slug":  "034-file-media-management",
+    "friendly_name":  "File \u0026 Media Management",
+    "source_description":  "Provide tenant-scoped file and media management with storage adapters, image processing, and ACL-enforced access.\n\n[goals]\n- Generic file upload/download for any use case\n- Storage adapter interface (local/S3/Azure)\n- Image thumbnails and basic transformations\n- Tenant isolation and ACL enforcement\n- Audit trail for all file operations\n\n[demo requirements]\nDemo page: /demo/files\n- Drag-and-drop upload zone\n- File list with thumbnails\n- Download (presigned URL), delete actions\n- Tests: upload  thumbnail  download  delete",
+    "created_at":  "2025-12-18T08:54:53Z"
+}

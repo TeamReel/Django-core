@@ -55,6 +55,14 @@ CELERY_BEAT_SCHEDULE = {
             "expires": 3600,  # Task expires if not run within 1 hour
         },
     },
+    # WP03: Cleanup deleted files daily at 2:30 AM UTC
+    "cleanup-deleted-files": {
+        "task": "files.tasks.cleanup_deleted_files",
+        "schedule": crontab(hour=2, minute=30),  # Daily at 2:30 AM UTC
+        "options": {
+            "expires": 3600,  # Task expires if not run within 1 hour
+        },
+    },
     # Example: Cleanup expired sessions daily at 3:00 AM
     "cleanup-expired-sessions": {
         "task": "tasks.examples.cleanup_expired_sessions",

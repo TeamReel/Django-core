@@ -1,0 +1,110 @@
+openapi: 3.0.0
+info:
+  title: File Management API
+  version: 1.0.0
+paths:
+  /api/files/upload/:
+    post:
+      summary: Upload a file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                is_public:
+                  type: boolean
+      responses:
+        201:
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileAsset'
+
+  /api/files/:
+    get:
+      summary: List files
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FileAsset'
+
+  /api/files/{id}/:
+    delete:
+      summary: Delete a file (Soft delete)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        204:
+          description: File deleted
+
+  /api/files/{id}/download/:
+    get:
+      summary: Get download URL
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Download URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                  expires_at:
+                    type: string
+                    format: date-time
+
+components:
+  schemas:
+    FileAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        original_name:
+          type: string
+        file_size:
+          type: integer
+        mime_type:
+          type: string
+        is_public:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        thumbnail_url:
+          type: string
+          format: uri
+          nullable: true

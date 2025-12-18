@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     "notifications.apps.NotificationsConfig",  # B16: Notifications
     # B17: Contextual Notification Service
     "contextual_notifications.apps.ContextualNotificationsConfig",
+    # B22: File & Media Management
+    "files.apps.FilesConfig",
 ]
 
 MIDDLEWARE = [
