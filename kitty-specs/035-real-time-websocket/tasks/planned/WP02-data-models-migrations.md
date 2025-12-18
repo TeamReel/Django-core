@@ -1,11 +1,13 @@
 ---
 work_package_id: "WP02"
 title: "Data Models & Migrations"
-lane: "doing"
+lane: "planned"
 subtasks: ["T007", "T008", "T009", "T010", "T011", "T012"]
 priority: "P1"
 estimated_effort: "1-2 days"
 dependencies: ["WP01"]
+review_status: "has_feedback"
+reviewed_by: "copilot-reviewer"
 agent: "copilot"
 shell_pid: "47288"
 history:
@@ -13,7 +15,30 @@ history:
     timestamp: "2025-12-18T15:30:00Z"
     author: "spec-kitty.tasks"
     note: "Generated from WebSocket infrastructure specification"
+  - action: "review_feedback"
+    timestamp: "2025-12-18T18:10:00Z"
+    author: "copilot-reviewer"
+    note: "Missing T012 indexes and unit tests"
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Key Issues**:
+1. **Missing T012 (Performance Indexes)**: The specific migration for partial indexes (using `RunSQL`) described in T012 was not implemented. Only the initial migration exists.
+2. **Missing Unit Tests**: The "Testing Strategy" and "Definition of Done" require model validation tests, but `src/rtc_websockets/tests.py` is empty.
+3. **App Name Deviation**: The implementation uses `rtc_websockets` instead of `realtime` as suggested in the prompt. This is acceptable but requires updating the T012 migration dependency to refer to `rtc_websockets` instead of `realtime`.
+
+**What Was Done Well**:
+- Models (`WebSocketConnection`, `RealtimeMessage`, `PresenceStatus`, `ActivityEvent`) are correctly implemented with all required fields and methods.
+- Initial migration `0001_initial.py` was generated and applied successfully.
+- Database indexes in `Meta` classes are correctly defined.
+
+**Action Items** (must complete before re-review):
+- [ ] Implement **T012**: Create the second migration file for partial indexes (adjusting the dependency to `('rtc_websockets', '0001_initial')`).
+- [ ] Implement **Unit Tests**: Add tests in `src/rtc_websockets/tests.py` covering model creation, validation, and custom methods (`is_stale`, `to_envelope_format`, etc.).
+- [ ] Verify tests pass with `pytest`.
 
 # WP02: Data Models & Migrations
 
