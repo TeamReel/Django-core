@@ -1,6 +1,8 @@
 ---
 lane: "done"
 agent: "system"
+assignee: "system"
+shell_pid: "13484"
 ---
 # WP04: Frontend Component
 *Tasks: T016, T017, T018, T019, T020*

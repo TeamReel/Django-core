@@ -52,9 +52,9 @@
 **Priority**: P2 (Verification)
 **Independent Test**: Full user flow: Upload -> List -> Download -> Delete on the demo page.
 
-- [ ] **T021**: Create `/demo/files` route and page in `examples/demo-shell`.
-- [ ] **T022**: Integrate `FileUpload` component with `POST /api/files/upload`.
-- [ ] **T023**: Fetch and display file list (with thumbnails if available).
-- [ ] **T024**: Implement delete action (soft delete) in the UI.
-- [ ] **T025**: Document manual verification steps in `DEMO_TEST_GUIDE.md`.
-- [ ] **T026**: Implement Playwright E2E tests for file upload flow.
+- [x] **T021**: Create `/demo/files` route and page in `examples/demo-shell`.
+- [x] **T022**: Integrate `FileUpload` component with `POST /api/files/upload`.
+- [x] **T023**: Fetch and display file list (with thumbnails if available).
+- [x] **T024**: Implement delete action (soft delete) in the UI.
+- [x] **T025**: Document manual verification steps in `DEMO_TEST_GUIDE.md`.
+- [x] **T026**: Implement Playwright E2E tests for file upload flow.

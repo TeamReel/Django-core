@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage';
 import ForbiddenPage from './pages/errors/ForbiddenPage';
 import NotFoundPage from './pages/errors/NotFoundPage';
 import LoadingState from './components/LoadingState';
+import FilesPage from './pages/files';
 
 // Identity pages
 import {
@@ -206,6 +207,16 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ApiDocsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Files Demo */}
+      <Route
+        path="/demo/files"
+        element={
+          <ProtectedRoute>
+            <FilesPage />
           </ProtectedRoute>
         }
       />

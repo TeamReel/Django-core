@@ -1,6 +1,7 @@
 ---
 lane: "done"
 agent: "copilot"
+assignee: "copilot"
 shell_pid: "13484"
 ---
 # WP02: API Implementation
