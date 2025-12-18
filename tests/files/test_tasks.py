@@ -9,17 +9,16 @@ Tests cover:
 
 import io
 import uuid
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from datetime import timedelta
+from unittest.mock import Mock, patch
 
 import pytest
+from common.storage import StorageBackend
 from django.test import TestCase, override_settings
 from django.utils import timezone
-from PIL import Image
-
 from files.models import FileAsset
-from files.tasks import generate_thumbnail, cleanup_deleted_files
-from common.storage import StorageBackend
+from files.tasks import cleanup_deleted_files, generate_thumbnail
+from PIL import Image
 
 
 class ThumbnailGenerationTaskTests(TestCase):
