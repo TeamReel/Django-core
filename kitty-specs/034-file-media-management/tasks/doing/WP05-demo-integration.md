@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "13484"
+---
 # WP05: Demo & Integration
 *Tasks: T021, T022, T023, T024, T025, T026*
 
@@ -33,3 +38,7 @@ We need to verify the entire feature works by building a demo page in the `demo-
 - Can upload, list, download, and delete files via the UI.
 - Manual test guide is written.
 - Playwright E2E tests pass.
+
+## Activity Log
+
+- 2025-12-18T11:38:34Z – claude – shell_pid=13484 – lane=doing – Started implementation - Demo integration and E2E testing
