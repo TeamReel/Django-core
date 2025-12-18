@@ -1,13 +1,13 @@
 ---
 work_package_id: "WP05"
 title: "Activity Feed & Monitoring (User Story 3)"
-lane: "doing"
+lane: "done"
 subtasks: ["T024", "T025", "T026", "T027", "T028"]
 priority: "P2"
 estimated_effort: "2-3 days"
 dependencies: ["WP03"]
 agent: "GitHub Copilot"
-shell_pid: "47288"
+shell_pid: "0"
 ---
 
 # WP05: Activity Feed & Monitoring (User Story 3)
@@ -37,3 +37,4 @@ Implement project activity feeds with Prometheus monitoring integration for obse
 ## Activity Log
 
 - 2025-12-18T19:28:39Z – GitHub Copilot – shell_pid=47288 – lane=doing – Started implementation
+- 2025-12-18T19:50:57Z – GitHub Copilot – shell_pid=0 – lane=done – Approved without changes
