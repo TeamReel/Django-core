@@ -64,8 +64,8 @@ class FileViewSet(viewsets.ModelViewSet):
             organization = Organisation.objects.get(
                 id=org_id, memberships__user=user, memberships__is_active=True
             )
-        except (Organisation.DoesNotExist, ValidationError):
-            raise PermissionDenied({"detail": "You do not have access to this organization."})
+        except (Organisation.DoesNotExist, ValidationError) as err:
+            raise PermissionDenied({"detail": "You do not have access to this organization."}) from err
 
         file_obj = serializer.validated_data["file"]
         is_public = serializer.validated_data.get("is_public", False)
@@ -107,8 +107,8 @@ class FileViewSet(viewsets.ModelViewSet):
         try:
             url = backend.url(instance.storage_path)
             return Response({"url": url, "expires_in": 3600})  # 1 hour default for signed URLs
-        except NotImplementedError:
+        except NotImplementedError as err:
             return Response(
                 {"detail": "Download URL generation not supported by current backend."},
                 status=status.HTTP_501_NOT_IMPLEMENTED,
-            )
+            ) from err

@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "13484"
+---
 # WP03: Async Processing
 *Tasks: T011, T012, T013, T014, T015*
 

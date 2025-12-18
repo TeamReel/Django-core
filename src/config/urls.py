@@ -27,7 +27,10 @@ def root_view(request):
     return JsonResponse(
         {
             "status": "running",
-            "message": "Django Core API is active. Visit /api/docs/ for documentation or /ui/ for the web interface.",
+            "message": (
+                "Django Core API is active. Visit /api/docs/ for documentation "
+                "or /ui/ for the web interface."
+            ),
         }
     )
 
