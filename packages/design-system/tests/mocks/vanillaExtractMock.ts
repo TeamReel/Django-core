@@ -110,6 +110,8 @@ module.exports = new Proxy(
     heading: createMockRecipe(),
     // Card
     card: createMockRecipe(),
+    // FileUpload
+    fileUploadContainer: createMockRecipe(),
   },
   {
     get(target: any, prop: string) {
@@ -140,3 +142,18 @@ export const radioGroup = recipe();
 export const radioWrapper = recipe();
 export const stack = recipe();
 export const grid = () => 'mock-grid';
+export const fileUploadContainer = recipe();
+export const fileUploadInput = () => 'mock-style';
+export const fileUploadContent = () => 'mock-style';
+export const fileUploadIcon = () => 'mock-style';
+export const fileUploadText = () => 'mock-style';
+export const fileUploadHint = () => 'mock-style';
+export const fileUploadProgress = () => 'mock-style';
+export const fileList = () => 'mock-style';
+export const fileItem = () => 'mock-style';
+export const fileName = () => 'mock-style';
+export const fileSize = () => 'mock-style';
+export const fileStatus = () => 'mock-style';
+export const fileStatusSuccess = () => 'mock-style';
+export const fileStatusError = () => 'mock-style';
+export const fileStatusUploading = () => 'mock-style';

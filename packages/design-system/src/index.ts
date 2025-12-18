@@ -15,6 +15,7 @@ export { Input, type InputProps, type InputState, type InputSize } from './compo
 export { Textarea, type TextareaProps, type TextareaState, type TextareaSize, type TextareaResize } from './components/Textarea';
 export { Checkbox, type CheckboxProps, type CheckboxState, type CheckboxSize } from './components/Checkbox';
 export { Radio, RadioGroup, type RadioProps, type RadioGroupProps, type RadioState, type RadioSize } from './components/Radio';
+export { FileUpload, type FileUploadProps, type FileUploadFile } from './components/FileUpload';
 
 // Data Display Components
 export { Card, type CardProps } from './components/Card';
