@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "copilot"
+shell_pid: "13484"
+---
 # WP02: API Implementation
 *Tasks: T006, T007, T008, T009, T010*
 
@@ -29,3 +34,7 @@ We need to expose the `FileAsset` model via a REST API. This API must be secure 
 - Endpoints `/api/files/` (List, Create) and `/api/files/{id}/` (Retrieve, Delete) are functional.
 - `/api/files/{id}/download/` returns a valid URL.
 - Tests pass covering all CRUD operations and permission checks.
+
+## Activity Log
+
+- 2025-12-18T09:28:45Z – copilot – shell_pid=13484 – lane=doing – Started implementation
