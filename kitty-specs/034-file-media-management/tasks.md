@@ -8,22 +8,22 @@
 **Priority**: P0 (Blocker)
 **Independent Test**: Can create `FileAsset` records via Django shell and verify files are saved to disk via `LocalStorageBackend`.
 
-- [ ] **T001**: Create `files` Django app and register in settings.
-- [ ] **T002**: Implement `StorageBackend` interface and `LocalStorageBackend` (plus S3 stub).
-- [ ] **T003**: Define `FileAsset` model with fields and indexes.
-- [ ] **T004**: Create migrations and run them.
-- [ ] **T005**: Write unit tests for `LocalStorageBackend` (save, exists, delete, url).
+- [x] **T001**: Create `files` Django app and register in settings.
+- [x] **T002**: Implement `StorageBackend` interface and `LocalStorageBackend` (plus S3 stub).
+- [x] **T003**: Define `FileAsset` model with fields and indexes.
+- [x] **T004**: Create migrations and run them.
+- [x] **T005**: Write unit tests for `LocalStorageBackend` (save, exists, delete, url).
 
 ### WP02: API Implementation
 **Goal**: Expose REST endpoints for file management with security and multi-tenancy.
 **Priority**: P0 (Blocker)
 **Independent Test**: Can upload, list, and delete files via Postman/curl.
 
-- [ ] **T006**: Create `FileAssetSerializer` (read) and `FileUploadSerializer` (write).
-- [ ] **T007**: Implement `FileViewSet` with `list`, `create`, `retrieve`, `destroy`.
-- [ ] **T008**: Implement `download` action to return signed/public URLs.
-- [ ] **T009**: Enforce multi-tenancy permissions (org-scoped access).
-- [ ] **T010**: Write integration tests for all endpoints (happy path + error cases).
+- [x] **T006**: Create `FileAssetSerializer` (read) and `FileUploadSerializer` (write).
+- [x] **T007**: Implement `FileViewSet` with `list`, `create`, `retrieve`, `destroy`.
+- [x] **T008**: Implement `download` action to return signed/public URLs.
+- [x] **T009**: Enforce multi-tenancy permissions (org-scoped access).
+- [x] **T010**: Write integration tests for all endpoints (happy path + error cases).
 
 ### WP03: Async Processing
 **Goal**: Offload heavy processing (thumbnails) and maintenance (cleanup) to background workers.
