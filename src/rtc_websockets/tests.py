@@ -11,7 +11,9 @@ User = get_user_model()
 
 class WebSocketConnectionTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(email="test@example.com", password="password")  # noqa: S106
+        self.user = User.objects.create_user(
+            email="test@example.com", password="password"
+        )  # noqa: S106
 
     def test_create_connection(self):
         connection = WebSocketConnection.objects.create(user=self.user, channel_name="test.channel")
@@ -40,7 +42,9 @@ class WebSocketConnectionTests(TestCase):
 
 class RealtimeMessageTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(email="sender@example.com", password="password")  # noqa: S106
+        self.user = User.objects.create_user(
+            email="sender@example.com", password="password"
+        )  # noqa: S106
 
     def test_create_message(self):
         message = RealtimeMessage.objects.create(
@@ -106,7 +110,9 @@ class RealtimeMessageTests(TestCase):
 
 class PresenceStatusTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(email="presence@example.com", password="password")  # noqa: S106
+        self.user = User.objects.create_user(
+            email="presence@example.com", password="password"
+        )  # noqa: S106
 
     def test_update_status(self):
         presence = PresenceStatus.objects.create(
@@ -124,7 +130,9 @@ class PresenceStatusTests(TestCase):
 
 class ActivityEventTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(email="actor@example.com", password="password")  # noqa: S106
+        self.user = User.objects.create_user(
+            email="actor@example.com", password="password"
+        )  # noqa: S106
 
     def test_create_event(self):
         event = ActivityEvent.objects.create(

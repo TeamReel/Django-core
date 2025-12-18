@@ -8,18 +8,16 @@ def create_partial_indexes(apps, schema_editor):
         schema_editor.execute(
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_realtime_message_undelivered ON realtime_message(created_at) WHERE delivered_at IS NULL;"
         )
-        schema_editor.execute(
-            "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_websocket_connection_stale ON realtime_websocket_connection(last_heartbeat) WHERE last_heartbeat < NOW() - INTERVAL '5 minutes';"
-        )
 
 
 def drop_partial_indexes(apps, schema_editor):
     if schema_editor.connection.vendor == "postgresql":
         schema_editor.execute("DROP INDEX IF EXISTS idx_realtime_message_undelivered;")
-        schema_editor.execute("DROP INDEX IF EXISTS idx_websocket_connection_stale;")
 
 
 class Migration(migrations.Migration):
+    atomic = False
+
     dependencies = [
         ("rtc_websockets", "0001_initial"),
     ]
