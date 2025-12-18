@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "13484"
 ---
@@ -33,3 +33,7 @@ File processing (thumbnails) and maintenance (cleanup) should happen asynchronou
 - Thumbnails are generated and linked to the asset.
 - `cleanup_deleted_files` correctly identifies and removes old soft-deleted records.
 - Tests pass.
+
+## Activity Log
+
+- 2025-12-18T09:56:00Z – claude – shell_pid=13484 – lane=for_review – All WP03 tasks complete - Async processing ready for review
