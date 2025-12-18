@@ -10,6 +10,7 @@ import {
   Table,
 } from '@django-core/design-system';
 import { Organisation, User, Project } from '../../types';
+import AppShell from '../../components/AppShell';
 
 /**
  * T007 - Organisation Detail Page
@@ -147,8 +148,9 @@ export const OrganisationDetailPage: React.FC = () => {
   }
 
   return (
-    <div>
-      <PageHeader
+    <AppShell>
+      <div>
+        <PageHeader
         title={org.name}
         breadcrumbs={[
           { label: 'Home', href: '/' },
@@ -247,7 +249,8 @@ export const OrganisationDetailPage: React.FC = () => {
           )}
         </Card>
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

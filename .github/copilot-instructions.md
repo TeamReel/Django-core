@@ -69,9 +69,9 @@ Quick reminders:
 Python 3.12+: Follow standard conventions
 
 ## Recent Changes
+- 035-real-time-websocket: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 - 034-file-media-management: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 - 028-theme-support-brand: Added TypeScript 5.x, React 18.x, vanilla-extract (@vanilla-extract/css), Vitest + React Testing Library, Chromatic
-- 025-notifications-hub-ui: Added TypeScript 5.x, React 18.x
 
 <!-- MANUAL ADDITIONS START -->
 

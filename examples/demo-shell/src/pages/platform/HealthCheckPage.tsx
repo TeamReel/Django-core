@@ -7,6 +7,7 @@ import {
   Alert,
 } from '@django-core/design-system';
 import { HealthStatus } from '../../types';
+import AppShell from '../../components/AppShell';
 
 /**
  * T016 - Health Check Page
@@ -35,12 +36,28 @@ export const HealthCheckPage: React.FC = () => {
           credentials: 'include',
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+          const data: HealthStatus = await response.json();
+          setHealth(data);
+        } else if (response.status === 404) {
+          // Demo mode: Use mock health data
+          const demoHealth: HealthStatus = {
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
+            uptime: 86400, // 1 day
+            checks: {
+              database: true,
+              cache: true,
+              api: true,
+              django: true,
+              python: true
+            },
+            details: 'All systems operational (demo mode)'
+          };
+          setHealth(demoHealth);
+        } else {
           throw new Error(`API error: ${response.status}`);
         }
-
-        const data: HealthStatus = await response.json();
-        setHealth(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch health status');
         console.error('Health fetch error:', err);
@@ -113,8 +130,9 @@ export const HealthCheckPage: React.FC = () => {
   }
 
   return (
-    <div>
-      <PageHeader
+    <AppShell>
+      <div>
+        <PageHeader
         title="System Health"
         breadcrumbs={[
           { label: 'Home', href: '/' },
@@ -123,6 +141,9 @@ export const HealthCheckPage: React.FC = () => {
         ]}
       />
       <PageContent>
+        <Alert type="info" className="mb-4">
+          <strong>Demo Mode:</strong> This page shows mock health status data. API endpoints are not yet implemented.
+        </Alert>
         <Card data-testid="health-status-card" className="mb-4">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
@@ -173,7 +194,8 @@ export const HealthCheckPage: React.FC = () => {
           </Card>
         )}
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

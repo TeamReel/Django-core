@@ -1,7 +1,9 @@
 import { Card } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 
 export function TemplatesPage() {
   return (
+    <AppShell>
     <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }} data-testid="templates-page">
       <div style={{ padding: '24px', borderBottom: '1px solid #e5e5e5', backgroundColor: '#fff' }}>
         <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700 }}>Page Templates</h1>
@@ -23,5 +25,6 @@ export function TemplatesPage() {
         ))}
       </div>
     </div>
+    </AppShell>
   );
 }

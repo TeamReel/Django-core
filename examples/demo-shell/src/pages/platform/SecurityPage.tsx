@@ -6,6 +6,7 @@ import {
   Badge,
   Alert,
 } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 
 /**
  * T018 - Security Page
@@ -78,12 +79,42 @@ export const SecurityPage: React.FC = () => {
           credentials: 'include',
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+          const data: SecurityData = await response.json();
+          setSecurity(data);
+        } else if (response.status === 404) {
+          // Demo mode: Use mock security data
+          const demoSecurity: SecurityData = {
+            events: [
+              {
+                id: '1',
+                event_type: 'login_attempt',
+                severity: 'medium',
+                resolved: true,
+                timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                description: 'Multiple failed login attempts from IP 192.168.1.100'
+              },
+              {
+                id: '2',
+                event_type: 'suspicious_activity',
+                severity: 'high',
+                resolved: false,
+                timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                description: 'Unusual API access pattern detected'
+              }
+            ],
+            asvs_scorecard: {
+              level1: 85,
+              level2: 72,
+              level3: 45
+            },
+            total_events: 2,
+            resolved_events: 1
+          };
+          setSecurity(demoSecurity);
+        } else {
           throw new Error(`API error: ${response.status}`);
         }
-
-        const data: SecurityData = await response.json();
-        setSecurity(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch security data');
         console.error('Security fetch error:', err);
@@ -141,8 +172,9 @@ export const SecurityPage: React.FC = () => {
   const criticalEvents = security?.events?.filter(e => e.severity === 'critical' && !e.resolved).length || 0;
 
   return (
-    <div>
-      <PageHeader
+    <AppShell>
+      <div>
+        <PageHeader
         title="Security"
         breadcrumbs={[
           { label: 'Home', href: '/' },
@@ -151,6 +183,9 @@ export const SecurityPage: React.FC = () => {
         ]}
       />
       <PageContent>
+        <Alert type="info" className="mb-4">
+          <strong>Demo Mode:</strong> This page shows mock security data. API endpoints are not yet implemented.
+        </Alert>
         <Card data-testid="security-summary" className="mb-4">
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -237,7 +272,8 @@ export const SecurityPage: React.FC = () => {
           </Card>
         )}
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

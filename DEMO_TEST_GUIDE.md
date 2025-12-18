@@ -1,6 +1,30 @@
 # File Management Demo - Manual Test Guide
 
+**⚠️ MOVED**: This guide has been moved to the structured manual testing directory.
+
+**🔗 New Location**: [manual-tests/file-management.md](manual-tests/file-management.md)
+
+**📁 Complete Testing Suite**: See [manual-tests/README.md](manual-tests/README.md) for all visual test guides.
+
+---
+
+## Legacy Guide (preserved for reference)
+
 This guide provides step-by-step instructions for manually testing the File & Media Management feature in the demo shell.
+
+## Quick Demo Access
+
+**🚀 Ready to test? Follow these steps:**
+
+1. **Start the demo shell**: `cd examples/demo-shell && pnpm dev`
+2. **Start Django backend**: `python manage.py runserver`
+3. **Open demo**: Navigate to `http://localhost:5173`
+4. **Login**: Use your demo credentials
+5. **Access File Demo**: Click "📁 File Management Demo" in the sidebar under "Frontend Resources"
+
+**Direct URL**: `http://localhost:5173/demo/files`
+
+---
 
 ## Prerequisites
 
@@ -169,6 +193,13 @@ This guide provides step-by-step instructions for manually testing the File & Me
 
 ## Common Issues & Troubleshooting
 
+### Demo Access Issues
+- **Demo shell won't start**: Run `pnpm install` in `examples/demo-shell` first
+- **Can't see File Management in sidebar**: Make sure you're using the updated demo shell code
+- **404 on /demo/files**: Ensure both frontend and backend are running
+- **Login issues**: Check if Django backend is running on `http://localhost:8000`
+- **API errors**: Verify the `files` app is in `INSTALLED_APPS` in Django settings
+
 ### Upload Fails
 - **Check**: Django server is running
 - **Check**: User is authenticated
@@ -213,9 +244,21 @@ Use a variety of test files:
 - [ ] Performance is acceptable (uploads complete in reasonable time)
 - [ ] UI feedback is clear and helpful
 
+## Quick Start Testing
+
+**🎯 Essential 5-minute test:**
+1. Navigate to File Management Demo in sidebar
+2. Upload a small image file (drag & drop)
+3. Verify file appears in list with correct details
+4. Download the file and confirm it matches original
+5. Delete the file and confirm removal
+
+**📋 Full feature test:** Work through all scenarios above (15-30 minutes)
+
 ## Notes
 
 - This is a demo implementation for testing the File & Media Management system
 - In production, additional security measures should be considered
 - The interface can be customized based on specific application needs
 - Consider implementing additional features like bulk operations, file organization, or sharing capabilities based on requirements
+- **Demo ready**: File Management Demo is now accessible via sidebar navigation!

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileUpload, Card, Stack, Text, Button, Badge, Alert } from '@django-core/design-system';
 import type { FileUploadFile } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 
 interface FileAsset {
   id: string;
@@ -28,6 +29,55 @@ const FilesPage: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Load files from localStorage or API
+  const loadDemoFiles = () => {
+    try {
+      const stored = localStorage.getItem('demo-files');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (err) {
+      console.warn('Failed to load files from localStorage:', err);
+    }
+
+    // Default demo files if nothing in localStorage
+    return [
+      {
+        id: 'demo-1',
+        original_filename: 'sample-document.pdf',
+        file_size: 245760, // ~240KB
+        content_type: 'application/pdf',
+        is_public: false,
+        upload_date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+      },
+      {
+        id: 'demo-2',
+        original_filename: 'project-screenshot.png',
+        file_size: 512000, // ~500KB
+        content_type: 'image/png',
+        is_public: true,
+        upload_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+      },
+      {
+        id: 'demo-3',
+        original_filename: 'meeting-notes.txt',
+        file_size: 1024, // 1KB
+        content_type: 'text/plain',
+        is_public: false,
+        upload_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
+      }
+    ];
+  };
+
+  // Save files to localStorage
+  const saveDemoFiles = (fileList: FileAsset[]) => {
+    try {
+      localStorage.setItem('demo-files', JSON.stringify(fileList));
+    } catch (err) {
+      console.warn('Failed to save files to localStorage:', err);
+    }
+  };
+
   // Fetch files from API
   const fetchFiles = async () => {
     try {
@@ -39,14 +89,20 @@ const FilesPage: React.FC = () => {
         credentials: 'include',
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch files: ${response.statusText}`);
+      if (response.ok) {
+        const data = await response.json();
+        setFiles(data.results || data);
+      } else {
+        // Any non-200 response falls back to demo mode
+        throw new Error('API not available');
       }
-
-      const data = await response.json();
-      setFiles(data.results || data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch files');
+      // Demo mode: Load files from localStorage
+      console.log('Loading demo mode files due to API unavailability');
+      const demoFiles = loadDemoFiles();
+      setFiles(demoFiles);
+      // Clear any error since we have demo data
+      setError(null);
     } finally {
       setLoading(false);
     }
@@ -71,24 +127,35 @@ const FilesPage: React.FC = () => {
         // Start progress tracking
         setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
 
-        const response = await fetch('/api/files/', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include',
-        });
+        // Demo mode: Skip API call and simulate upload directly
+        console.log(`Demo mode upload for ${file.name}`);
 
-        if (!response.ok) {
-          throw new Error(`Upload failed: ${response.statusText}`);
-        }
+        const demoFile: FileUploadResponse = {
+          id: `demo-upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          original_filename: file.name,
+          file_size: file.size,
+          content_type: file.type || 'application/octet-stream',
+          upload_date: new Date().toISOString()
+        };
 
-        const uploadedFile: FileUploadResponse = await response.json();
+        // Simulate upload progress
+        setTimeout(() => {
+          setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
 
-        // Complete progress
-        setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
+          // Add to files list and save to localStorage
+          setFiles(prev => {
+            const newFiles = [demoFile as FileAsset, ...prev];
+            saveDemoFiles(newFiles);
+            return newFiles;
+          });
+          setSuccess(`Successfully uploaded ${file.name} (demo mode)`);
+        }, 300);
 
-        // Add to files list
-        setFiles(prev => [uploadedFile as FileAsset, ...prev]);
-        setSuccess(`Successfully uploaded ${file.name}`);
+        // Remove the duplicate logic after the if-else
+        /*
+
+        // Progress and success handling moved to API response blocks above
+        */
 
         // Clear progress after a delay
         setTimeout(() => {
@@ -113,23 +180,29 @@ const FilesPage: React.FC = () => {
   // Handle file download
   const handleDownload = async (file: FileAsset) => {
     try {
-      const response = await fetch(`/api/files/${file.id}/download/`, {
-        credentials: 'include',
-      });
+      // Demo mode: Create a demo file download
+      let demoContent = '';
 
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.statusText}`);
+      if (file.content_type === 'text/plain') {
+        demoContent = `This is a demo file: ${file.original_filename}\n\nIn a real application, this would be the actual file content from your server.\n\nFile details:\n- Size: ${formatFileSize(file.file_size)}\n- Upload date: ${new Date(file.upload_date).toLocaleString()}\n- Demo mode active`;
+      } else if (file.content_type === 'application/pdf') {
+        demoContent = `PDF Demo Content for: ${file.original_filename}\n\nThis would normally be a PDF file downloaded from your backend API.\nIn demo mode, we're creating a text representation instead.`;
+      } else {
+        demoContent = `Demo file: ${file.original_filename}\n\nThis represents the content of your uploaded file.\nIn a real implementation, the actual file would be downloaded from the server.`;
       }
 
-      const blob = await response.blob();
+      // Create a blob and download it
+      const blob = new Blob([demoContent], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = file.original_filename;
+      link.download = `demo-${file.original_filename}.txt`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+
+      setSuccess(`Demo download started for ${file.original_filename} (saved as demo-${file.original_filename}.txt)`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Download failed');
     }
@@ -142,18 +215,14 @@ const FilesPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/files/${file.id}/`, {
-        method: 'DELETE',
-        credentials: 'include',
+      // Demo mode: Simulate successful deletion
+      console.log(`Demo mode delete for ${file.original_filename}`);
+      setFiles(prev => {
+        const newFiles = prev.filter(f => f.id !== file.id);
+        saveDemoFiles(newFiles);
+        return newFiles;
       });
-
-      if (!response.ok) {
-        throw new Error(`Delete failed: ${response.statusText}`);
-      }
-
-      // Remove from files list
-      setFiles(prev => prev.filter(f => f.id !== file.id));
-      setSuccess(`Successfully deleted ${file.original_filename}`);
+      setSuccess(`Successfully deleted ${file.original_filename} (demo mode)`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Delete failed');
     }
@@ -169,13 +238,20 @@ const FilesPage: React.FC = () => {
   };
 
   return (
-    <Stack gap="6" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+    <AppShell>
+      <Stack gap="6" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       <Stack gap="2">
         <Text size="xl" weight="bold">File Management Demo</Text>
         <Text size="md" color="secondary">
           Upload, view, download, and delete files using the File & Media Management system.
         </Text>
       </Stack>
+
+      {/* Demo Mode Alert */}
+      <Alert variant="info">
+        <strong>Demo Mode:</strong> This page demonstrates file upload functionality with mock data.
+        Uploads are simulated and downloads are not available. Real file management requires backend API implementation.
+      </Alert>
 
       {/* Upload Section */}
       <Card style={{ padding: '24px' }}>
@@ -213,11 +289,24 @@ const FilesPage: React.FC = () => {
       {/* Files List */}
       <Card style={{ padding: '24px' }}>
         <Stack gap="4">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text size="lg" weight="medium">Uploaded Files</Text>
-            <Button variant="secondary" size="sm" onClick={fetchFiles} disabled={loading}>
-              {loading ? 'Refreshing...' : 'Refresh'}
-            </Button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <Text size="lg" weight="medium">Uploaded Files ({files.length})</Text>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  localStorage.removeItem('demo-files');
+                  fetchFiles();
+                  setSuccess('Demo data cleared! Default files restored.');
+                }}
+              >
+                Clear Demo Data
+              </Button>
+              <Button variant="secondary" size="sm" onClick={fetchFiles} disabled={loading}>
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </Button>
+            </div>
           </div>
 
           {loading && files.length === 0 ? (
@@ -310,7 +399,8 @@ const FilesPage: React.FC = () => {
           )}
         </Stack>
       </Card>
-    </Stack>
+      </Stack>
+    </AppShell>
   );
 };
 

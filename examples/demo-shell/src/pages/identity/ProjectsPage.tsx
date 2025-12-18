@@ -12,6 +12,7 @@ import {
 } from '@django-core/design-system';
 import { useQueryParams } from '../../hooks/useQueryParams';
 import { Project, ListResponse } from '../../types';
+import AppShell from '../../components/AppShell';
 
 /**
  * T008 - Projects List Page
@@ -123,8 +124,9 @@ export const ProjectsPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <PageHeader
+    <AppShell>
+      <div>
+        <PageHeader
         title="Projects"
         breadcrumbs={[
           { label: 'Home', href: '/' },
@@ -264,7 +266,8 @@ export const ProjectsPage: React.FC = () => {
           </Card>
         )}
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

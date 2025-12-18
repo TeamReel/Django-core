@@ -10,6 +10,7 @@ import {
   Alert,
   Button,
 } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 import { AuditEvent, ListResponse } from '../../types';
 
 /**
@@ -121,7 +122,8 @@ export const AuditLogPage: React.FC = () => {
   const currentPage = parseInt(page);
 
   return (
-    <div>
+    <AppShell>
+      <div>
       <PageHeader
         title="Audit Log"
         breadcrumbs={[
@@ -295,7 +297,8 @@ export const AuditLogPage: React.FC = () => {
           </Card>
         )}
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

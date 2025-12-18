@@ -7,9 +7,10 @@ import {
   Button,
   Alert,
 } from '@django-core/design-system';
-import { usePolling } from '../../hooks/usePolling';
+// Removed usePolling import - using direct useEffect instead
 import { ObservabilityCharts } from '../../components/ObservabilityCharts';
 import type { ObservabilityMetrics } from '../../types/chart';
+import AppShell from '../../components/AppShell';
 
 /**
  * T019 - Observability Page
@@ -38,14 +39,61 @@ export const ObservabilityPage: React.FC = () => {
   const [metricsHistory, setMetricsHistory] = useState<ObservabilityMetrics[]>([]);
   const historyRef = useRef<ObservabilityMetrics[]>([]);
 
-  const { data: backendMetrics, loading, error, refetch } = usePolling<BackendObservabilityMetrics>(
-    '/api/observability/metrics/',
-    {
-      interval: 30000,
-      key: 'observability-metrics',
-      dependencies: [manualRefresh],
+  const [backendMetrics, setBackendMetrics] = useState<BackendObservabilityMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMetrics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/observability/metrics/', {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data: BackendObservabilityMetrics = await response.json();
+        setBackendMetrics(data);
+      } else if (response.status === 404) {
+        // Demo mode: Use mock observability data
+        const demoMetrics: BackendObservabilityMetrics = {
+          timestamp: new Date().toISOString(),
+          response_time_p99: 450 + Math.random() * 100,
+          response_time_p95: 250 + Math.random() * 50,
+          response_time_median: 120 + Math.random() * 30,
+          error_rate_4xx: Math.random() * 5,
+          error_rate_5xx: Math.random() * 2,
+          active_connections: 15 + Math.floor(Math.random() * 10),
+          database_latency: 25 + Math.random() * 15,
+          cache_hit_ratio: 0.85 + Math.random() * 0.1
+        };
+        setBackendMetrics(demoMetrics);
+      } else {
+        throw new Error(`API error: ${response.status}`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch observability metrics');
+      console.error('Observability fetch error:', err);
+    } finally {
+      setLoading(false);
     }
-  );
+  };
+
+  useEffect(() => {
+    fetchMetrics();
+    // Set up polling every 30 seconds
+    const interval = setInterval(fetchMetrics, 30000);
+    return () => clearInterval(interval);
+  }, [manualRefresh]);
+
+  const refetch = async () => {
+    await fetchMetrics();
+  };
 
   // Convert backend metrics to chart format
   const currentMetrics: ObservabilityMetrics | null = backendMetrics ? {
@@ -100,8 +148,9 @@ export const ObservabilityPage: React.FC = () => {
     : 'Never';
 
   return (
-    <div>
-      <PageHeader
+    <AppShell>
+      <div>
+        <PageHeader
         title="Observability"
         breadcrumbs={[
           { label: 'Home', href: '/' },
@@ -109,8 +158,9 @@ export const ObservabilityPage: React.FC = () => {
           { label: 'Observability' },
         ]}
       />
-      <PageContent>
-        <Card data-testid="observability-header" className="mb-4">
+      <PageContent>        <Alert type="info" className="mb-4">
+          <strong>Demo Mode:</strong> This page shows mock observability data with simulated real-time updates. API endpoints are not yet implemented.
+        </Alert>        <Card data-testid="observability-header" className="mb-4">
           <div className="p-6 flex justify-between items-center">
             <div>
               <h3 className="text-lg font-semibold mb-1">Metrics</h3>
@@ -238,7 +288,8 @@ export const ObservabilityPage: React.FC = () => {
           </Card>
         )}
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

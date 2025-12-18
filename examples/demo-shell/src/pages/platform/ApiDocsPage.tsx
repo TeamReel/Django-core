@@ -6,6 +6,7 @@ import {
   Alert,
   Button,
 } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 
 /**
  * T020 - API Docs Page
@@ -42,6 +43,14 @@ export const ApiDocsPage: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           setMeta(data);
+        } else if (response.status === 404) {
+          // Demo mode: Use mock API docs metadata
+          const demoMeta: ApiDocsMeta = {
+            total_endpoints: 42,
+            total_schemas: 18,
+            last_updated: new Date().toISOString()
+          };
+          setMeta(demoMeta);
         }
       } catch (err) {
         console.error('Failed to fetch API metadata:', err);
@@ -61,8 +70,9 @@ export const ApiDocsPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <PageHeader
+    <AppShell>
+      <div>
+        <PageHeader
         title="API Documentation"
         breadcrumbs={[
           { label: 'Home', href: '/' },
@@ -71,6 +81,9 @@ export const ApiDocsPage: React.FC = () => {
         ]}
       />
       <PageContent>
+        <Alert type="info" className="mb-4">
+          <strong>Demo Mode:</strong> This page shows mock API documentation. API endpoints are not yet implemented.
+        </Alert>
         {meta && (
           <Card data-testid="api-meta" className="mb-4">
             <div className="p-6">
@@ -214,7 +227,8 @@ export const ApiDocsPage: React.FC = () => {
           </div>
         </Card>
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

@@ -8,6 +8,7 @@ import {
   Table,
 } from '@django-core/design-system';
 import { Permission, Role } from '../../types';
+import AppShell from '../../components/AppShell';
 
 /**
  * T010 - Permissions Dashboard
@@ -224,8 +225,9 @@ export const PermissionsPage: React.FC = () => {
   }
 
   return (
-    <div>
-      <PageHeader
+    <AppShell>
+      <div>
+        <PageHeader
         title="Permissions & Access Control"
         breadcrumbs={[
           { label: 'Home', href: '/' },
@@ -348,7 +350,8 @@ export const PermissionsPage: React.FC = () => {
           </div>
         </Card>
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

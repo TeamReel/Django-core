@@ -14,6 +14,7 @@ import {
   Organisation,
   ListResponse,
 } from '../../types';
+import AppShell from '../../components/AppShell';
 
 /**
  * T006 - Organisations List Page
@@ -102,8 +103,9 @@ export const OrganisationsPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <PageHeader
+    <AppShell>
+      <div>
+        <PageHeader
         title="Organisations"
         breadcrumbs={[
           { label: 'Home', href: '/' },
@@ -249,7 +251,8 @@ export const OrganisationsPage: React.FC = () => {
           </Card>
         )}
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

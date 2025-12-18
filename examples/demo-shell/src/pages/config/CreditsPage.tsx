@@ -8,6 +8,7 @@ import {
   Table,
   Button,
 } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 import { CreditsChart } from '../../components/CreditsChart';
 import type { CreditsTransaction } from '../../types/chart';
 
@@ -70,6 +71,15 @@ export const CreditsPage: React.FC = () => {
         if (balanceResponse.ok) {
           const balanceData: CreditBalance = await balanceResponse.json();
           setBalance(balanceData);
+        } else if (balanceResponse.status === 404) {
+          // Demo mode: Use mock credit data
+          const demoBalance: CreditBalance = {
+            current_balance: 750,
+            monthly_limit: 1000,
+            used_this_month: 250,
+            marketing_hub_balance: 85, // Low balance to trigger alert
+          };
+          setBalance(demoBalance);
         } else {
           throw new Error(`Failed to fetch balance: ${balanceResponse.status}`);
         }
@@ -86,10 +96,42 @@ export const CreditsPage: React.FC = () => {
         if (txResponse.ok) {
           const txData = await txResponse.json();
           setTransactions(txData.results || []);
+        } else if (txResponse.status === 404) {
+          // Demo mode: Use mock transaction data
+          const demoTransactions: CreditTransaction[] = [
+            {
+              id: '1',
+              amount: 50,
+              operation: 'use',
+              reason: 'API calls - File processing',
+              created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+              product: 'API Gateway'
+            },
+            {
+              id: '2',
+              amount: 25,
+              operation: 'use',
+              reason: 'API calls - Data export',
+              created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+              product: 'Data Service'
+            },
+            {
+              id: '3',
+              amount: 1000,
+              operation: 'add',
+              reason: 'Monthly credits renewal',
+              created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+              product: 'Credits Package'
+            },
+          ];
+          setTransactions(demoTransactions);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch credits data');
-        console.error('Credits fetch error:', err);
+        // Only show error if it's not a demo mode fallback
+        if (!(err instanceof Error && err.message.includes('404'))) {
+          setError(err instanceof Error ? err.message : 'Failed to fetch credits data');
+          console.error('Credits fetch error:', err);
+        }
       } finally {
         setLoading(false);
       }
@@ -144,7 +186,8 @@ export const CreditsPage: React.FC = () => {
   const isMarketingHubLow = balance.marketing_hub_balance < 100;
 
   return (
-    <div>
+    <AppShell>
+      <div>
       <PageHeader
         title="Credits & Usage"
         breadcrumbs={[
@@ -160,6 +203,10 @@ export const CreditsPage: React.FC = () => {
       />
 
       <PageContent>
+        <Alert type="info" className="mb-4">
+          <strong>Demo Mode:</strong> This page shows mock credits data. API endpoints are not yet implemented.
+        </Alert>
+
         {/* Low balance alert */}
         {isMarketingHubLow && (
           <Alert type="error" className="mb-4" data-testid="credits-marketing-hub-low">
@@ -341,7 +388,8 @@ export const CreditsPage: React.FC = () => {
           )}
         </Card>
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

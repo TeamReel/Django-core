@@ -9,6 +9,7 @@ import {
   Alert,
 } from '@django-core/design-system';
 import { User } from '../../types';
+import AppShell from '../../components/AppShell';
 
 /**
  * T011 - Profile Page
@@ -19,6 +20,19 @@ import { User } from '../../types';
  * - Read-only view (editing handled in preferences)
  */
 export const ProfilePage: React.FC = () => {
+  console.log('ProfilePage rendering...'); // DEBUG
+
+  return (
+    <AppShell>
+      <div>
+        <h1>Simple Profile Test</h1>
+        <p>Testing if AppShell renders correctly</p>
+      </div>
+    </AppShell>
+  );
+};
+
+export const ProfilePageOLD: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,15 +118,16 @@ export const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div>
-      <PageHeader
-        title="My Profile"
-        breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Identity' },
-          { label: 'Profile' },
-        ]}
-      />
+    <AppShell>
+      <div>
+        <PageHeader
+          title="My Profile"
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Identity' },
+            { label: 'Profile' },
+          ]}
+        />
 
       <PageContent>
         {/* User information card */}
@@ -212,7 +227,8 @@ export const ProfilePage: React.FC = () => {
           your preferences page to update your account settings.
         </Alert>
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

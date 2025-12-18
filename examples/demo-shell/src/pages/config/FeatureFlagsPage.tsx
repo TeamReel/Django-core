@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import AppShell from '../../components/AppShell';
 import {
   PageHeader,
   PageContent,
@@ -149,7 +150,8 @@ export const FeatureFlagsPage: React.FC = () => {
   }
 
   return (
-    <div>
+    <AppShell>
+      <div>
       <PageHeader
         title="Feature Flags"
         breadcrumbs={[
@@ -275,7 +277,8 @@ export const FeatureFlagsPage: React.FC = () => {
           </ul>
         </Card>
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

@@ -14,6 +14,64 @@ interface NavItem {
   icon?: string;
 }
 
+const navGroups: NavGroup[] = [
+  {
+    id: 'identity',
+    label: 'Identity & Context',
+    items: [
+      { path: '/organisations', label: 'Organisations', icon: '🏢' },
+      { path: '/permissions', label: 'Permissions', icon: '🔐' },
+      { path: '/profile', label: 'Profile', icon: '👤' },
+    ],
+  },
+  {
+    id: 'config',
+    label: 'Configuration',
+    items: [
+      { path: '/preferences', label: 'Preferences', icon: '⚙️' },
+      { path: '/audit', label: 'Audit Log', icon: '📋' },
+      { path: '/flags', label: 'Feature Flags', icon: '🚩' },
+      { path: '/credits', label: 'Credits', icon: '💳' },
+    ],
+  },
+  {
+    id: 'platform',
+    label: 'Platform Status',
+    items: [
+      { path: '/health', label: 'Health Status', icon: '❤️' },
+      { path: '/integration-status', label: 'Integration Status', icon: '🔄' },
+      { path: '/constitution', label: 'Constitution', icon: '📜' },
+      { path: '/security', label: 'Security', icon: '🔒' },
+      { path: '/observability', label: 'Observability', icon: '📊' },
+      { path: '/api-docs', label: 'API Docs', icon: '🔌' },
+    ],
+  },
+  {
+    id: 'frontend',
+    label: 'Frontend Resources',
+    items: [
+      { path: '/design-system', label: 'Design System', icon: '🎨' },
+      { path: '/auth-flows', label: 'Auth Flows', icon: '🔐' },
+      { path: '/context', label: 'Context Switcher', icon: '🔀' },
+      { path: '/demo/files', label: 'File Management Demo', icon: '📁' },
+      { path: '/resources', label: 'Resources', icon: '📊' },
+      { path: '/templates', label: 'Templates', icon: '📄' },
+      { path: '/theme', label: 'Theme Showcase', icon: '🎭' },
+      { path: '/integration', label: 'Integration Patterns', icon: '🔗' },
+    ],
+  },
+  {
+    id: 'docs',
+    label: 'Documentation',
+    items: [
+      { path: '/docs', label: 'Docs', icon: '📚' },
+      { path: '/tasks', label: 'Tasks', icon: '✓' },
+      { path: '/notifications', label: 'Notifications', icon: '🔔' },
+      { path: '/deployment', label: 'Deployment', icon: '🚀' },
+    ],
+  },
+];
+
 /**
  * Sidebar using design-system primitives (Card, Button) with collapsible groups
  * - 5 groups: identity, config, platform, frontend, docs
@@ -23,62 +81,6 @@ interface NavItem {
 export default function Sidebar() {
   const location = useLocation();
   const STORAGE_KEY = 'demo_sidebar_expanded_groups';
-
-  const navGroups: NavGroup[] = [
-    {
-      id: 'identity',
-      label: 'Identity & Context',
-      items: [
-        { path: '/organisations', label: 'Organisations', icon: '🏢' },
-        { path: '/permissions', label: 'Permissions', icon: '🔐' },
-        { path: '/profile', label: 'Profile', icon: '👤' },
-      ],
-    },
-    {
-      id: 'config',
-      label: 'Configuration',
-      items: [
-        { path: '/preferences', label: 'Preferences', icon: '⚙️' },
-        { path: '/audit', label: 'Audit Log', icon: '📋' },
-        { path: '/flags', label: 'Feature Flags', icon: '🚩' },
-        { path: '/credits', label: 'Credits', icon: '💳' },
-      ],
-    },
-    {
-      id: 'platform',
-      label: 'Platform Status',
-      items: [
-        { path: '/health', label: 'Health Status', icon: '❤️' },
-        { path: '/constitution', label: 'Constitution', icon: '📜' },
-        { path: '/security', label: 'Security', icon: '🔒' },
-        { path: '/observability', label: 'Observability', icon: '📊' },
-        { path: '/api-docs', label: 'API Docs', icon: '🔌' },
-      ],
-    },
-    {
-      id: 'frontend',
-      label: 'Frontend Resources',
-      items: [
-        { path: '/design-system', label: 'Design System', icon: '🎨' },
-        { path: '/auth-flows', label: 'Auth Flows', icon: '🔐' },
-        { path: '/context', label: 'Context Switcher', icon: '🔀' },
-        { path: '/resources', label: 'Resources', icon: '📊' },
-        { path: '/templates', label: 'Templates', icon: '📄' },
-        { path: '/theme', label: 'Theme Showcase', icon: '🎭' },
-        { path: '/integration', label: 'Integration Patterns', icon: '🔗' },
-      ],
-    },
-    {
-      id: 'docs',
-      label: 'Documentation',
-      items: [
-        { path: '/docs', label: 'Docs', icon: '📚' },
-        { path: '/tasks', label: 'Tasks', icon: '✓' },
-        { path: '/notifications', label: 'Notifications', icon: '🔔' },
-        { path: '/deployment', label: 'Deployment', icon: '🚀' },
-      ],
-    },
-  ];
 
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
@@ -101,7 +103,7 @@ export default function Sidebar() {
         break;
       }
     }
-  }, [location.pathname, navGroups]);
+  }, [location.pathname]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(expandedGroups)));

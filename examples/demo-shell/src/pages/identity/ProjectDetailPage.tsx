@@ -10,6 +10,7 @@ import {
   Table,
 } from '@django-core/design-system';
 import { Project, User, AuditEvent } from '../../types';
+import AppShell from '../../components/AppShell';
 
 /**
  * T009 - Project Detail Page
@@ -144,8 +145,9 @@ export const ProjectDetailPage: React.FC = () => {
   }
 
   return (
-    <div>
-      <PageHeader
+    <AppShell>
+      <div>
+        <PageHeader
         title={project.name}
         breadcrumbs={[
           { label: 'Home', href: '/' },
@@ -263,7 +265,8 @@ export const ProjectDetailPage: React.FC = () => {
           )}
         </Card>
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

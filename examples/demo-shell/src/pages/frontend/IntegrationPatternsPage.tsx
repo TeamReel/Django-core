@@ -1,7 +1,9 @@
 import { Card, Alert } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 
 export function IntegrationPatternsPage() {
   return (
+    <AppShell>
     <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }} data-testid="integration-patterns-page">
       <div style={{ padding: '24px', borderBottom: '1px solid #e5e5e5', backgroundColor: '#fff' }}>
         <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700 }}>Integration Patterns</h1>
@@ -48,5 +50,6 @@ export function IntegrationPatternsPage() {
         </Card>
       </div>
     </div>
+    </AppShell>
   );
 }

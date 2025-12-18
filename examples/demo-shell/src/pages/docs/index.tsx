@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import AppShell from '../../components/AppShell';
 // Temporary: Import directly from dist until shim exports are fixed
 import { PageHeader } from '../../../../../packages/page-templates/src/components/PageHeader';
 import { PageContent } from '../../../../../packages/page-templates/src/components/PageContent';
@@ -48,7 +49,7 @@ export function TasksPage() {
   }, {} as Record<string, number>);
 
   return (
-    <>
+    <AppShell>
       <PageHeader title="Background Tasks" subtitle="B15 Task Scheduling & Monitoring" />
       <PageContent>
         <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="tasks-page">
@@ -119,7 +120,7 @@ export function TasksPage() {
           )}
         </div>
       </PageContent>
-    </>
+    </AppShell>
   );
 }
 
@@ -156,7 +157,7 @@ export function NotificationsPage() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <>
+    <AppShell>
       <PageHeader title="Notifications" subtitle="B16/B17 Notification System" />
       <PageContent>
         <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="notifications-page">
@@ -225,7 +226,7 @@ export function NotificationsPage() {
           )}
         </div>
       </PageContent>
-    </>
+    </AppShell>
   );
 }
 
@@ -257,7 +258,7 @@ export function DeploymentPage() {
   };
 
   return (
-    <>
+    <AppShell>
       <PageHeader title="Deployment Status" subtitle="B19 Container & Service Health" />
       <PageContent>
         <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="deployment-page">
@@ -318,7 +319,7 @@ export function DeploymentPage() {
           )}
         </div>
       </PageContent>
-    </>
+    </AppShell>
   );
 }
 
@@ -366,7 +367,7 @@ export function DocsPage() {
   };
 
   return (
-    <>
+    <AppShell>
       <PageHeader title="Documentation Browser" subtitle="B21 Module Documentation & Status" />
       <PageContent>
         <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="docs-page">
@@ -422,7 +423,7 @@ export function DocsPage() {
           )}
         </div>
       </PageContent>
-    </>
+    </AppShell>
   );
 }
 
@@ -490,7 +491,7 @@ export function I18nPage() {
   const currentLangInfo = languages.find(l => l.code === language);
 
   return (
-    <>
+    <AppShell>
       <PageHeader title="Internationalization" subtitle="B04 i18n & B12 Language Preferences" />
       <PageContent>
         <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="i18n-page">
@@ -555,6 +556,6 @@ export function I18nPage() {
           </Card>
         </div>
       </PageContent>
-    </>
+    </AppShell>
   );
 }

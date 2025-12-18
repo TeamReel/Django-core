@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button, Card, Badge, Input, Alert } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 
 export function AuthFlowsPage() {
   const [activeFlow, setActiveFlow] = useState<'login' | 'signup' | 'reset'>('login');
@@ -12,6 +13,7 @@ export function AuthFlowsPage() {
   };
 
   return (
+    <AppShell>
     <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }} data-testid="auth-flows-page">
       <div style={{ padding: '24px', borderBottom: '1px solid #e5e5e5', backgroundColor: '#fff' }}>
         <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700 }}>Authentication Flows</h1>
@@ -48,5 +50,6 @@ export function AuthFlowsPage() {
         </Card>
       </div>
     </div>
+    </AppShell>
   );
 }

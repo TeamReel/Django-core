@@ -73,7 +73,7 @@ const getAllModules = (): ModuleInfo[] => {
 
     // Fase 9: Backend Infrastructure (034-037)
     { id: '034', code: 'B22', number: 34, name: 'File & Media Management', description: 'File storage & processing', phase: 9, category: 'Backend', status: 'planned', features: ['S3 integration', 'Upload handling', 'Media processing'] },
-    { id: '035', code: 'B23', number: 35, name: 'Real-Time & WebSocket Foundation', description: 'WebSocket support', phase: 9, category: 'Backend', status: 'planned', features: ['WebSocket routing', 'Channel layers', 'Real-time events'] },
+    { id: '035', code: 'B23', number: 35, name: 'Real-Time & WebSocket Foundation', description: 'WebSocket support', phase: 9, category: 'Backend', status: 'complete', features: ['WebSocket routing', 'Channel layers', 'Real-time events', 'Rate limiting', 'Demo integration'], testUrl: '/ui/demo/websockets/' },
     { id: '036', code: 'B24', number: 36, name: 'Search & Full-Text Foundation', description: 'Search infrastructure', phase: 9, category: 'Backend', status: 'planned', features: ['Elasticsearch', 'Full-text search', 'Faceted queries'] },
     { id: '037', code: 'B25', number: 37, name: 'Cache Strategy & Redis Integration', description: 'Caching layer', phase: 9, category: 'Backend', status: 'planned', features: ['Cache patterns', 'Invalidation', 'Performance'] },
 
@@ -420,6 +420,30 @@ export default function IntegrationStatusPage() {
             >
               View Roadmap
             </button>
+          </div>
+        </div>
+
+        {/* Recent Updates */}
+        <div style={{
+          padding: '20px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '8px',
+          borderLeft: '4px solid #28a745',
+          marginTop: '24px'
+        }}>
+          <h3 style={{ marginTop: 0, fontSize: '16px', color: '#28a745' }}>🎉 Recent Updates</h3>
+          <div style={{ fontSize: '14px', color: '#666', lineHeight: '1.6' }}>
+            <strong>December 18, 2025 - Feature 035 Complete:</strong>
+            <br />
+            ✅ Real-Time & WebSocket Foundation (B23) is now fully operational
+            <br />
+            • WebSocket endpoints: <code>/ws/notifications/</code>, <code>/ws/presence/</code>, <code>/ws/activity/</code>
+            <br />
+            • Rate limiting: 100 messages/minute per connection
+            <br />
+            • Demo available: <a href="http://localhost:8000/ui/demo/websockets/" target="_blank" style={{color: '#007bff'}}>localhost:8000/ui/demo/websockets/</a>
+            <br />
+            • Integration testing completed with manual validation
           </div>
         </div>
       </div>

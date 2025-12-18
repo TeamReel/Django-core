@@ -14,8 +14,8 @@ import {
   ProjectsPage,
   ProjectDetailPage,
   PermissionsPage,
-  ProfilePage,
 } from './pages/identity';
+import ProfilePage from './pages/identity/ProfilePageSimple';
 
 // Config pages
 import {
@@ -33,6 +33,28 @@ import {
   ObservabilityPage,
   ApiDocsPage,
 } from './pages/platform';
+
+// Integration Status
+import IntegrationStatusPage from './pages/IntegrationStatusPage';
+
+// Frontend pages
+import {
+  DesignSystemPage,
+  AuthFlowsPage,
+  ContextSwitcherPage,
+  ResourceDisplayPage,
+  TemplatesPage,
+  ThemePage,
+  IntegrationPatternsPage,
+} from './pages/frontend';
+
+// Docs pages
+import {
+  DocsPage,
+  TasksPage,
+  NotificationsPage,
+  DeploymentPage,
+} from './pages/docs';
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -207,6 +229,116 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ApiDocsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/integration-status"
+        element={
+          <ProtectedRoute>
+            <IntegrationStatusPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Frontend Resource routes */}
+      <Route
+        path="/design-system"
+        element={
+          <ProtectedRoute>
+            <DesignSystemPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/auth-flows"
+        element={
+          <ProtectedRoute>
+            <AuthFlowsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/context"
+        element={
+          <ProtectedRoute>
+            <ContextSwitcherPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/resources"
+        element={
+          <ProtectedRoute>
+            <ResourceDisplayPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/templates"
+        element={
+          <ProtectedRoute>
+            <TemplatesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/theme"
+        element={
+          <ProtectedRoute>
+            <ThemePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/integration"
+        element={
+          <ProtectedRoute>
+            <IntegrationPatternsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Documentation routes */}
+      <Route
+        path="/docs"
+        element={
+          <ProtectedRoute>
+            <DocsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/tasks"
+        element={
+          <ProtectedRoute>
+            <TasksPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/deployment"
+        element={
+          <ProtectedRoute>
+            <DeploymentPage />
           </ProtectedRoute>
         }
       />

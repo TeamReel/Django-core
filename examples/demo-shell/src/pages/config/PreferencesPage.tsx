@@ -6,6 +6,7 @@ import {
   Button,
   Alert,
 } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 
 /**
  * T015 - Preferences Page
@@ -49,14 +50,31 @@ export const PreferencesPage: React.FC = () => {
         });
 
         if (!response.ok) {
+          // Demo mode: Use default preferences when API is not available
+          if (response.status === 404) {
+            const demoPreferences: UserPreferences = {
+              theme: 'light',
+              language: 'en',
+              timezone: 'UTC',
+              email_notifications: true,
+              marketing_email: false,
+            };
+            setPreferences(demoPreferences);
+            return;
+          }
           throw new Error(`Failed to fetch preferences: ${response.status}`);
         }
 
         const data: UserPreferences = await response.json();
         setPreferences(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load preferences');
-        console.error('Preferences fetch error:', err);
+        // If fetch completely fails, also use demo data
+        if (err instanceof Error && err.message.includes('Failed to fetch preferences: 404')) {
+          // Already handled above
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to load preferences');
+          console.error('Preferences fetch error:', err);
+        }
       } finally {
         setLoading(false);
       }
@@ -85,7 +103,12 @@ export const PreferencesPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to save preferences: ${response.status}`);
+        // Demo mode: Accept 404 as success (API not implemented yet)
+        if (response.status === 404) {
+          console.log('Demo mode: Preferences saved locally only');
+        } else {
+          throw new Error(`Failed to save preferences: ${response.status}`);
+        }
       }
 
       // Update theme via F07 hook
@@ -154,7 +177,8 @@ export const PreferencesPage: React.FC = () => {
   }
 
   return (
-    <div>
+    <AppShell>
+      <div>
       <PageHeader
         title="Preferences"
         breadcrumbs={[
@@ -165,6 +189,10 @@ export const PreferencesPage: React.FC = () => {
       />
 
       <PageContent>
+        <Alert type="info" className="mb-4">
+          <strong>Demo Mode:</strong> This page shows mock preferences data. API endpoints are not yet implemented.
+        </Alert>
+
         {error && (
           <Alert type="error" className="mb-4" data-testid="prefs-error-alert">
             {error}
@@ -352,7 +380,8 @@ export const PreferencesPage: React.FC = () => {
           devices.
         </Alert>
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

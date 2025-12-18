@@ -1,13 +1,15 @@
 import { Card } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 
 export function ResourceDisplayPage() {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }} data-testid="resource-display-page">
-      <div style={{ padding: '24px', borderBottom: '1px solid #e5e5e5', backgroundColor: '#fff' }}>
-        <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700 }}>Resource Display</h1>
-        <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>F05 Resource Meters & Display</p>
-      </div>
-      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+    <AppShell>
+      <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }} data-testid="resource-display-page">
+        <div style={{ padding: '24px', borderBottom: '1px solid #e5e5e5', backgroundColor: '#fff' }}>
+          <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700 }}>Resource Display</h1>
+          <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>F05 Resource Meters & Display</p>
+        </div>
+        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
         <Card style={{ padding: '24px', marginBottom: '24px' }}>
           <h3 style={{ margin: '0 0 16px 0' }}>Usage Metrics</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
@@ -49,7 +51,8 @@ export function ResourceDisplayPage() {
             ))}
           </div>
         </Card>
+        </div>
       </div>
-    </div>
+    </AppShell>
   );
 }

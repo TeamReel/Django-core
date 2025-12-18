@@ -7,6 +7,7 @@ import {
   Alert,
   Table,
 } from '@django-core/design-system';
+import AppShell from '../../components/AppShell';
 
 /**
  * T017 - Constitution Page
@@ -50,12 +51,46 @@ export const ConstitutionPage: React.FC = () => {
           credentials: 'include',
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+          const data: ConstitutionData = await response.json();
+          setConstitution(data);
+        } else if (response.status === 404) {
+          // Demo mode: Use mock constitution data
+          const demoConstitution: ConstitutionData = {
+            rules: [
+              {
+                id: '1',
+                category: 'Security',
+                name: 'Authentication Required',
+                active: true,
+                violation_count: 0
+              },
+              {
+                id: '2',
+                category: 'Data Protection',
+                name: 'Personal Data Encryption',
+                active: true,
+                violation_count: 2
+              },
+              {
+                id: '3',
+                category: 'API',
+                name: 'Rate Limiting',
+                active: true,
+                violation_count: 0
+              }
+            ],
+            categories: {
+              'Security': 5,
+              'Data Protection': 8,
+              'API': 3
+            },
+            total_violations: 2
+          };
+          setConstitution(demoConstitution);
+        } else {
           throw new Error(`API error: ${response.status}`);
         }
-
-        const data: ConstitutionData = await response.json();
-        setConstitution(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch constitution rules');
         console.error('Constitution fetch error:', err);
@@ -113,8 +148,9 @@ export const ConstitutionPage: React.FC = () => {
   const totalRules = constitution?.rules?.length || 0;
 
   return (
-    <div>
-      <PageHeader
+    <AppShell>
+      <div>
+        <PageHeader
         title="Constitution"
         breadcrumbs={[
           { label: 'Home', href: '/' },
@@ -123,6 +159,9 @@ export const ConstitutionPage: React.FC = () => {
         ]}
       />
       <PageContent>
+        <Alert type="info" className="mb-4">
+          <strong>Demo Mode:</strong> This page shows mock constitution data. API endpoints are not yet implemented.
+        </Alert>
         <Card data-testid="constitution-summary" className="mb-4">
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -196,7 +235,8 @@ export const ConstitutionPage: React.FC = () => {
           </Card>
         )}
       </PageContent>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 
