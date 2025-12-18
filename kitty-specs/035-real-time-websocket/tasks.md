@@ -23,17 +23,17 @@ This feature is broken down into 6 work packages that can be developed and deplo
 **Priority**: P1 (Blocker)
 **Estimated Effort**: 2-3 days
 **Dependencies**: None
-**Prompt**: [WP01-infrastructure-setup.md](tasks/planned/WP01-infrastructure-setup.md)
+**Prompt**: [WP01-infrastructure-setup.md](tasks/done/WP01-infrastructure-setup.md)
 
 **Goal**: Establish Django Channels infrastructure with Redis integration and basic WebSocket routing.
 
 **Subtasks**:
-- [ ] **T001**: Install and configure Django Channels dependencies
-- [ ] **T002**: Configure ASGI application with WebSocket routing
-- [ ] **T003**: Set up Redis channel layer configuration
-- [ ] **T004**: Create base WebSocket consumer class with authentication for three endpoints (/ws/notifications, /ws/presence, /ws/activity)
-- [ ] **T005**: Implement JWT fallback authentication mechanism
-- [ ] **T006**: Create Docker composition for Redis service
+- [x] **T001**: Install and configure Django Channels dependencies
+- [x] **T002**: Configure ASGI application with WebSocket routing
+- [x] **T003**: Set up Redis channel layer configuration
+- [x] **T004**: Create base WebSocket consumer class with authentication for three endpoints (/ws/notifications, /ws/presence, /ws/activity)
+- [x] **T005**: Implement JWT fallback authentication mechanism
+- [x] **T006**: Create Docker composition for Redis service
 
 **Success Criteria**:
 - WebSocket connection can be established at `/ws/test/`
