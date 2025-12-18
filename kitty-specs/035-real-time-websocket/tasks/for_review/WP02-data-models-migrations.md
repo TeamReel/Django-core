@@ -1,12 +1,12 @@
 ---
 work_package_id: "WP02"
 title: "Data Models & Migrations"
-lane: "doing"
+lane: "planned"
 subtasks: ["T007", "T008", "T009", "T010", "T011", "T012"]
 priority: "P1"
 estimated_effort: "1-2 days"
 dependencies: ["WP01"]
-review_status: "acknowledged"
+review_status: "has_feedback"
 reviewed_by: "copilot-reviewer"
 agent: "copilot"
 shell_pid: "47288"
@@ -19,6 +19,10 @@ history:
     timestamp: "2025-12-18T18:10:00Z"
     author: "copilot-reviewer"
     note: "Missing T012 indexes and unit tests"
+  - action: "review_feedback"
+    timestamp: "2025-12-18T18:30:00Z"
+    author: "copilot-reviewer"
+    note: "Invalid partial index condition and missing atomic=False"
 ---
 
 ## Review Feedback
@@ -26,19 +30,19 @@ history:
 **Status**: ❌ **Needs Changes**
 
 **Key Issues**:
-1. **Missing T012 (Performance Indexes)**: The specific migration for partial indexes (using `RunSQL`) described in T012 was not implemented. Only the initial migration exists.
-2. **Missing Unit Tests**: The "Testing Strategy" and "Definition of Done" require model validation tests, but `src/rtc_websockets/tests.py` is empty.
-3. **App Name Deviation**: The implementation uses `rtc_websockets` instead of `realtime` as suggested in the prompt. This is acceptable but requires updating the T012 migration dependency to refer to `rtc_websockets` instead of `realtime`.
+1. **Invalid Partial Index Condition**: The migration `0002_partial_indexes.py` uses `NOW()` in a partial index predicate (`WHERE last_heartbeat < NOW() - INTERVAL '5 minutes'`). This is not allowed in PostgreSQL as index predicates must be immutable.
+2. **Missing Atomic Transaction Handling**: The migration uses `CREATE INDEX CONCURRENTLY`, which cannot run inside a transaction. The `Migration` class must set `atomic = False`.
+3. **Redundant Index**: The stale connection index is likely redundant given the standard index on `last_heartbeat` defined in the model `Meta`.
 
 **What Was Done Well**:
-- Models (`WebSocketConnection`, `RealtimeMessage`, `PresenceStatus`, `ActivityEvent`) are correctly implemented with all required fields and methods.
-- Initial migration `0001_initial.py` was generated and applied successfully.
-- Database indexes in `Meta` classes are correctly defined.
+- Unit tests are comprehensive and passing (11/11).
+- Models are correctly implemented.
+- `RealtimeMessage` partial index for undelivered messages is correct.
 
 **Action Items** (must complete before re-review):
-- [ ] Implement **T012**: Create the second migration file for partial indexes (adjusting the dependency to `('rtc_websockets', '0001_initial')`).
-- [ ] Implement **Unit Tests**: Add tests in `src/rtc_websockets/tests.py` covering model creation, validation, and custom methods (`is_stale`, `to_envelope_format`, etc.).
-- [ ] Verify tests pass with `pytest`.
+- [ ] Fix **Migration 0002**: Remove the invalid partial index on `last_heartbeat`. If a partial index is needed for active connections, use `is_active=True` (if such a field exists) or rely on the standard index.
+- [ ] Add `atomic = False` to the `Migration` class in `0002_partial_indexes.py` to support `CONCURRENTLY`.
+- [ ] Verify the migration runs successfully on a local Postgres instance (if available) or ensure syntax is valid.
 
 # WP02: Data Models & Migrations
 
@@ -585,3 +589,4 @@ This work package builds on WP01's infrastructure setup and creates the persiste
 
 - 2025-12-18T17:47:14Z – copilot – shell_pid=47288 – lane=doing – Started implementation of WP02
 - 2025-12-18T18:06:50Z – copilot – shell_pid=47288 – lane=doing – Resuming implementation to address review feedback
+- 2025-12-18T18:19:37Z – copilot – shell_pid=47288 – lane=for_review – Implementation complete, ready for review
