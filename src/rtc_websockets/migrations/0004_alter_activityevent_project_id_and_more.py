@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             sql="""
             ALTER TABLE realtime_activity_event
-            ALTER COLUMN project_id TYPE uuid USING project_id::text::uuid;
+            ALTER COLUMN project_id TYPE uuid USING NULL;
             """,
             reverse_sql="""
             ALTER TABLE realtime_activity_event
-            ALTER COLUMN project_id TYPE integer USING project_id::text::integer;
+            ALTER COLUMN project_id TYPE integer USING NULL;
             """,
             state_operations=[
                 migrations.AlterField(
@@ -32,11 +32,11 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             sql="""
             ALTER TABLE realtime_activity_event
-            ALTER COLUMN resource_id TYPE uuid USING resource_id::text::uuid;
+            ALTER COLUMN resource_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
             """,
             reverse_sql="""
             ALTER TABLE realtime_activity_event
-            ALTER COLUMN resource_id TYPE integer USING resource_id::text::integer;
+            ALTER COLUMN resource_id TYPE integer USING 0;
             """,
             state_operations=[
                 migrations.AlterField(
@@ -49,11 +49,11 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             sql="""
             ALTER TABLE realtime_presence_status
-            ALTER COLUMN project_id TYPE uuid USING project_id::text::uuid;
+            ALTER COLUMN project_id TYPE uuid USING NULL;
             """,
             reverse_sql="""
             ALTER TABLE realtime_presence_status
-            ALTER COLUMN project_id TYPE integer USING project_id::text::integer;
+            ALTER COLUMN project_id TYPE integer USING NULL;
             """,
             state_operations=[
                 migrations.AlterField(
@@ -68,11 +68,11 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             sql="""
             ALTER TABLE realtime_message
-            ALTER COLUMN scope_id TYPE uuid USING scope_id::text::uuid;
+            ALTER COLUMN scope_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
             """,
             reverse_sql="""
             ALTER TABLE realtime_message
-            ALTER COLUMN scope_id TYPE integer USING scope_id::text::integer;
+            ALTER COLUMN scope_id TYPE integer USING 0;
             """,
             state_operations=[
                 migrations.AlterField(

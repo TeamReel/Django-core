@@ -12,11 +12,11 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             sql="""
             ALTER TABLE realtime_activity_event
-            ALTER COLUMN organization_id TYPE uuid USING organization_id::text::uuid;
+            ALTER COLUMN organization_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
             """,
             reverse_sql="""
             ALTER TABLE realtime_activity_event
-            ALTER COLUMN organization_id TYPE integer USING organization_id::text::integer;
+            ALTER COLUMN organization_id TYPE integer USING 0;
             """,
             state_operations=[
                 migrations.AlterField(
@@ -29,11 +29,11 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             sql="""
             ALTER TABLE realtime_presence_status
-            ALTER COLUMN organization_id TYPE uuid USING organization_id::text::uuid;
+            ALTER COLUMN organization_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
             """,
             reverse_sql="""
             ALTER TABLE realtime_presence_status
-            ALTER COLUMN organization_id TYPE integer USING organization_id::text::integer;
+            ALTER COLUMN organization_id TYPE integer USING 0;
             """,
             state_operations=[
                 migrations.AlterField(
