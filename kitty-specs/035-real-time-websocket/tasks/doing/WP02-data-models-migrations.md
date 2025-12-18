@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP02"
 title: "Data Models & Migrations"
-lane: "planned"
+lane: "doing"
 subtasks: ["T007", "T008", "T009", "T010", "T011", "T012"]
 priority: "P1"
 estimated_effort: "1-2 days"
@@ -584,3 +584,4 @@ This work package builds on WP01's infrastructure setup and creates the persiste
 ## Activity Log
 
 - 2025-12-18T17:47:14Z – copilot – shell_pid=47288 – lane=doing – Started implementation of WP02
+- 2025-12-18T18:06:50Z – copilot – shell_pid=47288 – lane=doing – Resuming implementation to address review feedback
