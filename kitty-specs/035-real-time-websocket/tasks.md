@@ -51,7 +51,7 @@ This feature is broken down into 6 work packages that can be developed and deplo
 **Priority**: P1 (Blocker)
 **Estimated Effort**: 1-2 days
 **Dependencies**: WP01 complete
-**Prompt**: [WP02-data-models-migrations.md](tasks/planned/WP02-data-models-migrations.md)
+**Prompt**: [WP02-data-models-migrations.md](tasks/done/WP02-data-models-migrations.md)
 
 **Goal**: Create database models for WebSocket connections, messages, presence, and activity tracking.
 
