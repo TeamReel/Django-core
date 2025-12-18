@@ -56,12 +56,12 @@ This feature is broken down into 6 work packages that can be developed and deplo
 **Goal**: Create database models for WebSocket connections, messages, presence, and activity tracking.
 
 **Subtasks**:
-- [ ] **T007**: Create WebSocketConnection model with validation
-- [ ] **T008**: Create RealtimeMessage model with envelope format
-- [ ] **T009**: Create PresenceStatus model with unique constraints
-- [ ] **T010**: Create ActivityEvent model for audit logging
-- [ ] **T011**: Generate and run database migrations
-- [ ] **T012**: Add database indexes for performance optimization
+- [x] **T007**: Create WebSocketConnection model with validation
+- [x] **T008**: Create RealtimeMessage model with envelope format
+- [x] **T009**: Create PresenceStatus model with unique constraints
+- [x] **T010**: Create ActivityEvent model for audit logging
+- [x] **T011**: Generate and run database migrations
+- [x] **T012**: Add database indexes for performance optimization
 
 **Success Criteria**:
 - All models created with proper field validation
