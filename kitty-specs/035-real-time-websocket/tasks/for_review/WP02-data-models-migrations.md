@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP02"
 title: "Data Models & Migrations"
-lane: "doing"
+lane: "for_review"
 subtasks: ["T007", "T008", "T009", "T010", "T011", "T012"]
 priority: "P1"
 estimated_effort: "1-2 days"
@@ -592,3 +592,4 @@ This work package builds on WP01's infrastructure setup and creates the persiste
 - 2025-12-18T18:19:37Z – copilot – shell_pid=47288 – lane=for_review – Implementation complete, ready for review
 - 2025-12-18T18:21:05Z – copilot – shell_pid=47288 – lane=planned – Code review complete: Invalid partial index condition and missing atomic=False
 - 2025-12-18T18:22:17Z – copilot – shell_pid=47288 – lane=doing – Resuming implementation to address review feedback
+- 2025-12-18T18:23:40Z – copilot – shell_pid=47288 – lane=for_review – Addressed review feedback: Removed invalid partial index and added atomic=False
