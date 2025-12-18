@@ -1,0 +1,24 @@
+{
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2025-12-18T20:20:19Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "466b6c42543626dcae814901264b776cedc9ddb2",
+      "branch": "035-real-time-websocket",
+      "mode": "pr",
+      "validation_commands": [
+        "pytest src/rtc_websockets"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2025-12-18T20:20:19Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "466b6c42543626dcae814901264b776cedc9ddb2",
+  "created_at": "2025-12-18T16:08:12Z",
+  "feature_number": "035",
+  "friendly_name": "Real-time WebSocket Infrastructure",
+  "slug": "035-real-time-websocket",
+  "source_description": "Django Channels WebSocket infrastructure for real-time updates (notifications, presence, activity) with dual authentication (session + JWT fallback), tenant-scoped broadcasting, rate limiting, and monitoring for enterprise scalability."
+}

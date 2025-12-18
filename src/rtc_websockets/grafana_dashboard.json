@@ -1,0 +1,55 @@
+{
+  "title": "WebSocket Activity",
+  "panels": [
+    {
+      "title": "Active Connections",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "websocket_connections_active",
+          "legendFormat": "{{type}}"
+        }
+      ]
+    },
+    {
+      "title": "Connection Rate",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(websocket_connections_total[5m])",
+          "legendFormat": "{{type}}"
+        }
+      ]
+    },
+    {
+      "title": "Message Rate (Sent)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(websocket_messages_sent_total[5m])",
+          "legendFormat": "{{type}}"
+        }
+      ]
+    },
+    {
+      "title": "Message Rate (Received)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(websocket_messages_received_total[5m])",
+          "legendFormat": "{{type}}"
+        }
+      ]
+    },
+    {
+      "title": "Errors",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(websocket_errors_total[5m])",
+          "legendFormat": "{{type}} - {{error}}"
+        }
+      ]
+    }
+  ]
+}

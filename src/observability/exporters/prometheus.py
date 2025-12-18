@@ -32,10 +32,7 @@ class PrometheusCollector:
         if metric_key not in self._counters:
             # Explicitly register to global REGISTRY (though it's the default)
             self._counters[metric_key] = Counter(
-                name,
-                f'Counter: {name}',
-                labelnames=list(label_names),
-                registry=REGISTRY
+                name, f"Counter: {name}", labelnames=list(label_names), registry=REGISTRY
             )
 
         self._counters[metric_key].labels(**labels).inc(value)
@@ -50,10 +47,7 @@ class PrometheusCollector:
 
         if metric_key not in self._histograms:
             self._histograms[metric_key] = Histogram(
-                name,
-                f'Histogram: {name}',
-                labelnames=list(label_names),
-                registry=REGISTRY
+                name, f"Histogram: {name}", labelnames=list(label_names), registry=REGISTRY
             )
 
         self._histograms[metric_key].labels(**labels).observe(value)
@@ -68,10 +62,22 @@ class PrometheusCollector:
 
         if metric_key not in self._gauges:
             self._gauges[metric_key] = Gauge(
-                name,
-                f'Gauge: {name}',
-                labelnames=list(label_names),
-                registry=REGISTRY
+                name, f"Gauge: {name}", labelnames=list(label_names), registry=REGISTRY
             )
 
         self._gauges[metric_key].labels(**labels).set(value)
+
+    def adjust_gauge(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
+        """Increment or decrement gauge value."""
+        if labels is None:
+            labels = {}
+
+        label_names = tuple(sorted(labels.keys()))
+        metric_key = (name, label_names)
+
+        if metric_key not in self._gauges:
+            self._gauges[metric_key] = Gauge(
+                name, f"Gauge: {name}", labelnames=list(label_names), registry=REGISTRY
+            )
+
+        self._gauges[metric_key].labels(**labels).inc(value)

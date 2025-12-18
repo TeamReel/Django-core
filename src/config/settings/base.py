@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",  # B13: JWT token blacklist
     "drf_spectacular",  # B13: OpenAPI documentation
+    "channels",  # B23: WebSocket Infrastructure
+    "rtc_websockets.apps.RtcWebsocketsConfig",  # B23: Real-time WebSocket
     # Core-App modules
     "constitution_engine",
     "security_baseline",
@@ -130,6 +132,19 @@ CACHES = {
         "KEY_PREFIX": "django_core",
         "TIMEOUT": 300,  # 5 minutes default
     }
+}
+
+# Channel Layer Configuration
+# B23: Redis channel layer for WebSocket communication
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [REDIS_URL],
+            "capacity": 1500,  # Message capacity per channel
+            "expiry": 10,  # Message expiry in seconds
+        },
+    },
 }
 
 # Rate Limiting Configuration
@@ -262,6 +277,11 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",  # B05 User model uses 'id'
     "USER_ID_CLAIM": "user_id",  # JWT payload field name
 }
+
+# B23: WebSocket JWT Configuration
+JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", SECRET_KEY)
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRY_HOURS = 24
 
 # B13 WP06: OpenAPI Documentation Configuration (drf-spectacular)
 SPECTACULAR_SETTINGS = {
