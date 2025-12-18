@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             sql="""
+            ALTER TABLE realtime_activity_event DROP CONSTRAINT IF EXISTS realtime_activity_event_project_id_check;
             ALTER TABLE realtime_activity_event
             ALTER COLUMN project_id TYPE uuid USING NULL;
             """,
@@ -31,6 +32,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RunSQL(
             sql="""
+            ALTER TABLE realtime_activity_event DROP CONSTRAINT IF EXISTS realtime_activity_event_resource_id_check;
             ALTER TABLE realtime_activity_event
             ALTER COLUMN resource_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
             """,
@@ -48,6 +50,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RunSQL(
             sql="""
+            ALTER TABLE realtime_presence_status DROP CONSTRAINT IF EXISTS realtime_presence_status_project_id_check;
             ALTER TABLE realtime_presence_status
             ALTER COLUMN project_id TYPE uuid USING NULL;
             """,
@@ -67,6 +70,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RunSQL(
             sql="""
+            ALTER TABLE realtime_message DROP CONSTRAINT IF EXISTS realtime_message_scope_id_check;
             ALTER TABLE realtime_message
             ALTER COLUMN scope_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
             """,

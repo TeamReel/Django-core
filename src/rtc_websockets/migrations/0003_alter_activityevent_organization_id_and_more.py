@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             sql="""
+            ALTER TABLE realtime_activity_event DROP CONSTRAINT IF EXISTS realtime_activity_event_organization_id_check;
             ALTER TABLE realtime_activity_event
             ALTER COLUMN organization_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
             """,
@@ -28,6 +29,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RunSQL(
             sql="""
+            ALTER TABLE realtime_presence_status DROP CONSTRAINT IF EXISTS realtime_presence_status_organization_id_check;
             ALTER TABLE realtime_presence_status
             ALTER COLUMN organization_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
             """,
