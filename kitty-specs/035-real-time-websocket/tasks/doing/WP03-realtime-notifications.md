@@ -1,11 +1,13 @@
 ---
 work_package_id: "WP03"
 title: "Real-time Notifications (User Story 1)"
-lane: "planned"
+lane: "doing"
 subtasks: ["T013", "T014", "T015", "T016", "T017", "T018"]
 priority: "P1"
 estimated_effort: "3-4 days"
 dependencies: ["WP01", "WP02"]
+agent: "system"
+shell_pid: "47288"
 history:
   - action: "created"
     timestamp: "2025-12-18T15:30:00Z"
@@ -876,3 +878,7 @@ This work package implements User Story 1 (Priority P1) from the specification. 
 - [ ] Connection cleanup prevents resource leaks
 - [ ] Structured message format is consistent
 - [ ] Integration with existing django-core modules works
+
+## Activity Log
+
+- 2025-12-18T18:29:21Z – system – shell_pid=47288 – lane=doing – Started implementation
