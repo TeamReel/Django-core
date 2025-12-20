@@ -81,24 +81,7 @@
 - [ ] Pass: Editing works without issues
 - [ ] Fail: Edit functionality broken or data loss
 
-### Scenario 5: Member Management
-**Steps**:
-1. Access organization member management
-2. Add new member to organization
-3. Change member roles/permissions
-4. Remove member from organization
-
-**Expected Results**:
-- ✅ Member list shows current members with roles
-- ✅ Add member functionality works (email/search)
-- ✅ Role changes take effect immediately
-- ✅ Member removal works with confirmation
-
-**Pass/Fail**:
-- [ ] Pass: Complete member management functionality
-- [ ] Fail: Member operations fail or cause issues
-
-### Scenario 6: Organization Context Switching
+### Scenario 5: Organization Context Switching
 **Steps**:
 1. Test switching between different organizations
 2. Check data filtering per organization
@@ -115,7 +98,7 @@
 - [ ] Pass: Context switching works seamlessly
 - [ ] Fail: Context issues or data leakage between orgs
 
-### Scenario 7: Delete Organization
+### Scenario 6: Delete Organization
 **Steps**:
 1. Attempt to delete an organization
 2. Handle deletion confirmation/warnings

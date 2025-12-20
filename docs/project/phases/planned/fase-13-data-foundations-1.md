@@ -1,10 +1,10 @@
-# Fase 13: Data Foundations Part 1 (048-052)
+# Fase 13: Data Foundations Part 1 (049-053)
 
 **Focus**: Data storage adapters, ETL pipelines, dataset management, streaming, versioning
 
 ---
 
-## 48. D01 – Data Storage Adapters
+## 49. D01 – Data Storage Adapters
 
 **Feature**: `D01-data-storage-adapters`
 
@@ -37,7 +37,7 @@
 
 ---
 
-## 49. D02 – ETL & Data Pipeline Foundation
+## 50. D02 – ETL & Data Pipeline Foundation
 
 **Feature**: `D02-etl-pipeline-foundation`
 
@@ -47,32 +47,9 @@
 
 **Core Components**:
 - **Pipeline Definition**: YAML-based pipeline specs (extract, transform, load steps)
-- Feature**: `D03-dataset-management-lineage`
-
-**Doel**: Central registry voor datasets met metadata, schema, lineage tracking.
-
-**Package**: `@django-core/dataset-management` (backend)
-
-**Core Features**:
-- **Dataset Registry**: Catalog met name, description, schema, owner, tags
-- **Lineage Tracking**: Graph van dataset dependencies (upstream/downstream)
-- **Schema Evolution**: Track schema changes over time
-- **Access Control**: Integration met B08 permissions (per dataset)
-- **Usage Metrics**: Track queries, transformations, consumers
-
-**Lineage Types**:
-- Pipeline-based (D02 ETL outputs)
-- Query-based (derived datasets from SQL/transforms)
-- Manual registration (external data imports)
-
-**Demo**: 📊 Dataset Catalog (`/demo/datasets`) - List datasets, lineage graph, version comparison
-
-**Acceptance Criteria**:
-- [ ] Dataset registry met CRUD operations
-- [ ] Lineage graph visualizer (upstream/downstream)
-- [ ] Schema diff viewer (compare versions)
-- [ ] Permission checks via B08
-- [ ] Usage tracking integration met B11
+- **Step Library**: Reusable transformation steps (filter, map, aggregate, join)
+- **Execution Engine**: Local or distributed execution (via B15 Celery)
+- **State Management**: Track run status, logs, artifacts
 - **Retry Logic**: Configurable retry policies per step
 
 **Demo**: 🔄 Pipeline Dashboard (`/demo/pipelines`) - List pipelines, runs, trigger manual run, step progress
@@ -86,7 +63,7 @@
 
 ---
 
-## 50. D03 – Dataset Management & Lineage
+## 51. D03 – Dataset Management & Lineage
 
 **Feature**: `D03-dataset-management-lineage`
 
@@ -117,7 +94,7 @@
 
 ---
 
-## 51. D04 – Streaming Data Adapters
+## 52. D04 – Streaming Data Adapters
 
 **Feature**: `D04-streaming-data-adapters`
 
@@ -149,7 +126,7 @@
 
 ---
 
-## 52. D05 – Data Version Control
+## 53. D05 – Data Version Control
 
 **Feature**: `D05-data-version-control`
 

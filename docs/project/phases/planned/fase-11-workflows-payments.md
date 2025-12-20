@@ -1,10 +1,10 @@
-# Fase 11: Workflows & Payments (041-043)
+# Fase 11: Workflows & Payments (042-044)
 
 **Focus**: Workflow engine, payment gateways, advanced reporting
 
 ---
 
-## 41. B26 – Payment Gateway Adapters
+## 42. B27 – Payment Gateway Adapters
 
 **Doel**: Multi-gateway payment integration (Stripe first, PayPal adapter) met webhook handling.
 
@@ -45,14 +45,14 @@
   - Payment button (create intent → capture payment)
   - Success/error messages
   - Transaction history (list of past payments)
-  - Receipt download (PDF via B28)
+  - Receipt download (PDF via B29)
   - Tests: select package → enter test card → pay → verify credits added
 
 **Status**: 🚧 ROADMAP
 
 **Specify Prompt**:
 ```
-/spec-kitty.specify feature=B26-payment-gateway-adapters
+/spec-kitty.specify feature=B27-payment-gateway-adapters
 
 [feature summary]
 Multi-gateway payment integration (Stripe, PayPal) with webhook handling and credit purchase flow.
@@ -76,7 +76,7 @@ Demo page: /demo/payments
 
 ---
 
-## 42. B27 – Workflow Engine & State Machine
+## 43. B28 – Workflow Engine & State Machine
 
 **Doel**: Generic workflow/state machine voor business processes (approvals, order status, etc.).
 
@@ -141,7 +141,7 @@ Demo page: /demo/workflows/approval
 
 ---
 
-## 43. B28 – Advanced Reporting & Exports
+## 44. B29 – Advanced Reporting & Exports
 
 **Doel**: Genereer PDF/Excel reports, data exports met templates en scheduling.
 
@@ -185,7 +185,7 @@ Demo page: /demo/workflows/approval
 
 **Specify Prompt**:
 ```
-/spec-kitty.specify feature=B28-advanced-reporting-exports
+/spec-kitty.specify feature=B29-advanced-reporting-exports
 
 [feature summary]
 Generate PDF/Excel reports and data exports with templates and scheduling.

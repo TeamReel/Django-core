@@ -37,11 +37,13 @@ export {
   useAuthStatus,
   useCurrentUser,
   useSignIn,
+  useSignUp,
   useSignOut,
   useRequestPasswordReset,
   useConfirmPasswordReset,
   type AuthStatusFlags,
   type UseSignInResult,
+  type UseSignUpResult,
   type UseSignOutResult,
   type UseRequestPasswordResetResult,
   type UseConfirmPasswordResetResult

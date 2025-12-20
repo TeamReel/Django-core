@@ -89,7 +89,24 @@ class Organisation(models.Model):
 
         self.is_active = False
         self.deleted_at = timezone.now()
-        self.save(update_fields=["is_active", "deleted_at"])
+
+        # Rename to allow reuse of name/slug
+        # Append timestamp to ensure uniqueness of deleted records
+        timestamp = int(self.deleted_at.timestamp())
+        suffix = f"_del_{timestamp}"
+
+        # Truncate to ensure we don't exceed max_length (100)
+        # suffix length is approx 15 chars.
+        if len(self.name) > 80:
+            self.name = self.name[:80]
+        self.name = f"{self.name}{suffix}"
+
+        if self.slug:
+            if len(self.slug) > 80:
+                self.slug = self.slug[:80]
+            self.slug = f"{self.slug}{suffix}"
+
+        self.save(update_fields=["is_active", "deleted_at", "name", "slug"])
         # Cascade soft-delete to memberships
         self.memberships.update(is_active=False)
 
@@ -207,4 +224,4 @@ class Membership(models.Model):
         verbose_name_plural = "Memberships"
 
     def __str__(self):
-        return f"{self.user.username} - {self.organisation.name} ({self.role})"
+        return f"{self.user.email} - {self.organisation.name} ({self.role})"

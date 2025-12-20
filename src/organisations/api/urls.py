@@ -27,33 +27,33 @@ projects_restore = ProjectViewSet.as_view({"post": "restore"})
 
 urlpatterns = router.urls + [
     path(
-        "<uuid:organisation_pk>/members/",
+        "<slug:organisation_pk>/members/",
         membership_list,
         name="organisation-members-list",
     ),
     path(
-        "<uuid:organisation_pk>/members/<uuid:pk>/",
+        "<slug:organisation_pk>/members/<uuid:pk>/",
         membership_detail,
         name="organisation-members-detail",
     ),
     # Projects nested under organisations
     path(
-        "<uuid:organisation_id>/projects/",
+        "<slug:organisation_id>/projects/",
         projects_list,
         name="organisation-projects-list",
     ),
     path(
-        "<uuid:organisation_id>/projects/<int:id>/",
+        "<slug:organisation_id>/projects/<slug:slug>/",
         projects_detail,
         name="organisation-projects-detail",
     ),
     path(
-        "<uuid:organisation_id>/projects/<int:id>/archive/",
+        "<slug:organisation_id>/projects/<slug:slug>/archive/",
         projects_archive,
         name="organisation-projects-archive",
     ),
     path(
-        "<uuid:organisation_id>/projects/<int:id>/restore/",
+        "<slug:organisation_id>/projects/<slug:slug>/restore/",
         projects_restore,
         name="organisation-projects-restore",
     ),

@@ -77,7 +77,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "updated_at",
             "archived_at",
         ]
-        read_only_fields = ["id", "slug", "is_active", "created_at", "updated_at", "archived_at"]
+        read_only_fields = ["id", "slug", "created_at", "updated_at", "archived_at"]
 
     def validate_name(self, value):
         """Validate name length and format."""
@@ -135,7 +135,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "description"]
+        fields = ["name", "description", "is_active"]
 
     def validate_name(self, value):
         """Validate name length and format."""

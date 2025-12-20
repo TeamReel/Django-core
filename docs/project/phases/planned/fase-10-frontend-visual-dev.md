@@ -1,10 +1,10 @@
-# Fase 10: Frontend & Visual Development (038-040)
+# Fase 10: Frontend & Visual Development (039-041)
 
 **Focus**: Frontend components - data visualization, design-to-code pipeline, rich text editor
 
 ---
 
-## 38. F08 – Data Visualization Components
+## 39. F08 – Data Visualization Components
 
 **Doel**: Herbruikbare visualisatie componenten (charts, graphs, metrics cards) voor dashboards.
 
@@ -75,7 +75,7 @@ Demo page: /demo/visualizations
 
 ---
 
-## 39. F09 – Design-to-Code Pipeline (Visily.ai Integration)
+## 40. F09 – Design-to-Code Pipeline (Visily.ai Integration)
 
 **Doel**: Pipeline om Visily.ai design exports te converteren naar werkende React components met F01 design system.
 
@@ -155,7 +155,7 @@ Demo page: /demo/design-to-code
 
 ---
 
-## 40. F13 – Rich Text Editor Component
+## 41. F13 – Rich Text Editor Component
 
 **Doel**: WYSIWYG editor component met content sanitization en markdown support.
 
@@ -241,7 +241,7 @@ Demo page: /demo/editor
 
 ## 📋 Constitution Gate (Post Frontend & Visual Dev)
 
-**Timing**: Na Fase 10 (modules 038-040 compleet)
+**Timing**: Na Fase 10 (modules 039-041 compleet)
 
 **Waarom nu**:
 - **Demo app is compleet** (F10 + F10b pages voor alle modules 001-030)

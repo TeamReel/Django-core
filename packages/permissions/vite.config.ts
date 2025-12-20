@@ -17,7 +17,7 @@ export default defineConfig({
         'react-dom',
         'react/jsx-runtime',
         '@django-core/api-client',
-        '@django-core/auth',
+        '@django-core/auth-ui',
         '@django-core/context-switcher',
       ],
       output: {
@@ -25,7 +25,7 @@ export default defineConfig({
           react: 'React',
           'react-dom': 'ReactDOM',
           '@django-core/api-client': 'DjangoCoreApiClient',
-          '@django-core/auth': 'DjangoCoreAuth',
+          '@django-core/auth-ui': 'DjangoCoreAuth',
           '@django-core/context-switcher': 'DjangoCoreContextSwitcher',
         },
       },

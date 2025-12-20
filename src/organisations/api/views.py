@@ -37,13 +37,14 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     Endpoints:
     - POST /api/organisations/ - Create organisation (creator becomes first admin)
     - GET /api/organisations/ - List organisations (user is member of)
-    - GET /api/organisations/{id}/ - Retrieve organisation details
-    - PUT/PATCH /api/organisations/{id}/ - Update organisation (admin only)
-    - DELETE /api/organisations/{id}/ - Soft-delete organisation (admin only)
+    - GET /api/organisations/{slug}/ - Retrieve organisation details
+    - PUT/PATCH /api/organisations/{slug}/ - Update organisation (admin only)
+    - DELETE /api/organisations/{slug}/ - Soft-delete organisation (admin only)
     """
 
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = OrganisationPagination
+    lookup_field = "slug"
 
     def get_queryset(self):
         """
@@ -53,15 +54,25 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         - select_related('creator'): Avoid N+1 for creator field
         - prefetch_related('memberships'): Optimize member count queries
         - distinct(): Ensure no duplicates from join
+
+        Query Parameters:
+        - include_inactive: If 'false', filter out inactive organisations (default: true)
         """
-        return (
+        queryset = (
             Organisation.objects.filter(
-                memberships__user=self.request.user, memberships__is_active=True, is_active=True
+                memberships__user=self.request.user, memberships__is_active=True
             )
             .select_related("creator")
-            .prefetch_related("memberships")
+            .prefetch_related("memberships", "projects")
             .distinct()
         )
+
+        # Filter inactive organisations based on query parameter
+        include_inactive = self.request.query_params.get("include_inactive", "true").lower()
+        if include_inactive == "false":
+            queryset = queryset.filter(is_active=True)
+
+        return queryset
 
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
@@ -69,6 +80,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             return OrganisationCreateSerializer
         if self.action == "list":
             return OrganisationListSerializer
+        if self.action in ["update", "partial_update"]:
+            return OrganisationCreateSerializer
         return OrganisationSerializer
 
     def get_permissions(self):
@@ -125,21 +138,28 @@ class MembershipViewSet(viewsets.ModelViewSet):
     ViewSet for Membership model (nested under organisations).
 
     Endpoints:
-    - POST /api/organisations/{id}/members/ - Invite member (admin only)
-    - GET /api/organisations/{id}/members/ - List members (any member)
-    - GET /api/organisations/{id}/members/{id}/ - Retrieve member details
-    - PATCH /api/organisations/{id}/members/{id}/ - Update member role (admin only)
-    - DELETE /api/organisations/{id}/members/{id}/ - Remove member (admin only)
+    - POST /api/organisations/{slug}/members/ - Invite member (admin only)
+    - GET /api/organisations/{slug}/members/ - List members (any member)
+    - GET /api/organisations/{slug}/members/{id}/ - Retrieve member details
+    - PATCH /api/organisations/{slug}/members/{id}/ - Update member role (admin only)
+    - DELETE /api/organisations/{slug}/members/{id}/ - Remove member (admin only)
     """
 
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        """Filter memberships by organisation_pk from URL."""
-        org_id = self.kwargs.get("organisation_pk")
-        return Membership.objects.filter(organisation_id=org_id, is_active=True).select_related(
-            "user", "organisation", "invited_by"
-        )
+        """Filter memberships by organisation_pk slug from URL."""
+        org_slug = self.kwargs.get("organisation_pk")
+        # Resolve slug to organisation ID
+        from organisations.models import Organisation
+
+        try:
+            org = Organisation.objects.get(slug=org_slug)
+            return Membership.objects.filter(organisation_id=org.id, is_active=True).select_related(
+                "user", "organisation", "invited_by"
+            )
+        except Organisation.DoesNotExist:
+            return Membership.objects.none()
 
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
@@ -159,6 +179,83 @@ class MembershipViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated(), IsOrganisationAdmin()]
         return super().get_permissions()
 
+    def list(self, request, *args, **kwargs):
+        """
+        List members of the organisation.
+        Includes:
+        1. Direct Memberships
+        2. Users with RoleAssignments in this org or its projects
+        """
+        response = super().list(request, *args, **kwargs)
+
+        # If pagination is used, response.data is {'results': [...], ...}
+        # If not, it's [...]
+        results = (
+            response.data.get("results", response.data)
+            if isinstance(response.data, dict)
+            else response.data
+        )
+
+        # Get existing user IDs (ensure strings for comparison)
+        existing_user_ids = {str(m["user"]["id"]) for m in results}
+
+        # Find users with RoleAssignments in this org or its projects
+        org_slug = self.kwargs.get("organisation_pk")
+        from django.db import models
+
+        from organisations.models import Organisation
+
+        try:
+            org = Organisation.objects.get(slug=org_slug)
+        except Organisation.DoesNotExist:
+            return response
+
+        from permissions.models import RoleAssignment
+
+        # Get assignments for this org OR projects in this org
+        assignments = RoleAssignment.objects.filter(
+            models.Q(target_organization=org) | models.Q(target_project__organisation=org)
+        ).select_related("user", "role", "target_project")
+
+        additional_members = []
+        for ra in assignments:
+            if str(ra.user.id) not in existing_user_ids:
+                # Create a virtual membership structure
+                role_name = ra.role.name
+                if ra.target_project:
+                    role_name = f"{role_name} ({ra.target_project.name})"
+
+                additional_members.append(
+                    {
+                        "id": str(ra.id),  # Use assignment ID
+                        "user": {
+                            "id": str(ra.user.id),
+                            "email": ra.user.email,
+                            "first_name": ra.user.first_name,
+                            "last_name": ra.user.last_name,
+                        },
+                        "organisation": {"id": str(org.id), "name": org.name, "slug": org.slug},
+                        "role": role_name,  # Custom role string
+                        "joined_at": ra.assigned_at,
+                        "invited_by": None,
+                        "is_active": True,
+                    }
+                )
+                existing_user_ids.add(str(ra.user.id))
+
+        # Append to results
+        if additional_members:
+            results.extend(additional_members)
+
+        # Update response
+        if isinstance(response.data, dict):
+            response.data["results"] = results
+            response.data["count"] = len(results)  # Update count roughly
+        else:
+            response.data = results
+
+        return response
+
     def create(self, request, *args, **kwargs):
         """
         Invite member with rate limiting (20 per org per hour).
@@ -166,7 +263,19 @@ class MembershipViewSet(viewsets.ModelViewSet):
         Rate limit: 20 invitations per organisation per hour.
         Returns 429 Too Many Requests if limit exceeded.
         """
-        org_id = self.kwargs.get("organisation_pk")
+        org_slug = self.kwargs.get("organisation_pk")
+
+        # Resolve slug to organisation ID for rate limiting
+        from organisations.models import Organisation
+
+        try:
+            org = Organisation.objects.get(slug=org_slug)
+            org_id = org.id
+        except Organisation.DoesNotExist:
+            return Response(
+                {"detail": "Organisation not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         # Check rate limit
         key = f"ratelimit:member_invite:{org_id}:{timezone.now().strftime('%Y-%m-%d-%H')}"

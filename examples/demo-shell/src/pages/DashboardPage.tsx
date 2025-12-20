@@ -124,7 +124,7 @@ export default function DashboardPage() {
             </Link>
             {context.organisation && (
               <Link
-                to={`/organisations/${context.organisation.id}/projects`}
+                to={`/organisations/${context.organisation.slug}/projects`}
                 style={{
                   display: 'inline-block',
                   padding: '10px 20px',

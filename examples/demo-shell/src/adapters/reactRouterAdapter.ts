@@ -25,13 +25,13 @@ export function useReactRouterAdapter(): RouterAdapter {
     /**
      * Build URL path for given organisation/project context.
      *
-     * Note: context.orgSlug contains the org ID (UUID) and projectSlug contains project ID (integer)
-     * since we've adapted the context switcher to work with IDs instead of slugs.
+     * Note: context.orgSlug and projectSlug now contain actual slugs (not IDs)
+     * since we've migrated to slug-based URLs.
      */
     buildPathForContext: (context: { orgSlug: string; projectSlug?: string | null }, options?: { preservePath?: boolean; fallbackPath?: string }) => {
-      // Build path based on context IDs
-      const orgId = context.orgSlug; // Actually contains org UUID
-      const projectId = context.projectSlug; // Actually contains project ID
+      // Build path based on context slugs
+      const orgSlug = context.orgSlug;
+      const projectSlug = context.projectSlug;
 
       // If preservePath is true, stay on current page and just update context
       if (options?.preservePath) {
@@ -44,30 +44,65 @@ export function useReactRouterAdapter(): RouterAdapter {
 
         // If path contains org/project structure, replace the IDs
         if (orgIndex !== -1) {
-          // Replace org ID
-          pathSegments[orgIndex + 1] = orgId;
-
-          // Replace project ID if exists
-          if (projectIndex !== -1 && projectId) {
-            pathSegments[projectIndex + 1] = projectId;
-          } else if (projectIndex !== -1 && !projectId) {
-            // Remove project segment if switching to org without project
-            pathSegments.splice(projectIndex, 2);
+          // Check if we're on the organisations LIST page (no ID after 'organisations')
+          // If so, stay on the list page - don't navigate to detail
+          const hasOrgId = pathSegments.length > orgIndex + 1 && pathSegments[orgIndex + 1];
+          if (!hasOrgId || pathSegments[orgIndex + 1] === 'create') {
+            // We're on /organisations or /organisations/create - stay there
+            return currentPath;
           }
+
+          // Check if we're on projects list page (/organisations/{orgSlug}/projects)
+          // without a specific project slug - stay there
+          if (projectIndex !== -1) {
+            const hasProjectSlug = pathSegments.length > projectIndex + 1 &&
+                                pathSegments[projectIndex + 1] &&
+                                pathSegments[projectIndex + 1] !== 'create';
+
+            if (!hasProjectSlug) {
+              // We're on /organisations/{orgSlug}/projects - stay on projects list
+              // Just update the org slug
+              pathSegments[orgIndex + 1] = orgSlug;
+              return '/' + pathSegments.join('/');
+            }
+          }
+
+          // Replace org slug (we're on a detail/edit page)
+          pathSegments[orgIndex + 1] = orgSlug;
+
+          // Replace project slug if exists in context
+          if (projectIndex !== -1 && projectSlug) {
+            pathSegments[projectIndex + 1] = projectSlug;
+          }
+          // Note: If projectSlug is null/undefined, we keep the existing slug in the URL
+          // This prevents navigation away from project pages during page refresh/context load
 
           return '/' + pathSegments.join('/');
         }
 
         // If path doesn't contain org/project structure, stay on same page
         // (e.g., /status/permissions, /dashboard)
+
+        // Check if we should use query parameters (e.g. /users?organisation_id=...)
+        const searchParams = new URLSearchParams(location.search);
+        if (currentPath === '/users' || searchParams.has('organisation_id')) {
+          searchParams.set('organisation_id', orgSlug);
+          if (projectSlug) {
+            searchParams.set('project_id', projectSlug);
+          } else {
+            searchParams.delete('project_id');
+          }
+          return `${currentPath}?${searchParams.toString()}`;
+        }
+
         return currentPath;
       }
 
       // Default behavior: navigate to org/project page
-      if (projectId) {
-        return `/organisations/${orgId}/projects/${projectId}`;
-      } else if (orgId) {
-        return `/organisations/${orgId}`;
+      if (projectSlug) {
+        return `/organisations/${orgSlug}/projects/${projectSlug}`;
+      } else if (orgSlug) {
+        return `/organisations/${orgSlug}`;
       }
 
       // Return fallback path or dashboard

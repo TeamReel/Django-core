@@ -19,7 +19,12 @@ def check_rate_limit(key: str, limit: int, window_seconds: int) -> tuple[bool, i
         - remaining: Number of remaining requests in current window
         - reset_timestamp: Unix timestamp when the rate limit window resets
     """
-    current = cache.get(key, 0)
+    try:
+        current = cache.get(key, 0)
+    except Exception:
+        # Fail open if cache is down (allow request)
+        # In production, this should be logged as a critical error
+        return True, limit - 1, timezone.now().timestamp() + window_seconds
 
     if current >= limit:
         ttl = cache.ttl(key)

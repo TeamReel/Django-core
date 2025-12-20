@@ -1,10 +1,10 @@
-# Fase 18: Operations & Resilience (071)
+# Fase 18: Operations & Resilience (072)
 
 **Focus**: Resilience testing
 
 ---
 
-## 71. O01 – Resilience Testing & Health Validation (Lightweight)
+## 72. O01 – Resilience Testing & Health Validation (Lightweight)
 
 **Feature**: `O01-resilience-testing-health-validation`
 
@@ -93,10 +93,10 @@
 
 ## 📋 Constitution Gate (Final Platform Validation)
 
-**Timing**: Na Fase 16 (module 069 compleet)
+**Timing**: Na Fase 18 (module 072 compleet)
 
 **Waarom nu**
-- Volledige platform compleet (68 modules)
+- Volledige platform compleet (72 modules)
 - Alle quality gates, integration, en resilience checks operational
 - Voor productie deployment, finale platform validation nodig
 

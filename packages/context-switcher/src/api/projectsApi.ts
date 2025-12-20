@@ -19,26 +19,26 @@ export interface ProjectsResponse {
 /**
  * Fetch list of projects for a given organisation.
  *
- * @param organisationId - ID of the organisation
+ * @param organisationSlug - Slug of the organisation
  * @param apiBaseUrl - Base URL for API requests (default: '/api')
  * @returns Array of projects
  * @throws Error if API request fails or returns error
  *
  * @example
  * ```typescript
- * const projects = await fetchProjects('org_123', '/api');
+ * const projects = await fetchProjects('bundesliga', '/api');
  * console.log('Available projects:', projects.map(p => p.name));
  * ```
  */
 export async function fetchProjects(
-  organisationId: string,
+  organisationSlug: string,
   apiBaseUrl: string = '/api'
 ): Promise<Project[]> {
-  console.log(`Fetching projects for org: ${organisationId} from ${apiBaseUrl}`);
+  console.log(`Fetching projects for org: ${organisationSlug} from ${apiBaseUrl}`);
   const client = createApiClient({ baseUrl: apiBaseUrl });
   try {
     const response = await client.get<ProjectsResponse>(
-      `/organisations/${organisationId}/projects/`
+      `/organisations/${organisationSlug}/projects/`
     );
     console.log('Projects API response:', response);
 
@@ -60,7 +60,7 @@ export async function fetchProjects(
         id: String(item.id),
         name: item.name,
         slug: item.slug,
-        organisationId: item.organisation?.id || organisationId, // Fallback to requested org ID
+        organisationId: item.organisation?.id || organisationSlug, // Fallback to requested org slug
         metadata: {
           description: item.description
         }

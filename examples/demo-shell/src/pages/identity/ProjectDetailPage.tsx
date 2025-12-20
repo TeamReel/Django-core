@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  PageHeader,
-  PageContent,
   Button,
   Card,
   Badge,
   Alert,
   Table,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
+import { useContextSwitcher } from '@django-core/context-switcher';
 import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
 
@@ -21,22 +24,50 @@ import AppShell from '../../components/AppShell';
  * - Shows recent audit events filtered by project_id
  */
 export const ProjectDetailPage: React.FC = () => {
+  const { orgId, projectId } = useParams<{ orgId: string; projectId: string }>();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { context, organisations, projects: contextProjects } = useContextSwitcher();
+
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<User[]>([]);
   const [recentEvents, setRecentEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Resolve org and project slugs
+  const resolvedOrg = organisations.find(o =>
+    o.slug.toLowerCase() === orgId?.toLowerCase() || o.id === orgId
+  ) || context.organisation;
+
+  const targetId = projectId || id;
+
+  // Try to find project in context first (if loaded), otherwise use targetId as slug
+  const resolvedProject = contextProjects.find(p =>
+    p.slug.toLowerCase() === targetId?.toLowerCase() || p.id === targetId
+  );
+  const currentProjectSlug = resolvedProject?.slug || targetId?.toLowerCase(); // Use slug for API calls
+
   useEffect(() => {
     const fetchProjectDetails = async () => {
+      // Wait for context to load before attempting fetch if we have a potential slug
+      if (context.isLoading) return;
+
+      if (!currentProjectSlug) return;
+
       try {
         setLoading(true);
         setError(null);
 
         // Fetch project details
-        const projectResponse = await fetch(`/api/projects/${id}/`, {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+        // Use nested route if we have org context, otherwise top-level
+        const endpoint = resolvedOrg
+          ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/`
+          : `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/`;
+
+        const projectResponse = await fetch(endpoint, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -52,8 +83,13 @@ export const ProjectDetailPage: React.FC = () => {
         setProject(projectData);
 
         // Fetch project members
+        // Use the new 'members' action on the project viewset
+        const membersEndpoint = resolvedOrg
+          ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/members/`
+          : `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/members/`;
+
         const membersResponse = await fetch(
-          `/api/projects/${id}/members/`,
+          membersEndpoint,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -66,11 +102,28 @@ export const ProjectDetailPage: React.FC = () => {
         if (membersResponse.ok) {
           const membersData = await membersResponse.json();
           setMembers(membersData.results || []);
+        } else {
+            // Fallback to org members if endpoint fails (e.g. during transition)
+            console.warn("Project members endpoint failed, falling back to org members");
+            if (resolvedOrg) {
+                const fallbackEndpoint = `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/members/`;
+                const fallbackResponse = await fetch(fallbackEndpoint, {
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (fallbackResponse.ok) {
+                    const data = await fallbackResponse.json();
+                    setMembers(data.results || []);
+                }
+            }
         }
 
         // Fetch recent audit events for this project
+        // Note: audit API might still expect project ID, not slug
+        // If backend supports slug, change this to currentProjectSlug
+        const projectIdForAudit = resolvedProject?.id || currentProjectSlug;
         const eventsResponse = await fetch(
-          `/api/audit/?project_id=${id}&limit=10`,
+          `${apiBaseUrl}/api/v1/audit/?project_id=${projectIdForAudit}&limit=10`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -92,55 +145,59 @@ export const ProjectDetailPage: React.FC = () => {
       }
     };
 
-    if (id) {
-      fetchProjectDetails();
-    }
-  }, [id]);
+    fetchProjectDetails();
+  }, [currentProjectSlug, context.isLoading, resolvedProject]);
 
-  if (loading) {
+  if (loading || context.isLoading) {
     return (
-      <div>
-        <PageHeader
-          title="Project Details"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Identity' },
-            { label: 'Projects', href: '/projects' },
-            { label: 'Details' },
-          ]}
-        />
-        <PageContent>
-          <Card>
-            <div className="text-center py-8 text-gray-500">
-              Loading project details...
-            </div>
-          </Card>
-        </PageContent>
-      </div>
+      <AppShell>
+        <div>
+          <PageHeader
+            title="Project Details"
+            breadcrumbs={[
+              { label: 'Home', onClick: () => navigate('/') },
+              { label: 'Organisations', onClick: () => navigate('/organisations') },
+              { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
+              { label: 'Projects', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
+              { label: 'Details', current: true },
+            ]}
+          />
+          <PageContent>
+            <Card>
+              <div className="text-center py-8 text-gray-500">
+                Loading project details...
+              </div>
+            </Card>
+          </PageContent>
+        </div>
+      </AppShell>
     );
   }
 
   if (error || !project) {
     return (
-      <div>
-        <PageHeader
-          title="Project Details"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Identity' },
-            { label: 'Projects', href: '/projects' },
-            { label: 'Details' },
-          ]}
-        />
-        <PageContent>
-          <Alert type="error" data-testid="project-detail-error">
-            {error || 'Project not found'}
-          </Alert>
-          <Button variant="secondary" onClick={() => navigate('/projects')}>
-            Back to Projects
-          </Button>
-        </PageContent>
-      </div>
+      <AppShell>
+        <div>
+          <PageHeader
+            title="Project Details"
+            breadcrumbs={[
+              { label: 'Home', onClick: () => navigate('/') },
+              { label: 'Organisations', onClick: () => navigate('/organisations') },
+              { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
+              { label: 'Projects', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
+              { label: 'Details', current: true },
+            ]}
+          />
+          <PageContent>
+            <Alert type="error" data-testid="project-detail-error">
+              {error || 'Project not found'}
+            </Alert>
+            <Button variant="secondary" onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`)}>
+              Back to Projects
+            </Button>
+          </PageContent>
+        </div>
+      </AppShell>
     );
   }
 
@@ -150,15 +207,24 @@ export const ProjectDetailPage: React.FC = () => {
         <PageHeader
         title={project.name}
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Identity' },
-          { label: 'Projects', href: '/projects' },
-          { label: project.name },
+          { label: 'Home', onClick: () => navigate('/') },
+          { label: 'Organisations', onClick: () => navigate('/organisations') },
+          { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
+          { label: 'Projects', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
+          { label: project.name, current: true },
         ]}
-        action={
-          <Button variant="secondary" onClick={() => navigate('/projects')}>
-            Back
-          </Button>
+        actions={
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`)}>
+              Back
+            </Button>
+            <Button variant="secondary" onClick={() => navigate(`/users?project_id=${project.slug || project.id}&organisation_id=${resolvedOrg?.slug || resolvedOrg?.id}`)}>
+              View Project Users
+            </Button>
+            <Button variant="primary" onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}/edit`)}>
+              Edit Project
+            </Button>
+          </div>
         }
       />
 
@@ -197,7 +263,12 @@ export const ProjectDetailPage: React.FC = () => {
 
         {/* Team members */}
         <Card className="mb-6">
-          <h3 className="text-lg font-semibold mb-4">Team Members</h3>
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold">Team Members</h3>
+            <p className="text-sm text-gray-500">
+              Users with explicit roles in this project, plus Organisation Admins.
+            </p>
+          </div>
           {members.length > 0 ? (
             <Table
               columns={[
@@ -206,23 +277,29 @@ export const ProjectDetailPage: React.FC = () => {
                 { key: 'role', label: 'Role' },
                 { key: 'joined', label: 'Joined' },
               ]}
-              rows={members.map((member) => ({
-                id: member.id,
-                name: member.name,
-                email: member.email,
-                role: (
-                  <Badge variant="secondary" data-testid={`team-role-${member.id}`}>
-                    {member.role || 'member'}
-                  </Badge>
-                ),
-                joined: (
-                  <span data-testid={`team-joined-${member.id}`}>
-                    {member.created_at
-                      ? new Date(member.created_at).toLocaleDateString()
-                      : '-'}
-                  </span>
-                ),
-              }))}
+              rows={members.map((item: any) => {
+                // Handle Membership object structure
+                const user = item.user || item;
+                const role = item.role || 'member';
+
+                return {
+                  id: user.id,
+                  name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
+                  email: user.email,
+                  role: (
+                    <Badge variant="secondary" data-testid={`team-role-${user.id}`}>
+                      {role}
+                    </Badge>
+                  ),
+                  joined: (
+                    <span data-testid={`team-joined-${user.id}`}>
+                      {item.joined_at
+                        ? new Date(item.joined_at).toLocaleDateString()
+                        : '-'}
+                    </span>
+                  ),
+                };
+              })}
               data-testid="project-members-table"
             />
           ) : (

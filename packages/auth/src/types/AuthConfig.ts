@@ -13,6 +13,8 @@ export interface AuthConfig {
   endpoints: {
     /** Sign in endpoint - POST */
     signIn: string;
+    /** Sign up/register endpoint - POST */
+    signUp?: string;
     /** Sign out endpoint - POST */
     signOut: string;
     /** Request password reset endpoint - POST */

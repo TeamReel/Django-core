@@ -1,1 +1,1 @@
-export * from '../../../../packages/context-switcher/dist/index.js';
+export * from '../../../../packages/context-switcher/src/index';

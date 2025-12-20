@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ForbiddenPage from './pages/errors/ForbiddenPage';
 import NotFoundPage from './pages/errors/NotFoundPage';
@@ -10,10 +11,17 @@ import FilesPage from './pages/files';
 // Identity pages
 import {
   OrganisationsPage,
+  OrganisationCreatePage,
+  OrganisationEditPage,
   OrganisationDetailPage,
+  MemberDetailPage,
   ProjectsPage,
+  ProjectCreatePage,
+  ProjectEditPage,
   ProjectDetailPage,
   PermissionsPage,
+  UsersPage,
+  UserDetailPage,
 } from './pages/identity';
 import ProfilePage from './pages/identity/ProfilePageSimple';
 
@@ -84,6 +92,7 @@ export default function App() {
 
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
       {/* Protected routes */}
       <Route
@@ -106,10 +115,82 @@ export default function App() {
       />
 
       <Route
+        path="/organisations/create"
+        element={
+          <ProtectedRoute>
+            <OrganisationCreatePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/organisations/:id"
         element={
           <ProtectedRoute>
             <OrganisationDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/organisations/:id/members/:memberId"
+        element={
+          <ProtectedRoute>
+            <MemberDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/organisations/:orgId/users"
+        element={
+          <ProtectedRoute>
+            <UsersPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/organisations/:id/edit"
+        element={
+          <ProtectedRoute>
+            <OrganisationEditPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/organisations/:orgId/projects"
+        element={
+          <ProtectedRoute>
+            <ProjectsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/organisations/:orgId/projects/create"
+        element={
+          <ProtectedRoute>
+            <ProjectCreatePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/organisations/:orgId/projects/:projectId"
+        element={
+          <ProtectedRoute>
+            <ProjectDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/organisations/:orgId/projects/:projectId/edit"
+        element={
+          <ProtectedRoute>
+            <ProjectEditPage />
           </ProtectedRoute>
         }
       />
@@ -124,19 +205,28 @@ export default function App() {
       />
 
       <Route
-        path="/projects/:id"
+        path="/permissions"
         element={
           <ProtectedRoute>
-            <ProjectDetailPage />
+            <PermissionsPage />
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/permissions"
+        path="/users"
         element={
           <ProtectedRoute>
-            <PermissionsPage />
+            <UsersPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/users/:userId"
+        element={
+          <ProtectedRoute>
+            <UserDetailPage />
           </ProtectedRoute>
         }
       />

@@ -111,7 +111,7 @@ export const PermissionsPage: React.FC = () => {
     member: {
       title: 'Member',
       description:
-        'Standard access. Can view and contribute to projects, but cannot manage organisation or members.',
+        'Standard access. Can view projects and members, but cannot manage organisation, projects, or members.',
     },
     admin: {
       title: 'Administrator',
@@ -131,13 +131,13 @@ export const PermissionsPage: React.FC = () => {
     {
       permission: 'create_project',
       viewer: false,
-      member: true,
+      member: false,
       admin: true,
     },
     {
       permission: 'edit_project',
       viewer: false,
-      member: true,
+      member: false,
       admin: true,
     },
     {

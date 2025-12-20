@@ -35,6 +35,7 @@ class UserAdmin(BaseUserAdmin):
     ]
     search_fields = ["email", "first_name", "last_name"]
     ordering = ["-date_joined"]
+    readonly_fields = ["date_joined", "last_login", "email_verification_sent_at"]
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),

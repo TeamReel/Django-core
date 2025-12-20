@@ -10,10 +10,11 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.html import strip_tags
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.decorators.csrf import ensure_csrf_cookie
+from permissions.evaluator import check_permission
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import User
@@ -26,6 +27,7 @@ from accounts.serializers import (
     RegistrationSerializer,
     UserDetailSerializer,
     UserListSerializer,
+    UserUpdateSerializer,
 )
 from accounts.tokens import email_verification_token
 
@@ -472,10 +474,98 @@ class UserPagination(PageNumberPagination):
     page_size = 50
 
 
-@api_view(["GET"])
-@permission_classes([IsAdmin])
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
 def admin_user_list(request):
-    """List all users with pagination and filters (admin only)."""
+    """List all users with pagination and filters (admin only), or create a new user."""
+
+    # Permission Check
+    is_global_admin = request.user.is_superuser or request.user.groups.filter(name="admin").exists()
+
+    if not is_global_admin:
+        organisation_id = request.query_params.get("organisation_id")
+        if organisation_id:
+            # Resolve Org
+            import uuid
+
+            from organisations.models import Organisation
+
+            org_check = None
+            try:
+                uuid.UUID(organisation_id)
+                org_check = Organisation.objects.filter(id=organisation_id).first()
+            except ValueError:
+                org_check = Organisation.objects.filter(slug__iexact=organisation_id).first()
+
+            if not org_check:
+                return Response(
+                    {"detail": "Organization not found."}, status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Check Permission
+            required_perm = "org.view_members"
+            if request.method == "POST":
+                required_perm = "org.invite_users"
+
+            has_perm = check_permission(
+                request.user.id,
+                required_perm,
+                resource_id=org_check.id,
+                resource_type="organisation",
+            )
+
+            if not has_perm:
+                # Fallback: Check Membership (Legacy/Simple)
+                from organisations.models import Membership
+
+                # For GET (viewing), any active member is allowed
+                if request.method == "GET":
+                    if Membership.objects.filter(
+                        user=request.user,
+                        organisation=org_check,
+                        is_active=True,
+                    ).exists():
+                        has_perm = True
+                # For POST (creating), only admins are allowed
+                elif Membership.objects.filter(
+                    user=request.user,
+                    organisation=org_check,
+                    role="admin",
+                    is_active=True,
+                ).exists():
+                    has_perm = True
+
+            if not has_perm:
+                return Response(
+                    {
+                        "detail": f"You do not have permission to {required_perm} in this organization."
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        elif request.method == "POST":
+            # Creating a user requires an organization context for non-global admins
+            return Response(
+                {"detail": "Organization ID required to create users."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+    if request.method == "POST":
+        serializer = RegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+
+            # If created by an Org Admin, automatically add the user to the organization
+            if not is_global_admin and org_check:
+                from organisations.models import Membership
+
+                # Default role for new members created by Org Admin
+                Membership.objects.create(user=user, organisation=org_check, role="member")
+
+            # Return the created user using the list serializer format for consistency
+            response_serializer = UserListSerializer(user)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     queryset = User.objects.select_related().prefetch_related("groups").order_by("-date_joined")
 
     # Apply filters
@@ -496,6 +586,142 @@ def admin_user_list(request):
         elif role == "user":
             queryset = queryset.filter(groups__name="user", is_superuser=False)
 
+    # Filter by organisation (if provided)
+    organisation_id = request.query_params.get("organisation_id")
+    if organisation_id:
+        from django.db.models import Q
+        from organisations.models import Organisation
+        from permissions.models import RoleAssignment
+
+        org = None
+        # Check if it's a UUID or a slug
+        try:
+            import uuid
+
+            uuid.UUID(organisation_id)
+            # It's a UUID
+            org = Organisation.objects.filter(id=organisation_id).first()
+        except ValueError:
+            # It's likely a slug
+            org = Organisation.objects.filter(slug__iexact=organisation_id).first()
+
+        if org:
+            # Security Check: If not global admin, ensure user has access to this org
+            if not is_global_admin:
+                # Check if user is member or has role assignment in this org
+                has_access = (
+                    request.user.organisation_memberships.filter(organisation=org).exists()
+                    or RoleAssignment.objects.filter(
+                        user=request.user, target_organization=org
+                    ).exists()
+                )
+                if not has_access:
+                    return Response(
+                        {
+                            "detail": "You do not have permission to view users in this organization."
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+                # PLAYER PRIVACY: Check if user is a non-admin member (Player/Coach/Viewer)
+                # Non-admin members can ONLY see their own user record
+                from organisations.models import Membership
+
+                user_membership = Membership.objects.filter(
+                    user=request.user, organisation=org, is_active=True
+                ).first()
+
+                # If user is a member but NOT an admin, restrict to self only
+                is_org_admin = user_membership and user_membership.role == "admin"
+
+                if not is_org_admin:
+                    # Non-admin members (player/coach/member) can only see themselves
+                    queryset = User.objects.filter(id=request.user.id)
+                    paginator = UserPagination()
+                    page = paginator.paginate_queryset(queryset, request)
+                    if page is not None:
+                        serializer = UserListSerializer(page, many=True)
+                        return paginator.get_paginated_response(serializer.data)
+                    serializer = UserListSerializer(queryset, many=True)
+                    return Response(serializer.data)
+
+            # Filter users who are:
+            # 1. Direct members of the organisation
+            # 2. Have a RoleAssignment on the organisation
+            # 3. Have a RoleAssignment on a project within the organisation
+            # 4. Have NO organisation memberships (unassigned users) - ONLY if explicitly requested
+
+            include_unassigned = (
+                request.query_params.get("include_unassigned", "false").lower() == "true"
+            )
+
+            filters = (
+                Q(organisation_memberships__organisation=org)
+                | Q(role_assignments__target_organization=org)
+                | Q(role_assignments__target_project__organisation=org)
+            )
+
+            if include_unassigned:
+                filters |= Q(organisation_memberships__isnull=True)
+
+            queryset = queryset.filter(filters).distinct()
+        else:
+            # Return empty if org not found
+            return Response({"count": 0, "next": None, "previous": None, "results": []})
+    elif not is_global_admin:
+        # Filter by all allowed organizations for the current user
+        from django.db.models import Q
+        from permissions.models import RoleAssignment, ScopeChoices
+
+        # 1. Direct membership
+        user_org_ids = set(
+            request.user.organisation_memberships.values_list("organisation_id", flat=True)
+        )
+
+        # 2. Role Assignments on Organisations
+        assigned_org_ids = set(
+            RoleAssignment.objects.filter(
+                user=request.user, scope=ScopeChoices.ORGANIZATION
+            ).values_list("target_organization_id", flat=True)
+        )
+
+        allowed_org_ids = user_org_ids | assigned_org_ids
+
+        # Also include unassigned users if explicitly requested (e.g. for Org Admins looking for new users)
+        include_unassigned = (
+            request.query_params.get("include_unassigned", "false").lower() == "true"
+        )
+
+        filters = (
+            Q(organisation_memberships__organisation_id__in=allowed_org_ids)
+            | Q(role_assignments__target_organization_id__in=allowed_org_ids)
+            | Q(role_assignments__target_project__organisation_id__in=allowed_org_ids)
+        )
+
+        if include_unassigned:
+            filters |= Q(organisation_memberships__isnull=True)
+
+        queryset = queryset.filter(filters).distinct()
+
+    # Filter by project (if provided)
+    project_id = request.query_params.get("project_id")
+    if project_id:
+        from projects.models import Project
+
+        proj = None
+        try:
+            import uuid
+
+            uuid.UUID(project_id)
+            proj = Project.objects.filter(id=project_id).first()
+        except ValueError:
+            proj = Project.objects.filter(slug__iexact=project_id).first()
+
+        if proj:
+            queryset = queryset.filter(role_assignments__target_project=proj).distinct()
+        else:
+            return Response({"count": 0, "next": None, "previous": None, "results": []})
+
     # Paginate
     paginator = UserPagination()
     page = paginator.paginate_queryset(queryset, request)
@@ -503,10 +729,10 @@ def admin_user_list(request):
     return paginator.get_paginated_response(serializer.data)
 
 
-@api_view(["GET"])
-@permission_classes([IsAdmin])
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
+@permission_classes([IsAuthenticated])
 def admin_user_detail(request, user_id):
-    """Get user details (admin only)."""
+    """Get, update, or delete user details (admin only)."""
     try:
         user = User.objects.prefetch_related("groups").get(id=user_id)
     except User.DoesNotExist:
@@ -514,12 +740,226 @@ def admin_user_detail(request, user_id):
             {"error": "not_found", "message": "User not found."},
             status=status.HTTP_404_NOT_FOUND,
         )
-    serializer = UserDetailSerializer(user)
-    return Response(serializer.data)
+
+    # Permission Check
+    is_global_admin = request.user.is_superuser or request.user.groups.filter(name="admin").exists()
+    is_self = user_id == request.user.id
+
+    # SELF-ACCESS: Users can always view and edit their own profile
+    if is_self:
+        # Allow GET for self
+        if request.method == "GET":
+            serializer = UserDetailSerializer(user)
+            return Response(serializer.data)
+
+        # Allow PATCH/PUT for self with safe fields only
+        if request.method in ["PUT", "PATCH"]:
+            # Whitelist of fields users can update for themselves
+            safe_fields = {"first_name", "last_name", "email"}
+
+            # Check if any forbidden fields are being modified
+            forbidden_fields = set(request.data.keys()) - safe_fields
+            if forbidden_fields:
+                return Response(
+                    {
+                        "error": "forbidden_fields",
+                        "message": f"You cannot modify these fields: {', '.join(forbidden_fields)}",
+                        "allowed_fields": list(safe_fields),
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Allow self-update for safe fields
+            serializer = UserUpdateSerializer(
+                user, data=request.data, partial=True, context={"user": user}
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(UserDetailSerializer(user).data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Prevent self-deletion
+        if request.method == "DELETE":
+            return Response(
+                {"error": "permission_denied", "message": "You cannot delete yourself."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+    if not is_global_admin:
+        # PLAYER PRIVACY: Non-admin members can ONLY access their own user record
+        from organisations.models import Membership
+
+        # Check if requesting user is a non-admin member (Player/Coach/Viewer)
+        # Get all memberships for the requestor
+        requestor_memberships = Membership.objects.filter(user=request.user, is_active=True)
+
+        # Check if user is an admin in ANY organisation
+        is_admin_anywhere = requestor_memberships.filter(role="admin").exists()
+
+        # If not admin anywhere and not self, deny access
+        if not is_admin_anywhere:
+            # Return 404 to prevent information leakage
+            return Response(
+                {"error": "not_found", "message": "User not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # For non-global admins, we need to check if they have permission to manage THIS user.
+        # This is tricky because the user might belong to multiple organizations.
+        # We'll check if the requestor has 'org.view_members' (for GET) or 'org.remove_users' (for DELETE)
+        # on ANY organization that the target user is also a member of.
+
+        from permissions.models import RoleAssignment
+
+        # Get organizations where the requestor has admin rights
+        # This is a simplified check. Ideally we should check specific permissions per org.
+        # But for now, let's find common organizations.
+
+        # 1. Via RoleAssignment (RBAC)
+        requestor_org_ids = set(
+            RoleAssignment.objects.filter(
+                user=request.user, role__permissions__permission="org.view_members"
+            ).values_list("target_organization_id", flat=True)
+        )
+
+        # 2. Via Membership (Legacy/Simple)
+        from organisations.models import Membership
+
+        membership_org_ids = set(
+            Membership.objects.filter(user=request.user, role="admin", is_active=True).values_list(
+                "organisation_id", flat=True
+            )
+        )
+        requestor_org_ids.update(membership_org_ids)
+
+        target_user_org_ids = set(
+            user.organisation_memberships.values_list("organisation_id", flat=True)
+        )
+
+        common_orgs = requestor_org_ids.intersection(target_user_org_ids)
+
+        # If no common orgs, check if the user has a role assignment in an org the requestor manages
+        if not common_orgs:
+            target_user_role_org_ids = set(
+                user.role_assignments.values_list("target_organization_id", flat=True)
+            )
+            common_orgs = requestor_org_ids.intersection(target_user_role_org_ids)
+
+        # Check if target user is unassigned
+        # We align this with admin_user_list which considers users with no memberships as unassigned
+        # even if they might have role assignments (e.g. project roles)
+        is_unassigned = not target_user_org_ids
+
+        if not common_orgs and not is_unassigned:
+            return Response(
+                {"detail": "You do not have permission to manage this user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # For DELETE, check specifically for org.remove_users on at least one common org
+        if request.method == "DELETE":
+            if is_unassigned:
+                return Response(
+                    {"detail": "You cannot delete unassigned users."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            has_delete_perm = False
+            for org_id in common_orgs:
+                # Check RBAC
+                if check_permission(
+                    request.user.id,
+                    "org.remove_users",
+                    resource_id=org_id,
+                    resource_type="organisation",
+                ):
+                    has_delete_perm = True
+                    break
+
+                # Check Membership Admin (Legacy/Simple)
+                # Admins have full permissions
+                if Membership.objects.filter(
+                    user=request.user,
+                    organisation_id=org_id,
+                    role="admin",
+                    is_active=True,
+                ).exists():
+                    has_delete_perm = True
+                    break
+
+            if not has_delete_perm:
+                return Response(
+                    {
+                        "detail": "You do not have permission to delete users in the shared organization(s)."
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+    if request.method == "GET":
+        serializer = UserDetailSerializer(user)
+        return Response(serializer.data)
+
+    if request.method == "DELETE":
+        # Prevent deleting yourself
+        if request.user.id == user.id:
+            return Response(
+                {"error": "permission_denied", "message": "You cannot delete yourself."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if not is_global_admin:
+            # For Org Admins, we don't actually delete the user account (which is global).
+            # We only remove them from the organization(s) that the admin manages.
+            # However, the frontend calls this endpoint expecting a "delete".
+            # If the user is ONLY in this organization, maybe we can delete them?
+            # For now, let's stick to the safe approach: Remove membership from common orgs.
+
+            from organisations.models import Membership
+
+            # Get organizations where the requestor has remove_users permission
+            # AND the user is a member
+
+            # Re-calculate common orgs to be safe (or reuse from above if scope allows)
+            requestor_org_ids = set(
+                RoleAssignment.objects.filter(
+                    user=request.user, role__permissions__permission="org.remove_users"
+                ).values_list("target_organization_id", flat=True)
+            )
+            target_user_org_ids = set(
+                user.organisation_memberships.values_list("organisation_id", flat=True)
+            )
+            common_orgs = requestor_org_ids.intersection(target_user_org_ids)
+
+            if not common_orgs:
+                return Response(
+                    {"detail": "No common organizations found to remove user from."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            deleted_count, _ = Membership.objects.filter(
+                user=user, organisation_id__in=common_orgs
+            ).delete()
+
+            return Response(
+                {"message": f"User removed from {deleted_count} organization(s)."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # Handle PUT/PATCH
+    serializer = UserUpdateSerializer(user, data=request.data, partial=True, context={"user": user})
+    if serializer.is_valid():
+        serializer.save()
+        # Return full details after update
+        return Response(UserDetailSerializer(user).data)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["PATCH"])
-@permission_classes([IsAdmin])
+@permission_classes([IsAuthenticated])
 def admin_user_activate(request, user_id):
     """Activate a user (admin only)."""
     try:
@@ -529,6 +969,29 @@ def admin_user_activate(request, user_id):
             {"error": "not_found", "message": "User not found."},
             status=status.HTTP_404_NOT_FOUND,
         )
+
+    # Permission Check
+    is_global_admin = request.user.is_superuser or request.user.groups.filter(name="admin").exists()
+
+    if not is_global_admin:
+        # Check if requestor manages any org the user is in
+        from permissions.models import RoleAssignment
+
+        requestor_org_ids = set(
+            RoleAssignment.objects.filter(
+                user=request.user, role__permissions__permission="org.manage_settings"
+            ).values_list("target_organization_id", flat=True)
+        )
+        target_user_org_ids = set(
+            user.organisation_memberships.values_list("organisation_id", flat=True)
+        )
+        common_orgs = requestor_org_ids.intersection(target_user_org_ids)
+
+        if not common_orgs:
+            return Response(
+                {"detail": "You do not have permission to manage this user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
     if user.is_active:
         return Response(
@@ -543,7 +1006,7 @@ def admin_user_activate(request, user_id):
 
 
 @api_view(["PATCH"])
-@permission_classes([IsAdmin])
+@permission_classes([IsAuthenticated])
 def admin_user_deactivate(request, user_id):
     """Deactivate a user with protection checks (admin only)."""
     try:
@@ -553,6 +1016,29 @@ def admin_user_deactivate(request, user_id):
             {"error": "not_found", "message": "User not found."},
             status=status.HTTP_404_NOT_FOUND,
         )
+
+    # Permission Check
+    is_global_admin = request.user.is_superuser or request.user.groups.filter(name="admin").exists()
+
+    if not is_global_admin:
+        # Check if requestor manages any org the user is in
+        from permissions.models import RoleAssignment
+
+        requestor_org_ids = set(
+            RoleAssignment.objects.filter(
+                user=request.user, role__permissions__permission="org.manage_settings"
+            ).values_list("target_organization_id", flat=True)
+        )
+        target_user_org_ids = set(
+            user.organisation_memberships.values_list("organisation_id", flat=True)
+        )
+        common_orgs = requestor_org_ids.intersection(target_user_org_ids)
+
+        if not common_orgs:
+            return Response(
+                {"detail": "You do not have permission to manage this user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
     # Prevent self-deactivation
     if user.id == request.user.id:

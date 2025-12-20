@@ -1,10 +1,10 @@
-# Fase 15: ML/AI Platform (058-063)
+# Fase 15: ML/AI Platform (059-064)
 
 **Focus**: Feature engineering, model registry, prompt templates, agents, vector search, monitoring
 
 ---
 
-## 58. D11 – Feature Engineering Patterns
+## 59. D11 – Feature Engineering Patterns
 
 **Feature**: `D11-feature-engineering-patterns`
 
@@ -37,7 +37,7 @@
 
 ---
 
-## 59. D12 – Model Registry
+## 60. D12 – Model Registry
 
 **Feature**: `D12-model-registry`
 
@@ -71,7 +71,7 @@
 
 ---
 
-## 60. D13 – Prompt Template Library
+## 61. D13 – Prompt Template Library
 
 **Feature**: `D13-prompt-template-library`
 
@@ -112,7 +112,7 @@ metadata:
 
 ---
 
-## 61. D14 – Agent Operations & Orchestration
+## 62. D14 – Agent Operations & Orchestration
 
 **Feature**: `D14-agent-operations-orchestration`
 
@@ -152,7 +152,7 @@ policies:
 
 ---
 
-## 62. D15 – Vector Search & Retrieval Adapter
+## 63. D15 – Vector Search & Retrieval Adapter
 
 **Feature**: `D15-vector-search-retrieval-adapter`
 
@@ -185,7 +185,7 @@ policies:
 
 ---
 
-## 63. D16 – Model Monitoring & Feedback Loop
+## 64. D16 – Model Monitoring & Feedback Loop
 
 **Feature**: `D16-model-monitoring-feedback-loop`
 
@@ -220,7 +220,7 @@ policies:
 
 ## 📋 Constitution Gate (Post ML & Agent Governance)
 
-**Timing**: Na Fase 13 (modules 056-061 compleet)
+**Timing**: Na Fase 15 (modules 059-064 compleet)
 
 **Waarom nu**
 - ML/AI infrastructure complete (features, models, prompts, agents, vector search, monitoring)

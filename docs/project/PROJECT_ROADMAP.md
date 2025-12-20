@@ -15,24 +15,24 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 - **Fase 1-5**: Backend Core (modules 001-021) — 21 modules ✅ **COMPLETE**
 - **Fase 6-7**: Frontend Core (modules 022-030) — 9 modules ✅ **COMPLETE**
 - **Fase 8**: Demo Foundation (modules 031-033) — 3 modules 🚧 **IN PROGRESS** (F10 ✅, F10b-Database 🚧)
-- **Fase 9**: Backend Infrastructure (modules 034-037) — 4 modules 📋 **PLANNED**
-- **Fase 10**: Frontend & Visual Dev (modules 038-040) — 3 modules 📋 **PLANNED**
-- **Fase 11**: Workflows & Payments (modules 041-043) — 3 modules 📋 **PLANNED**
-- **Fase 12**: Advanced UI (modules 044-047) — 4 modules 📋 **PLANNED**
-- **Fase 13**: Data Foundations Part 1 (modules 048-052) — 5 modules 📋 **PLANNED**
-- **Fase 14**: Data Foundations Part 2 (modules 053-057) — 5 modules 📋 **PLANNED**
-- **Fase 15**: ML/AI Platform (modules 058-063) — 6 modules 📋 **PLANNED**
-- **Fase 16**: Platform Quality Gates (modules 064-068) — 5 modules 📋 **PLANNED**
-- **Fase 17**: Integration Ecosystem (modules 069-070) — 2 modules 📋 **PLANNED**
-- **Fase 18**: Operations & Resilience (module 071) — 1 module 📋 **PLANNED**
+- **Fase 9**: Backend Infrastructure (modules 034-038) — 5 modules 📋 **PLANNED**
+- **Fase 10**: Frontend & Visual Dev (modules 039-041) — 3 modules 📋 **PLANNED**
+- **Fase 11**: Workflows & Payments (modules 042-044) — 3 modules 📋 **PLANNED**
+- **Fase 12**: Advanced UI (modules 045-048) — 4 modules 📋 **PLANNED**
+- **Fase 13**: Data Foundations Part 1 (modules 049-053) — 5 modules 📋 **PLANNED**
+- **Fase 14**: Data Foundations Part 2 (modules 054-058) — 5 modules 📋 **PLANNED**
+- **Fase 15**: ML/AI Platform (modules 059-064) — 6 modules 📋 **PLANNED**
+- **Fase 16**: Platform Quality Gates (modules 065-069) — 5 modules 📋 **PLANNED**
+- **Fase 17**: Integration Ecosystem (modules 070-071) — 2 modules 📋 **PLANNED**
+- **Fase 18**: Operations & Resilience (module 072) — 1 module 📋 **PLANNED**
 
 **Key Architecture Decisions:**
 - **Fase 7 Module 029**: F08 reserved for future (placeholder, not F09 Visily.ai)
 - **Fase 8 Split**: F10 Demo Shell complete, F10b-Database + F10b-Pages added for production-ready demo
 - **Constitution Gates**: Distributed after Fases 8, 15, and 18 (not concentrated)
 - **Quality Gates Lightweight**: P01-P05 show scorecards in F10 dashboard, no separate demo pages
-- **Module Numbering**: 71 total modules (B01-B28, F01-F15, P01-P05, D01-D16, I01-I02, O01)
-- **Current Status**: 30/71 modules complete (42%), Fase 8 in progress
+- **Module Numbering**: 72 total modules (B01-B29, F01-F15, P01-P05, D01-D16, I01-I02, O01)
+- **Current Status**: 30/72 modules complete (42%), Fase 8 in progress
 
 ---
 
@@ -144,18 +144,19 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 
 ---
 
-## Fase 9 — Backend Infrastructure (4 modules)
+## Fase 9 — Backend Infrastructure (5 modules)
 
-**Modules:** B22, B23, B24, B25 (034-037)
+**Modules:** B22, B23, B24, B25, B26 (034-038)
 
 - **#034 B22** — File & Media Management 📋
 - **#035 B23** — Real-time Infrastructure 📋
 - **#036 B24** — Full-text Search Foundation 📋
 - **#037 B25** — Cache Layer & Patterns 📋
+- **#038 B26** — Project-Level Access Control 📋
 
-**Demo Pages:** `/demo/files`, `/demo/realtime`, `/demo/search`, `/demo/cache-test`
+**Demo Pages:** `/demo/files`, `/demo/realtime`, `/demo/search`, `/demo/cache-test`, `/demo/project-access`
 
-**Outcome:** Core backend infrastructure voor files, real-time, search en caching operational.
+**Outcome:** Core backend infrastructure voor files, real-time, search, caching en project access operational.
 
 **Details:** See [phases/planned/fase-09-backend-infrastructure.md](phases/planned/fase-09-backend-infrastructure.md)
 
@@ -163,11 +164,11 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 
 ## Fase 10 — Frontend & Visual Development (3 modules)
 
-**Modules:** F08, F09, F13 (038-040)
+**Modules:** F08, F09, F13 (039-041)
 
-- **#038 F08** — Data Visualization Components 📋
-- **#039 F09** — Design-to-Code Pipeline (Visily.ai Integration) 📋
-- **#040 F13** — Rich Text Editor Component 📋
+- **#039 F08** — Data Visualization Components 📋
+- **#040 F09** — Design-to-Code Pipeline (Visily.ai Integration) 📋
+- **#041 F13** — Rich Text Editor Component 📋
 
 **Demo Pages:** `/demo/charts`, `/demo/visily`, `/demo/editor`
 
@@ -179,11 +180,11 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 
 ## Fase 11 — Workflows & Payments (3 modules)
 
-**Modules:** B26, B27, B28 (041-043)
+**Modules:** B27, B28, B29 (042-044)
 
-- **#041 B26** — Payment Gateway Adapters 📋
-- **#042 B27** — Workflow Engine & State Machine 📋
-- **#043 B28** — Advanced Reporting & Exports 📋
+- **#042 B27** — Payment Gateway Adapters 📋
+- **#043 B28** — Workflow Engine & State Machine 📋
+- **#044 B29** — Advanced Reporting & Exports 📋
 
 **Demo Pages:** `/demo/payments`, `/demo/workflows/approval`, PDF export buttons
 
@@ -195,12 +196,12 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 
 ## Fase 12 — Advanced UI (4 modules)
 
-**Modules:** F14, F11, F12, F15 (044-047)
+**Modules:** F14, F11, F12, F15 (045-048)
 
-- **#044 F14** — Admin Panel Components 📋
-- **#045 F11** — Operations Console UI 📋
-- **#046 F12** — Billing & Usage UI 📋
-- **#047 F15** — Frontend Form Components 📋
+- **#045 F14** — Admin Panel Components 📋
+- **#046 F11** — Operations Console UI 📋
+- **#047 F12** — Billing & Usage UI 📋
+- **#048 F15** — Frontend Form Components 📋
 
 **Demo Pages:** `/admin`, `/ops`, `/billing`, `/demo/forms`
 
@@ -212,13 +213,13 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 
 ## Fase 13 — Data Foundations Part 1 (5 modules)
 
-**Modules:** D01-D05 (048-052)
+**Modules:** D01-D05 (049-053)
 
-- **#048 D01** — Data Storage Adapters 📋
-- **#049 D02** — ETL & Data Pipeline Foundation 📋
-- **#050 D03** — Dataset Management & Lineage 📋
-- **#051 D04** — Streaming Data Adapters 📋
-- **#052 D05** — Data Version Control 📋
+- **#049 D01** — Data Storage Adapters 📋
+- **#050 D02** — ETL & Data Pipeline Foundation 📋
+- **#051 D03** — Dataset Management & Lineage 📋
+- **#052 D04** — Streaming Data Adapters 📋
+- **#053 D05** — Data Version Control 📋
 
 **Demo Pages:** `/demo/storage`, `/demo/pipelines`, `/demo/datasets`, `/demo/streams`, `/demo/datasets/{id}/versions`
 
@@ -230,13 +231,13 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 
 ## Fase 14 — Data Foundations Part 2 (5 modules)
 
-**Modules:** D06-D10 (053-057)
+**Modules:** D06-D10 (054-058)
 
-- **#053 D06** — Structured Output Validation 📋
-- **#054 D07** — Tool-Call Logging Infrastructure 📋
-- **#055 D08** — Prompt Experiment Tracking 📋
-- **#056 D09** — Evaluation & Metrics Framework 📋
-- **#057 D10** — Annotation & Labeling Tools 📋
+- **#054 D06** — Structured Output Validation 📋
+- **#055 D07** — Tool-Call Logging Infrastructure 📋
+- **#056 D08** — Prompt Experiment Tracking 📋
+- **#057 D09** — Evaluation & Metrics Framework 📋
+- **#058 D10** — Annotation & Labeling Tools 📋
 
 **Demo Pages:** `/demo/validation`, `/demo/tool-calls`, `/demo/experiments/prompts`, `/demo/evaluations`, `/demo/labeling`
 
@@ -248,14 +249,14 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 
 ## Fase 15 — ML/AI Platform (6 modules)
 
-**Modules:** D11-D16 (058-063)
+**Modules:** D11-D16 (059-064)
 
-- **#058 D11** — Feature Engineering Patterns 📋
-- **#059 D12** — Model Registry 📋
-- **#060 D13** — Prompt Template Library 📋
-- **#061 D14** — Agent Operations & Orchestration 📋
-- **#062 D15** — Vector Search & Retrieval Adapter 📋
-- **#063 D16** — Model Monitoring & Feedback Loop 📋
+- **#059 D11** — Feature Engineering Patterns 📋
+- **#060 D12** — Model Registry 📋
+- **#061 D13** — Prompt Template Library 📋
+- **#062 D14** — Agent Operations & Orchestration 📋
+- **#063 D15** — Vector Search & Retrieval Adapter 📋
+- **#064 D16** — Model Monitoring & Feedback Loop 📋
 - 📋 **Constitution Gate** (Post ML & Agent Governance)
 
 **Demo Pages:** `/demo/features`, `/demo/models`, `/demo/prompts`, `/demo/agents`, `/demo/vector-search`, `/demo/monitoring/models`
@@ -268,13 +269,13 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 
 ## Fase 16 — Platform Quality Gates (5 modules) — Lightweight
 
-**Modules:** P01-P05 (064-068)
+**Modules:** P01-P05 (065-069)
 
-- **#064 P01** — Constitutional Enforcement Engine 📋
-- **#065 P02** — Security Audit & ASVS Compliance (Lightweight) 📋
-- **#066 P03** — ML & Agent Governance Gate (Lightweight) 📋
-- **#067 P04** — Integration Security Audit (Lightweight) 📋
-- **#068 P05** — Stack & Dependency Validation 📋
+- **#065 P01** — Constitutional Enforcement Engine 📋
+- **#066 P02** — Security Audit & ASVS Compliance (Lightweight) 📋
+- **#067 P03** — ML & Agent Governance Gate (Lightweight) 📋
+- **#068 P04** — Integration Security Audit (Lightweight) 📋
+- **#069 P05** — Stack & Dependency Validation 📋
 
 **Demo Pages:** ⚠️ NONE - All scorecards shown in F10 Development Dashboard
 
@@ -286,10 +287,10 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 
 ## Fase 17 — Integration Ecosystem (2 modules) — Lightweight
 
-**Modules:** I01-I02 (069-070)
+**Modules:** I01-I02 (070-071)
 
-- **#069 I01** — Connector Framework & SDK (Lightweight) 📋
-- **#070 I02** — Compliance Exports (Lightweight) 📋
+- **#070 I01** — Connector Framework & SDK (Lightweight) 📋
+- **#071 I02** — Compliance Exports (Lightweight) 📋
 
 **Demo Pages:** `/demo/connectors`, `/demo/compliance/exports`
 
@@ -301,14 +302,14 @@ The roadmap is structured in **18 development phases** (Fase 1-18) spanning **71
 
 ## Fase 18 — Operations & Resilience (1 module) — Lightweight
 
-**Module:** O01 (071)
+**Module:** O01 (072)
 
-- **#071 O01** — Resilience Testing & Health Validation (Lightweight) 📋
+- **#072 O01** — Resilience Testing & Health Validation (Lightweight) 📋
 - 📋 **Constitution Gate** (Final Platform Validation)
 
 **Demo Pages:** ⚠️ NONE - Scorecard in F10 Development Dashboard
 
-**Outcome:** Complete platform validation, all 71 modules operational, production-ready.
+**Outcome:** Complete platform validation, all 72 modules operational, production-ready.
 
 **Details:** See [phases/planned/fase-18-operations.md](phases/planned/fase-18-operations.md)
 

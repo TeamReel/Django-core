@@ -120,8 +120,8 @@ export function ContextSwitcherProvider({
    * Fetch all projects for an organisation.
    */
   const fetchProjects = useCallback(
-    async (orgId: string): Promise<Project[]> => {
-      return apiFetchProjects(orgId, apiBaseUrl);
+    async (orgSlug: string): Promise<Project[]> => {
+      return apiFetchProjects(orgSlug, apiBaseUrl);
     },
     [apiBaseUrl]
   );
@@ -149,7 +149,7 @@ export function ContextSwitcherProvider({
           const storedOrg = allOrgs.find(org => org.id === storedOrgId);
           if (storedOrg) {
             // Fetch projects for restored org
-            const orgProjects = await fetchProjects(storedOrg.id);
+            const orgProjects = await fetchProjects(storedOrg.slug);
             setProjects(orgProjects);
 
             const storedProject = storedProjectId
@@ -183,19 +183,52 @@ export function ContextSwitcherProvider({
         return;
       }
 
-      // Find organisation from fetched list by ID
-      const organisation = allOrgs.find(org => org.id === orgId) || null;
+      // Find organisation from fetched list by ID or Slug
+      const organisation = allOrgs.find(org => org.id === orgId || org.slug === orgId) || null;
       if (!organisation) {
-        throw new Error(`Organisation not found: ${orgId}`);
+        // Organisation not found by slug - try localStorage as fallback
+        const storedOrgId = localStorage.getItem('django-core:currentOrgId');
+        if (storedOrgId) {
+          const storedOrg = allOrgs.find(org => org.id === storedOrgId);
+          if (storedOrg) {
+            // Use stored org but stay on current page (context switcher will handle URL sync)
+            const orgProjects = await fetchProjects(storedOrg.slug);
+            setProjects(orgProjects);
+
+            const newContext: UserContext = {
+              organisation: storedOrg,
+              project: null,
+              isLoading: false,
+              error: null,
+            };
+
+            setContext(newContext);
+
+            if (onContextChanged) {
+              onContextChanged(newContext);
+            }
+            return;
+          }
+        }
+
+        // Still not found - clear context
+        setContext({
+          organisation: null,
+          project: null,
+          isLoading: false,
+          error: null,
+        });
+        setProjects([]);
+        return;
       }
 
       // Fetch projects for this organisation
-      const orgProjects = await fetchProjects(organisation.id);
+      const orgProjects = await fetchProjects(organisation.slug);
       setProjects(orgProjects);
 
       // Find current project if specified (compare as strings since URL params are strings)
       const project = projectId
-        ? orgProjects.find(p => String(p.id) === String(projectId)) || null
+        ? orgProjects.find(p => String(p.id) === String(projectId) || p.slug === projectId) || null
         : null;
 
       const newContext: UserContext = {
@@ -287,9 +320,9 @@ export function ContextSwitcherProvider({
         }
 
         // Build new path and navigate
-        // Use IDs instead of slugs for URL construction
+        // Use slugs instead of IDs for URL construction
         const newPath = routerAdapter.buildPathForContext(
-          { orgSlug: org.id, projectSlug: project ? String(project.id) : undefined },
+          { orgSlug: org.slug, projectSlug: project ? (project.slug || String(project.id)) : undefined },
           { preservePath: true, fallbackPath: '/dashboard' }
         );
 

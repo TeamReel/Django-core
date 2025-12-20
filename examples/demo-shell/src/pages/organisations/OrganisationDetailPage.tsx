@@ -4,7 +4,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 
 interface Organisation {
-  id: number;
+  id: string;
   slug: string;
   name: string;
   description?: string;
@@ -88,7 +88,7 @@ export default function OrganisationDetailPage() {
 
         <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
           <Link
-            to={`/organisations/${organisation.id}/projects`}
+            to={`/organisations/${organisation.slug}/projects`}
             style={{
               padding: '12px 24px',
               backgroundColor: '#007bff',

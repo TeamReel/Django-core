@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
-  PageHeader,
-  PageContent,
   Button,
   Input,
   Badge,
@@ -11,10 +9,17 @@ import {
   Alert,
 } from '@django-core/design-system';
 import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
+import { useAuth } from '@django-core/auth-ui';
+import { useContextSwitcher } from '@django-core/context-switcher';
+import {
   Organisation,
   ListResponse,
 } from '../../types';
 import AppShell from '../../components/AppShell';
+import { canPerformAction } from '../../utils/permissions';
 
 /**
  * T006 - Organisations List Page
@@ -26,10 +31,19 @@ import AppShell from '../../components/AppShell';
  * - Permission-aware: viewer sees read-only view
  */
 export const OrganisationsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { organisations: myOrganisations } = useContextSwitcher();
   const [searchParams, setSearchParams] = useSearchParams();
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Permission checks - can user create organisations?
+  const isSuperAdmin = (user as any)?.role === 'superadmin';
+  // Note: Organisation creation is typically a superadmin action
+  // Individual org edit/delete uses per-org permissions
 
   // Query params for sort and filter
   const sort = searchParams.get('sort') || 'name';
@@ -52,7 +66,7 @@ export const OrganisationsPage: React.FC = () => {
         }
 
         const response = await fetch(
-          `/api/organisations/?${params.toString()}`,
+          `/api/v1/organisations/?${params.toString()}`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -77,7 +91,39 @@ export const OrganisationsPage: React.FC = () => {
     };
 
     fetchOrganisations();
-  }, [sort, order, search]);
+  }, [sort, order, search, refreshKey]);
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this organisation?')) {
+      return;
+    }
+
+    try {
+      // Get CSRF token from cookie
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+
+      const response = await fetch(`/api/v1/organisations/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken || '',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete organisation');
+      }
+
+      setRefreshKey(k => k + 1);
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to delete organisation');
+    }
+  };
 
   // Handle search input
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,13 +155,14 @@ export const OrganisationsPage: React.FC = () => {
         title="Organisations"
         breadcrumbs={[
           { label: 'Home', href: '/' },
-          { label: 'Identity' },
-          { label: 'Organisations' },
+          { label: 'Organisations', current: true },
         ]}
-        action={
-          <Button variant="primary" size="md">
-            Create Organisation
-          </Button>
+        actions={
+          isSuperAdmin ? (
+            <Button variant="primary" size="md" onClick={() => navigate('/organisations/create')}>
+              Create Organisation
+            </Button>
+          ) : undefined
         }
       />
 
@@ -189,12 +236,31 @@ export const OrganisationsPage: React.FC = () => {
                 label: 'Actions',
               },
             ]}
-            rows={organisations.map((org) => ({
+            rows={organisations.map((org) => {
+              // Check if user can edit/delete this specific org
+              const orgWithRole = myOrganisations.find(o => o.id === org.id);
+              const permissionContext = {
+                currentOrganisation: orgWithRole,
+                isSuperAdmin,
+              };
+              const userCanEdit = canPerformAction('update', 'organisation', permissionContext);
+              const userCanDelete = canPerformAction('delete', 'organisation', permissionContext);
+
+              return {
               id: org.id,
               name: (
-                <a href={`/organisations/${org.id}`} className="text-blue-600 hover:underline">
+                <span
+                  style={{
+                    color: '#2563eb',
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                  onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#1d4ed8'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#2563eb'}
+                >
                   {org.name}
-                </a>
+                </span>
               ),
               member_count: (
                 <Badge variant="secondary" data-testid={`org-members-${org.id}`}>
@@ -225,18 +291,57 @@ export const OrganisationsPage: React.FC = () => {
                 </Badge>
               ),
               actions: (
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => window.location.href = `/organisations/${org.id}`}
-                    data-testid={`org-detail-btn-${org.id}`}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
+                    style={{
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        border: '1px solid #6c757d',
+                        backgroundColor: 'white',
+                        color: '#6c757d',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                    }}
                   >
                     View
-                  </Button>
+                  </button>
+                  {userCanEdit && (
+                    <button
+                      onClick={() => navigate(`/organisations/${org.slug || org.id}/edit`)}
+                      style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          border: '1px solid #007bff',
+                          backgroundColor: 'white',
+                          color: '#007bff',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                      }}
+                    >
+                      Edit
+                    </button>
+                  )}
+                  {userCanDelete && (
+                    <button
+                      onClick={() => handleDelete(org.id)}
+                      style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          border: '1px solid #dc3545',
+                          backgroundColor: 'white',
+                          color: '#dc3545',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               ),
-            }))}
+            };
+            })}
             loading={loading}
             data-testid="org-table"
           />

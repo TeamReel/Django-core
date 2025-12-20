@@ -35,6 +35,7 @@ export interface Organisation {
   created_at?: string;
   updated_at?: string;
   logo_url?: string;
+  user_role?: 'admin' | 'member';
 }
 
 /**
@@ -43,6 +44,7 @@ export interface Organisation {
 export interface Project {
   id: string;
   name: string;
+  slug?: string;
   description?: string;
   organisation_id: string;
   member_count?: number;

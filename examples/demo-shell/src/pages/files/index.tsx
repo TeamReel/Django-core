@@ -24,7 +24,7 @@ interface FileUploadResponse {
 
 const FilesPage: React.FC = () => {
   const [files, setFiles] = useState<FileAsset[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [activeUploads, setActiveUploads] = useState<FileUploadFile[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -119,13 +119,56 @@ const FilesPage: React.FC = () => {
     setSuccess(null);
 
     for (const file of selectedFiles) {
+      // Add to active uploads
+      const uploadId = Math.random().toString(36).substr(2, 9);
+      setActiveUploads(prev => [...prev, {
+          file,
+          id: uploadId,
+          status: 'uploading',
+          progress: 0
+      }]);
+
       try {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('is_public', 'false');
 
-        // Start progress tracking
-        setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
+        // Try API upload first
+        try {
+            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const csrfToken = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('csrftoken='))
+                ?.split('=')[1];
+
+            const response = await fetch(`${apiBaseUrl}/api/v1/files/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken || '',
+                },
+                credentials: 'include',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // Update progress to success
+                setActiveUploads(prev => prev.map(u => u.id === uploadId ? { ...u, status: 'success', progress: 100 } : u));
+
+                setFiles(prev => [data, ...prev]);
+                setSuccess(`Successfully uploaded ${file.name}`);
+
+                // Remove from active uploads after delay
+                setTimeout(() => {
+                    setActiveUploads(prev => prev.filter(u => u.id !== uploadId));
+                }, 2000);
+
+                return; // Exit success
+            }
+        } catch (e) {
+            console.warn("API upload failed, falling back to demo mode", e);
+        }
 
         // Demo mode: Skip API call and simulate upload directly
         console.log(`Demo mode upload for ${file.name}`);
@@ -140,7 +183,8 @@ const FilesPage: React.FC = () => {
 
         // Simulate upload progress
         setTimeout(() => {
-          setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
+          // Update progress to success
+          setActiveUploads(prev => prev.map(u => u.id === uploadId ? { ...u, status: 'success', progress: 100 } : u));
 
           // Add to files list and save to localStorage
           setFiles(prev => {
@@ -149,30 +193,24 @@ const FilesPage: React.FC = () => {
             return newFiles;
           });
           setSuccess(`Successfully uploaded ${file.name} (demo mode)`);
-        }, 300);
 
-        // Remove the duplicate logic after the if-else
-        /*
-
-        // Progress and success handling moved to API response blocks above
-        */
-
-        // Clear progress after a delay
-        setTimeout(() => {
-          setUploadProgress(prev => {
-            const newProgress = { ...prev };
-            delete newProgress[file.name];
-            return newProgress;
-          });
-        }, 2000);
+          // Remove from active uploads after delay
+          setTimeout(() => {
+              setActiveUploads(prev => prev.filter(u => u.id !== uploadId));
+          }, 2000);
+        }, 500);
 
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Upload failed');
-        setUploadProgress(prev => {
-          const newProgress = { ...prev };
-          delete newProgress[file.name];
-          return newProgress;
-        });
+        const errorMsg = err instanceof Error ? err.message : 'Upload failed';
+        setError(errorMsg);
+
+        // Update status to error
+        setActiveUploads(prev => prev.map(u => u.id === uploadId ? { ...u, status: 'error', error: errorMsg } : u));
+
+        // Remove from active uploads after delay
+        setTimeout(() => {
+            setActiveUploads(prev => prev.filter(u => u.id !== uploadId));
+        }, 3000);
       }
     }
   };
@@ -259,16 +297,15 @@ const FilesPage: React.FC = () => {
           <Text size="lg" weight="medium">Upload Files</Text>
 
           <FileUpload
+            files={activeUploads}
             onFilesChange={handleFilesChange}
             maxFiles={10}
             maxSize={10 * 1024 * 1024} // 10MB
             accept="image/*,application/pdf,.doc,.docx,.txt"
-            multiple
-            showFileList
-            uploadProgress={uploadProgress}
-            errorMessage={error}
-            titleText="Drop files here or click to browse"
-            subtitleText="Supports images, PDFs, documents up to 10MB each"
+            enableDragDrop={true}
+            showFileList={true}
+            dragText="Drop files here or click to browse"
+            hintText="Supports images, PDFs, documents up to 10MB each"
           />
         </Stack>
       </Card>

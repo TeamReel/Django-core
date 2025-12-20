@@ -18,6 +18,7 @@ const authConfig: AuthConfig = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '',
   endpoints: {
     signIn: '/api/v1/auth/login/',
+    signUp: '/api/v1/auth/register/',
     signOut: '/api/v1/auth/logout/',
     requestPasswordReset: '/api/v1/auth/password-reset/',
     confirmPasswordReset: '/api/v1/auth/password-reset-confirm/',

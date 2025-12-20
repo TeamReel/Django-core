@@ -1,4 +1,4 @@
-# Fase 9: Backend Infrastructure (034-037)
+# Fase 9: Backend Infrastructure (034-038)
 
 **Focus**: Backend utilities - file management, real-time (WebSocket), full-text search, cache patterns
 
@@ -266,5 +266,60 @@ Demo page: /demo/performance
 
 ---
 
-**Fase 9 Compleet**: 4 modules (B22, B23, B24, B25)
+## 38. B26 – Project-Level Access Control (New)
+
+**Doel**: Fijnmazige toegangscontrole per project, los van organisatielidmaatschap.
+
+**Waarom agnostisch**: Essentieel voor samenwerking met externen (freelancers, clients) die niet de hele organisatie mogen zien.
+
+**Wat moet er gebeuren**:
+- **ProjectMembership Model**:
+  - Koppeling User <-> Project
+  - Rollen: 'viewer', 'editor', 'admin' (project-scope)
+- **Permission Updates**:
+  - Update `IsOrganisationMember` naar `IsProjectMemberOrOrgAdmin`
+  - Project-level permissies hebben voorrang op org-level (indien restrictiever)
+- **UI Updates**:
+  - Project Settings -> Members tab
+  - "Invite to Project" flow (email invite)
+  - "My Projects" dashboard filter (direct + org-inherited)
+- **API Updates**:
+  - `GET /api/v1/projects/:id/members`
+  - `POST /api/v1/projects/:id/invite`
+  - `DELETE /api/v1/projects/:id/members/:user_id`
+
+**Demo Requirements**:
+- 🔒 **Project Access Demo** (`/demo/project-access`):
+  - Create project
+  - Invite external user (not in org)
+  - Login as external user -> verify only project access
+  - Verify org admin still has access
+  - Tests: invite → accept → verify scope → remove access
+
+**Status**: 📋 PLANNED
+
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B26-project-access-control
+
+[feature summary]
+Implement direct project membership and access control, allowing users to be added to specific projects without organization-wide access.
+
+[goals]
+- ProjectMembership model with roles
+- Updated permission classes for project-level access
+- Invite flow for external project members
+- UI for managing project members
+- API endpoints for project membership
+
+[demo requirements]
+Demo page: /demo/project-access
+- Project member management UI
+- Invite flow simulation
+- Access verification tests
+```
+
+---
+
+**Fase 9 Compleet**: 5 modules (B22, B23, B24, B25, B26)
 **Volgende**: Fase 10 - Frontend & Visual Development

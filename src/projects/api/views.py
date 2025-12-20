@@ -36,27 +36,96 @@ class ProjectViewSet(viewsets.ModelViewSet):
     Supports both nested (under organisations) and top-level routes.
 
     Actions:
-    - list: GET /api/organisations/{org_id}/projects/ or /api/projects/
-    - create: POST /api/organisations/{org_id}/projects/
-    - retrieve: GET /api/organisations/{org_id}/projects/{id}/
-      or /api/projects/{id}/
-    - update: PATCH /api/organisations/{org_id}/projects/{id}/
-      or /api/projects/{id}/
-    - archive: POST /api/organisations/{org_id}/projects/{id}/archive/
-      or /api/projects/{id}/archive/
-    - restore: POST /api/organisations/{org_id}/projects/{id}/restore/
-      or /api/projects/{id}/restore/
+    - list: GET /api/organisations/{org_slug}/projects/ or /api/projects/
+    - create: POST /api/organisations/{org_slug}/projects/
+    - retrieve: GET /api/organisations/{org_slug}/projects/{slug}/
+      or /api/projects/{slug}/
+    - update: PATCH /api/organisations/{org_slug}/projects/{slug}/
+      or /api/projects/{slug}/
+    - archive: POST /api/organisations/{org_slug}/projects/{slug}/archive/
+      or /api/projects/{slug}/archive/
+    - restore: POST /api/organisations/{org_slug}/projects/{slug}/restore/
+      or /api/projects/{slug}/restore/
     """
+
+    lookup_field = "slug"
 
     permission_classes = [IsAuthenticated, IsOrganisationMemberOrAdmin]
     pagination_class = ProjectCursorPagination
-    lookup_field = "id"
+
+    @action(detail=True, methods=["get"])
+    def members(self, request, slug=None, organisation_id=None):
+        """
+        List users with access to this project.
+        Includes:
+        1. Users with explicit RoleAssignments on this project.
+        2. Organisation Admins (who implicitly have access).
+        """
+        project = self.get_object()
+
+        # 1. Role Assignments
+        from permissions.models import RoleAssignment, ScopeChoices
+
+        assignments = RoleAssignment.objects.filter(
+            target_project=project, scope=ScopeChoices.PROJECT
+        ).select_related("user", "role")
+
+        # 2. Org Admins
+        from organisations.models import Membership
+
+        org_admins = Membership.objects.filter(
+            organisation=project.organisation, role="admin", is_active=True
+        ).select_related("user")
+
+        # Combine and format
+        members_data = []
+        seen_user_ids = set()
+
+        # Add explicit assignments
+        for ra in assignments:
+            if ra.user.id not in seen_user_ids:
+                members_data.append(
+                    {
+                        "id": str(ra.id),  # Use assignment ID as unique key
+                        "user": {
+                            "id": str(ra.user.id),
+                            "email": ra.user.email,
+                            "first_name": ra.user.first_name,
+                            "last_name": ra.user.last_name,
+                        },
+                        "role": ra.role.name,  # Use the actual role name (e.g. "Coach", "Player")
+                        "joined_at": ra.assigned_at,
+                        "source": "assignment",
+                    }
+                )
+                seen_user_ids.add(ra.user.id)
+
+        # Add org admins
+        for m in org_admins:
+            if m.user.id not in seen_user_ids:
+                members_data.append(
+                    {
+                        "id": str(m.id),
+                        "user": {
+                            "id": str(m.user.id),
+                            "email": m.user.email,
+                            "first_name": m.user.first_name,
+                            "last_name": m.user.last_name,
+                        },
+                        "role": "Org Admin",
+                        "joined_at": m.joined_at,
+                        "source": "membership",
+                    }
+                )
+                seen_user_ids.add(m.user.id)
+
+        return Response({"results": members_data})
 
     def get_queryset(self):
         """
         Return projects queryset with optimizations.
 
-        For nested routes: filter by organisation_id
+        For nested routes: filter by organisation_id (slug)
         For top-level routes: filter by user's organisation memberships
 
         Applies select_related for organisation and creator to minimize queries.
@@ -69,21 +138,44 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         queryset = base_queryset
 
-        # Check if this is a nested route (organisation_id in URL)
-        organisation_id = self.kwargs.get("organisation_id")
+        # Apply visibility filter for all routes
+        user = self.request.user
+        if user.is_authenticated and not user.is_superuser:
+            from django.db.models import Q
+            from permissions.models import RoleAssignment, ScopeChoices
 
-        if organisation_id:
-            # Nested route: filter by organisation
-            queryset = queryset.filter(organisation_id=organisation_id)
-        else:
-            # Top-level route: filter by user's organisations
-            user = self.request.user
-            if user.is_authenticated:
-                # Get all organisations where user is a member
-                user_org_ids = user.organisation_memberships.values_list(
-                    "organisation_id", flat=True
-                )
-                queryset = queryset.filter(organisation_id__in=user_org_ids)
+            # 1. Direct membership
+            user_org_ids = user.organisation_memberships.values_list("organisation_id", flat=True)
+
+            # 2. Role Assignments on Projects
+            assigned_project_ids = RoleAssignment.objects.filter(
+                user=user, scope=ScopeChoices.PROJECT
+            ).values_list("target_project_id", flat=True)
+
+            # 3. Role Assignments on Organisations
+            assigned_org_ids = RoleAssignment.objects.filter(
+                user=user, scope=ScopeChoices.ORGANIZATION
+            ).values_list("target_organization_id", flat=True)
+
+            queryset = queryset.filter(
+                Q(organisation_id__in=user_org_ids)
+                | Q(id__in=assigned_project_ids)
+                | Q(organisation_id__in=assigned_org_ids)
+            ).distinct()
+
+        # Check if this is a nested route (organisation_id slug in URL)
+        organisation_slug = self.kwargs.get("organisation_id")
+
+        if organisation_slug:
+            # Nested route: resolve slug to organisation and filter
+            from organisations.models import Organisation
+
+            try:
+                organisation = Organisation.objects.get(slug=organisation_slug)
+                queryset = queryset.filter(organisation_id=organisation.id)
+            except Organisation.DoesNotExist:
+                # Return empty queryset if organisation not found
+                return queryset.none()
 
         # Handle include_archived query parameter
         include_archived = (
@@ -95,15 +187,40 @@ class ProjectViewSet(viewsets.ModelViewSet):
             queryset = Project.all_objects.select_related("organisation", "creator")
 
             # Reapply organisation filter
-            if organisation_id:
-                queryset = queryset.filter(organisation_id=organisation_id)
+            if organisation_slug:
+                from organisations.models import Organisation
+
+                try:
+                    organisation = Organisation.objects.get(slug=organisation_slug)
+                    queryset = queryset.filter(organisation_id=organisation.id)
+                except Organisation.DoesNotExist:
+                    return queryset.none()
             else:
                 user = self.request.user
-                if user.is_authenticated:
+                if user.is_authenticated and not user.is_superuser:
+                    from django.db.models import Q
+                    from permissions.models import RoleAssignment, ScopeChoices
+
+                    # 1. Direct membership
                     user_org_ids = user.organisation_memberships.values_list(
                         "organisation_id", flat=True
                     )
-                    queryset = queryset.filter(organisation_id__in=user_org_ids)
+
+                    # 2. Role Assignments on Projects
+                    assigned_project_ids = RoleAssignment.objects.filter(
+                        user=user, scope=ScopeChoices.PROJECT
+                    ).values_list("target_project_id", flat=True)
+
+                    # 3. Role Assignments on Organisations
+                    assigned_org_ids = RoleAssignment.objects.filter(
+                        user=user, scope=ScopeChoices.ORGANIZATION
+                    ).values_list("target_organization_id", flat=True)
+
+                    queryset = queryset.filter(
+                        Q(organisation_id__in=user_org_ids)
+                        | Q(id__in=assigned_project_ids)
+                        | Q(organisation_id__in=assigned_org_ids)
+                    ).distinct()
 
         # Handle search query parameter
         search = self.request.query_params.get("search")
@@ -124,13 +241,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
         """Add organisation to serializer context for nested routes."""
         context = super().get_serializer_context()
 
-        organisation_id = self.kwargs.get("organisation_id")
-        if organisation_id:
-            # For nested routes, fetch the organisation and add to context
+        organisation_slug = self.kwargs.get("organisation_id")
+        if organisation_slug:
+            # For nested routes, fetch the organisation by slug and add to context
             from organisations.models import Organisation
 
             try:
-                organisation = Organisation.objects.get(id=organisation_id)
+                organisation = Organisation.objects.get(slug=organisation_slug)
                 context["organisation"] = organisation
             except Organisation.DoesNotExist:
                 pass
@@ -140,10 +257,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Create a new project."""
         # Ensure organisation is in context
-        organisation_id = self.kwargs.get("organisation_id")
-        if not organisation_id:
+        organisation_slug = self.kwargs.get("organisation_id")
+        if not organisation_slug:
             return Response(
-                {"detail": "Organisation ID is required for project creation."},
+                {"detail": "Organisation slug is required for project creation."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

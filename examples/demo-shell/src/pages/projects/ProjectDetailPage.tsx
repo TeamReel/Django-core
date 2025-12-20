@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { usePermissions } from '@django-core/permissions';
 import AppShell from '../../components/AppShell';
+import { canEditProject, canDeleteProject } from '../../utils/permissions';
 
 interface Project {
   id: string;
@@ -18,9 +20,21 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { context, switchProject } = useContextSwitcher();
+  const { context, switchProject, organisations } = useContextSwitcher();
   const { hasPermission } = usePermissions();
+  const { user } = useAuth();
   const [orgName, setOrgName] = useState<string>('');
+
+  // Permission checks using centralized helper
+  const isSuperAdmin = (user as any)?.role === 'superadmin';
+  const currentOrgSlug = (orgId || context.organisation?.slug)?.toLowerCase();
+  const currentOrg = organisations.find(o => o.slug.toLowerCase() === currentOrgSlug);
+  const permissionContext = {
+    currentOrganisation: currentOrg,
+    isSuperAdmin,
+  };
+  const userCanEdit = canEditProject(permissionContext);
+  const userCanDelete = canDeleteProject(permissionContext);
 
   // Fetch organisation name
   useEffect(() => {
@@ -151,7 +165,7 @@ export default function ProjectDetailPage() {
           </Link>
 
           {/* Permission-gated action buttons */}
-          {hasPermission('projects.edit', {
+          {userCanEdit && hasPermission('projects.update', {
             organizationId: context.organisation?.id?.toString(),
             projectId: project.id
           }) && (
@@ -171,7 +185,7 @@ export default function ProjectDetailPage() {
             </button>
           )}
 
-          {hasPermission('projects.delete', {
+          {userCanDelete && hasPermission('projects.delete', {
             organizationId: context.organisation?.id?.toString(),
             projectId: project.id
           }) && (

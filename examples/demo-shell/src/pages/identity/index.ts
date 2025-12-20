@@ -1,6 +1,13 @@
 export { OrganisationsPage } from './OrganisationsPage';
+export { OrganisationCreatePage } from './OrganisationCreatePage';
+export { OrganisationEditPage } from './OrganisationEditPage';
 export { OrganisationDetailPage } from './OrganisationDetailPage';
 export { ProjectsPage } from './ProjectsPage';
+export { ProjectCreatePage } from './ProjectCreatePage';
+export { ProjectEditPage } from './ProjectEditPage';
 export { ProjectDetailPage } from './ProjectDetailPage';
 export { PermissionsPage } from './PermissionsPage';
 export { ProfilePage } from './ProfilePage';
+export { default as UsersPage } from './UsersPage';
+export { default as UserDetailPage } from './UserDetailPage';
+export { MemberDetailPage } from './MemberDetailPage';

@@ -1,4 +1,4 @@
-# Fase 16: Platform Quality Gates (064-068) - Lightweight
+# Fase 16: Platform Quality Gates (065-069) - Lightweight
 
 **Focus**: Constitutional enforcement, security audit, ML governance, integration security, dependency validation
 
@@ -6,7 +6,7 @@
 
 ---
 
-## 64. P01 – Constitutional Enforcement Engine
+## 65. P01 – Constitutional Enforcement Engine
 
 **Feature**: `P01-constitutional-enforcement-engine`
 
@@ -43,7 +43,7 @@
 
 ---
 
-## 65. P02 – Security Audit & ASVS Compliance (Lightweight)
+## 66. P02 – Security Audit & ASVS Compliance (Lightweight)
 
 **Feature**: `P02-security-audit-asvs-compliance`
 
@@ -93,7 +93,7 @@
 
 ---
 
-## 66. P03 – ML & Agent Governance Gate (Lightweight)
+## 67. P03 – ML & Agent Governance Gate (Lightweight)
 
 **Feature**: `P03-ml-agent-governance-gate`
 
@@ -130,7 +130,7 @@
 
 ---
 
-## 67. P04 – Integration Security Audit (Lightweight)
+## 68. P04 – Integration Security Audit (Lightweight)
 
 **Feature**: `P04-integration-security-audit`
 
@@ -167,7 +167,7 @@
 
 ---
 
-## 68. P05 – Stack & Dependency Validation
+## 69. P05 – Stack & Dependency Validation
 
 **Feature**: `P05-stack-dependency-validation`
 

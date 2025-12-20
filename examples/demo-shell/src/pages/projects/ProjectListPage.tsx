@@ -140,7 +140,7 @@ export default function ProjectListPage() {
                 <p style={{ color: '#666', fontSize: '14px' }}>{project.description}</p>
               )}
               <Link
-                to={`/organisations/${orgId}/projects/${project.id}`}
+                to={`/organisations/${orgId}/projects/${project.slug || project.id}`}
                 style={{
                   display: 'inline-block',
                   marginTop: '12px',

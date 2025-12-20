@@ -4,32 +4,26 @@ import { createApiClient } from '@django-core/api-client';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 
-interface Permission {
-  resource: string;
-  action: string;
-  allowed: boolean;
-  scope?: 'global' | 'organisation' | 'project';
-}
-
-interface PermissionsData {
-  user_id: number;
-  global_permissions: Permission[];
-  organisation_permissions?: {
-    org_id: number;
-    org_name: string;
-    permissions: Permission[];
-  };
-  project_permissions?: {
-    project_id: number;
-    project_name: string;
-    permissions: Permission[];
+interface BackendPermissionsData {
+  global: string[];
+  organizations: {
+    [key: string]: {
+      name: string;
+      permissions: string[];
+      projects: {
+        [key: string]: {
+          name: string;
+          permissions: string[];
+        };
+      };
+    };
   };
 }
 
 export default function PermissionsStatusPage() {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
-  const [permissions, setPermissions] = useState<PermissionsData | null>(null);
+  const [permissions, setPermissions] = useState<BackendPermissionsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,8 +33,7 @@ export default function PermissionsStatusPage() {
 
     const fetchPermissions = async () => {
       try {
-        // The client automatically handles auth headers if token is in storage
-        const response = await client.get<PermissionsData>('/api/v1/permissions/current/');
+        const response = await client.get<BackendPermissionsData>('/api/v1/permissions/current/');
 
         if (response.error) {
           throw new Error(response.error.message || 'API request failed');
@@ -90,7 +83,7 @@ export default function PermissionsStatusPage() {
     );
   }
 
-  const renderPermissionTable = (perms: Permission[], title: string) => {
+  const renderPermissionList = (perms: string[], title: string) => {
     if (!perms || perms.length === 0) {
       return (
         <p style={{ fontSize: '14px', color: '#666' }}>
@@ -100,38 +93,47 @@ export default function PermissionsStatusPage() {
     }
 
     return (
-      <table style={{
-        width: '100%',
-        borderCollapse: 'collapse',
-        fontSize: '14px'
-      }}>
-        <thead>
-          <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
-            <th style={{ padding: '12px', textAlign: 'left' }}>Resource</th>
-            <th style={{ padding: '12px', textAlign: 'left' }}>Action</th>
-            <th style={{ padding: '12px', textAlign: 'left' }}>Scope</th>
-            <th style={{ padding: '12px', textAlign: 'center' }}>Allowed</th>
-          </tr>
-        </thead>
-        <tbody>
-          {perms.map((perm, index) => (
-            <tr key={index} style={{ borderBottom: '1px solid #dee2e6' }}>
-              <td style={{ padding: '12px' }}>{perm.resource}</td>
-              <td style={{ padding: '12px' }}>{perm.action}</td>
-              <td style={{ padding: '12px' }}>{perm.scope || 'N/A'}</td>
-              <td style={{ padding: '12px', textAlign: 'center' }}>
-                {perm.allowed ? (
-                  <span style={{ color: '#198754', fontWeight: 'bold' }}>✓ Yes</span>
-                ) : (
-                  <span style={{ color: '#dc3545', fontWeight: 'bold' }}>✗ No</span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
+        {perms.map((perm, index) => (
+          <li key={index} style={{
+            padding: '8px 12px',
+            borderBottom: '1px solid #eee',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <span style={{
+              display: 'inline-block',
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: '#198754',
+              marginRight: '12px'
+            }}></span>
+            <span style={{ fontFamily: 'monospace', fontSize: '14px' }}>{perm}</span>
+          </li>
+        ))}
+      </ul>
     );
   };
+
+  // Helper to get current context permissions
+  const getCurrentOrgPermissions = () => {
+    if (!permissions || !context.organisation) return null;
+    // Find org by ID (backend uses UUID as key)
+    const orgData = permissions.organizations[context.organisation.id];
+    return orgData;
+  };
+
+  const getCurrentProjectPermissions = () => {
+    const orgData = getCurrentOrgPermissions();
+    if (!orgData || !context.project) return null;
+
+    const projectData = orgData.projects[context.project.id];
+    return projectData;
+  };
+
+  const currentOrgData = getCurrentOrgPermissions();
+  const currentProjectData = getCurrentProjectPermissions();
 
   return (
     <AppShell>
@@ -151,7 +153,7 @@ export default function PermissionsStatusPage() {
             <strong>Email:</strong> {user?.email}
           </p>
           <p style={{ margin: '4px 0', fontSize: '14px' }}>
-            <strong>User ID:</strong> {user?.id || permissions?.user_id}
+            <strong>User ID:</strong> {user?.id}
           </p>
           {context.organisation && (
             <p style={{ margin: '4px 0', fontSize: '14px' }}>
@@ -174,15 +176,15 @@ export default function PermissionsStatusPage() {
             border: '1px solid #dee2e6',
             borderRadius: '4px'
           }}>
-            {renderPermissionTable(permissions?.global_permissions || [], 'Global')}
+            {renderPermissionList(permissions?.global || [], 'Global')}
           </div>
         </div>
 
         {/* Organisation Permissions */}
-        {permissions?.organisation_permissions && (
+        {context.organisation && (
           <div style={{ marginBottom: '32px' }}>
             <h2>
-              Organisation Permissions: {permissions.organisation_permissions.org_name}
+              Organisation Permissions: {context.organisation.name}
             </h2>
             <div style={{
               padding: '16px',
@@ -190,19 +192,22 @@ export default function PermissionsStatusPage() {
               border: '1px solid #dee2e6',
               borderRadius: '4px'
             }}>
-              {renderPermissionTable(
-                permissions.organisation_permissions.permissions || [],
-                'Organisation'
+              {currentOrgData ? (
+                renderPermissionList(currentOrgData.permissions, 'Organisation')
+              ) : (
+                 <p style={{ fontSize: '14px', color: '#666' }}>
+                  No permissions found for this organisation (ID: {context.organisation.id})
+                </p>
               )}
             </div>
           </div>
         )}
 
         {/* Project Permissions */}
-        {permissions?.project_permissions && (
+        {context.project && (
           <div style={{ marginBottom: '32px' }}>
             <h2>
-              Project Permissions: {permissions.project_permissions.project_name}
+              Project Permissions: {context.project.name}
             </h2>
             <div style={{
               padding: '16px',
@@ -210,9 +215,12 @@ export default function PermissionsStatusPage() {
               border: '1px solid #dee2e6',
               borderRadius: '4px'
             }}>
-              {renderPermissionTable(
-                permissions.project_permissions.permissions || [],
-                'Project'
+              {currentProjectData ? (
+                renderPermissionList(currentProjectData.permissions, 'Project')
+              ) : (
+                <p style={{ fontSize: '14px', color: '#666' }}>
+                  No permissions found for this project (ID: {context.project.id})
+                </p>
               )}
             </div>
           </div>
@@ -232,6 +240,22 @@ export default function PermissionsStatusPage() {
             </p>
           </div>
         )}
+
+        {/* Debug Info */}
+        <div style={{ marginTop: '48px', borderTop: '1px solid #eee', paddingTop: '24px' }}>
+            <details>
+                <summary style={{ cursor: 'pointer', color: '#666' }}>Raw Permissions Data</summary>
+                <pre style={{
+                    backgroundColor: '#f8f9fa',
+                    padding: '16px',
+                    borderRadius: '4px',
+                    overflow: 'auto',
+                    fontSize: '12px'
+                }}>
+                    {JSON.stringify(permissions, null, 2)}
+                </pre>
+            </details>
+        </div>
       </div>
     </AppShell>
   );

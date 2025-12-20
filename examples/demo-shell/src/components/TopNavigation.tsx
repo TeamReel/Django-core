@@ -11,21 +11,6 @@ export default function TopNavigation() {
   const { context, organisations, switchContext } = useContextSwitcher();
   const [hasSelectedOrg, setHasSelectedOrg] = useState(false);
 
-  // Auto-select first org if none selected and orgs are available
-  useEffect(() => {
-    if (!hasSelectedOrg && !context.organisation && organisations.length > 0) {
-      // Try to restore from localStorage first
-      const savedOrgId = localStorage.getItem('demo_selected_org_id');
-      if (savedOrgId) {
-        const org = organisations.find((o: Organisation) => o.id.toString() === savedOrgId);
-        if (org) {
-          switchContext(org);
-          setHasSelectedOrg(true);
-        }
-      }
-    }
-  }, [organisations, context.organisation, hasSelectedOrg, switchContext]);
-
   // Save selected org to localStorage
   useEffect(() => {
     if (context.organisation) {

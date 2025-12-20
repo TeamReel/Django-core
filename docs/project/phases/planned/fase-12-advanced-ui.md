@@ -1,10 +1,10 @@
-# Fase 12: Advanced UI (044-047)
+# Fase 12: Advanced UI (045-048)
 
 **Focus**: Admin panel, operations console, billing UI, frontend form components
 
 ---
 
-## 44. F14 – Admin Panel Components
+## 45. F14 – Admin Panel Components
 
 **Feature**: `F14-admin-panel-components`
 
@@ -35,7 +35,7 @@
 
 ---
 
-## 45. F11 – Operations Console UI
+## 46. F11 – Operations Console UI
 
 **Feature**: `F11-operations-console`
 
@@ -46,7 +46,7 @@
 **Dependencies**:
 - `@django-core/design-system` (F01)
 - `@django-core/data-viz` (F08) - charts voor metrics
-- Backend: B09 (audit), B15 (background tasks), B27 (workflows)
+- Backend: B09 (audit), B15 (background tasks), B28 (workflows)
 
 **Core Features**:
 - **Job Monitoring**: Real-time status, logs, retry/cancel actions
@@ -66,7 +66,7 @@
 
 ---
 
-## 46. F12 – Billing & Usage UI
+## 47. F12 – Billing & Usage UI
 
 **Feature**: `F12-billing-usage-ui`
 
@@ -77,27 +77,27 @@
 **Dependencies**:
 - `@django-core/design-system` (F01)
 - `@django-core/data-viz` (F08) - usage charts
-- Backend: B11 (billing), B26 (payments)
+- Backend: B11 (billing), B27 (payments)
 
 **Core Features**:
 - **Usage Dashboard**: Charts voor API calls, storage, compute credits
-- **Credit Purchase Flow**: Integration met B26 payment gateways
+- **Credit Purchase Flow**: Integration met B27 payment gateways
 - **Billing History**: Transaction list, invoices, payment methods
 - **Usage Alerts**: Threshold warnings, auto-top-up configuration
-- **Invoice Downloads**: PDF generation via B28
+- **Invoice Downloads**: PDF generation via B29
 
 **Demo Page**: 💰 `/billing` - Usage charts, buy credits flow, transaction history
 
 **Acceptance Criteria**:
 - [ ] Usage charts tonen real-time data (max 5s delay)
-- [ ] Credit purchase flow integreert met Stripe (B26)
-- [ ] Invoice PDFs genereren <2s (B28)
+- [ ] Credit purchase flow integreert met Stripe (B27)
+- [ ] Invoice PDFs genereren <2s (B29)
 - [ ] Multi-currency support
 - [ ] Usage export naar CSV/Excel
 
 ---
 
-## 47. F15 – Frontend Form Components
+## 48. F15 – Frontend Form Components
 
 **Feature**: `F15-frontend-form-components`
 

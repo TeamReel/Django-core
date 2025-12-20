@@ -3,6 +3,8 @@ import { ReactNode, HTMLAttributes } from 'react';
 export interface BreadcrumbItem {
   label: string;
   path?: string;
+  href?: string;
+  onClick?: () => void;
   current?: boolean;
 }
 
@@ -40,14 +42,35 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
           {breadcrumbs.map((crumb, index) => (
             <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {index > 0 && <span>/</span>}
-              <span
-                style={{
-                  color: crumb.current ? '#1f2937' : '#6b7280',
-                  fontWeight: crumb.current ? 600 : 400,
-                }}
-              >
-                {crumb.label}
-              </span>
+              {(crumb.path || crumb.href || crumb.onClick) && !crumb.current ? (
+                <a
+                  href={crumb.path || crumb.href || '#'}
+                  onClick={(e) => {
+                    if (crumb.onClick) {
+                      e.preventDefault();
+                      crumb.onClick();
+                    }
+                  }}
+                  style={{
+                    color: '#6b7280',
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                  onMouseOut={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                >
+                  {crumb.label}
+                </a>
+              ) : (
+                <span
+                  style={{
+                    color: crumb.current ? '#1f2937' : '#6b7280',
+                    fontWeight: crumb.current ? 600 : 400,
+                  }}
+                >
+                  {crumb.label}
+                </span>
+              )}
             </div>
           ))}
         </div>

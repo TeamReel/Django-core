@@ -34,16 +34,21 @@ class OrganisationListSerializer(serializers.ModelSerializer):
     """
 
     member_count = serializers.SerializerMethodField()
+    project_count = serializers.SerializerMethodField()
     user_role = serializers.SerializerMethodField()
 
     class Meta:
         model = Organisation
-        fields = ["id", "name", "slug", "member_count", "user_role"]
+        fields = ["id", "name", "slug", "is_active", "member_count", "project_count", "user_role"]
         read_only_fields = fields
 
     def get_member_count(self, obj):
         """Return count of active members."""
-        return obj.memberships.filter(is_active=True).count()
+        return len([m for m in obj.memberships.all() if m.is_active])
+
+    def get_project_count(self, obj):
+        """Return count of projects."""
+        return len(obj.projects.all())
 
     def get_user_role(self, obj):
         """Return current user's role in this organisation, or None."""
@@ -51,7 +56,10 @@ class OrganisationListSerializer(serializers.ModelSerializer):
         if not user or not user.is_authenticated:
             return None
 
-        membership = obj.memberships.filter(user=user, is_active=True).first()
+        # Use list comprehension to avoid DB hit if prefetched
+        membership = next(
+            (m for m in obj.memberships.all() if m.user_id == user.id and m.is_active), None
+        )
         return membership.role if membership else None
 
 
@@ -68,6 +76,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
     creator = UserSerializer(read_only=True)
     member_count = serializers.SerializerMethodField()
     admin_count = serializers.SerializerMethodField()
+    project_count = serializers.SerializerMethodField()
     user_role = serializers.SerializerMethodField()
 
     class Meta:
@@ -77,22 +86,28 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "name",
             "slug",
             "description",
+            "is_active",
             "created_at",
             "updated_at",
             "creator",
             "member_count",
             "admin_count",
+            "project_count",
             "user_role",
         ]
         read_only_fields = fields
 
     def get_member_count(self, obj):
         """Return count of active members."""
-        return obj.memberships.filter(is_active=True).count()
+        return len([m for m in obj.memberships.all() if m.is_active])
 
     def get_admin_count(self, obj):
         """Return count of active admin members."""
-        return obj.memberships.filter(role="admin", is_active=True).count()
+        return len([m for m in obj.memberships.all() if m.role == "admin" and m.is_active])
+
+    def get_project_count(self, obj):
+        """Return count of active projects."""
+        return len([p for p in obj.projects.all() if p.is_active])
 
     def get_user_role(self, obj):
         """Return current user's role in this organisation, or None."""
@@ -100,7 +115,10 @@ class OrganisationSerializer(serializers.ModelSerializer):
         if not user or not user.is_authenticated:
             return None
 
-        membership = obj.memberships.filter(user=user, is_active=True).first()
+        # Use list comprehension to avoid DB hit if prefetched
+        membership = next(
+            (m for m in obj.memberships.all() if m.user_id == user.id and m.is_active), None
+        )
         return membership.role if membership else None
 
 
@@ -115,7 +133,8 @@ class OrganisationCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organisation
-        fields = ["name", "description"]
+        fields = ["id", "name", "slug", "description", "is_active"]
+        read_only_fields = ["id", "slug"]
 
     def validate_name(self, value):
         """Validate name meets requirements."""
@@ -162,40 +181,70 @@ class MembershipCreateSerializer(serializers.ModelSerializer):
     Write serializer for creating memberships (inviting members).
 
     Validates:
-    - user_id: Must be a valid user
+    - email: Must be a valid user email
     - role: Must be 'admin' or 'member'
     - No duplicate memberships (validated in validate())
     """
 
-    user_id = serializers.UUIDField(write_only=True)
+    email = serializers.EmailField(write_only=True)
 
     class Meta:
         model = Membership
-        fields = ["user_id", "role"]
+        fields = ["email", "role"]
 
-    def validate_user_id(self, value):
+    def validate_email(self, value):
         """Validate that user exists."""
-        if not User.objects.filter(id=value).exists():
-            raise serializers.ValidationError("User does not exist.")
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("User with this email does not exist.")
         return value
 
     def validate(self, attrs):
-        """Validate no duplicate membership exists."""
-        org_id = self.context["view"].kwargs.get("organisation_pk")
-        user_id = attrs["user_id"]
+        """Validate user and organisation."""
+        org_pk = self.context["view"].kwargs.get("organisation_pk")
+        email = attrs["email"]
 
-        if Membership.objects.filter(user_id=user_id, organisation_id=org_id).exists():
-            raise serializers.ValidationError(
-                {"user_id": "User is already a member of this organisation."}
-            )
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"email": "User does not exist."})
+
+        attrs["user"] = user
+
+        # Resolve organisation
+        import uuid
+
+        from organisations.models import Organisation
+
+        try:
+            # Check if it's a UUID
+            uuid.UUID(str(org_pk))
+            org = Organisation.objects.get(id=org_pk)
+        except (ValueError, Organisation.DoesNotExist):
+            # Try as slug
+            try:
+                org = Organisation.objects.get(slug=org_pk)
+            except Organisation.DoesNotExist:
+                raise serializers.ValidationError("Organisation not found.")
+
+        # Store org for create method
+        attrs["organisation"] = org
 
         return attrs
 
     def create(self, validated_data):
-        """Create membership with resolved user and organisation."""
-        org_id = self.context["view"].kwargs["organisation_pk"]
-        user_id = validated_data.pop("user_id")
+        """Create or update membership with resolved user and organisation."""
+        user = validated_data.pop("user")
+        org = validated_data.pop("organisation")
+        validated_data.pop("email", None)
 
-        return Membership.objects.create(
-            user_id=user_id, organisation_id=org_id, role=validated_data["role"]
+        # Update existing membership or create new one
+        membership, created = Membership.objects.update_or_create(
+            user=user, organisation=org, defaults=validated_data
         )
+
+        # If it was inactive (soft deleted), reactivate it
+        if not created and not membership.is_active:
+            membership.is_active = True
+            membership.save()
+
+        return membership

@@ -15,11 +15,12 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@django-core/design-system": ["./src/shims/design-system"],
-      "@django-core/context-switcher": ["./src/shims/context-switcher"],
-      "@django-core/page-templates": ["./src/shims/page-templates"]
+      "@django-core/design-system": ["./src/shims/design-system.tsx"],
+      "@django-core/context-switcher": ["./src/shims/context-switcher.ts"],
+      "@django-core/page-templates": ["../../packages/page-templates/src/index.ts"]
     }
   },
   "include": ["src"],

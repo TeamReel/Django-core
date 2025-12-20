@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 
+from corsheaders.defaults import default_headers
+
 from .base import *  # noqa: F401, F403
 
 DEBUG = True
@@ -17,6 +19,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-organisation-id",
+    "x-project-id",
+]
 
 # CSRF Trusted Origins (required for POST requests from frontend)
 CSRF_TRUSTED_ORIGINS = [

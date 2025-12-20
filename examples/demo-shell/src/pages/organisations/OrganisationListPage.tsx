@@ -104,7 +104,7 @@ export default function OrganisationListPage() {
               )}
               <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                 <Link
-                  to={`/organisations/${org.id}`}
+                  to={`/organisations/${org.slug}`}
                   style={{
                     padding: '8px 16px',
                     backgroundColor: '#007bff',
@@ -117,7 +117,7 @@ export default function OrganisationListPage() {
                   View Details
                 </Link>
                 <Link
-                  to={`/organisations/${org.id}/projects`}
+                  to={`/organisations/${org.slug}/projects`}
                   style={{
                     padding: '8px 16px',
                     backgroundColor: '#6c757d',
