@@ -16,6 +16,10 @@ export * from './components/states';
 export * from './components/PageHeader';
 export * from './components/PageContent';
 
+// Export BreadcrumbContextSwitcher
+export * from './components/BreadcrumbContextSwitcher';
+export * from './hooks/useBreadcrumbContextSwitcher';
+
 // Export Dashboard template
 export * from './components/Dashboard';
 
