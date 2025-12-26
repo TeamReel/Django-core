@@ -361,6 +361,8 @@ def evaluate_permission(
     # Fallback to user.id if uuid not present
     user_uuid: Any = getattr(user, "uuid", None) or user.id
     resource_uuid: Optional[Any] = getattr(resource, "uuid", None) if resource else None
+    if resource and resource_uuid is None:
+        resource_uuid = getattr(resource, "id", None)
 
     # Call existing check_permission function
     # This performs the actual permission resolution via role assignments

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text } from '@django-core/design-system';
+import { Text, themeVars } from '@django-core/design-system';
 import { ContextIndicator } from './ContextIndicator';
 import { OrganisationPicker } from './OrganisationPicker';
 import { ProjectPicker } from './ProjectPicker';
@@ -71,8 +71,9 @@ export function ContextSwitcher({
   };
 
   const buttonBaseStyle: React.CSSProperties = {
-    border: '1px solid #ddd',
-    background: '#f8f9fa',
+    border: `1px solid ${themeVars.color.border.secondary}`,
+    background: themeVars.color.background.secondary,
+    color: themeVars.color.text.primary,
     padding: '6px 12px',
     cursor: 'pointer',
     font: 'inherit',

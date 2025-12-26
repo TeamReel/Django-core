@@ -15,24 +15,24 @@ export const alert = recipe({
   variants: {
     variant: {
       info: {
-        backgroundColor: '#eff6ff',
-        borderColor: '#3b82f6',
-        color: '#1e40af',
+        backgroundColor: themeVars.color.background.info,
+        borderColor: themeVars.color.interactive.primary,
+        color: themeVars.color.text.link,
       },
       success: {
-        backgroundColor: '#f0fdf4',
-        borderColor: '#22c55e',
-        color: '#15803d',
+        backgroundColor: themeVars.color.background.success,
+        borderColor: themeVars.color.text.success,
+        color: themeVars.color.text.success,
       },
       warning: {
-        backgroundColor: '#fefce8',
-        borderColor: '#eab308',
-        color: '#854d0e',
+        backgroundColor: themeVars.color.background.warning,
+        borderColor: themeVars.color.text.warning,
+        color: themeVars.color.text.warning,
       },
       error: {
-        backgroundColor: '#fef2f2',
-        borderColor: '#ef4444',
-        color: '#991b1b',
+        backgroundColor: themeVars.color.background.error,
+        borderColor: themeVars.color.text.error,
+        color: themeVars.color.text.error,
       },
     },
   },
@@ -55,16 +55,16 @@ export const alertIcon = recipe({
   variants: {
     variant: {
       info: {
-        color: '#3b82f6',
+        color: themeVars.color.interactive.primary,
       },
       success: {
-        color: '#22c55e',
+        color: themeVars.color.text.success,
       },
       warning: {
-        color: '#eab308',
+        color: themeVars.color.text.warning,
       },
       error: {
-        color: '#ef4444',
+        color: themeVars.color.text.error,
       },
     },
   },

@@ -33,9 +33,18 @@ class JWTAuthMiddleware:
         if scope["type"] != "websocket":
             return await self.app(scope, receive, send)
 
+        # Debug logging for connection issues
+        headers = dict(scope.get("headers", []))
+        cookie_header = headers.get(b"cookie", b"").decode()
+        logger.debug(f"WebSocket connection attempt. Headers: {headers.keys()}")
+        logger.debug(f"Cookie header present: {bool(cookie_header)}")
+
         # Check if user is already authenticated (e.g. by session)
         if scope.get("user") and scope["user"].is_authenticated:
+            logger.debug(f"User authenticated via session: {scope['user']}")
             return await self.app(scope, receive, send)
+        else:
+            logger.debug(f"User NOT authenticated via session. User: {scope.get('user')}")
 
         try:
             query_string = parse_qs(scope["query_string"].decode())

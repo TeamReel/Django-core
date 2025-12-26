@@ -45,6 +45,7 @@ urlpatterns = [
     path("health/tasks/", include("tasks.urls")),  # B15: Task health check
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
+    path("api/ws/", include("rtc_websockets.urls")),
     # B13 WP06: OpenAPI Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
@@ -73,6 +74,8 @@ urlpatterns = [
     path("api/security/", include("security_baseline.urls")),
     # Audit Log API
     path("api/audit/", include("audit.urls")),
+    # B18: Observability API
+    path("api/observability/", include("observability.urls")),
     path("", include("django_prometheus.urls")),  # Exposes /metrics endpoint
     # B14: Web UI Baseline - User-facing HTML pages
     path("ui/", include("web_ui.urls")),  # Web UI URLs under /ui/

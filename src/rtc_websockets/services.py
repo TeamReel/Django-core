@@ -61,6 +61,18 @@ class NotificationService:
         envelope = self._create_envelope(message_type, payload, "project", project_id)
         self._send_to_group(group_name, envelope)
 
+    def send_system_notification(self, message_type, payload):
+        """
+        Send a notification to all system admins.
+
+        Args:
+            message_type: Type of notification
+            payload: Data content
+        """
+        group_name = "system_admins"
+        envelope = self._create_envelope(message_type, payload, "system", "all")
+        self._send_to_group(group_name, envelope)
+
     def _create_envelope(self, message_type, payload, scope, target_id):
         """
         Wrap message in standard envelope format.

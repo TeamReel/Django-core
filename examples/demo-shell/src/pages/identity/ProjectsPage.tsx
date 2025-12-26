@@ -437,7 +437,7 @@ export const ProjectsPage: React.FC = () => {
         title={displayOrgName ? `${displayOrgName} - Projects` : 'All Projects'}
         breadcrumbs={breadcrumbItems}
         actions={
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
             {currentOrgSlug && (
               <Button
                 variant="secondary"
@@ -550,7 +550,9 @@ export const ProjectsPage: React.FC = () => {
           }
 
           return (
+          <div style={{ overflowX: 'auto' }}>
           <Table
+            style={{ minWidth: '1000px' }}
             columns={columns}
             rows={filteredProjects.map((project) => {
               const projectOrgSlug = (project as any).organisation?.slug || resolvedOrg?.slug || currentOrgId;
@@ -674,6 +676,7 @@ export const ProjectsPage: React.FC = () => {
             loading={loading}
             data-testid="project-table"
           />
+          </div>
           );
         })()}
 

@@ -24,3 +24,19 @@ class SettingsConfig(AppConfig):
         from settings.signals import register_audit_events
 
         register_audit_events()
+
+        # Register permissions
+        from permissions.registry import permission_registry
+
+        permission_registry.register(
+            "settings.view",
+            "organisation",
+            is_sensitive=False,
+            description="View settings and feature flags",
+        )
+        permission_registry.register(
+            "settings.edit",
+            "organisation",
+            is_sensitive=True,
+            description="Modify settings and feature flags",
+        )

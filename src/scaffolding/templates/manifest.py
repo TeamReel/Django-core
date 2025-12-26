@@ -26,7 +26,7 @@ class TemplateManifest:
     name: str
     description: str
     variables: dict[str, dict[str, Any]]
-    files: list[str]
+    files: list[Any]
     template_dir: Path
     extends: Optional[str] = None
     _source: str = field(default="unknown", repr=False)
@@ -50,9 +50,7 @@ class TemplateManifest:
             data = yaml.safe_load(f)
 
         if not isinstance(data, dict):
-            raise ValueError(
-                f"Manifest must be YAML dict, got {type(data).__name__}"
-            )
+            raise ValueError(f"Manifest must be YAML dict, got {type(data).__name__}")
 
         # Validate required fields
         required = ["name", "description", "variables", "files"]
@@ -62,9 +60,7 @@ class TemplateManifest:
 
         # Validate field types
         if not isinstance(data["name"], str):
-            raise ValueError(
-                f"Field 'name' must be string, got {type(data['name']).__name__}"
-            )
+            raise ValueError(f"Field 'name' must be string, got {type(data['name']).__name__}")
         if not isinstance(data["description"], str):
             raise ValueError(
                 f"Field 'description' must be string, got {type(data['description']).__name__}"
@@ -74,16 +70,12 @@ class TemplateManifest:
                 f"Field 'variables' must be dict, got {type(data['variables']).__name__}"
             )
         if not isinstance(data["files"], list):
-            raise ValueError(
-                f"Field 'files' must be list, got {type(data['files']).__name__}"
-            )
+            raise ValueError(f"Field 'files' must be list, got {type(data['files']).__name__}")
 
         # Validate extends if present
         extends = data.get("extends")
         if extends is not None and not isinstance(extends, str):
-            raise ValueError(
-                f"Field 'extends' must be string, got {type(extends).__name__}"
-            )
+            raise ValueError(f"Field 'extends' must be string, got {type(extends).__name__}")
 
         return cls(
             name=data["name"],
@@ -109,12 +101,21 @@ class TemplateManifest:
         errors = []
 
         # Check files exist in template directory
-        for file_path in self.files:
-            full_path = self.template_dir / file_path
-            if not full_path.exists():
-                errors.append(
-                    f"File not found: {file_path} (expected at {full_path})"
-                )
+        for file_entry in self.files:
+            if isinstance(file_entry, dict):
+                # Handle mapping: path -> template
+                template_file = file_entry.get("template")
+                if not template_file:
+                    continue  # Skip empty/generated files
+
+                full_path = self.template_dir / template_file
+                if not full_path.exists():
+                    errors.append(f"File not found: {template_file} (expected at {full_path})")
+            else:
+                # Handle simple string path
+                full_path = self.template_dir / file_entry
+                if not full_path.exists():
+                    errors.append(f"File not found: {file_entry} (expected at {full_path})")
 
         # Check variable definitions have required fields
         for var_name, var_def in self.variables.items():
@@ -133,8 +134,6 @@ class TemplateManifest:
 
         # Check no circular inheritance
         if self.extends == self.name:
-            errors.append(
-                f"Template '{self.name}' extends itself (circular inheritance)"
-            )
+            errors.append(f"Template '{self.name}' extends itself (circular inheritance)")
 
         return errors

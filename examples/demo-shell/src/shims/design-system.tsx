@@ -47,10 +47,13 @@ export type TableProps = TableHTMLAttributes<HTMLTableElement> & {
   loading?: boolean;
 };
 
-export const Table = ({ children, columns, rows, loading, ...rest }: TableProps) => {
+export const Table = ({ children, columns, rows, loading, style, ...rest }: TableProps) => {
+  const baseStyle: CSSProperties = { width: '100%', borderCollapse: 'collapse', textAlign: 'left' };
+  const mergedStyle = { ...baseStyle, ...style };
+
   if (columns && rows) {
     return (
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }} {...rest}>
+      <table style={mergedStyle} {...rest}>
         <thead>
           <tr style={{ borderBottom: '1px solid #eee' }}>
             {columns.map((col) => (
@@ -82,7 +85,7 @@ export const Table = ({ children, columns, rows, loading, ...rest }: TableProps)
   }
 
   return (
-    <table style={{ width: '100%', borderCollapse: 'collapse' }} {...rest}>
+    <table style={{ width: '100%', borderCollapse: 'collapse', ...style }} {...rest}>
       {children}
     </table>
   );

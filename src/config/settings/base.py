@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     "contextual_notifications.apps.ContextualNotificationsConfig",
     # B22: File & Media Management
     "files.apps.FilesConfig",
+    # B20: CLI & Scaffolding
+    "scaffolding",
 ]
 
 MIDDLEWARE = [

@@ -17,6 +17,12 @@
   --app-input-text: #1a1a1a;
   --app-input-border: #d1d5db;
   --app-focus-ring: #3b82f6;
+  --app-success: #16a34a;
+  --app-warning: #ca8a04;
+  --app-error: #dc2626;
+  --app-info: #2563eb;
+  --app-text-muted: #6b7280;
+  --app-surface-active: #eff6ff;
 }
 
 [data-theme="dark"] {
@@ -35,6 +41,19 @@
   --app-input-text: #e5e5e5;
   --app-input-border: #404040;
   --app-focus-ring: #60a5fa;
+  --app-success: #4ade80;
+  --app-warning: #facc15;
+  --app-error: #f87171;
+  --app-info: #60a5fa;
+  --app-text-muted: #9ca3af;
+  --app-surface-active: #1e3a8a;
+}
+
+/* Global Accessibility: Ensure visible focus indicator for all interactive elements */
+:focus-visible {
+  outline: 2px solid var(--app-focus-ring) !important;
+  outline-offset: 2px !important;
+  z-index: 10; /* Ensure focus ring is visible above other elements */
 }
 
 * {

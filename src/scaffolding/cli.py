@@ -118,6 +118,7 @@ def init(
     ctx: click.Context,
     name: str,
     project_name: Optional[str],
+    validate: bool,
 ) -> None:
     """
     Bootstrap new downstream project.
@@ -197,9 +198,7 @@ def list_templates(ctx: click.Context) -> None:
 
             if ctx.obj.get("verbose"):
                 # Show source and file count in verbose mode
-                click.echo(
-                    f"    Source: {template._source}, Files: {len(template.files)}"
-                )
+                click.echo(f"    Source: {template._source}, Files: {len(template.files)}")
                 if template.extends:
                     click.echo(f"    Extends: {template.extends}")
 

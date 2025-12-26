@@ -7,6 +7,12 @@ import ForbiddenPage from './pages/errors/ForbiddenPage';
 import NotFoundPage from './pages/errors/NotFoundPage';
 import LoadingState from './components/LoadingState';
 import FilesPage from './pages/files';
+import {
+  ProtectedRoute,
+  AdminOnlyRoute,
+  OrgAdminRoute,
+  SecurityRoute,
+} from './components/PermissionGuards';
 
 // Identity pages
 import {
@@ -32,6 +38,8 @@ import {
   CreditsPage,
   PreferencesPage,
 } from './pages/config';
+import NotificationPreferencesPage from './pages/config/NotificationPreferencesPage';
+import UsageEventsPage from './pages/config/UsageEventsPage';
 
 // Platform pages
 import {
@@ -41,6 +49,8 @@ import {
   ObservabilityPage,
   ApiDocsPage,
 } from './pages/platform';
+
+import WebSocketTestPage from './pages/platform/WebSocketTestPage';
 
 // Integration Status
 import IntegrationStatusPage from './pages/IntegrationStatusPage';
@@ -63,47 +73,7 @@ import {
   NotificationsPage,
   DeploymentPage,
 } from './pages/docs';
-
-// Protected Route wrapper
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <LoadingState message="Checking authentication..." />;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-}
-
-// Security Route wrapper
-function SecurityRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <LoadingState message="Checking permissions..." />;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Fix: Check 'role' property from API instead of is_staff
-  const isSystemAdmin = (user as any)?.role === 'superadmin' || (user as any)?.role === 'admin';
-  const isOrgAdmin = (user as any)?.organisations?.some((org: any) =>
-    org.role?.toLowerCase().includes('admin') ||
-    org.role?.toLowerCase().includes('coach')
-  );
-
-  if (!isSystemAdmin && !isOrgAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  return <>{children}</>;
-}
+import NotificationRoutingLogsPage from './pages/docs/NotificationRoutingLogsPage';
 
 export default function App() {
   const { user } = useAuth();
@@ -270,27 +240,27 @@ export default function App() {
       <Route
         path="/audit"
         element={
-          <ProtectedRoute>
+          <OrgAdminRoute>
             <AuditLogPage />
-          </ProtectedRoute>
+          </OrgAdminRoute>
         }
       />
 
       <Route
         path="/flags"
         element={
-          <ProtectedRoute>
+          <OrgAdminRoute>
             <FeatureFlagsPage />
-          </ProtectedRoute>
+          </OrgAdminRoute>
         }
       />
 
       <Route
         path="/credits"
         element={
-          <ProtectedRoute>
+          <OrgAdminRoute>
             <CreditsPage />
-          </ProtectedRoute>
+          </OrgAdminRoute>
         }
       />
 
@@ -303,22 +273,49 @@ export default function App() {
         }
       />
 
+      <Route
+        path="/notification-preferences"
+        element={
+          <ProtectedRoute>
+            <NotificationPreferencesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/usage-events"
+        element={
+          <OrgAdminRoute>
+            <UsageEventsPage />
+          </OrgAdminRoute>
+        }
+      />
+
+      <Route
+        path="/routing-logs"
+        element={
+          <AdminOnlyRoute>
+            <NotificationRoutingLogsPage />
+          </AdminOnlyRoute>
+        }
+      />
+
       {/* Platform routes */}
       <Route
         path="/health"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <HealthCheckPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/constitution"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <ConstitutionPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
@@ -334,27 +331,36 @@ export default function App() {
       <Route
         path="/observability"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <ObservabilityPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/api-docs"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <ApiDocsPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
+        }
+      />
+
+      <Route
+        path="/demo/websockets"
+        element={
+          <AdminOnlyRoute>
+            <WebSocketTestPage />
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/integration-status"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <IntegrationStatusPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
@@ -362,63 +368,63 @@ export default function App() {
       <Route
         path="/design-system"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <DesignSystemPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/auth-flows"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <AuthFlowsPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/context"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <ContextSwitcherPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/resources"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <ResourceDisplayPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/templates"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <TemplatesPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/theme"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <ThemePage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/integration"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <IntegrationPatternsPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
@@ -426,18 +432,18 @@ export default function App() {
       <Route
         path="/docs"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <DocsPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/tasks"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <TasksPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
@@ -453,9 +459,9 @@ export default function App() {
       <Route
         path="/deployment"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <DeploymentPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 
@@ -463,9 +469,9 @@ export default function App() {
       <Route
         path="/demo/files"
         element={
-          <ProtectedRoute>
+          <AdminOnlyRoute>
             <FilesPage />
-          </ProtectedRoute>
+          </AdminOnlyRoute>
         }
       />
 

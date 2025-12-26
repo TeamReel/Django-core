@@ -172,7 +172,34 @@ export function ContextSwitcherProvider({
           }
         }
 
-        // No stored context either
+        // No stored context either - Auto-select first available organisation
+        if (allOrgs.length > 0) {
+          const firstOrg = allOrgs[0];
+          console.log('[ContextSwitcher] Auto-selecting first organisation:', firstOrg.name);
+
+          // Fetch projects for the auto-selected org
+          const orgProjects = await fetchProjects(firstOrg.slug);
+          setProjects(orgProjects);
+
+          const autoContext: UserContext = {
+            organisation: firstOrg,
+            project: null,
+            isLoading: false,
+            error: null,
+          };
+
+          setContext(autoContext);
+
+          // Persist for next time
+          localStorage.setItem('django-core:currentOrgId', firstOrg.id);
+
+          if (onContextChanged) {
+            onContextChanged(autoContext);
+          }
+          return;
+        }
+
+        // No organisations available at all
         setContext({
           organisation: null,
           project: null,

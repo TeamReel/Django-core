@@ -14,24 +14,28 @@ export const badge = recipe({
   variants: {
     variant: {
       default: {
-        backgroundColor: '#e5e7eb',
-        color: '#374151',
+        backgroundColor: themeVars.color.background.secondary,
+        color: themeVars.color.text.primary,
       },
       primary: {
-        backgroundColor: '#3b82f6',
-        color: '#ffffff',
+        backgroundColor: themeVars.color.interactive.primary,
+        color: themeVars.color.text.inverse,
       },
       success: {
-        backgroundColor: '#22c55e',
-        color: '#ffffff',
+        backgroundColor: themeVars.color.background.success,
+        color: themeVars.color.text.success,
       },
       warning: {
-        backgroundColor: '#eab308',
-        color: '#ffffff',
+        backgroundColor: themeVars.color.background.warning,
+        color: themeVars.color.text.warning,
       },
       error: {
-        backgroundColor: '#ef4444',
-        color: '#ffffff',
+        backgroundColor: themeVars.color.background.error,
+        color: themeVars.color.text.error,
+      },
+      info: {
+        backgroundColor: themeVars.color.background.info,
+        color: themeVars.color.interactive.primary,
       },
     },
     size: {

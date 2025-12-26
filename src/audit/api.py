@@ -109,6 +109,52 @@ class AuditLog:
             # Metrics: Increment success counter
             audit_events_recorded_total.labels(event_type=event_type).inc()
 
+            # Broadcast via WebSockets (best effort)
+            try:
+                from rtc_websockets.services import NotificationService
+
+                from .serializers import AuditEventSerializer
+
+                service = NotificationService()
+                payload = AuditEventSerializer(event).data
+
+                # Always broadcast to system admins
+                service.send_system_notification("audit.created", payload)
+
+                # Broadcast to organization if present
+                if organization:
+                    service.send_org_notification(organization.id, "audit.created", payload)
+                # Broadcast to project if present
+                elif project:
+                    service.send_project_notification(project.id, "audit.created", payload)
+                # Fallback: Broadcast to user if present (and no org/project context)
+                elif user:
+                    service.send_user_notification(user.id, "audit.created", payload)
+
+                    # Also broadcast to all organizations the user belongs to (for Org Admins)
+                    # This ensures Org Admins see logins/logouts of their members
+                    if not organization and not project:
+                        try:
+                            memberships = user.organisation_memberships.filter(
+                                is_active=True
+                            ).select_related("organisation")
+
+                            # Log count for debugging
+                            logger.info(
+                                f"Broadcasting global event {event_type} to user {user.id}'s organisations"
+                            )
+
+                            for membership in memberships:
+                                service.send_org_notification(
+                                    membership.organisation.id, "audit.created", payload
+                                )
+                        except Exception as e:
+                            logger.warning(f"Failed to broadcast to user orgs: {e}")
+
+            except Exception as ws_error:
+                # Do not fail audit recording if WebSocket fails
+                logger.warning(f"Failed to broadcast audit event: {ws_error}")
+
             return event
 
         except Exception as e:

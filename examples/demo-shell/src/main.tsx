@@ -19,7 +19,7 @@ import './index.css';
 const themeStorage = new LocalStorageAdapter('django_core_theme');
 
 const authConfig: AuthConfig = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '',
+  apiBaseUrl: '', // Use relative path to leverage Vite proxy
   endpoints: {
     signIn: '/api/v1/auth/login/',
     signUp: '/api/v1/auth/register/',
@@ -45,7 +45,7 @@ function AppWithProviders() {
 
   const contextConfig: ContextSwitcherConfig = {
     routerAdapter,
-    apiBaseUrl: (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1',
+    apiBaseUrl: '/api/v1', // Use relative path to leverage Vite proxy
     onContextError: (error: unknown) => {
       console.warn('Context switch error (non-critical):', error);
       // Silently handle - context switching is optional

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Card, Button } from '@django-core/design-system';
 import { useAuth } from '@django-core/auth-ui';
+import { useUserRole } from './PermissionGuards';
 
 interface NavGroup {
   id: string;
@@ -47,6 +48,7 @@ const navGroups: NavGroup[] = [
       { path: '/security', label: 'Security', icon: '🔒' },
       { path: '/observability', label: 'Observability', icon: '📊' },
       { path: '/api-docs', label: 'API Docs', icon: '🔌' },
+      { path: '/demo/websockets', label: 'WebSocket Test', icon: '⚡' },
     ],
   },
   {
@@ -84,30 +86,43 @@ const navGroups: NavGroup[] = [
 export default function Sidebar() {
   const location = useLocation();
   const { user } = useAuth();
+  const { isSystemAdmin, isOrgAdmin, isCoach, hasOrgRole } = useUserRole();
   const STORAGE_KEY = 'demo_sidebar_expanded_groups';
 
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   // Filter navGroups based on permissions
-  // Note: We use useMemo to ensure this recalculates when user state changes
-  // The issue "only visible after refresh" suggests 'user' might be stale or incomplete initially.
-  // However, since this is a render-time calculation, it should update as soon as 'user' updates.
   const filteredNavGroups = navGroups.map(group => {
     const items = group.items.filter(item => {
-      if (item.path === '/security') {
-        // Show if system admin or org admin (or Coach)
-        // Fix: Check 'role' property from API
-        const isSystemAdmin = (user as any)?.role === 'superadmin' || (user as any)?.role === 'admin';
+      // Admin-only pages
+      if (['/integration-status', '/health', '/constitution', '/observability', '/api-docs', '/demo/websockets'].includes(item.path)) {
+        return isSystemAdmin;
+      }
 
-        // Check organisations array safely
-        const orgs = (user as any)?.organisations || [];
-        const isOrgAdmin = orgs.some((org: any) =>
-          org.role?.toLowerCase().includes('admin') ||
-          org.role?.toLowerCase().includes('coach')
-        );
-
+      // Org Admin+ pages (includes flags for tenant-aware management)
+      if (['/flags', '/credits', '/audit'].includes(item.path)) {
         return isSystemAdmin || isOrgAdmin;
       }
+
+      // Security: Admin or Org Admin/Coach
+      if (item.path === '/security') {
+        return isSystemAdmin || hasOrgRole;
+      }
+
+      // Frontend resources: Admin-only (demo/documentation pages)
+      if (group.id === 'frontend') {
+        return isSystemAdmin;
+      }
+
+      // Documentation: Admin-only (except user-relevant notifications)
+      if (group.id === 'docs') {
+        if (item.path === '/notifications') {
+          return true; // All users can see notifications
+        }
+        return isSystemAdmin;
+      }
+
+      // User-facing pages: everyone
       return true;
     });
     return { ...group, items };

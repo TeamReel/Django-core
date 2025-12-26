@@ -301,7 +301,7 @@ export default function UsersPage() {
         }
         breadcrumbs={breadcrumbs}
         actions={
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                 {orgIdParam && (
                     <Button variant="secondary" onClick={() => navigate(`/organisations/${orgIdParam}`)}>
                         Back to Organisation
@@ -366,8 +366,8 @@ export default function UsersPage() {
       {isLoading ? (
         <div>Loading users...</div>
       ) : (
-        <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1000px' }}>
             <thead style={{ backgroundColor: 'var(--app-table-header-bg)', borderBottom: '1px solid var(--app-border)' }}>
               <tr>
                 <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>User</th>

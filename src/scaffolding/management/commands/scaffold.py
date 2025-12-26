@@ -7,6 +7,7 @@ Provides 'python manage.py scaffold' as an alternative to the console script
 
 from __future__ import annotations
 
+import argparse
 import sys
 from typing import Any
 
@@ -24,10 +25,15 @@ class Command(BaseCommand):
         """
         Add arguments to management command parser.
 
-        We don't add arguments here because Click handles all argument parsing.
-        This method is required by Django but left empty intentionally.
+        We capture all arguments to pass them to Click.
+        We also explicitly define flags that precede the subcommand to satisfy Django's parser.
         """
-        pass
+        parser.add_argument(
+            "--no-interactive",
+            action="store_true",
+            help="Run without prompts (use defaults, CI/CD mode)",
+        )
+        parser.add_argument("args", nargs=argparse.REMAINDER)
 
     def handle(self, *args: Any, **options: Any) -> None:
         """

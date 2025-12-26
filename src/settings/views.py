@@ -51,12 +51,58 @@ class FeatureFlagViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Set created_by when creating a flag."""
+        # Validate hierarchy rules for org admins creating org overrides
+        scope_type = serializer.validated_data.get("scope_type")
+        if scope_type == "ORGANISATION":
+            key = serializer.validated_data.get("key")
+            enabled = serializer.validated_data.get("enabled", False)
+
+            # Find the global flag for this key
+            global_flag = FeatureFlag.objects.filter(key=key, scope_type="GLOBAL").first()
+
+            # If global flag exists and is disabled, org cannot enable it
+            if global_flag and not global_flag.enabled and enabled:
+                from rest_framework.exceptions import PermissionDenied
+
+                raise PermissionDenied(
+                    {
+                        "error": "forbidden",
+                        "detail": "Cannot enable organisation override when global flag is disabled. "
+                        "Organisation admins can only be more restrictive, not more permissive.",
+                        "global_value": global_flag.enabled,
+                        "attempted_value": enabled,
+                    }
+                )
+
         serializer.save(
             created_by=self.request.user if self.request.user.is_authenticated else None
         )
 
     def perform_update(self, serializer):
         """Set updated_by when updating a flag."""
+        # Validate hierarchy rules for org admins
+        instance = self.get_object()
+        if instance.scope_type == "ORGANISATION":
+            # Check if trying to enable an org override when global is disabled
+            new_enabled = serializer.validated_data.get("enabled", instance.enabled)
+
+            # Find the global flag for this key
+            global_flag = FeatureFlag.objects.filter(key=instance.key, scope_type="GLOBAL").first()
+
+            # If global flag exists and is disabled, org cannot enable it
+            if global_flag and not global_flag.enabled and new_enabled:
+                from rest_framework.exceptions import PermissionDenied
+
+                raise PermissionDenied(
+                    {
+                        "error": "forbidden",
+                        "detail": "Cannot enable organisation override when global flag is disabled. "
+                        "Organisation admins can only be more restrictive, not more permissive.",
+                        "global_value": global_flag.enabled,
+                        "attempted_value": new_enabled,
+                    }
+                )
+
         serializer.save(
             updated_by=self.request.user if self.request.user.is_authenticated else None
         )
@@ -138,6 +184,95 @@ class FeatureFlagViewSet(viewsets.ModelViewSet):
 
         serializer = FeatureFlagResolveSerializer(response_data)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="resolve-all")
+    def resolve_all(self, request):
+        """
+        Resolve all feature flags for a specific scope.
+
+        Query parameters:
+        - organisation_id: Optional organisation ID for org scope
+
+        Returns list of flags with:
+        - key
+        - description
+        - enabled (effective value)
+        - resolution_source ('global', 'override', 'organisation')
+        - global_value
+        - org_value (if applicable)
+        - global_id
+        - org_override_id
+        """
+        organisation_id = request.query_params.get("organisation_id")
+
+        # 1. Get all GLOBAL flags (the baseline)
+        global_flags = FeatureFlag.objects.filter(scope_type="GLOBAL")
+        global_flags_map = {f.key: f for f in global_flags}
+
+        # 2. Get ORG flags if org_id provided
+        org_flags_map = {}
+        if organisation_id:
+            org_flags = FeatureFlag.objects.filter(
+                scope_type="ORGANISATION", organisation_id=organisation_id
+            )
+            org_flags_map = {f.key: f for f in org_flags}
+
+        # Collect all unique keys from both global and org flags
+        all_keys = set(global_flags_map.keys()) | set(org_flags_map.keys())
+
+        results = []
+        for key in all_keys:
+            g_flag = global_flags_map.get(key)
+            org_flag = org_flags_map.get(key)
+
+            # Determine effective value and source
+            if org_flag:
+                enabled = org_flag.enabled
+                org_val = org_flag.enabled
+                org_override_id = str(org_flag.id)
+
+                if g_flag:
+                    # Org override of a global flag
+                    resolution_source = "override"
+                    global_val = g_flag.enabled
+                    global_id = str(g_flag.id)
+                    description = g_flag.description
+                else:
+                    # Standalone org flag (no global counterpart)
+                    resolution_source = "organisation"
+                    global_val = None
+                    global_id = None
+                    description = org_flag.description
+            elif g_flag:
+                # Global flag only
+                enabled = g_flag.enabled
+                resolution_source = "global"
+                global_val = g_flag.enabled
+                org_val = None
+                global_id = str(g_flag.id)
+                org_override_id = None
+                description = g_flag.description
+            else:
+                # Should not happen, but handle gracefully
+                continue
+
+            results.append(
+                {
+                    "key": key,
+                    "name": key.replace("_", " ").title(),  # Simple name generation
+                    "description": description,
+                    "enabled": enabled,
+                    "resolutionSource": resolution_source,  # Match frontend naming
+                    "global_value": global_val,
+                    "org_value": org_val,
+                    "global_id": global_id,
+                    "org_override_id": org_override_id,
+                    # Add rollout_percentage placeholder (not in model yet, but UI expects it)
+                    "rollout_percentage": 100,
+                }
+            )
+
+        return Response(results)
 
 
 class SettingViewSet(viewsets.ModelViewSet):

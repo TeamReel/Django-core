@@ -7,7 +7,8 @@ import {
   Badge,
   Alert,
 } from '@django-core/design-system';
-import { useTheme, themeVars } from '@django-core/theme-system';
+import { useTheme } from '@django-core/theme-system';
+import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import AppShell from '../../components/AppShell';
 
 /**
@@ -29,10 +30,21 @@ interface UserPreferences {
   marketing_email: boolean;
 }
 
+interface I18nEffectivePreferences {
+  language: string;
+  timezone: string;
+  date_format: string;
+  time_format: string;
+  currency: string;
+  resolved_from: 'user' | 'org' | 'system';
+}
+
 export const PreferencesPage: React.FC = () => {
   const { setTheme, mode, resolvedMode } = useTheme();
+  const darkModeEnabled = useFeatureFlag('dark_mode', true); // Default enabled
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [initialPreferences, setInitialPreferences] = useState<UserPreferences | null>(null);
+  const [effectivePrefs, setEffectivePrefs] = useState<I18nEffectivePreferences | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -78,6 +90,43 @@ export const PreferencesPage: React.FC = () => {
       setPreferences(loadedPrefs);
       setInitialPreferences(loadedPrefs);
       setLoading(false);
+
+      // Fetch effective i18n preferences from backend (or demo data)
+      try {
+        const response = await fetch('/api/v1/i18n-preferences/me/', {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const effective = await response.json();
+          setEffectivePrefs(effective);
+        } else if (response.status === 404) {
+          // Demo mode: Use mock effective preferences
+          setEffectivePrefs({
+            language: fullLangCode,
+            timezone: 'UTC',
+            date_format: 'YYYY-MM-DD',
+            time_format: '24h',
+            currency: 'USD',
+            resolved_from: 'user',
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load effective preferences:', err);
+        // Fallback to demo data
+        setEffectivePrefs({
+          language: fullLangCode,
+          timezone: 'UTC',
+          date_format: 'YYYY-MM-DD',
+          time_format: '24h',
+          currency: 'USD',
+          resolved_from: 'system',
+        });
+      }
     };
 
     loadPreferences();
@@ -144,6 +193,9 @@ export const PreferencesPage: React.FC = () => {
     localStorage.setItem('demo_language', shortCode);
     localStorage.setItem('language', preferences.language);
 
+    // Dispatch event for TopNavbar to update
+    window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: shortCode } }));
+
     // 3. Save notification preferences
     localStorage.setItem('email_notifications', String(preferences.email_notifications));
     localStorage.setItem('marketing_email', String(preferences.marketing_email));
@@ -189,22 +241,16 @@ export const PreferencesPage: React.FC = () => {
 
   return (
     <AppShell>
-      <div style={{
-        position: 'relative',
-        minHeight: 'calc(100vh - 56px)',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <PageHeader
-          title="Preferences"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Config' },
-            { label: 'Preferences' },
-          ]}
-        />
+      <PageHeader
+        title="Preferences"
+        breadcrumbs={[
+          { label: 'Home', href: '/' },
+          { label: 'Config' },
+          { label: 'Preferences' },
+        ]}
+      />
 
-        <PageContent style={{ flex: 1, paddingBottom: '120px' }}>
+      <PageContent>
           {success && (
             <div style={{ marginBottom: '24px' }}>
                 <Alert type="success" data-testid="prefs-success-alert">
@@ -214,97 +260,99 @@ export const PreferencesPage: React.FC = () => {
           )}
 
           <div>
-            {/* Theme Section */}
-            <Card>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '16px', color: themeVars.color.text.primary }}>Appearance</h3>
-              <div style={{ maxWidth: '800px' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '12px', color: themeVars.color.text.secondary }}>
-                  Theme
-                </label>
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }} role="group" aria-label="Theme selection">
-                  {['light', 'dark', 'auto'].map((t) => {
-                    const isActive = preferences?.theme === t;
-                    return (
-                      <Button
-                        key={t}
-                        variant={isActive ? 'primary' : 'outline'}
-                        onClick={() => setPreferences(prev => prev ? ({ ...prev, theme: t as any }) : null)}
-                      >
-                        {t === 'auto' ? 'Auto (System)' : t.charAt(0).toUpperCase() + t.slice(1)}
-                      </Button>
-                    );
-                  })}
-                </div>
-
-                {/* Preview Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                  <div
-                    style={{
-                      padding: '24px',
-                      backgroundColor: '#ffffff',
-                      border: preferences?.theme === 'light' || (preferences?.theme === 'auto' && mode === 'light') ? '2px solid #3b82f6' : '1px solid #e5e5e5',
-                      borderRadius: '8px',
-                    }}
-                  >
-                    <h4 style={{ margin: '0 0 12px 0', color: '#1f2937', fontWeight: 600 }}>Light Theme</h4>
-                    <div style={{ padding: '12px', backgroundColor: '#f9fafb', borderRadius: '4px', marginBottom: '12px' }}>
-                      <p style={{ margin: 0, fontSize: '12px', color: '#1f2937' }}>Background: #FFFFFF</p>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#6b7280' }}>Text: #1F2937</p>
-                    </div>
-                    {preferences?.theme === 'light' && <Badge variant="success">Selected</Badge>}
+            {/* Theme Section - gated by dark_mode feature flag */}
+            {darkModeEnabled ? (
+              <Card>
+                <h3 className="text-lg font-semibold mb-4">Appearance</h3>
+                <div style={{ maxWidth: '800px' }}>
+                  <label className="block text-sm font-medium mb-3">
+                    Theme
+                  </label>
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }} role="group" aria-label="Theme selection">
+                    {['light', 'dark', 'auto'].map((t) => {
+                      const isActive = preferences?.theme === t;
+                      return (
+                        <Button
+                          key={t}
+                          variant={isActive ? 'primary' : 'outline'}
+                          onClick={() => setPreferences(prev => prev ? ({ ...prev, theme: t as any }) : null)}
+                        >
+                          {t === 'auto' ? 'Auto (System)' : t.charAt(0).toUpperCase() + t.slice(1)}
+                        </Button>
+                      );
+                    })}
                   </div>
 
-                  <div
-                    style={{
-                      padding: '24px',
-                      backgroundColor: '#1f2937',
-                      color: '#f3f4f6',
-                      border: preferences?.theme === 'dark' || (preferences?.theme === 'auto' && mode === 'dark') ? '2px solid #3b82f6' : '1px solid #e5e5e5',
-                      borderRadius: '8px',
-                    }}
-                  >
-                    <h4 style={{ margin: '0 0 12px 0', color: '#f3f4f6', fontWeight: 600 }}>Dark Theme</h4>
+                  {/* Preview Cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                     <div
                       style={{
-                        padding: '12px',
-                        backgroundColor: '#111827',
-                        borderRadius: '4px',
-                        marginBottom: '12px',
+                        padding: '24px',
+                        backgroundColor: '#ffffff',
+                        border: preferences?.theme === 'light' || (preferences?.theme === 'auto' && resolvedMode === 'light') ? '2px solid #3b82f6' : '1px solid #e5e7eb',
+                        borderRadius: '8px',
                       }}
                     >
-                      <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#f3f4f6' }}>Background: #1F2937</p>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#9ca3af' }}>Text: #F3F4F6</p>
+                      <h4 style={{ margin: '0 0 12px 0', color: '#1f2937', fontWeight: 600 }}>Light Theme</h4>
+                      <div style={{ padding: '12px', backgroundColor: '#f9fafb', borderRadius: '4px', marginBottom: '12px' }}>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#1f2937' }}>Background: #FFFFFF</p>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#6b7280' }}>Text: #1F2937</p>
+                      </div>
+                      {preferences?.theme === 'light' && <Badge variant="success">Selected</Badge>}
                     </div>
-                    {preferences?.theme === 'dark' && <Badge variant="success">Selected</Badge>}
-                  </div>
-                </div>
 
-                <p style={{ fontSize: '0.875rem', color: themeVars.color.text.tertiary, marginTop: '24px' }}>
-                  Select your preferred interface theme. "Auto" will sync with your operating system settings.
-                </p>
-              </div>
-            </Card>
+                    <div
+                      style={{
+                        padding: '24px',
+                        backgroundColor: '#1f2937',
+                        color: '#f3f4f6',
+                        border: preferences?.theme === 'dark' || (preferences?.theme === 'auto' && resolvedMode === 'dark') ? '2px solid #3b82f6' : '1px solid #374151',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <h4 style={{ margin: '0 0 12px 0', color: '#f3f4f6', fontWeight: 600 }}>Dark Theme</h4>
+                      <div
+                        style={{
+                          padding: '12px',
+                          backgroundColor: '#111827',
+                          borderRadius: '4px',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#f3f4f6' }}>Background: #1F2937</p>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#9ca3af' }}>Text: #F3F4F6</p>
+                      </div>
+                      {preferences?.theme === 'dark' && <Badge variant="success">Selected</Badge>}
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-gray-600 mt-6">
+                    Select your preferred interface theme. "Auto" will sync with your operating system settings.
+                  </p>
+                </div>
+              </Card>
+            ) : (
+              <Card>
+                <h3 className="text-lg font-semibold mb-4">Appearance</h3>
+                <Alert type="info">
+                  <strong>Theme settings disabled</strong> - The dark mode feature is currently disabled by a feature flag.
+                  Contact your administrator to enable theme customization.
+                </Alert>
+              </Card>
+            )}
 
             {/* Localisation Section */}
             <Card style={{ marginTop: '24px' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '16px', color: themeVars.color.text.primary }}>Localisation</h3>
+              <h3 className="text-lg font-semibold mb-4">Localisation</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px', color: themeVars.color.text.secondary }}>
+                  <label className="block text-sm font-medium mb-2">
                     Language
                   </label>
                   <select
                     value={preferences?.language || 'en'}
                     onChange={(e) => setPreferences(prev => prev ? ({ ...prev, language: e.target.value }) : null)}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: `1px solid ${themeVars.color.border.default}`,
-                      fontSize: '0.875rem',
-                      backgroundColor: themeVars.color.bg.surface,
-                      color: themeVars.color.text.primary
-                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   >
                     <option value="en">English (EN)</option>
                     <option value="nl">Nederlands (NL)</option>
@@ -316,21 +364,13 @@ export const PreferencesPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px', color: themeVars.color.text.secondary }}>
+                  <label className="block text-sm font-medium mb-2">
                     Timezone
                   </label>
                   <select
                     value={preferences?.timezone || 'UTC'}
                     onChange={(e) => setPreferences(prev => prev ? ({ ...prev, timezone: e.target.value }) : null)}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: `1px solid ${themeVars.color.border.default}`,
-                      fontSize: '0.875rem',
-                      backgroundColor: themeVars.color.bg.surface,
-                      color: themeVars.color.text.primary
-                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   >
                     <option value="UTC">UTC</option>
                     <option value="America/New_York">Eastern Time</option>
@@ -343,89 +383,138 @@ export const PreferencesPage: React.FC = () => {
               </div>
             </Card>
 
+            {/* Effective i18n Preferences (Backend-Resolved) */}
+            {effectivePrefs && (
+              <Card style={{ marginTop: '24px' }}>
+                <h3 className="text-lg font-semibold mb-2">
+                  Effective Preferences (Server-Resolved)
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  These are the actual values used by the system, resolved from your user settings, organization defaults, or system fallbacks.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                      Language
+                    </div>
+                    <div className="text-base">
+                      {effectivePrefs.language}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                      Timezone
+                    </div>
+                    <div className="text-base">
+                      {effectivePrefs.timezone}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                      Date Format
+                    </div>
+                    <div className="text-base">
+                      {effectivePrefs.date_format}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                      Time Format
+                    </div>
+                    <div className="text-base">
+                      {effectivePrefs.time_format}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                      Currency
+                    </div>
+                    <div className="text-base">
+                      {effectivePrefs.currency}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                      Resolved From
+                    </div>
+                    <Badge variant={effectivePrefs.resolved_from === 'user' ? 'success' : effectivePrefs.resolved_from === 'org' ? 'warning' : 'info'}>
+                      {effectivePrefs.resolved_from}
+                    </Badge>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Notifications Section */}
             <Card style={{ marginTop: '24px' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '16px', color: themeVars.color.text.primary }}>Notifications</h3>
+              <h3 className="text-lg font-semibold mb-4">Notifications</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <label style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', height: '20px' }}>
+                <label className="flex items-start cursor-pointer">
+                  <div className="flex items-center h-5">
                     <input
                       type="checkbox"
                       checked={preferences?.email_notifications || false}
                       onChange={(e) => setPreferences(prev => prev ? ({ ...prev, email_notifications: e.target.checked }) : null)}
-                      style={{ height: '16px', width: '16px', borderRadius: '4px', borderColor: themeVars.color.border.default, color: themeVars.color.action.primary }}
+                      className="h-4 w-4 rounded border-gray-300"
                     />
                   </div>
-                  <div style={{ marginLeft: '12px', fontSize: '0.875rem' }}>
-                    <span style={{ fontWeight: 500, color: themeVars.color.text.primary, display: 'block' }}>Email Notifications</span>
-                    <p style={{ color: themeVars.color.text.secondary, marginTop: '4px' }}>Receive notifications about important account activity.</p>
+                  <div className="ml-3 text-sm">
+                    <span className="font-medium block">Email Notifications</span>
+                    <p className="text-gray-500 mt-1">Receive notifications about important account activity.</p>
                   </div>
                 </label>
 
-                <label style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer', borderTop: `1px solid ${themeVars.color.border.subtle}`, paddingTop: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', height: '20px' }}>
+                <label className="flex items-start cursor-pointer border-t border-gray-200 pt-4">
+                  <div className="flex items-center h-5">
                     <input
                       type="checkbox"
                       checked={preferences?.marketing_email || false}
                       onChange={(e) => setPreferences(prev => prev ? ({ ...prev, marketing_email: e.target.checked }) : null)}
-                      style={{ height: '16px', width: '16px', borderRadius: '4px', borderColor: themeVars.color.border.default, color: themeVars.color.action.primary }}
+                      className="h-4 w-4 rounded border-gray-300"
                     />
                   </div>
-                  <div style={{ marginLeft: '12px', fontSize: '0.875rem' }}>
-                    <span style={{ fontWeight: 500, color: themeVars.color.text.primary, display: 'block' }}>Marketing Emails</span>
-                    <p style={{ color: themeVars.color.text.secondary, marginTop: '4px' }}>Receive updates about new features and special offers.</p>
+                  <div className="ml-3 text-sm">
+                    <span className="font-medium block">Marketing Emails</span>
+                    <p className="text-gray-500 mt-1">Receive updates about new features and special offers.</p>
                   </div>
                 </label>
               </div>
             </Card>
 
             {/* Debug Info - Temporary for validation */}
-            <div style={{ marginTop: '24px', padding: '12px', border: '1px dashed #ccc', borderRadius: '4px', fontSize: '12px', color: themeVars.color.text.secondary }}>
+            <div className="mt-6 p-3 border border-dashed border-gray-300 rounded text-xs text-gray-600">
               <strong>Debug Storage (django_core_theme):</strong> {typeof window !== 'undefined' ? localStorage.getItem('django_core_theme') || 'null' : 'N/A'}
               <br />
               <strong>Current Mode:</strong> {mode} | <strong>Resolved:</strong> {resolvedMode}
             </div>
-          </div>
 
-          {/* Sticky Footer Action Bar */}
-          <div style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: '16px 24px',
-            backgroundColor: 'var(--app-surface)',
-            borderTop: '1px solid var(--app-border)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.1)',
-            zIndex: 100
-          }}>
-             <div style={{ fontSize: '0.875rem', color: 'var(--app-text)', opacity: 0.7, fontStyle: 'italic', marginRight: '16px' }}>
-               Changes are saved locally for this demo.
-             </div>
-             <div style={{ display: 'flex', gap: '12px', flexShrink: 0 }}>
-               <Button
-                 variant="outline"
-                 onClick={handleCancel}
-                 disabled={saving}
-               >
-                 Cancel
-               </Button>
-               <Button
-                 variant="primary"
-                 onClick={handleSavePreferences}
-                 disabled={saving}
-                 data-testid="prefs-save-button"
-               >
-                 {saving ? 'Saving...' : 'Save Preferences'}
-               </Button>
-             </div>
+            {/* Save Actions */}
+            <Card style={{ marginTop: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <p className="text-sm text-gray-600 m-0">
+                  Changes are saved locally for this demo.
+                </p>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <Button
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleSavePreferences}
+                    disabled={saving}
+                    data-testid="prefs-save-button"
+                  >
+                    {saving ? 'Saving...' : 'Save Preferences'}
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </div>
-
         </PageContent>
-      </div>
     </AppShell>
   );
 };

@@ -1,6 +1,8 @@
 """Scope-aware permission classes for Settings & Feature Flags."""
 
+from organisations.models import Organisation
 from permissions.audit import evaluate_permission
+from projects.models import Project
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
@@ -22,6 +24,18 @@ class ScopeAwarePermission(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
+        # For detail views (retrieve/update/delete), defer to has_object_permission
+        # Check if this is a detail view by looking for 'pk' in view.kwargs
+        if hasattr(view, "kwargs") and "pk" in view.kwargs:
+            # Let has_object_permission handle the actual permission check
+            return True
+
+        # For custom actions like 'resolve' and 'resolve-all', allow if authenticated
+        # These are read-only operations that respect org context
+        if hasattr(view, "action") and view.action in ["resolve", "resolve_all"]:
+            return True
+
+        # For list/create views, check permission based on request context
         # Determine permission based on HTTP method
         permission_code = self._get_permission_for_method(request.method)
 
@@ -153,6 +167,15 @@ class ScopeAwarePermission(BasePermission):
             org_id = request.data.get("organisation")
             project_id = request.data.get("project")
 
+        # Check query params for scope info (for GET requests)
+        if not org_id and not project_id and hasattr(request, "query_params"):
+            org_id = request.query_params.get("organisation_id") or request.query_params.get(
+                "organisation"
+            )
+            project_id = request.query_params.get("project_id") or request.query_params.get(
+                "project"
+            )
+
         # Determine scope type
         if project_id:
             return {
@@ -185,10 +208,32 @@ class ScopeAwarePermission(BasePermission):
             # Global settings require superuser status (already checked above)
             return False
         elif scope_type == ScopeType.ORGANISATION:
+            # Fetch organisation object to pass as resource
+            try:
+                organisation = Organisation.objects.get(id=resource_id)
+            except Organisation.DoesNotExist:
+                return False
+
             # Organisation settings - use evaluate_permission
+            # For READ operations (GET), we check org.view_settings or similar
+            # For WRITE operations (POST/PUT/DELETE), we check org.manage_settings
+
+            # Map permission_code to granular permissions if needed
+            # settings.view -> org.view_settings (or just org.view_members/generic read)
+            # settings.edit -> org.manage_settings
+
+            actual_permission = permission_code
+            if permission_code == "settings.view":
+                # Fallback to a basic read permission if settings.view isn't explicitly assigned
+                # Or assume settings.view is what we want to check against the role
+                pass
+            elif permission_code == "settings.edit":
+                actual_permission = "org.manage_settings"
+
             has_permission = evaluate_permission(
                 user=user,
-                permission=permission_code,
+                permission=actual_permission,
+                resource=organisation,
                 context={
                     "scope": "ORGANIZATION",
                     "organization_id": resource_id,
@@ -196,10 +241,17 @@ class ScopeAwarePermission(BasePermission):
             )
             return has_permission
         else:  # PROJECT
+            # Fetch project object to pass as resource
+            try:
+                project = Project.objects.get(id=resource_id)
+            except Project.DoesNotExist:
+                return False
+
             # Project settings - check project permission
             has_permission = evaluate_permission(
                 user=user,
                 permission=permission_code,
+                resource=project,
                 context={
                     "scope": "PROJECT",
                     "project_id": resource_id,

@@ -1,0 +1,151 @@
+import { FeatureFlag } from './featureFlagStorage';
+
+const API_BASE = '/api/v1/settings/feature-flags';
+
+export interface ApiFeatureFlag extends FeatureFlag {
+  global_id: string;
+  org_override_id: string | null;
+}
+
+export async function fetchFlags(orgId: string | null): Promise<ApiFeatureFlag[]> {
+  const url = new URL(`${API_BASE}/resolve-all/`, window.location.origin);
+  if (orgId) {
+    url.searchParams.append('organisation_id', orgId);
+  }
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch flags: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function updateGlobalFlag(flagId: string, enabled: boolean): Promise<void> {
+  const response = await fetch(`${API_BASE}/${flagId}/`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': getCsrfToken(),
+    },
+    credentials: 'include',
+    body: JSON.stringify({ enabled }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update global flag: ${response.statusText}`);
+  }
+}
+
+export async function createOrgOverride(orgId: string, key: string, enabled: boolean): Promise<void> {
+  const response = await fetch(`${API_BASE}/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': getCsrfToken(),
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      scope_type: 'ORGANISATION',
+      organisation: orgId,
+      key: key,
+      enabled: enabled,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create org override: ${response.statusText}`);
+  }
+}
+
+export async function updateOrgOverride(overrideId: string, enabled: boolean): Promise<void> {
+  const response = await fetch(`${API_BASE}/${overrideId}/`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': getCsrfToken(),
+    },
+    credentials: 'include',
+    body: JSON.stringify({ enabled }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update org override: ${response.statusText}`);
+  }
+}
+
+export async function deleteOrgOverride(overrideId: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/${overrideId}/`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': getCsrfToken(),
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete org override: ${response.statusText}`);
+  }
+}
+
+export async function seedDefaultFlags(): Promise<void> {
+  const defaults = [
+    { key: 'advanced_analytics', description: 'Enable advanced analytics dashboard with real-time insights', enabled: true },
+    { key: 'dark_mode', description: 'Enable dark mode theme support', enabled: true },
+    { key: 'new_dashboard_ui', description: 'Enable the new dashboard layout (beta)', enabled: false },
+    { key: 'api_keys', description: 'Allow users to generate API keys', enabled: true },
+    { key: 'webhooks', description: 'Enable webhook integrations', enabled: true },
+    { key: 'custom_domains', description: 'Allow custom domain configuration', enabled: false },
+  ];
+
+  for (const flag of defaults) {
+    // Check if exists first (optional, but good for idempotency if we had a check endpoint)
+    // For now, just try to create. If it fails (unique constraint), we ignore.
+    try {
+      await fetch(`${API_BASE}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+          scope_type: 'GLOBAL',
+          key: flag.key,
+          description: flag.description,
+          enabled: flag.enabled,
+        }),
+      });
+    } catch (e) {
+      console.warn(`Failed to seed flag ${flag.key} (might already exist)`);
+    }
+  }
+}
+
+function getCsrfToken(): string {
+  const name = 'csrftoken';
+  let cookieValue = '';
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}

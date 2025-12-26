@@ -178,6 +178,12 @@ class NotificationConsumer(BaseConsumer):
             await self.channel_layer.group_add(group, self.channel_name)
             self.user_groups.append(group)
 
+        # System admin group
+        if self.user.is_superuser or self.user.is_staff:
+            admin_group = "system_admins"
+            await self.channel_layer.group_add(admin_group, self.channel_name)
+            self.user_groups.append(admin_group)
+
         logger.debug(f"User {self.user.id} joined groups: {self.user_groups}")
 
     @database_sync_to_async

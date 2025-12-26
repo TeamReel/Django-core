@@ -39,6 +39,7 @@ interface CreditBalance {
 }
 
 export const CreditsPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'overview' | 'transactions'>('overview');
   const [balance, setBalance] = useState<CreditBalance | null>(null);
   const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -207,6 +208,35 @@ export const CreditsPage: React.FC = () => {
           <strong>Demo Mode:</strong> This page shows mock credits data. API endpoints are not yet implemented.
         </Alert>
 
+        {/* Tab Navigation */}
+        <div className="mb-6 border-b border-gray-200">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'overview'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab('transactions')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'transactions'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Transaction History
+            </button>
+          </nav>
+        </div>
+
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (<>
+
         {/* Low balance alert */}
         {isMarketingHubLow && (
           <Alert type="error" className="mb-4" data-testid="credits-marketing-hub-low">
@@ -301,10 +331,13 @@ export const CreditsPage: React.FC = () => {
             className="w-full"
           />
         </Card>
+        </>
+        )}
 
-        {/* Recent transactions */}
+        {/* Transaction History Tab */}
+        {activeTab === 'transactions' && (
         <Card>
-          <h3 className="text-lg font-semibold mb-4">Recent Transactions</h3>
+          <h3 className="text-lg font-semibold mb-4">Transaction History</h3>
           {transactions.length > 0 ? (
             <Table
               columns={[
@@ -387,6 +420,7 @@ export const CreditsPage: React.FC = () => {
             <Alert type="info">No transactions yet.</Alert>
           )}
         </Card>
+        )}
       </PageContent>
       </div>
     </AppShell>

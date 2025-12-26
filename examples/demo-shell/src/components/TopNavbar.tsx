@@ -25,6 +25,9 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, useSignOut } from '@django-core/auth-ui';
 import { useTheme } from '@django-core/theme-system';
+import { useFeatureFlag } from '../hooks/useFeatureFlag';
+import { useUserRole } from './PermissionGuards';
+import ProfileAvatarDropdown from './ProfileAvatarDropdown';
 
 interface NavGroup {
   id: string;
@@ -56,17 +59,16 @@ const navGroups: NavGroup[] = [
       { path: '/projects', label: 'Projects', description: 'Browse and manage projects', icon: '📁' },
       { path: '/users', label: 'Users', description: 'View users and roles', icon: '👥' },
       { path: '/permissions', label: 'Permissions', description: 'Configure access control', icon: '🔐' },
-      { path: '/profile', label: 'Profile', description: 'Edit your profile settings', icon: '👤' },
     ],
   },
   {
     id: 'config',
     label: 'Configuration',
     items: [
-      { path: '/preferences', label: 'Preferences', description: 'Customize application settings', icon: '⚙️' },
+      { path: '/notification-preferences', label: 'Notification Preferences', description: 'Manage notification channels', icon: '🔔' },
+      { path: '/usage-events', label: 'Usage Events', description: 'Track usage and analytics', icon: '📈' },
       { path: '/audit', label: 'Audit Log', description: 'Review recorded audit events', icon: '📋' },
       { path: '/flags', label: 'Feature Flags', description: 'Toggle experimental features', icon: '🚩' },
-      { path: '/credits', label: 'Credits', description: 'View credits and attribution', icon: '💳' },
     ],
   },
   {
@@ -101,7 +103,7 @@ const navGroups: NavGroup[] = [
     items: [
       { path: '/docs', label: 'Docs', description: 'Documentation and guides', icon: '📚' },
       { path: '/tasks', label: 'Tasks', description: 'Background task management', icon: '✓' },
-      { path: '/notifications', label: 'Notifications', description: 'User notification system', icon: '🔔' },
+      { path: '/routing-logs', label: 'Routing Logs', description: 'Notification routing decisions', icon: '🔀' },
       { path: '/deployment', label: 'Deployment', description: 'Deploy and release guides', icon: '🚀' },
     ],
   },
@@ -113,6 +115,8 @@ export default function TopNavbar() {
   const { user } = useAuth();
   const { signOut, loading: signOutLoading } = useSignOut();
   const { mode, setTheme } = useTheme();
+  const darkModeEnabled = useFeatureFlag('dark_mode', true); // Default enabled
+  const { isSystemAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState<'EN' | 'NL' | 'DE'>('EN');
@@ -123,6 +127,7 @@ export default function TopNavbar() {
   // Docker-style hover timers
   const hoverTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isDropdownHoveredRef = useRef(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   const currentThemeMode = mode || 'light';
@@ -140,6 +145,8 @@ export default function TopNavbar() {
   const handleMouseEnterTrigger = useCallback((groupId: string) => {
     if (isTouchDevice) return; // Disable hover on touch devices
 
+    console.log('Mouse enter trigger:', groupId, 'isTouchDevice:', isTouchDevice);
+
     // Clear any pending close timer
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
@@ -153,14 +160,25 @@ export default function TopNavbar() {
   const handleMouseLeaveTrigger = useCallback((groupId: string) => {
     if (isTouchDevice) return;
 
+    console.log('Mouse leave trigger:', groupId);
+
+    // If we are already hovering the dropdown (due to overlap), don't close
+    if (isDropdownHoveredRef.current) {
+      console.log('Ignoring leave trigger because dropdown is hovered');
+      return;
+    }
+
     // Delay closing to allow moving to dropdown panel
     closeTimerRef.current = setTimeout(() => {
+      console.log('Closing dropdown after delay');
       setOpenDropdown(null);
-    }, 200);
+    }, 300); // Increased from 200ms to 300ms
   }, [isTouchDevice]);
 
-  const handleMouseEnterDropdown = useCallback(() => {
+  const handleMouseEnterDropdown = useCallback((groupId: string) => {
     if (isTouchDevice) return;
+    console.log('Mouse enter dropdown panel:', groupId);
+    isDropdownHoveredRef.current = true;
 
     // Cancel close timer when entering dropdown
     if (closeTimerRef.current) {
@@ -169,8 +187,10 @@ export default function TopNavbar() {
     }
   }, [isTouchDevice]);
 
-  const handleMouseLeaveDropdown = useCallback(() => {
+  const handleMouseLeaveDropdown = useCallback((groupId: string) => {
     if (isTouchDevice) return;
+    console.log('Mouse leave dropdown panel:', groupId);
+    isDropdownHoveredRef.current = false;
 
     // Close after delay when leaving dropdown
     closeTimerRef.current = setTimeout(() => {
@@ -257,15 +277,35 @@ export default function TopNavbar() {
   // Filter based on permissions (same logic as Sidebar)
   const filteredNavGroups = navGroups.map(group => {
     const items = group.items.filter(item => {
-      if (item.path === '/security') {
-        const isSystemAdmin = (user as any)?.role === 'superadmin' || (user as any)?.role === 'admin';
-        const orgs = (user as any)?.organisations || [];
-        const isOrgAdmin = orgs.some((org: any) =>
-          org.role?.toLowerCase().includes('admin') ||
-          org.role?.toLowerCase().includes('coach')
-        );
+      // Admin-only pages
+      if (['/integration-status', '/health', '/constitution', '/observability', '/api-docs', '/routing-logs'].includes(item.path)) {
+        return isSystemAdmin;
+      }
+
+      // Org Admin+ pages (includes flags for tenant-aware management)
+      if (['/flags', '/credits', '/audit', '/usage-events'].includes(item.path)) {
         return isSystemAdmin || isOrgAdmin;
       }
+
+      // Security: Admin or Org Admin/Coach
+      if (item.path === '/security') {
+        return isSystemAdmin || hasOrgRole;
+      }
+
+      // Frontend resources: Admin-only (demo/documentation pages)
+      if (group.id === 'frontend') {
+        return isSystemAdmin;
+      }
+
+      // Documentation: Admin-only (except user-relevant notifications)
+      if (group.id === 'docs') {
+        if (item.path === '/notifications') {
+          return true; // All users can see notifications
+        }
+        return isSystemAdmin;
+      }
+
+      // User-facing pages: everyone
       return true;
     });
     return { ...group, items };
@@ -332,13 +372,16 @@ export default function TopNavbar() {
   const activeGroup = openDropdown ? filteredNavGroups.find(g => g.id === openDropdown) : null;
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ height: '57px', position: 'relative', zIndex: 500 }}>
       <nav style={{
         backgroundColor: 'var(--app-surface)',
         borderBottom: '1px solid var(--app-border)',
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
+        left: 0,
+        right: 0,
         zIndex: 500,
+        overflow: 'visible',
       }}>
         <div style={{
           maxWidth: '100%',
@@ -347,21 +390,41 @@ export default function TopNavbar() {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '16px',
-          gap: '16px',
           height: '56px',
         }}>
+          {/* Mobile Menu Button */}
+          <button
+            className="mobile-menu-button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              display: 'none',
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: 'var(--app-text)',
+              padding: '8px',
+              marginRight: '8px',
+            }}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
+
           {/* Left side: Navigation items */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
             flex: 1,
-            overflow: 'hidden',
             flexWrap: 'nowrap',
+            height: '100%',
           }} className="desktop-nav">
             {/* Dashboard link */}
             <Link
               to={dashboardItem.path}
+              title={dashboardItem.label}
+              aria-label={dashboardItem.label}
               style={{
                 padding: '8px 12px',
                 borderRadius: '4px',
@@ -376,8 +439,7 @@ export default function TopNavbar() {
                 gap: '6px',
               }}
             >
-              <span>{dashboardItem.icon}</span>
-              <span>{dashboardItem.label}</span>
+              <span style={{ fontSize: '16px' }}>{dashboardItem.icon}</span>
             </Link>
 
             {/* Group triggers */}
@@ -389,12 +451,21 @@ export default function TopNavbar() {
                 <div
                   key={group.id}
                   className="nav-dropdown-container"
-                  onMouseEnter={() => handleMouseEnterTrigger(group.id)}
-                  onMouseLeave={() => handleMouseLeaveTrigger(group.id)}
+                  style={{
+                    position: 'relative',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
                 >
                   <button
                     onClick={(e) => handleClickTrigger(group.id, e)}
                     onKeyDown={(e) => handleKeyDown(group.id, e)}
+                    onMouseEnter={() => handleMouseEnterTrigger(group.id)}
+                    onMouseLeave={() => {
+                      console.log('Mouse leave BUTTON:', group.id);
+                      handleMouseLeaveTrigger(group.id);
+                    }}
                     aria-haspopup="menu"
                     aria-expanded={isOpen}
                     aria-controls={`mega-menu-panel`}
@@ -416,6 +487,93 @@ export default function TopNavbar() {
                     <span>{group.label}</span>
                     <span style={{ fontSize: '10px', transition: 'transform 0.2s' }}>{isOpen ? '▴' : '▾'}</span>
                   </button>
+
+                  {/* Mega Menu Panel for this group */}
+                  {isOpen && (
+                    <div
+                      id={`mega-menu-panel-${group.id}`}
+                      role="menu"
+                      onMouseEnter={() => handleMouseEnterDropdown(group.id)}
+                      onMouseLeave={() => handleMouseLeaveDropdown(group.id)}
+                      style={{
+                        position: 'absolute',
+                        top: 'calc(100% - 10px)', // Overlap by 10px
+                        left: '0',
+                        paddingTop: '10px', // Push content down
+                        minWidth: '600px',
+                        zIndex: 100,
+                      }}
+                    >
+                      <div style={{
+                        backgroundColor: 'var(--app-surface)',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                        padding: '20px',
+                      }}>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: `repeat(${getColumnCount(group.items.length)}, minmax(0, 1fr))`,
+                          columnGap: '40px',
+                          rowGap: '10px',
+                        }}
+                      >
+                        {group.items.map((item) => (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            role="menuitem"
+                            onClick={() => setOpenDropdown(null)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: '12px',
+                              padding: '10px 12px',
+                              textDecoration: 'none',
+                              color: isItemActive(item.path) ? '#2563eb' : 'var(--app-text)',
+                              backgroundColor: isItemActive(item.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                              borderRadius: '10px',
+                              transition: 'background-color 0.15s',
+                              pointerEvents: 'auto',
+                              cursor: 'pointer',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isItemActive(item.path)) {
+                                e.currentTarget.style.backgroundColor = 'var(--app-surface-2)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isItemActive(item.path)) {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }
+                            }}
+                          >
+                            {item.icon && <span style={{ fontSize: '16px', flexShrink: 0, marginTop: '2px' }}>{item.icon}</span>}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
+                              <span style={{
+                                fontSize: '14px',
+                                fontWeight: isItemActive(item.path) ? 600 : 500,
+                                lineHeight: '1.3',
+                              }}>
+                                {item.label}
+                              </span>
+                              {item.description && (
+                                <span style={{
+                                  fontSize: '12px',
+                                  color: 'var(--app-muted-text)',
+                                  lineHeight: '1.3',
+                                }}>
+                                  {item.description}
+                                </span>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -424,26 +582,28 @@ export default function TopNavbar() {
           {/* Right side: User controls */}
           {user && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              style={{
-                padding: '8px',
-                backgroundColor: 'transparent',
-                border: '1px solid var(--app-text)',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '20px',
-                position: 'relative',
-                zIndex: 1000,
-                pointerEvents: 'auto',
-                color: 'var(--app-text)',
-              }}
-              title={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
-              aria-label={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
-            >
-              ◐
-            </button>
+            {/* Theme Toggle - gated by dark_mode feature flag */}
+            {darkModeEnabled && (
+              <button
+                onClick={toggleTheme}
+                style={{
+                  padding: '8px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid var(--app-text)',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '20px',
+                  position: 'relative',
+                  zIndex: 1000,
+                  pointerEvents: 'auto',
+                  color: 'var(--app-text)',
+                }}
+                title={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
+                aria-label={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
+              >
+                ◐
+              </button>
+            )}
 
             {/* Language Switcher */}
             <div className="language-menu-container" style={{ position: 'relative' }}>
@@ -546,128 +706,37 @@ export default function TopNavbar() {
               )}
             </button>
 
-            <span style={{ fontSize: '14px', color: 'var(--app-text)', opacity: 0.7 }}>{user.email}</span>
-            <button
-              onClick={signOut}
-              disabled={signOutLoading}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: signOutLoading ? '#6c757d' : '#dc3545',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '14px',
-                cursor: signOutLoading ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {signOutLoading ? 'Logging out...' : 'Log Out'}
-            </button>
+            {/* Profile Avatar Dropdown */}
+            <ProfileAvatarDropdown />
           </div>
         )}
       </div>
 
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .mobile-menu-button {
             display: block !important;
           }
           .desktop-nav {
             display: none !important;
           }
+          .desktop-only {
+            display: none !important;
+          }
           #mega-menu-panel {
+            display: none !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .language-menu-container {
+            display: none !important;
+          }
+          .hide-on-mobile {
             display: none !important;
           }
         }
       `}</style>
       </nav>
-
-      {/* Docker-style Mega Menu Panel */}
-      {activeGroup && (
-        <div
-          id="mega-menu-panel"
-          role="menu"
-          onMouseEnter={handleMouseEnterDropdown}
-          onMouseLeave={handleMouseLeaveDropdown}
-          style={{
-            position: 'absolute',
-            top: '56px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '90%',
-            maxWidth: '1000px',
-            backgroundColor: 'var(--app-surface)',
-            border: '1px solid var(--app-border)',
-            borderRadius: '12px',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-            padding: '20px',
-            zIndex: 100,
-            pointerEvents: 'auto',
-          }}
-        >
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: `repeat(${getColumnCount(activeGroup.items.length)}, minmax(0, 1fr))`,
-              columnGap: '40px',
-              rowGap: '10px',
-            }}
-          >
-            {activeGroup.items.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                role="menuitem"
-                onClick={() => setOpenDropdown(null)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                  padding: '10px 12px',
-                  textDecoration: 'none',
-                  color: isItemActive(item.path) ? '#2563eb' : 'var(--app-text)',
-                  backgroundColor: isItemActive(item.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                  borderRadius: '10px',
-                  transition: 'background-color 0.15s',
-                  pointerEvents: 'auto',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isItemActive(item.path)) {
-                    e.currentTarget.style.backgroundColor = 'var(--app-surface-2)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isItemActive(item.path)) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-              >
-                {item.icon && <span style={{ fontSize: '16px', flexShrink: 0, marginTop: '2px' }}>{item.icon}</span>}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
-                  <span style={{
-                    fontSize: '14px',
-                    fontWeight: isItemActive(item.path) ? 600 : 500,
-                    lineHeight: '1.3',
-                    color: 'inherit',
-                  }}>
-                    {item.label}
-                  </span>
-                  {item.description && (
-                    <span style={{
-                      fontSize: '12px',
-                      fontWeight: 400,
-                      lineHeight: '1.4',
-                      color: 'var(--app-muted-text)',
-                    }}>
-                      {item.description}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
@@ -739,6 +808,13 @@ export default function TopNavbar() {
               ))}
             </div>
           ))}
+
+          {/* Mobile User Controls */}
+          {user && (
+            <div style={{ borderTop: '1px solid var(--app-border)', marginTop: '16px', paddingTop: '16px', padding: '16px' }}>
+              <ProfileAvatarDropdown />
+            </div>
+          )}
         </div>
       )}
     </div>

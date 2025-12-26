@@ -23,15 +23,19 @@ import AppShell from '../../components/AppShell';
  */
 
 interface BackendObservabilityMetrics {
-  timestamp: string;
-  response_time_p99?: number;
-  response_time_p95?: number;
-  response_time_median?: number;
-  error_rate_4xx?: number;
-  error_rate_5xx?: number;
-  active_connections?: number;
-  database_latency?: number;
-  cache_hit_ratio?: number;
+  timestamp?: string;
+  response_time_p99?: number | null;
+  response_time_p95?: number | null;
+  response_time_median?: number | null;
+  error_rate_4xx?: number | null;
+  error_rate_5xx?: number | null;
+  active_connections?: number | null;
+  database_latency?: number | null;
+  cache_hit_ratio?: number | null;
+  requests_total?: number | null;
+  message?: string;
+  available?: boolean;
+  error?: boolean;
 }
 
 export const ObservabilityPage: React.FC = () => {
@@ -48,37 +52,30 @@ export const ObservabilityPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/observability/metrics/', {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiBaseUrl}/api/observability/metrics/`, {
         headers: {
           'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
         },
         credentials: 'include',
       });
 
-      if (response.ok) {
-        const data: BackendObservabilityMetrics = await response.json();
-        setBackendMetrics(data);
-      } else if (response.status === 404) {
-        // Demo mode: Use mock observability data
-        const demoMetrics: BackendObservabilityMetrics = {
-          timestamp: new Date().toISOString(),
-          response_time_p99: 450 + Math.random() * 100,
-          response_time_p95: 250 + Math.random() * 50,
-          response_time_median: 120 + Math.random() * 30,
-          error_rate_4xx: Math.random() * 5,
-          error_rate_5xx: Math.random() * 2,
-          active_connections: 15 + Math.floor(Math.random() * 10),
-          database_latency: 25 + Math.random() * 15,
-          cache_hit_ratio: 0.85 + Math.random() * 0.1
-        };
-        setBackendMetrics(demoMetrics);
-      } else {
+      if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
+
+      const data: BackendObservabilityMetrics = await response.json();
+
+      // Check if backend returned an error flag
+      if (data.error) {
+        throw new Error(data.message || 'Backend metrics error');
+      }
+
+      setBackendMetrics(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch observability metrics');
       console.error('Observability fetch error:', err);
+      setBackendMetrics(null);
     } finally {
       setLoading(false);
     }
@@ -89,14 +86,32 @@ export const ObservabilityPage: React.FC = () => {
     // Set up polling every 30 seconds
     const interval = setInterval(fetchMetrics, 30000);
     return () => clearInterval(interval);
-  }, [manualRefresh]);
+  }, []);
 
-  const refetch = async () => {
-    await fetchMetrics();
-  };
+  // Update metrics history when new backend data arrives
+  useEffect(() => {
+    if (backendMetrics && backendMetrics.available) {
+      const currentMetrics: ObservabilityMetrics = {
+        timestamp: Date.now(),
+        responseTime: {
+          p50: backendMetrics.response_time_median || 0,
+          p95: backendMetrics.response_time_p95 || 0,
+          p99: backendMetrics.response_time_p99 || 0,
+        },
+        errorRate: (backendMetrics.error_rate_4xx || 0) + (backendMetrics.error_rate_5xx || 0),
+        activeConnections: backendMetrics.active_connections || 0,
+      };
 
-  // Convert backend metrics to chart format
-  const currentMetrics: ObservabilityMetrics | null = backendMetrics ? {
+      const newHistory = [...historyRef.current, currentMetrics];
+      // Keep only last 20 data points
+      const trimmedHistory = newHistory.slice(-20);
+      historyRef.current = trimmedHistory;
+      setMetricsHistory(trimmedHistory);
+    }
+  }, [backendMetrics]);
+
+  // Convert backend metrics to chart format for current display
+  const currentMetrics: ObservabilityMetrics | null = backendMetrics && backendMetrics.available ? {
     timestamp: Date.now(),
     responseTime: {
       p50: backendMetrics.response_time_median || 0,
@@ -107,39 +122,45 @@ export const ObservabilityPage: React.FC = () => {
     activeConnections: backendMetrics.active_connections || 0,
   } : null;
 
-  // Update metrics history when new data arrives
-  useEffect(() => {
-    if (currentMetrics) {
-      const newHistory = [...historyRef.current, currentMetrics];
-      // Keep only last 20 data points
-      const trimmedHistory = newHistory.slice(-20);
-      historyRef.current = trimmedHistory;
-      setMetricsHistory(trimmedHistory);
-    }
-  }, [currentMetrics]);
-
   const handleManualRefresh = async () => {
-    setManualRefresh(prev => prev + 1);
-    await refetch();
+    await fetchMetrics();
   };
+
+  // Determine if we have any usable data
+  const hasData = backendMetrics?.available === true;
+  const isEmptyState = !loading && !error && backendMetrics && !hasData;
 
   if (error) {
     return (
-      <div>
-        <PageHeader
-          title="Observability"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Platform' },
-            { label: 'Observability' },
-          ]}
-        />
-        <PageContent>
-          <Alert type="error" data-testid="observability-error">
-            {error}
-          </Alert>
-        </PageContent>
-      </div>
+      <AppShell>
+        <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
+          <PageHeader
+            title="Observability"
+            breadcrumbs={[
+              { label: 'Home', href: '/' },
+              { label: 'Platform' },
+              { label: 'Observability' },
+            ]}
+          />
+          <PageContent>
+            <Card style={{
+              marginBottom: '16px',
+              padding: '24px',
+              backgroundColor: 'var(--app-surface)',
+              border: '1px solid var(--app-border)'
+            }}>
+              <Alert type="error" data-testid="observability-error">
+                Observability data unavailable (backend error): {error}
+              </Alert>
+              <div style={{ marginTop: '16px' }}>
+                <Button onClick={handleManualRefresh}>
+                  Retry
+                </Button>
+              </div>
+            </Card>
+          </PageContent>
+        </div>
+      </AppShell>
     );
   }
 
@@ -149,7 +170,7 @@ export const ObservabilityPage: React.FC = () => {
 
   return (
     <AppShell>
-      <div>
+      <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
         <PageHeader
         title="Observability"
         breadcrumbs={[
@@ -158,134 +179,186 @@ export const ObservabilityPage: React.FC = () => {
           { label: 'Observability' },
         ]}
       />
-      <PageContent>        <Alert type="info" className="mb-4">
-          <strong>Demo Mode:</strong> This page shows mock observability data with simulated real-time updates. API endpoints are not yet implemented.
-        </Alert>        <Card data-testid="observability-header" className="mb-4">
-          <div className="p-6 flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-semibold mb-1">Metrics</h3>
-              <p className="text-sm text-gray-600">
-                Last updated: <span className="font-mono text-gray-700">{lastUpdated}</span>
-              </p>
-              {loading && <p className="text-sm text-blue-600 mt-1">Updating...</p>}
+      <PageContent>
+        {/* Loading state - only show on initial load */}
+        {loading && !backendMetrics && (
+          <Card style={{
+            padding: '48px 24px',
+            textAlign: 'center',
+            backgroundColor: 'var(--app-surface)',
+            border: '1px solid var(--app-border)'
+          }}>
+            <div style={{ color: 'var(--app-muted-text)', fontSize: '16px' }}>
+              Loading observability metrics...
             </div>
-            <Button
-              onClick={handleManualRefresh}
-              disabled={loading}
-              data-testid="refresh-button"
-            >
-              {loading ? 'Refreshing...' : 'Refresh Now'}
-            </Button>
-          </div>
-        </Card>
+          </Card>
+        )}
 
-        {backendMetrics && (
+        {/* Empty state - backend available but no metrics configured */}
+        {isEmptyState && (
+          <Card style={{
+            padding: '24px',
+            backgroundColor: 'var(--app-surface)',
+            border: '1px solid var(--app-border)'
+          }}>
+            <div style={{ marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--app-text)', margin: '0 0 8px 0' }}>
+                Status
+              </h3>
+              <Alert type="info">
+                No observability metrics configured yet. {backendMetrics?.message}
+              </Alert>
+            </div>
+            <Button onClick={handleManualRefresh} variant="secondary">
+              Check Again
+            </Button>
+          </Card>
+        )}
+
+        {/* Data available - show metrics */}
+        {hasData && backendMetrics && (
           <>
+            <Card data-testid="observability-header" style={{
+              marginBottom: '24px',
+              padding: '24px',
+              backgroundColor: 'var(--app-surface)',
+              border: '1px solid var(--app-border)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '4px', color: 'var(--app-text)' }}>Metrics</h3>
+                  <p style={{ fontSize: '14px', color: 'var(--app-muted-text)', margin: 0 }}>
+                    Last updated: <span style={{ fontFamily: 'monospace', color: 'var(--app-text)' }}>
+                      {backendMetrics.timestamp ? new Date(backendMetrics.timestamp).toLocaleTimeString() : 'N/A'}
+                    </span>
+                  </p>
+                  {loading && <p style={{ fontSize: '14px', color: '#007bff', marginTop: '4px', margin: 0 }}>Updating...</p>}
+                  {backendMetrics.message && (
+                    <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px', margin: '4px 0 0 0' }}>
+                      {backendMetrics.message}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  onClick={handleManualRefresh}
+                  disabled={loading}
+                  data-testid="refresh-button"
+                >
+                  {loading ? 'Refreshing...' : 'Refresh Now'}
+                </Button>
+              </div>
+            </Card>
             {/* Charts Section */}
-            <Card className="mb-6" data-testid="observability-charts">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Metrics Visualization</h3>
+            {metricsHistory.length > 0 && (
+              <Card style={{
+                marginBottom: '24px',
+                padding: '24px',
+                backgroundColor: 'var(--app-surface)',
+                border: '1px solid var(--app-border)'
+              }} data-testid="observability-charts">
+                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Metrics Visualization</h3>
                 <ObservabilityCharts
                   metricsHistory={metricsHistory}
                   currentMetrics={currentMetrics}
                 />
-              </div>
-            </Card>
+              </Card>
+            )}
 
-            <Card data-testid="latency-metrics" className="mb-4">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Response Latency</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <div className="text-sm text-gray-600">p99 Latency</div>
-                    <div className="text-2xl font-bold text-red-600 mt-2">
-                      {backendMetrics.response_time_p99?.toFixed(0) || 'N/A'}
-                      <span className="text-sm font-normal text-gray-600">ms</span>
-                    </div>
+            <Card data-testid="latency-metrics" style={{
+              marginBottom: '24px',
+              padding: '24px',
+              backgroundColor: 'var(--app-surface)',
+              border: '1px solid var(--app-border)'
+            }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Response Latency</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
+                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>p99 Latency</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc3545', marginTop: '8px' }}>
+                    {backendMetrics.response_time_p99 != null ? backendMetrics.response_time_p99.toFixed(0) : 'N/A'}
+                    <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--app-muted-text)' }}>ms</span>
                   </div>
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <div className="text-sm text-gray-600">p95 Latency</div>
-                    <div className="text-2xl font-bold text-orange-600 mt-2">
-                      {backendMetrics.response_time_p95?.toFixed(0) || 'N/A'}
-                      <span className="text-sm font-normal text-gray-600">ms</span>
-                    </div>
+                </div>
+                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
+                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>p95 Latency</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#fd7e14', marginTop: '8px' }}>
+                    {backendMetrics.response_time_p95 != null ? backendMetrics.response_time_p95.toFixed(0) : 'N/A'}
+                    <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--app-muted-text)' }}>ms</span>
                   </div>
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <div className="text-sm text-gray-600">Median Latency</div>
-                    <div className="text-2xl font-bold text-green-600 mt-2">
-                      {backendMetrics.response_time_median?.toFixed(0) || 'N/A'}
-                      <span className="text-sm font-normal text-gray-600">ms</span>
-                    </div>
+                </div>
+                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
+                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Median Latency</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745', marginTop: '8px' }}>
+                    {backendMetrics.response_time_median != null ? backendMetrics.response_time_median.toFixed(0) : 'N/A'}
+                    <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--app-muted-text)' }}>ms</span>
                   </div>
                 </div>
               </div>
             </Card>
 
-            <Card data-testid="error-metrics" className="mb-4">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Error Rates</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <div className="text-sm text-gray-600">4xx Error Rate</div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="text-2xl font-bold text-yellow-600">
-                        {backendMetrics.error_rate_4xx?.toFixed(2) || 'N/A'}%
-                      </div>
-                      {backendMetrics.error_rate_4xx && backendMetrics.error_rate_4xx > 5 && (
-                        <Badge type="warning">Elevated</Badge>
-                      )}
+            <Card data-testid="error-metrics" style={{
+              marginBottom: '24px',
+              padding: '24px',
+              backgroundColor: 'var(--app-surface)',
+              border: '1px solid var(--app-border)'
+            }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Error Rates</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
+                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>4xx Error Rate</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffc107' }}>
+                      {backendMetrics.error_rate_4xx != null ? backendMetrics.error_rate_4xx.toFixed(2) : 'N/A'}%
                     </div>
+                    {backendMetrics.error_rate_4xx != null && backendMetrics.error_rate_4xx > 5 && (
+                      <Badge type="warning">Elevated</Badge>
+                    )}
                   </div>
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <div className="text-sm text-gray-600">5xx Error Rate</div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="text-2xl font-bold text-red-600">
-                        {backendMetrics.error_rate_5xx?.toFixed(2) || 'N/A'}%
-                      </div>
-                      {backendMetrics.error_rate_5xx && backendMetrics.error_rate_5xx > 1 && (
-                        <Badge type="error">Critical</Badge>
-                      )}
+                </div>
+                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
+                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>5xx Error Rate</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc3545' }}>
+                      {backendMetrics.error_rate_5xx != null ? backendMetrics.error_rate_5xx.toFixed(2) : 'N/A'}%
                     </div>
+                    {backendMetrics.error_rate_5xx != null && backendMetrics.error_rate_5xx > 1 && (
+                      <Badge type="error">Critical</Badge>
+                    )}
                   </div>
                 </div>
               </div>
             </Card>
 
-            <Card data-testid="resource-metrics" className="mb-4">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Resources</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <div className="text-sm text-gray-600">Active Connections</div>
-                    <div className="text-2xl font-bold text-blue-600 mt-2">
-                      {backendMetrics.active_connections || 'N/A'}
-                    </div>
+            <Card data-testid="resource-metrics" style={{
+              marginBottom: '24px',
+              padding: '24px',
+              backgroundColor: 'var(--app-surface)',
+              border: '1px solid var(--app-border)'
+            }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Resources</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
+                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Active Connections</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff', marginTop: '8px' }}>
+                    {backendMetrics.active_connections != null ? backendMetrics.active_connections : 'N/A'}
                   </div>
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <div className="text-sm text-gray-600">Database Latency</div>
-                    <div className="text-2xl font-bold text-green-600 mt-2">
-                      {backendMetrics.database_latency?.toFixed(1) || 'N/A'}
-                      <span className="text-sm font-normal text-gray-600">ms</span>
-                    </div>
+                </div>
+                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
+                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Database Latency</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745', marginTop: '8px' }}>
+                    {backendMetrics.database_latency != null ? backendMetrics.database_latency.toFixed(1) : 'N/A'}
+                    <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--app-muted-text)' }}>ms</span>
                   </div>
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <div className="text-sm text-gray-600">Cache Hit Ratio</div>
-                    <div className="text-2xl font-bold text-purple-600 mt-2">
-                      {backendMetrics.cache_hit_ratio?.toFixed(1) || 'N/A'}%
-                    </div>
+                </div>
+                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
+                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Cache Hit Ratio</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#6f42c1', marginTop: '8px' }}>
+                    {backendMetrics.cache_hit_ratio != null ? (backendMetrics.cache_hit_ratio * 100).toFixed(1) : 'N/A'}%
                   </div>
                 </div>
               </div>
             </Card>
           </>
-        )}
-
-        {loading && !backendMetrics && (
-          <Card>
-            <div className="text-center py-8 text-gray-500">
-              Loading observability metrics...
-            </div>
-          </Card>
         )}
       </PageContent>
       </div>

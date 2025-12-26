@@ -1,6 +1,7 @@
 import type { ThemeMode } from '../types/theme';
 import { getSystemTheme } from './systemPreference';
-import { lightTheme, darkTheme } from '../themes';
+import { lightTheme as tsLightTheme, darkTheme as tsDarkTheme } from '../themes';
+import { lightTheme as dsLightTheme, darkTheme as dsDarkTheme } from '@django-core/design-system';
 
 /**
  * Resolve theme mode to actual light or dark value.
@@ -37,5 +38,7 @@ export function resolveThemeMode(mode: ThemeMode): 'light' | 'dark' {
  * ```
  */
 export function getThemeClassName(resolvedMode: 'light' | 'dark'): string {
-  return resolvedMode === 'dark' ? darkTheme : lightTheme;
+  return resolvedMode === 'dark'
+    ? `${tsDarkTheme} ${dsDarkTheme}`
+    : `${tsLightTheme} ${dsLightTheme}`;
 }

@@ -167,7 +167,7 @@ export const OrganisationsPage: React.FC = () => {
           { label: 'Organisations', current: true },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
             <label style={{ fontSize: '14px', fontWeight: 500 }}>Status:</label>
             <select
               value={statusFilter}
@@ -225,7 +225,9 @@ export const OrganisationsPage: React.FC = () => {
           }
 
           return (
+          <div style={{ overflowX: 'auto' }}>
           <Table
+            style={{ minWidth: '1000px' }}
             columns={[
               {
                 key: 'name',
@@ -382,6 +384,7 @@ export const OrganisationsPage: React.FC = () => {
             loading={loading}
             data-testid="org-table"
           />
+          </div>
         );
         })()}
 

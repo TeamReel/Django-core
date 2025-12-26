@@ -96,12 +96,13 @@ def check_permission(
                 pass
             elif assignment.scope == ScopeChoices.ORGANIZATION:
                 # Organization roles apply if resource belongs to that org
-                if (
-                    resource_type == "organisation"
-                    and resource_id == assignment.target_organization_id
+                # Handle case-insensitive resource_type (e.g. "Organisation" vs "organisation")
+                # Handle UUID vs string comparison for IDs
+                if resource_type.lower() == "organisation" and str(resource_id) == str(
+                    assignment.target_organization_id
                 ):
                     pass  # Relevant
-                elif resource_type == "project" and resource_id:
+                elif resource_type.lower() == "project" and resource_id:
                     # For project checks, org roles apply if project belongs
                     # to this org. We need to look up the project's org.
                     # For now, skip this check (will be refined in WP03)
@@ -110,7 +111,9 @@ def check_permission(
                     continue  # Not relevant to this resource
             elif assignment.scope == ScopeChoices.PROJECT:
                 # Project roles only apply to specific project
-                if resource_type == "project" and resource_id == assignment.target_project_id:
+                if resource_type.lower() == "project" and str(resource_id) == str(
+                    assignment.target_project_id
+                ):
                     pass  # Relevant
                 else:
                     continue  # Not relevant

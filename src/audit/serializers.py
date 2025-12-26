@@ -18,7 +18,7 @@ class AuditEventSerializer(serializers.ModelSerializer):
     user = AuditUserSerializer(read_only=True)
     timestamp = serializers.DateTimeField(source="created_at", read_only=True)
     organisation_id = serializers.IntegerField(source="organization_id", read_only=True)
-    project_id = serializers.IntegerField(source="project_id", read_only=True)
+    project_id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = AuditEvent

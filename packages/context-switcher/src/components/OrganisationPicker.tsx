@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { Modal, Input, Stack, Text, Spinner } from '@django-core/design-system';
+import { Modal, Input, Stack, Text, Spinner, themeVars } from '@django-core/design-system';
 import { useContextSwitcher } from '../hooks/useContextSwitcher';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
@@ -238,7 +238,8 @@ export function OrganisationPicker({
                       padding: '12px 16px',
                       textAlign: 'left',
                       border: 'none',
-                      backgroundColor: index === selectedIndex ? '#f3f4f6' : 'transparent',
+                      backgroundColor: index === selectedIndex ? themeVars.color.background.secondary : 'transparent',
+                      color: themeVars.color.text.primary,
                       cursor: org.id === context.organisation?.id ? 'default' : 'pointer',
                       borderRadius: '4px',
                       transition: 'background-color 0.2s',
@@ -291,7 +292,8 @@ export function OrganisationPicker({
                       padding: '12px 16px',
                       textAlign: 'left',
                       border: 'none',
-                      backgroundColor: index === selectedIndex ? '#f3f4f6' : 'transparent',
+                      backgroundColor: index === selectedIndex ? themeVars.color.background.secondary : 'transparent',
+                      color: themeVars.color.text.primary,
                       cursor: org.id === context.organisation?.id ? 'default' : 'pointer',
                       borderRadius: '4px',
                       transition: 'background-color 0.2s',
@@ -328,7 +330,7 @@ export function OrganisationPicker({
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              backgroundColor: themeVars.color.background.overlay,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
