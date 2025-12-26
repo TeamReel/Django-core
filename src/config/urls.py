@@ -69,6 +69,10 @@ urlpatterns = [
     path("api/v1/contextual-notifications/", include("contextual_notifications.urls")),
     # B22: File & Media Management
     path("api/v1/", include("files.urls")),
+    # Security Baseline API
+    path("api/security/", include("security_baseline.urls")),
+    # Audit Log API
+    path("api/audit/", include("audit.urls")),
     path("", include("django_prometheus.urls")),  # Exposes /metrics endpoint
     # B14: Web UI Baseline - User-facing HTML pages
     path("ui/", include("web_ui.urls")),  # Web UI URLs under /ui/

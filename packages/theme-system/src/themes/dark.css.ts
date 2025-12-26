@@ -1,10 +1,8 @@
 import { createTheme } from '@vanilla-extract/css';
 import { themeVars } from './contract.css';
-// Import directly from source since design-system doesn't generate .d.ts files yet
-import { colorVars } from '../../../design-system/src/tokens/colors.css';
-import { spacingVars } from '../../../design-system/src/tokens/spacing.css';
-import { radiusVars } from '../../../design-system/src/tokens/radius.css';
-import { shadowVars } from '../../../design-system/src/tokens/shadows.css';
+import { themeVars as dsThemeVars } from '@django-core/design-system';
+
+const { color: colorVars, spacing: spacingVars, radius: radiusVars, shadow: shadowVars } = dsThemeVars;
 
 /**
  * Dark theme implementation mapping F01 design-system tokens to theme contract.

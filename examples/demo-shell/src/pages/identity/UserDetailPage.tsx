@@ -7,6 +7,7 @@ import {
   Alert,
   Badge,
 } from '@django-core/design-system';
+import { PageHeader, PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import UserEditModal from './UserEditModal';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
@@ -171,44 +172,86 @@ export const UserDetailPage: React.FC = () => {
 
   return (
     <AppShell>
-      <div style={{ marginBottom: '16px', fontSize: '14px' }}>
-          <Link to="/" style={{ textDecoration: 'none', color: '#0066cc' }}>Home</Link>
-          <span style={{ margin: '0 8px', color: '#999' }}>/</span>
-          <Link to="/users" style={{ textDecoration: 'none', color: '#0066cc' }}>Users</Link>
-          <span style={{ margin: '0 8px', color: '#999' }}>/</span>
-          <span style={{ color: '#333', fontWeight: 500 }}>{user.first_name} {user.last_name}</span>
-      </div>
+      <PageHeader
+        title="User Details"
+        breadcrumbs={[
+          { label: 'Home', href: '/' },
+          { label: 'Users', onClick: () => navigate('/users') },
+          { label: `${user.first_name} ${user.last_name}`, current: true },
+        ]}
+        actions={
+            <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => navigate('/users')}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface-2)',
+                    color: 'var(--app-text)',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 500
+                  }}
+                >
+                  Back to List
+                </button>
+                <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid #0056b3',
+                    backgroundColor: 'var(--app-surface)',
+                    color: 'var(--app-text)',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 500
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => setIsAssignModalOpen(true)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface-2)',
+                    color: 'var(--app-text)',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 500
+                  }}
+                >
+                  Assign
+                </button>
+            </div>
+        }
+      />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 600 }}>User Details</h1>
-        <div style={{ display: 'flex', gap: '8px' }}>
-            <Button onClick={() => navigate('/users')} variant="secondary">Back to List</Button>
-            <Button onClick={() => setIsEditModalOpen(true)} variant="primary">Edit</Button>
-            <Button onClick={() => setIsAssignModalOpen(true)} variant="secondary">Assign</Button>
-        </div>
-      </div>
-
+      <PageContent>
       <Card>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
           <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Profile Information</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Profile Information</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#666', marginBottom: '4px' }}>Full Name</label>
-                <div style={{ fontWeight: 500 }}>{user.first_name} {user.last_name}</div>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Full Name</label>
+                <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{user.first_name} {user.last_name}</div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#666', marginBottom: '4px' }}>Email</label>
-                <div style={{ fontWeight: 500 }}>{user.email}</div>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Email</label>
+                <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{user.email}</div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#666', marginBottom: '4px' }}>System Role</label>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>System Role</label>
                 <Badge variant={user.role === 'superadmin' ? 'primary' : 'neutral'}>
                   {user.role}
                 </Badge>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#666', marginBottom: '4px' }}>Status</label>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Status</label>
                 <Badge variant={user.is_active ? 'success' : 'error'}>
                   {user.is_active ? 'Active' : 'Inactive'}
                 </Badge>
@@ -218,7 +261,7 @@ export const UserDetailPage: React.FC = () => {
 
 
           <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Organisations</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Organisations</h3>
             {user.organisations && user.organisations.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {user.organisations.map((org: any) => {
@@ -274,6 +317,7 @@ export const UserDetailPage: React.FC = () => {
           </div>
         </div>
       </Card>
+      </PageContent>
 
       <UserEditModal
         opened={isEditModalOpen}

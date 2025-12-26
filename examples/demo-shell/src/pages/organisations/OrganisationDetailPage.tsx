@@ -57,10 +57,10 @@ export default function OrganisationDetailPage() {
       <AppShell>
         <div style={{
           padding: '12px',
-          backgroundColor: '#fee',
-          border: '1px solid #fcc',
+          backgroundColor: 'var(--app-surface-2)',
+          border: '1px solid #bd2130',
           borderRadius: '4px',
-          color: '#c00'
+          color: '#dc3545'
         }}>
           {error || 'Organisation not found'}
         </div>
@@ -74,14 +74,14 @@ export default function OrganisationDetailPage() {
   return (
     <AppShell>
       <div>
-        <nav style={{ marginBottom: '24px', fontSize: '14px', color: '#666' }}>
+        <nav style={{ marginBottom: '24px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
           <Link to="/organisations">Organisations</Link> / {organisation.name}
         </nav>
 
-        <h1>{organisation.name}</h1>
+        <h1 style={{ color: 'var(--app-text)' }}>{organisation.name}</h1>
 
         {organisation.description && (
-          <p style={{ color: '#666', fontSize: '16px', marginBottom: '32px' }}>
+          <p style={{ color: 'var(--app-muted-text)', fontSize: '16px', marginBottom: '32px' }}>
             {organisation.description}
           </p>
         )}
@@ -90,13 +90,14 @@ export default function OrganisationDetailPage() {
           <Link
             to={`/organisations/${organisation.slug}/projects`}
             style={{
-              padding: '12px 24px',
-              backgroundColor: '#007bff',
-              color: 'white',
+              padding: '6px 12px',
+              backgroundColor: 'var(--app-surface-2)',
+              color: 'var(--app-text)',
               textDecoration: 'none',
               borderRadius: '4px',
-              fontSize: '16px',
-              fontWeight: 500
+              fontSize: '14px',
+              fontWeight: 500,
+              border: '1px solid #0056b3'
             }}
           >
             View Projects
@@ -104,21 +105,21 @@ export default function OrganisationDetailPage() {
         </div>
 
         <div style={{
-          border: '1px solid #ddd',
+          border: '1px solid var(--app-border)',
           borderRadius: '8px',
           padding: '24px',
-          backgroundColor: '#f8f9fa'
+          backgroundColor: 'var(--app-surface)'
         }}>
-          <h2 style={{ marginTop: 0 }}>Organisation Details</h2>
+          <h2 style={{ marginTop: 0, color: 'var(--app-text)' }}>Organisation Details</h2>
           <dl style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '12px' }}>
-            <dt style={{ fontWeight: 600 }}>Name:</dt>
-            <dd style={{ margin: 0 }}>{organisation.name}</dd>
+            <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Name:</dt>
+            <dd style={{ margin: 0, color: 'var(--app-text)' }}>{organisation.name}</dd>
 
-            <dt style={{ fontWeight: 600 }}>Slug:</dt>
-            <dd style={{ margin: 0, fontFamily: 'monospace' }}>{organisation.slug}</dd>
+            <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Slug:</dt>
+            <dd style={{ margin: 0, fontFamily: 'monospace', color: 'var(--app-text)' }}>{organisation.slug}</dd>
 
-            <dt style={{ fontWeight: 600 }}>ID:</dt>
-            <dd style={{ margin: 0, fontFamily: 'monospace' }}>{organisation.id}</dd>
+            <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>ID:</dt>
+            <dd style={{ margin: 0, fontFamily: 'monospace', color: 'var(--app-text)' }}>{organisation.id}</dd>
           </dl>
         </div>
       </div>

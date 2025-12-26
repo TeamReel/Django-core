@@ -10,12 +10,15 @@ export const card = recipe({
     variant: {
       outlined: {
         border: `1px solid ${themeVars.color.border.primary}`,
+        backgroundColor: themeVars.color.background.primary,
       },
       elevated: {
         boxShadow: themeVars.shadow.md,
+        backgroundColor: themeVars.color.background.primary,
       },
       filled: {
         backgroundColor: themeVars.color.background.secondary,
+        border: 'none',
       },
     },
     padding: {

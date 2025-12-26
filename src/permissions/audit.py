@@ -54,23 +54,47 @@ class B09Backend:
     Adapter for B09-audit-logging integration.
 
     Falls back to silent operation if B09 not available.
+    Supports both 'audit_logging' package and internal 'audit' app.
     """
 
     def __init__(self):
-        self.b09_available = self._check_b09_available()
+        self.b09_available = False
         self.emit_event = None
-        if self.b09_available:
+
+        # 1. Try external audit_logging package
+        if importlib.util.find_spec("audit_logging") is not None:
             try:
                 from audit_logging import emit_event  # type: ignore
 
                 self.emit_event = emit_event
+                self.b09_available = True
             except ImportError:
                 logger.warning("B09 audit_logging found but emit_event not importable")
-                self.b09_available = False
 
-    def _check_b09_available(self) -> bool:
-        """Check if B09-audit-logging package is installed."""
-        return importlib.util.find_spec("audit_logging") is not None
+        # 2. Try internal audit app if external not found
+        if not self.b09_available and importlib.util.find_spec("audit.api") is not None:
+            try:
+                from audit.api import audit_log
+
+                def emit_event_adapter(event_type, user_id, data):
+                    # Map permission_check to permission.checked
+                    if event_type == "permission_check":
+                        event_type = "permission.checked"
+
+                    # Fetch user if possible (audit.api expects User object)
+                    user = None
+                    if user_id:
+                        try:
+                            user = User.objects.get(id=user_id)
+                        except User.DoesNotExist:
+                            pass
+
+                    audit_log.record(event_type, user=user, metadata=data)
+
+                self.emit_event = emit_event_adapter
+                self.b09_available = True
+            except ImportError:
+                logger.warning("Internal audit app found but could not be adapted")
 
     def emit(
         self,
@@ -169,6 +193,7 @@ def emit_role_assignment_audit(
     scope: str,
     target_org_id: Optional[str] = None,
     target_project_id: Optional[str] = None,
+    action: str = "assigned",
 ) -> None:
     """
     Emit audit event for role assignment.
@@ -181,7 +206,39 @@ def emit_role_assignment_audit(
         scope: Role scope (global/organization/project)
         target_org_id: Target organization UUID if applicable
         target_project_id: Target project UUID if applicable
+        action: "assigned" (or "created") or "revoked"
     """
+    # Try to use internal audit log directly for better event typing
+    try:
+        from audit.api import audit_log
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+
+        event_type = "role.revoked" if action == "revoked" else "role.assigned"
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            user = None
+
+        audit_log.record(
+            event_type,
+            user=user,
+            metadata={
+                "role_name": role_name,
+                "target_user_id": assigned_to_user_id,
+                "scope": scope,
+                "target_org_id": target_org_id,
+                "target_project_id": target_project_id,
+                "role_id": role_id,
+            },
+        )
+        return
+    except ImportError:
+        pass
+
+    # Fallback to generic backend
     backend = get_audit_backend()
     backend.emit(
         user_id=user_id,
@@ -190,7 +247,7 @@ def emit_role_assignment_audit(
         resource_id=assigned_to_user_id,
         decision="grant",
         context={
-            "action": "assign_role",
+            "action": action,
             "role_id": role_id,
             "role_name": role_name,
             "scope": scope,

@@ -12,7 +12,8 @@ export function PageContent({ children, ...props }: PageContentProps) {
   return (
     <div
       style={{
-        backgroundColor: '#f9fafb',
+        backgroundColor: 'var(--app-bg)',
+        color: 'var(--app-text)',
         minHeight: 'calc(100vh - 140px)',
       }}
       {...props}

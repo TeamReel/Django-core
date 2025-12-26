@@ -1,3 +1,4 @@
+from audit.api import audit_log
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
@@ -147,20 +148,27 @@ def login_api(request):
                 request.session["last_activity"] = timezone.now().timestamp()
             except Exception as e:
                 print(f"Session error: {e}")
-            return Response(
-                {
-                    "id": user.id,
-                    "email": user.email,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "role": (
-                        "superadmin"
-                        if user.is_superuser
-                        else ("admin" if user.is_admin else "user")
-                    ),
-                    "message": "Login successful.",
-                }
-            )
+
+            # Audit log: Successful login
+            audit_log.record("auth.login", user=user, request=request)
+
+            # Use UserListSerializer to include organisations and consistent fields
+            user_data = UserListSerializer(user).data
+            user_data["message"] = "Login successful."
+
+            return Response(user_data)
+
+        # Audit log: Failed login
+        # Try to find user to attach to audit log (for org-scoped visibility)
+        failed_user = User.objects.filter(email=serializer.validated_data.get("email")).first()
+
+        audit_log.record(
+            "auth.login_failed",
+            user=failed_user,
+            metadata={"username": serializer.validated_data.get("email")},
+            request=request,
+        )
+
         return Response(
             {
                 "error": "invalid_credentials",
@@ -174,6 +182,9 @@ def login_api(request):
 @api_view(["POST"])
 def logout_api(request):
     """API endpoint for user logout."""
+    if request.user.is_authenticated:
+        audit_log.record("auth.logout", user=request.user, request=request)
+
     auth_logout(request)
     return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -204,26 +215,8 @@ def auth_me(request):
         )
 
     user = request.user
-
-    # Determine role based on user attributes
-    if user.is_superuser:
-        role = "superadmin"
-    elif getattr(user, "is_admin", False) or user.is_staff:
-        role = "admin"
-    else:
-        role = "user"
-
-    data = {
-        "id": user.id,
-        "email": user.email,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "role": role,
-        "email_verified": getattr(user, "email_verified", True),
-        "is_active": user.is_active,
-    }
-
-    return Response(data, status=status.HTTP_200_OK)
+    serializer = UserListSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["PATCH"])
@@ -438,6 +431,9 @@ def password_reset_confirm_api(request):
             # Set new password
             user.set_password(serializer.validated_data["new_password"])
             user.save()
+
+            # Audit log: Password changed
+            audit_log.record("auth.password_changed", user=user, request=request)
 
             # Invalidate all existing sessions for this user
             from django.contrib.sessions.models import Session

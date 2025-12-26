@@ -28,18 +28,18 @@ export function DesignSystemPage() {
 
   return (
     <AppShell>
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }} data-testid="design-system-page" onKeyDown={handleKeyDown} tabIndex={0}>
-      <div style={{ padding: '24px', borderBottom: '1px solid #e5e5e5', backgroundColor: '#fff' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }} data-testid="design-system-page" onKeyDown={handleKeyDown} tabIndex={0}>
+      <div style={{ padding: '24px', borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
         <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700 }}>Design System</h1>
-        <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>F01 Components Gallery</p>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--app-muted-text)' }}>F01 Components Gallery</p>
       </div>
       <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '48px' }}>
+        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Buttons</h2>
           <div style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px' }}>Interactive Examples</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-              <Card className="interactive-card" style={{ padding: '16px' }}>
+              <Card variant="filled" className="interactive-card" style={{ padding: '16px' }}>
                 <Button
                   variant="primary"
                   onClick={() => setClickCount(prev => prev + 1)}
@@ -48,9 +48,9 @@ export function DesignSystemPage() {
                 >
                   Click Me ({clickCount})
                 </Button>
-                <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>✨ Hover & click for effects</p>
+                <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>✨ Hover & click for effects</p>
               </Card>
-              <Card className="interactive-card" style={{ padding: '16px' }}>
+              <Card variant="filled" className="interactive-card" style={{ padding: '16px' }}>
                 <Button
                   variant="secondary"
                   onClick={() => setIsLoading(!isLoading)}
@@ -60,9 +60,9 @@ export function DesignSystemPage() {
                 >
                   {isLoading ? 'Loading...' : 'Toggle Loading'}
                 </Button>
-                <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>🔄 Try disabled state</p>
+                <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>🔄 Try disabled state</p>
               </Card>
-              <Card className="interactive-card" style={{ padding: '16px' }}>
+              <Card variant="filled" className="interactive-card" style={{ padding: '16px' }}>
                 <Button
                   variant="destructive"
                   onClick={() => alert('🗑️ Delete action confirmed!')}
@@ -71,13 +71,13 @@ export function DesignSystemPage() {
                 >
                   Delete Item
                 </Button>
-                <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>⚠️ Hover for danger state</p>
+                <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>⚠️ Hover for danger state</p>
               </Card>
             </div>
           </div>
           <div>
             <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px' }}>Variant Switcher</h3>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <div style={{ marginBottom: '12px', display: 'flex', gap: '8px' }}>
                 <Button
                   variant={selectedVariant === 'primary' ? 'primary' : 'secondary'}
@@ -104,11 +104,11 @@ export function DesignSystemPage() {
               <Button variant={selectedVariant}>Current: {selectedVariant}</Button>
             </Card>
           </div>
-        </div>
-        <div style={{ marginBottom: '48px' }}>
+        </Card>
+        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Inputs</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Interactive Input</h3>
               <Input
                 type="text"
@@ -118,11 +118,11 @@ export function DesignSystemPage() {
                 className="glow-input"
                 style={{ marginBottom: '8px' }}
               />
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+              <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>
                 Characters: {inputValue.length}
               </p>
             </Card>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>State Examples</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <Input type="text" placeholder="Normal state" className="glow-input" />
@@ -139,11 +139,11 @@ export function DesignSystemPage() {
               </div>
             </Card>
           </div>
-        </div>
-        <div style={{ marginBottom: '48px' }}>
+        </Card>
+        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Badges</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>Static Variants</h3>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <Badge variant="primary">Primary</Badge>
@@ -152,7 +152,7 @@ export function DesignSystemPage() {
                 <Badge variant="danger">Danger</Badge>
               </div>
             </Card>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>Dynamic Counter</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <Badge variant="primary" className="badge-hover">Clicks: {clickCount}</Badge>
@@ -165,28 +165,30 @@ export function DesignSystemPage() {
               </div>
             </Card>
           </div>
-        </div>
-        <div style={{ marginBottom: '48px' }}>
+        </Card>
+        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Alerts</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <Alert variant="success">
-              🎉 Success! You clicked the button {clickCount} times
-            </Alert>
-            <Alert variant="warning">
-              ⚠️ {inputValue.length > 20 ? 'Text is getting quite long!' : 'Warning alert - type more than 20 characters'}
-            </Alert>
-            <Alert variant="danger">
-              🚨 {isLoading ? 'System is processing - please wait' : 'Danger alert - click Toggle Loading button'}
-            </Alert>
-            <Alert variant="info">
-              ℹ️ Currently using {selectedVariant} button variant
-            </Alert>
-          </div>
-        </div>
-        <div style={{ marginBottom: '48px' }}>
+          <Card variant="filled" style={{ padding: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <Alert variant="success">
+                🎉 Success! You clicked the button {clickCount} times
+              </Alert>
+              <Alert variant="warning">
+                ⚠️ {inputValue.length > 20 ? 'Text is getting quite long!' : 'Warning alert - type more than 20 characters'}
+              </Alert>
+              <Alert variant="danger">
+                🚨 {isLoading ? 'System is processing - please wait' : 'Danger alert - click Toggle Loading button'}
+              </Alert>
+              <Alert variant="info">
+                ℹ️ Currently using {selectedVariant} button variant
+              </Alert>
+            </div>
+          </Card>
+        </Card>
+        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Loading States</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>🌊 Wave Loader</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div className="wave-loader">
@@ -196,10 +198,10 @@ export function DesignSystemPage() {
                   <div></div>
                   <div></div>
                 </div>
-                <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Audio wave effect</p>
+                <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>Audio wave effect</p>
               </div>
             </Card>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>💫 Dots Loader</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div className="dots-loader">
@@ -207,30 +209,30 @@ export function DesignSystemPage() {
                   <div></div>
                   <div></div>
                 </div>
-                <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Bouncing dots</p>
+                <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>Bouncing dots</p>
               </div>
             </Card>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>📊 Progress Bar</h3>
               <div style={{ marginBottom: '8px' }}>
                 <div className="progress-bar">
                   <div className="progress-bar-fill"></div>
                 </div>
               </div>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Indeterminate progress</p>
+              <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>Indeterminate progress</p>
             </Card>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>🫁 Breathing Effect</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div className="breathing-loader"></div>
-                <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Calm breathing</p>
+                <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>Calm breathing</p>
               </div>
             </Card>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>✨ Skeleton Loading</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div className="skeleton-loader" style={{ height: '20px', width: '80%' }}></div>
@@ -238,7 +240,7 @@ export function DesignSystemPage() {
                 <div className="skeleton-loader" style={{ height: '20px', width: '90%' }}></div>
               </div>
             </Card>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>🎭 Interactive Demo</h3>
               <div style={{ textAlign: 'center', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '8px' }}>
                 {isLoading ? (
@@ -248,20 +250,20 @@ export function DesignSystemPage() {
                       <div></div>
                       <div></div>
                     </div>
-                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Processing...</span>
+                    <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Processing...</span>
                   </div>
                 ) : (
-                  <p style={{ fontSize: '14px', color: '#6b7280' }}>Toggle loading for dots animation</p>
+                  <p style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Toggle loading for dots animation</p>
                 )}
               </div>
             </Card>
           </div>
-        </div>
+        </Card>
 
-        <div style={{ marginBottom: '48px' }}>
+        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Form Components</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>📝 Form Controls</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <Input type="text" placeholder="Text input" className="glow-input" />
@@ -269,10 +271,10 @@ export function DesignSystemPage() {
                 <Input type="password" placeholder="Password input" className="glow-input" />
                 <select style={{
                   padding: '8px 12px',
-                  border: '1px solid #d1d5db',
+                  border: '1px solid var(--app-border)',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  backgroundColor: 'white'
+                  backgroundColor: 'var(--app-bg)'
                 }}>
                   <option>Select option</option>
                   <option>Option 1</option>
@@ -280,7 +282,7 @@ export function DesignSystemPage() {
                 </select>
               </div>
             </Card>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>☑️ Selection Controls</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
@@ -298,7 +300,7 @@ export function DesignSystemPage() {
               </div>
             </Card>
           </div>
-          <Card style={{ padding: '16px' }}>
+          <Card variant="filled" style={{ padding: '16px' }}>
             <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>🚨 Form Validation States</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
               <div>
@@ -307,7 +309,7 @@ export function DesignSystemPage() {
                   placeholder="Normal state"
                   className="glow-input"
                 />
-                <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0 0' }}>Normal input</p>
+                <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: '4px 0 0 0' }}>Normal input</p>
               </div>
               <div>
                 <Input
@@ -327,18 +329,18 @@ export function DesignSystemPage() {
               </div>
             </div>
           </Card>
-        </div>
+        </Card>
 
-        <div style={{ marginBottom: '48px' }}>
+        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Layout Components</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>📊 Organization Layout</h3>
               <div style={{
-                border: '1px solid #e5e7eb',
+                border: '1px solid var(--app-border)',
                 borderRadius: '8px',
                 padding: '12px',
-                backgroundColor: '#fafafa'
+                backgroundColor: 'var(--app-surface)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                   <div style={{
@@ -357,7 +359,7 @@ export function DesignSystemPage() {
                   </div>
                   <div>
                     <p style={{ fontSize: '14px', fontWeight: 600, margin: 0 }}>DataLab Enterprises</p>
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>3 projects • 12 members</p>
+                    <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>3 projects • 12 members</p>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -366,38 +368,22 @@ export function DesignSystemPage() {
                 </div>
               </div>
             </Card>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>🎨 Card Variations</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '4px',
-                  padding: '8px',
-                  backgroundColor: 'white'
-                }}>
-                  <p style={{ fontSize: '12px', margin: 0 }}>Basic card</p>
-                </div>
-                <div style={{
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '4px',
-                  padding: '8px',
-                  backgroundColor: 'white',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-                }}>
-                  <p style={{ fontSize: '12px', margin: 0 }}>Card with shadow</p>
-                </div>
-                <div style={{
-                  border: '1px solid #3b82f6',
-                  borderRadius: '4px',
-                  padding: '8px',
-                  backgroundColor: '#eff6ff'
-                }}>
-                  <p style={{ fontSize: '12px', margin: 0 }}>Highlighted card</p>
-                </div>
+                <Card variant="outlined" padding="sm">
+                  <p style={{ fontSize: '12px', margin: 0 }}>Outlined (Default)</p>
+                </Card>
+                <Card variant="elevated" padding="sm">
+                  <p style={{ fontSize: '12px', margin: 0 }}>Elevated</p>
+                </Card>
+                <Card variant="filled" padding="sm">
+                  <p style={{ fontSize: '12px', margin: 0 }}>Filled</p>
+                </Card>
               </div>
             </Card>
           </div>
-          <Card style={{ padding: '16px' }}>
+          <Card variant="filled" style={{ padding: '16px' }}>
             <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>📏 Typography Scale</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <h1 style={{ fontSize: '32px', fontWeight: 700, margin: 0 }}>Heading 1 - 32px</h1>
@@ -405,15 +391,15 @@ export function DesignSystemPage() {
               <h3 style={{ fontSize: '20px', fontWeight: 600, margin: 0 }}>Heading 3 - 20px</h3>
               <h4 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Heading 4 - 16px</h4>
               <p style={{ fontSize: '14px', margin: 0 }}>Body text - 14px</p>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Small text - 12px</p>
+              <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>Small text - 12px</p>
             </div>
           </Card>
-        </div>
+        </Card>
 
-        <div style={{ marginBottom: '48px' }}>
+        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Interactive Components</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>💬 Tooltips & Dropdowns</h3>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
                 <Button
@@ -445,8 +431,8 @@ export function DesignSystemPage() {
                       top: '100%',
                       left: 0,
                       marginTop: '4px',
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: 'var(--app-bg)',
+                      border: '1px solid var(--app-border)',
                       borderRadius: '6px',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                       padding: '8px',
@@ -462,7 +448,7 @@ export function DesignSystemPage() {
                 </div>
               </div>
             </Card>
-            <Card style={{ padding: '16px' }}>
+            <Card variant="filled" style={{ padding: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>🎭 Modal Dialog</h3>
               <Button
                 variant="primary"
@@ -497,7 +483,7 @@ export function DesignSystemPage() {
                 }}
               >
                 <div style={{
-                  backgroundColor: 'white',
+                  backgroundColor: 'var(--app-bg)',
                   borderRadius: '8px',
                   padding: '24px',
                   maxWidth: '400px',
@@ -505,7 +491,7 @@ export function DesignSystemPage() {
                   boxShadow: '0 20px 25px rgba(0, 0, 0, 0.1)'
                 }}>
                   <h3 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 12px 0' }}>Demo Modal</h3>
-                  <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 16px 0' }}>
+                  <p style={{ fontSize: '14px', color: 'var(--app-muted-text)', margin: '0 0 16px 0' }}>
                     This is a simple modal dialog demonstration. Click outside or the close button to dismiss.
                   </p>
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
@@ -539,7 +525,7 @@ export function DesignSystemPage() {
               </div>
             </Card>
           </div>
-          <Card style={{ padding: '16px' }}>
+          <Card variant="filled" style={{ padding: '16px' }}>
             <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>⚡ Animations & Transitions</h3>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
               <Button
@@ -592,36 +578,36 @@ export function DesignSystemPage() {
               ></div>
             </div>
           </Card>
-        </div>
+        </Card>
 
-        <div>
+        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Interactive Demo</h2>
-          <Card style={{ padding: '24px' }}>
+          <Card variant="filled" style={{ padding: '24px' }}>
             <div style={{ textAlign: 'center' }}>
               <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>Component State Dashboard</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#6b7280' }}>Button Clicks</p>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--app-muted-text)' }}>Button Clicks</p>
                   <p style={{ fontSize: '24px', fontWeight: 700, color: '#3b82f6' }}>{clickCount}</p>
                 </div>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#6b7280' }}>Input Length</p>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--app-muted-text)' }}>Input Length</p>
                   <p style={{ fontSize: '24px', fontWeight: 700, color: '#10b981' }}>{inputValue.length}</p>
                 </div>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#6b7280' }}>Loading State</p>
-                  <p style={{ fontSize: '24px', fontWeight: 700, color: isLoading ? '#f59e0b' : '#6b7280' }}>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--app-muted-text)' }}>Loading State</p>
+                  <p style={{ fontSize: '24px', fontWeight: 700, color: isLoading ? '#f59e0b' : 'var(--app-muted-text)' }}>
                     {isLoading ? 'ON' : 'OFF'}
                   </p>
                 </div>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#6b7280' }}>Button Variant</p>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--app-muted-text)' }}>Button Variant</p>
                   <p style={{ fontSize: '24px', fontWeight: 700, color: '#8b5cf6', textTransform: 'capitalize' }}>
                     {selectedVariant}
                   </p>
                 </div>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#6b7280' }}>Skeleton Demo</p>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--app-muted-text)' }}>Skeleton Demo</p>
                   <div style={{ marginTop: '8px' }}>
                     <Button
                       variant="secondary"
@@ -634,17 +620,17 @@ export function DesignSystemPage() {
                   </div>
                 </div>
               </div>
-              <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+              <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: 'var(--app-surface)', borderRadius: '8px' }}>
                 <h4 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 8px 0' }}>⌨️ Keyboard Shortcuts</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', fontSize: '12px', color: '#6b7280' }}>
-                  <div><kbd style={{ padding: '2px 6px', backgroundColor: '#e5e7eb', borderRadius: '4px', fontSize: '11px' }}>Ctrl+Enter</kbd> Increment counter</div>
-                  <div><kbd style={{ padding: '2px 6px', backgroundColor: '#e5e7eb', borderRadius: '4px', fontSize: '11px' }}>Escape</kbd> Clear input</div>
-                  <div><kbd style={{ padding: '2px 6px', backgroundColor: '#e5e7eb', borderRadius: '4px', fontSize: '11px' }}>Ctrl+S</kbd> Toggle skeleton</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                  <div><kbd style={{ padding: '2px 6px', backgroundColor: 'var(--app-border)', borderRadius: '4px', fontSize: '11px' }}>Ctrl+Enter</kbd> Increment counter</div>
+                  <div><kbd style={{ padding: '2px 6px', backgroundColor: 'var(--app-border)', borderRadius: '4px', fontSize: '11px' }}>Escape</kbd> Clear input</div>
+                  <div><kbd style={{ padding: '2px 6px', backgroundColor: 'var(--app-border)', borderRadius: '4px', fontSize: '11px' }}>Ctrl+S</kbd> Toggle skeleton</div>
                   <div>Last key: <span style={{ fontWeight: 600 }}>{lastKeyPressed || 'none'}</span></div>
                 </div>
               </div>
               {skeletonDemo && (
-                <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+                <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: 'var(--app-surface)', borderRadius: '8px' }}>
                   <h4 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>✨ Skeleton Loading Demo</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
                     <div>
@@ -661,12 +647,12 @@ export function DesignSystemPage() {
                   </div>
                 </div>
               )}
-              <p style={{ fontSize: '14px', color: '#6b7280' }}>
+              <p style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>
                 🎮 Interact with components above to see real-time state changes
               </p>
             </div>
           </Card>
-        </div>
+        </Card>
       </div>
     </div>
     </AppShell>

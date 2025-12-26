@@ -81,10 +81,10 @@ export default function ProjectDetailPage() {
       <AppShell>
         <div style={{
           padding: '12px',
-          backgroundColor: '#fee',
-          border: '1px solid #fcc',
+          backgroundColor: 'var(--app-surface-2)',
+          border: '1px solid #bd2130',
           borderRadius: '4px',
-          color: '#c00',
+          color: '#dc3545',
           marginBottom: '16px'
         }}>
           {error}
@@ -99,7 +99,7 @@ export default function ProjectDetailPage() {
   return (
     <AppShell>
       <div>
-        <nav style={{ marginBottom: '24px', fontSize: '14px', color: '#666' }}>
+        <nav style={{ marginBottom: '24px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
           <Link to="/organisations">Organisations</Link>
           {orgId && orgName && (
             <>
@@ -111,14 +111,15 @@ export default function ProjectDetailPage() {
           {' '}/ <Link to={`/organisations/${orgId}/projects`}>Projects</Link> / {project.name}
         </nav>
 
-        <h1>{project.name}</h1>
+        <h1 style={{ color: 'var(--app-text)' }}>{project.name}</h1>
 
         {project.status && (
           <span style={{
             display: 'inline-block',
             padding: '6px 12px',
-            backgroundColor: project.status === 'active' ? '#d4edda' : '#f8d7da',
-            color: project.status === 'active' ? '#155724' : '#721c24',
+            backgroundColor: 'var(--app-surface-2)',
+            color: 'var(--app-text)',
+            border: '1px solid var(--app-border)',
             borderRadius: '4px',
             fontSize: '14px',
             fontWeight: 600,
@@ -129,7 +130,7 @@ export default function ProjectDetailPage() {
         )}
 
         {project.description && (
-          <p style={{ color: '#666', marginTop: '16px', marginBottom: '24px' }}>
+          <p style={{ color: 'var(--app-muted-text)', marginTop: '16px', marginBottom: '24px' }}>
             {project.description}
           </p>
         )}
@@ -139,12 +140,14 @@ export default function ProjectDetailPage() {
             to={`/organisations/${orgId}/projects`}
             style={{
               display: 'inline-block',
-              padding: '10px 20px',
-              backgroundColor: '#6c757d',
-              color: 'white',
+              padding: '6px 12px',
+              backgroundColor: 'var(--app-surface-2)',
+              color: 'var(--app-text)',
               textDecoration: 'none',
               borderRadius: '4px',
-              fontSize: '14px'
+              fontSize: '14px',
+              fontWeight: 500,
+              border: '1px solid var(--app-border)'
             }}
           >
             ← Back to Projects
@@ -153,12 +156,14 @@ export default function ProjectDetailPage() {
             to={`/organisations/${orgId}`}
             style={{
               display: 'inline-block',
-              padding: '10px 20px',
-              backgroundColor: '#007bff',
-              color: 'white',
+              padding: '6px 12px',
+              backgroundColor: 'var(--app-surface-2)',
+              color: 'var(--app-text)',
               textDecoration: 'none',
               borderRadius: '4px',
-              fontSize: '14px'
+              fontSize: '14px',
+              fontWeight: 500,
+              border: '1px solid #0056b3'
             }}
           >
             View Organisation
@@ -172,12 +177,13 @@ export default function ProjectDetailPage() {
             <button
               onClick={() => alert('Edit functionality not yet implemented')}
               style={{
-                padding: '10px 20px',
-                backgroundColor: '#28a745',
-                color: 'white',
-                border: 'none',
+                padding: '6px 12px',
+                backgroundColor: 'var(--app-surface)',
+                color: 'var(--app-text)',
+                border: '1px solid #0056b3',
                 borderRadius: '4px',
                 fontSize: '14px',
+                fontWeight: 500,
                 cursor: 'pointer'
               }}
             >
@@ -196,12 +202,13 @@ export default function ProjectDetailPage() {
                 }
               }}
               style={{
-                padding: '10px 20px',
-                backgroundColor: '#dc3545',
-                color: 'white',
-                border: 'none',
+                padding: '6px 12px',
+                backgroundColor: 'var(--app-surface)',
+                color: 'var(--app-text)',
+                border: '1px solid #bd2130',
                 borderRadius: '4px',
                 fontSize: '14px',
+                fontWeight: 500,
                 cursor: 'pointer'
               }}
             >
@@ -211,35 +218,37 @@ export default function ProjectDetailPage() {
         </div>
 
         <div style={{
-          border: '1px solid #ddd',
+          border: '1px solid var(--app-border)',
           borderRadius: '8px',
           padding: '24px',
-          backgroundColor: '#f8f9fa'
+          backgroundColor: 'var(--app-surface)'
         }}>
-          <h2>Project Details</h2>
+          <h2 style={{ color: 'var(--app-text)' }}>Project Details</h2>
           <div style={{ display: 'grid', gap: '12px' }}>
             <div>
-              <strong>Name:</strong> {project.name}
+              <strong style={{ color: 'var(--app-muted-text)' }}>Name:</strong> <span style={{ color: 'var(--app-text)' }}>{project.name}</span>
             </div>
             <div>
-              <strong>Slug:</strong> <code style={{
-                backgroundColor: '#fff',
+              <strong style={{ color: 'var(--app-muted-text)' }}>Slug:</strong> <code style={{
+                backgroundColor: 'var(--app-surface-2)',
                 padding: '2px 6px',
                 borderRadius: '3px',
-                fontFamily: 'monospace'
+                fontFamily: 'monospace',
+                color: 'var(--app-text)'
               }}>{project.slug}</code>
             </div>
             <div>
-              <strong>ID:</strong> <code style={{
-                backgroundColor: '#fff',
+              <strong style={{ color: 'var(--app-muted-text)' }}>ID:</strong> <code style={{
+                backgroundColor: 'var(--app-surface-2)',
                 padding: '2px 6px',
                 borderRadius: '3px',
-                fontFamily: 'monospace'
+                fontFamily: 'monospace',
+                color: 'var(--app-text)'
               }}>{project.id}</code>
             </div>
             {project.created_at && (
               <div>
-                <strong>Created:</strong> {new Date(project.created_at).toLocaleDateString()}
+                <strong style={{ color: 'var(--app-muted-text)' }}>Created:</strong> <span style={{ color: 'var(--app-text)' }}>{new Date(project.created_at).toLocaleDateString()}</span>
               </div>
             )}
           </div>

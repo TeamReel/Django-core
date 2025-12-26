@@ -8,13 +8,16 @@ export interface BreadcrumbSwitcherOption {
 
 export interface BreadcrumbContextSwitcherProps {
   /** Current segment label (what's shown when not in dropdown mode) */
-  label: string;
+  label?: string;
 
   /** Currently selected option ID */
   currentId: string;
 
   /** Available options for this segment */
-  options: BreadcrumbSwitcherOption[];
+  options?: BreadcrumbSwitcherOption[];
+
+  /** Alias for options */
+  items?: BreadcrumbSwitcherOption[];
 
   /** Callback when an option is selected */
   onSelect: (option: BreadcrumbSwitcherOption) => void;
@@ -27,6 +30,9 @@ export interface BreadcrumbContextSwitcherProps {
 
   /** Icon to show before label (optional) */
   icon?: ReactNode;
+
+  /** Type of switcher (organisation, project, user) - used for styling/icons */
+  type?: 'organisation' | 'project' | 'user';
 }
 
 /**
@@ -47,16 +53,28 @@ export interface BreadcrumbContextSwitcherProps {
  * ```
  */
 export function BreadcrumbContextSwitcher({
-  label,
+  label: labelProp,
   currentId,
-  options,
+  options: optionsProp,
+  items,
   onSelect,
   current = false,
-  hasDropdown = true,
+  hasDropdown: hasDropdownProp,
   icon,
+  type,
 }: BreadcrumbContextSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Normalize props
+  const options = items || optionsProp || [];
+
+  // Derive label if not provided
+  const currentOption = options.find(o => o.id === currentId || o.slug === currentId);
+  const label = labelProp || currentOption?.label || currentId;
+
+  // Determine if dropdown should be shown
+  const hasDropdown = hasDropdownProp !== undefined ? hasDropdownProp : options.length > 1;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -99,7 +117,7 @@ export function BreadcrumbContextSwitcher({
           display: 'inline-flex',
           alignItems: 'center',
           gap: '4px',
-          color: current ? '#1f2937' : '#6b7280',
+          color: current ? 'var(--app-text)' : 'var(--app-muted-text)',
           fontWeight: current ? 600 : 400,
         }}
       >
@@ -124,17 +142,17 @@ export function BreadcrumbContextSwitcher({
           alignItems: 'center',
           gap: '4px',
           padding: '4px 8px',
-          backgroundColor: isOpen ? '#f3f4f6' : 'transparent',
+          backgroundColor: isOpen ? 'var(--app-surface-secondary)' : 'transparent',
           border: '1px solid transparent',
           borderRadius: '4px',
-          color: '#6b7280',
+          color: 'var(--app-muted-text)',
           fontSize: '12px',
           cursor: 'pointer',
           transition: 'all 0.2s',
         }}
         onMouseOver={(e) => {
           if (!isOpen) {
-            e.currentTarget.style.backgroundColor = '#f9fafb';
+            e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
           }
         }}
         onMouseOut={(e) => {
@@ -171,8 +189,8 @@ export function BreadcrumbContextSwitcher({
             minWidth: '200px',
             maxHeight: '300px',
             overflowY: 'auto',
-            backgroundColor: '#fff',
-            border: '1px solid #e5e5e5',
+            backgroundColor: 'var(--app-surface)',
+            border: '1px solid var(--app-border)',
             borderRadius: '4px',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
             zIndex: 1000,
@@ -182,7 +200,7 @@ export function BreadcrumbContextSwitcher({
             <div
               style={{
                 padding: '12px 16px',
-                color: '#9ca3af',
+                color: 'var(--app-muted-text)',
                 fontSize: '14px',
               }}
             >
@@ -199,11 +217,11 @@ export function BreadcrumbContextSwitcher({
                   display: 'block',
                   width: '100%',
                   padding: '10px 16px',
-                  backgroundColor: option.id === currentId ? '#eff6ff' : 'transparent',
+                  backgroundColor: option.id === currentId ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
                   border: 'none',
-                  borderBottom: '1px solid #f3f4f6',
+                  borderBottom: '1px solid var(--app-border)',
                   textAlign: 'left',
-                  color: option.id === currentId ? '#1976d2' : '#374151',
+                  color: option.id === currentId ? 'var(--app-link)' : 'var(--app-text)',
                   fontSize: '14px',
                   fontWeight: option.id === currentId ? 600 : 400,
                   cursor: 'pointer',
@@ -211,7 +229,7 @@ export function BreadcrumbContextSwitcher({
                 }}
                 onMouseOver={(e) => {
                   if (option.id !== currentId) {
-                    e.currentTarget.style.backgroundColor = '#f9fafb';
+                    e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
                   }
                 }}
                 onMouseOut={(e) => {

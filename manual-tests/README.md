@@ -10,10 +10,12 @@ Features die volledig geïmplementeerd en getest zijn:
 - **[02-demo-shell.md](done/02-demo-shell.md)** - Demo interface (3 min)
 - **[03-navigation.md](done/03-navigation.md)** - Sidebar navigation (7 min)
 - **[04-file-management.md](done/04-file-management.md)** - File upload/download (15 min)
+- **[13-notifications.md](done/13-notifications.md)** - Notification system (10 min)
 
 ### 🟡 **todo/** - Ready to Test
 Features die geïmplementeerd zijn en klaarstaan voor testing:
 - **[22-real-time-websockets.md](todo/22-real-time-websockets.md)** - Real-time WebSocket testing (15 min)
+- **[14-security-baseline.md](todo/14-security-baseline.md)** - Security features (20 min)
 
 ### 🟠 **in-progress/** - Partially Implemented
 Features die gedeeltelijk werken en continue verbetering nodig hebben:
@@ -31,8 +33,6 @@ Features die ontwikkeld zijn en klaarstaan voor testing:
 - **[10-context-switching.md](not-started/10-context-switching.md)** - Context switcher (8 min)
 - **[11-api-endpoints.md](not-started/11-api-endpoints.md)** - REST API testing (15 min)
 - **[12-backend-integration.md](not-started/12-backend-integration.md)** - Backend integration (10 min)
-- **[13-notifications.md](not-started/13-notifications.md)** - Notification system (10 min)
-- **[14-security-baseline.md](not-started/14-security-baseline.md)** - Security features (20 min)
 - **[15-audit-logging.md](not-started/15-audit-logging.md)** - Audit trail (15 min)
 - **[16-theme-system.md](not-started/16-theme-system.md)** - Theme switching (10 min)
 - **[17-platform-observability.md](not-started/17-platform-observability.md)** - Observability & monitoring (18 min)

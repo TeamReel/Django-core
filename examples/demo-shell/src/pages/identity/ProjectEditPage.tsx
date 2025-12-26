@@ -10,6 +10,8 @@ import {
 import {
   PageHeader,
   PageContent,
+  BreadcrumbContextSwitcher,
+  useBreadcrumbContextSwitcher,
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
@@ -34,6 +36,27 @@ export const ProjectEditPage: React.FC = () => {
   // Try to find project in context first (if loaded), otherwise use projectId as slug
   const resolvedProject = projects.find(p => p.slug === projectId || p.id === projectId);
   const currentProjectSlug = resolvedProject?.slug || projectId; // Use slug for API calls
+
+  const {
+    organisationOptions,
+    projectOptions,
+    handleOrganisationSwitch,
+    handleProjectSwitch,
+  } = useBreadcrumbContextSwitcher({
+    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    projects: projects.map(p => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      organisation_id: p.organisation_id
+    })),
+    users: [],
+    context: {
+      currentOrgId: resolvedOrg?.id,
+      currentProjectId: resolvedProject?.id || projectId,
+    },
+    basePath: '',
+  });
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -162,9 +185,29 @@ export const ProjectEditPage: React.FC = () => {
         breadcrumbs={[
           { label: 'Home', onClick: () => navigate('/') },
           { label: 'Organisations', onClick: () => navigate('/organisations') },
-          { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
+          {
+            label: (
+              <BreadcrumbContextSwitcher
+                label={resolvedOrg?.name || 'Organisation'}
+                currentId={resolvedOrg?.id || ''}
+                options={organisationOptions}
+                onSelect={handleOrganisationSwitch}
+                hasDropdown={organisationOptions.length > 1}
+              />
+            ),
+          },
           { label: 'Projects', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
-          { label: name, onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${projectId}`) },
+          {
+            label: (
+              <BreadcrumbContextSwitcher
+                type="project"
+                currentId={resolvedProject?.id || ''}
+                items={projectOptions}
+                onSelect={handleProjectSwitch}
+              />
+            ),
+            onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${projectId}`),
+          },
           { label: 'Edit', current: true },
         ]}
       />

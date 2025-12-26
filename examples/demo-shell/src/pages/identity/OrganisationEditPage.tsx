@@ -9,6 +9,8 @@ import {
 import {
   PageHeader,
   PageContent,
+  BreadcrumbContextSwitcher,
+  useBreadcrumbContextSwitcher,
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
@@ -34,6 +36,17 @@ export const OrganisationEditPage: React.FC = () => {
   const resolvedOrg = organisations.find(o => o.slug === id || o.id === id);
   const currentOrgSlug = resolvedOrg?.slug || id; // Use slug for API calls
   const currentOrgId = resolvedOrg?.id; // Keep ID for headers if needed
+
+  const {
+    organisationOptions,
+    handleOrganisationSwitch,
+  } = useBreadcrumbContextSwitcher({
+    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    projects: [],
+    users: [],
+    context: { currentOrgId: resolvedOrg?.id },
+    basePath: '',
+  });
 
   useEffect(() => {
     const fetchOrg = async () => {
@@ -141,9 +154,20 @@ export const OrganisationEditPage: React.FC = () => {
       <PageHeader
         title={`Edit ${name}`}
         breadcrumbs={[
+          { label: 'Home', onClick: () => navigate('/') },
           { label: 'Organisations', onClick: () => navigate('/organisations') },
-          { label: name, onClick: () => navigate(`/organisations/${id}`) },
-          { label: 'Edit' },
+          {
+            label: (
+              <BreadcrumbContextSwitcher
+                type="organisation"
+                currentId={resolvedOrg?.id || ''}
+                items={organisationOptions}
+                onSelect={handleOrganisationSwitch}
+              />
+            ),
+            onClick: () => navigate(`/organisations/${id}`),
+          },
+          { label: 'Edit', current: true },
         ]}
       />
       <PageContent>

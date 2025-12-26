@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  PageHeader,
-  PageContent,
   Card,
   Button,
   Input,
   Alert,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+  BreadcrumbContextSwitcher,
+  useBreadcrumbContextSwitcher,
+} from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 
@@ -24,6 +28,17 @@ export const ProjectCreatePage: React.FC = () => {
   const resolvedOrg = organisations.find(o => o.slug === orgId || o.id === orgId) || context.organisation;
   const currentOrgId = resolvedOrg?.id;
   const currentOrgSlug = resolvedOrg?.slug || orgId;
+
+  const {
+    organisationOptions,
+    handleOrganisationSwitch,
+  } = useBreadcrumbContextSwitcher({
+    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    projects: [],
+    users: [],
+    context: { currentOrgId: resolvedOrg?.id },
+    basePath: '',
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,10 +93,20 @@ export const ProjectCreatePage: React.FC = () => {
       <PageHeader
         title="Create Project"
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Identity' },
-          { label: 'Projects', href: `/organisations/${currentOrgSlug}/projects` },
-          { label: 'Create' },
+          { label: 'Home', onClick: () => navigate('/') },
+          { label: 'Organisations', onClick: () => navigate('/organisations') },
+          {
+            label: (
+              <BreadcrumbContextSwitcher
+                type="organisation"
+                currentId={resolvedOrg?.id || ''}
+                items={organisationOptions}
+                onSelect={handleOrganisationSwitch}
+              />
+            ),
+          },
+          { label: 'Projects', onClick: () => navigate(`/organisations/${currentOrgSlug}/projects`) },
+          { label: 'Create', current: true },
         ]}
       />
       <PageContent>

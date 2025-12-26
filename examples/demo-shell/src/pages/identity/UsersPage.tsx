@@ -3,8 +3,10 @@ import { useSearchParams, Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Button } from '@django-core/design-system';
+import { PageHeader, BreadcrumbContextSwitcher, useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import UserEditModal from './UserEditModal';
+import UserDetailModal from './UserDetailModal';
 import InviteMemberModal from './InviteMemberModal';
 import CreateUserModal from './CreateUserModal';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
@@ -30,6 +32,18 @@ export default function UsersPage() {
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
   const { context, organisations: myOrganisations } = useContextSwitcher();
+
+  const {
+    organisationOptions,
+    handleOrganisationSwitch,
+  } = useBreadcrumbContextSwitcher({
+    organisations: myOrganisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    projects: [],
+    users: [],
+    context: { currentOrgId: orgId },
+    basePath: ''
+  });
+
   const [searchParams] = useSearchParams();
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,6 +62,10 @@ export default function UsersPage() {
   // Edit Modal
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Detail Modal
+  const [detailUser, setDetailUser] = useState<User | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Invite Modal
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -251,68 +269,38 @@ export default function UsersPage() {
     return cookieValue;
   }
 
-  // Breadcrumbs
-  const renderBreadcrumbs = () => {
-      const items = [
-          <Link key="home" to="/" style={{ textDecoration: 'none', color: '#0066cc' }}>Home</Link>
-      ];
+  // Construct breadcrumbs
+  const breadcrumbs = [
+    { label: 'Home', href: '/' },
+  ];
 
-      if (orgIdParam) {
-          items.push(<span key="sep1" style={{ margin: '0 8px', color: '#999' }}>/</span>);
-          items.push(
-              <Link key="orgs" to="/organisations" style={{ textDecoration: 'none', color: '#0066cc' }}>
-                  Organisations
-              </Link>
-          );
-          items.push(<span key="sep2" style={{ margin: '0 8px', color: '#999' }}>/</span>);
-          items.push(
-              <Link key="org" to={`/organisations/${orgIdParam}`} style={{ textDecoration: 'none', color: '#0066cc' }}>
-                  {(myOrganisations.find(o => o.slug === orgIdParam || o.id === orgIdParam) || context.organisation)?.name || 'Organisation'}
-              </Link>
-          );
-      }
-
-      if (projectIdParam) {
-          items.push(<span key="sep3" style={{ margin: '0 8px', color: '#999' }}>/</span>);
-          items.push(
-              <Link key="proj" to={`/organisations/${orgIdParam}/projects/${projectIdParam}`} style={{ textDecoration: 'none', color: '#0066cc' }}>
-                  Project
-              </Link>
-          );
-      }
-
-      items.push(<span key="sep4" style={{ margin: '0 8px', color: '#999' }}>/</span>);
-      items.push(<span key="curr" style={{ color: '#333', fontWeight: 500 }}>Users</span>);
-
-      return (
-          <div style={{ marginBottom: '16px', fontSize: '14px' }}>
-              {items}
-          </div>
-      );
-  };
+  if (orgIdParam) {
+    breadcrumbs.push({ label: 'Organisations', onClick: () => navigate('/organisations') });
+    breadcrumbs.push({ label: (myOrganisations.find(o => o.slug === orgIdParam || o.id === orgIdParam) || context.organisation)?.name || 'Organisation', onClick: () => navigate(`/organisations/${orgIdParam}`) });
+    breadcrumbs.push({ label: 'Users', current: true });
+  } else {
+    breadcrumbs.push({ label: 'Users', current: true });
+  }
 
   return (
     <AppShell>
-      {renderBreadcrumbs()}
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-                <h1 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>
-                {isSuperAdmin
-                    ? 'All Users (System Admin)'
-                    : orgIdParam
-                        ? `Users - ${(myOrganisations.find(o => o.slug === orgIdParam || o.id === orgIdParam) || context.organisation)?.name || 'Organisation'}`
-                        : 'All Users'}
-                </h1>
-                <p style={{ color: '#666' }}>
-                {isSuperAdmin
-                    ? 'Manage all users in the system.'
-                    : orgIdParam
-                        ? 'View members of the current organisation.'
-                        : 'View all users associated with your organisations and unassigned users.'}
-                </p>
-            </div>
-
+      <PageHeader
+        title={
+            isSuperAdmin
+                ? 'All Users (System Admin)'
+                : orgIdParam
+                    ? `Users - ${(myOrganisations.find(o => o.slug === orgIdParam || o.id === orgIdParam) || context.organisation)?.name || 'Organisation'}`
+                    : 'All Users'
+        }
+        subtitle={
+            isSuperAdmin
+                ? 'Manage all users in the system.'
+                : orgIdParam
+                    ? 'View members of the current organisation.'
+                    : 'View all users associated with your organisations and unassigned users.'
+        }
+        breadcrumbs={breadcrumbs}
+        actions={
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                 {orgIdParam && (
                     <Button variant="secondary" onClick={() => navigate(`/organisations/${orgIdParam}`)}>
@@ -353,24 +341,24 @@ export default function UsersPage() {
                         Create User
                     </Button>
                 )}
-                </div>
 
-            {/* Add Member Button - Only show if we have a specific organisation context AND permission */}
-            {(orgIdParam || context.organisation) && !isSuperAdmin && canManageUsers && (
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <Button variant="secondary" onClick={() => setIsCreateUserModalOpen(true)}>
-                        Create User
-                    </Button>
-                    <Button onClick={() => setIsInviteModalOpen(true)}>
-                        Add Member
-                    </Button>
-                </div>
-            )}
-        </div>
-      </div>
+                {/* Add Member Button - Only show if we have a specific organisation context AND permission */}
+                {(orgIdParam || context.organisation) && !isSuperAdmin && canManageUsers && (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <Button variant="secondary" onClick={() => setIsCreateUserModalOpen(true)}>
+                            Create User
+                        </Button>
+                        <Button onClick={() => setIsInviteModalOpen(true)}>
+                            Add Member
+                        </Button>
+                    </div>
+                )}
+            </div>
+        }
+      />
 
       {error && (
-        <div style={{ padding: '12px', backgroundColor: '#fee', color: '#c00', borderRadius: '4px', marginBottom: '24px' }}>
+        <div style={{ padding: '12px', backgroundColor: 'rgba(220, 53, 69, 0.1)', color: '#dc3545', border: '1px solid rgba(220, 53, 69, 0.3)', borderRadius: '4px', marginBottom: '24px' }}>
           {error}
         </div>
       )}
@@ -378,22 +366,22 @@ export default function UsersPage() {
       {isLoading ? (
         <div>Loading users...</div>
       ) : (
-        <div style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden' }}>
+        <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #eee' }}>
+            <thead style={{ backgroundColor: 'var(--app-table-header-bg)', borderBottom: '1px solid var(--app-border)' }}>
               <tr>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: '#444' }}>User</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: '#444' }}>Email</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: '#444' }}>Role</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: '#444' }}>Status</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: '#444' }}>Organisations</th>
-                <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '14px', fontWeight: 600, color: '#444' }}>Actions</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>User</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>Email</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>Role</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>Status</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>Organisations</th>
+                <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#666' }}>
+                  <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: 'var(--app-muted-text)' }}>
                     No users found.
                   </td>
                 </tr>
@@ -437,8 +425,9 @@ export default function UsersPage() {
                       <td style={{ padding: '12px 16px' }}>
                         <span style={{
                           padding: '4px 8px',
-                          backgroundColor: isOrgRole ? '#e3f2fd' : '#e9ecef',
-                          color: isOrgRole ? '#0d47a1' : 'inherit',
+                          backgroundColor: 'var(--app-surface-2)',
+                          color: 'var(--app-text)',
+                          border: '1px solid var(--app-border)',
                           borderRadius: '12px',
                           fontSize: '12px',
                           fontWeight: 500,
@@ -461,14 +450,15 @@ export default function UsersPage() {
                               {userOrgs.length > 0 ? userOrgs.map((org: any) => (
                                   <span key={org.id} style={{
                                       padding: '2px 6px',
-                                      border: '1px solid #ddd',
+                                      border: '1px solid var(--app-border)',
                                       borderRadius: '4px',
                                       fontSize: '11px',
-                                      backgroundColor: '#f8f9fa'
+                                      backgroundColor: 'var(--app-surface-2)',
+                                      color: 'var(--app-text)'
                                   }}>
                                       {org.name} ({org.role})
                                   </span>
-                              )) : <span style={{ color: '#999', fontSize: '12px' }}>-</span>}
+                              )) : <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>-</span>}
                           </div>
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
@@ -477,17 +467,14 @@ export default function UsersPage() {
                             {((isMembership && (orgIdParam || context.organisation)) || (!isMembership)) && (
                                 <button
                                     onClick={() => {
-                                        if (isMembership && (orgIdParam || context.organisation)) {
-                                            navigate(`/organisations/${orgIdParam || context.organisation?.slug}/members/${item.id}`);
-                                        } else {
-                                            navigate(`/users/${user.id}`);
-                                        }
+                                        setDetailUser(user);
+                                        setIsDetailModalOpen(true);
                                     }}
                                     style={{
                                         padding: '4px 8px',
                                         borderRadius: '4px',
                                         border: '1px solid #6c757d',
-                                        backgroundColor: 'white',
+                                        backgroundColor: 'var(--app-surface)',
                                         color: '#6c757d',
                                         cursor: 'pointer',
                                         fontSize: '12px'
@@ -509,13 +496,56 @@ export default function UsersPage() {
                                     padding: '4px 8px',
                                     borderRadius: '4px',
                                     border: '1px solid #007bff',
-                                    backgroundColor: 'white',
+                                    backgroundColor: 'var(--app-surface)',
                                     color: '#007bff',
                                     cursor: 'pointer',
                                     fontSize: '12px'
                                 }}
                             >
                                 Edit
+                            </button>
+                            )}
+
+                            {/* Delete Button - Always show with permission check */}
+                            {canManageUsers && (
+                            <button
+                                onClick={async () => {
+                                    if (!window.confirm(`Are you sure you want to delete user ${user.email}? This action cannot be undone.`)) return;
+                                    try {
+                                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                        const csrfToken = getCookie('csrftoken');
+
+                                        const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${user.id}/`, {
+                                            method: 'DELETE',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRFToken': csrfToken || '',
+                                            },
+                                            credentials: 'include',
+                                        });
+
+                                        if (res.ok) {
+                                            fetchUsers();
+                                        } else {
+                                            const data = await res.json();
+                                            alert(data.message || 'Failed to delete user');
+                                        }
+                                    } catch (e) {
+                                        console.error(e);
+                                        alert('Error deleting user');
+                                    }
+                                }}
+                                style={{
+                                    padding: '4px 8px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #dc3545',
+                                    backgroundColor: 'var(--app-surface)',
+                                    color: '#dc3545',
+                                    cursor: 'pointer',
+                                    fontSize: '12px'
+                                }}
+                            >
+                                Delete
                             </button>
                             )}
 
@@ -560,7 +590,7 @@ export default function UsersPage() {
                                                 padding: '4px 8px',
                                                 borderRadius: '4px',
                                                 border: '1px solid #dc3545',
-                                                backgroundColor: 'white',
+                                                backgroundColor: 'var(--app-surface)',
                                                 color: '#dc3545',
                                                 cursor: 'pointer',
                                                 fontSize: '12px'
@@ -578,79 +608,40 @@ export default function UsersPage() {
                                                 setIsAssignModalOpen(true);
                                             }}
                                             style={{
-                                                padding: '4px 8px',
+                                                padding: '6px 12px',
                                                 borderRadius: '4px',
-                                                border: '1px solid #28a745',
-                                                backgroundColor: 'white',
+                                                border: '1px solid #1e7e34',
+                                                backgroundColor: 'var(--app-surface)',
                                                 color: '#28a745',
                                                 cursor: 'pointer',
-                                                fontSize: '12px'
+                                                fontSize: '12px',
+                                                fontWeight: 500
                                             }}
                                         >
                                             Assign
                                         </button>
                                     );
                                 } else if (isSuperAdmin && !isMembership) {
-                                    // SuperAdmin fallback (no specific org context)
+                                    // SuperAdmin fallback - show Assign button
                                     return (
-                                        <div style={{ display: 'flex', gap: '8px' }}>
-                                            <button
-                                                onClick={() => {
-                                                    setAssignUser(user);
-                                                    setIsAssignModalOpen(true);
-                                                }}
-                                                style={{
-                                                    padding: '4px 8px',
-                                                    borderRadius: '4px',
-                                                    border: '1px solid #28a745',
-                                                    backgroundColor: 'white',
-                                                    color: '#28a745',
-                                                    cursor: 'pointer',
-                                                    fontSize: '12px'
-                                                }}
-                                            >
-                                                Assign
-                                            </button>
-                                            <button
-                                                onClick={async () => {
-                                                    if (!window.confirm(`Are you sure you want to delete user ${user.email}? This action cannot be undone.`)) return;
-                                                    try {
-                                                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                                        const csrfToken = getCookie('csrftoken');
-
-                                                        const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${user.id}/`, {
-                                                            method: 'DELETE',
-                                                            headers: {
-                                                                'Content-Type': 'application/json',
-                                                                'X-CSRFToken': csrfToken || '',
-                                                            },
-                                                            credentials: 'include',
-                                                        });
-
-                                                        if (res.ok) {
-                                                            fetchUsers();
-                                                        } else {
-                                                            const data = await res.json();
-                                                            alert(data.message || 'Failed to delete user');
-                                                        }
-                                                    } catch (e) {
-                                                        console.error(e);
-                                                        alert('Error deleting user');
-                                                    }
-                                                }}
-                                                style={{
-                                                    padding: '4px 8px',
-                                                    borderRadius: '4px',
-                                                    border: '1px solid #dc3545',
-                                                    backgroundColor: 'white',
-                                                    color: '#dc3545',
-                                                    cursor: 'pointer',
-                                                    fontSize: '12px'
-                                                }}
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setAssignUser(user);
+                                                setIsAssignModalOpen(true);
+                                            }}
+                                            style={{
+                                                padding: '6px 12px',
+                                                borderRadius: '4px',
+                                                border: '1px solid #1e7e34',
+                                                backgroundColor: 'var(--app-surface)',
+                                                color: '#28a745',
+                                                cursor: 'pointer',
+                                                fontSize: '12px',
+                                                fontWeight: 500
+                                            }}
+                                        >
+                                            Assign
+                                        </button>
                                     );
                                 }
                                 return null;
@@ -698,6 +689,12 @@ export default function UsersPage() {
             fetchUsers();
             setIsAssignModalOpen(false);
         }}
+      />
+
+      <UserDetailModal
+        opened={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        user={detailUser}
       />
     </AppShell>
   );

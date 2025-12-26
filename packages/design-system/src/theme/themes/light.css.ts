@@ -15,9 +15,9 @@ export const lightTheme = createTheme(themeVars, {
       warning: '#ca8a04',
     },
     background: {
-      primary: '#ffffff',
-      secondary: '#f5f5f5',
-      tertiary: '#e5e5e5',
+      primary: '#ffffff', // Surface 1 (Cards) - Distinct from page bg #f5f5f5
+      secondary: '#f9fafb', // Surface 2 (Filled Cards)
+      tertiary: '#f3f4f6', // Surface 3
       inverse: '#1a1a1a',
       overlay: 'rgba(0, 0, 0, 0.5)',
       success: '#dcfce7',

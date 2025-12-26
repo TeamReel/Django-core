@@ -11,6 +11,19 @@ class OrganisationNestedSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     name = serializers.CharField()
     slug = serializers.CharField()
+    user_role = serializers.SerializerMethodField()
+
+    def get_user_role(self, obj):
+        """Return current user's role in this organisation, or None."""
+        user = self.context.get("request").user if self.context.get("request") else None
+        if not user or not user.is_authenticated:
+            return None
+
+        # Use list comprehension to avoid DB hit if prefetched
+        membership = next(
+            (m for m in obj.memberships.all() if m.user_id == user.id and m.is_active), None
+        )
+        return membership.role if membership else None
 
 
 class UserNestedSerializer(serializers.Serializer):

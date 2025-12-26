@@ -22,8 +22,8 @@ import {
   PermissionsPage,
   UsersPage,
   UserDetailPage,
+  ProfilePage,
 } from './pages/identity';
-import ProfilePage from './pages/identity/ProfilePageSimple';
 
 // Config pages
 import {
@@ -74,6 +74,32 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+// Security Route wrapper
+function SecurityRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingState message="Checking permissions..." />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Fix: Check 'role' property from API instead of is_staff
+  const isSystemAdmin = (user as any)?.role === 'superadmin' || (user as any)?.role === 'admin';
+  const isOrgAdmin = (user as any)?.organisations?.some((org: any) =>
+    org.role?.toLowerCase().includes('admin') ||
+    org.role?.toLowerCase().includes('coach')
+  );
+
+  if (!isSystemAdmin && !isOrgAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
@@ -299,9 +325,9 @@ export default function App() {
       <Route
         path="/security"
         element={
-          <ProtectedRoute>
+          <SecurityRoute>
             <SecurityPage />
-          </ProtectedRoute>
+          </SecurityRoute>
         }
       />
 

@@ -15,9 +15,9 @@ export const darkTheme = createTheme(themeVars, {
       warning: '#facc15',
     },
     background: {
-      primary: '#171717',
-      secondary: '#262626',
-      tertiary: '#404040',
+      primary: '#1a1a1a', // Surface 1 (Cards, Modals) - Distinct from page bg #0f0f0f
+      secondary: '#333333', // Surface 2 (Filled Cards, Inputs) - Increased contrast
+      tertiary: '#404040', // Surface 3 (Hover states)
       inverse: '#fafafa',
       overlay: 'rgba(0, 0, 0, 0.75)',
       success: '#14532d',
@@ -35,9 +35,9 @@ export const darkTheme = createTheme(themeVars, {
       primary: '#3b82f6',
       primaryHover: '#60a5fa',
       primaryActive: '#2563eb',
-      secondary: '#262626',
-      secondaryHover: '#404040',
-      secondaryActive: '#525252',
+      secondary: '#404040',
+      secondaryHover: '#525252',
+      secondaryActive: '#737373',
       destructive: '#ef4444',
       destructiveHover: '#f87171',
       destructiveActive: '#dc2626',

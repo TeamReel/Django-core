@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '@django-core/auth-ui';
+import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   PageHeader,
   PageContent,
@@ -60,18 +63,101 @@ const getSeverityColor = (severity: string): 'error' | 'warning' | 'info' | 'suc
   }
 };
 
+const FilterButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    style={{
+      padding: '6px 16px',
+      borderRadius: '20px',
+      border: '1px solid',
+      borderColor: active ? '#2563eb' : 'var(--app-border)',
+      backgroundColor: active ? 'rgba(37, 99, 235, 0.1)' : 'var(--app-surface)',
+      color: active ? 'var(--app-link)' : 'var(--app-text)',
+      cursor: 'pointer',
+      fontSize: '13px',
+      fontWeight: 500,
+      transition: 'all 0.2s',
+      outline: 'none',
+    }}
+  >
+    {children}
+  </button>
+);
+
 export const SecurityPage: React.FC = () => {
+  const { user } = useAuth();
+  const { context, organisations } = useContextSwitcher();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [security, setSecurity] = useState<SecurityData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Use URL params for filtering (shareable URLs)
+  const filterSeverity = searchParams.get('severity') || 'all';
+  const filterStatus = searchParams.get('status') || 'all';
+
+  // Fix: Check 'role' property from API (UserListSerializer)
+  // The API returns 'superadmin' for superusers, 'admin' for staff, 'user' for others
+  const isSystemAdmin = (user as any)?.role === 'superadmin' || (user as any)?.role === 'admin';
+
+  // Check for admin OR coach role
+  const isOrgAdmin = (user as any)?.organisations?.some((org: any) =>
+    org.role?.toLowerCase().includes('admin') ||
+    org.role?.toLowerCase().includes('coach')
+  );
+
+  const currentOrgSlug = searchParams.get('org') || '';
+
+  // Enforce Org Admin Scoping (preserve other params)
+  useEffect(() => {
+    if (!isSystemAdmin && isOrgAdmin) {
+      const currentOrg = organisations.find(o => o.id === context.currentOrgId);
+      let targetSlug = '';
+
+      if (currentOrg) {
+        targetSlug = currentOrg.slug;
+      } else if (!currentOrg && organisations.length > 0 && !currentOrgSlug) {
+         // Fallback to first org if no context
+         const firstAdminOrg = (user as any)?.organisations?.find((o: any) =>
+            o.role?.toLowerCase().includes('admin') ||
+            o.role?.toLowerCase().includes('coach')
+         );
+         if (firstAdminOrg) {
+             targetSlug = firstAdminOrg.slug;
+         }
+      }
+
+      if (targetSlug && currentOrgSlug !== targetSlug) {
+        setSearchParams(prev => {
+          const next = new URLSearchParams(prev);
+          next.set('org', targetSlug);
+          return next;
+        });
+      }
+    }
+  }, [isSystemAdmin, isOrgAdmin, context.currentOrgId, organisations, currentOrgSlug, setSearchParams, user]);
+
   useEffect(() => {
     const fetchSecurity = async () => {
+      if (!isSystemAdmin && !currentOrgSlug) {
+        return;
+      }
+
       try {
-        setLoading(true);
+        // Only show full page loading on initial fetch
+        if (!security) {
+          setLoading(true);
+        }
         setError(null);
 
-        const response = await fetch('/api/security/events/', {
+        const query = new URLSearchParams();
+        if (currentOrgSlug) query.append('org', currentOrgSlug);
+        if (filterSeverity !== 'all') query.append('severity', filterSeverity);
+        if (filterStatus !== 'all') query.append('status', filterStatus);
+
+        const response = await fetch(`/api/security/events/?${query.toString()}`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -82,38 +168,20 @@ export const SecurityPage: React.FC = () => {
         if (response.ok) {
           const data: SecurityData = await response.json();
           setSecurity(data);
-        } else if (response.status === 404) {
-          // Demo mode: Use mock security data
-          const demoSecurity: SecurityData = {
-            events: [
-              {
-                id: '1',
-                event_type: 'login_attempt',
-                severity: 'medium',
-                resolved: true,
-                timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                description: 'Multiple failed login attempts from IP 192.168.1.100'
-              },
-              {
-                id: '2',
-                event_type: 'suspicious_activity',
-                severity: 'high',
-                resolved: false,
-                timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-                description: 'Unusual API access pattern detected'
-              }
-            ],
-            asvs_scorecard: {
-              level1: 85,
-              level2: 72,
-              level3: 45
-            },
-            total_events: 2,
-            resolved_events: 1
-          };
-          setSecurity(demoSecurity);
         } else {
-          throw new Error(`API error: ${response.status}`);
+          // Try to get error details from response
+          let errorMessage = `API error: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            if (errorData.error) {
+              errorMessage += ` - ${errorData.error}`;
+            } else if (errorData.detail) {
+                errorMessage += ` - ${errorData.detail}`;
+            }
+          } catch (e) {
+            // Ignore JSON parse error
+          }
+          throw new Error(errorMessage);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch security data');
@@ -124,7 +192,16 @@ export const SecurityPage: React.FC = () => {
     };
 
     fetchSecurity();
-  }, []);
+  }, [currentOrgSlug, isSystemAdmin, filterSeverity, filterStatus]);
+
+  const handleOrgChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val) {
+      setSearchParams({ org: val });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   if (loading) {
     return (
@@ -139,7 +216,7 @@ export const SecurityPage: React.FC = () => {
         />
         <PageContent>
           <Card>
-            <div className="text-center py-8 text-gray-500">
+            <div style={{ textAlign: 'center', padding: '32px 0', color: '#6b7280' }}>
               Loading security data...
             </div>
           </Card>
@@ -175,82 +252,146 @@ export const SecurityPage: React.FC = () => {
     <AppShell>
       <div>
         <PageHeader
-        title="Security"
-        breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Platform' },
-          { label: 'Security' },
-        ]}
+          title="Security"
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Platform' },
+            { label: 'Security' },
+          ]}
+          actions={
+            isSystemAdmin && (
+              <select
+                value={currentOrgSlug}
+                onChange={handleOrgChange}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                <option value="">All Organisations</option>
+                {organisations.map(org => (
+                  <option key={org.id} value={org.slug}>{org.name}</option>
+                ))}
+              </select>
+            )
+          }
       />
       <PageContent>
-        <Alert type="info" className="mb-4">
-          <strong>Demo Mode:</strong> This page shows mock security data. API endpoints are not yet implemented.
-        </Alert>
-        <Card data-testid="security-summary" className="mb-4">
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card data-testid="security-summary" style={{ marginBottom: '16px' }}>
+          <div style={{ padding: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
               <div>
-                <div className="text-sm text-gray-600">Total Events</div>
-                <div className="text-3xl font-bold text-gray-700">{security?.total_events || 0}</div>
+                <div style={{ fontSize: '14px', color: '#4b5563' }}>Total Events</div>
+                <div style={{ fontSize: '30px', fontWeight: 'bold', color: '#374151' }}>{security?.total_events || 0}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Resolved</div>
-                <div className="text-3xl font-bold text-green-600">{security?.resolved_events || 0}</div>
+                <div style={{ fontSize: '14px', color: '#4b5563' }}>Resolved</div>
+                <div style={{ fontSize: '30px', fontWeight: 'bold', color: '#16a34a' }}>{security?.resolved_events || 0}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Unresolved</div>
-                <div className="text-3xl font-bold text-orange-600">{unresolvedEvents}</div>
+                <div style={{ fontSize: '14px', color: '#4b5563' }}>Unresolved</div>
+                <div style={{ fontSize: '30px', fontWeight: 'bold', color: '#ea580c' }}>{unresolvedEvents}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Critical</div>
-                <div className="text-3xl font-bold text-red-600">{criticalEvents}</div>
+                <div style={{ fontSize: '14px', color: '#4b5563' }}>Critical</div>
+                <div style={{ fontSize: '30px', fontWeight: 'bold', color: '#dc2626' }}>{criticalEvents}</div>
               </div>
             </div>
           </div>
         </Card>
 
         {security?.asvs_scorecard && (
-          <Card data-testid="asvs-scorecard" className="mb-4">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4">ASVS Scorecard</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-gray-600">Level 1 (Completeness)</div>
-                  <div className="text-2xl font-bold text-blue-600 mt-2">
+          <Card data-testid="asvs-scorecard" style={{ marginBottom: '16px' }}>
+            <div style={{ padding: '24px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>ASVS Scorecard</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                <div style={{ padding: '16px', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '14px', color: '#4b5563' }}>Level 1 (Completeness)</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563eb', marginTop: '8px' }}>
                     {security.asvs_scorecard.level1}%
                   </div>
                 </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-gray-600">Level 2 (Security Controls)</div>
-                  <div className="text-2xl font-bold text-green-600 mt-2">
+                <div style={{ padding: '16px', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '14px', color: '#4b5563' }}>Level 2 (Security Controls)</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#16a34a', marginTop: '8px' }}>
                     {security.asvs_scorecard.level2}%
                   </div>
                 </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-gray-600">Level 3 (Advanced)</div>
-                  <div className="text-2xl font-bold text-purple-600 mt-2">
+                <div style={{ padding: '16px', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '14px', color: '#4b5563' }}>Level 3 (Advanced)</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#9333ea', marginTop: '8px' }}>
                     {security.asvs_scorecard.level3}%
                   </div>
                 </div>
+              </div>
+              <div style={{ marginTop: '16px', padding: '12px', backgroundColor: 'var(--app-surface-2)', borderRadius: '6px', fontSize: '13px', color: 'var(--app-link)' }}>
+                <strong>What is this?</strong> The Application Security Verification Standard (ASVS) measures your security posture.
+                To improve your score, resolve the <strong>Open</strong> security violations listed below.
               </div>
             </div>
           </Card>
         )}
 
-        {security?.events && security.events.length > 0 && (
+        {security && (
           <Card data-testid="security-events">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Recent Security Events</h3>
-              <div className="space-y-3">
-                {security.events.slice(0, 10).map(event => (
+            <div style={{ padding: '24px' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 16px 0' }}>Recent Security Events</h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px', border: '1px solid var(--app-border)' }}>
+                  {/* Status Row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#6b7280', minWidth: '60px' }}>Status:</span>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {['all', 'open', 'resolved'].map(status => (
+                        <FilterButton
+                          key={status}
+                          active={filterStatus === status}
+                          onClick={() => setSearchParams(prev => {
+                            const next = new URLSearchParams(prev);
+                            status === 'all' ? next.delete('status') : next.set('status', status);
+                            return next;
+                          }, { replace: true })}
+                        >
+                          {status === 'all' ? 'All Statuses' : status.charAt(0).toUpperCase() + status.slice(1)}
+                        </FilterButton>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Severity Row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#6b7280', minWidth: '60px' }}>Severity:</span>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {['all', 'critical', 'high', 'medium', 'low'].map(sev => (
+                        <FilterButton
+                          key={sev}
+                          active={filterSeverity === sev}
+                          onClick={() => setSearchParams(prev => {
+                            const next = new URLSearchParams(prev);
+                            sev === 'all' ? next.delete('severity') : next.set('severity', sev);
+                            return next;
+                          }, { replace: true })}
+                        >
+                          {sev === 'all' ? 'All Severities' : sev.charAt(0).toUpperCase() + sev.slice(1)}
+                        </FilterButton>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {security.events.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-muted-text)', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                    No events found matching your filters.
+                  </div>
+                ) : (
+                  security.events.slice(0, 10).map(event => (
                   <div
                     key={event.id}
-                    className="flex items-center justify-between p-3 border rounded hover:bg-gray-50"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', border: '1px solid #e5e7eb', borderRadius: '4px' }}
                     data-testid={`event-${event.id}`}
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">{event.event_type}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: '500' }}>{event.event_type}</span>
                         <Badge type={getSeverityColor(event.severity)}>
                           {event.severity.toUpperCase()}
                         </Badge>
@@ -260,13 +401,13 @@ export const SecurityPage: React.FC = () => {
                           <Badge type="error">Open</Badge>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600">{event.description}</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p style={{ fontSize: '14px', color: '#4b5563', margin: 0 }}>{event.description}</p>
+                      <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px', marginBottom: 0 }}>
                         {new Date(event.timestamp).toLocaleString()}
                       </p>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
             </div>
           </Card>

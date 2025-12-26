@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Card, Button } from '@django-core/design-system';
+import { useAuth } from '@django-core/auth-ui';
 
 interface NavGroup {
   id: string;
@@ -82,9 +83,35 @@ const navGroups: NavGroup[] = [
  */
 export default function Sidebar() {
   const location = useLocation();
+  const { user } = useAuth();
   const STORAGE_KEY = 'demo_sidebar_expanded_groups';
 
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  // Filter navGroups based on permissions
+  // Note: We use useMemo to ensure this recalculates when user state changes
+  // The issue "only visible after refresh" suggests 'user' might be stale or incomplete initially.
+  // However, since this is a render-time calculation, it should update as soon as 'user' updates.
+  const filteredNavGroups = navGroups.map(group => {
+    const items = group.items.filter(item => {
+      if (item.path === '/security') {
+        // Show if system admin or org admin (or Coach)
+        // Fix: Check 'role' property from API
+        const isSystemAdmin = (user as any)?.role === 'superadmin' || (user as any)?.role === 'admin';
+
+        // Check organisations array safely
+        const orgs = (user as any)?.organisations || [];
+        const isOrgAdmin = orgs.some((org: any) =>
+          org.role?.toLowerCase().includes('admin') ||
+          org.role?.toLowerCase().includes('coach')
+        );
+
+        return isSystemAdmin || isOrgAdmin;
+      }
+      return true;
+    });
+    return { ...group, items };
+  }).filter(group => group.items.length > 0);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -96,7 +123,7 @@ export default function Sidebar() {
       }
     }
 
-    for (const group of navGroups) {
+    for (const group of filteredNavGroups) {
       const hasActive = group.items.some(item =>
         location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
       );
@@ -105,7 +132,7 @@ export default function Sidebar() {
         break;
       }
     }
-  }, [location.pathname]);
+  }, [location.pathname, user]); // Added user dependency
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(expandedGroups)));
@@ -128,10 +155,27 @@ export default function Sidebar() {
   };
 
   return (
-    <aside data-testid="sidebar" style={{ width: 280, minHeight: '100vh' }}>
-      <Card style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {navGroups.map(group => (
-          <Card key={group.id} data-testid={`nav-group-${group.id}`} style={{ padding: 8 }}>
+    <aside data-testid="sidebar" style={{
+      width: 280,
+      minHeight: '100vh',
+      backgroundColor: 'var(--app-surface)',
+      borderRight: '1px solid var(--app-border)'
+    }}>
+      <Card style={{
+        padding: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        backgroundColor: 'transparent',
+        border: 'none',
+        boxShadow: 'none'
+      }}>
+        {filteredNavGroups.map(group => (
+          <Card key={group.id} data-testid={`nav-group-${group.id}`} style={{
+            padding: 8,
+            backgroundColor: 'var(--app-surface-secondary)',
+            border: '1px solid var(--app-border)'
+          }}>
             <Button
               variant="secondary"
               size="md"
@@ -163,8 +207,8 @@ export default function Sidebar() {
                         padding: '8px 10px',
                         borderRadius: 6,
                         textDecoration: 'none',
-                        backgroundColor: active ? '#eff6ff' : 'transparent',
-                        color: active ? '#0f172a' : '#374151',
+                        backgroundColor: active ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                        color: active ? '#2563eb' : 'var(--app-text)',
                         fontWeight: active ? 600 : 500,
                       }}
                     >
@@ -189,8 +233,8 @@ export default function Sidebar() {
               padding: '8px 10px',
               borderRadius: 6,
               textDecoration: 'none',
-              backgroundColor: isItemActive('/dashboard') ? '#eff6ff' : 'transparent',
-              color: isItemActive('/dashboard') ? '#0f172a' : '#374151',
+              backgroundColor: isItemActive('/dashboard') ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+              color: isItemActive('/dashboard') ? '#2563eb' : 'var(--app-text)',
               fontWeight: isItemActive('/dashboard') ? 600 : 500,
             }}
           >

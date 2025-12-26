@@ -85,20 +85,23 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
       zIndex: 1000
     }}>
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: 'var(--app-surface)',
         padding: '24px',
         borderRadius: '8px',
         width: '100%',
         maxWidth: '400px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        color: 'var(--app-text)',
+        border: '1px solid var(--app-border)'
       }}>
-        <h2 style={{ marginTop: 0, marginBottom: '16px', fontSize: '18px', fontWeight: 600 }}>Create New User</h2>
+        <h2 style={{ marginTop: 0, marginBottom: '16px', fontSize: '18px', fontWeight: 600, color: 'var(--app-text)' }}>Create New User</h2>
 
         {error && (
           <div style={{
             padding: '8px',
-            backgroundColor: '#fee',
-            color: '#c00',
+            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+            color: '#dc3545',
+            border: '1px solid rgba(220, 53, 69, 0.3)',
             borderRadius: '4px',
             marginBottom: '16px',
             fontSize: '14px'

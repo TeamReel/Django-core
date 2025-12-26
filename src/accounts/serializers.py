@@ -62,7 +62,7 @@ class UserListSerializer(serializers.ModelSerializer):
         """Get user's role."""
         if obj.is_superuser:
             return "superadmin"
-        elif obj.is_admin:
+        elif getattr(obj, "is_admin", False) or obj.is_staff:
             return "admin"
         return "user"
 

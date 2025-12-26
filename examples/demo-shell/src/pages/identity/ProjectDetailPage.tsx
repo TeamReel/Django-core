@@ -10,6 +10,8 @@ import {
 import {
   PageHeader,
   PageContent,
+  BreadcrumbContextSwitcher,
+  useBreadcrumbContextSwitcher,
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Project, User, AuditEvent } from '../../types';
@@ -34,19 +36,99 @@ export const ProjectDetailPage: React.FC = () => {
   const [recentEvents, setRecentEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [orgProjects, setOrgProjects] = useState<Project[]>([]); // For switcher
 
   // Resolve org and project slugs
-  const resolvedOrg = organisations.find(o =>
-    o.slug.toLowerCase() === orgId?.toLowerCase() || o.id === orgId
-  ) || context.organisation;
+  const resolvedOrg = (orgId
+    ? organisations.find(o => o.slug.toLowerCase() === orgId?.toLowerCase() || o.id === orgId)
+    : context.organisation) || context.organisation;
 
   const targetId = projectId || id;
 
   // Try to find project in context first (if loaded), otherwise use targetId as slug
-  const resolvedProject = contextProjects.find(p =>
-    p.slug.toLowerCase() === targetId?.toLowerCase() || p.id === targetId
-  );
+  const resolvedProject = (targetId
+    ? contextProjects.find(p => p.slug.toLowerCase() === targetId?.toLowerCase() || p.id === targetId)
+    : context.project) || context.project;
+
   const currentProjectSlug = resolvedProject?.slug || targetId?.toLowerCase(); // Use slug for API calls
+
+  // Breadcrumb context switcher setup
+  const {
+    organisationOptions,
+    projectOptions,
+  } = useBreadcrumbContextSwitcher({
+    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    projects: orgProjects.map(p => ({ id: p.id, name: p.name, slug: p.slug, organisation_id: p.organisation_id })),
+    users: [],
+    context: {
+      currentOrgId: resolvedOrg?.id || project?.organisation_id,
+      currentProjectId: resolvedProject?.id || project?.id,
+    },
+    basePath: '',
+  });
+
+  // Custom handlers for navigation
+  const handleOrganisationSwitch = (option: { id: string; label: string; slug: string }) => {
+    navigate(`/organisations/${option.slug || option.id}`);
+  };
+
+  const handleProjectSwitch = (option: { id: string; label: string; slug: string }) => {
+    navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${option.slug || option.id}`);
+  };
+
+  // Debug: Log project options
+  console.log('[ProjectDetailPage] Debug:', {
+    orgProjectsCount: orgProjects.length,
+    projectOptionsCount: projectOptions.length,
+    currentOrgId: resolvedOrg?.id || project?.organisation_id,
+    resolvedOrgId: resolvedOrg?.id,
+    projectOrgId: project?.organisation_id,
+    sampleOrgProjects: orgProjects.slice(0, 2).map(p => ({
+      name: p.name,
+      id: p.id,
+      organisation_id: p.organisation_id,
+      organisation: p.organisation
+    }))
+  });
+
+  // Fetch projects for the current organisation (for switcher dropdown)
+  useEffect(() => {
+    const fetchOrgProjects = async () => {
+      const orgId = resolvedOrg?.id || project?.organisation_id;
+      if (!orgId) return;
+
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const orgSlug = resolvedOrg?.slug || organisations.find(o => o.id === orgId)?.slug;
+        if (!orgSlug) return;
+
+        const response = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/?page_size=100`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'include',
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          // Map API response to match expected format (organisation_id snake_case)
+          const mapped = (data.results || []).map((p: any) => ({
+            ...p,
+            organisation_id: p.organisation?.id || p.organisation_id
+          }));
+          setOrgProjects(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch org projects for switcher:', err);
+      }
+    };
+
+    fetchOrgProjects();
+  }, [resolvedOrg?.id, resolvedOrg?.slug, project?.organisation_id, organisations]);
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
@@ -201,6 +283,16 @@ export const ProjectDetailPage: React.FC = () => {
     );
   }
 
+  // Ensure current project is in options for the switcher
+  const effectiveProjectOptions = [...projectOptions];
+  if (project && !effectiveProjectOptions.find(p => p.id === project.id)) {
+    effectiveProjectOptions.push({
+      id: project.id,
+      label: project.name,
+      slug: project.slug || project.id
+    });
+  }
+
   return (
     <AppShell>
       <div>
@@ -211,19 +303,81 @@ export const ProjectDetailPage: React.FC = () => {
           { label: 'Organisations', onClick: () => navigate('/organisations') },
           { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
           { label: 'Projects', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
-          { label: project.name, current: true },
+          {
+            label: (
+              <select
+                value={project.slug || project.id}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const selectedProject = effectiveProjectOptions.find(p => (p.slug || p.id) === value);
+                  if (selectedProject) handleProjectSwitch(selectedProject);
+                }}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500
+                }}
+              >
+                {effectiveProjectOptions.map(proj => (
+                  <option key={proj.id} value={proj.slug || proj.id}>{proj.label}</option>
+                ))}
+              </select>
+            ),
+            current: true,
+          },
         ]}
         actions={
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`)}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500
+              }}
+            >
               Back
-            </Button>
-            <Button variant="secondary" onClick={() => navigate(`/users?project_id=${project.slug || project.id}&organisation_id=${resolvedOrg?.slug || resolvedOrg?.id}`)}>
+            </button>
+            <button
+              onClick={() => navigate(`/users?project_id=${project.slug || project.id}&organisation_id=${resolvedOrg?.slug || resolvedOrg?.id}`)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500
+              }}
+            >
               View Project Users
-            </Button>
-            <Button variant="primary" onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}/edit`)}>
+            </button>
+            <button
+              onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}/edit`)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid #0056b3',
+                backgroundColor: 'var(--app-surface)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500
+              }}
+            >
               Edit Project
-            </Button>
+            </button>
           </div>
         }
       />

@@ -11,6 +11,8 @@ import {
 import {
   PageHeader,
   PageContent,
+  BreadcrumbContextSwitcher,
+  useBreadcrumbContextSwitcher,
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
@@ -67,6 +69,22 @@ export const OrganisationDetailPage: React.FC = () => {
   const userCanManageMembers = canManageMembers(permissionContext);
   const userCanEditProject = canEditProject(permissionContext);
   const userCanDeleteProject = canDeleteProject(permissionContext);
+
+  // Breadcrumb context switcher setup
+  const {
+    organisationOptions,
+  } = useBreadcrumbContextSwitcher({
+    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    projects: [],
+    users: [],
+    context: { currentOrgId: resolvedOrg?.id },
+    basePath: '',
+  });
+
+  // Custom handler to navigate to the selected organisation's detail page
+  const handleOrganisationSwitch = (option: { id: string; label: string; slug: string }) => {
+    navigate(`/organisations/${option.slug || option.id}`);
+  };
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -311,34 +329,96 @@ export const OrganisationDetailPage: React.FC = () => {
         breadcrumbs={[
           { label: 'Home', onClick: () => navigate('/') },
           { label: 'Organisations', onClick: () => navigate('/organisations') },
-          { label: org.name, current: true },
+          {
+            label: (
+              <select
+                value={org.slug || org.id}
+                onChange={(e) => handleOrganisationSwitch({ id: e.target.value, label: '', slug: e.target.value })}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500
+                }}
+              >
+                {organisationOptions.map(orgOption => (
+                  <option key={orgOption.id} value={orgOption.slug || orgOption.id}>{orgOption.label}</option>
+                ))}
+              </select>
+            ),
+            current: true,
+          },
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
-            <Button variant="secondary" onClick={() => navigate('/organisations')}>
+            <button
+              onClick={() => navigate('/organisations')}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500
+              }}
+            >
               Back
-            </Button>
-            <Button
-              variant="secondary"
+            </button>
+            <button
               onClick={() => navigate(`/organisations/${org.slug || org.id}/users`)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500
+              }}
             >
               View All Users
-            </Button>
+            </button>
             {userCanEditOrg && (
               <>
-                <Button
-                  variant="secondary"
+                <button
                   onClick={() => navigate(`/organisations/${org.slug || org.id}/edit`)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid #0056b3',
+                    backgroundColor: 'var(--app-surface)',
+                    color: 'var(--app-text)',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 500
+                  }}
                 >
                   Edit
-                </Button>
-                <Button
-                  variant="destructive"
+                </button>
+                <button
                   onClick={handleDelete}
                   disabled={deleteLoading}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid #bd2130',
+                    backgroundColor: 'var(--app-surface)',
+                    color: 'var(--app-text)',
+                    cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    opacity: deleteLoading ? 0.6 : 1
+                  }}
                 >
                   {deleteLoading ? 'Deleting...' : 'Delete'}
-                </Button>
+                </button>
               </>
             )}
           </div>
@@ -416,7 +496,15 @@ export const OrganisationDetailPage: React.FC = () => {
 
                 return {
                   id: user.id,
-                  name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
+                  name: (
+                    <Link
+                      to={`/users/${user.id}`}
+                      className="text-blue-600 hover:underline"
+                      data-testid={`user-link-${user.id}`}
+                    >
+                      {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                    </Link>
+                  ),
                   email: user.email,
                   role: (
                     <Badge variant="secondary" data-testid={`member-role-${user.id}`}>
@@ -430,13 +518,14 @@ export const OrganisationDetailPage: React.FC = () => {
                           <button
                             onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
                             style={{
-                                padding: '4px 8px',
+                                padding: '6px 12px',
                                 borderRadius: '4px',
-                                border: '1px solid #6c757d',
-                                backgroundColor: 'white',
-                                color: '#6c757d',
+                                border: '1px solid var(--app-border)',
+                                backgroundColor: 'var(--app-surface-2)',
+                                color: 'var(--app-text)',
                                 cursor: 'pointer',
-                                fontSize: '12px'
+                                fontSize: '12px',
+                                fontWeight: 500
                             }}
                           >
                             View
@@ -444,13 +533,14 @@ export const OrganisationDetailPage: React.FC = () => {
                           <button
                             onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}?action=edit`)}
                             style={{
-                                padding: '4px 8px',
+                                padding: '6px 12px',
                                 borderRadius: '4px',
-                                border: '1px solid #007bff',
-                                backgroundColor: 'white',
-                                color: '#007bff',
+                                border: '1px solid #0056b3',
+                                backgroundColor: 'var(--app-surface)',
+                                color: 'var(--app-text)',
                                 cursor: 'pointer',
-                                fontSize: '12px'
+                                fontSize: '12px',
+                                fontWeight: 500
                             }}
                           >
                             Edit
@@ -499,13 +589,14 @@ export const OrganisationDetailPage: React.FC = () => {
                           }
                         }}
                         style={{
-                            padding: '4px 8px',
+                            padding: '6px 12px',
                             borderRadius: '4px',
-                            border: '1px solid #dc3545',
-                            backgroundColor: 'white',
-                            color: '#dc3545',
+                            border: '1px solid #bd2130',
+                            backgroundColor: 'var(--app-surface)',
+                            color: 'var(--app-text)',
                             cursor: 'pointer',
-                            fontSize: '12px'
+                            fontSize: '12px',
+                            fontWeight: 500
                         }}
                       >
                         Remove
@@ -568,13 +659,14 @@ export const OrganisationDetailPage: React.FC = () => {
                         <button
                             onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`)}
                             style={{
-                                padding: '4px 8px',
+                                padding: '6px 12px',
                                 borderRadius: '4px',
-                                border: '1px solid #6c757d',
-                                backgroundColor: 'white',
-                                color: '#6c757d',
+                                border: '1px solid var(--app-border)',
+                                backgroundColor: 'var(--app-surface-2)',
+                                color: 'var(--app-text)',
                                 cursor: 'pointer',
-                                fontSize: '12px'
+                                fontSize: '12px',
+                                fontWeight: 500
                             }}
                         >
                             View
@@ -583,13 +675,14 @@ export const OrganisationDetailPage: React.FC = () => {
                           <button
                               onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}/edit`)}
                               style={{
-                                  padding: '4px 8px',
+                                  padding: '6px 12px',
                                   borderRadius: '4px',
-                                  border: '1px solid #007bff',
-                                  backgroundColor: 'white',
-                                  color: '#007bff',
+                                  border: '1px solid #0056b3',
+                                  backgroundColor: 'var(--app-surface)',
+                                  color: 'var(--app-text)',
                                   cursor: 'pointer',
-                                  fontSize: '12px'
+                                  fontSize: '12px',
+                                  fontWeight: 500
                               }}
                           >
                               Edit
@@ -638,13 +731,14 @@ export const OrganisationDetailPage: React.FC = () => {
                                   }
                               }}
                               style={{
-                                  padding: '4px 8px',
+                                  padding: '6px 12px',
                                   borderRadius: '4px',
-                                  border: '1px solid #dc3545',
-                                  backgroundColor: 'white',
-                                  color: '#dc3545',
+                                  border: '1px solid #bd2130',
+                                  backgroundColor: 'var(--app-surface)',
+                                  color: 'var(--app-text)',
                                   cursor: 'pointer',
-                                  fontSize: '12px'
+                                  fontSize: '12px',
+                                  fontWeight: 500
                               }}
                           >
                               Delete

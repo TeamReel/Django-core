@@ -166,7 +166,7 @@ export default function IntegrationStatusPage() {
     <div style={{
       display: 'flex',
       gap: '4px',
-      borderBottom: '2px solid #ddd',
+      borderBottom: '2px solid var(--app-border)',
       marginBottom: '32px'
     }}>
       {[
@@ -183,7 +183,7 @@ export default function IntegrationStatusPage() {
           style={{
             padding: '12px 24px',
             backgroundColor: activeTab === tab.id ? '#007bff' : 'transparent',
-            color: activeTab === tab.id ? 'white' : '#666',
+            color: activeTab === tab.id ? 'white' : 'var(--app-muted-text)',
             border: 'none',
             borderBottom: activeTab === tab.id ? '2px solid #007bff' : '2px solid transparent',
             cursor: 'pointer',
@@ -211,7 +211,7 @@ export default function IntegrationStatusPage() {
         {/* Platform Roadmap Progress */}
         <div style={{
           padding: '24px',
-          backgroundColor: '#e7f3ff',
+          backgroundColor: 'var(--app-surface)',
           border: '2px solid #007bff',
           borderRadius: '12px',
           marginBottom: '32px'
@@ -227,28 +227,28 @@ export default function IntegrationStatusPage() {
           }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>{platformCompletion}%</div>
-              <div style={{ fontSize: '14px', color: '#666' }}>Platform Complete</div>
-              <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Platform Complete</div>
+              <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
                 {completedModules}/{totalPlatformModules} modules
               </div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>7</div>
-              <div style={{ fontSize: '14px', color: '#666' }}>Phases Complete</div>
-              <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>Fase 1-7 ✅</div>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Phases Complete</div>
+              <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>Fase 1-7 ✅</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#fd7e14' }}>1</div>
-              <div style={{ fontSize: '14px', color: '#666' }}>Phase In Progress</div>
-              <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>Fase 8 🚧</div>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Phase In Progress</div>
+              <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>Fase 8 🚧</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#6c757d' }}>10</div>
-              <div style={{ fontSize: '14px', color: '#666' }}>Phases Planned</div>
-              <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>Fase 9-18 📋</div>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Phases Planned</div>
+              <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>Fase 9-18 📋</div>
             </div>
           </div>
-          <div style={{ fontSize: '13px', color: '#555', lineHeight: '1.6' }}>
+          <div style={{ fontSize: '13px', color: 'var(--app-text)', lineHeight: '1.6' }}>
             <strong>Current Status:</strong> Core backend (B01-B21) and frontend foundations (F01-F07, F09) complete.
             Demo foundation (F10) in progress. Next: Infrastructure extensions (B22-B25), Advanced UI (F11-F15),
             Data Platform (D01-D16), Quality Gates (P01-P05).
@@ -265,38 +265,38 @@ export default function IntegrationStatusPage() {
         }}>
           <div style={{
             padding: '20px',
-            backgroundColor: '#d4edda',
+            backgroundColor: 'var(--app-surface)',
             border: '2px solid #28a745',
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>✅ Complete</div>
+            <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '8px' }}>✅ Complete</div>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#28a745' }}>{completedModules}</div>
-            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>Tested & deployed</div>
+            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>Tested & deployed</div>
           </div>
 
           <div style={{
             padding: '20px',
-            backgroundColor: '#fff3cd',
+            backgroundColor: 'var(--app-surface)',
             border: '2px solid #fd7e14',
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>🚧 In Progress</div>
+            <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '8px' }}>🚧 In Progress</div>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#fd7e14' }}>{inProgressModules}</div>
-            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>Under development</div>
+            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>Under development</div>
           </div>
 
           <div style={{
             padding: '20px',
-            backgroundColor: '#f8f9fa',
+            backgroundColor: 'var(--app-surface)',
             border: '2px solid #6c757d',
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>📋 Planned</div>
+            <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '8px' }}>📋 Planned</div>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#6c757d' }}>{plannedModules}</div>
-            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>On roadmap</div>
+            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>On roadmap</div>
           </div>
         </div>
 
@@ -337,13 +337,13 @@ export default function IntegrationStatusPage() {
                   <span style={{ fontWeight: 600 }}>
                     {phase.status} {phase.name}
                   </span>
-                  <span style={{ color: '#666' }}>
+                  <span style={{ color: 'var(--app-muted-text)' }}>
                     {phase.complete}/{phase.modules} modules ({percentage}%)
                   </span>
                 </div>
                 <div style={{
                   height: '8px',
-                  backgroundColor: '#e9ecef',
+                  backgroundColor: 'var(--app-surface)',
                   borderRadius: '4px',
                   overflow: 'hidden'
                 }}>
@@ -362,7 +362,7 @@ export default function IntegrationStatusPage() {
         {/* Quick Links */}
         <div style={{
           padding: '20px',
-          backgroundColor: '#e3f2fd',
+          backgroundColor: 'var(--app-surface)',
           borderRadius: '8px',
           borderLeft: '4px solid #2196f3'
         }}>
@@ -426,13 +426,13 @@ export default function IntegrationStatusPage() {
         {/* Recent Updates */}
         <div style={{
           padding: '20px',
-          backgroundColor: '#f8f9fa',
+          backgroundColor: 'var(--app-surface)',
           borderRadius: '8px',
           borderLeft: '4px solid #28a745',
           marginTop: '24px'
         }}>
           <h3 style={{ marginTop: 0, fontSize: '16px', color: '#28a745' }}>🎉 Recent Updates</h3>
-          <div style={{ fontSize: '14px', color: '#666', lineHeight: '1.6' }}>
+          <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', lineHeight: '1.6' }}>
             <strong>December 18, 2025 - Feature 035 Complete:</strong>
             <br />
             ✅ Real-Time & WebSocket Foundation (B23) is now fully operational
@@ -500,15 +500,15 @@ export default function IntegrationStatusPage() {
         {/* Filters */}
         <div style={{
           padding: '20px',
-          backgroundColor: '#f8f9fa',
+          backgroundColor: 'var(--app-surface)',
           borderRadius: '8px',
           marginBottom: '24px',
-          border: '1px solid #ddd'
+          border: '1px solid var(--app-border)'
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
             {/* Phase Filter */}
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: '#666' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: 'var(--app-muted-text)' }}>
                 FASE
               </label>
               <select
@@ -517,7 +517,7 @@ export default function IntegrationStatusPage() {
                 style={{
                   width: '100%',
                   padding: '8px 12px',
-                  border: '1px solid #ddd',
+                  border: '1px solid var(--app-border)',
                   borderRadius: '4px',
                   fontSize: '14px'
                 }}
@@ -531,7 +531,7 @@ export default function IntegrationStatusPage() {
 
             {/* Category Filter */}
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: '#666' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: 'var(--app-muted-text)' }}>
                 CATEGORY
               </label>
               <select
@@ -540,7 +540,7 @@ export default function IntegrationStatusPage() {
                 style={{
                   width: '100%',
                   padding: '8px 12px',
-                  border: '1px solid #ddd',
+                  border: '1px solid var(--app-border)',
                   borderRadius: '4px',
                   fontSize: '14px'
                 }}
@@ -557,7 +557,7 @@ export default function IntegrationStatusPage() {
 
             {/* Status Filter */}
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: '#666' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: 'var(--app-muted-text)' }}>
                 STATUS
               </label>
               <select
@@ -566,7 +566,7 @@ export default function IntegrationStatusPage() {
                 style={{
                   width: '100%',
                   padding: '8px 12px',
-                  border: '1px solid #ddd',
+                  border: '1px solid var(--app-border)',
                   borderRadius: '4px',
                   fontSize: '14px'
                 }}
@@ -580,7 +580,7 @@ export default function IntegrationStatusPage() {
 
             {/* Search */}
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: '#666' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: 'var(--app-muted-text)' }}>
                 SEARCH
               </label>
               <input
@@ -591,7 +591,7 @@ export default function IntegrationStatusPage() {
                 style={{
                   width: '100%',
                   padding: '8px 12px',
-                  border: '1px solid #ddd',
+                  border: '1px solid var(--app-border)',
                   borderRadius: '4px',
                   fontSize: '14px'
                 }}
@@ -600,7 +600,7 @@ export default function IntegrationStatusPage() {
           </div>
 
           {/* Filter Summary */}
-          <div style={{ fontSize: '13px', color: '#666' }}>
+          <div style={{ fontSize: '13px', color: 'var(--app-muted-text)' }}>
             Showing <strong>{filteredModules.length}</strong> of <strong>71</strong> modules
             {(phaseFilter !== 'all' || categoryFilter !== 'all' || statusFilter !== 'all' || searchQuery.trim()) && (
               <button
@@ -637,10 +637,10 @@ export default function IntegrationStatusPage() {
             <div
               key={module.id}
               style={{
-                border: '1px solid #ddd',
+                border: '1px solid var(--app-border)',
                 borderRadius: '8px',
                 padding: '16px',
-                backgroundColor: '#fff',
+                backgroundColor: 'var(--app-bg)',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                 transition: 'box-shadow 0.2s',
                 cursor: 'pointer'
@@ -667,17 +667,17 @@ export default function IntegrationStatusPage() {
                     }}>
                       {module.code}
                     </span>
-                    <span style={{ fontSize: '11px', color: '#999' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--app-muted-text)' }}>
                       #{module.number.toString().padStart(3, '0')}
                     </span>
-                    <span style={{ fontSize: '11px', color: '#999' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--app-muted-text)' }}>
                       Fase {module.phase}
                     </span>
                   </div>
                   <h3 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: 600 }}>
                     {module.name}
                   </h3>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#666', lineHeight: '1.4' }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--app-muted-text)', lineHeight: '1.4' }}>
                     {module.description}
                   </p>
                 </div>
@@ -690,12 +690,12 @@ export default function IntegrationStatusPage() {
               <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                 <span style={{
                   padding: '4px 10px',
-                  backgroundColor: '#f8f9fa',
-                  border: '1px solid #ddd',
+                  backgroundColor: 'var(--app-surface)',
+                  border: '1px solid var(--app-border)',
                   borderRadius: '12px',
                   fontSize: '11px',
                   fontWeight: 600,
-                  color: '#666'
+                  color: 'var(--app-muted-text)'
                 }}>
                   {module.category}
                 </span>
@@ -714,9 +714,9 @@ export default function IntegrationStatusPage() {
               </div>
 
               {/* Features */}
-              <div style={{ fontSize: '12px', color: '#666', marginBottom: '12px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '12px' }}>
                 {module.features.slice(0, 3).join(' • ')}
-                {module.features.length > 3 && <span style={{ color: '#999' }}> +{module.features.length - 3} more</span>}
+                {module.features.length > 3 && <span style={{ color: 'var(--app-muted-text)' }}> +{module.features.length - 3} more</span>}
               </div>
 
               {/* Test Link */}
@@ -747,7 +747,7 @@ export default function IntegrationStatusPage() {
           <div style={{
             padding: '60px 20px',
             textAlign: 'center',
-            color: '#999'
+            color: 'var(--app-muted-text)'
           }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
             <div style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>No modules found</div>
@@ -778,7 +778,7 @@ export default function IntegrationStatusPage() {
       <div>
         <div style={{
           padding: '20px',
-          backgroundColor: '#e7f3ff',
+          backgroundColor: 'var(--app-surface)',
           borderRadius: '8px',
           borderLeft: '4px solid #007bff',
           marginBottom: '32px'
@@ -824,15 +824,15 @@ export default function IntegrationStatusPage() {
                 gap: '12px',
                 marginBottom: '16px',
                 paddingBottom: '8px',
-                borderBottom: '2px solid #ddd'
+                borderBottom: '2px solid var(--app-border)'
               }}>
                 <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
                   {phase.status} {phase.name}
                 </h2>
                 <span style={{
                   padding: '4px 12px',
-                  backgroundColor: '#f8f9fa',
-                  color: '#6c757d',
+                  backgroundColor: 'var(--app-surface)',
+                  color: 'var(--app-muted-text)',
                   borderRadius: '12px',
                   fontSize: '12px',
                   fontWeight: 600
@@ -850,10 +850,10 @@ export default function IntegrationStatusPage() {
                   <div
                     key={moduleCode}
                     style={{
-                      border: '1px solid #ddd',
+                      border: '1px solid var(--app-border)',
                       borderRadius: '8px',
                       padding: '12px 16px',
-                      backgroundColor: '#f8f9fa',
+                      backgroundColor: 'var(--app-surface)',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px'
@@ -863,7 +863,7 @@ export default function IntegrationStatusPage() {
                     <span style={{ fontWeight: 600, fontSize: '14px' }}>
                       {moduleCode}
                     </span>
-                    <span style={{ fontSize: '12px', color: '#666' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
                       {moduleCode.startsWith('B') ? 'Backend' :
                        moduleCode.startsWith('F') ? 'Frontend' :
                        moduleCode.startsWith('D') ? 'Data/ML' :
@@ -889,7 +889,7 @@ export default function IntegrationStatusPage() {
         {/* Stack Overview */}
         <div style={{
           padding: '24px',
-          backgroundColor: '#e7f3ff',
+          backgroundColor: 'var(--app-surface)',
           border: '2px solid #007bff',
           borderRadius: '12px',
           marginBottom: '32px'
@@ -1005,10 +1005,10 @@ export default function IntegrationStatusPage() {
                     {item.tech.split(',')[0]}
                   </span>
                 </div>
-                <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#666' }}>
+                <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: 'var(--app-muted-text)' }}>
                   {item.description}
                 </p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#999' }}>
+                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'var(--app-muted-text)' }}>
                   <strong>Tech:</strong> {item.tech}
                 </p>
               </div>
@@ -1062,9 +1062,9 @@ export default function IntegrationStatusPage() {
                 key={item.title}
                 style={{
                   padding: '16px',
-                  border: '1px solid #ddd',
+                  border: '1px solid var(--app-border)',
                   borderRadius: '8px',
-                  backgroundColor: '#fff'
+                  backgroundColor: 'var(--app-bg)'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
@@ -1074,7 +1074,7 @@ export default function IntegrationStatusPage() {
                 <p style={{ margin: '8px 0', fontSize: '13px', fontWeight: 600, color: '#007bff' }}>
                   → {item.decision}
                 </p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666', lineHeight: '1.5' }}>
+                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'var(--app-muted-text)', lineHeight: '1.5' }}>
                   {item.rationale}
                 </p>
               </div>
@@ -1087,12 +1087,12 @@ export default function IntegrationStatusPage() {
           <h3 style={{ marginBottom: '16px' }}>Package Structure & Dependencies</h3>
           <div style={{
             padding: '20px',
-            backgroundColor: '#f8f9fa',
-            border: '1px solid #ddd',
+            backgroundColor: 'var(--app-surface)',
+            border: '1px solid var(--app-border)',
             borderRadius: '8px'
           }}>
             <h4 style={{ marginTop: 0, marginBottom: '12px' }}>Backend Apps (src/)</h4>
-            <div style={{ fontSize: '13px', color: '#666', lineHeight: '1.8' }}>
+            <div style={{ fontSize: '13px', color: 'var(--app-muted-text)', lineHeight: '1.8' }}>
               <code>core/</code> → Base settings & config<br />
               <code>accounts/</code> → User model & auth (B05)<br />
               <code>organisations/</code> → Multi-tenancy (B06)<br />
@@ -1104,7 +1104,7 @@ export default function IntegrationStatusPage() {
             </div>
 
             <h4 style={{ marginTop: '20px', marginBottom: '12px' }}>Frontend Packages (packages/)</h4>
-            <div style={{ fontSize: '13px', color: '#666', lineHeight: '1.8' }}>
+            <div style={{ fontSize: '13px', color: 'var(--app-muted-text)', lineHeight: '1.8' }}>
               <code>@django-core/design-system</code> → UI primitives (F01)<br />
               <code>@django-core/auth-ui</code> → Login/logout (F02)<br />
               <code>@django-core/context-switcher</code> → Org/project switcher (F03)<br />
@@ -1126,7 +1126,7 @@ export default function IntegrationStatusPage() {
         {/* Product Vision */}
         <div style={{
           padding: '24px',
-          backgroundColor: '#d4edda',
+          backgroundColor: 'var(--app-surface)',
           border: '2px solid #28a745',
           borderRadius: '12px',
           marginBottom: '32px'
@@ -1140,25 +1140,25 @@ export default function IntegrationStatusPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginTop: '20px' }}>
             <div>
               <h4 style={{ marginBottom: '8px', fontSize: '14px' }}>🚀 Fast to Market</h4>
-              <p style={{ fontSize: '13px', color: '#666', margin: 0 }}>
+              <p style={{ fontSize: '13px', color: 'var(--app-muted-text)', margin: 0 }}>
                 Pre-built auth, RBAC, multi-tenancy, APIs → focus on business logic
               </p>
             </div>
             <div>
               <h4 style={{ marginBottom: '8px', fontSize: '14px' }}>🔒 Secure by Default</h4>
-              <p style={{ fontSize: '13px', color: '#666', margin: 0 }}>
+              <p style={{ fontSize: '13px', color: 'var(--app-muted-text)', margin: 0 }}>
                 OWASP compliance, rate limiting, audit logging baked in
               </p>
             </div>
             <div>
               <h4 style={{ marginBottom: '8px', fontSize: '14px' }}>📈 Scales with You</h4>
-              <p style={{ fontSize: '13px', color: '#666', margin: 0 }}>
+              <p style={{ fontSize: '13px', color: 'var(--app-muted-text)', margin: 0 }}>
                 From MVP to enterprise: async tasks, caching, observability ready
               </p>
             </div>
             <div>
               <h4 style={{ marginBottom: '8px', fontSize: '14px' }}>🎨 Modern UX</h4>
-              <p style={{ fontSize: '13px', color: '#666', margin: 0 }}>
+              <p style={{ fontSize: '13px', color: 'var(--app-muted-text)', margin: 0 }}>
                 React + TypeScript + design system for polished interfaces
               </p>
             </div>
@@ -1205,18 +1205,18 @@ export default function IntegrationStatusPage() {
                 key={item.principle}
                 style={{
                   padding: '20px',
-                  border: '1px solid #ddd',
+                  border: '1px solid var(--app-border)',
                   borderRadius: '8px',
-                  backgroundColor: '#fff'
+                  backgroundColor: 'var(--app-bg)'
                 }}
               >
                 <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#007bff' }}>
                   {item.principle}
                 </h4>
-                <p style={{ margin: '0 0 12px 0', fontSize: '14px', lineHeight: '1.6', color: '#333' }}>
+                <p style={{ margin: '0 0 12px 0', fontSize: '14px', lineHeight: '1.6', color: 'var(--app-text)' }}>
                   {item.description}
                 </p>
-                <p style={{ margin: 0, fontSize: '13px', color: '#666', fontStyle: 'italic' }}>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
                   <strong>Impact:</strong> {item.impact}
                 </p>
               </div>
@@ -1229,7 +1229,7 @@ export default function IntegrationStatusPage() {
           <h3 style={{ marginBottom: '16px' }}>Roadmap Strategy (18 Phases)</h3>
           <div style={{
             padding: '20px',
-            backgroundColor: '#e7f3ff',
+            backgroundColor: 'var(--app-surface)',
             border: '1px solid #007bff',
             borderRadius: '8px'
           }}>
@@ -1291,7 +1291,7 @@ export default function IntegrationStatusPage() {
               <li>Submit PR with demo video/screenshots</li>
             </ol>
 
-            <p style={{ marginTop: '16px', marginBottom: 0, fontSize: '13px', color: '#856404' }}>
+            <p style={{ marginTop: '16px', marginBottom: 0, fontSize: '13px', color: 'var(--app-text)' }}>
               📚 <strong>Docs:</strong> Zie <code>docs/</code> voor detailed guides, API references, ADRs
             </p>
           </div>
@@ -1308,7 +1308,7 @@ export default function IntegrationStatusPage() {
         {/* Overall Health */}
         <div style={{
           padding: '24px',
-          backgroundColor: '#d4edda',
+          backgroundColor: 'var(--app-surface)',
           border: '2px solid #28a745',
           borderRadius: '12px',
           marginBottom: '32px'
@@ -1321,19 +1321,19 @@ export default function IntegrationStatusPage() {
           }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>A+</div>
-              <div style={{ fontSize: '14px', color: '#666' }}>Security Grade</div>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Security Grade</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>95%</div>
-              <div style={{ fontSize: '14px', color: '#666' }}>Test Coverage</div>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Test Coverage</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>100%</div>
-              <div style={{ fontSize: '14px', color: '#666' }}>Type Coverage</div>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Type Coverage</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>0</div>
-              <div style={{ fontSize: '14px', color: '#666' }}>Critical Issues</div>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Critical Issues</div>
             </div>
           </div>
         </div>
@@ -1356,7 +1356,7 @@ export default function IntegrationStatusPage() {
                   padding: '16px',
                   border: `2px solid ${item.status === 'pass' ? '#28a745' : '#ffc107'}`,
                   borderRadius: '8px',
-                  backgroundColor: item.status === 'pass' ? '#d4edda' : '#fff3cd'
+                  backgroundColor: 'var(--app-surface)'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -1366,7 +1366,7 @@ export default function IntegrationStatusPage() {
                 <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '4px' }}>
                   {item.value}{item.unit}
                 </div>
-                <div style={{ fontSize: '12px', color: '#666' }}>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
                   Target: {item.target}{item.unit}
                 </div>
               </div>
@@ -1379,30 +1379,30 @@ export default function IntegrationStatusPage() {
           <h3 style={{ marginBottom: '16px' }}>Build & Deploy Health</h3>
           <div style={{
             padding: '20px',
-            backgroundColor: '#f8f9fa',
-            border: '1px solid #ddd',
+            backgroundColor: 'var(--app-surface)',
+            border: '1px solid var(--app-border)',
             borderRadius: '8px'
           }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
               <div>
                 <h4 style={{ marginTop: 0, marginBottom: '8px', fontSize: '14px' }}>CI/CD Pipeline</h4>
                 <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745', marginBottom: '4px' }}>✓ Passing</div>
-                <div style={{ fontSize: '12px', color: '#666' }}>Last run: 2 hours ago</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Last run: 2 hours ago</div>
               </div>
               <div>
                 <h4 style={{ marginTop: 0, marginBottom: '8px', fontSize: '14px' }}>Build Time</h4>
                 <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>4m 32s</div>
-                <div style={{ fontSize: '12px', color: '#666' }}>Target: &lt;5 min</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Target: &lt;5 min</div>
               </div>
               <div>
                 <h4 style={{ marginTop: 0, marginBottom: '8px', fontSize: '14px' }}>Test Suite</h4>
                 <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>2m 18s</div>
-                <div style={{ fontSize: '12px', color: '#666' }}>1,247 tests passed</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>1,247 tests passed</div>
               </div>
               <div>
                 <h4 style={{ marginTop: 0, marginBottom: '8px', fontSize: '14px' }}>Deploy Frequency</h4>
                 <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>Daily</div>
-                <div style={{ fontSize: '12px', color: '#666' }}>Last deploy: 18 hours ago</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Last deploy: 18 hours ago</div>
               </div>
             </div>
           </div>
@@ -1413,30 +1413,30 @@ export default function IntegrationStatusPage() {
           <h3 style={{ marginBottom: '16px' }}>Module Development Progress</h3>
           <div style={{
             padding: '20px',
-            backgroundColor: '#e7f3ff',
+            backgroundColor: 'var(--app-surface)',
             border: '1px solid #007bff',
             borderRadius: '8px'
           }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#28a745' }}>30</div>
-                <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>Complete & Tested</div>
-                <div style={{ fontSize: '12px', color: '#999' }}>Fase 1-7 (42%)</div>
+                <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Complete & Tested</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Fase 1-7 (42%)</div>
               </div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#fd7e14' }}>1</div>
-                <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>In Progress</div>
-                <div style={{ fontSize: '12px', color: '#999' }}>Fase 8 (F10b)</div>
+                <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>In Progress</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Fase 8 (F10b)</div>
               </div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#6c757d' }}>40</div>
-                <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>Planned</div>
-                <div style={{ fontSize: '12px', color: '#999' }}>Fase 9-18</div>
+                <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Planned</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Fase 9-18</div>
               </div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#007bff' }}>71</div>
-                <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>Total Modules</div>
-                <div style={{ fontSize: '12px', color: '#999' }}>18 phases</div>
+                <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Total Modules</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>18 phases</div>
               </div>
             </div>
           </div>
@@ -1458,9 +1458,9 @@ export default function IntegrationStatusPage() {
                 key={item.metric}
                 style={{
                   padding: '16px',
-                  border: '1px solid #ddd',
+                  border: '1px solid var(--app-border)',
                   borderRadius: '8px',
-                  backgroundColor: '#fff'
+                  backgroundColor: 'var(--app-bg)'
                 }}
               >
                 <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{item.metric}</h4>
@@ -1468,7 +1468,7 @@ export default function IntegrationStatusPage() {
                   <span style={{ fontSize: '24px', fontWeight: 'bold' }}>{item.value}</span>
                   <span style={{ fontSize: '20px' }}>{item.status === 'pass' ? '✅' : '⚠️'}</span>
                 </div>
-                <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
                   Target: {item.target}
                 </div>
               </div>
@@ -1486,7 +1486,7 @@ export default function IntegrationStatusPage() {
           <h1 style={{ marginTop: 0, marginBottom: '8px' }}>
             🔬 Integration Status Dashboard
           </h1>
-          <p style={{ color: '#666', marginBottom: '16px' }}>
+          <p style={{ color: 'var(--app-muted-text)', marginBottom: '16px' }}>
             Complete overview of django-core platform development (Modules 001-055)
           </p>
         </div>

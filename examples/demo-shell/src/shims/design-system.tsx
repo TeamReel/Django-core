@@ -1,6 +1,7 @@
 import type { ReactNode, TableHTMLAttributes, CSSProperties } from 'react';
 // @ts-expect-error: dist package has no bundled .d.ts in this snapshot
 import * as RealDesignSystem from '../../../../packages/design-system/dist/index.js';
+import { themeVars } from '@django-core/theme-system';
 
 // @ts-expect-error: dist package has no bundled .d.ts in this snapshot
 export * from '../../../../packages/design-system/dist/index.js';
@@ -13,8 +14,8 @@ export type PageHeaderProps = {
 };
 export const PageHeader = ({ title, subtitle, children, ...rest }: PageHeaderProps) => (
   <div style={{ marginBottom: '16px' }} {...rest}>
-    {title ? <h1 style={{ margin: 0 }}>{title}</h1> : null}
-    {subtitle ? <p style={{ margin: '4px 0', color: '#555' }}>{subtitle}</p> : null}
+    {title ? <h1 style={{ margin: 0, color: themeVars.color.text.primary }}>{title}</h1> : null}
+    {subtitle ? <p style={{ margin: '4px 0', color: themeVars.color.text.secondary }}>{subtitle}</p> : null}
     {children}
   </div>
 );
@@ -43,9 +44,10 @@ export type TableColumn = {
 export type TableProps = TableHTMLAttributes<HTMLTableElement> & {
   columns?: TableColumn[];
   rows?: Record<string, ReactNode>[];
+  loading?: boolean;
 };
 
-export const Table = ({ children, columns, rows, ...rest }: TableProps) => {
+export const Table = ({ children, columns, rows, loading, ...rest }: TableProps) => {
   if (columns && rows) {
     return (
       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }} {...rest}>
@@ -87,5 +89,10 @@ export const Table = ({ children, columns, rows, ...rest }: TableProps) => {
 };
 
 // Fallbacks for named exports expected by demos
+// We need to explicitly export these if they are not found in RealDesignSystem
+// But since we do export * from ..., they should be there.
+// However, if RealDesignSystem is a CJS module, the named exports might be on .default
+const DS = (RealDesignSystem as any).default || RealDesignSystem;
+
 export const { Card, Button, Badge, Text, Spinner, Alert, Modal, Input, Stack, ThemeProvider } =
-  RealDesignSystem as Record<string, unknown>;
+  DS as Record<string, unknown>;

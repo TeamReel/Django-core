@@ -12,18 +12,19 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div>
+      <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
         {/* Mock Credit Alert (F05 integration point) */}
         {showLowCreditAlert && (
           <div style={{
             marginBottom: '24px',
             padding: '16px',
-            backgroundColor: '#fff3cd',
+            backgroundColor: 'var(--app-surface-2)',
             border: '1px solid #ffc107',
             borderRadius: '4px',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px'
+            gap: '12px',
+            color: 'var(--app-text)'
           }}>
             <span style={{ fontSize: '24px' }}>⚠️</span>
             <div style={{ flex: 1 }}>
@@ -47,8 +48,8 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <h1>Welcome, {user?.first_name || user?.email}!</h1>
-        <p>You are logged in to the Django Core-App Demo Shell.</p>
+        <h1 style={{ color: 'var(--app-text)' }}>Welcome, {user?.first_name || user?.email}!</h1>
+        <p style={{ color: 'var(--app-text)' }}>You are logged in to the Django Core-App Demo Shell.</p>
 
         <div style={{ marginTop: '20px', marginBottom: '32px' }}>
           <Link
@@ -72,11 +73,12 @@ export default function DashboardPage() {
           <div style={{
             marginTop: '24px',
             padding: '16px',
-            backgroundColor: '#e7f3ff',
-            border: '1px solid #b3d7ff',
-            borderRadius: '4px'
+            backgroundColor: 'var(--app-surface-2)',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            color: 'var(--app-text)'
           }}>
-            <h3 style={{ marginTop: 0 }}>Current Context</h3>
+            <h3 style={{ marginTop: 0, color: 'var(--app-text)' }}>Current Context</h3>
             <p><strong>Organisation:</strong> {context.organisation.name}</p>
             {context.project && (
               <p><strong>Project:</strong> {context.project.name}</p>
@@ -88,9 +90,10 @@ export default function DashboardPage() {
           <div style={{
             marginTop: '24px',
             padding: '16px',
-            backgroundColor: '#fff3cd',
+            backgroundColor: 'var(--app-surface-2)',
             border: '1px solid #ffc107',
-            borderRadius: '4px'
+            borderRadius: '4px',
+            color: 'var(--app-text)'
           }}>
             <p style={{ margin: 0 }}>
               No organisation selected. <Link to="/organisations">Browse organisations</Link> to get started.
@@ -98,15 +101,15 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
-          <h2>Your Profile</h2>
+        <div style={{ marginTop: '30px', padding: '20px', backgroundColor: 'var(--app-surface-2)', borderRadius: '4px', border: '1px solid var(--app-border)', color: 'var(--app-text)' }}>
+          <h2 style={{ color: 'var(--app-text)' }}>Your Profile</h2>
           <p><strong>Email:</strong> {user?.email}</p>
           <p><strong>Name:</strong> {user?.first_name || 'Not set'}</p>
           <p><strong>User ID:</strong> {user?.id}</p>
         </div>
 
         <div style={{ marginTop: '30px' }}>
-          <h2>Quick Links</h2>
+          <h2 style={{ color: 'var(--app-text)' }}>Quick Links</h2>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <Link
               to="/organisations"

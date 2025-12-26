@@ -114,14 +114,14 @@ export default function ProjectListPage() {
             <div
               key={project.id}
               style={{
-                border: '1px solid #ddd',
+                border: '1px solid var(--app-border)',
                 borderRadius: '8px',
                 padding: '20px',
-                backgroundColor: '#fff',
+                backgroundColor: 'var(--app-surface)',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
               }}
             >
-              <h3 style={{ marginTop: 0 }}>{project.name}</h3>
+              <h3 style={{ marginTop: 0, color: 'var(--app-text)' }}>{project.name}</h3>
               {project.status && (
                 <span style={{
                   display: 'inline-block',
@@ -137,7 +137,7 @@ export default function ProjectListPage() {
                 </span>
               )}
               {project.description && (
-                <p style={{ color: '#666', fontSize: '14px' }}>{project.description}</p>
+                <p style={{ color: 'var(--app-muted-text)', fontSize: '14px' }}>{project.description}</p>
               )}
               <Link
                 to={`/organisations/${orgId}/projects/${project.slug || project.id}`}

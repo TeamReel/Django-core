@@ -6,10 +6,16 @@ from .notification_serializers import (
     NotificationSerializer,
     NotificationTypeSerializer,
 )
+from .user_notification_serializers import (
+    UserNotificationSerializer,
+    UserNotificationUpdateSerializer,
+)
 
 __all__ = [
     "DeliveryAttemptSerializer",
     "NotificationListSerializer",
     "NotificationSerializer",
     "NotificationTypeSerializer",
+    "UserNotificationSerializer",
+    "UserNotificationUpdateSerializer",
 ]

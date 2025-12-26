@@ -1,7 +1,7 @@
 import { ReactNode, HTMLAttributes } from 'react';
 
 export interface BreadcrumbItem {
-  label: string;
+  label: string | ReactNode;
   path?: string;
   href?: string;
   onClick?: () => void;
@@ -24,8 +24,9 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
     <div
       style={{
         padding: '24px',
-        borderBottom: '1px solid #e5e5e5',
-        backgroundColor: '#fff',
+        borderBottom: '1px solid var(--app-border)',
+        backgroundColor: 'var(--app-surface)',
+        color: 'var(--app-text)',
       }}
       {...props}
     >
@@ -36,13 +37,13 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
             gap: '8px',
             marginBottom: '16px',
             fontSize: '12px',
-            color: '#6b7280',
+            color: 'var(--app-muted-text)',
           }}
         >
           {breadcrumbs.map((crumb, index) => (
             <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {index > 0 && <span>/</span>}
-              {(crumb.path || crumb.href || crumb.onClick) && !crumb.current ? (
+              {typeof crumb.label === 'string' && (crumb.path || crumb.href || crumb.onClick) && !crumb.current ? (
                 <a
                   href={crumb.path || crumb.href || '#'}
                   onClick={(e) => {
@@ -52,7 +53,7 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
                     }
                   }}
                   style={{
-                    color: '#6b7280',
+                    color: 'var(--app-muted-text)',
                     textDecoration: 'none',
                     cursor: 'pointer',
                   }}
@@ -61,15 +62,18 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
                 >
                   {crumb.label}
                 </a>
-              ) : (
+              ) : typeof crumb.label === 'string' ? (
                 <span
                   style={{
-                    color: crumb.current ? '#1f2937' : '#6b7280',
+                    color: crumb.current ? 'var(--app-text)' : 'var(--app-muted-text)',
                     fontWeight: crumb.current ? 600 : 400,
                   }}
                 >
                   {crumb.label}
                 </span>
+              ) : (
+                // Render ReactNode directly (e.g., BreadcrumbContextSwitcher)
+                crumb.label
               )}
             </div>
           ))}
@@ -88,7 +92,7 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
               margin: '0 0 8px 0',
               fontSize: '28px',
               fontWeight: 700,
-              color: '#1f2937',
+              color: 'var(--app-text)',
             }}
           >
             {title}
@@ -98,7 +102,7 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
               style={{
                 margin: 0,
                 fontSize: '14px',
-                color: '#6b7280',
+                color: 'var(--app-muted-text)',
               }}
             >
               {subtitle}

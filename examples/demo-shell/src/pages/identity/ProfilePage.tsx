@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   PageHeader,
   PageContent,
-  Button,
   Card,
   Badge,
   Alert,
@@ -16,23 +15,9 @@ import AppShell from '../../components/AppShell';
  *
  * Purpose: Display current user info and roles
  * - Shows user name, email, role, last login
- * - Links to preferences page
- * - Read-only view (editing handled in preferences)
+ * - Read-only view
  */
 export const ProfilePage: React.FC = () => {
-  console.log('ProfilePage rendering...'); // DEBUG
-
-  return (
-    <AppShell>
-      <div>
-        <h1>Simple Profile Test</h1>
-        <p>Testing if AppShell renders correctly</p>
-      </div>
-    </AppShell>
-  );
-};
-
-export const ProfilePageOLD: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +29,8 @@ export const ProfilePageOLD: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('/api/users/me/', {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiBaseUrl}/api/v1/auth/me/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -53,6 +39,9 @@ export const ProfilePageOLD: React.FC = () => {
         });
 
         if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Not authenticated. Please log in.');
+          }
           throw new Error(`Failed to fetch profile (${response.status})`);
         }
 
@@ -71,35 +60,33 @@ export const ProfilePageOLD: React.FC = () => {
 
   if (loading) {
     return (
-      <div>
+      <AppShell>
         <PageHeader
           title="My Profile"
           breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Identity' },
-            { label: 'Profile' },
+            { label: 'Home', onClick: () => navigate('/') },
+            { label: 'Profile', current: true },
           ]}
         />
         <PageContent>
           <Card>
-            <div className="text-center py-8 text-gray-500">
+            <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-muted-text)' }}>
               Loading profile...
             </div>
           </Card>
         </PageContent>
-      </div>
+      </AppShell>
     );
   }
 
   if (error || !user) {
     return (
-      <div>
+      <AppShell>
         <PageHeader
           title="My Profile"
           breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Identity' },
-            { label: 'Profile' },
+            { label: 'Home', onClick: () => navigate('/') },
+            { label: 'Profile', current: true },
           ]}
         />
         <PageContent>
@@ -107,127 +94,122 @@ export const ProfilePageOLD: React.FC = () => {
             {error || 'Could not load profile'}
           </Alert>
         </PageContent>
-      </div>
+      </AppShell>
     );
   }
 
-  const roleDescriptions: Record<string, string> = {
-    viewer: 'Read-only access to organisation data',
-    member: 'Can create and edit projects',
-    admin: 'Full administrative access',
-  };
-
   return (
     <AppShell>
-      <div>
-        <PageHeader
-          title="My Profile"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Identity' },
-            { label: 'Profile' },
-          ]}
-        />
+      <PageHeader
+        title="My Profile"
+        breadcrumbs={[
+          { label: 'Home', onClick: () => navigate('/') },
+          { label: 'Profile', current: true },
+        ]}
+        actions={
+          <button
+            onClick={() => navigate('/users')}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '4px',
+              border: '1px solid var(--app-border)',
+              backgroundColor: 'var(--app-surface-2)',
+              color: 'var(--app-text)',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 500
+            }}
+          >
+            Back to Users
+          </button>
+        }
+      />
 
       <PageContent>
-        {/* User information card */}
-        <Card className="mb-6" data-testid="profile-info-card">
-          <div className="flex items-start justify-between mb-6">
+        {/* Profile Information Card */}
+        <Card data-testid="profile-info-card">
+          <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>
+            Profile Information
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
-              <h2 className="text-2xl font-bold mb-2" data-testid="profile-name">
-                {user.name}
-              </h2>
-              <p className="text-gray-600" data-testid="profile-email">
-                {user.email}
-              </p>
-            </div>
-            <Button
-              variant="secondary"
-              onClick={() => navigate('/preferences')}
-              data-testid="profile-preferences-button"
-            >
-              Edit Preferences
-            </Button>
-          </div>
-
-          <div className="border-t pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Role */}
-              <div>
-                <div className="text-sm text-gray-600 font-semibold mb-2">Role</div>
-                <Badge
-                  variant="primary"
-                  data-testid="profile-role-badge"
-                >
-                  {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Member'}
-                </Badge>
-                <p className="text-xs text-gray-500 mt-2">
-                  {roleDescriptions[user.role || 'member']}
-                </p>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                Full Name
+              </label>
+              <div style={{ fontWeight: 500, color: 'var(--app-text)' }} data-testid="profile-name">
+                {user.first_name && user.last_name
+                  ? `${user.first_name} ${user.last_name}`
+                  : user.email}
               </div>
-
-              {/* Status */}
-              <div>
-                <div className="text-sm text-gray-600 font-semibold mb-2">Status</div>
-                <Badge
-                  variant={user.is_active ? 'success' : 'warning'}
-                  data-testid="profile-status-badge"
-                >
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                Email
+              </label>
+              <div style={{ fontWeight: 500, color: 'var(--app-text)' }} data-testid="profile-email">
+                {user.email}
+              </div>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                System Role
+              </label>
+              <div data-testid="profile-role-badge">
+                <Badge variant="secondary">
+                  {user.role || 'User'}
+                </Badge>
+              </div>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                Status
+              </label>
+              <div data-testid="profile-status-badge">
+                <Badge variant={user.is_active ? 'success' : 'warning'}>
                   {user.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
+            </div>
+          </div>
+        </Card>
 
-              {/* Last login */}
-              <div>
-                <div className="text-sm text-gray-600 font-semibold mb-2">
-                  Last Active
-                </div>
-                <p data-testid="profile-last-login">
-                  {user.last_login
-                    ? new Date(user.last_login).toLocaleString()
-                    : 'Never'}
-                </p>
+        {/* Account Information Card */}
+        <Card style={{ marginTop: '16px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>
+            Account Information
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                User ID
+              </label>
+              <div style={{ fontWeight: 500, color: 'var(--app-text)', fontFamily: 'monospace', fontSize: '14px' }} data-testid="profile-user-id">
+                {user.id}
               </div>
             </div>
+            {user.created_at && (
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                  Member Since
+                </label>
+                <div style={{ fontWeight: 500, color: 'var(--app-text)' }} data-testid="profile-created-at">
+                  {new Date(user.created_at).toLocaleDateString()}
+                </div>
+              </div>
+            )}
+            {user.last_login && (
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                  Last Login
+                </label>
+                <div style={{ fontWeight: 500, color: 'var(--app-text)' }} data-testid="profile-last-login">
+                  {new Date(user.last_login).toLocaleString()}
+                </div>
+              </div>
+            )}
           </div>
         </Card>
-
-        {/* User metadata */}
-        <Card>
-          <h3 className="text-lg font-semibold mb-4">Account Information</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between py-2 border-b">
-              <span className="text-gray-600">User ID</span>
-              <span className="font-mono text-sm" data-testid="profile-user-id">
-                {user.id}
-              </span>
-            </div>
-            <div className="flex justify-between py-2 border-b">
-              <span className="text-gray-600">Member Since</span>
-              <span data-testid="profile-created-at">
-                {user.created_at
-                  ? new Date(user.created_at).toLocaleDateString()
-                  : '-'}
-              </span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-gray-600">Last Updated</span>
-              <span data-testid="profile-updated-at">
-                {user.updated_at
-                  ? new Date(user.updated_at).toLocaleString()
-                  : '-'}
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Help section */}
-        <Alert type="info" className="mt-6" data-testid="profile-help">
-          <strong>Need to change your password or security settings?</strong> Visit
-          your preferences page to update your account settings.
-        </Alert>
       </PageContent>
-      </div>
     </AppShell>
   );
 };

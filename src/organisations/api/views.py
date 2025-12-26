@@ -7,7 +7,7 @@ Provides:
 
 from django.db import transaction
 from django.utils import timezone
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import Throttled
 from rest_framework.pagination import PageNumberPagination
 
@@ -167,6 +167,10 @@ class MembershipViewSet(viewsets.ModelViewSet):
             from .serializers import MembershipCreateSerializer
 
             return MembershipCreateSerializer
+        if self.action in ["update", "partial_update"]:
+            from .serializers import MembershipUpdateSerializer
+
+            return MembershipUpdateSerializer
         from .serializers import MembershipSerializer
 
         return MembershipSerializer
@@ -311,6 +315,7 @@ class MembershipViewSet(viewsets.ModelViewSet):
         from rest_framework.exceptions import ValidationError
 
         membership = self.get_object()
+        old_role = membership.role
         new_role = request.data.get("role")
 
         # Check if this would remove the last admin
@@ -327,7 +332,38 @@ class MembershipViewSet(viewsets.ModelViewSet):
                     code="last_admin_protection",
                 )
 
-        return super().update(request, *args, **kwargs)
+        response = super().update(request, *args, **kwargs)
+
+        # Trigger notification on successful role change
+        if response.status_code == status.HTTP_200_OK and old_role != new_role:
+            try:
+                from notifications.services import notify_member_role_changed
+
+                membership.refresh_from_db()  # Get updated role
+                notify_member_role_changed(
+                    membership=membership,
+                    changed_by=request.user,
+                    old_role=old_role,
+                    new_role=new_role,
+                )
+            except Exception as e:
+                # Log but don't fail the role change
+                import logging
+
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send role change notification: {e}", exc_info=True)
+
+        # Return full member data after update using read serializer
+        if response.status_code == status.HTTP_200_OK:
+            from rest_framework.response import Response
+
+            from .serializers import MembershipSerializer
+
+            membership.refresh_from_db()
+            serializer = MembershipSerializer(membership, context={"request": request})
+            return Response(serializer.data)
+
+        return response
 
     def destroy(self, request, *args, **kwargs):
         """

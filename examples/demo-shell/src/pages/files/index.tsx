@@ -277,166 +277,218 @@ const FilesPage: React.FC = () => {
 
   return (
     <AppShell>
-      <Stack gap="6" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-      <Stack gap="2">
-        <Text size="xl" weight="bold">File Management Demo</Text>
-        <Text size="md" color="secondary">
-          Upload, view, download, and delete files using the File & Media Management system.
-        </Text>
-      </Stack>
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
+        {/* Page Header */}
+        <div style={{ padding: '24px', borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
+          <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700, color: 'var(--app-text)' }}>File Management Demo</h1>
+          <p style={{ margin: 0, fontSize: '14px', color: 'var(--app-muted-text)' }}>
+            Upload, view, download, and delete files using the File & Media Management system.
+          </p>
+        </div>
 
-      {/* Demo Mode Alert */}
-      <Alert variant="info">
-        <strong>Demo Mode:</strong> This page demonstrates file upload functionality with mock data.
-        Uploads are simulated and downloads are not available. Real file management requires backend API implementation.
-      </Alert>
+        {/* Content */}
+        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Demo Mode Alert */}
+            <Alert variant="info">
+              <strong>Demo Mode:</strong> This page demonstrates file upload functionality with mock data.
+              Uploads are simulated and downloads are not available. Real file management requires backend API implementation.
+            </Alert>
 
-      {/* Upload Section */}
-      <Card style={{ padding: '24px' }}>
-        <Stack gap="4">
-          <Text size="lg" weight="medium">Upload Files</Text>
+            {/* Upload Section */}
+            <Card style={{ padding: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: 'var(--app-text)' }}>Upload Files</h2>
 
-          <FileUpload
-            files={activeUploads}
-            onFilesChange={handleFilesChange}
-            maxFiles={10}
-            maxSize={10 * 1024 * 1024} // 10MB
-            accept="image/*,application/pdf,.doc,.docx,.txt"
-            enableDragDrop={true}
-            showFileList={true}
-            dragText="Drop files here or click to browse"
-            hintText="Supports images, PDFs, documents up to 10MB each"
-          />
-        </Stack>
-      </Card>
+                <FileUpload
+                  files={activeUploads}
+                  onFilesChange={handleFilesChange}
+                  maxFiles={10}
+                  maxSize={10 * 1024 * 1024} // 10MB
+                  accept="image/*,application/pdf,.doc,.docx,.txt"
+                  enableDragDrop={true}
+                  showFileList={true}
+                  dragText="Drop files here or click to browse"
+                  hintText="Supports images, PDFs, documents up to 10MB each"
+                />
+              </div>
+            </Card>
 
-      {/* Status Messages */}
-      {error && (
-        <Alert variant="error" onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+            {/* Status Messages */}
+            {error && (
+              <Alert variant="error" onClose={() => setError(null)}>
+                {error}
+              </Alert>
+            )}
 
-      {success && (
-        <Alert variant="success" onClose={() => setSuccess(null)}>
-          {success}
-        </Alert>
-      )}
+            {success && (
+              <Alert variant="success" onClose={() => setSuccess(null)}>
+                {success}
+              </Alert>
+            )}
 
-      {/* Files List */}
-      <Card style={{ padding: '24px' }}>
-        <Stack gap="4">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-            <Text size="lg" weight="medium">Uploaded Files ({files.length})</Text>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  localStorage.removeItem('demo-files');
-                  fetchFiles();
-                  setSuccess('Demo data cleared! Default files restored.');
-                }}
-              >
-                Clear Demo Data
-              </Button>
-              <Button variant="secondary" size="sm" onClick={fetchFiles} disabled={loading}>
-                {loading ? 'Refreshing...' : 'Refresh'}
-              </Button>
-            </div>
+            {/* Files List */}
+            <Card style={{ padding: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: 'var(--app-text)' }}>
+                    Uploaded Files ({files.length})
+                  </h2>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem('demo-files');
+                        fetchFiles();
+                        setSuccess('Demo data cleared! Default files restored.');
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        border: '1px solid #6c757d',
+                        backgroundColor: 'var(--app-surface)',
+                        color: '#6c757d',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Clear Demo Data
+                    </button>
+                    <button
+                      onClick={fetchFiles}
+                      disabled={loading}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        border: '1px solid #6c757d',
+                        backgroundColor: 'var(--app-surface)',
+                        color: '#6c757d',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        opacity: loading ? 0.6 : 1,
+                      }}
+                    >
+                      {loading ? 'Refreshing...' : 'Refresh'}
+                    </button>
+                  </div>
+                </div>
+
+                {loading && files.length === 0 ? (
+                  <p style={{ color: 'var(--app-muted-text)', margin: 0 }}>Loading files...</p>
+                ) : files.length === 0 ? (
+                  <p style={{ color: 'var(--app-muted-text)', margin: 0 }}>No files uploaded yet. Upload some files to get started!</p>
+                ) : (
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                    gap: '16px'
+                  }}>
+                    {files.map((file) => (
+                      <Card key={file.id} style={{ padding: '16px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {/* File thumbnail or icon */}
+                          <div style={{
+                            width: '100%',
+                            height: '120px',
+                            backgroundColor: 'var(--app-surface-2)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden'
+                          }}>
+                            {file.thumbnail_url ? (
+                              <img
+                                src={file.thumbnail_url}
+                                alt={file.original_filename}
+                                style={{
+                                  maxWidth: '100%',
+                                  maxHeight: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                            ) : (
+                              <span style={{ fontSize: '48px' }}>
+                                {file.content_type.startsWith('image/') ? '🖼️' : '📄'}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* File info */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <p style={{
+                              margin: 0,
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              color: 'var(--app-text)',
+                              wordBreak: 'break-word'
+                            }}>
+                              {file.original_filename}
+                            </p>
+
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                              <Badge variant="secondary" size="sm">
+                                {formatFileSize(file.file_size)}
+                              </Badge>
+                              <Badge variant="secondary" size="sm">
+                                {file.content_type}
+                              </Badge>
+                              {file.is_public && (
+                                <Badge variant="success" size="sm">Public</Badge>
+                              )}
+                            </div>
+
+                            <p style={{ margin: 0, fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                              Uploaded: {new Date(file.upload_date).toLocaleString()}
+                            </p>
+                          </div>
+
+                          {/* Actions */}
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => handleDownload(file)}
+                              style={{
+                                flex: 1,
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                border: '1px solid #007bff',
+                                backgroundColor: 'var(--app-surface)',
+                                color: '#007bff',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                              }}
+                            >
+                              Download
+                            </button>
+                            <button
+                              onClick={() => handleDelete(file)}
+                              style={{
+                                flex: 1,
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                border: '1px solid #dc3545',
+                                backgroundColor: 'var(--app-surface)',
+                                color: '#dc3545',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
           </div>
-
-          {loading && files.length === 0 ? (
-            <Text color="secondary">Loading files...</Text>
-          ) : files.length === 0 ? (
-            <Text color="secondary">No files uploaded yet. Upload some files to get started!</Text>
-          ) : (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: '16px'
-            }}>
-              {files.map((file) => (
-                <Card key={file.id} variant="outlined" style={{ padding: '16px' }}>
-                  <Stack gap="3">
-                    {/* File thumbnail or icon */}
-                    <div style={{
-                      width: '100%',
-                      height: '120px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      overflow: 'hidden'
-                    }}>
-                      {file.thumbnail_url ? (
-                        <img
-                          src={file.thumbnail_url}
-                          alt={file.original_filename}
-                          style={{
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                            objectFit: 'cover'
-                          }}
-                        />
-                      ) : (
-                        <Text color="secondary" size="sm">
-                          {file.content_type.startsWith('image/') ? '🖼️' : '📄'}
-                        </Text>
-                      )}
-                    </div>
-
-                    {/* File info */}
-                    <Stack gap="2">
-                      <Text weight="medium" size="sm" style={{ wordBreak: 'break-word' }}>
-                        {file.original_filename}
-                      </Text>
-
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <Badge variant="secondary" size="sm">
-                          {formatFileSize(file.file_size)}
-                        </Badge>
-                        <Badge variant="secondary" size="sm">
-                          {file.content_type}
-                        </Badge>
-                        {file.is_public && (
-                          <Badge variant="success" size="sm">Public</Badge>
-                        )}
-                      </div>
-
-                      <Text size="xs" color="secondary">
-                        Uploaded: {new Date(file.upload_date).toLocaleString()}
-                      </Text>
-                    </Stack>
-
-                    {/* Actions */}
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleDownload(file)}
-                        style={{ flex: 1 }}
-                      >
-                        Download
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDelete(file)}
-                        style={{ flex: 1 }}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </Stack>
-                </Card>
-              ))}
-            </div>
-          )}
-        </Stack>
-      </Card>
-      </Stack>
+        </div>
+      </div>
     </AppShell>
   );
 };

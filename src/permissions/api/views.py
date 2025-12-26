@@ -121,6 +121,24 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
             action="created",
         )
 
+    def perform_destroy(self, instance):
+        """Emit audit event when role assignment is revoked."""
+        emit_role_assignment_audit(
+            user_id=str(self.request.user.id),
+            assigned_to_user_id=str(instance.user_id),
+            role_id=str(instance.role_id),
+            role_name=instance.role.name,
+            scope=instance.scope,
+            target_org_id=(
+                str(instance.target_organization_id) if instance.target_organization_id else None
+            ),
+            target_project_id=(
+                str(instance.target_project_id) if instance.target_project_id else None
+            ),
+            action="revoked",
+        )
+        instance.delete()
+
 
 class PermissionsCurrentView(APIView):
     """

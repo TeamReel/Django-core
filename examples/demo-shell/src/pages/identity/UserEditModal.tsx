@@ -61,14 +61,16 @@ export default function UserEditModal({ opened, onClose, user, onSave }: UserEdi
       zIndex: 1000
     }}>
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: 'var(--app-surface)',
         padding: '24px',
         borderRadius: '8px',
         width: '500px',
         maxWidth: '90%',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        color: 'var(--app-text)',
+        border: '1px solid var(--app-border)'
       }}>
-        <h2 style={{ marginTop: 0, marginBottom: '20px' }}>Edit User</h2>
+        <h2 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--app-text)' }}>Edit User</h2>
 
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -122,8 +124,9 @@ export default function UserEditModal({ opened, onClose, user, onSave }: UserEdi
                 style={{
                   padding: '8px 16px',
                   borderRadius: '4px',
-                  border: '1px solid #ccc',
-                  backgroundColor: 'white',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
                   cursor: 'pointer'
                 }}
               >

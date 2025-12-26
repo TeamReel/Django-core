@@ -176,6 +176,18 @@ class MembershipSerializer(serializers.ModelSerializer):
         }
 
 
+class MembershipUpdateSerializer(serializers.ModelSerializer):
+    """
+    Write serializer for updating membership role.
+
+    Only allows updating the role field.
+    """
+
+    class Meta:
+        model = Membership
+        fields = ["role"]
+
+
 class MembershipCreateSerializer(serializers.ModelSerializer):
     """
     Write serializer for creating memberships (inviting members).

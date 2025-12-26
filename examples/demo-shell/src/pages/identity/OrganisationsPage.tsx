@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Button,
-  Input,
   Badge,
-  Card,
   Table,
   Alert,
 } from '@django-core/design-system';
@@ -20,6 +18,8 @@ import {
 } from '../../types';
 import AppShell from '../../components/AppShell';
 import { canPerformAction } from '../../utils/permissions';
+import OrganisationDetailModal from './OrganisationDetailModal';
+import OrganisationEditModal from './OrganisationEditModal';
 
 /**
  * T006 - Organisations List Page
@@ -39,6 +39,15 @@ export const OrganisationsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState<string>('active'); // Default to 'active'
+
+  // Modal state
+  const [detailOrganisation, setDetailOrganisation] = useState<Organisation | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [editOrganisation, setEditOrganisation] = useState<Organisation | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Permission checks - can user create organisations?
   const isSuperAdmin = (user as any)?.role === 'superadmin';
@@ -158,29 +167,28 @@ export const OrganisationsPage: React.FC = () => {
           { label: 'Organisations', current: true },
         ]}
         actions={
-          isSuperAdmin ? (
-            <Button variant="primary" size="md" onClick={() => navigate('/organisations/create')}>
-              Create Organisation
-            </Button>
-          ) : undefined
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <label style={{ fontSize: '14px', fontWeight: 500 }}>Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="all">All</option>
+            </select>
+
+            {isSuperAdmin && (
+              <Button variant="primary" size="md" onClick={() => navigate('/organisations/create')}>
+                Create Organisation
+              </Button>
+            )}
+          </div>
         }
       />
 
       <PageContent>
-        {/* Search and filters */}
-        <Card className="mb-4">
-          <div className="flex gap-4">
-            <Input
-              type="text"
-              placeholder="Search organisations..."
-              value={search}
-              onChange={handleSearch}
-              className="flex-1"
-              data-testid="org-search-input"
-            />
-          </div>
-        </Card>
-
         {/* Error state */}
         {error && (
           <Alert type="error" className="mb-4" data-testid="org-error-alert">
@@ -196,7 +204,27 @@ export const OrganisationsPage: React.FC = () => {
         )}
 
         {/* Organisations table */}
-        {!loading && organisations.length > 0 && (
+        {!loading && organisations.length > 0 && (() => {
+          // Apply client-side status filter
+          let filteredOrganisations = organisations;
+
+          if (statusFilter === 'active') {
+            filteredOrganisations = filteredOrganisations.filter(org => org.is_active !== false);
+          } else if (statusFilter === 'inactive') {
+            filteredOrganisations = filteredOrganisations.filter(org => org.is_active === false);
+          }
+          // 'all' shows everything
+
+          // Show empty state if filters result in no data
+          if (filteredOrganisations.length === 0) {
+            return (
+              <Alert type="info" data-testid="org-filtered-empty">
+                No organisations match the current filters.
+              </Alert>
+            );
+          }
+
+          return (
           <Table
             columns={[
               {
@@ -236,7 +264,7 @@ export const OrganisationsPage: React.FC = () => {
                 label: 'Actions',
               },
             ]}
-            rows={organisations.map((org) => {
+            rows={filteredOrganisations.map((org) => {
               // Check if user can edit/delete this specific org
               const orgWithRole = myOrganisations.find(o => o.id === org.id);
               const permissionContext = {
@@ -293,30 +321,38 @@ export const OrganisationsPage: React.FC = () => {
               actions: (
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
-                    onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
+                    onClick={() => {
+                      setDetailOrganisation(org);
+                      setIsDetailModalOpen(true);
+                    }}
                     style={{
-                        padding: '4px 8px',
+                        padding: '6px 12px',
                         borderRadius: '4px',
-                        border: '1px solid #6c757d',
-                        backgroundColor: 'white',
-                        color: '#6c757d',
+                        border: '1px solid var(--app-border)',
+                        backgroundColor: 'var(--app-surface-2)',
+                        color: 'var(--app-text)',
                         cursor: 'pointer',
-                        fontSize: '12px'
+                        fontSize: '12px',
+                        fontWeight: 500
                     }}
                   >
                     View
                   </button>
                   {userCanEdit && (
                     <button
-                      onClick={() => navigate(`/organisations/${org.slug || org.id}/edit`)}
+                      onClick={() => {
+                        setEditOrganisation(org);
+                        setIsEditModalOpen(true);
+                      }}
                       style={{
-                          padding: '4px 8px',
+                          padding: '6px 12px',
                           borderRadius: '4px',
-                          border: '1px solid #007bff',
-                          backgroundColor: 'white',
+                          border: '1px solid #0056b3',
+                          backgroundColor: 'var(--app-surface)',
                           color: '#007bff',
                           cursor: 'pointer',
-                          fontSize: '12px'
+                          fontSize: '12px',
+                          fontWeight: 500
                       }}
                     >
                       Edit
@@ -326,13 +362,14 @@ export const OrganisationsPage: React.FC = () => {
                     <button
                       onClick={() => handleDelete(org.id)}
                       style={{
-                          padding: '4px 8px',
+                          padding: '6px 12px',
                           borderRadius: '4px',
-                          border: '1px solid #dc3545',
-                          backgroundColor: 'white',
+                          border: '1px solid #bd2130',
+                          backgroundColor: 'var(--app-surface)',
                           color: '#dc3545',
                           cursor: 'pointer',
-                          fontSize: '12px'
+                          fontSize: '12px',
+                          fontWeight: 500
                       }}
                     >
                       Delete
@@ -345,17 +382,53 @@ export const OrganisationsPage: React.FC = () => {
             loading={loading}
             data-testid="org-table"
           />
-        )}
+        );
+        })()}
 
         {/* Loading state */}
         {loading && (
-          <Card>
-            <div className="text-center py-8 text-gray-500">
-              Loading organisations...
-            </div>
-          </Card>
+          <div className="text-center py-8 text-gray-500">
+            Loading organisations...
+          </div>
         )}
       </PageContent>
+
+      {/* Modals */}
+      <OrganisationDetailModal
+        opened={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        organisation={detailOrganisation}
+      />
+
+      <OrganisationEditModal
+        opened={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        organisation={editOrganisation}
+        onSave={async (orgData) => {
+          if (!editOrganisation) return;
+
+          const csrfToken = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrftoken='))
+            ?.split('=')[1];
+
+          const response = await fetch(`/api/v1/organisations/${editOrganisation.slug}/`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify(orgData),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to update organisation');
+          }
+
+          setRefreshKey(prev => prev + 1);
+        }}
+      />
       </div>
     </AppShell>
   );

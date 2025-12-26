@@ -16,6 +16,10 @@ class IsOrganisationMemberOrAdmin(permissions.BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
+        # Superusers (admin role) have full access
+        if request.user.is_superuser or request.user.is_staff:
+            return True
+
         # For nested routes, check organisation membership via organisation_id (slug)
         organisation_slug = view.kwargs.get("organisation_id")
 
@@ -80,6 +84,10 @@ class IsOrganisationMemberOrAdmin(permissions.BasePermission):
         """Check if user has permission to access the specific project object."""
         if not request.user or not request.user.is_authenticated:
             return False
+
+        # Superusers (admin role) have full access
+        if request.user.is_superuser or request.user.is_staff:
+            return True
 
         # 1. Check direct organisation membership
         is_member = request.user.organisation_memberships.filter(

@@ -8,9 +8,9 @@ export const input = recipe({
     fontSize: themeVars.typography.fontSize.sm,
     lineHeight: themeVars.typography.lineHeight.normal,
     borderRadius: themeVars.radius.md,
-    border: `1px solid ${themeVars.color.palette.neutral['300']}`,
+    border: `1px solid ${themeVars.color.border.secondary}`,
     backgroundColor: themeVars.color.background.primary,
-    color: themeVars.color.palette.neutral['900'],
+    color: themeVars.color.text.primary,
     transition: 'all 150ms ease',
     outline: 'none',
 

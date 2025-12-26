@@ -132,9 +132,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
         """
         # For archive/restore actions, include archived projects
         if self.action in ["restore", "archive"]:
-            base_queryset = Project.all_objects.select_related("organisation", "creator")
+            base_queryset = Project.all_objects.select_related(
+                "organisation", "creator"
+            ).prefetch_related("organisation__memberships")
         else:
-            base_queryset = Project.objects.select_related("organisation", "creator")
+            base_queryset = Project.objects.select_related(
+                "organisation", "creator"
+            ).prefetch_related("organisation__memberships")
 
         queryset = base_queryset
 
@@ -184,7 +188,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         if include_archived:
             # Use all_objects manager to include archived projects
-            queryset = Project.all_objects.select_related("organisation", "creator")
+            queryset = Project.all_objects.select_related(
+                "organisation", "creator"
+            ).prefetch_related("organisation__memberships")
 
             # Reapply organisation filter
             if organisation_slug:
@@ -264,7 +270,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return super().create(request, *args, **kwargs)
+        response = super().create(request, *args, **kwargs)
+
+        # Trigger notification on successful creation
+        if response.status_code == status.HTTP_201_CREATED:
+            from notifications.services import notify_project_created
+
+            from projects.models import Project
+
+            project = Project.objects.get(id=response.data["id"])
+            notify_project_created(project=project, creator=request.user)
+
+        return response
 
     @action(detail=True, methods=["post"], url_path="archive")
     def archive(self, request, *args, **kwargs):

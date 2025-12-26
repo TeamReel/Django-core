@@ -329,7 +329,9 @@ PASSWORD_RESET_TIMEOUT = 3600  # 1 hour in seconds
 # Permissions System Configuration
 PERMISSIONS_CACHE_PREFIX = "perms"  # Cache key prefix for permission evaluations
 PERMISSIONS_CACHE_TTL = 300  # 5 minutes (for Redis cache in permission evaluations)
-PERMISSIONS_AUDIT_BACKEND = "permissions.audit.DjangoLoggingBackend"  # Default to Django logging
+PERMISSIONS_AUDIT_BACKEND = (
+    "permissions.audit.B09Backend"  # Use B09 adapter (supports internal audit app)
+)
 
 # Logging Configuration
 LOGGING = {

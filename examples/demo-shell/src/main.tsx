@@ -7,12 +7,16 @@ import type { AuthConfig } from '@django-core/auth-ui';
 import { ContextSwitcherProvider } from '@django-core/context-switcher';
 import type { ContextSwitcherConfig } from '@django-core/context-switcher';
 // import { PermissionsProvider } from '@django-core/permissions';
-import { ThemeProvider } from '@django-core/design-system';
+import { ThemeProvider, LocalStorageAdapter } from '@django-core/theme-system';
 import { useReactRouterAdapter } from './adapters/reactRouterAdapter';
 import ErrorBoundary from './components/ErrorBoundary';
 import App from './App';
-import './index.css';
 import '@django-core/design-system/tokens.css';
+import '@django-core/theme-system/dist/style.css';
+import './index.css';
+
+// Initialize theme storage
+const themeStorage = new LocalStorageAdapter('django_core_theme');
 
 const authConfig: AuthConfig = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '',
@@ -49,21 +53,21 @@ function AppWithProviders() {
   };
 
   return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <AuthProvider config={authConfig}>
-          <ContextSwitcherProvider config={contextConfig}>
+    <ThemeProvider storage={themeStorage}>
+      <AuthProvider config={authConfig}>
+        <ContextSwitcherProvider config={contextConfig}>
+          <ErrorBoundary>
             <App />
-          </ContextSwitcherProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
+          </ErrorBoundary>
+        </ContextSwitcherProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AppWithProviders />
     </BrowserRouter>
   </React.StrictMode>

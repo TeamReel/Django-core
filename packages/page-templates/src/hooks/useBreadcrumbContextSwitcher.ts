@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import type { BreadcrumbSwitcherOption } from '../components/BreadcrumbContextSwitcher';
 
 export interface Organisation {
@@ -95,6 +95,7 @@ export function useBreadcrumbContextSwitcher({
   basePath = '/app',
 }: UseBreadcrumbContextSwitcherProps) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Filter organisations by permission
   const organisationOptions = useMemo<BreadcrumbSwitcherOption[]>(() => {
@@ -147,16 +148,21 @@ export function useBreadcrumbContextSwitcher({
       // Check if current project belongs to new org
       const currentProject = projects.find((p) => p.id === context.currentProjectId);
       const projectStillValid = currentProject?.organisation_id === option.id;
+// Check if we are on a projects page (preserve page type)
+      const isProjectsPage = location.pathname.includes('/projects');
 
       if (projectStillValid && currentProject) {
         // Navigate to project detail in new org
         navigate(`${basePath}/organisations/${newOrgSlug}/projects/${currentProject.slug}`);
+      } else if (isProjectsPage) {
+        // Preserve "projects" list view
+        navigate(`${basePath}/organisations/${newOrgSlug}/projects`);
       } else {
         // Navigate to org detail (reset project context)
         navigate(`${basePath}/organisations/${newOrgSlug}`);
       }
     },
-    [navigate, basePath, projects, context.currentProjectId]
+    [navigate, basePath, projects, context.currentProjectId, location.pathname]
   );
 
   /**

@@ -129,99 +129,261 @@ export function NotificationsPage() {
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Simulate API call - /api/notifications/
-    setTimeout(() => {
-      setNotifications([
-        { id: '1', type: 'info', title: 'New project created', message: 'Project "Alpha" was created', read: false, created: '2025-12-17T12:00:00Z' },
-        { id: '2', type: 'warning', title: 'Low credits', message: 'Your credit balance is below 100', read: false, created: '2025-12-17T11:30:00Z' },
-        { id: '3', type: 'success', title: 'Task completed', message: 'Monthly report generation finished', read: true, created: '2025-12-17T10:00:00Z' },
-        { id: '4', type: 'error', title: 'Backup failed', message: 'Database backup failed due to disk space', read: false, created: '2025-12-17T09:00:00Z' },
-        { id: '5', type: 'info', title: 'New member added', message: 'Jane Doe joined Organisation A', read: true, created: '2025-12-17T08:00:00Z' },
-      ]);
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setNotifications(data.results || data); // Handle both paginated and non-paginated
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load notifications');
+    } finally {
       setLoading(false);
-    }, 500);
-  }, []);
-
-  const handleMarkRead = (id: string) => {
-    setMarking(id);
-    // Simulate POST /api/notifications/{id}/mark-read
-    setTimeout(() => {
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-      setMarking(null);
-    }, 500);
+    }
   };
 
-  const filtered = filter === 'unread' ? notifications.filter(n => !n.read) : notifications;
-  const unreadCount = notifications.filter(n => !n.read).length;
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const handleToggleRead = async (id: string, currentReadStatus: boolean) => {
+    setMarking(id);
+    const newReadStatus = !currentReadStatus;
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+      // Get CSRF token
+      const csrfToken = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+
+      const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/${id}/`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken || '',
+        },
+        body: JSON.stringify({ is_read: newReadStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update notification: ${response.status}`);
+      }
+
+      const updated = await response.json();
+
+      // Update local state with server response
+      setNotifications(prev =>
+        prev.map(n => n.id === id ? updated : n)
+      );
+
+      // Trigger badge refresh in header
+      window.dispatchEvent(new CustomEvent('notificationChanged'));
+    } catch (err) {
+      console.error('Failed to toggle notification:', err);
+      alert(err instanceof Error ? err.message : 'Failed to update notification');
+    } finally {
+      setMarking(null);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+
+      const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/mark-all-read/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken || '',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to mark all as read');
+      }
+
+      // Refetch notifications
+      await fetchNotifications();
+
+      // Trigger event for badge update
+      window.dispatchEvent(new Event('notificationChanged'));
+    } catch (err) {
+      console.error('Error marking all as read:', err);
+      alert('Failed to mark all as read');
+    }
+  };
+
+  const filtered = filter === 'unread' ? notifications.filter(n => !n.is_read) : notifications;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
     <AppShell>
-      <PageHeader title="Notifications" subtitle="B16/B17 Notification System" />
+      <PageHeader title="Notifications" subtitle="In-App Notifications with Persistent Read/Unread Status" />
       <PageContent>
         <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="notifications-page">
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}>
               <Spinner />
             </div>
+          ) : error ? (
+            <Card style={{ padding: '24px', textAlign: 'center', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
+              <p style={{ color: '#ef4444', marginBottom: '16px' }}>{error}</p>
+              <button
+                onClick={fetchNotifications}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  border: '1px solid #007bff',
+                  backgroundColor: 'var(--app-surface)',
+                  color: '#007bff',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                }}
+              >
+                Retry
+              </button>
+            </Card>
           ) : (
             <>
-              <Card style={{ padding: '16px', marginBottom: '24px' }}>
+              <Card style={{ padding: '16px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <h3 style={{ margin: 0 }}>Unread: {unreadCount}</h3>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#6b7280' }}>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: 'var(--app-text)' }}>Unread: {unreadCount}</h3>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: 'var(--app-muted-text)' }}>
                       Total: {notifications.length} notifications
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <Button
-                      variant={filter === 'all' ? 'primary' : 'secondary'}
+                    <button
                       onClick={() => setFilter('all')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        border: filter === 'all' ? '1px solid #007bff' : '1px solid #6c757d',
+                        backgroundColor: 'var(--app-surface)',
+                        color: filter === 'all' ? '#007bff' : '#6c757d',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                      }}
                     >
                       All
-                    </Button>
-                    <Button
-                      variant={filter === 'unread' ? 'primary' : 'secondary'}
+                    </button>
+                    <button
                       onClick={() => setFilter('unread')}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        border: filter === 'unread' ? '1px solid #007bff' : '1px solid #6c757d',
+                        backgroundColor: 'var(--app-surface)',
+                        color: filter === 'unread' ? '#007bff' : '#6c757d',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                      }}
                     >
                       Unread ({unreadCount})
-                    </Button>
+                    </button>
+                    <button
+                      onClick={markAllAsRead}
+                      disabled={unreadCount === 0}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        border: '1px solid #6c757d',
+                        backgroundColor: 'var(--app-surface)',
+                        color: '#6c757d',
+                        cursor: unreadCount === 0 ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        opacity: unreadCount === 0 ? 0.5 : 1,
+                      }}
+                    >
+                      Mark All Read
+                    </button>
                   </div>
                 </div>
               </Card>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {filtered.map(notif => (
-                  <Card key={notif.id} style={{ padding: '16px', backgroundColor: notif.read ? '#fff' : '#f0f9ff' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                          <Badge variant={notif.type === 'error' ? 'error' : notif.type === 'warning' ? 'warning' : notif.type === 'success' ? 'success' : 'info'}>
-                            {notif.type}
-                          </Badge>
-                          {!notif.read && <Badge variant="info">NEW</Badge>}
+              {filtered.length === 0 ? (
+                <Card style={{ padding: '48px', textAlign: 'center', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
+                  <p style={{ color: 'var(--app-muted-text)' }}>
+                    {filter === 'unread' ? 'No unread notifications' : 'No notifications'}
+                  </p>
+                </Card>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {filtered.map(notif => (
+                    <Card key={notif.id} style={{ padding: '16px', backgroundColor: notif.is_read ? 'var(--app-surface)' : 'var(--app-surface-2)', border: '1px solid var(--app-border)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                            <Badge variant={
+                              notif.level === 'error' ? 'error' :
+                              notif.level === 'warning' ? 'warning' :
+                              notif.level === 'success' ? 'success' :
+                              'info'
+                            }>
+                              {notif.level}
+                            </Badge>
+                            {!notif.is_read && <Badge variant="info">NEW</Badge>}
+                          </div>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 600, color: 'var(--app-text)' }}>{notif.title}</h4>
+                          <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: 'var(--app-muted-text)' }}>{notif.message}</p>
+                          <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                            {new Date(notif.created_at).toLocaleString()}
+                          </div>
                         </div>
-                        <h4 style={{ margin: '0 0 4px 0' }}>{notif.title}</h4>
-                        <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#6b7280' }}>{notif.message}</p>
-                        <div style={{ fontSize: '12px', color: '#9ca3af' }}>
-                          {new Date(notif.created).toLocaleString()}
-                        </div>
-                      </div>
-                      {!notif.read && (
-                        <Button
-                          variant="secondary"
-                          onClick={() => handleMarkRead(notif.id)}
+                        <button
+                          onClick={() => handleToggleRead(notif.id, notif.is_read)}
                           disabled={marking === notif.id}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '4px',
+                            border: '1px solid #6c757d',
+                            backgroundColor: 'var(--app-surface)',
+                            color: '#6c757d',
+                            cursor: marking === notif.id ? 'not-allowed' : 'pointer',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            opacity: marking === notif.id ? 0.6 : 1,
+                            whiteSpace: 'nowrap',
+                          }}
                         >
-                          {marking === notif.id ? 'Marking...' : 'Mark Read'}
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-              </div>
+                          {marking === notif.id
+                            ? 'Updating...'
+                            : notif.is_read
+                              ? 'Mark Unread'
+                              : 'Mark Read'}
+                        </button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -377,18 +539,54 @@ export function DocsPage() {
             </div>
           ) : (
             <>
-              <Card style={{ padding: '24px', marginBottom: '24px' }}>
-                <h3 style={{ margin: '0 0 16px 0' }}>Documentation Resources</h3>
+              <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 600, color: 'var(--app-text)' }}>Documentation Resources</h3>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <Button variant="primary" onClick={() => window.open('http://localhost:8001/docs', '_blank')}>
+                  <button
+                    onClick={() => window.open('http://localhost:8001/docs', '_blank')}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '4px',
+                      border: '1px solid #007bff',
+                      backgroundColor: 'var(--app-surface)',
+                      color: '#007bff',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                    }}
+                  >
                     📚 MkDocs Site
-                  </Button>
-                  <Button variant="secondary" onClick={() => window.location.href = '/api-docs'}>
+                  </button>
+                  <button
+                    onClick={() => window.location.href = '/api-docs'}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '4px',
+                      border: '1px solid #6c757d',
+                      backgroundColor: 'var(--app-surface)',
+                      color: '#6c757d',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                    }}
+                  >
                     📖 API Documentation
-                  </Button>
-                  <Button variant="secondary" onClick={() => window.open('https://github.com', '_blank')}>
+                  </button>
+                  <button
+                    onClick={() => window.open('https://github.com', '_blank')}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '4px',
+                      border: '1px solid #6c757d',
+                      backgroundColor: 'var(--app-surface)',
+                      color: '#6c757d',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                    }}
+                  >
                     🔗 GitHub Repository
-                  </Button>
+                  </button>
                 </div>
               </Card>
 

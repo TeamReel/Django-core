@@ -7,7 +7,7 @@ export const button = recipe({
     alignItems: 'center',
     justifyContent: 'center',
     gap: themeVars.spacing['2'],
-    borderRadius: themeVars.radius.md,
+    borderRadius: '4px',
     fontFamily: themeVars.typography.fontFamily.sans,
     fontWeight: themeVars.typography.fontWeight.medium,
     transition: `all ${themeVars.motion.duration.fast} ${themeVars.motion.easing.default}`,
@@ -27,6 +27,7 @@ export const button = recipe({
       primary: {
         backgroundColor: themeVars.color.interactive.primary,
         color: themeVars.color.text.inverse,
+        border: 'none',
         ':hover:not(:disabled)': {
           backgroundColor: themeVars.color.interactive.primaryHover,
         },
@@ -37,13 +38,27 @@ export const button = recipe({
       secondary: {
         backgroundColor: themeVars.color.interactive.secondary,
         color: themeVars.color.text.primary,
+        border: 'none',
         ':hover:not(:disabled)': {
           backgroundColor: themeVars.color.interactive.secondaryHover,
+        },
+      },
+      outline: {
+        backgroundColor: 'transparent',
+        color: themeVars.color.text.primary,
+        border: `1px solid ${themeVars.color.border.primary}`,
+        ':hover:not(:disabled)': {
+          backgroundColor: themeVars.color.background.secondary,
+          borderColor: themeVars.color.border.secondary,
+        },
+        ':active:not(:disabled)': {
+          backgroundColor: themeVars.color.background.tertiary,
         },
       },
       ghost: {
         backgroundColor: 'transparent',
         color: themeVars.color.text.primary,
+        border: 'none',
         ':hover:not(:disabled)': {
           backgroundColor: themeVars.color.interactive.secondary,
         },
@@ -51,6 +66,7 @@ export const button = recipe({
       destructive: {
         backgroundColor: themeVars.color.interactive.destructive,
         color: themeVars.color.text.inverse,
+        border: 'none',
         ':hover:not(:disabled)': {
           backgroundColor: themeVars.color.interactive.destructiveHover,
         },
@@ -58,21 +74,21 @@ export const button = recipe({
     },
     size: {
       sm: {
-        height: '32px',
-        paddingLeft: themeVars.spacing['3'],
-        paddingRight: themeVars.spacing['3'],
+        height: '36px',
+        paddingLeft: themeVars.spacing['4'],
+        paddingRight: themeVars.spacing['4'],
         fontSize: themeVars.typography.fontSize.sm,
       },
       md: {
         height: '40px',
-        paddingLeft: themeVars.spacing['4'],
-        paddingRight: themeVars.spacing['4'],
+        paddingLeft: themeVars.spacing['5'],
+        paddingRight: themeVars.spacing['5'],
         fontSize: themeVars.typography.fontSize.md,
       },
       lg: {
         height: '48px',
-        paddingLeft: themeVars.spacing['6'],
-        paddingRight: themeVars.spacing['6'],
+        paddingLeft: themeVars.spacing['8'],
+        paddingRight: themeVars.spacing['8'],
         fontSize: themeVars.typography.fontSize.lg,
       },
     },

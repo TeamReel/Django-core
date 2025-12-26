@@ -9,40 +9,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql="""
-            ALTER TABLE realtime_activity_event DROP CONSTRAINT IF EXISTS realtime_activity_event_organization_id_check;
-            ALTER TABLE realtime_activity_event
-            ALTER COLUMN organization_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
-            """,
-            reverse_sql="""
-            ALTER TABLE realtime_activity_event
-            ALTER COLUMN organization_id TYPE integer USING 0;
-            """,
-            state_operations=[
-                migrations.AlterField(
-                    model_name="activityevent",
-                    name="organization_id",
-                    field=models.UUIDField(help_text="Organization context"),
-                ),
-            ],
+        migrations.AlterField(
+            model_name="activityevent",
+            name="organization_id",
+            field=models.UUIDField(help_text="Organization context"),
         ),
-        migrations.RunSQL(
-            sql="""
-            ALTER TABLE realtime_presence_status DROP CONSTRAINT IF EXISTS realtime_presence_status_organization_id_check;
-            ALTER TABLE realtime_presence_status
-            ALTER COLUMN organization_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
-            """,
-            reverse_sql="""
-            ALTER TABLE realtime_presence_status
-            ALTER COLUMN organization_id TYPE integer USING 0;
-            """,
-            state_operations=[
-                migrations.AlterField(
-                    model_name="presencestatus",
-                    name="organization_id",
-                    field=models.UUIDField(help_text="Organization scope for presence visibility"),
-                ),
-            ],
+        migrations.AlterField(
+            model_name="presencestatus",
+            name="organization_id",
+            field=models.UUIDField(help_text="Organization scope for presence visibility"),
         ),
     ]

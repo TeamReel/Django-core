@@ -91,16 +91,16 @@ export default function OrganisationListPage() {
             <div
               key={org.id}
               style={{
-                border: '1px solid #ddd',
+                border: '1px solid var(--app-border)',
                 borderRadius: '8px',
                 padding: '20px',
-                backgroundColor: '#fff',
+                backgroundColor: 'var(--app-surface)',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
               }}
             >
-              <h3 style={{ marginTop: 0 }}>{org.name}</h3>
+              <h3 style={{ marginTop: 0, color: 'var(--app-text)' }}>{org.name}</h3>
               {org.description && (
-                <p style={{ color: '#666', fontSize: '14px' }}>{org.description}</p>
+                <p style={{ color: 'var(--app-muted-text)', fontSize: '14px' }}>{org.description}</p>
               )}
               <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                 <Link

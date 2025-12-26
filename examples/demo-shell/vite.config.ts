@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@django-core/design-system/tokens.css': path.resolve(__dirname, '../../packages/design-system/dist/tokens.css'),
+      '@django-core/theme-system/dist/style.css': path.resolve(__dirname, '../../packages/theme-system/dist/style.css'),
       '@django-core/design-system': path.resolve(__dirname, './src/shims/design-system'),
       '@django-core/context-switcher': path.resolve(__dirname, '../../packages/context-switcher/src/index.ts'),
       '@django-core/page-templates': path.resolve(__dirname, '../../packages/page-templates/src/index.ts'),
@@ -20,10 +21,6 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/auth': {
         target: 'http://localhost:8000',
         changeOrigin: true,
       },

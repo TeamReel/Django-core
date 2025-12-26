@@ -10,83 +10,25 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql="""
-            ALTER TABLE realtime_activity_event DROP CONSTRAINT IF EXISTS realtime_activity_event_project_id_check;
-            ALTER TABLE realtime_activity_event
-            ALTER COLUMN project_id TYPE uuid USING NULL;
-            """,
-            reverse_sql="""
-            ALTER TABLE realtime_activity_event
-            ALTER COLUMN project_id TYPE integer USING NULL;
-            """,
-            state_operations=[
-                migrations.AlterField(
-                    model_name="activityevent",
-                    name="project_id",
-                    field=models.UUIDField(
-                        blank=True, help_text="Optional project context", null=True
-                    ),
-                ),
-            ],
+        migrations.AlterField(
+            model_name="activityevent",
+            name="project_id",
+            field=models.UUIDField(blank=True, help_text="Optional project context", null=True),
         ),
-        migrations.RunSQL(
-            sql="""
-            ALTER TABLE realtime_activity_event DROP CONSTRAINT IF EXISTS realtime_activity_event_resource_id_check;
-            ALTER TABLE realtime_activity_event
-            ALTER COLUMN resource_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
-            """,
-            reverse_sql="""
-            ALTER TABLE realtime_activity_event
-            ALTER COLUMN resource_id TYPE integer USING 0;
-            """,
-            state_operations=[
-                migrations.AlterField(
-                    model_name="activityevent",
-                    name="resource_id",
-                    field=models.UUIDField(help_text="ID of the affected resource"),
-                ),
-            ],
+        migrations.AlterField(
+            model_name="activityevent",
+            name="resource_id",
+            field=models.UUIDField(help_text="ID of the affected resource"),
         ),
-        migrations.RunSQL(
-            sql="""
-            ALTER TABLE realtime_presence_status DROP CONSTRAINT IF EXISTS realtime_presence_status_project_id_check;
-            ALTER TABLE realtime_presence_status
-            ALTER COLUMN project_id TYPE uuid USING NULL;
-            """,
-            reverse_sql="""
-            ALTER TABLE realtime_presence_status
-            ALTER COLUMN project_id TYPE integer USING NULL;
-            """,
-            state_operations=[
-                migrations.AlterField(
-                    model_name="presencestatus",
-                    name="project_id",
-                    field=models.UUIDField(
-                        blank=True, help_text="Optional project scope", null=True
-                    ),
-                ),
-            ],
+        migrations.AlterField(
+            model_name="presencestatus",
+            name="project_id",
+            field=models.UUIDField(blank=True, help_text="Optional project scope", null=True),
         ),
-        migrations.RunSQL(
-            sql="""
-            ALTER TABLE realtime_message DROP CONSTRAINT IF EXISTS realtime_message_scope_id_check;
-            ALTER TABLE realtime_message
-            ALTER COLUMN scope_id TYPE uuid USING '00000000-0000-0000-0000-000000000000'::uuid;
-            """,
-            reverse_sql="""
-            ALTER TABLE realtime_message
-            ALTER COLUMN scope_id TYPE integer USING 0;
-            """,
-            state_operations=[
-                migrations.AlterField(
-                    model_name="realtimemessage",
-                    name="scope_id",
-                    field=models.UUIDField(
-                        help_text="ID of the scope (user_id, org_id, project_id)"
-                    ),
-                ),
-            ],
+        migrations.AlterField(
+            model_name="realtimemessage",
+            name="scope_id",
+            field=models.UUIDField(help_text="ID of the scope (user_id, org_id, project_id)"),
         ),
         migrations.AlterField(
             model_name="websocketconnection",

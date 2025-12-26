@@ -1,8 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Button,
-  Modal,
-} from '@django-core/design-system';
 
 interface Organisation {
     id: string;
@@ -88,68 +84,145 @@ export default function AssignUserToOrgModal({ opened, onClose, user, organisati
   if (!opened) return null;
 
   return (
-    <Modal
-      isOpen={opened}
-      onClose={onClose}
-      title={`Assign ${user?.first_name} ${user?.last_name} to Organisation`}
-    >
-      <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {error && (
-            <div style={{ padding: '8px', backgroundColor: '#fee', color: '#c00', borderRadius: '4px', fontSize: '14px' }}>
-              {error}
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        backgroundColor: 'var(--app-surface)',
+        padding: '24px',
+        borderRadius: '8px',
+        width: '500px',
+        maxWidth: '90%',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        color: 'var(--app-text)',
+        border: '1px solid var(--app-border)'
+      }}>
+        <h2 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--app-text)' }}>
+          Assign {user?.first_name} {user?.last_name} to Organisation
+        </h2>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {error && (
+              <div style={{
+                padding: '12px',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                color: '#dc3545',
+                border: '1px solid rgba(220, 53, 69, 0.2)',
+                borderRadius: '4px',
+                fontSize: '14px'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontWeight: 500,
+                color: 'var(--app-text)',
+                fontSize: '14px'
+              }}>
+                Organisation
+              </label>
+              <select
+                value={selectedOrgId}
+                onChange={(e) => setSelectedOrgId(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-input-bg)',
+                  color: 'var(--app-text)',
+                  fontSize: '14px'
+                }}
+                required
+              >
+                <option value="">Select Organisation...</option>
+                {organisations.map(org => (
+                  <option key={org.id} value={org.id}>{org.name}</option>
+                ))}
+              </select>
             </div>
-          )}
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Organisation</label>
-            <select
-              value={selectedOrgId}
-              onChange={(e) => setSelectedOrgId(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px',
-                borderRadius: '4px',
-                border: '1px solid #ccc',
+            <div>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontWeight: 500,
+                color: 'var(--app-text)',
                 fontSize: '14px'
-              }}
-              required
-            >
-              <option value="">Select Organisation...</option>
-              {organisations.map(org => (
-                <option key={org.id} value={org.id}>{org.name}</option>
-              ))}
-            </select>
-          </div>
+              }}>
+                Role
+              </label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-input-bg)',
+                  color: 'var(--app-text)',
+                  fontSize: '14px'
+                }}
+              >
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Role</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
-              style={{
-                width: '100%',
-                padding: '8px',
-                borderRadius: '4px',
-                border: '1px solid #ccc',
-                fontSize: '14px'
-              }}
-            >
-              <option value="member">Member</option>
-              <option value="admin">Admin</option>
-            </select>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !selectedOrgId}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  backgroundColor: loading || !selectedOrgId ? '#cccccc' : '#0066cc',
+                  color: 'white',
+                  cursor: loading || !selectedOrgId ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  opacity: loading || !selectedOrgId ? 0.6 : 1
+                }}
+              >
+                {loading ? 'Assigning...' : 'Assign'}
+              </button>
+            </div>
           </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
-            <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading || !selectedOrgId}>
-              {loading ? 'Assigning...' : 'Assign'}
-            </Button>
-          </div>
-        </div>
-      </form>
-    </Modal>
+        </form>
+      </div>
+    </div>
   );
 }

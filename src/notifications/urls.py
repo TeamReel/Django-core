@@ -5,11 +5,13 @@ from rest_framework.routers import DefaultRouter
 
 from notifications.views import NotificationViewSet
 from notifications.views.health_views import HealthCheckView
+from notifications.views.user_notification_views import UserNotificationViewSet
 
 app_name = "notifications"
 
 router = DefaultRouter()
 router.register(r"notifications", NotificationViewSet, basename="notification")
+router.register(r"user-notifications", UserNotificationViewSet, basename="user-notification")
 
 urlpatterns = [
     # Note: notifications health check is at /api/v1/notifications/health/

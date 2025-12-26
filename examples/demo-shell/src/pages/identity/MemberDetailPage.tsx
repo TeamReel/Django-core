@@ -9,7 +9,10 @@ import {
 import {
   PageHeader,
   PageContent,
+  BreadcrumbContextSwitcher,
+  useBreadcrumbContextSwitcher,
 } from '@django-core/page-templates';
+import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 
 export const MemberDetailPage: React.FC = () => {
@@ -22,15 +25,98 @@ export const MemberDetailPage: React.FC = () => {
   const [role, setRole] = useState('');
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [orgMembers, setOrgMembers] = useState<any[]>([]);
+
+  const { organisations } = useContextSwitcher();
 
   // Use 'id' from params as orgId/slug
   const orgSlug = id;
+
+  // Find resolved organisation
+  const resolvedOrg = organisations.find(o => o.slug === orgSlug || o.id === id);
+
+  const {
+    organisationOptions,
+    userOptions,
+    handleOrganisationSwitch,
+    handleUserSwitch,
+  } = useBreadcrumbContextSwitcher({
+    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    projects: [],
+    users: orgMembers.map(m => ({
+      id: m.id,
+      username: `${m.user?.first_name || ''} ${m.user?.last_name || ''}`.trim() || m.user?.email || 'Unknown',
+      email: m.user?.email || '',
+      slug: m.id, // Use member ID as slug
+    })),
+    context: {
+      currentOrgId: resolvedOrg?.id || member?.organisation?.id,
+      currentUserId: member?.id,
+    },
+    basePath: '',
+  });
+
+  // Debug logging
+  console.log('[MemberDetailPage] Debug:', {
+    orgMembersCount: orgMembers.length,
+    userOptionsCount: userOptions.length,
+    currentUserId: member?.id,
+    sampleMembers: orgMembers.slice(0, 2).map(m => ({
+      id: m.id,
+      name: `${m.user?.first_name} ${m.user?.last_name}`,
+      email: m.user?.email
+    })),
+    member: member ? { id: member.id, name: `${member.user?.first_name} ${member.user?.last_name}` } : null
+  });
 
   useEffect(() => {
     if (searchParams.get('action') === 'edit') {
       setIsEditing(true);
     }
   }, [searchParams]);
+
+  // Fetch org members for user switcher
+  useEffect(() => {
+    const fetchOrgMembers = async () => {
+      if (!orgSlug) {
+        console.log('[MemberDetailPage] No orgSlug, skipping member fetch');
+        return;
+      }
+
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const url = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/?page_size=100`;
+        console.log('[MemberDetailPage] Fetching org members from:', url);
+
+        const response = await fetch(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'include',
+        });
+
+        console.log('[MemberDetailPage] Members fetch response:', {
+          ok: response.ok,
+          status: response.status,
+          statusText: response.statusText
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[MemberDetailPage] Members data:', data);
+          // API might return array directly or object with results
+          const members = Array.isArray(data) ? data : (data.results || []);
+          console.log('[MemberDetailPage] Setting orgMembers:', members.length);
+          setOrgMembers(members);
+        }
+      } catch (err) {
+        console.error('Failed to fetch org members for switcher:', err);
+      }
+    };
+
+    fetchOrgMembers();
+  }, [orgSlug]);
 
   useEffect(() => {
     const fetchMember = async () => {
@@ -83,15 +169,34 @@ export const MemberDetailPage: React.FC = () => {
           });
 
           if (!response.ok) {
-              const data = await response.json();
-              throw new Error(data.role?.[0] || data.detail || 'Failed to update member');
+              const errorText = await response.text();
+              console.error('PATCH failed:', {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText.substring(0, 500) // Show first 500 chars
+              });
+
+              // Try to extract error from HTML if it's a Django error page
+              if (errorText.includes('<!DOCTYPE html>')) {
+                const titleMatch = errorText.match(/<title>(.*?)<\/title>/);
+                const errorTitle = titleMatch ? titleMatch[1] : 'Server Error';
+                throw new Error(`Server error: ${errorTitle}`);
+              }
+
+              let errorData;
+              try {
+                errorData = JSON.parse(errorText);
+              } catch {
+                throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
+              }
+              throw new Error(errorData.role?.[0] || errorData.detail || 'Failed to update member');
           }
 
           const data = await response.json();
           setMember(data);
           setIsEditing(false);
-          alert('Member updated successfully');
       } catch (err) {
+          console.error('Failed to update member:', err);
           alert(err instanceof Error ? err.message : 'Failed to update member');
       } finally {
           setSaving(false);
@@ -148,9 +253,81 @@ export const MemberDetailPage: React.FC = () => {
           title={`${member.user.first_name || ''} ${member.user.last_name || ''}`.trim() || member.user.email}
           breadcrumbs={[
             { label: 'Home', onClick: () => navigate('/') },
-            { label: 'Organisations', onClick: () => navigate('/organisations') },
-            { label: member.organisation.name, onClick: () => navigate(`/organisations/${orgSlug}`) },
-            { label: 'Member Details', current: true },
+            {
+              label: (
+                <select
+                  value="organisations"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === 'projects') navigate('/projects');
+                    else if (value === 'users') navigate('/users');
+                  }}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface)',
+                    color: 'var(--app-text)',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                >
+                  <option value="organisations">Organisations</option>
+                  <option value="projects">Projects</option>
+                  <option value="users">Users</option>
+                </select>
+              ),
+              current: false
+            },
+            {
+              label: (
+                <select
+                  value={member.organisation.slug || member.organisation.id}
+                  onChange={(e) => handleOrganisationSwitch({ id: e.target.value, label: '', slug: e.target.value })}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface)',
+                    color: 'var(--app-text)',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                >
+                  {organisationOptions.map(org => (
+                    <option key={org.id} value={org.slug || org.id}>{org.label}</option>
+                  ))}
+                </select>
+              ),
+              current: false
+            },
+            {
+              label: (
+                <select
+                  value={member.id}
+                  onChange={(e) => {
+                    navigate(`/organisations/${orgSlug}/members/${e.target.value}`);
+                  }}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface)',
+                    color: 'var(--app-text)',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                >
+                  {userOptions.map(u => (
+                    <option key={u.id} value={u.slug || u.id}>{u.label}</option>
+                  ))}
+                </select>
+              ),
+              current: true
+            },
           ]}
           actions={
             <div className="flex gap-2">
