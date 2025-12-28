@@ -87,10 +87,10 @@ export default function LoginPage() {
         <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>Quick Login (Test Accounts)</h3>
         <div style={{ display: 'grid', gap: '10px' }}>
           {[
-            { label: 'Super Admin', email: 'admin@example.com', desc: 'Full System Access', pass: 'admin' },
+            { label: 'Super Admin', email: 'admin@example.com', desc: 'Full System Access', pass: 'Basis123.' },
             { label: 'Org Admin', email: 'ronald.koeman@nederland.nl', desc: 'Admin of Eredivisie', pass: 'Basis123.' },
-            { label: 'Org Member', email: 'tuchel@bayern.de', desc: 'Member of Bundesliga', pass: 'password' },
-            { label: 'No Org', email: 'alice@example.com', desc: 'No organization', pass: 'password' },
+            { label: 'Org Member', email: 'tuchel@bayern.de', desc: 'Member of Bundesliga', pass: 'Basis123.' },
+            { label: 'No Org', email: 'alice@example.com', desc: 'No organization', pass: 'Basis123.' },
           ].map((account) => (
             <button
               key={account.email}

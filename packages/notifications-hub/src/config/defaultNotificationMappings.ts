@@ -1,4 +1,4 @@
-import { NotificationTypeMapping } from '@/types';
+import { NotificationTypeMapping } from '../types';
 
 export const defaultNotificationMappings: NotificationTypeMapping = {
   'job.completed': {

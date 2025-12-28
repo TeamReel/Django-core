@@ -9,7 +9,7 @@
 ## 🚀 Quick Access
 - **API Docs Page**: http://localhost:3000/api-docs
 - **Navigation**: Sidebar → Platform Status → "🔌 API Docs"
-- **Direct API Docs**: http://localhost:8000/api/schema/swagger-ui/
+- **Direct API Docs**: http://localhost:8000/api/docs/
 
 ## 📋 Visual Test Scenarios
 
@@ -130,7 +130,7 @@
 
 ### Swagger UI Not Loading
 - **Check**: Backend API is running on port 8000
-- **Check**: `/api/schema/swagger-ui/` endpoint is accessible
+- **Check**: `/api/docs/` endpoint is accessible
 - **Check**: CORS settings allow iframe embedding
 - **Check**: drf-spectacular is installed and configured
 

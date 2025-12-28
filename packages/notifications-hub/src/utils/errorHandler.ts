@@ -5,7 +5,7 @@
  * error categorization for observability.
  */
 
-import { ApiError } from '@/context/apiClient';
+import { ApiError } from '../context/apiClient';
 
 export interface UserFriendlyError {
   message: string;

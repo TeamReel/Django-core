@@ -1,4 +1,4 @@
-import { Notification, NotificationTypeMapping, NotificationDisplayConfig } from '@/types';
+import { Notification, NotificationTypeMapping, NotificationDisplayConfig } from '../types';
 
 export function applyNotificationMapping(
   notification: Notification,

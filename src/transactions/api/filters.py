@@ -11,9 +11,14 @@ class UsageEventFilter(django_filters.FilterSet):
     organization_id = django_filters.UUIDFilter(field_name="organization__id")
     project_id = django_filters.UUIDFilter(field_name="project__id")
     event_type = django_filters.CharFilter(field_name="event_type", lookup_expr="iexact")
+    user__email__icontains = django_filters.CharFilter(
+        field_name="user__email", lookup_expr="icontains"
+    )
     unbilled = django_filters.BooleanFilter(method="filter_unbilled")
     start_date = django_filters.DateTimeFilter(field_name="timestamp", lookup_expr="gte")
     end_date = django_filters.DateTimeFilter(field_name="timestamp", lookup_expr="lte")
+    timestamp__gte = django_filters.DateTimeFilter(field_name="timestamp", lookup_expr="gte")
+    timestamp__lte = django_filters.DateTimeFilter(field_name="timestamp", lookup_expr="lte")
 
     class Meta:
         """Filter metadata."""
@@ -23,9 +28,12 @@ class UsageEventFilter(django_filters.FilterSet):
             "organization_id",
             "project_id",
             "event_type",
+            "user__email__icontains",
             "unbilled",
             "start_date",
             "end_date",
+            "timestamp__gte",
+            "timestamp__lte",
         ]
 
     def filter_unbilled(self, queryset, name, value):  # noqa: ARG002

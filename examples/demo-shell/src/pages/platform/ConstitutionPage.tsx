@@ -23,6 +23,8 @@ interface ConstitutionRule {
   category: string;
   name: string;
   active: boolean;
+  severity?: string;
+  parameters?: Record<string, any>;
   violation_count?: number;
 }
 
@@ -52,44 +54,13 @@ export const ConstitutionPage: React.FC = () => {
         });
 
         if (response.ok) {
-          const data: ConstitutionData = await response.json();
+          const json = await response.json();
+          // Handle B13 envelope (data.data) or direct response
+          // The backend EnvelopeJSONRenderer wraps the response in a 'data' field
+          const data = json.data ? json.data : json;
           setConstitution(data);
-        } else if (response.status === 404) {
-          // Demo mode: Use mock constitution data
-          const demoConstitution: ConstitutionData = {
-            rules: [
-              {
-                id: '1',
-                category: 'Security',
-                name: 'Authentication Required',
-                active: true,
-                violation_count: 0
-              },
-              {
-                id: '2',
-                category: 'Data Protection',
-                name: 'Personal Data Encryption',
-                active: true,
-                violation_count: 2
-              },
-              {
-                id: '3',
-                category: 'API',
-                name: 'Rate Limiting',
-                active: true,
-                violation_count: 0
-              }
-            ],
-            categories: {
-              'Security': 5,
-              'Data Protection': 8,
-              'API': 3
-            },
-            total_violations: 2
-          };
-          setConstitution(demoConstitution);
         } else {
-          throw new Error(`API error: ${response.status}`);
+          throw new Error(`Failed to fetch constitution rules (${response.status})`);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch constitution rules');
@@ -104,43 +75,47 @@ export const ConstitutionPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div>
-        <PageHeader
-          title="Constitution"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Platform' },
-            { label: 'Constitution' },
-          ]}
-        />
-        <PageContent>
-          <Card>
-            <div className="text-center py-8 text-gray-500">
-              Loading constitution rules...
-            </div>
-          </Card>
-        </PageContent>
-      </div>
+      <AppShell>
+        <div>
+          <PageHeader
+            title="Constitution"
+            breadcrumbs={[
+              { label: 'Home', href: '/' },
+              { label: 'Platform' },
+              { label: 'Constitution' },
+            ]}
+          />
+          <PageContent>
+            <Card>
+              <div className="text-center py-8 text-gray-500">
+                Loading constitution rules...
+              </div>
+            </Card>
+          </PageContent>
+        </div>
+      </AppShell>
     );
   }
 
   if (error) {
     return (
-      <div>
-        <PageHeader
-          title="Constitution"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Platform' },
-            { label: 'Constitution' },
-          ]}
-        />
-        <PageContent>
-          <Alert type="error" data-testid="constitution-error">
-            {error}
-          </Alert>
-        </PageContent>
-      </div>
+      <AppShell>
+        <div>
+          <PageHeader
+            title="Constitution"
+            breadcrumbs={[
+              { label: 'Home', href: '/' },
+              { label: 'Platform' },
+              { label: 'Constitution' },
+            ]}
+          />
+          <PageContent>
+            <Alert type="error" data-testid="constitution-error">
+              {error}
+            </Alert>
+          </PageContent>
+        </div>
+      </AppShell>
     );
   }
 
@@ -159,9 +134,6 @@ export const ConstitutionPage: React.FC = () => {
         ]}
       />
       <PageContent>
-        <Alert type="info" className="mb-4">
-          <strong>Demo Mode:</strong> This page shows mock constitution data. API endpoints are not yet implemented.
-        </Alert>
         <Card data-testid="constitution-summary" className="mb-4">
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -184,53 +156,79 @@ export const ConstitutionPage: React.FC = () => {
         </Card>
 
         {constitution?.categories && Object.keys(constitution.categories).length > 0 && (
-          <Card data-testid="constitution-categories" className="mb-4">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Rule Categories</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(constitution.categories).map(([category, count]) => (
-                  <div key={category} className="flex justify-between items-center p-3 border rounded" data-testid={`category-${category}`}>
-                    <span className="font-medium capitalize">{category}</span>
-                    <Badge type="info">{count}</Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
-        )}
+          <div className="space-y-6">
+            {Object.keys(constitution.categories).sort().map(category => {
+              const categoryRules = constitution.rules.filter(r => r.category === category);
+              if (categoryRules.length === 0) return null;
 
-        {constitution?.rules && constitution.rules.length > 0 && (
-          <Card data-testid="constitution-rules">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Rules</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm" data-testid="rules-table">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2 px-2">Category</th>
-                      <th className="text-left py-2 px-2">Rule Name</th>
-                      <th className="text-left py-2 px-2">Status</th>
-                      <th className="text-left py-2 px-2">Violations</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {constitution.rules.map(rule => (
-                      <tr key={rule.id} className="border-b hover:bg-gray-50" data-testid={`rule-${rule.id}`}>
-                        <td className="py-2 px-2">{rule.category}</td>
-                        <td className="py-2 px-2 font-medium">{rule.name}</td>
-                        <td className="py-2 px-2">
-                          {rule.active ? (
+              return (
+                <Card key={category} data-testid={`category-section-${category}`}>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-gray-800">{category}</h3>
+                      <Badge type="info">{categoryRules.length} Rules</Badge>
+                    </div>
+                    <div style={{ overflowX: 'auto' }}>
+                      <Table
+                        columns={[
+                          { key: 'id', label: 'Rule Identifier' },
+                          { key: 'name', label: 'Description' },
+                          { key: 'severity', label: 'Severity' },
+                          { key: 'parameters', label: 'Configuration' },
+                          { key: 'status', label: 'Status' },
+                          { key: 'violations', label: 'Violations' },
+                        ]}
+                        rows={categoryRules.map(rule => ({
+                          id: <span className="font-mono text-blue-600 font-medium">{rule.id}</span>,
+                          name: <span className="text-gray-700">{rule.name}</span>,
+                          severity: (
+                            <Badge
+                              type={
+                                rule.severity === 'critical' ? 'error' :
+                                rule.severity === 'high' ? 'warning' :
+                                'info'
+                              }
+                            >
+                              {rule.severity || 'medium'}
+                            </Badge>
+                          ),
+                          parameters: (
+                            <div className="text-xs text-gray-500 font-mono max-w-xs break-words">
+                              {rule.parameters && Object.keys(rule.parameters).length > 0 ? (
+                                Object.entries(rule.parameters).map(([k, v]) => (
+                                  <div key={k}>
+                                    <span className="font-semibold">{k}:</span> {JSON.stringify(v)}
+                                  </div>
+                                ))
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </div>
+                          ),
+                          status: rule.active ? (
                             <Badge type="success">Active</Badge>
                           ) : (
                             <Badge type="gray">Inactive</Badge>
-                          )}
-                        </td>
-                        <td className="py-2 px-2">{rule.violation_count || 0}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          ),
+                          violations: (
+                            <span className="font-medium text-gray-900">
+                              {rule.violation_count || 0}
+                            </span>
+                          ),
+                        }))}
+                      />
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {!constitution?.rules?.length && (
+          <Card>
+            <div className="p-6 text-center text-gray-500">
+              No constitution rules configured.
             </div>
           </Card>
         )}

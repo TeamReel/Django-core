@@ -10,8 +10,12 @@ import {
 import {
   PageHeader,
   PageContent,
+  BreadcrumbContextSwitcher,
+  useBreadcrumbContextSwitcher,
 } from '@django-core/page-templates';
-import { ContextSwitcher, useContextSwitcher } from '@django-core/context-switcher';
+import { useContextSwitcher } from '@django-core/context-switcher';
+import { useAuth } from '@django-core/auth-ui';
+import { useNavigate } from 'react-router-dom';
 import {
   fetchFlags,
   updateGlobalFlag,
@@ -42,12 +46,15 @@ import {
  */
 
 export const FeatureFlagsPage: React.FC = () => {
-  const { context, switchContext } = useContextSwitcher();
+  const navigate = useNavigate();
+  const { context, organisations, switchContext } = useContextSwitcher();
+  const { user } = useAuth();
   const [flags, setFlags] = useState<(FeatureFlag | ApiFeatureFlag)[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [isSuperadmin, setIsSuperadmin] = useState(false);
-  const [editMode, setEditMode] = useState<'global' | 'org'>('global');
+  const [updating, setUpdating] = useState(false);
+  const [editMode, setEditMode] = useState<'global' | 'org'>(
+    () => (localStorage.getItem('feature-flags-edit-mode') as 'global' | 'org') || 'global'
+  );
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [useApi, setUseApi] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -56,6 +63,35 @@ export const FeatureFlagsPage: React.FC = () => {
   const currentOrgId = context.organisation?.id ? String(context.organisation.id) : null;
   const currentOrgName = context.organisation?.name || '';
 
+  // Use useAuth for superadmin check (most reliable source)
+  const isSuperadmin = (user as any)?.role === 'superadmin';
+
+  // Breadcrumb context switcher setup
+  const {
+    organisationOptions,
+  } = useBreadcrumbContextSwitcher({
+    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    projects: [],
+    users: [],
+    context: { currentOrgId },
+    basePath: '',
+  });
+
+  // Custom handler to switch organisation without page reload
+  const handleOrganisationSwitch = async (option: { id: string; label: string; slug: string }) => {
+    console.log('[FeatureFlagsPage] Switching to org:', option.label, option.id);
+
+    // SIMPLIFIED APPROACH FOR NON-ORG-SCOPED ROUTES:
+    // The Feature Flags page is at /config/feature-flags (not org-scoped in the URL)
+    // So switchContext won't navigate. Instead, we directly update localStorage and reload.
+    localStorage.setItem('django-core:currentOrgId', option.id);
+    localStorage.removeItem('django-core:currentProjectId');
+    window.location.reload();
+  };
+  // Persist editMode to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('feature-flags-edit-mode', editMode);
+  }, [editMode]);
   // Load user info
   useEffect(() => {
     // Wait for context to be loaded before making decisions
@@ -65,74 +101,12 @@ export const FeatureFlagsPage: React.FC = () => {
       try {
         setLoading(true);
 
-        // Try to fetch current user from backend
-        let userIsSuperadmin = false;
-        try {
-          const userResponse = await fetch('/api/v1/auth/me/', {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'include',
-          });
-
-          if (userResponse.ok) {
-            const userData = await userResponse.json();
-            setUserRole(userData.role);
-            userIsSuperadmin = userData.is_superuser || userData.role === 'superadmin';
-            setIsSuperadmin(userIsSuperadmin);
-          }
-        } catch (err) {
-          console.warn('Backend not available, using demo mode for feature flags');
-        }
-
-        // DEMO MODE FALLBACK:
-        // Check localStorage FIRST to see if role is already determined
-        if (!userIsSuperadmin) {
-          const demoRole = localStorage.getItem('demo_user_role');
-          console.log('[FeatureFlags] Demo mode check - localStorage role:', demoRole, 'currentOrgId:', currentOrgId);
-
-          if (demoRole === 'superadmin') {
-            // User was previously marked as superadmin, keep that role
-            console.log('Demo mode: Found superadmin in localStorage, preserving role');
-            setIsSuperadmin(true);
-            userIsSuperadmin = true;
-          } else if (demoRole === 'org_admin') {
-            // User was previously marked as org admin, keep that role
-            console.log('Demo mode: Found org_admin in localStorage, preserving role');
-            setIsSuperadmin(false);
-          } else if (!initialLoadDone) {
-            // First load - determine role based on org context
-            if (currentOrgId) {
-              // Has org context on first load → Org Admin (e.g., coming from Users page as Koeman)
-              console.log('Demo mode: First load with org context, simulating Org Admin');
-              setIsSuperadmin(false);
-              localStorage.setItem('demo_user_role', 'org_admin');
-            } else {
-              // No org context on first load → Superadmin
-              console.log('Demo mode: First load without org context, defaulting to Superadmin');
-              setIsSuperadmin(true);
-              userIsSuperadmin = true;
-              localStorage.setItem('demo_user_role', 'superadmin');
-            }
-          }
-        } else {
-          // Backend confirmed superadmin, persist it
-          console.log('Demo mode: Backend confirmed superadmin, persisting to localStorage');
-          localStorage.setItem('demo_user_role', 'superadmin');
+        // Set initial edit mode - force org mode for non-superadmins
+        if (!isSuperadmin && currentOrgId) {
+          setEditMode('org');
         }
 
         setInitialLoadDone(true);
-
-        // Set initial edit mode - force org mode for non-superadmins
-        if (!userIsSuperadmin) {
-          setEditMode('org');
-        } else if (currentOrgId) {
-           // Superadmin with org context -> default to org mode? No, keep global as default for superadmin unless they switch?
-           // Actually, let's keep superadmin as global default, but allow them to switch.
-           // But for non-superadmin, MUST be org.
-        }
-
       } catch (err) {
         console.error('Error loading user:', err);
       } finally {
@@ -141,7 +115,7 @@ export const FeatureFlagsPage: React.FC = () => {
     };
 
     loadUser();
-  }, [context.isLoading, currentOrgId]); // Re-run when context loading finishes or org changes
+  }, [context.isLoading, currentOrgId, isSuperadmin]);
 
   // Reload flags when org context changes (via ContextSwitcher)
   useEffect(() => {
@@ -181,12 +155,22 @@ export const FeatureFlagsPage: React.FC = () => {
           // Only fallback if 404 (endpoint missing) or other network errors
           console.log('Falling back to local storage due to non-auth error');
           setUseApi(false);
-          const resolvedFlags = getAllFlagsWithResolution(currentOrgId);
+          const targetOrgId = editMode === 'org' ? currentOrgId : null;
+          const resolvedFlags = getAllFlagsWithResolution(targetOrgId);
           setFlags(resolvedFlags);
         }
       } else {
-        const resolvedFlags = getAllFlagsWithResolution(currentOrgId);
-        console.log('[FeatureFlagsPage] Loaded flags from storage for org:', currentOrgId, 'Count:', resolvedFlags.length);
+        // In demo mode (localStorage), also respect editMode like API path does
+        const targetOrgId = editMode === 'org' ? currentOrgId : null;
+
+        // Safety check: Non-superadmins cannot fetch global flags
+        if (!isSuperadmin && !targetOrgId) {
+          console.log('[FeatureFlagsPage] Skipping storage fetch: Non-superadmin cannot fetch global flags');
+          return;
+        }
+
+        const resolvedFlags = getAllFlagsWithResolution(targetOrgId);
+        console.log('[FeatureFlagsPage] Loaded flags from storage for org:', targetOrgId, 'Count:', resolvedFlags.length);
         setFlags(resolvedFlags);
       }
     };
@@ -217,10 +201,18 @@ export const FeatureFlagsPage: React.FC = () => {
     if (!isSuperadmin && currentOrgId) {
       setEditMode('org');
     }
-  }, [isSuperadmin, currentOrgId]); // Added editMode to dependency to ensure refresh on mode switch
+    // REMOVED: The auto-switch to 'org' mode for Superadmins was preventing access to 'global' mode
+    // because currentOrgId is often present in the background.
+    // Superadmins should be able to stay in 'global' mode even if an org is selected.
+  }, [isSuperadmin, currentOrgId]); // Removed editMode from dependency to avoid loops
 
   // Toggle flag (tenant-aware)
   const handleToggleFlag = async (flag: FeatureFlag | ApiFeatureFlag) => {
+    if (updating) {
+      console.log('[FeatureFlagsPage] Already updating, ignoring click');
+      return;
+    }
+
     const currentState = flag.enabled;
     const newState = !currentState;
 
@@ -236,6 +228,7 @@ export const FeatureFlagsPage: React.FC = () => {
     });
 
     if (useApi) {
+      setUpdating(true);
       const apiFlag = flag as ApiFeatureFlag;
       try {
         if (editMode === 'global') {
@@ -253,16 +246,22 @@ export const FeatureFlagsPage: React.FC = () => {
              await createOrgOverride(currentOrgId, apiFlag.key, newState);
            }
         }
+
         // Reload flags to reflect changes
         const targetOrgId = editMode === 'org' ? currentOrgId : null;
+        console.log('[FeatureFlagsPage] Reloading flags after update. editMode:', editMode, 'targetOrgId:', targetOrgId);
         const apiFlags = await fetchFlags(targetOrgId);
+        console.log('[FeatureFlagsPage] Reloaded flags:', apiFlags);
         setFlags(apiFlags);
 
         // Trigger featureFlagsChanged event so other components (like theme toggle) can react
         window.dispatchEvent(new CustomEvent('featureFlagsChanged'));
+        console.log('[FeatureFlagsPage] Successfully updated flag and reloaded data');
       } catch (err) {
         console.error('Failed to toggle flag via API:', err);
         alert('Failed to update flag. See console for details.');
+      } finally {
+        setUpdating(false);
       }
       return;
     }
@@ -319,7 +318,8 @@ export const FeatureFlagsPage: React.FC = () => {
     removeOrgFlag(currentOrgId, flag.key);
 
     // Reload flags to show updated state
-    const resolvedFlags = getAllFlagsWithResolution(currentOrgId);
+    const targetOrgId = editMode === 'org' ? currentOrgId : null;
+    const resolvedFlags = getAllFlagsWithResolution(targetOrgId);
     setFlags(resolvedFlags);
   };
 
@@ -353,6 +353,20 @@ export const FeatureFlagsPage: React.FC = () => {
           { label: 'Home', href: '/' },
           { label: 'Config' },
           { label: 'Feature Flags' },
+          ...(isSuperadmin && editMode === 'global'
+            ? [{ label: 'Global Defaults' }]
+            : [{
+                label: isSuperadmin ? (
+                  <BreadcrumbContextSwitcher
+                    currentId={currentOrgId || ''}
+                    options={organisationOptions}
+                    onSelect={handleOrganisationSwitch}
+                    hasDropdown={true}
+                    type="organisation"
+                  />
+                ) : (currentOrgName || 'Organisation')
+              }]
+          )
         ]}
         actions={
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -394,10 +408,8 @@ export const FeatureFlagsPage: React.FC = () => {
                     }}
                     onClick={() => {
                       setEditMode('global');
-                      // Clear org context when switching to global to avoid confusion
-                      if (currentOrgId) {
-                        switchContext({ organisation: null, project: null });
-                      }
+                      // Note: We don't clear the org context here because switchContext(null) is not supported.
+                      // The page logic handles editMode='global' by ignoring the current org context.
                     }}
                   >
                     Global Defaults
@@ -422,22 +434,8 @@ export const FeatureFlagsPage: React.FC = () => {
               </>
             )}
 
-            {/* Context Switcher - Only for Superadmin in Org Mode */}
-            {isSuperadmin && editMode === 'org' && (
-              <>
-                <div style={{
-                  height: '24px',
-                  width: '1px',
-                  backgroundColor: 'var(--app-border)',
-                  opacity: 0.5,
-                }} />
-                <div style={{ minWidth: '200px' }}>
-                  <ContextSwitcher />
-                </div>
-              </>
-            )}
-
-            {/* Superadmin: Clear Context button */}
+            {/* Superadmin: Clear Context button - Removed as switchContext(null) is not supported */}
+            {/*
             {isSuperadmin && currentOrgId && (
               <Button
                 variant="outline"
@@ -448,19 +446,20 @@ export const FeatureFlagsPage: React.FC = () => {
                 ✕ Clear
               </Button>
             )}
+            */}
 
-            {/* Dev Tool: Role Toggler (Hidden from normal UI flow, for demo testing only) */}
-            {isSuperadmin && (
-              <button
-                onClick={() => {
-                  const newRole = !isSuperadmin;
-                  setIsSuperadmin(newRole);
-                  localStorage.setItem('demo_user_role', newRole ? 'superadmin' : 'org_admin');
-                  if (!newRole && currentOrgId) setEditMode('org');
-                }}
-                title="🛠️ Developer Tool: Toggle Role (Superadmin <-> Org Admin)"
-                style={{
-                  background: 'none',
+            {/* Dev Tool: Role Toggler - REMOVED for manual validation to avoid confusion */}
+            {/*
+            <button
+              onClick={() => {
+                const newRole = !isSuperadmin;
+                setIsSuperadmin(newRole);
+                localStorage.setItem('demo_user_role', newRole ? 'superadmin' : 'org_admin');
+                if (!newRole && currentOrgId) setEditMode('org');
+              }}
+              title="🛠️ Developer Tool: Toggle Role (Superadmin <-> Org Admin)"
+              style={{
+                background: 'none',
                   border: 'none',
                   cursor: 'pointer',
                   opacity: 0.3,
@@ -473,7 +472,7 @@ export const FeatureFlagsPage: React.FC = () => {
               >
                 ⚙️
               </button>
-            )}
+            */}
           </div>
         }
       />
@@ -559,65 +558,102 @@ export const FeatureFlagsPage: React.FC = () => {
           ) : (
             <Table
               columns={[
-              {
-                key: 'name',
-                label: 'Flag',
-                },
-                {
-                  key: 'scope',
-                  label: 'Scope',
-                },
-                {
-                  key: 'enabled',
-                  label: 'Status',
-                },
-                {
-                  key: 'rollout_percentage',
-                  label: 'Rollout',
-                },
-                {
-                  key: 'actions',
-                  label: 'Actions',
-                },
+                { key: 'name', label: 'Feature Flag' },
+                ...(editMode === 'org' ? [
+                  { key: 'global_setting', label: 'Global Setting' },
+                  { key: 'org_setting', label: 'Organisation Setting' },
+                  { key: 'effective_value', label: 'Effective Value' },
+                ] : [
+                  { key: 'enabled', label: 'Setting' },
+                ]),
+                { key: 'rollout_percentage', label: 'Rollout %' },
+                { key: 'actions', label: 'Actions' },
               ]}
               rows={flags.map((flag) => {
                 // Determine if we have an override
                 const resolutionSource = useApi
                   ? (flag as ApiFeatureFlag).resolutionSource
                   : (hasOrgOverride(currentOrgId, flag.key) ? 'override' : 'global');
-                const isOverride = resolutionSource === 'override';
+                const isOverride = resolutionSource === 'override' || resolutionSource === 'global_disabled';
                 const isOrgFlag = resolutionSource === 'organisation';
+                const isGlobalDisabled = resolutionSource === 'global_disabled';
 
-                const isOrgMode = isSuperadmin && currentOrgId && editMode === 'org';
+                // Get raw values from API
+                const apiFlag = flag as ApiFeatureFlag;
+                const globalValue = apiFlag.global_value;
+                const orgValue = apiFlag.org_value;
 
                 // Effective enabled state
                 const displayEnabled = flag.enabled;
 
                 // Disabled state (cannot edit)
-                // Org Admin can always edit their own overrides in this model
                 const isDisabled = !isSuperadmin && !currentOrgId;
 
-                return {
+                // Global Setting Column
+                let globalSettingNode: React.ReactNode = <span className="text-gray-400">-</span>;
+                if (editMode === 'org' && globalValue !== null && globalValue !== undefined) {
+                  globalSettingNode = (
+                    <Badge variant={globalValue ? 'success' : 'secondary'}>
+                      {globalValue ? 'Enabled' : 'Disabled'}
+                    </Badge>
+                  );
+                }
+
+                // Organisation Setting Column - show the stored value even if overridden by global
+                let orgSettingNode: React.ReactNode = <span className="text-gray-400">-</span>;
+                if (editMode === 'org') {
+                  if (orgValue !== null && orgValue !== undefined) {
+                    orgSettingNode = (
+                      <Badge variant={orgValue ? 'success' : 'secondary'}>
+                        {orgValue ? 'Enabled' : 'Disabled'}
+                      </Badge>
+                    );
+                  } else {
+                    orgSettingNode = (
+                      <span className="text-gray-500 dark:text-gray-400 text-sm italic">
+                        Inherited from global
+                      </span>
+                    );
+                  }
+                }
+
+                // Effective Value Column - shows what's actually active
+                let effectiveValueNode: React.ReactNode = null;
+                if (editMode === 'org') {
+                  if (isGlobalDisabled && orgValue === true) {
+                    // Global disabled overrides org enabled
+                    effectiveValueNode = (
+                      <div>
+                        <Badge variant="secondary">Disabled</Badge>
+                        <div className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                          <span>⚠️</span>
+                          <span>Overridden by global setting</span>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    // Normal case
+                    effectiveValueNode = (
+                      <Badge variant={displayEnabled ? 'success' : 'secondary'}>
+                        {displayEnabled ? 'Enabled' : 'Disabled'}
+                      </Badge>
+                    );
+                  }
+                }
+
+                const rowData: any = {
                   id: flag.id,
                   name: (
                     <div>
-                      <div className="font-medium">{flag.name}</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100">{flag.name}</div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">{flag.description}</div>
                     </div>
                   ),
-                  scope: isSuperadmin ? (
-                    editMode === 'global' ? <Badge variant="default">Global</Badge> : <Badge variant="primary">Org Override</Badge>
-                  ) : (isOverride || isOrgFlag) ? (
-                    <Badge variant="primary">Organisation</Badge>
-                  ) : (
-                    <Badge variant="secondary">Global Default</Badge>
+                  rollout_percentage: (
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {flag.rollout_percentage}%
+                    </span>
                   ),
-                  enabled: (
-                    <Badge variant={displayEnabled ? 'success' : 'secondary'}>
-                      {displayEnabled ? 'Enabled' : 'Disabled'}
-                    </Badge>
-                  ),
-                  rollout_percentage: `${flag.rollout_percentage}%`,
                   actions: (
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <Button
@@ -634,8 +670,6 @@ export const FeatureFlagsPage: React.FC = () => {
                       </Button>
 
                       {/* Reset to global button */}
-                      {/* Visible for Org Admin if override exists */}
-                      {/* Visible for Superadmin in Org Mode if override exists */}
                       {((!isSuperadmin && isOverride) || (isSuperadmin && editMode === 'org' && isOverride)) && (
                         <Button
                           size="sm"
@@ -645,7 +679,7 @@ export const FeatureFlagsPage: React.FC = () => {
                             e.stopPropagation();
                             handleResetToGlobal(flag);
                           }}
-                          title="Reset to global default"
+                          title="Revert to global default"
                         >
                           Reset
                         </Button>
@@ -653,22 +687,49 @@ export const FeatureFlagsPage: React.FC = () => {
                     </div>
                   ),
                 };
+
+                // Add mode-specific columns
+                if (editMode === 'org') {
+                  rowData.global_setting = globalSettingNode;
+                  rowData.org_setting = orgSettingNode;
+                  rowData.effective_value = effectiveValueNode;
+                } else {
+                  rowData.enabled = (
+                    <Badge variant={displayEnabled ? 'success' : 'secondary'}>
+                      {displayEnabled ? 'Enabled' : 'Disabled'}
+                    </Badge>
+                  );
+                }
+
+                return rowData;
               })}
             />
           )}
         </Card>
 
         {/* Info Footer */}
-        <Alert type="info" className="mt-4">
-          <strong>How flags work:</strong>
-          <ul className="mt-2 ml-4 list-disc">
-            <li><strong>Global Defaults</strong>: Set the baseline for all organisations.</li>
-            <li><strong>Organisation Overrides</strong>: Specific settings for an organisation that override the global default.</li>
-            <li><strong>Superadmins</strong> can manage both global defaults and overrides for any organisation.</li>
-            <li><strong>Org Admins</strong> can manage overrides for their own organisation.</li>
-            <li>Changes are saved to the server and persist across sessions.</li>
-          </ul>
-        </Alert>
+        {editMode === 'org' ? (
+          <Alert type="info" className="mt-4">
+            <strong>Organisation Feature Flags:</strong>
+            <ul className="mt-2 ml-4 list-disc space-y-1">
+              <li><strong>Global Setting</strong>: The baseline value set by administrators for all organisations.</li>
+              <li><strong>Organisation Setting</strong>: Your organisation's override (if configured).</li>
+              <li><strong>Effective Value</strong>: The actual active setting for your organisation.</li>
+              <li className="text-amber-700 dark:text-amber-400">
+                ⚠️ <strong>Master Switch</strong>: When a global setting is disabled, it overrides all organisation settings but preserves your overrides for when it's re-enabled.
+              </li>
+            </ul>
+          </Alert>
+        ) : (
+          <Alert type="info" className="mt-4">
+            <strong>Global Feature Flags:</strong>
+            <ul className="mt-2 ml-4 list-disc space-y-1">
+              <li><strong>Setting</strong>: The baseline value that applies to all organisations by default.</li>
+              <li><strong>Disabled global flags</strong> act as a master switch - they override all organisation settings system-wide.</li>
+              <li>Organisations can create more restrictive overrides (disable when global is enabled) but cannot enable when global is disabled.</li>
+            </ul>
+          </Alert>
+        )}
       </PageContent>
     </AppShell>
   );

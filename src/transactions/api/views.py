@@ -38,7 +38,7 @@ class UsageEventViewSet(viewsets.ModelViewSet):
     - GET /usage-events/ - List usage events (filterable)
     """
 
-    queryset = UsageEvent.objects.all()
+    queryset = UsageEvent.objects.select_related("user", "organization", "project").all()
     serializer_class = UsageEventSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = UsageEventFilter

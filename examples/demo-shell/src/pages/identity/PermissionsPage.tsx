@@ -41,7 +41,8 @@ export const PermissionsPage: React.FC = () => {
         });
 
         if (userResponse.ok) {
-          const userData = await userResponse.json();
+          const rawUserData = await userResponse.json();
+          const userData = rawUserData.data || rawUserData;
           setCurrentUserRole(userData.role);
         }
 
@@ -56,7 +57,9 @@ export const PermissionsPage: React.FC = () => {
 
         if (permissionsResponse.ok) {
           const permissionsData = await permissionsResponse.json();
-          setPermissions(permissionsData.results || permissionsData);
+          // Handle B13 response envelope
+          const permissionsList = permissionsData.data?.results || permissionsData.results || permissionsData.data || permissionsData || [];
+          setPermissions(Array.isArray(permissionsList) ? permissionsList : []);
         }
 
         // Fetch roles
@@ -70,7 +73,9 @@ export const PermissionsPage: React.FC = () => {
 
         if (rolesResponse.ok) {
           const rolesData = await rolesResponse.json();
-          setRoles(rolesData.results || rolesData);
+          // Handle B13 response envelope
+          const rolesList = rolesData.data?.results || rolesData.results || rolesData.data || rolesData || [];
+          setRoles(Array.isArray(rolesList) ? rolesList : []);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch permissions');

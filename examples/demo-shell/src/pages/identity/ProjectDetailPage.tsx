@@ -114,12 +114,21 @@ export const ProjectDetailPage: React.FC = () => {
         );
 
         if (response.ok) {
-          const data = await response.json();
+          const rawData = await response.json();
+          // Handle B13 envelope: {data: {results: [...]}} or direct {results: [...]}
+          const data = rawData.data || rawData;
+          const results = data.results || data.data?.results || [];
+
           // Map API response to match expected format (organisation_id snake_case)
-          const mapped = (data.results || []).map((p: any) => ({
+          const mapped = results.map((p: any) => ({
             ...p,
-            organisation_id: p.organisation?.id || p.organisation_id
+            organisation_id: p.organisation?.id || p.organisation_id || orgId
           }));
+          console.log('[ProjectDetailPage] Fetched projects:', {
+            count: mapped.length,
+            orgId,
+            sample: mapped[0]
+          });
           setOrgProjects(mapped);
         }
       } catch (err) {
@@ -161,7 +170,9 @@ export const ProjectDetailPage: React.FC = () => {
           throw new Error(`Failed to fetch project (${projectResponse.status})`);
         }
 
-        const projectData: Project = await projectResponse.json();
+        const rawProjectData = await projectResponse.json();
+        // Handle B13 response envelope
+        const projectData = rawProjectData.data || rawProjectData;
         setProject(projectData);
 
         // Fetch project members
@@ -183,7 +194,9 @@ export const ProjectDetailPage: React.FC = () => {
 
         if (membersResponse.ok) {
           const membersData = await membersResponse.json();
-          setMembers(membersData.results || []);
+          // Handle B13 response envelope
+          const membersList = membersData.data?.results || membersData.results || membersData.data || membersData || [];
+          setMembers(Array.isArray(membersList) ? membersList : []);
         } else {
             // Fallback to org members if endpoint fails (e.g. during transition)
             console.warn("Project members endpoint failed, falling back to org members");
@@ -424,38 +437,42 @@ export const ProjectDetailPage: React.FC = () => {
             </p>
           </div>
           {members.length > 0 ? (
-            <Table
-              columns={[
-                { key: 'name', label: 'Name' },
-                { key: 'email', label: 'Email' },
-                { key: 'role', label: 'Role' },
-                { key: 'joined', label: 'Joined' },
-              ]}
-              rows={members.map((item: any) => {
-                // Handle Membership object structure
-                const user = item.user || item;
-                const role = item.role || 'member';
+            <Table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                </tr>
+              </thead>
+              <tbody>
+                {members.map((item: any) => {
+                  // Handle Membership object structure
+                  const user = item.user || item;
+                  const role = item.role || 'member';
 
-                return {
-                  id: user.id,
-                  name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
-                  email: user.email,
-                  role: (
-                    <Badge variant="secondary" data-testid={`team-role-${user.id}`}>
-                      {role}
-                    </Badge>
-                  ),
-                  joined: (
-                    <span data-testid={`team-joined-${user.id}`}>
-                      {item.joined_at
-                        ? new Date(item.joined_at).toLocaleDateString()
-                        : '-'}
-                    </span>
-                  ),
-                };
-              })}
-              data-testid="project-members-table"
-            />
+                  return (
+                    <tr key={user.id}>
+                      <td style={{ fontSize: '0.85rem' }}>
+                        {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                      </td>
+                      <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
+                      <td>
+                        <Badge variant="secondary" data-testid={`team-role-${user.id}`}>
+                          {role}
+                        </Badge>
+                      </td>
+                      <td style={{ fontSize: '0.85rem' }} data-testid={`team-joined-${user.id}`}>
+                        {item.joined_at
+                          ? new Date(item.joined_at).toLocaleDateString()
+                          : '-'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
           ) : (
             <Alert type="info">No team members yet</Alert>
           )}
@@ -465,32 +482,32 @@ export const ProjectDetailPage: React.FC = () => {
         <Card>
           <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
           {recentEvents.length > 0 ? (
-            <Table
-              columns={[
-                { key: 'event_type', label: 'Event' },
-                { key: 'user', label: 'User' },
-                { key: 'timestamp', label: 'Time' },
-              ]}
-              rows={recentEvents.map((event) => ({
-                id: event.id,
-                event_type: (
-                  <Badge variant="secondary" data-testid={`event-type-${event.id}`}>
-                    {event.event_type}
-                  </Badge>
-                ),
-                user: (
-                  <span data-testid={`event-user-${event.id}`}>
-                    {event.user?.name || 'System'}
-                  </span>
-                ),
-                timestamp: (
-                  <span className="text-sm text-gray-600" data-testid={`event-time-${event.id}`}>
-                    {new Date(event.timestamp).toLocaleString()}
-                  </span>
-                ),
-              }))}
-              data-testid="project-activity-table"
-            />
+            <Table>
+              <thead>
+                <tr>
+                  <th>Event</th>
+                  <th>User</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentEvents.map((event) => (
+                  <tr key={event.id}>
+                    <td>
+                      <Badge variant="secondary" data-testid={`event-type-${event.id}`}>
+                        {event.event_type}
+                      </Badge>
+                    </td>
+                    <td style={{ fontSize: '0.85rem' }} data-testid={`event-user-${event.id}`}>
+                      {event.user?.name || 'System'}
+                    </td>
+                    <td style={{ fontSize: '0.85rem' }} data-testid={`event-time-${event.id}`}>
+                      {new Date(event.timestamp).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
           ) : (
             <Alert type="info">No recent activity</Alert>
           )}

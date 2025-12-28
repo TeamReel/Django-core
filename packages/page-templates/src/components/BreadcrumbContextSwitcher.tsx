@@ -61,7 +61,6 @@ export function BreadcrumbContextSwitcher({
   current = false,
   hasDropdown: hasDropdownProp,
   icon,
-  type,
 }: BreadcrumbContextSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

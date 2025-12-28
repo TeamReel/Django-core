@@ -11,7 +11,7 @@
  * - Skip retry for client errors (4xx) except 429 (rate limit)
  */
 
-import { ApiError } from '@/context/apiClient';
+import { ApiError } from '../context/apiClient';
 
 export interface RetryOptions {
   maxRetries?: number; // Default: 3

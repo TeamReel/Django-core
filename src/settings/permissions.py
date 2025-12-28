@@ -215,30 +215,45 @@ class ScopeAwarePermission(BasePermission):
                 return False
 
             # Organisation settings - use evaluate_permission
-            # For READ operations (GET), we check org.view_settings or similar
-            # For WRITE operations (POST/PUT/DELETE), we check org.manage_settings
+            # For WRITE operations, check both settings.edit AND org.manage_settings
+            # Organization Admin role has org.manage_settings
+            # But for backwards compatibility, also check settings.edit
 
-            # Map permission_code to granular permissions if needed
-            # settings.view -> org.view_settings (or just org.view_members/generic read)
-            # settings.edit -> org.manage_settings
-
-            actual_permission = permission_code
-            if permission_code == "settings.view":
-                # Fallback to a basic read permission if settings.view isn't explicitly assigned
-                # Or assume settings.view is what we want to check against the role
-                pass
-            elif permission_code == "settings.edit":
-                actual_permission = "org.manage_settings"
-
-            has_permission = evaluate_permission(
-                user=user,
-                permission=actual_permission,
-                resource=organisation,
-                context={
-                    "scope": "ORGANIZATION",
-                    "organization_id": resource_id,
-                },
-            )
+            # For edit operations, check org.manage_settings first (preferred)
+            # Then fallback to settings.edit for backwards compatibility
+            if permission_code == "settings.edit":
+                # Try org.manage_settings first
+                has_permission = evaluate_permission(
+                    user=user,
+                    permission="org.manage_settings",
+                    resource=organisation,
+                    context={
+                        "scope": "ORGANIZATION",
+                        "organization_id": resource_id,
+                    },
+                )
+                # Fallback to settings.edit if org.manage_settings failed
+                if not has_permission:
+                    has_permission = evaluate_permission(
+                        user=user,
+                        permission=permission_code,
+                        resource=organisation,
+                        context={
+                            "scope": "ORGANIZATION",
+                            "organization_id": resource_id,
+                        },
+                    )
+            else:
+                # For settings.view or other permissions, use as-is
+                has_permission = evaluate_permission(
+                    user=user,
+                    permission=permission_code,
+                    resource=organisation,
+                    context={
+                        "scope": "ORGANIZATION",
+                        "organization_id": resource_id,
+                    },
+                )
             return has_permission
         else:  # PROJECT
             # Fetch project object to pass as resource

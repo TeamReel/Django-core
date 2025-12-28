@@ -227,22 +227,35 @@ class FeatureFlagViewSet(viewsets.ModelViewSet):
 
             # Determine effective value and source
             if org_flag:
-                enabled = org_flag.enabled
-                org_val = org_flag.enabled
-                org_override_id = str(org_flag.id)
-
-                if g_flag:
-                    # Org override of a global flag
-                    resolution_source = "override"
+                # MASTER SWITCH: If global flag is explicitly disabled, it overrides everything
+                # (but org overrides remain stored and will become active if global is re-enabled)
+                if g_flag and g_flag.enabled == False:
+                    # Global is disabled (master switch) - feature is disabled everywhere
+                    enabled = False
+                    org_val = org_flag.enabled  # Store the override value
+                    org_override_id = str(org_flag.id)
+                    resolution_source = "global_disabled"  # Show why it's disabled
                     global_val = g_flag.enabled
                     global_id = str(g_flag.id)
                     description = g_flag.description
                 else:
-                    # Standalone org flag (no global counterpart)
-                    resolution_source = "organisation"
-                    global_val = None
-                    global_id = None
-                    description = org_flag.description
+                    # Normal case: org override is active
+                    enabled = org_flag.enabled
+                    org_val = org_flag.enabled
+                    org_override_id = str(org_flag.id)
+
+                    if g_flag:
+                        # Org override of a global flag
+                        resolution_source = "override"
+                        global_val = g_flag.enabled
+                        global_id = str(g_flag.id)
+                        description = g_flag.description
+                    else:
+                        # Standalone org flag (no global counterpart)
+                        resolution_source = "organisation"
+                        global_val = None
+                        global_id = None
+                        description = org_flag.description
             elif g_flag:
                 # Global flag only
                 enabled = g_flag.enabled

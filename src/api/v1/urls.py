@@ -31,4 +31,5 @@ urlpatterns = [
     path("organisations/", include("organisations.api.urls")),  # /api/v1/organisations/
     path("projects/", include("projects.api.urls")),  # /api/v1/projects/
     path("permissions/", include("permissions.api.urls")),  # /api/v1/permissions/
+    path("credits/", include("credits.urls")),  # /api/v1/credits/
 ]

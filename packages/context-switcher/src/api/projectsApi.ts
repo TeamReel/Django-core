@@ -51,7 +51,8 @@ export async function fetchProjects(
     }
 
     if (isApiSuccess(response)) {
-      const rawResults = response.data.results || response.data.projects || [];
+      const data = response.data as any;
+      const rawResults = data.data?.results || data.results || data.projects || [];
       console.log('Parsed projects (raw):', rawResults);
 
       // Map API response to Project interface

@@ -1,5 +1,5 @@
 import React, { createContext } from 'react';
-import { Notification } from '@/types';
+import { Notification } from '../types';
 
 export interface Toast {
   id: string;

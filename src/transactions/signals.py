@@ -5,6 +5,9 @@ This module defines signal handlers for automatic cache invalidation
 when transactions are created or modified.
 """
 
+from decimal import Decimal
+
+from django.db.models import Sum
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -31,3 +34,18 @@ def invalidate_cache_on_transaction(sender, instance, created, **kwargs):  # noq
             organization_id=instance.organization_id,
             project_id=instance.project_id if instance.project else None,
         )
+
+        # Update CreditsBalance if this is an org-level transaction (no project)
+        if not instance.project:
+            from credits.models import CreditsBalance
+
+            # Calculate current balance from all transactions
+            balance_sum = Transaction.objects.filter(
+                organization_id=instance.organization_id, project__isnull=True
+            ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
+
+            # Update or create CreditsBalance
+            CreditsBalance.objects.update_or_create(
+                organisation_id=instance.organization_id,
+                defaults={"current_balance": int(balance_sum)},
+            )

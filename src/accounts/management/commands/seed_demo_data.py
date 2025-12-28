@@ -150,6 +150,9 @@ class Command(BaseCommand):
             self._seed_feature_flags(orgs, progress, verbose)
             self._seed_file_metadata(projects, progress, verbose)
 
+            # T008: Credits balance
+            self._seed_credits_balance(orgs, progress, verbose)
+
         elapsed = time.time() - start_time
 
         # T008: Summary output
@@ -684,3 +687,63 @@ class Command(BaseCommand):
                 files_created += 1
 
         progress.log("file_metadata_placeholders", files_created)
+
+    def _seed_credits_balance(self, orgs, progress, verbose):
+        """T008: Create credits balance for organisations (test data)."""
+        try:
+            from credits.models import CreditsBalance
+        except ImportError:
+            if verbose:
+                self.stdout.write(
+                    self.style.WARNING(
+                        "  credits.models.CreditsBalance not available, skipping credits balance"
+                    )
+                )
+            return
+
+        balances_created = 0
+
+        # Test data: Different balances for different organisations
+        # TechCorp: High balance
+        # MarketingHub: Low balance (to test low balance alert)
+        # Others: Medium balance
+        balance_map = {
+            "techcorp": 1200,  # High balance (Eredivisie)
+            "marketinghub": 75,  # Low balance (La Liga)
+            "datalab": 500,  # Medium balance (Serie A)
+            "opensource": 350,  # Medium balance (Bundesliga)
+            "premier-league": 1000,  # Standard demo org
+            "eredivisie": 1200,
+            "la-liga": 75,
+            "serie-a": 500,
+            "bundesliga": 350,
+            # global intentionally skipped to test 404
+        }
+
+        for org_slug, balance_amount in balance_map.items():
+            org = orgs.get(org_slug)
+
+            # Fallback: Try to find org in DB if not in seeded map
+            if not org:
+                from organisations.models import Organisation
+
+                org = Organisation.objects.filter(slug=org_slug).first()
+
+            if not org:
+                continue
+
+            # Skip global to test 404 response
+            if org_slug == "global":
+                continue
+
+            _, created = CreditsBalance.objects.get_or_create(
+                organisation=org,
+                defaults={"current_balance": balance_amount},
+            )
+
+            if created:
+                balances_created += 1
+                if verbose:
+                    self.stdout.write(f"  Created credits balance for {org.name}: {balance_amount}")
+
+        progress.log("credits_balance", balances_created)

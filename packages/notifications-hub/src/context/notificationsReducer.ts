@@ -1,5 +1,5 @@
 import { NotificationsState } from './NotificationsContext';
-import { Notification } from '@/types';
+import { Notification } from '../types';
 
 export type NotificationsAction =
   | { type: 'FETCH_START' }

@@ -149,7 +149,9 @@ export function NotificationsPage() {
       }
 
       const data = await response.json();
-      setNotifications(data.results || data); // Handle both paginated and non-paginated
+      // Handle B13 response envelope
+      const results = data.data?.results || data.results || data.data || data || [];
+      setNotifications(Array.isArray(results) ? results : []);
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
       setError(err instanceof Error ? err.message : 'Failed to load notifications');

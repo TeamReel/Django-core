@@ -22,7 +22,7 @@ class RoutingDecisionLogFilter(filters.FilterSet):
     """Filter for routing decision audit logs."""
 
     event_type = filters.CharFilter(field_name="event_type", lookup_expr="icontains")
-    org_id = filters.NumberFilter(field_name="organization__id")
+    org_id = filters.UUIDFilter(field_name="organization__id")
     user_id = filters.NumberFilter(field_name="user__id")
     start_date = filters.DateTimeFilter(field_name="created_at", lookup_expr="gte")
     end_date = filters.DateTimeFilter(field_name="created_at", lookup_expr="lte")

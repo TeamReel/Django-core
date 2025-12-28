@@ -28,7 +28,9 @@ export const HealthCheckPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('/api/health/', {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        console.log('[HealthCheckPage] Fetching health from:', `${apiBaseUrl}/api/v1/health/`);
+        const response = await fetch(`${apiBaseUrl}/api/v1/health/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -36,10 +38,18 @@ export const HealthCheckPage: React.FC = () => {
           credentials: 'include',
         });
 
+        console.log('[HealthCheckPage] Response status:', response.status);
+
         if (response.ok) {
-          const data: HealthStatus = await response.json();
+          const rawData = await response.json();
+          console.log('[HealthCheckPage] Raw response:', rawData);
+
+          // Handle B13 envelope if present
+          const data: HealthStatus = (rawData as any).data || rawData;
+          console.log('[HealthCheckPage] Parsed health data:', data);
           setHealth(data);
         } else if (response.status === 404) {
+          console.log('[HealthCheckPage] 404 - Using demo mode');
           // Demo mode: Use mock health data
           const demoHealth: HealthStatus = {
             status: 'healthy',

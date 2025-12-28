@@ -100,7 +100,9 @@ export const AuditLogPage: React.FC = () => {
           throw new Error(`Failed to load audit log. Backend error: ${response.status}`);
         }
 
-        const data: ListResponse<AuditEvent> = await response.json();
+        const rawData = await response.json();
+        // Handle B13 response envelope
+        const data = rawData.data || rawData;
         let filteredEvents = data.results || [];
 
         // Apply outcome filter client-side
@@ -409,201 +411,169 @@ export const AuditLogPage: React.FC = () => {
         {/* Audit events table */}
         {!loading && events.length > 0 && (
           <>
-            <div style={{ overflowX: 'auto', minWidth: 0 }}>
-            <Table
-              style={{ minWidth: '1000px' }}
-              columns={[
-                {
-                  key: 'timestamp',
-                  label: 'Time',
-                },
-                {
-                  key: 'event_type',
-                  label: 'Event',
-                },
-                {
-                  key: 'user',
-                  label: 'User',
-                },
-                {
-                  key: 'outcome',
-                  label: 'Outcome',
-                },
-                {
-                  key: 'target',
-                  label: 'Target',
-                },
-                {
-                  key: 'actions',
-                  label: '',
-                },
-              ]}
-              rows={events.map((event) => {
-                // Extract outcome from various possible sources
-                const outcome =
-                  (event as any).outcome ||
-                  (event as any).result ||
-                  event.metadata?.decision ||
-                  null;
+            <Card>
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Event Type</th>
+                    <th>User</th>
+                    <th>Outcome</th>
+                    <th>Target</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {events.map((event) => {
+                    // Extract outcome from various possible sources
+                    const outcome =
+                      (event as any).outcome ||
+                      (event as any).result ||
+                      event.metadata?.decision ||
+                      null;
 
-                // Special handling for permission.checked events
-                const permissionGranted = event.event_type === 'permission.checked'
-                  ? event.metadata?.granted
-                  : null;
+                    // Special handling for permission.checked events
+                    const permissionGranted = event.event_type === 'permission.checked'
+                      ? event.metadata?.granted
+                      : null;
 
-                const getOutcomeBadge = () => {
-                  // Handle permission.checked specifically
-                  if (permissionGranted !== null && permissionGranted !== undefined) {
+                    const getOutcomeBadge = () => {
+                      // Handle permission.checked specifically
+                      if (permissionGranted !== null && permissionGranted !== undefined) {
+                        return (
+                          <Badge
+                            variant={permissionGranted ? 'success' : 'error'}
+                            data-testid={`audit-outcome-${event.id}`}
+                          >
+                            {permissionGranted ? 'allowed' : 'denied'}
+                          </Badge>
+                        );
+                      }
+
+                      // Infer success from event type for certain events
+                      const successEventTypes = ['auth.login', 'auth.logout', 'resource.created', 'role.assigned', 'config.updated'];
+                      const failureEventTypes = ['auth.login_failed'];
+
+                      if (successEventTypes.includes(event.event_type)) {
+                        return (
+                          <Badge variant="success" data-testid={`audit-outcome-${event.id}`}>
+                            success
+                          </Badge>
+                        );
+                      }
+
+                      if (failureEventTypes.includes(event.event_type)) {
+                        return (
+                          <Badge variant="error" data-testid={`audit-outcome-${event.id}`}>
+                            failed
+                          </Badge>
+                        );
+                      }
+
+                      // Handle other outcome fields
+                      if (!outcome) {
+                        return <span className="text-sm text-gray-500">–</span>;
+                      }
+
+                      const outcomeStr = String(outcome).toLowerCase();
+                      let variant: 'success' | 'error' | 'secondary' = 'secondary';
+
+                      if (outcomeStr === 'success' || outcomeStr === 'allowed') {
+                        variant = 'success';
+                      } else if (outcomeStr === 'failed' || outcomeStr === 'denied') {
+                        variant = 'error';
+                      }
+
+                      return (
+                        <Badge variant={variant} data-testid={`audit-outcome-${event.id}`}>
+                          {outcome}
+                        </Badge>
+                      );
+                    };
+
+                    // Get target display
+                    const getTargetDisplay = () => {
+                      // Prefer resource_display if available
+                      if ((event as any).resource_display) {
+                        return (event as any).resource_display;
+                      }
+
+                      // Show resource_type with ID if available
+                      if (event.metadata?.resource_type) {
+                        return event.metadata.resource_id
+                          ? `${event.metadata.resource_type} #${event.metadata.resource_id}`
+                          : event.metadata.resource_type;
+                      }
+
+                      return '–';
+                    };
+
                     return (
-                      <Badge
-                        variant={permissionGranted ? 'success' : 'error'}
-                        data-testid={`audit-outcome-${event.id}`}
-                      >
-                        {permissionGranted ? 'allowed' : 'denied'}
-                      </Badge>
+                      <tr key={event.id}>
+                        <td style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                          {new Date(event.timestamp).toLocaleString()}
+                        </td>
+                        <td>
+                          <Badge
+                            variant={eventTypeColorMap[event.event_type] || 'secondary'}
+                            data-testid={`audit-type-${event.id}`}
+                          >
+                            {event.event_type.replace(/_/g, ' ')}
+                          </Badge>
+                        </td>
+                        <td style={{ fontSize: '0.85rem' }}>
+                          {event.user?.name || 'System'}
+                        </td>
+                        <td>{getOutcomeBadge()}</td>
+                        <td style={{ fontSize: '0.85rem' }}>
+                          {getTargetDisplay()}
+                        </td>
+                        <td>
+                          <button
+                            onClick={() => setSelectedEvent(event)}
+                            style={{
+                              padding: '4px 8px',
+                              fontSize: '12px',
+                              color: '#007bff',
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              textDecoration: 'underline',
+                            }}
+                            data-testid={`audit-details-${event.id}`}
+                          >
+                            Details
+                          </button>
+                        </td>
+                      </tr>
                     );
-                  }
-
-                  // Infer success from event type for certain events
-                  const successEventTypes = ['auth.login', 'auth.logout', 'resource.created', 'role.assigned', 'config.updated'];
-                  const failureEventTypes = ['auth.login_failed'];
-
-                  if (successEventTypes.includes(event.event_type)) {
-                    return (
-                      <Badge variant="success" data-testid={`audit-outcome-${event.id}`}>
-                        success
-                      </Badge>
-                    );
-                  }
-
-                  if (failureEventTypes.includes(event.event_type)) {
-                    return (
-                      <Badge variant="error" data-testid={`audit-outcome-${event.id}`}>
-                        failed
-                      </Badge>
-                    );
-                  }
-
-                  // Handle other outcome fields
-                  if (!outcome) {
-                    return <span className="text-sm text-gray-500">–</span>;
-                  }
-
-                  const outcomeStr = String(outcome).toLowerCase();
-                  let variant: 'success' | 'error' | 'secondary' = 'secondary';
-
-                  if (outcomeStr === 'success' || outcomeStr === 'allowed') {
-                    variant = 'success';
-                  } else if (outcomeStr === 'failed' || outcomeStr === 'denied') {
-                    variant = 'error';
-                  }
-
-                  return (
-                    <Badge variant={variant} data-testid={`audit-outcome-${event.id}`}>
-                      {outcome}
-                    </Badge>
-                  );
-                };
-
-                return {
-                  id: event.id,
-                  timestamp: (
-                    <span
-                      className="text-sm text-gray-600"
-                      data-testid={`audit-timestamp-${event.id}`}
-                    >
-                      {new Date(event.timestamp).toLocaleString()}
-                    </span>
-                  ),
-                  event_type: (
-                    <Badge
-                      variant={eventTypeColorMap[event.event_type] || 'secondary'}
-                      data-testid={`audit-type-${event.id}`}
-                    >
-                      {event.event_type.replace(/_/g, ' ')}
-                    </Badge>
-                  ),
-                  user: (
-                    <span data-testid={`audit-user-${event.id}`}>
-                      {event.user?.name || 'System'}
-                    </span>
-                  ),
-                  outcome: getOutcomeBadge(),
-                  target: (
-                    <span className="text-sm" data-testid={`audit-target-${event.id}`}>
-                      {(() => {
-                        // Prefer resource_display if available
-                        if ((event as any).resource_display) {
-                          return (event as any).resource_display;
-                        }
-
-                        // Show resource_type with ID if available
-                        if (event.metadata?.resource_type) {
-                          return event.metadata.resource_id
-                            ? `${event.metadata.resource_type} #${event.metadata.resource_id}`
-                            : event.metadata.resource_type;
-                        }
-
-                        return '–';
-                      })()}
-                    </span>
-                  ),
-                  actions: (
-                    <button
-                      onClick={() => setSelectedEvent(event)}
-                      style={{
-                        padding: '4px 8px',
-                        fontSize: '12px',
-                        color: '#007bff',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        textDecoration: 'underline',
-                      }}
-                      data-testid={`audit-details-${event.id}`}
-                    >
-                      Details
-                    </button>
-                  ),
-                };
-              })}
-              loading={loading}
-              data-testid="audit-table"
-            />
-            </div>
+                  })}
+                </tbody>
+              </Table>
+            </Card>
 
             {/* Pagination */}
-            <Card style={{ marginTop: '16px', padding: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>
-                  Showing {(currentPage - 1) * limit + 1} to{' '}
-                  {Math.min(currentPage * limit, total)} of {total} events
-                </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={currentPage <= 1}
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    data-testid="audit-prev-page"
-                  >
-                    Previous
-                  </Button>
-                  <span style={{ fontSize: '14px', padding: '0 12px' }}>
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={currentPage >= totalPages}
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    data-testid="audit-next-page"
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            </Card>
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
+              <Button
+                variant="secondary"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+                data-testid="audit-prev-page"
+              >
+                Previous
+              </Button>
+              <span style={{ fontSize: '0.875rem', color: 'var(--app-muted-text)' }}>
+                Page {currentPage} of {totalPages} ({total} total events)
+              </span>
+              <Button
+                variant="secondary"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                data-testid="audit-next-page"
+              >
+                Next
+              </Button>
+            </div>
           </>
         )}
 

@@ -5,6 +5,7 @@ import {
   Badge,
   Table,
   Alert,
+  Card,
 } from '@django-core/design-system';
 import { PageHeader, PageContent, BreadcrumbContextSwitcher, useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -163,11 +164,12 @@ export const ProjectsPage: React.FC = () => {
       // Debug: log full response
       console.log('[ProjectsPage] Full API response:', JSON.stringify(data, null, 2));
       console.log('[ProjectsPage] Response keys:', Object.keys(data));
-      console.log('[ProjectsPage] Has results?', 'results' in data);
-      console.log('[ProjectsPage] Results value:', data.results);
 
-      // Extract results from paginated response
-      const results = data.results || [];
+      // Handle B13 envelope or direct DRF response
+      const results = data.data?.results || data.results || [];
+
+      console.log('[ProjectsPage] Has results?', results.length > 0);
+      console.log('[ProjectsPage] Results value:', results);
 
       // Enforce array invariant
       if (!Array.isArray(results)) {
@@ -550,133 +552,144 @@ export const ProjectsPage: React.FC = () => {
           }
 
           return (
-          <div style={{ overflowX: 'auto' }}>
-          <Table
-            style={{ minWidth: '1000px' }}
-            columns={columns}
-            rows={filteredProjects.map((project) => {
-              const projectOrgSlug = (project as any).organisation?.slug || resolvedOrg?.slug || currentOrgId;
+          <Card>
+          <Table>
+            <thead>
+              <tr>
+                <th onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>
+                  Project Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
+                </th>
+                {!currentOrgSlug && <th>Organisation</th>}
+                <th>Description</th>
+                <th onClick={() => handleSort('member_count')} style={{ cursor: 'pointer' }}>
+                  Team Members {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={() => handleSort('created_at')} style={{ cursor: 'pointer' }}>
+                  Created {sort === 'created_at' && (order === 'asc' ? '↑' : '↓')}
+                </th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProjects.map((project) => {
+                const projectOrgSlug = (project as any).organisation?.slug || resolvedOrg?.slug || currentOrgId;
 
-              return {
-                id: project.id,
-                name: (
-                  <a
-                    href={`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`}
-                    className="text-blue-600 hover:underline"
-                    data-testid={`project-name-${project.id}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate(`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`);
-                    }}
-                  >
-                    {project.name}
-                  </a>
-                ),
-                organisation: !currentOrgSlug ? (
-                  <span className="text-sm text-gray-600">
-                    {(project as any).organisation?.name || '-'}
-                  </span>
-                ) : undefined,
-                description: (
-                  <span className="text-sm text-gray-600" data-testid={`project-desc-${project.id}`}>
-                    {project.description || '-'}
-                  </span>
-                ),
-                member_count: (
-                  <Badge variant="secondary" data-testid={`project-members-${project.id}`}>
-                    {project.member_count || 0}
-                  </Badge>
-                ),
-                created_at: (
-                  <span data-testid={`project-created-${project.id}`}>
-                    {new Date(project.created_at || '').toLocaleDateString()}
-                  </span>
-                ),
-                status: (
-                  <Badge
-                    variant={project.is_active ? 'success' : 'warning'}
-                    data-testid={`project-status-${project.id}`}
-                  >
-                    {project.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
-                ),
-                actions: (() => {
-                  // For global view: check permissions per-project based on project's org
-                  const projectOrg = (project as any).organisation;
-                  const projectPermissionContext = {
-                    currentOrganisation: projectOrg ? {
-                      ...projectOrg,
-                      user_role: projectOrg.user_role
-                    } : resolvedOrg,
-                    isSuperAdmin,
-                  };
-                  const canEdit = canEditProject(projectPermissionContext);
-                  const canDelete = canDeleteProject(projectPermissionContext);
+                // For global view: check permissions per-project based on project's org
+                const projectOrg = (project as any).organisation;
+                const projectPermissionContext = {
+                  currentOrganisation: projectOrg ? {
+                    ...projectOrg,
+                    user_role: projectOrg.user_role
+                  } : resolvedOrg,
+                  isSuperAdmin,
+                };
+                const canEdit = canEditProject(projectPermissionContext);
+                const canDelete = canDeleteProject(projectPermissionContext);
 
-                  return (
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onClick={() => {
-                          setDetailProject(project);
-                          setIsDetailModalOpen(true);
-                        }}
-                        style={{
-                            padding: '6px 12px',
-                            borderRadius: '4px',
-                            border: '1px solid var(--app-border)',
-                            backgroundColor: 'var(--app-surface-2)',
-                            color: 'var(--app-text)',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            fontWeight: 500
+                return (
+                  <tr key={project.id}>
+                    <td>
+                      <a
+                        href={`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`}
+                        className="text-blue-600 hover:underline"
+                        style={{ fontSize: '0.85rem' }}
+                        data-testid={`project-name-${project.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate(`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`);
                         }}
                       >
-                        View
-                      </button>
-                      {canEdit && (
+                        {project.name}
+                      </a>
+                    </td>
+                    {!currentOrgSlug && (
+                      <td style={{ fontSize: '0.85rem' }}>
+                        {(project as any).organisation?.name || '-'}
+                      </td>
+                    )}
+                    <td style={{ fontSize: '0.85rem' }} data-testid={`project-desc-${project.id}`}>
+                      {project.description || '-'}
+                    </td>
+                    <td>
+                      <Badge variant="secondary" data-testid={`project-members-${project.id}`}>
+                        {project.member_count || 0}
+                      </Badge>
+                    </td>
+                    <td style={{ fontSize: '0.85rem' }} data-testid={`project-created-${project.id}`}>
+                      {new Date(project.created_at || '').toLocaleDateString()}
+                    </td>
+                    <td>
+                      <Badge
+                        variant={project.is_active ? 'success' : 'warning'}
+                        data-testid={`project-status-${project.id}`}
+                      >
+                        {project.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                           onClick={() => {
-                            setSelectedProject(project);
-                            setIsEditModalOpen(true);
+                            setDetailProject(project);
+                            setIsDetailModalOpen(true);
                           }}
                           style={{
-                              padding: '4px 8px',
+                              padding: '6px 12px',
                               borderRadius: '4px',
-                              border: '1px solid #007bff',
-                              backgroundColor: 'var(--app-surface)',
-                              color: '#007bff',
+                              border: '1px solid var(--app-border)',
+                              backgroundColor: 'var(--app-surface-2)',
+                              color: 'var(--app-text)',
                               cursor: 'pointer',
-                              fontSize: '12px'
+                              fontSize: '12px',
+                              fontWeight: 500
                           }}
                         >
-                          Edit
+                          View
                         </button>
-                      )}
-                      {canDelete && (
-                        <button
-                          onClick={() => handleDelete(project.id)}
-                          style={{
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              border: '1px solid #dc3545',
-                              backgroundColor: 'var(--app-surface)',
-                              color: '#dc3545',
-                              cursor: 'pointer',
-                              fontSize: '12px'
-                          }}
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  );
-                })(),
-              };
-            })}
-            loading={loading}
-            data-testid="project-table"
-          />
-          </div>
+                        {canEdit && (
+                          <button
+                            onClick={() => {
+                              setSelectedProject(project);
+                              setIsEditModalOpen(true);
+                            }}
+                            style={{
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                border: '1px solid #007bff',
+                                backgroundColor: 'var(--app-surface)',
+                                color: '#007bff',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                            }}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(project.id)}
+                            style={{
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                border: '1px solid #dc3545',
+                                backgroundColor: 'var(--app-surface)',
+                                color: '#dc3545',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                            }}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+          </Card>
           );
         })()}
 

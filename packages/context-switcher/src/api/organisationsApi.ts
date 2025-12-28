@@ -44,8 +44,9 @@ export async function fetchOrganisations(
   }
 
   if (isApiSuccess(response)) {
-    // Handle both DRF paginated format and direct array
-    return response.data.results || response.data.organisations || [];
+    // Handle B13 envelope, DRF paginated format and direct array
+    const data = response.data as any;
+    return data.data?.results || data.results || data.organisations || [];
   }
 
   return [];

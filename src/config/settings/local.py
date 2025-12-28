@@ -35,9 +35,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Disable throttling in local development (Redis not required)
-REST_FRAMEWORK = {
-    "DEFAULT_THROTTLE_CLASSES": [],  # Disable throttling locally
-}
+REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []  # Disable throttling locally
 
 # WP08: Security enforcement mode for Constitutional Engine integration
 SECURITY_ENFORCEMENT_MODE = "advisory"
@@ -52,3 +50,18 @@ EMAIL_FROM = "noreply@localhost"
 WEBHOOK_SECRET_KEY = os.environ.get(
     "WEBHOOK_SECRET_KEY", "test-webhook-secret-key-for-development-only"
 )
+
+# Use dummy cache and in-memory channel layer for local development if Redis is not available
+# This prevents timeouts when Redis is not running
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}

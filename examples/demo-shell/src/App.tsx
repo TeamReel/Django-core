@@ -38,7 +38,6 @@ import {
   CreditsPage,
   PreferencesPage,
 } from './pages/config';
-import NotificationPreferencesPage from './pages/config/NotificationPreferencesPage';
 import UsageEventsPage from './pages/config/UsageEventsPage';
 
 // Platform pages
@@ -142,6 +141,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <UsersPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/organisations/:orgId/users/:userId"
+        element={
+          <ProtectedRoute>
+            <UserDetailPage />
           </ProtectedRoute>
         }
       />
@@ -258,9 +266,9 @@ export default function App() {
       <Route
         path="/credits"
         element={
-          <OrgAdminRoute>
+          <ProtectedRoute>
             <CreditsPage />
-          </OrgAdminRoute>
+          </ProtectedRoute>
         }
       />
 
@@ -269,15 +277,6 @@ export default function App() {
         element={
           <ProtectedRoute>
             <PreferencesPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/notification-preferences"
-        element={
-          <ProtectedRoute>
-            <NotificationPreferencesPage />
           </ProtectedRoute>
         }
       />
@@ -294,9 +293,9 @@ export default function App() {
       <Route
         path="/routing-logs"
         element={
-          <AdminOnlyRoute>
+          <SecurityRoute>
             <NotificationRoutingLogsPage />
-          </AdminOnlyRoute>
+          </SecurityRoute>
         }
       />
 

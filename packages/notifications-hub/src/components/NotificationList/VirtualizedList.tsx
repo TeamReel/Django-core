@@ -1,7 +1,10 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import { FixedSizeList, ListChildComponentProps } from 'react-window';
+import { FixedSizeList as FixedSizeListType, ListChildComponentProps } from 'react-window';
+import * as ReactWindow from 'react-window';
 import { Notification } from '../../types/notification';
 import { NotificationItem } from './NotificationItem';
+
+const FixedSizeList = ReactWindow.FixedSizeList;
 
 /**
  * VirtualizedList Component
@@ -64,7 +67,7 @@ export const VirtualizedList: React.FC<VirtualizedListProps> = ({
 }) => {
   // T073: Ref to track the sentinel element for IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const listRef = useRef<FixedSizeList | null>(null);
+  const listRef = useRef<FixedSizeListType | null>(null);
 
   // T073: IntersectionObserver callback for scroll-to-bottom detection
   const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {

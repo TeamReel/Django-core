@@ -68,11 +68,11 @@ const getAllModules = (): ModuleInfo[] => {
 
     // Fase 8: Demo Foundation (031-033)
     { id: '031', code: 'F10', number: 31, name: 'Demo Shell & Integration Dashboard', description: 'Demo app & status monitoring', phase: 8, category: 'Frontend', status: 'complete', features: ['Integration dashboard', 'Module testing', 'Visual validation'], testUrl: '/integration-status' },
-    { id: '032', code: 'F10b-DB', number: 32, name: 'Demo Database & Data Seeding', description: 'Demo data infrastructure', phase: 8, category: 'Backend', status: 'in-progress', features: ['Data fixtures', 'Seeding scripts', 'Realistic data'] },
-    { id: '033', code: 'F10b-Pages', number: 33, name: 'Demo Pages & User Journeys', description: 'Production-ready demos', phase: 8, category: 'Frontend', status: 'planned', features: ['User journeys', 'Interactive demos', 'Feature showcase'] },
+    { id: '032', code: 'F10b-DB', number: 32, name: 'Demo Database & Data Seeding', description: 'Demo data infrastructure', phase: 8, category: 'Backend', status: 'complete', features: ['Data fixtures', 'Seeding scripts', 'Realistic data'] },
+    { id: '033', code: 'F10b-Pages', number: 33, name: 'Demo Pages & User Journeys', description: 'Production-ready demos', phase: 8, category: 'Frontend', status: 'complete', features: ['User journeys', 'Interactive demos', 'Feature showcase'] },
 
     // Fase 9: Backend Infrastructure (034-037)
-    { id: '034', code: 'B22', number: 34, name: 'File & Media Management', description: 'File storage & processing', phase: 9, category: 'Backend', status: 'planned', features: ['S3 integration', 'Upload handling', 'Media processing'] },
+    { id: '034', code: 'B22', number: 34, name: 'File & Media Management', description: 'File storage & processing', phase: 9, category: 'Backend', status: 'complete', features: ['S3 integration', 'Upload handling', 'Media processing'] },
     { id: '035', code: 'B23', number: 35, name: 'Real-Time & WebSocket Foundation', description: 'WebSocket support', phase: 9, category: 'Backend', status: 'complete', features: ['WebSocket routing', 'Channel layers', 'Real-time events', 'Rate limiting', 'Demo integration'], testUrl: '/ui/demo/websockets/' },
     { id: '036', code: 'B24', number: 36, name: 'Search & Full-Text Foundation', description: 'Search infrastructure', phase: 9, category: 'Backend', status: 'planned', features: ['Elasticsearch', 'Full-text search', 'Faceted queries'] },
     { id: '037', code: 'B25', number: 37, name: 'Cache Strategy & Redis Integration', description: 'Caching layer', phase: 9, category: 'Backend', status: 'planned', features: ['Cache patterns', 'Invalidation', 'Performance'] },
@@ -142,6 +142,13 @@ export default function IntegrationStatusPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'all' | 'built' | 'roadmap'>('all'); // NEW: Built vs Roadmap toggle
+
+  // Module detail modal
+  const [selectedModule, setSelectedModule] = useState<ModuleInfo | null>(null);
+
+  // Phase grouping
+  const [expandedPhases, setExpandedPhases] = useState<Set<number>>(new Set([1, 2, 3, 4, 5, 6, 7, 8])); // Expand completed phases by default
 
   // Utility functions for status display
   const getStatusColor = (status: ModuleInfo['status']) => {
@@ -451,8 +458,15 @@ export default function IntegrationStatusPage() {
   };
 
   const renderModules = () => {
-    // Apply filters
+    // Apply filters to module list
     let filteredModules = allModules;
+
+    // View Mode filter (Built vs Roadmap - separate complete modules from roadmap)
+    if (viewMode === 'built') {
+      filteredModules = filteredModules.filter(m => m.status === 'complete');
+    } else if (viewMode === 'roadmap') {
+      filteredModules = filteredModules.filter(m => m.status === 'in-progress' || m.status === 'planned');
+    }
 
     if (phaseFilter !== 'all') {
       filteredModules = filteredModules.filter(m => m.phase === phaseFilter);
@@ -495,7 +509,99 @@ export default function IntegrationStatusPage() {
 
     return (
       <div>
-        <h2 style={{ marginBottom: '24px' }}>All Modules (71 total)</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h2 style={{ margin: 0 }}>All Modules (71 total)</h2>
+
+          {/* View Mode Toggle */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <span style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginRight: '8px' }}>View:</span>
+            <button
+              onClick={() => setViewMode('all')}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: viewMode === 'all' ? '#007bff' : 'var(--app-surface)',
+                color: viewMode === 'all' ? 'white' : 'var(--app-text)',
+                border: `1px solid ${viewMode === 'all' ? '#007bff' : 'var(--app-border)'}`,
+                borderRadius: '4px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              All Modules
+            </button>
+            <button
+              onClick={() => setViewMode('built')}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: viewMode === 'built' ? '#28a745' : 'var(--app-surface)',
+                color: viewMode === 'built' ? 'white' : 'var(--app-text)',
+                border: `1px solid ${viewMode === 'built' ? '#28a745' : 'var(--app-border)'}`,
+                borderRadius: '4px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              ✅ In Platform ({allModules.filter(m => m.status === 'complete').length})
+            </button>
+            <button
+              onClick={() => setViewMode('roadmap')}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: viewMode === 'roadmap' ? '#6c757d' : 'var(--app-surface)',
+                color: viewMode === 'roadmap' ? 'white' : 'var(--app-text)',
+                border: `1px solid ${viewMode === 'roadmap' ? '#6c757d' : 'var(--app-border)'}`,
+                borderRadius: '4px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              📋 Roadmap ({allModules.filter(m => m.status === 'in-progress' || m.status === 'planned').length})
+            </button>
+          </div>
+        </div>
+
+        {/* View Mode Info Banner */}
+        {viewMode === 'built' && (
+          <div style={{
+            padding: '16px 20px',
+            backgroundColor: '#d4edda',
+            border: '2px solid #28a745',
+            borderRadius: '8px',
+            marginBottom: '24px'
+          }}>
+            <div style={{ fontSize: '15px', fontWeight: 600, color: '#155724', marginBottom: '4px' }}>
+              ✅ Built & Operational Modules
+            </div>
+            <div style={{ fontSize: '13px', color: '#155724' }}>
+              These modules are complete, tested, and available in the current platform (Fase 1-7 + B23).
+              Click any module to test it in the demo.
+            </div>
+          </div>
+        )}
+
+        {viewMode === 'roadmap' && (
+          <div style={{
+            padding: '16px 20px',
+            backgroundColor: '#f8f9fa',
+            border: '2px solid #6c757d',
+            borderRadius: '8px',
+            marginBottom: '24px'
+          }}>
+            <div style={{ fontSize: '15px', fontWeight: 600, color: '#495057', marginBottom: '4px' }}>
+              📋 Future Roadmap Modules
+            </div>
+            <div style={{ fontSize: '13px', color: '#495057' }}>
+              These modules are planned for future implementation (Fase 8-18). They extend the platform with
+              advanced features, data capabilities, and ML/AI integrations.
+            </div>
+          </div>
+        )}
 
         {/* Filters */}
         <div style={{
@@ -602,9 +708,10 @@ export default function IntegrationStatusPage() {
           {/* Filter Summary */}
           <div style={{ fontSize: '13px', color: 'var(--app-muted-text)' }}>
             Showing <strong>{filteredModules.length}</strong> of <strong>71</strong> modules
-            {(phaseFilter !== 'all' || categoryFilter !== 'all' || statusFilter !== 'all' || searchQuery.trim()) && (
+            {(viewMode !== 'all' || phaseFilter !== 'all' || categoryFilter !== 'all' || statusFilter !== 'all' || searchQuery.trim()) && (
               <button
                 onClick={() => {
+                  setViewMode('all');
                   setPhaseFilter('all');
                   setCategoryFilter('all');
                   setStatusFilter('all');
@@ -621,7 +728,7 @@ export default function IntegrationStatusPage() {
                   cursor: 'pointer'
                 }}
               >
-                Clear Filters
+                Clear All Filters
               </button>
             )}
           </div>
@@ -636,20 +743,23 @@ export default function IntegrationStatusPage() {
           {filteredModules.map(module => (
             <div
               key={module.id}
+              onClick={() => setSelectedModule(module)}
               style={{
                 border: '1px solid var(--app-border)',
                 borderRadius: '8px',
                 padding: '16px',
                 backgroundColor: 'var(--app-bg)',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                transition: 'box-shadow 0.2s',
+                transition: 'box-shadow 0.2s, transform 0.2s',
                 cursor: 'pointer'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
               {/* Header */}
@@ -762,118 +872,217 @@ export default function IntegrationStatusPage() {
 
   const renderRoadmap = () => {
     const roadmapPhases = [
-      { name: 'Fase 9: Backend Infrastructure', modules: ['B22', 'B23', 'B24', 'B25'], range: '034-037', status: '📋' },
-      { name: 'Fase 10: Frontend & Visual Dev', modules: ['F08', 'F09', 'F13'], range: '038-040', status: '📋' },
-      { name: 'Fase 11: Workflows & Payments', modules: ['B26', 'B27', 'B28'], range: '041-043', status: '📋' },
-      { name: 'Fase 12: Advanced UI', modules: ['F14', 'F11', 'F12', 'F15'], range: '044-047', status: '📋' },
-      { name: 'Fase 13: Data Foundations Part 1', modules: ['D01', 'D02', 'D03', 'D04', 'D05'], range: '048-052', status: '📋' },
-      { name: 'Fase 14: Data Foundations Part 2', modules: ['D06', 'D07', 'D08', 'D09', 'D10'], range: '053-057', status: '📋' },
-      { name: 'Fase 15: ML/AI Platform', modules: ['D11', 'D12', 'D13', 'D14', 'D15', 'D16'], range: '058-063', status: '📋' },
-      { name: 'Fase 16: Quality Gates (Lightweight)', modules: ['P01', 'P02', 'P03', 'P04', 'P05'], range: '064-068', status: '📋' },
-      { name: 'Fase 17: Integration Ecosystem (Lightweight)', modules: ['I01', 'I02'], range: '069-070', status: '📋' },
-      { name: 'Fase 18: Operations & Resilience (Lightweight)', modules: ['O01'], range: '071', status: '📋' },
+      {
+        phase: 9,
+        name: 'Backend Infrastructure',
+        modules: 4,
+        codes: ['B22', 'B23', 'B24', 'B25'],
+        summary: 'File management, WebSockets, search, and caching infrastructure',
+        focus: 'Scalability & Performance'
+      },
+      {
+        phase: 10,
+        name: 'Frontend & Visual Dev',
+        modules: 3,
+        codes: ['F08', 'F09', 'F13'],
+        summary: 'Data visualization, rich text editing, and developer tooling',
+        focus: 'Advanced UI Components'
+      },
+      {
+        phase: 11,
+        name: 'Workflows & Payments',
+        modules: 3,
+        codes: ['B26', 'B27', 'B28'],
+        summary: 'Payment gateways, workflow engine, and reporting infrastructure',
+        focus: 'Business Operations'
+      },
+      {
+        phase: 12,
+        name: 'Advanced UI',
+        modules: 4,
+        codes: ['F14', 'F11', 'F12', 'F15'],
+        summary: 'Admin panels, operations console, billing UI, and form builders',
+        focus: 'Admin & Operations UX'
+      },
+      {
+        phase: 13,
+        name: 'Data Foundations Part 1',
+        modules: 5,
+        codes: ['D01', 'D02', 'D03', 'D04', 'D05'],
+        summary: 'Storage adapters, ETL pipelines, dataset management, streaming, and versioning',
+        focus: 'Data Infrastructure'
+      },
+      {
+        phase: 14,
+        name: 'Data Foundations Part 2',
+        modules: 5,
+        codes: ['D06', 'D07', 'D08', 'D09', 'D10'],
+        summary: 'Schema validation, tool logging, prompt tracking, evaluation, and annotation tools',
+        focus: 'ML/AI Foundations'
+      },
+      {
+        phase: 15,
+        name: 'ML/AI Platform',
+        modules: 6,
+        codes: ['D11', 'D12', 'D13', 'D14', 'D15', 'D16'],
+        summary: 'Feature engineering, model registry, prompt templates, agent ops, vector search, and monitoring',
+        focus: 'AI Capabilities'
+      },
+      {
+        phase: 16,
+        name: 'Quality Gates',
+        modules: 5,
+        codes: ['P01', 'P02', 'P03', 'P04', 'P05'],
+        summary: 'Constitutional enforcement, security audits, ML governance, integration security, and dependency validation',
+        focus: 'Quality Assurance'
+      },
+      {
+        phase: 17,
+        name: 'Integration Ecosystem',
+        modules: 2,
+        codes: ['I01', 'I02'],
+        summary: 'Connector framework with SDK and compliance export capabilities',
+        focus: 'Extensibility'
+      },
+      {
+        phase: 18,
+        name: 'Operations & Resilience',
+        modules: 1,
+        codes: ['O01'],
+        summary: 'Resilience testing, chaos engineering, and comprehensive health validation',
+        focus: 'Platform Stability'
+      },
     ];
+
+    const totalRoadmapModules = roadmapPhases.reduce((sum, p) => sum + p.modules, 0);
 
     return (
       <div>
+        {/* Roadmap Header */}
         <div style={{
-          padding: '20px',
+          padding: '24px',
           backgroundColor: 'var(--app-surface)',
-          borderRadius: '8px',
-          borderLeft: '4px solid #007bff',
+          borderRadius: '12px',
+          border: '2px solid #6c757d',
           marginBottom: '32px'
         }}>
-          <h3 style={{ marginTop: 0, fontSize: '16px' }}>🗺️ Platform Roadmap: Fase 9-18</h3>
-          <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
-            These 41 modules (034-071) are planned for future implementation. They extend the platform
-            with infrastructure, advanced UI, data foundations, ML/AI capabilities, quality gates, and operations.
-          </p>
+          <h2 style={{ marginTop: 0, marginBottom: '16px', color: '#6c757d' }}>
+            🗺️ Platform Roadmap: Fase 9-18
+          </h2>
           <div style={{
-            marginTop: '16px',
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '12px'
+            gap: '16px',
+            marginBottom: '20px'
           }}>
-            <div>
-              <strong>Backend Extensions:</strong> B22-B28 (7 modules)
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#6c757d' }}>{totalRoadmapModules}</div>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Modules Planned</div>
             </div>
-            <div>
-              <strong>Frontend Extensions:</strong> F08-F15 (8 modules)
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#6c757d' }}>10</div>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Phases Remaining</div>
             </div>
-            <div>
-              <strong>Data & ML Platform:</strong> D01-D16 (16 modules)
-            </div>
-            <div>
-              <strong>Quality Gates:</strong> P01-P05 (5 modules)
-            </div>
-            <div>
-              <strong>Integration:</strong> I01-I02 (2 modules)
-            </div>
-            <div>
-              <strong>Operations:</strong> O01 (1 module)
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#fd7e14' }}>1</div>
+              <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>In Progress (F10b)</div>
             </div>
           </div>
+          <p style={{ margin: 0, fontSize: '14px', color: 'var(--app-text)', lineHeight: '1.6' }}>
+            These phases extend the platform with infrastructure, advanced UI, data capabilities, ML/AI integrations,
+            quality gates, and operations. Each phase delivers focused functionality that builds on previous work.
+          </p>
         </div>
 
+        {/* Phase Cards */}
         {roadmapPhases.map(phase => {
-          return (
-            <div key={phase.name} style={{ marginBottom: '32px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                marginBottom: '16px',
-                paddingBottom: '8px',
-                borderBottom: '2px solid var(--app-border)'
-              }}>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
-                  {phase.status} {phase.name}
-                </h2>
-                <span style={{
-                  padding: '4px 12px',
-                  backgroundColor: 'var(--app-surface)',
-                  color: 'var(--app-muted-text)',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  fontWeight: 600
-                }}>
-                  {phase.modules.join(', ')} • {phase.range}
-                </span>
-              </div>
+          const moduleDetails = phase.codes.map(code => {
+            const module = allModules.find(m => m.code === code);
+            return module ? `${code}: ${module.name}` : code;
+          });
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                gap: '12px'
-              }}>
-                {phase.modules.map(moduleCode => (
-                  <div
-                    key={moduleCode}
-                    style={{
-                      border: '1px solid var(--app-border)',
-                      borderRadius: '8px',
-                      padding: '12px 16px',
-                      backgroundColor: 'var(--app-surface)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <span style={{ fontSize: '20px' }}>📋</span>
-                    <span style={{ fontWeight: 600, fontSize: '14px' }}>
-                      {moduleCode}
-                    </span>
-                    <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
-                      {moduleCode.startsWith('B') ? 'Backend' :
-                       moduleCode.startsWith('F') ? 'Frontend' :
-                       moduleCode.startsWith('D') ? 'Data/ML' :
-                       moduleCode.startsWith('P') ? 'Quality' :
-                       moduleCode.startsWith('I') ? 'Integration' :
-                       moduleCode.startsWith('O') ? 'Operations' : 'Platform'}
+          return (
+            <div
+              key={phase.phase}
+              style={{
+                padding: '24px',
+                backgroundColor: 'var(--app-surface)',
+                border: '2px solid var(--app-border)',
+                borderRadius: '12px',
+                marginBottom: '20px'
+              }}
+            >
+              {/* Phase Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                    <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 600 }}>
+                      Fase {phase.phase}: {phase.name}
+                    </h3>
+                    <span style={{
+                      padding: '4px 12px',
+                      backgroundColor: '#f8f9fa',
+                      border: '1px solid #6c757d',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: '#6c757d'
+                    }}>
+                      {phase.modules} modules • {phase.codes[0]}-{phase.codes[phase.codes.length - 1]}
                     </span>
                   </div>
-                ))}
+                  <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--app-muted-text)', lineHeight: '1.5' }}>
+                    {phase.summary}
+                  </p>
+                  <div style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#e7f3ff',
+                    border: '1px solid #2196f3',
+                    borderRadius: '6px',
+                    display: 'inline-block'
+                  }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#2196f3' }}>
+                      Focus: {phase.focus}
+                    </span>
+                  </div>
+                </div>
+                <span style={{ fontSize: '32px', marginLeft: '16px' }}>📋</span>
               </div>
+
+              {/* Module List (Compact) */}
+              <details style={{ marginTop: '16px' }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#007bff',
+                  padding: '8px 0',
+                  userSelect: 'none'
+                }}>
+                  View {phase.modules} modules in this phase →
+                </summary>
+                <div style={{
+                  marginTop: '12px',
+                  padding: '16px',
+                  backgroundColor: 'var(--app-bg)',
+                  borderRadius: '8px',
+                  border: '1px solid var(--app-border)'
+                }}>
+                  {moduleDetails.map((detail, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '8px 0',
+                        borderBottom: idx < moduleDetails.length - 1 ? '1px solid var(--app-border)' : 'none',
+                        fontSize: '13px',
+                        color: 'var(--app-text)'
+                      }}
+                    >
+                      <strong>{phase.codes[idx]}</strong> — {detail.split(': ')[1] || detail}
+                    </div>
+                  ))}
+                </div>
+              </details>
             </div>
           );
         })}
@@ -1301,6 +1510,24 @@ export default function IntegrationStatusPage() {
   };
 
   const renderMetrics = () => {
+    // Calculate REAL module statistics from allModules data
+    const completedModules = allModules.filter(m => m.status === 'complete').length;
+    const inProgressModules = allModules.filter(m => m.status === 'in-progress').length;
+    const plannedModules = allModules.filter(m => m.status === 'planned').length;
+    const totalModules = allModules.length;
+    const completionPercentage = Math.round((completedModules / totalModules) * 100);
+
+    // Calculate completed phases (phases where ALL modules are complete)
+    const phaseModules = allModules.reduce((acc, m) => {
+      if (!acc[m.phase]) acc[m.phase] = [];
+      acc[m.phase].push(m);
+      return acc;
+    }, {} as Record<number, typeof allModules>);
+
+    const completedPhases = Object.entries(phaseModules)
+      .filter(([_, modules]) => modules.every(m => m.status === 'complete'))
+      .length;
+
     return (
       <div>
         <h2 style={{ marginBottom: '24px' }}>📈 Development Metrics & Health</h2>
@@ -1322,18 +1549,22 @@ export default function IntegrationStatusPage() {
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>A+</div>
               <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Security Grade</div>
+              <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '4px' }}>(demo data)</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>95%</div>
               <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Test Coverage</div>
+              <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '4px' }}>(demo data)</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>100%</div>
               <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Type Coverage</div>
+              <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '4px' }}>(demo data)</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>0</div>
               <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Critical Issues</div>
+              <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '4px' }}>(demo data)</div>
             </div>
           </div>
         </div>
@@ -1408,35 +1639,35 @@ export default function IntegrationStatusPage() {
           </div>
         </div>
 
-        {/* Module Completion Stats */}
+        {/* Module Completion Stats - REAL DATA */}
         <div style={{ marginBottom: '32px' }}>
-          <h3 style={{ marginBottom: '16px' }}>Module Development Progress</h3>
+          <h3 style={{ marginBottom: '16px' }}>Module Development Progress (Live Data)</h3>
           <div style={{
             padding: '20px',
             backgroundColor: 'var(--app-surface)',
-            border: '1px solid #007bff',
+            border: '2px solid #007bff',
             borderRadius: '8px'
           }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#28a745' }}>30</div>
+                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#28a745' }}>{completedModules}</div>
                 <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Complete & Tested</div>
-                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Fase 1-7 (42%)</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>{completionPercentage}% complete</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#fd7e14' }}>1</div>
+                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#fd7e14' }}>{inProgressModules}</div>
                 <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>In Progress</div>
-                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Fase 8 (F10b)</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Active development</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#6c757d' }}>40</div>
+                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#6c757d' }}>{plannedModules}</div>
                 <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Planned</div>
-                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>Fase 9-18</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>On roadmap</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#007bff' }}>71</div>
+                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#007bff' }}>{totalModules}</div>
                 <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Total Modules</div>
-                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>18 phases</div>
+                <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>{completedPhases} phases done</div>
               </div>
             </div>
           </div>
@@ -1500,6 +1731,185 @@ export default function IntegrationStatusPage() {
         {activeTab === 'vision' && renderVision()}
         {activeTab === 'metrics' && renderMetrics()}
       </div>
+
+      {/* Module Detail Modal */}
+      {selectedModule && (
+        <div
+          onClick={() => setSelectedModule(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: 'var(--app-bg)',
+              borderRadius: '12px',
+              maxWidth: '700px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              border: '2px solid var(--app-border)'
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{
+              padding: '24px',
+              borderBottom: '2px solid var(--app-border)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'start',
+              position: 'sticky',
+              top: 0,
+              backgroundColor: 'var(--app-bg)',
+              zIndex: 1
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '4px 12px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    fontWeight: 600
+                  }}>
+                    {selectedModule.code}
+                  </span>
+                  <span style={{ fontSize: '13px', color: 'var(--app-muted-text)' }}>
+                    Module #{selectedModule.number.toString().padStart(3, '0')}
+                  </span>
+                  <span style={{ fontSize: '13px', color: 'var(--app-muted-text)' }}>
+                    • Fase {selectedModule.phase}
+                  </span>
+                  <span style={{
+                    padding: '4px 10px',
+                    backgroundColor: `${getStatusColor(selectedModule.status)}20`,
+                    border: `1px solid ${getStatusColor(selectedModule.status)}`,
+                    borderRadius: '12px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: getStatusColor(selectedModule.status)
+                  }}>
+                    {getStatusLabel(selectedModule.status)}
+                  </span>
+                </div>
+                <h2 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>
+                  {selectedModule.name}
+                </h2>
+                <p style={{ margin: 0, fontSize: '15px', color: 'var(--app-muted-text)' }}>
+                  {selectedModule.description}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedModule(null)}
+                style={{
+                  marginLeft: '16px',
+                  padding: '8px 12px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid var(--app-border)',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '20px',
+                  lineHeight: '1'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '24px' }}>
+              {/* Category */}
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{ marginTop: 0, marginBottom: '8px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
+                  CATEGORY
+                </h4>
+                <span style={{
+                  padding: '6px 14px',
+                  backgroundColor: 'var(--app-surface)',
+                  border: '1px solid var(--app-border)',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: 600
+                }}>
+                  {selectedModule.category}
+                </span>
+              </div>
+
+              {/* Features */}
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{ marginTop: 0, marginBottom: '12px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
+                  KEY FEATURES
+                </h4>
+                <ul style={{ margin: 0, padding: '0 0 0 20px' }}>
+                  {selectedModule.features.map((feature, idx) => (
+                    <li key={idx} style={{ marginBottom: '8px', fontSize: '14px', lineHeight: '1.5' }}>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Notes */}
+              {selectedModule.notes && (
+                <div style={{ marginBottom: '20px' }}>
+                  <h4 style={{ marginTop: 0, marginBottom: '8px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
+                    NOTES
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.6', color: 'var(--app-text)' }}>
+                    {selectedModule.notes}
+                  </p>
+                </div>
+              )}
+
+              {/* Test URL */}
+              {selectedModule.testUrl && (
+                <div style={{
+                  marginTop: '24px',
+                  padding: '16px',
+                  backgroundColor: 'var(--app-surface)',
+                  border: '1px solid var(--app-border)',
+                  borderRadius: '8px'
+                }}>
+                  <h4 style={{ marginTop: 0, marginBottom: '12px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
+                    TEST THIS MODULE
+                  </h4>
+                  <a
+                    href={selectedModule.testUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      padding: '10px 20px',
+                      backgroundColor: '#007bff',
+                      color: 'white',
+                      textDecoration: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: 600
+                    }}
+                  >
+                    → Open Demo Page
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

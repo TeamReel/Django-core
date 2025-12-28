@@ -46,9 +46,15 @@ function AppWithProviders() {
   const contextConfig: ContextSwitcherConfig = {
     routerAdapter,
     apiBaseUrl: '/api/v1', // Use relative path to leverage Vite proxy
-    onContextError: (error: unknown) => {
-      console.warn('Context switch error (non-critical):', error);
-      // Silently handle - context switching is optional
+    onContextError: (error: any) => {
+      console.warn('Context switch error:', error);
+      // Handle 401 Unauthorized by redirecting to login
+      if (error?.code === 401 || error?.status === 401) {
+        console.log('[ContextSwitcher] 401 detected, redirecting to login');
+        window.location.href = '/login';
+        return;
+      }
+      // Silently handle other errors - context switching is optional
     },
   };
 

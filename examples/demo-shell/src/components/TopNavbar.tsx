@@ -65,7 +65,7 @@ const navGroups: NavGroup[] = [
     id: 'config',
     label: 'Configuration',
     items: [
-      { path: '/notification-preferences', label: 'Notification Preferences', description: 'Manage notification channels', icon: '🔔' },
+      { path: '/credits', label: 'Credits', description: 'View organisation credits', icon: '💳' },
       { path: '/usage-events', label: 'Usage Events', description: 'Track usage and analytics', icon: '📈' },
       { path: '/audit', label: 'Audit Log', description: 'Review recorded audit events', icon: '📋' },
       { path: '/flags', label: 'Feature Flags', description: 'Toggle experimental features', icon: '🚩' },
@@ -248,14 +248,32 @@ export default function TopNavbar() {
     const fetchUnreadCount = async () => {
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        console.log('[TopNavbar] Fetching notifications from:', `${apiBaseUrl}/api/v1/user-notifications/`);
         const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, {
           credentials: 'include',
         });
 
         if (response.ok) {
           const data: NotificationResponse = await response.json();
-          const unread = data.results?.filter(n => !n.is_read).length || 0;
+          console.log('[TopNavbar] Notifications API response:', data);
+          console.log('[TopNavbar] data.results:', data.results);
+          console.log('[TopNavbar] data.data:', (data as any).data);
+
+          // Handle B13 envelope structure
+          const notifications = data.results
+            || (data as any).data?.results
+            || (data as any).data?.data
+            || (data as any).data
+            || [];
+          console.log('[TopNavbar] Parsed notifications:', notifications);
+
+          const unread = Array.isArray(notifications)
+            ? notifications.filter(n => !n.is_read).length
+            : 0;
+          console.log('[TopNavbar] Unread count:', unread);
           setUnreadCount(unread);
+        } else {
+          console.error('[TopNavbar] Notifications API error:', response.status, response.statusText);
         }
       } catch (err) {
         console.error('Failed to fetch notification count:', err);

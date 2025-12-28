@@ -192,71 +192,90 @@ class MembershipViewSet(viewsets.ModelViewSet):
         """
         response = super().list(request, *args, **kwargs)
 
-        # If pagination is used, response.data is {'results': [...], ...}
-        # If not, it's [...]
-        results = (
-            response.data.get("results", response.data)
-            if isinstance(response.data, dict)
-            else response.data
-        )
-
-        # Get existing user IDs (ensure strings for comparison)
-        existing_user_ids = {str(m["user"]["id"]) for m in results}
-
-        # Find users with RoleAssignments in this org or its projects
-        org_slug = self.kwargs.get("organisation_pk")
-        from django.db import models
-
-        from organisations.models import Organisation
-
         try:
-            org = Organisation.objects.get(slug=org_slug)
-        except Organisation.DoesNotExist:
+            # If pagination is used, response.data is {'results': [...], ...} or {'data': [...], ...}
+            # If not, it's [...]
+            results = response.data
+            if isinstance(response.data, dict):
+                results = response.data.get("results", response.data.get("data", response.data))
+
+            # Ensure results is a list
+            if not isinstance(results, (list, tuple)):
+                results = []
+
+            # Get existing user IDs (ensure strings for comparison)
+            existing_user_ids = {str(m["user"]["id"]) for m in results}
+
+            # Find users with RoleAssignments in this org or its projects
+            org_slug = self.kwargs.get("organisation_pk")
+            from django.db import models
+
+            from organisations.models import Organisation
+
+            try:
+                org = Organisation.objects.get(slug=org_slug)
+            except Organisation.DoesNotExist:
+                return response
+
+            from permissions.models import RoleAssignment
+
+            # Get assignments for this org OR projects in this org
+            assignments = RoleAssignment.objects.filter(
+                models.Q(target_organization=org) | models.Q(target_project__organisation=org)
+            ).select_related("user", "role", "target_project")
+
+            additional_members = []
+            for ra in assignments:
+                if str(ra.user.id) not in existing_user_ids:
+                    # Create a virtual membership structure
+                    role_name = ra.role.name
+                    if ra.target_project:
+                        role_name = f"{role_name} ({ra.target_project.name})"
+
+                    additional_members.append(
+                        {
+                            "id": str(ra.id),  # Use assignment ID
+                            "user": {
+                                "id": str(ra.user.id),
+                                "email": ra.user.email,
+                                "first_name": ra.user.first_name,
+                                "last_name": ra.user.last_name,
+                            },
+                            "organisation": {"id": str(org.id), "name": org.name, "slug": org.slug},
+                            "role": role_name,  # Custom role string
+                            "joined_at": ra.assigned_at,
+                            "invited_by": None,
+                            "is_active": True,
+                        }
+                    )
+                    existing_user_ids.add(str(ra.user.id))
+
+            # Append to results
+            if additional_members:
+                results.extend(additional_members)
+
+            # Update response
+            if isinstance(response.data, dict):
+                if "data" in response.data:
+                    response.data["data"] = results
+                else:
+                    response.data["results"] = results
+
+                # Update count if possible
+                if "count" in response.data:
+                    response.data["count"] = len(results)
+                elif "meta" in response.data and "pagination" in response.data["meta"]:
+                    response.data["meta"]["pagination"]["count"] = len(results)
+            else:
+                response.data = results
+
+        except Exception as e:
+            # Log error but return original response (direct members only)
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error extending membership list with role assignments: {e}")
             return response
-
-        from permissions.models import RoleAssignment
-
-        # Get assignments for this org OR projects in this org
-        assignments = RoleAssignment.objects.filter(
-            models.Q(target_organization=org) | models.Q(target_project__organisation=org)
-        ).select_related("user", "role", "target_project")
-
-        additional_members = []
-        for ra in assignments:
-            if str(ra.user.id) not in existing_user_ids:
-                # Create a virtual membership structure
-                role_name = ra.role.name
-                if ra.target_project:
-                    role_name = f"{role_name} ({ra.target_project.name})"
-
-                additional_members.append(
-                    {
-                        "id": str(ra.id),  # Use assignment ID
-                        "user": {
-                            "id": str(ra.user.id),
-                            "email": ra.user.email,
-                            "first_name": ra.user.first_name,
-                            "last_name": ra.user.last_name,
-                        },
-                        "organisation": {"id": str(org.id), "name": org.name, "slug": org.slug},
-                        "role": role_name,  # Custom role string
-                        "joined_at": ra.assigned_at,
-                        "invited_by": None,
-                        "is_active": True,
-                    }
-                )
-                existing_user_ids.add(str(ra.user.id))
-
-        # Append to results
-        if additional_members:
-            results.extend(additional_members)
-
-        # Update response
-        if isinstance(response.data, dict):
-            response.data["results"] = results
-            response.data["count"] = len(results)  # Update count roughly
-        else:
-            response.data = results
 
         return response
 

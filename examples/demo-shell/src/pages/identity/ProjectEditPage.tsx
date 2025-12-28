@@ -86,7 +86,9 @@ export const ProjectEditPage: React.FC = () => {
           throw new Error(`Failed to fetch project (${response.status})`);
         }
 
-        const data: Project = await response.json();
+        const rawData = await response.json();
+        // Handle B13 envelope pattern: {status: 'success', data: {...}}
+        const data: Project = rawData.data || rawData;
         setName(data.name);
         setSlug(data.slug || ''); // Assuming backend returns slug now, or we use what we have
         setDescription(data.description || '');
@@ -201,7 +203,8 @@ export const ProjectEditPage: React.FC = () => {
             label: (
               <BreadcrumbContextSwitcher
                 type="project"
-                currentId={resolvedProject?.id || ''}
+                label={name || projectId || 'Project'}
+                currentId={resolvedProject?.id || projectId || ''}
                 items={projectOptions}
                 onSelect={handleProjectSwitch}
               />

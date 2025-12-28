@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { NotificationsContext, NotificationsContextValue } from '@/context/NotificationsContext';
+import { NotificationsContext, NotificationsContextValue } from '../context/NotificationsContext';
 
 /**
  * Main hook for accessing the full notifications state and all actions.

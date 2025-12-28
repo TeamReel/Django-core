@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+import yaml
 from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -24,6 +25,74 @@ try:
 except ImportError:
     Organisation = None
     Membership = None
+
+
+class ConstitutionRulesView(APIView):
+    """
+    API Endpoint to retrieve constitution rules from the engine configuration.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Path to constitution_engine.yaml
+        # BASE_DIR is 'src', so we need to go up one level to project root
+        config_path = settings.BASE_DIR.parent / "constitution_engine.yaml"
+
+        rules = []
+        categories = {}
+        total_violations = 0
+
+        if config_path.exists():
+            try:
+                with open(config_path, "r") as f:
+                    config = yaml.safe_load(f)
+
+                raw_rules = config.get("rules", [])
+                for rule in raw_rules:
+                    # Infer category from identifier or description
+                    identifier = rule.get("identifier", "").lower()
+                    description = rule.get("description", "").lower()
+
+                    category = "General"
+                    if "security" in identifier or "security" in description:
+                        category = "Security"
+                    elif (
+                        "mypy" in identifier
+                        or "ruff" in identifier
+                        or "lint" in identifier
+                        or "type" in description
+                    ):
+                        category = "Code Quality"
+                    elif "dependency" in identifier or "dependencies" in description:
+                        category = "Dependencies"
+                    elif "api" in identifier:
+                        category = "API"
+                    elif "data" in identifier or "privacy" in description:
+                        category = "Data Protection"
+
+                    r = {
+                        "id": rule.get("identifier", "unknown"),
+                        "category": category,
+                        "name": rule.get("description", rule.get("identifier", "Unknown Rule")),
+                        "active": rule.get("enabled", True),
+                        "severity": rule.get("severity", "medium"),
+                        "parameters": rule.get("parameters", {}),
+                        "violation_count": 0,  # Placeholder: Real violations would come from engine report
+                    }
+                    rules.append(r)
+
+                    # Update categories count
+                    categories[category] = categories.get(category, 0) + 1
+
+            except Exception as e:
+                print(f"Error reading constitution config: {e}")
+                # Return empty list on error
+                pass
+
+        return Response(
+            {"rules": rules, "categories": categories, "total_violations": total_violations}
+        )
 
 
 class SecurityEventsView(APIView):

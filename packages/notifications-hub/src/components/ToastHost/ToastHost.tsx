@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Notification, NotificationSeverity } from '@/types';
+import { Notification, NotificationSeverity } from '../../types';
 import { Toast } from './Toast';
 import { ToastContainer, ToastPosition } from './ToastContainer';
 

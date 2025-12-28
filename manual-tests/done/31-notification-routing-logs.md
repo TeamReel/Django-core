@@ -1,6 +1,6 @@
 # Test 31: Notification Routing Logs
 
-**Status:** READY TO RUN
+**Status:** ✅ DONE
 **Spec Reference:** Notifications baseline, contextual notifications
 **Page:** `/routing-logs`
 

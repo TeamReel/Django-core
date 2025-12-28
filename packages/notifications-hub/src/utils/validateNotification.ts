@@ -1,4 +1,4 @@
-import { Notification, NotificationSeverity } from '@/types';
+import { Notification, NotificationSeverity } from '../types';
 
 const SEVERITY_VALUES: NotificationSeverity[] = ['INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL'];
 

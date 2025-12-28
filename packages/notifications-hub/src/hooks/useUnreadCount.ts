@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { NotificationsContext } from '@/context/NotificationsContext';
+import { NotificationsContext } from '../context/NotificationsContext';
 
 /**
  * Lightweight hook for accessing unread notification count.

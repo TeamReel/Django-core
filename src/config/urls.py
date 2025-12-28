@@ -21,6 +21,7 @@ from django.http import JsonResponse
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from observability.health import liveness_view, readiness_view
+from security_baseline.views import ConstitutionRulesView
 
 
 def root_view(request):
@@ -72,6 +73,8 @@ urlpatterns = [
     path("api/v1/", include("files.urls")),
     # Security Baseline API
     path("api/security/", include("security_baseline.urls")),
+    # Constitution API (B18)
+    path("api/constitution/rules/", ConstitutionRulesView.as_view(), name="constitution-rules"),
     # Audit Log API
     path("api/audit/", include("audit.urls")),
     # B18: Observability API

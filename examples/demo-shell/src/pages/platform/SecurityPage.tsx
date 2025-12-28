@@ -166,7 +166,9 @@ export const SecurityPage: React.FC = () => {
         });
 
         if (response.ok) {
-          const data: SecurityData = await response.json();
+          const rawData = await response.json();
+          // Handle B13 response envelope
+          const data = (rawData.data || rawData) as SecurityData;
           setSecurity(data);
         } else {
           // Try to get error details from response

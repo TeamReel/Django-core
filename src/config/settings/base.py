@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "audit.apps.AuditConfig",  # Audit logging system
     "settings.apps.SettingsConfig",  # Settings & Feature Flags (B10)
     "transactions.apps.TransactionsConfig",  # Transaction & Credits Engine (B11)
+    "credits.apps.CreditsConfig",  # Credits Balance (organisation-scoped)
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
     "api",  # B13: API Foundation & Standards
     "tasks.apps.TasksConfig",  # B15: Tasks & Scheduling

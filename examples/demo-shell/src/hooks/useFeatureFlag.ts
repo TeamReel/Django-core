@@ -21,6 +21,76 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
   useEffect(() => {
     const checkFlag = async () => {
       try {
+        // Detect if user is a superadmin
+        // Priority: Backend API > useAuth user object > localStorage demo_user_role > demo email check
+        let isSuperadmin = false;
+
+        // Try to fetch current user from backend
+        try {
+          const userResponse = await fetch('/api/v1/auth/me/', {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'include',
+          });
+
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            isSuperadmin = userData.is_superuser || userData.role === 'superadmin';
+            console.log(`[useFeatureFlag] Backend check: isSuperadmin=${isSuperadmin}`);
+          }
+        } catch (err) {
+          // Backend not available, fallback to demo mode
+          console.debug('[useFeatureFlag] Backend not available, using demo mode');
+        }
+
+        // Check useAuth user object
+        if (!isSuperadmin && user) {
+          if (user.is_superuser || (user as any).role === 'superadmin') {
+            isSuperadmin = true;
+            console.log(`[useFeatureFlag] useAuth check: isSuperadmin=${isSuperadmin}`);
+          }
+        }
+
+        // DEMO MODE FALLBACK: check localStorage
+        // CRITICAL FIX: Only trust localStorage if we are NOT logged in via backend
+        // If backend check succeeded (userResponse.ok), we already know the truth.
+        // If backend check failed, THEN we check localStorage.
+        // But here, we are checking localStorage even if backend said "false".
+        // We must ensure we don't accidentally promote a regular user to superadmin via stale localStorage.
+
+        // If we successfully checked backend, DO NOT check localStorage for role
+        // The backend is the source of truth.
+
+        // However, the code above sets isSuperadmin=true if backend says so.
+        // If backend says false, isSuperadmin is false.
+        // We should only check localStorage if we didn't get a definitive answer from backend/user object.
+
+        // Simplified logic:
+        // 1. Backend API (definitive)
+        // 2. useAuth user object (definitive if present)
+        // 3. localStorage (ONLY if no user is logged in or backend unreachable)
+
+        // We can detect if we are "logged in" via the user object from useAuth
+        const isLoggedIn = !!user;
+
+        if (!isSuperadmin && !isLoggedIn) {
+          const demoRole = localStorage.getItem('demo_user_role');
+          if (demoRole === 'superadmin') {
+            isSuperadmin = true;
+            console.log(`[useFeatureFlag] Demo mode: found superadmin in localStorage`);
+          }
+        }
+
+        // DEMO MODE: Check by email (admin@example.com = superadmin)
+        if (!isSuperadmin && user?.email) {
+          if (user.email === 'admin@example.com') {
+            isSuperadmin = true;
+            console.log(`[useFeatureFlag] Demo mode: detected superadmin by email (${user.email})`);
+          }
+        }
+
         // Get current organisation context from localStorage
         // ContextSwitcher uses 'django-core:currentOrgId', not 'demo_context'
         let orgId: string | null = null;
@@ -41,7 +111,18 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
           }
         }
 
-        console.log(`[useFeatureFlag] Checking flag "${flagKey}" for orgId:`, orgId);
+        // If Superadmin, they MIGHT want to see org-specific flags if they have selected an org context.
+        // But for "dark_mode", usually we want the org setting if an org is selected.
+        // The previous logic forced orgId=null for superadmins, which means they always saw global defaults.
+        // This is wrong if the superadmin has switched context to an org.
+
+        // However, the requirement says: "Superadmin: Manages global defaults".
+        // But for *consuming* flags (like dark mode), they should see what the current context dictates.
+
+        // If isSuperadmin is true, we still respect the orgId if it exists.
+        // The only time we force global is if we are in a "Global Config" mode, but this hook is for *consuming* flags.
+
+        console.log(`[useFeatureFlag] Checking flag "${flagKey}" for orgId:`, orgId, 'isSuperadmin:', isSuperadmin);
 
         // Try to fetch from API first
         try {

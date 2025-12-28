@@ -4,7 +4,7 @@
  * @packageDocumentation
  */
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   ContextSwitcherContext,
   type ContextSwitcherContextValue,
@@ -173,7 +173,38 @@ export function ContextSwitcherProvider({
         }
 
         // No stored context either - Auto-select first available organisation
+        // BUT ONLY if we are not currently switching context (to avoid overwriting a manual switch)
         if (allOrgs.length > 0) {
+          // Check if we just manually set a context in localStorage that hasn't been picked up yet
+          const freshStoredOrgId = localStorage.getItem('django-core:currentOrgId');
+
+          // FIX: The previous check (freshStoredOrgId !== storedOrgId) was flawed because storedOrgId
+          // is captured from the *start* of the function execution (before the manual switch might have happened).
+          // If freshStoredOrgId exists, we should trust it and try to restore from it instead of auto-selecting.
+          if (freshStoredOrgId) {
+             const freshOrg = allOrgs.find(org => org.id === freshStoredOrgId);
+             if (freshOrg) {
+                console.log('[ContextSwitcher] Found fresh manual context, restoring instead of auto-selecting:', freshOrg.name);
+
+                // Fetch projects for restored org
+                const orgProjects = await fetchProjects(freshOrg.slug);
+                setProjects(orgProjects);
+
+                const restoredContext: UserContext = {
+                  organisation: freshOrg,
+                  project: null, // Reset project on fresh org switch
+                  isLoading: false,
+                  error: null,
+                };
+
+                setContext(restoredContext);
+                if (onContextChanged) onContextChanged(restoredContext);
+                return;
+             } else {
+                console.warn('[ContextSwitcher] Fresh stored org ID not found in available organisations:', freshStoredOrgId);
+             }
+          }
+
           const firstOrg = allOrgs[0];
           console.log('[ContextSwitcher] Auto-selecting first organisation:', firstOrg.name);
 
@@ -305,8 +336,14 @@ export function ContextSwitcherProvider({
 
       // Clear localStorage on auth errors (user logged out or unauthorized)
       if (error.code === 401 || error.code === 403) {
-        localStorage.removeItem('django-core:currentOrgId');
-        localStorage.removeItem('django-core:currentProjectId');
+        // DO NOT CLEAR LOCALSTORAGE ON 403!
+        // In demo mode, the backend might return 403 for /organisations/ if the user is not logged in,
+        // but we might still want to show the demo shell with mock data or preserved context.
+        // Clearing localStorage here breaks the manual context switch if the backend check fails.
+
+        // localStorage.removeItem('django-core:currentOrgId');
+        // localStorage.removeItem('django-core:currentProjectId');
+
         // Don't call onContextError for expected auth failures
         return;
       }
@@ -416,11 +453,17 @@ export function ContextSwitcherProvider({
   // Reload context when URL path changes (for navigation)
   // We track the path as a dependency by calling getCurrentPath on each render
   const currentPath = routerAdapter.getCurrentPath();
+
+  // Ref to track previous path to avoid redundant loads
+  const prevPathRef = useRef(currentPath);
+
   useEffect(() => {
-    // Reload context whenever path changes
-    void loadContext();
+    if (prevPathRef.current !== currentPath) {
+       prevPathRef.current = currentPath;
+       void loadContext();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPath]); // Only depend on path, not loadContext to avoid infinite loops
+  }, [currentPath]);
 
   // Context value
   const contextValue = useMemo<ContextSwitcherContextValue>(

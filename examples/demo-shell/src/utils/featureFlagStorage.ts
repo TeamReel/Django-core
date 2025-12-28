@@ -149,7 +149,10 @@ export function saveFlagStorage(storage: FlagStorage): void {
 
 /**
  * Get resolved flag value for a specific organisation
- * Priority: Org override > Global > Default
+ * Priority: Global disabled (master switch) > Org override > Global enabled > Default
+ *
+ * Global disabled acts as a master switch - it disables the feature everywhere
+ * but preserves org overrides, so they become active again when global is re-enabled.
  */
 export function getResolvedFlag(
   flagKey: string,
@@ -158,12 +161,18 @@ export function getResolvedFlag(
 ): boolean {
   const storage = getFlagStorage();
 
-  // If org context exists, check for org override first
+  // MASTER SWITCH: If global is explicitly disabled, that overrides everything
+  // (but org overrides remain stored and will become active if global is re-enabled)
+  if (storage.global[flagKey] === false) {
+    return false;
+  }
+
+  // If org context exists, check for org override
   if (orgId && storage.orgs[orgId]?.[flagKey] !== undefined) {
     return storage.orgs[orgId][flagKey];
   }
 
-  // Fall back to global value
+  // Fall back to global value (if enabled or not set)
   if (storage.global[flagKey] !== undefined) {
     return storage.global[flagKey];
   }
@@ -265,13 +274,14 @@ export function getAllFlagsWithResolution(orgId: string | null): FeatureFlag[] {
     }
 
     // Resolve value
-    // If not provisioned (and we are in an org context), it is effectively disabled (false)
-    // UNLESS we are just checking the raw value?
-    // The requirement is "What is OFF for that organization is disabled grey out".
-    // This implies the *value* is OFF.
+    // Priority: Global disabled (master switch) > Provisioning > Org override > Global > Default
+
+    // Check if global is explicitly disabled (master switch)
+    const globalValue = storage.global[flag.key];
+    const globalDisabled = globalValue === false;
 
     let enabled = getResolvedFlag(flag.key, orgId, flag.enabled);
-    let resolutionSource: 'global' | 'override' | 'provisioning_restriction' = 'global';
+    let resolutionSource: 'global' | 'override' | 'provisioning_restriction' | 'global_disabled' = 'global';
 
     if (orgId) {
       if (hasOrgOverride(orgId, flag.key)) {
@@ -281,6 +291,16 @@ export function getAllFlagsWithResolution(orgId: string | null): FeatureFlag[] {
       if (!isProvisioned) {
         enabled = false;
         resolutionSource = 'provisioning_restriction';
+      }
+    }
+
+    // MASTER SWITCH: Global disabled overrides everything (but org overrides stay stored)
+    if (globalDisabled) {
+      enabled = false;
+      // Keep the resolutionSource to show WHY it's disabled
+      // If there was an override, it's now overridden by global
+      if (resolutionSource === 'override') {
+        resolutionSource = 'global_disabled';
       }
     }
 

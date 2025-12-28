@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { NotificationsContext, NotificationsActions } from '@/context/NotificationsContext';
+import { NotificationsContext, NotificationsActions } from '../context/NotificationsContext';
 
 /**
  * Hook for accessing only notification actions without state.

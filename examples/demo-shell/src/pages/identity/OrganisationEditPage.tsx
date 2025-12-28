@@ -68,7 +68,9 @@ export const OrganisationEditPage: React.FC = () => {
           throw new Error(`Failed to fetch organisation (${response.status})`);
         }
 
-        const data: Organisation = await response.json();
+        const rawData = await response.json();
+        // Handle B13 envelope pattern: {status: 'success', data: {...}}
+        const data: Organisation = rawData.data || rawData;
         setName(data.name);
         setDescription(data.description || '');
         setIsActive(data.is_active !== undefined ? data.is_active : true);

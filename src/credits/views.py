@@ -1,0 +1,55 @@
+"""Credits API views."""
+
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .models import CreditsBalance
+from .serializers import CreditsBalanceSerializer
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_organisation_credits(request):
+    """
+    Get credits balance for the current organisation context.
+
+    Returns:
+        200: Credits balance object
+        403: User not authorized for this organisation
+        404: No credits configured for this organisation
+        400: No organisation context provided
+    """
+    # Get organisation from query param (set by frontend context)
+    org_id = request.query_params.get("organisation_id")
+
+    if not org_id:
+        return Response(
+            {"error": "organisation_id parameter required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Security check: Ensure user has access to this organisation
+    if not request.user.is_superuser:
+        from organisations.models import Membership
+
+        has_access = Membership.objects.filter(
+            user=request.user, organisation_id=org_id, is_active=True
+        ).exists()
+
+        if not has_access:
+            return Response(
+                {"error": "You do not have permission to view credits for this organisation"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+    try:
+        balance = CreditsBalance.objects.get(organisation_id=org_id)
+        serializer = CreditsBalanceSerializer(balance)
+        return Response(serializer.data)
+    except CreditsBalance.DoesNotExist:
+        return Response(
+            {"error": "No credits configured for this organisation"},
+            status=status.HTTP_404_NOT_FOUND,
+        )

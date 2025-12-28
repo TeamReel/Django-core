@@ -10,11 +10,18 @@ from transactions.models import BalancePolicy, SourceTypeChoices, Transaction, U
 class UsageEventSerializer(serializers.ModelSerializer):
     """Serializer for UsageEvent model."""
 
+    # Write-only fields for creation
     organization_id = serializers.UUIDField(write_only=True, required=True)
     project_id = serializers.IntegerField(
         write_only=True, required=False, allow_null=True
     )  # Project uses integer PK
     user_id = serializers.IntegerField(write_only=True, required=True)  # User uses integer PK
+
+    # Read-only fields for display
+    user_email = serializers.EmailField(source="user.email", read_only=True)
+    user_full_name = serializers.CharField(source="user.get_full_name", read_only=True)
+    organization_name = serializers.CharField(source="organization.name", read_only=True)
+    project_name = serializers.CharField(source="project.name", read_only=True)
 
     class Meta:
         """Serializer metadata."""
@@ -24,14 +31,26 @@ class UsageEventSerializer(serializers.ModelSerializer):
             "id",
             "event_type",
             "user_id",
+            "user_email",
+            "user_full_name",
             "organization_id",
+            "organization_name",
             "project_id",
+            "project_name",
             "metadata",
             "timestamp",
             "idempotency_key",
             "created_at",
         ]
-        read_only_fields = ["id", "timestamp", "created_at"]
+        read_only_fields = [
+            "id",
+            "timestamp",
+            "created_at",
+            "user_email",
+            "user_full_name",
+            "organization_name",
+            "project_name",
+        ]
 
     def validate_event_type(self, value: str) -> str:
         """Validate event_type is non-empty."""

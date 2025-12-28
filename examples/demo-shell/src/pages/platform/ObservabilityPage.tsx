@@ -53,6 +53,7 @@ export const ObservabilityPage: React.FC = () => {
       setError(null);
 
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      console.log('[ObservabilityPage] Fetching metrics from:', `${apiBaseUrl}/api/observability/metrics/`);
       const response = await fetch(`${apiBaseUrl}/api/observability/metrics/`, {
         headers: {
           'Content-Type': 'application/json',
@@ -60,11 +61,20 @@ export const ObservabilityPage: React.FC = () => {
         credentials: 'include',
       });
 
+      console.log('[ObservabilityPage] Response status:', response.status);
+
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
 
-      const data: BackendObservabilityMetrics = await response.json();
+      const rawData = await response.json();
+      console.log('[ObservabilityPage] Raw API response:', rawData);
+
+      // Handle B13 envelope if present
+      const data: BackendObservabilityMetrics = (rawData as any).data || rawData;
+      console.log('[ObservabilityPage] Parsed data:', data);
+      console.log('[ObservabilityPage] data.available:', data.available);
+      console.log('[ObservabilityPage] data.error:', data.error);
 
       // Check if backend returned an error flag
       if (data.error) {

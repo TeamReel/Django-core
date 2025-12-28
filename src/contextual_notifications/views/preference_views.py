@@ -29,7 +29,7 @@ class NotificationPreferenceViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationPreferenceSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ["event_type", "channel", "enabled"]
+    filterset_fields = ["event_type", "channel", "enabled", "user"]
     pagination_class = StandardResultsSetPagination
     ordering = ["-created_at"]
     ordering_fields = ["created_at", "event_type", "channel"]
@@ -89,3 +89,15 @@ class NotificationPreferenceViewSet(viewsets.ModelViewSet):
 
         # Regular users and org admins create for themselves
         serializer.save(user=user)
+
+    def perform_update(self, serializer):
+        """Allow users to update their own preferences."""
+        # Users can only update preferences returned by get_queryset()
+        # which already filters to their own preferences
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        """Allow users to delete their own preferences."""
+        # Users can only delete preferences returned by get_queryset()
+        # which already filters to their own preferences
+        instance.delete()

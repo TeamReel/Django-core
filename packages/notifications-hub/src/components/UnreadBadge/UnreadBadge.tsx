@@ -1,5 +1,5 @@
 import { Badge, type BadgeProps } from '@django-core/design-system';
-import { useUnreadCount } from '@/hooks/useUnreadCount';
+import { useUnreadCount } from '../../hooks/useUnreadCount';
 import type { CSSProperties } from 'react';
 
 export interface UnreadBadgeProps {

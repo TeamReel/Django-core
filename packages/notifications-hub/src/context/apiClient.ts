@@ -7,8 +7,8 @@
  * TODO: Extract to @django-core/api-client shared package (per F03 spec)
  */
 
-import { Notification } from '@/types';
-import { retryWithBackoff } from '@/utils/retryWithBackoff';
+import { Notification } from '../types';
+import { retryWithBackoff } from '../utils/retryWithBackoff';
 
 export interface ApiError extends Error {
   status?: number;

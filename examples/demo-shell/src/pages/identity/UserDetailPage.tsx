@@ -7,29 +7,106 @@ import {
   Alert,
   Badge,
 } from '@django-core/design-system';
-import { PageHeader, PageContent } from '@django-core/page-templates';
+import {
+  PageHeader,
+  PageContent,
+  BreadcrumbContextSwitcher,
+  useBreadcrumbContextSwitcher,
+} from '@django-core/page-templates';
+import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import UserEditModal from './UserEditModal';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
 
 export const UserDetailPage: React.FC = () => {
-  const { userId } = useParams<{ userId: string }>();
+  const { userId, orgId } = useParams<{ userId: string; orgId?: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const { organisations: contextOrganisations } = useContextSwitcher();
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [orgUsers, setOrgUsers] = useState<any[]>([]); // For user switcher
 
   // Modals
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [organisations, setOrganisations] = useState<any[]>([]);
 
+  // Get current org for context switcher
+  const currentOrg = orgId ? contextOrganisations.find(o => o.slug === orgId || o.id === orgId) : null;
+
+  // Breadcrumb context switcher setup
+  const {
+    userOptions,
+  } = useBreadcrumbContextSwitcher({
+    organisations: contextOrganisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    projects: [],
+    users: orgUsers.map(u => ({
+      id: u.id.toString(),
+      username: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email,
+      email: u.email,
+      slug: u.id.toString(),
+    })),
+    context: {
+      currentOrgId: currentOrg?.id,
+      currentUserId: userId,
+    },
+    basePath: '',
+  });
+
+  // Custom handler for user navigation
+  const handleUserSwitch = (option: { id: string; label: string; slug: string }) => {
+    if (orgId) {
+      navigate(`/organisations/${orgId}/users/${option.slug || option.id}`);
+    } else {
+      navigate(`/users/${option.slug || option.id}`);
+    }
+  };
+
+  // Fetch users for the current organisation (for switcher dropdown)
+  useEffect(() => {
+    const fetchOrgUsers = async () => {
+      if (!orgId) return;
+
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+        const response = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${orgId}/members/`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'include',
+          }
+        );
+
+        if (response.ok) {
+          const rawData = await response.json();
+          // Handle B13 envelope and extract user data from members
+          const data = rawData.data || rawData;
+          const members = Array.isArray(data) ? data : (data.data || data.results || []);
+          // Extract user objects from membership objects
+          const users = members.map((m: any) => m.user).filter(Boolean);
+          setOrgUsers(users);
+        }
+      } catch (err) {
+        console.error('Failed to fetch org users for switcher:', err);
+      }
+    };
+
+    fetchOrgUsers();
+  }, [orgId]);
+
   const fetchUser = async () => {
     try {
       setLoading(true);
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
+      // Always use admin endpoint for user details
+      // (org-scoped user endpoints don't exist, only members endpoints with membership UUIDs)
       const response = await fetch(`${apiBaseUrl}/api/v1/admin/users/${userId}/`, {
           credentials: 'include',
       });
@@ -47,8 +124,10 @@ export const UserDetailPage: React.FC = () => {
         throw new Error(errorMsg);
       }
 
-      const data = await response.json();
-      setUser(data);
+      const rawData = await response.json();
+      // Handle B13 envelope: {data: {...}} or direct {...}
+      const userData = rawData.data || rawData;
+      setUser(userData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -63,8 +142,11 @@ export const UserDetailPage: React.FC = () => {
               credentials: 'include',
           });
           if (res.ok) {
-              const data = await res.json();
-              setOrganisations(data.results || data);
+              const rawData = await res.json();
+              // Handle B13 envelope: {data: {results: [...]}} or direct {results: [...]}
+              const data = rawData.data || rawData;
+              const results = data.results || data.data?.results || [];
+              setOrganisations(Array.isArray(results) ? results : []);
           }
       } catch (e) {
           console.error('Failed to fetch organisations', e);
@@ -99,7 +181,8 @@ export const UserDetailPage: React.FC = () => {
           };
           const csrfToken = getCookie('csrftoken');
 
-          const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${updatedUser.id}/`, {
+          // Use userId from URL params instead of updatedUser.id (which may be undefined)
+          const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${userId}/`, {
               method: 'PATCH',
               headers: {
                   'Content-Type': 'application/json',
@@ -170,19 +253,38 @@ export const UserDetailPage: React.FC = () => {
   if (error) return <AppShell><Alert variant="error" title="Error">{error}</Alert></AppShell>;
   if (!user) return <AppShell><div>User not found</div></AppShell>;
 
+  // Determine back path based on whether we're in org context
+  const backPath = orgId ? `/organisations/${orgId}/users` : '/users';
+  const usersLabel = orgId ? 'Members' : 'Users';
+
   return (
     <AppShell>
       <PageHeader
         title="User Details"
         breadcrumbs={[
           { label: 'Home', href: '/' },
-          { label: 'Users', onClick: () => navigate('/users') },
-          { label: `${user.first_name} ${user.last_name}`, current: true },
+          ...(orgId ? [{ label: 'Organisations', href: '/organisations' }] : []),
+          ...(currentOrg ? [{ label: currentOrg.name, href: `/organisations/${orgId}` }] : []),
+          { label: usersLabel, onClick: () => navigate(backPath) },
+          ...(orgId && userOptions.length > 1 ? [{
+            label: (
+              <BreadcrumbContextSwitcher
+                currentId={userId || ''}
+                options={userOptions.map(u => ({
+                  id: u.id,
+                  label: u.name || u.label || u.id  // Use name from useBreadcrumbContextSwitcher
+                }))}
+                onSelect={handleUserSwitch}
+                hasDropdown={true}
+                type="user"
+              />
+            )
+          }] : [{ label: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email : 'User', current: true }]),
         ]}
         actions={
             <div style={{ display: 'flex', gap: '8px' }}>
                 <button
-                  onClick={() => navigate('/users')}
+                  onClick={() => navigate(backPath)}
                   style={{
                     padding: '6px 12px',
                     borderRadius: '4px',

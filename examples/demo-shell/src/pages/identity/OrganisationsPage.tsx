@@ -5,6 +5,7 @@ import {
   Badge,
   Table,
   Alert,
+  Card,
 } from '@django-core/design-system';
 import {
   PageHeader,
@@ -89,8 +90,10 @@ export const OrganisationsPage: React.FC = () => {
           throw new Error(`API error: ${response.status}`);
         }
 
-        const data: ListResponse<Organisation> = await response.json();
-        setOrganisations(data.results || []);
+        const data: any = await response.json();
+        // Handle B13 envelope or direct DRF response
+        const results = data.data?.results || data.results || [];
+        setOrganisations(results);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch organisations');
         console.error('Organisations fetch error:', err);
@@ -225,166 +228,148 @@ export const OrganisationsPage: React.FC = () => {
           }
 
           return (
-          <div style={{ overflowX: 'auto' }}>
-          <Table
-            style={{ minWidth: '1000px' }}
-            columns={[
-              {
-                key: 'name',
-                label: 'Name',
-                sortable: true,
-                sorted: sort === 'name' ? order : undefined,
-                onSort: () => handleSort('name'),
-              },
-              {
-                key: 'member_count',
-                label: 'Members',
-                sortable: true,
-                sorted: sort === 'member_count' ? order : undefined,
-                onSort: () => handleSort('member_count'),
-              },
-              {
-                key: 'project_count',
-                label: 'Projects',
-                sortable: true,
-                sorted: sort === 'project_count' ? order : undefined,
-                onSort: () => handleSort('project_count'),
-              },
-              {
-                key: 'credit_balance',
-                label: 'Credits',
-                sortable: true,
-                sorted: sort === 'credit_balance' ? order : undefined,
-                onSort: () => handleSort('credit_balance'),
-              },
-              {
-                key: 'status',
-                label: 'Status',
-              },
-              {
-                key: 'actions',
-                label: 'Actions',
-              },
-            ]}
-            rows={filteredOrganisations.map((org) => {
-              // Check if user can edit/delete this specific org
-              const orgWithRole = myOrganisations.find(o => o.id === org.id);
-              const permissionContext = {
-                currentOrganisation: orgWithRole,
-                isSuperAdmin,
-              };
-              const userCanEdit = canPerformAction('update', 'organisation', permissionContext);
-              const userCanDelete = canPerformAction('delete', 'organisation', permissionContext);
+          <Card>
+          <Table>
+            <thead>
+              <tr>
+                <th onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>
+                  Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={() => handleSort('member_count')} style={{ cursor: 'pointer' }}>
+                  Members {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={() => handleSort('project_count')} style={{ cursor: 'pointer' }}>
+                  Projects {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={() => handleSort('credit_balance')} style={{ cursor: 'pointer' }}>
+                  Credits {sort === 'credit_balance' && (order === 'asc' ? '↑' : '↓')}
+                </th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredOrganisations.map((org) => {
+                // Check if user can edit/delete this specific org
+                const orgWithRole = myOrganisations.find(o => o.id === org.id);
+                const permissionContext = {
+                  currentOrganisation: orgWithRole,
+                  isSuperAdmin,
+                };
+                const userCanEdit = canPerformAction('update', 'organisation', permissionContext);
+                const userCanDelete = canPerformAction('delete', 'organisation', permissionContext);
 
-              return {
-              id: org.id,
-              name: (
-                <span
-                  style={{
-                    color: '#2563eb',
-                    cursor: 'pointer',
-                    textDecoration: 'underline'
-                  }}
-                  onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#1d4ed8'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = '#2563eb'}
-                >
-                  {org.name}
-                </span>
-              ),
-              member_count: (
-                <Badge variant="secondary" data-testid={`org-members-${org.id}`}>
-                  {org.member_count || 0}
-                </Badge>
-              ),
-              project_count: (
-                <Badge variant="secondary" data-testid={`org-projects-${org.id}`}>
-                  {org.project_count || 0}
-                </Badge>
-              ),
-              credit_balance: (
-                <span
-                  className={
-                    (org.credit_balance || 0) < 100 ? 'text-red-600 font-semibold' : ''
-                  }
-                  data-testid={`org-credits-${org.id}`}
-                >
-                  {org.credit_balance || 0}
-                </span>
-              ),
-              status: (
-                <Badge
-                  variant={org.is_active ? 'success' : 'warning'}
-                  data-testid={`org-status-${org.id}`}
-                >
-                  {org.is_active ? 'Active' : 'Inactive'}
-                </Badge>
-              ),
-              actions: (
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => {
-                      setDetailOrganisation(org);
-                      setIsDetailModalOpen(true);
-                    }}
-                    style={{
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        border: '1px solid var(--app-border)',
-                        backgroundColor: 'var(--app-surface-2)',
-                        color: 'var(--app-text)',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 500
-                    }}
-                  >
-                    View
-                  </button>
-                  {userCanEdit && (
-                    <button
-                      onClick={() => {
-                        setEditOrganisation(org);
-                        setIsEditModalOpen(true);
-                      }}
-                      style={{
-                          padding: '6px 12px',
-                          borderRadius: '4px',
-                          border: '1px solid #0056b3',
-                          backgroundColor: 'var(--app-surface)',
-                          color: '#007bff',
+                return (
+                  <tr key={org.id}>
+                    <td>
+                      <span
+                        style={{
+                          color: '#2563eb',
                           cursor: 'pointer',
-                          fontSize: '12px',
-                          fontWeight: 500
-                      }}
-                    >
-                      Edit
-                    </button>
-                  )}
-                  {userCanDelete && (
-                    <button
-                      onClick={() => handleDelete(org.id)}
-                      style={{
-                          padding: '6px 12px',
-                          borderRadius: '4px',
-                          border: '1px solid #bd2130',
-                          backgroundColor: 'var(--app-surface)',
-                          color: '#dc3545',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          fontWeight: 500
-                      }}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              ),
-            };
-            })}
-            loading={loading}
-            data-testid="org-table"
-          />
-          </div>
+                          textDecoration: 'underline',
+                          fontSize: '0.85rem'
+                        }}
+                        onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
+                        onMouseEnter={(e) => e.currentTarget.style.color = '#1d4ed8'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = '#2563eb'}
+                      >
+                        {org.name}
+                      </span>
+                    </td>
+                    <td>
+                      <Badge variant="secondary" data-testid={`org-members-${org.id}`}>
+                        {org.member_count || 0}
+                      </Badge>
+                    </td>
+                    <td>
+                      <Badge variant="secondary" data-testid={`org-projects-${org.id}`}>
+                        {org.project_count || 0}
+                      </Badge>
+                    </td>
+                    <td>
+                      <span
+                        className={
+                          (org.credit_balance || 0) < 100 ? 'text-red-600 font-semibold' : ''
+                        }
+                        style={{ fontSize: '0.85rem' }}
+                        data-testid={`org-credits-${org.id}`}
+                      >
+                        {org.credit_balance || 0}
+                      </span>
+                    </td>
+                    <td>
+                      <Badge
+                        variant={org.is_active ? 'success' : 'warning'}
+                        data-testid={`org-status-${org.id}`}
+                      >
+                        {org.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => {
+                            setDetailOrganisation(org);
+                            setIsDetailModalOpen(true);
+                          }}
+                          style={{
+                              padding: '6px 12px',
+                              borderRadius: '4px',
+                              border: '1px solid var(--app-border)',
+                              backgroundColor: 'var(--app-surface-2)',
+                              color: 'var(--app-text)',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              fontWeight: 500
+                          }}
+                        >
+                          View
+                        </button>
+                        {userCanEdit && (
+                          <button
+                            onClick={() => {
+                              setEditOrganisation(org);
+                              setIsEditModalOpen(true);
+                            }}
+                            style={{
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                border: '1px solid #0056b3',
+                                backgroundColor: 'var(--app-surface)',
+                                color: '#007bff',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: 500
+                            }}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {userCanDelete && (
+                          <button
+                            onClick={() => handleDelete(org.id)}
+                            style={{
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                border: '1px solid #bd2130',
+                                backgroundColor: 'var(--app-surface)',
+                                color: '#dc3545',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: 500
+                            }}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+          </Card>
         );
         })()}
 

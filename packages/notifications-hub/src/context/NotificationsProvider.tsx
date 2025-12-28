@@ -3,11 +3,11 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { NotificationsContext, NotificationsState } from './NotificationsContext';
 import { notificationsReducer, initialState } from './notificationsReducer';
-import { NotificationsConfig, NotificationTypeMapping } from '@/types';
-import { defaultNotificationMappings } from '@/config';
+import { NotificationsConfig, NotificationTypeMapping } from '../types';
+import { defaultNotificationMappings } from '../config';
 import * as api from './apiClient';
-import { handleError, formatErrorForLogging, isAuthenticationError } from '@/utils/errorHandler';
-import { validateNotification } from '@/utils/validateNotification';
+import { handleError, formatErrorForLogging, isAuthenticationError } from '../utils/errorHandler';
+import { validateNotification } from '../utils/validateNotification';
 
 interface NotificationsProviderProps {
   children: React.ReactNode;

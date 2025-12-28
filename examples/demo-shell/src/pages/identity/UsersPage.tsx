@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { Button } from '@django-core/design-system';
+import { Button, Card, Table, Badge } from '@django-core/design-system';
 import { PageHeader, BreadcrumbContextSwitcher, useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import UserEditModal from './UserEditModal';
@@ -204,7 +204,9 @@ export default function UsersPage() {
       }
 
       const data = await res.json();
-      setUsers(data.results || []);
+      // Handle B13 envelope or direct DRF response
+      const results = data.data?.results || data.results || [];
+      setUsers(results);
     } catch (err: any) {
       console.error(err);
       setError(err.message);
@@ -366,16 +368,16 @@ export default function UsersPage() {
       {isLoading ? (
         <div>Loading users...</div>
       ) : (
-        <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1000px' }}>
-            <thead style={{ backgroundColor: 'var(--app-table-header-bg)', borderBottom: '1px solid var(--app-border)' }}>
+        <Card>
+          <Table>
+            <thead>
               <tr>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>User</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>Email</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>Role</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>Status</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>Organisations</th>
-                <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '14px', fontWeight: 600, color: 'var(--app-text)' }}>Actions</th>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Organisations</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -406,13 +408,14 @@ export default function UsersPage() {
                   const isActive = isMembership ? item.is_active : user.is_active;
 
                   return (
-                    <tr key={item.id || user.id} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '12px 16px' }}>
+                    <tr key={item.id || user.id}>
+                      <td>
                         <div
-                            style={{ fontWeight: 500, color: '#0066cc', cursor: 'pointer', textDecoration: 'underline' }}
+                            style={{ fontWeight: 500, color: '#0066cc', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.85rem' }}
                             onClick={() => {
-                                if (isMembership && (orgIdParam || context.organisation)) {
-                                    navigate(`/organisations/${orgIdParam || context.organisation?.slug}/members/${item.id}`);
+                                if (orgIdParam || context.organisation) {
+                                    // Navigate to user detail within org context
+                                    navigate(`/organisations/${orgIdParam || context.organisation?.slug}/users/${user.id}`);
                                 } else {
                                     navigate(`/users/${user.id}`);
                                 }
@@ -421,31 +424,18 @@ export default function UsersPage() {
                             {user.first_name} {user.last_name}
                         </div>
                       </td>
-                      <td style={{ padding: '12px 16px', color: '#666' }}>{user.email}</td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{
-                          padding: '4px 8px',
-                          backgroundColor: 'var(--app-surface-2)',
-                          color: 'var(--app-text)',
-                          border: '1px solid var(--app-border)',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                          textTransform: 'capitalize'
-                        }}>
+                      <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
+                      <td>
+                        <Badge variant="secondary">
                           {displayRole}
-                        </span>
+                        </Badge>
                       </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{
-                          color: isActive ? '#28a745' : '#dc3545',
-                          fontWeight: 500,
-                          fontSize: '14px'
-                        }}>
+                      <td>
+                        <Badge variant={isActive ? 'success' : 'error'}>
                           {isActive ? 'Active' : 'Inactive'}
-                        </span>
+                        </Badge>
                       </td>
-                      <td style={{ padding: '12px 16px' }}>
+                      <td>
                           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                               {userOrgs.length > 0 ? userOrgs.map((org: any) => (
                                   <span key={org.id} style={{
@@ -461,7 +451,7 @@ export default function UsersPage() {
                               )) : <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>-</span>}
                           </div>
                       </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                      <td>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                             {/* View Button - Show for both Memberships and Unassigned Users */}
                             {((isMembership && (orgIdParam || context.organisation)) || (!isMembership)) && (
@@ -653,8 +643,8 @@ export default function UsersPage() {
                 })
               )}
             </tbody>
-          </table>
-        </div>
+          </Table>
+        </Card>
       )}
 
       <UserEditModal
