@@ -37,7 +37,7 @@ class Test{{ service_name | default("ItemService") }}GetOperations:
     def test_get_by_id_existing(self):
         """Test retrieving item by ID."""
         item = Item.objects.create(name="Test Item")
-        
+
         found = {{ service_name | default("ItemService") }}.get_by_id(item.id)
         assert found is not None
         assert found.id == item.id
@@ -60,7 +60,7 @@ class Test{{ service_name | default("ItemService") }}CreateOperations:
             description="A new item",
             is_active=True
         )
-        
+
         assert item.id is not None
         assert item.name == "New Item"
         assert item.description == "A new item"
@@ -70,7 +70,7 @@ class Test{{ service_name | default("ItemService") }}CreateOperations:
     def test_create_item_minimal(self):
         """Test creating item with minimal data."""
         item = {{ service_name | default("ItemService") }}.create(name="Minimal Item")
-        
+
         assert item.name == "Minimal Item"
         assert item.description == ""
         assert item.is_active is True
@@ -93,7 +93,7 @@ class Test{{ service_name | default("ItemService") }}CreateOperations:
     def test_create_item_duplicate_name(self):
         """Test creating item with duplicate name raises error."""
         Item.objects.create(name="Existing")
-        
+
         with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError, match="already exists"):
             {{ service_name | default("ItemService") }}.create(name="Existing")
 
@@ -103,7 +103,7 @@ class Test{{ service_name | default("ItemService") }}CreateOperations:
             name="  Trimmed  ",
             description="  Also trimmed  "
         )
-        
+
         assert item.name == "Trimmed"
         assert item.description == "Also trimmed"
 
@@ -115,9 +115,9 @@ class Test{{ service_name | default("ItemService") }}UpdateOperations:
     def test_update_item_name(self):
         """Test updating item name."""
         item = Item.objects.create(name="Original")
-        
+
         updated = {{ service_name | default("ItemService") }}.update(item.id, name="Updated")
-        
+
         assert updated.name == "Updated"
         item.refresh_from_db()
         assert item.name == "Updated"
@@ -125,14 +125,14 @@ class Test{{ service_name | default("ItemService") }}UpdateOperations:
     def test_update_item_multiple_fields(self):
         """Test updating multiple fields."""
         item = Item.objects.create(name="Original", is_active=True)
-        
+
         updated = {{ service_name | default("ItemService") }}.update(
             item.id,
             name="Updated",
             description="New description",
             is_active=False
         )
-        
+
         assert updated.name == "Updated"
         assert updated.description == "New description"
         assert updated.is_active is False
@@ -145,14 +145,14 @@ class Test{{ service_name | default("ItemService") }}UpdateOperations:
     def test_update_item_empty_name(self):
         """Test updating item with empty name raises error."""
         item = Item.objects.create(name="Original")
-        
+
         with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError, match="cannot be empty"):
             {{ service_name | default("ItemService") }}.update(item.id, name="")
 
     def test_update_item_short_name(self):
         """Test updating item with short name raises error."""
         item = Item.objects.create(name="Original")
-        
+
         with pytest.raises({{ app_name | title | replace('_', '') }}ValidationError, match="at least 3 characters"):
             {{ service_name | default("ItemService") }}.update(item.id, name="ab")
 
@@ -164,9 +164,9 @@ class Test{{ service_name | default("ItemService") }}DeleteOperations:
     def test_delete_item(self):
         """Test deleting existing item."""
         item = Item.objects.create(name="To Delete")
-        
+
         {{ service_name | default("ItemService") }}.delete(item.id)
-        
+
         assert not Item.objects.filter(pk=item.id).exists()
 
     def test_delete_nonexistent_item(self):
@@ -182,9 +182,9 @@ class Test{{ service_name | default("ItemService") }}ActivationOperations:
     def test_activate_item(self):
         """Test activating inactive item."""
         item = Item.objects.create(name="Inactive", is_active=False)
-        
+
         activated = {{ service_name | default("ItemService") }}.activate(item.id)
-        
+
         assert activated.is_active is True
         item.refresh_from_db()
         assert item.is_active is True
@@ -192,9 +192,9 @@ class Test{{ service_name | default("ItemService") }}ActivationOperations:
     def test_deactivate_item(self):
         """Test deactivating active item."""
         item = Item.objects.create(name="Active", is_active=True)
-        
+
         deactivated = {{ service_name | default("ItemService") }}.deactivate(item.id)
-        
+
         assert deactivated.is_active is False
         item.refresh_from_db()
         assert item.is_active is False
@@ -211,7 +211,7 @@ class Test{{ service_name | default("ItemService") }}ActivationOperations:
         item3 = Item.objects.create(name="Item 3", is_active=False)
 
         count = {{ service_name | default("ItemService") }}.bulk_activate([item1.id, item2.id, item3.id])
-        
+
         assert count == 3
         assert Item.objects.filter(is_active=True).count() == 3
 
@@ -221,7 +221,7 @@ class Test{{ service_name | default("ItemService") }}ActivationOperations:
         item2 = Item.objects.create(name="Item 2", is_active=True)
 
         count = {{ service_name | default("ItemService") }}.bulk_deactivate([item1.id, item2.id])
-        
+
         assert count == 2
         assert Item.objects.filter(is_active=False).count() == 2
 

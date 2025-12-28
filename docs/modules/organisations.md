@@ -6,7 +6,7 @@ Multi-tenant organization management for Django Core-App.
 
 The `organisations` module provides multi-tenancy support through organization-scoped data isolation. It manages organizations and user memberships with role-based access within each tenant.
 
-**App location**: `src/organisations/`  
+**App location**: `src/organisations/`
 **Feature spec**: `kitty-specs/006-organisation-management-multi/`
 
 ## Configuration
@@ -230,7 +230,7 @@ All tenant-scoped models should filter by organization:
 ```python
 class TenantScopedMixin:
     """Mixin for organization-scoped models."""
-    
+
     def get_queryset(self):
         org = self.request.user.current_organisation
         return super().get_queryset().filter(organisation=org)
@@ -248,7 +248,7 @@ The current organization is determined from:
 ```python
 class OrganisationMiddleware:
     """Set current organisation on request."""
-    
+
     def __call__(self, request):
         org_id = (
             request.headers.get('X-Organisation-ID') or
@@ -269,7 +269,7 @@ class TenantModel(models.Model):
         Organisation,
         on_delete=models.CASCADE,
     )
-    
+
     class Meta:
         abstract = True
 ```
@@ -280,7 +280,7 @@ class TenantModel(models.Model):
 class TenantManager(models.Manager):
     def for_organisation(self, org):
         return self.filter(organisation=org)
-    
+
     def for_request(self, request):
         return self.for_organisation(request.organisation)
 ```

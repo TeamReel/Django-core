@@ -149,7 +149,7 @@ packages/
            motion.css.ts
            theme.css.ts
            index.ts
-       
+
         components/
            Button/
               Button.tsx
@@ -175,7 +175,7 @@ packages/
            Badge/
            Spinner/
            index.ts
-       
+
         theme/
            ThemeProvider.tsx
            useTheme.ts
@@ -183,17 +183,17 @@ packages/
               light.css.ts
               dark.css.ts
            index.ts
-       
+
         index.ts
-    
+
      .storybook/
         main.ts
         preview.ts
         theme.ts
-    
+
      tests/
         setup.ts
-    
+
      package.json
      vite.config.ts
      tsconfig.json
@@ -210,11 +210,11 @@ packages/
 
 ## Phase Outputs
 
-### Phase 0: Research 
+### Phase 0: Research
 
 - [research.md](research.md)  5 key decisions documented with rationale
 
-### Phase 1: Design & Contracts 
+### Phase 1: Design & Contracts
 
 - [data-model.md](data-model.md)  Token schema, component props, state transitions
 - [contracts/components.md](contracts/components.md)  Full API contracts for all 15+ components
@@ -229,4 +229,3 @@ packages/
 1. Run `/spec-kitty.tasks` to break down into implementable work packages
 2. Each work package should be independently testable
 3. Prioritize P1 user stories (tokens, core components) first
-

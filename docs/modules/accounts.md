@@ -6,7 +6,7 @@ Core authentication and user management for Django Core-App.
 
 The `accounts` module implements email-as-username authentication, role-based access control, and comprehensive user management. It serves as the authentication foundation for all downstream projects.
 
-**App location**: `src/accounts/`  
+**App location**: `src/accounts/`
 **Feature spec**: `kitty-specs/005-core-accounts-authentication/`
 
 ## Configuration
@@ -164,7 +164,7 @@ from accounts.permissions import IsAdmin
 
 class AdminOnlyView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
-    
+
     def get(self, request):
         # Only accessible by superadmins and admins
         pass

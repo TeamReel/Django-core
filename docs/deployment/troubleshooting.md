@@ -1,6 +1,6 @@
 # Deployment Troubleshooting Guide
-**Feature**: B19 Deployment Templates & Configuration  
-**Document Type**: Troubleshooting  
+**Feature**: B19 Deployment Templates & Configuration
+**Document Type**: Troubleshooting
 **Last Updated**: 2025-12-04
 
 ---

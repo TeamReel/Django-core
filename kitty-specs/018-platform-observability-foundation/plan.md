@@ -13,7 +13,7 @@ Provide foundational observability capabilities for the Django Core-App platform
 ## Technical Context
 
 **Language/Version**: Python 3.12+
-**Primary Dependencies**: 
+**Primary Dependencies**:
 - Django 5.1+
 - prometheus-client (official Prometheus library, wrapped in abstraction layer)
 - Celery 5.3+ (B15 task integration)
@@ -24,13 +24,13 @@ Provide foundational observability capabilities for the Django Core-App platform
 **Target Platform**: Kubernetes (Linux containers), Django WSGI/ASGI servers
 **Project Type**: Django app (new `observability/` app in core)
 
-**Performance Goals**: 
+**Performance Goals**:
 - Health check latency: <100ms per dependency, 500ms total timeout
 - Metric collection overhead: <1ms per event
 - Log emission overhead: <1ms per log event
 - Support 10,000 req/min with <1% observability overhead
 
-**Constraints**: 
+**Constraints**:
 - **Minimal Dependencies**: No django-prometheus, structlog, or django-health-check in core (extension layer only)
 - **Exception Isolation**: All observability hooks MUST catch exceptions internally; never break task/request execution
 - **Constitution Compliance**: Logging and metrics MUST follow Principle V (Security & Privacy) and Principle VI (Performance & Reliability)

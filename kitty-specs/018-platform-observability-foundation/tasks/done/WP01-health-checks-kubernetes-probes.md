@@ -86,11 +86,11 @@ history:
 
 ## Review Feedback
 
-**Status**: ✅ **APPROVED** 
+**Status**: ✅ **APPROVED**
 
-**Reviewed By**: claude-reviewer  
-**Review Date (Initial)**: 2025-12-03T12:15:00Z  
-**Re-Review Date**: 2025-12-03T13:30:00Z  
+**Reviewed By**: claude-reviewer
+**Review Date (Initial)**: 2025-12-03T12:15:00Z
+**Re-Review Date**: 2025-12-03T13:30:00Z
 **Overall Quality**: Excellent implementation with comprehensive tests and Constitution compliance. All feedback addressed successfully.
 
 ---
@@ -101,9 +101,9 @@ history:
 
 **Original Problem**: The migration lock detection used PostgreSQL-specific `pg_locks` system catalog without database vendor check.
 
-**Resolution Verified**: 
+**Resolution Verified**:
 - ✅ Added `if connection.vendor == 'postgresql':` check in [migrations.py](../../../src/observability/checks/migrations.py#L48-L68)
-- ✅ Lock detection now skipped on SQLite/other databases  
+- ✅ Lock detection now skipped on SQLite/other databases
 - ✅ Test case added: `test_migrations_lock_check_postgresql_only()` validates behavior on non-PostgreSQL databases
 - ✅ Commit: 57969dd
 
@@ -125,7 +125,7 @@ history:
 
 **Code Quality**: Excellent
 - Clean, idiomatic Python with proper type hints
-- Well-structured Protocol-based design for extensibility  
+- Well-structured Protocol-based design for extensibility
 - Comprehensive error handling with try-except blocks
 
 **Test Coverage**: Comprehensive
@@ -185,7 +185,7 @@ if connection.vendor == 'postgresql':
             AND mode = 'AccessExclusiveLock'
         """)
         lock_count = cursor.fetchone()[0]
-        
+
         if lock_count > 0:
             latency_ms = (time.time() - start_time) * 1000
             return HealthCheckResult(
@@ -257,10 +257,10 @@ if connection.vendor == 'postgresql':
       """Test that lock check is skipped on non-PostgreSQL databases."""
       mock_migration_executor.return_value.migration_plan.return_value = []
       mock_database_connection.vendor = 'sqlite'  # Simulate SQLite
-      
+
       check = MigrationHealthCheck()
       result = check.check()
-      
+
       # Should pass without attempting pg_locks query
       assert result.status is True
   ```
@@ -344,12 +344,12 @@ if connection.vendor == 'postgresql':
 3. Create `apps.py` with `ObservabilityConfig` class:
    ```python
    from django.apps import AppConfig
-   
+
    class ObservabilityConfig(AppConfig):
        default_auto_field = 'django.db.models.BigAutoField'
        name = 'observability'
        verbose_name = 'Platform Observability'
-       
+
        def ready(self):
            """Auto-register default health checks on app startup."""
            # Implementation in T014
@@ -367,7 +367,7 @@ if connection.vendor == 'postgresql':
 
 **Parallel**: Can proceed with T002, T003, T005 (different files).
 
-**Notes**: 
+**Notes**:
 - Use `default_auto_field` for Django 3.2+ compatibility
 - `ready()` method will be populated in T014
 
@@ -393,7 +393,7 @@ if connection.vendor == 'postgresql':
        status: bool  # True if healthy, False if unhealthy
        latency_ms: float  # Time taken to perform check
        details: dict[str, Any]  # Optional context (connection pool, error message)
-       
+
        def __post_init__(self):
            """Validate name format (lowercase alphanumeric + underscores)."""
            import re
@@ -406,10 +406,10 @@ if connection.vendor == 'postgresql':
    ```python
    class HealthCheck(Protocol):
        """Interface for all health check implementations."""
-       
+
        def check(self) -> HealthCheckResult:
            """Perform health check and return result.
-           
+
            Must complete within 500ms (enforced by registry).
            Must NOT raise exceptions (return status=False with error in details).
            Must be stateless (no instance variables between checks).
@@ -441,30 +441,30 @@ if connection.vendor == 'postgresql':
    import threading
    from contextlib import contextmanager
    from typing import Generator
-   
+
    class TimeoutError(Exception):
        """Raised when operation exceeds timeout."""
        pass
-   
+
    @contextmanager
    def timeout(seconds: float) -> Generator[None, None, None]:
        """Context manager enforcing timeout on wrapped code.
-       
+
        Uses signal.alarm() on Unix, threading.Timer() on Windows.
-       
+
        Args:
            seconds: Timeout in seconds (e.g., 0.5 for 500ms)
-       
+
        Raises:
            TimeoutError: If wrapped code exceeds timeout
-       
+
        Example:
            with timeout(0.5):
                slow_database_query()  # Raises TimeoutError if >500ms
        """
        def timeout_handler(signum, frame):
            raise TimeoutError(f"Operation exceeded {seconds}s timeout")
-       
+
        # Unix-based timeout
        if hasattr(signal, 'SIGALRM'):
            old_handler = signal.signal(signal.SIGALRM, timeout_handler)
@@ -504,43 +504,43 @@ if connection.vendor == 'postgresql':
    ```python
    # Global registry: {name: (check_instance, is_critical)}
    HEALTH_CHECKS: dict[str, tuple[HealthCheck, bool]] = {}
-   
+
    def register_health_check(name: str, check: HealthCheck, critical: bool = True) -> None:
        """Register a new health check.
-       
+
        Args:
            name: Unique identifier (lowercase alphanumeric + underscores)
            check: Health check implementation (must implement HealthCheck Protocol)
            critical: If True, failure affects /health/ready; if False, reported but non-blocking
-       
+
        Raises:
            ValueError: If name already registered or invalid format
        """
        if name in HEALTH_CHECKS:
            raise ValueError(f"Health check '{name}' already registered")
-       
+
        import re
        if not re.match(r'^[a-z0-9_]+$', name):
            raise ValueError(f"Invalid health check name: {name}")
-       
+
        HEALTH_CHECKS[name] = (check, critical)
-   
+
    def run_health_checks(liveness: bool = False) -> dict[str, HealthCheckResult]:
        """Run all registered health checks and return results.
-       
+
        Args:
            liveness: If True, skip non-critical checks (for /health/live endpoint)
-       
+
        Returns:
            Dictionary mapping check names to HealthCheckResult instances
        """
        from .utils import timeout, TimeoutError as HealthTimeoutError
-       
+
        results = {}
        for name, (check, is_critical) in HEALTH_CHECKS.items():
            if liveness and not is_critical:
                continue  # Skip non-critical checks for liveness probe
-           
+
            try:
                with timeout(0.5):  # 500ms timeout per FR-005
                    result = check.check()
@@ -559,7 +559,7 @@ if connection.vendor == 'postgresql':
                    latency_ms=0.0,
                    details={"error": str(e), "error_type": type(e).__name__}
                )
-       
+
        return results
    ```
 
@@ -584,7 +584,7 @@ if connection.vendor == 'postgresql':
 2. Create `__init__.py` with imports:
    ```python
    """Health check implementations for critical dependencies."""
-   
+
    # Will import check classes after implementation
    # from .database import DatabaseHealthCheck
    # from .cache import CacheHealthCheck
@@ -597,7 +597,7 @@ if connection.vendor == 'postgresql':
 
 **Parallel**: Can proceed with T002, T003 (different modules).
 
-**Notes**: 
+**Notes**:
 - Leave imports commented until T006-T009 complete
 - Submodule enables clean separation of check implementations
 
@@ -615,13 +615,13 @@ if connection.vendor == 'postgresql':
    from django.db import connection
    from django.conf import settings
    from observability.health import HealthCheckResult
-   
+
    class DatabaseHealthCheck:
        """Health check for PostgreSQL database connection."""
-       
+
        def check(self) -> HealthCheckResult:
            """Perform database health check.
-           
+
            Tests connection by executing simple SELECT 1 query.
            Reports connection pool status in details.
            """
@@ -632,9 +632,9 @@ if connection.vendor == 'postgresql':
                    result = cursor.fetchone()
                    if result != (1,):
                        raise ValueError(f"Unexpected query result: {result}")
-               
+
                latency_ms = (time.time() - start) * 1000
-               
+
                return HealthCheckResult(
                    name="database",
                    status=True,
@@ -681,34 +681,34 @@ if connection.vendor == 'postgresql':
    import time
    from django.core.cache import cache
    from observability.health import HealthCheckResult
-   
+
    class CacheHealthCheck:
        """Health check for Redis cache connection (non-critical)."""
-       
+
        def check(self) -> HealthCheckResult:
            """Perform cache health check.
-           
+
            Tests connection by setting and retrieving test key.
            Non-critical: failures don't affect /health/ready status.
            """
            start = time.time()
            test_key = "__health_check__"
            test_value = "ok"
-           
+
            try:
                # Set test key with 10-second expiration
                cache.set(test_key, test_value, timeout=10)
-               
+
                # Retrieve and validate
                retrieved = cache.get(test_key)
                if retrieved != test_value:
                    raise ValueError(f"Cache read/write mismatch: expected '{test_value}', got '{retrieved}'")
-               
+
                # Cleanup
                cache.delete(test_key)
-               
+
                latency_ms = (time.time() - start) * 1000
-               
+
                return HealthCheckResult(
                    name="cache",
                    status=True,
@@ -752,28 +752,28 @@ if connection.vendor == 'postgresql':
    import time
    from celery import current_app as celery_app
    from observability.health import HealthCheckResult
-   
+
    class QueueHealthCheck:
        """Health check for Redis queue/Celery broker connection (critical)."""
-       
+
        def check(self) -> HealthCheckResult:
            """Perform queue broker health check.
-           
+
            Tests Celery broker connection by pinging Redis.
            Critical: failures cause /health/ready to return 503.
            """
            start = time.time()
-           
+
            try:
                # Test broker connection via Celery inspect
                inspector = celery_app.control.inspect()
                stats = inspector.stats()
-               
+
                if stats is None:
                    raise ConnectionError("Celery broker not reachable (inspect.stats() returned None)")
-               
+
                latency_ms = (time.time() - start) * 1000
-               
+
                return HealthCheckResult(
                    name="queue",
                    status=True,
@@ -821,25 +821,25 @@ if connection.vendor == 'postgresql':
    from django.db import connection
    from django.db.migrations.executor import MigrationExecutor
    from observability.health import HealthCheckResult
-   
+
    class MigrationHealthCheck:
        """Health check for migration state (critical)."""
-       
+
        def check(self) -> HealthCheckResult:
            """Check for pending or running migrations.
-           
+
            Returns unhealthy if:
            - Pending migrations detected (not yet applied)
            - Migrations actively running (detected via lock or process check)
-           
+
            Critical per Clarification #1: prevents traffic during schema changes.
            """
            start = time.time()
-           
+
            try:
                executor = MigrationExecutor(connection)
                plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
-               
+
                # Check for pending migrations
                if plan:
                    pending_count = len(plan)
@@ -854,7 +854,7 @@ if connection.vendor == 'postgresql':
                            "note": "Run 'python manage.py migrate' to apply"
                        }
                    )
-               
+
                # Check for actively running migrations (heuristic: query django_migrations table)
                with connection.cursor() as cursor:
                    cursor.execute("""
@@ -862,7 +862,7 @@ if connection.vendor == 'postgresql':
                        WHERE applied > NOW() - INTERVAL '5 minutes'
                    """)
                    recent_migrations = cursor.fetchone()[0]
-                   
+
                    if recent_migrations > 0:
                        # Heuristic: migrations applied in last 5 minutes suggest active migration
                        latency_ms = (time.time() - start) * 1000
@@ -876,7 +876,7 @@ if connection.vendor == 'postgresql':
                                "note": "Pod will be unready during schema changes per Clarification #1"
                            }
                        )
-               
+
                latency_ms = (time.time() - start) * 1000
                return HealthCheckResult(
                    name="migrations",
@@ -884,7 +884,7 @@ if connection.vendor == 'postgresql':
                    latency_ms=latency_ms,
                    details={"pending_migrations": 0}
                )
-           
+
            except Exception as e:
                latency_ms = (time.time() - start) * 1000
                return HealthCheckResult(
@@ -921,15 +921,15 @@ if connection.vendor == 'postgresql':
    from django.http import JsonResponse
    from django.views.decorators.http import require_http_methods
    from django.views.decorators.csrf import csrf_exempt
-   
+
    @csrf_exempt  # Health endpoints don't require CSRF (K8s probes are unauthenticated)
    @require_http_methods(["GET", "HEAD"])
    def liveness_view(request):
        """Liveness probe endpoint for Kubernetes.
-       
+
        Returns 200 OK if process is alive (minimal checks).
        Does not check dependencies; only confirms process is running.
-       
+
        Endpoint: GET /health/live
        Response: {"status": "healthy"}
        """
@@ -959,27 +959,27 @@ if connection.vendor == 'postgresql':
    @require_http_methods(["GET", "HEAD"])
    def readiness_view(request):
        """Readiness probe endpoint for Kubernetes.
-       
+
        Returns 200 OK only if all critical dependencies are healthy.
        Non-critical dependencies (cache) reported but don't affect status.
-       
+
        Endpoint: GET /health/ready
        Response: {"status": "healthy|unhealthy", "checks": {"database": true, "cache": false, ...}}
        """
        results = run_health_checks(liveness=False)  # Run all checks
-       
+
        # Determine overall status: ANY critical check fails → unhealthy
        critical_checks = {name: result for name, result in results.items() if HEALTH_CHECKS[name][1]}  # [1] = is_critical
        overall_healthy = all(result.status for result in critical_checks.values())
-       
+
        # Build response with individual check statuses
        checks = {name: result.status for name, result in results.items()}
-       
+
        response_data = {
            "status": "healthy" if overall_healthy else "unhealthy",
            "checks": checks
        }
-       
+
        status_code = 200 if overall_healthy else 503
        return JsonResponse(response_data, status=status_code)
    ```
@@ -1005,7 +1005,7 @@ if connection.vendor == 'postgresql':
 2. Add health endpoint imports and patterns:
    ```python
    from observability.health import liveness_view, readiness_view
-   
+
    urlpatterns = [
        # ... existing patterns
        path('health/live', liveness_view, name='health-live'),
@@ -1035,14 +1035,14 @@ if connection.vendor == 'postgresql':
    # =======================
    # Observability Settings
    # =======================
-   
+
    # Health Checks
    OBSERVABILITY_HEALTH_CHECKS_ENABLED = env.bool('OBSERVABILITY_HEALTH_CHECKS_ENABLED', default=True)
-   
+
    # Metrics (WP03)
    OBSERVABILITY_METRICS_ENABLED = env.bool('OBSERVABILITY_METRICS_ENABLED', default=True)
    OBSERVABILITY_METRICS_EXPORTER = env.str('OBSERVABILITY_METRICS_EXPORTER', default='prometheus')
-   
+
    # Logging (WP02)
    OBSERVABILITY_LOGGING_JSON = env.bool('OBSERVABILITY_LOGGING_JSON', default=True)
    OBSERVABILITY_PII_REDACTION_ENABLED = env.bool('OBSERVABILITY_PII_REDACTION_ENABLED', default=True)
@@ -1069,16 +1069,16 @@ if connection.vendor == 'postgresql':
    def ready(self):
        """Auto-register default health checks on app startup."""
        from django.conf import settings
-       
+
        if not settings.OBSERVABILITY_HEALTH_CHECKS_ENABLED:
            return  # Health checks disabled
-       
+
        from .health import register_health_check
        from .checks.database import DatabaseHealthCheck
        from .checks.cache import CacheHealthCheck
        from .checks.queue import QueueHealthCheck
        from .checks.migrations import MigrationHealthCheck
-       
+
        # Register default checks
        register_health_check("database", DatabaseHealthCheck(), critical=True)
        register_health_check("cache", CacheHealthCheck(), critical=False)  # Non-critical per Clarification #4
@@ -1091,7 +1091,7 @@ if connection.vendor == 'postgresql':
    from .cache import CacheHealthCheck
    from .queue import QueueHealthCheck
    from .migrations import MigrationHealthCheck
-   
+
    __all__ = [
        'DatabaseHealthCheck',
        'CacheHealthCheck',

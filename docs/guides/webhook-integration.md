@@ -13,14 +13,14 @@ sequenceDiagram
     participant App as Your App
     participant API as Core-App
     participant Queue as Task Queue
-    
+
     Note over API: Event occurs
     API->>Queue: Queue webhook delivery
     Queue->>App: POST webhook payload
     App->>App: Verify signature
     App->>App: Process event
     App-->>Queue: 200 OK
-    
+
     alt Delivery failed
         Queue->>Queue: Wait (exponential backoff)
         Queue->>App: Retry delivery
@@ -98,7 +98,7 @@ def verify_signature(payload, signature, timestamp):
         message.encode(),
         hashlib.sha256
     ).hexdigest()
-    
+
     return hmac.compare_digest(f'sha256={expected}', signature)
 
 @app.route('/webhooks/core-app', methods=['POST'])
@@ -106,16 +106,16 @@ def handle_webhook():
     payload = request.data.decode('utf-8')
     signature = request.headers.get('X-Webhook-Signature')
     timestamp = request.headers.get('X-Webhook-Timestamp')
-    
+
     if not verify_signature(payload, signature, timestamp):
         abort(401)
-    
+
     event = request.json
-    
+
     # Process event
     if event['type'] == 'project.created':
         handle_project_created(event['data'])
-    
+
     return '', 200
 ```
 
@@ -134,7 +134,7 @@ function verifySignature(payload, signature, timestamp) {
     .createHmac('sha256', WEBHOOK_SECRET)
     .update(message)
     .digest('hex');
-  
+
   const expectedSignature = `sha256=${expected}`;
   return crypto.timingSafeEqual(
     Buffer.from(signature),
@@ -146,16 +146,16 @@ app.post('/webhooks/core-app', express.raw({ type: 'application/json' }), (req, 
   const payload = req.body.toString();
   const signature = req.headers['x-webhook-signature'];
   const timestamp = req.headers['x-webhook-timestamp'];
-  
+
   if (!verifySignature(payload, signature, timestamp)) {
     return res.status(401).send('Invalid signature');
   }
-  
+
   const event = JSON.parse(payload);
-  
+
   // Process event
   console.log(`Received ${event.type}:`, event.data);
-  
+
   res.status(200).send('OK');
 });
 ```
@@ -227,12 +227,12 @@ from celery import shared_task
 @app.route('/webhooks/core-app', methods=['POST'])
 def handle_webhook():
     # Verify signature...
-    
+
     event = request.json
-    
+
     # Queue for async processing
     process_webhook_event.delay(event)
-    
+
     # Respond immediately
     return '', 200
 
@@ -252,10 +252,10 @@ def handle_webhook(event):
     # Check if already processed
     if WebhookLog.objects.filter(event_id=event['id']).exists():
         return  # Already handled
-    
+
     # Process event
     process_event(event)
-    
+
     # Mark as processed
     WebhookLog.objects.create(event_id=event['id'])
 ```

@@ -36,9 +36,9 @@ def ci_environment():
     original_env = os.environ.copy()
 
     # Set common CI environment variables
-    os.environ['CI'] = 'true'
-    os.environ['GITHUB_ACTIONS'] = 'true'
-    os.environ['CONTINUOUS_INTEGRATION'] = 'true'
+    os.environ["CI"] = "true"
+    os.environ["GITHUB_ACTIONS"] = "true"
+    os.environ["CONTINUOUS_INTEGRATION"] = "true"
 
     yield
 
@@ -52,16 +52,19 @@ class TestCICDNonInteractiveMode:
 
     def test_ci_environment_detected(self, ci_environment):
         """Test CI environment variables are set correctly."""
-        assert os.getenv('CI') == 'true'
-        assert os.getenv('GITHUB_ACTIONS') == 'true'
+        assert os.getenv("CI") == "true"
+        assert os.getenv("GITHUB_ACTIONS") == "true"
 
     def test_non_interactive_no_tty_required(self, runner, temp_workspace):
         """Test non-interactive mode works without TTY."""
-        result = runner.invoke(scaffold, [
-            "--no-interactive",
-            "app",
-            "ci_test_app",
-        ])
+        result = runner.invoke(
+            scaffold,
+            [
+                "--no-interactive",
+                "app",
+                "ci_test_app",
+            ],
+        )
 
         # Should not hang waiting for input
         # Currently returns SYSTEM_ERROR (placeholder)
@@ -69,12 +72,15 @@ class TestCICDNonInteractiveMode:
 
     def test_non_interactive_with_verbose(self, runner):
         """Test non-interactive mode with verbose output."""
-        result = runner.invoke(scaffold, [
-            "--no-interactive",
-            "--verbose",
-            "app",
-            "test_app",
-        ])
+        result = runner.invoke(
+            scaffold,
+            [
+                "--no-interactive",
+                "--verbose",
+                "app",
+                "test_app",
+            ],
+        )
 
         assert result.exit_code == EXIT_SYSTEM_ERROR
 

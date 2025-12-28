@@ -85,7 +85,7 @@ class Note(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-created_at']
 ```
@@ -101,12 +101,12 @@ class Note(models.Model):
 ```python
 class NoteSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.email')
-    
+
     class Meta:
         model = Note
         fields = ['id', 'title', 'content', 'author', 'created_at', 'updated_at']
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
-    
+
     def validate_title(self, value):
         if len(value) < 3:
             raise serializers.ValidationError("Title must be at least 3 characters.")
@@ -125,15 +125,15 @@ class NoteViewSet(viewsets.ModelViewSet):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
-    
+
     def get_queryset(self):
         if self.action == 'list':
             return self.queryset.filter(author=self.request.user)
         return self.queryset
-    
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-    
+
     @action(detail=False, methods=['get'])
     def recent(self, request):
         recent_notes = self.get_queryset()[:5]
@@ -337,8 +337,8 @@ class Category(models.Model):
 class Note(models.Model):
     # ... existing fields
     category = models.ForeignKey(
-        Category, 
-        null=True, 
+        Category,
+        null=True,
         blank=True,
         on_delete=models.SET_NULL
     )

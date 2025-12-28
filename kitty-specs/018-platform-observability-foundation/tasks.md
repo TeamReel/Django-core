@@ -1,8 +1,8 @@
 # Work Packages: Platform Observability Foundation
 
-**Feature**: B18 Platform Observability Foundation  
-**Branch**: `018-platform-observability-foundation`  
-**Inputs**: [plan.md](plan.md), [spec.md](spec.md), [research.md](research.md), [data-model.md](data-model.md), [quickstart.md](quickstart.md)  
+**Feature**: B18 Platform Observability Foundation
+**Branch**: `018-platform-observability-foundation`
+**Inputs**: [plan.md](plan.md), [spec.md](spec.md), [research.md](research.md), [data-model.md](data-model.md), [quickstart.md](quickstart.md)
 **Prerequisites**: plan.md (architecture), spec.md (user stories), research.md (technical decisions), data-model.md (protocols)
 
 **Tests**: Not explicitly requested by spec; focus on implementation with comprehensive test coverage (95% target per Constitution).
@@ -24,8 +24,8 @@
 | WP03 | Metrics & B15 Task Observability | T028-T043 (16 tasks) | P1 | WP01 (health check protocol), WP02 (logging) |
 | WP04 | Documentation & Constitutional Compliance | T044-T053 (10 tasks) | P2 | WP01, WP02, WP03 |
 
-**Total**: 53 subtasks across 4 work packages  
-**Estimated Duration**: 5-6 days (with parallelization of WP01/WP02)  
+**Total**: 53 subtasks across 4 work packages
+**Estimated Duration**: 5-6 days (with parallelization of WP01/WP02)
 **MVP Scope**: WP01 + WP03 (Health checks + task observability; logging can be added incrementally)
 
 **Status**: ✅ **ALL WORK PACKAGES COMPLETE** (4/4 approved, 2025-12-03)

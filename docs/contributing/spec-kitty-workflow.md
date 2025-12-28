@@ -100,7 +100,7 @@ Generate work packages and subtasks.
 ## WP01: Documentation Structure (P0)
 
 - [ ] T001 Create docs/getting-started/ directory
-- [ ] T002 [P] Create docs/architecture/ directory  
+- [ ] T002 [P] Create docs/architecture/ directory
 - [ ] T003 [P] Create docs/modules/ directory
 ```
 

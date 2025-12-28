@@ -74,9 +74,7 @@ class TemplateRegistry:
         self._validate_all_templates()
 
         self._discovered = True
-        logger.info(
-            f"Template discovery complete: {len(self._templates)} template(s) found"
-        )
+        logger.info(f"Template discovery complete: {len(self._templates)} template(s) found")
 
     def get_template(self, name: str) -> TemplateManifest:
         """
@@ -96,9 +94,7 @@ class TemplateRegistry:
 
         if name not in self._templates:
             available = ", ".join(sorted(self._templates.keys()))
-            raise KeyError(
-                f"Template '{name}' not found. Available templates: {available}"
-            )
+            raise KeyError(f"Template '{name}' not found. Available templates: {available}")
 
         return self._templates[name]
 
@@ -165,9 +161,7 @@ class TemplateRegistry:
         # Merge base + template
         return self._merge_templates(base, template)
 
-    def _merge_templates(
-        self, base: TemplateManifest, child: TemplateManifest
-    ) -> TemplateManifest:
+    def _merge_templates(self, base: TemplateManifest, child: TemplateManifest) -> TemplateManifest:
         """
         Merge base and child templates (file-level override).
 
@@ -200,9 +194,7 @@ class TemplateRegistry:
             _source=child._source,
         )
 
-    def _add_template(
-        self, template: TemplateManifest, source: str
-    ) -> None:
+    def _add_template(self, template: TemplateManifest, source: str) -> None:
         """
         Add template to registry with conflict detection.
 
@@ -237,9 +229,7 @@ class TemplateRegistry:
         for template in templates.values():
             self._add_template(template, "Core built-in")
 
-        logger.debug(
-            f"Discovered {len(templates)} Core built-in template(s)"
-        )
+        logger.debug(f"Discovered {len(templates)} Core built-in template(s)")
 
     def _discover_plugin_templates(self) -> None:
         """
@@ -281,9 +271,7 @@ class TemplateRegistry:
         """
         project_dir = self._get_project_root()
         if project_dir is None:
-            logger.debug(
-                "Could not determine project root, skipping project-local templates"
-            )
+            logger.debug("Could not determine project root, skipping project-local templates")
             return
 
         templates_dir = project_dir / "templates" / "scaffold"
@@ -291,9 +279,7 @@ class TemplateRegistry:
         for template in templates.values():
             self._add_template(template, "project-local")
 
-        logger.debug(
-            f"Discovered {len(templates)} project-local template(s)"
-        )
+        logger.debug(f"Discovered {len(templates)} project-local template(s)")
 
     def _validate_all_templates(self) -> None:
         """
@@ -338,9 +324,7 @@ class TemplateRegistry:
 
         # Search up directory tree for project markers
         for parent in [current] + list(current.parents):
-            if (parent / "manage.py").exists() or (
-                parent / "pyproject.toml"
-            ).exists():
+            if (parent / "manage.py").exists() or (parent / "pyproject.toml").exists():
                 return parent
 
         return None

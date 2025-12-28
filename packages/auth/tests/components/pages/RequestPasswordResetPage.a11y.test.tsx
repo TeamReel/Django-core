@@ -165,7 +165,7 @@ describe('RequestPasswordResetPage Accessibility', () => {
 
       // Email field should have aria-invalid when validation fails
       const emailInput = screen.getByLabelText(/email/i);
-      
+
       // Note: The actual form implementation should set aria-invalid="true"
       // This test documents the expected behavior for F01 integration
       // For now, we verify that error messages are displayed
@@ -230,7 +230,7 @@ describe('RequestPasswordResetPage Accessibility', () => {
       // Success message should be announced
       const successMessage = await screen.findByText(/if that email exists/i);
       expect(successMessage).toBeInTheDocument();
-      
+
       // Note: The actual implementation should have role="alert" or aria-live="polite"
       // to ensure screen readers announce the message
     });

@@ -6,8 +6,8 @@ Hierarchical role-based access control (RBAC) for Django Core-App.
 
 The `permissions` module implements a hierarchical RBAC system with three scope levels: global, organization, and project. Permissions flow down the hierarchy, enabling flexible access control patterns.
 
-**App location**: `src/permissions/`  
-**Feature spec**: `kitty-specs/008-hierarchical-access-control/`  
+**App location**: `src/permissions/`
+**Feature spec**: `kitty-specs/008-hierarchical-access-control/`
 **ADR**: [ADR-002: Role-Based Access Control](../architecture/adr/index.md#security--authentication)
 
 ## Configuration
@@ -243,7 +243,7 @@ The evaluator handles hierarchical permission checks:
 
 ```python
 class PermissionEvaluator:
-    def check_permission(self, user, permission, resource=None, 
+    def check_permission(self, user, permission, resource=None,
                          organization=None, project=None):
         """
         Check permission with hierarchy:

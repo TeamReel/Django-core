@@ -40,24 +40,24 @@ class ObservableTask(Task):
         """
         start_time = time.time()
         task_name = self.name
-        status = 'unknown'
+        status = "unknown"
 
         try:
             # Extract correlation_id from task request headers
-            correlation_id = self.request.get('correlation_id')
+            correlation_id = self.request.get("correlation_id")
             if correlation_id:
                 set_correlation_id(correlation_id)
 
             # FR-014: Emit tasks_started_total
-            emit_metric('counter', 'tasks_started_total', 1, {'task_name': task_name})
+            emit_metric("counter", "tasks_started_total", 1, {"task_name": task_name})
 
             # Execute task
             result = super().__call__(*args, **kwargs)
-            status = 'success'
+            status = "success"
             return result
 
         except Exception:
-            status = 'failure'
+            status = "failure"
             raise  # Re-raise after capturing status
 
         finally:
@@ -65,21 +65,26 @@ class ObservableTask(Task):
                 duration = time.time() - start_time
 
                 # FR-014: Emit tasks_completed_total with status label
-                emit_metric('counter', 'tasks_completed_total', 1, {
-                    'task_name': task_name,
-                    'status': status
-                })
+                emit_metric(
+                    "counter",
+                    "tasks_completed_total",
+                    1,
+                    {"task_name": task_name, "status": status},
+                )
 
                 # FR-014: Emit task_duration_seconds
-                emit_metric('histogram', 'task_duration_seconds', duration, {
-                    'task_name': task_name
-                })
+                emit_metric(
+                    "histogram", "task_duration_seconds", duration, {"task_name": task_name}
+                )
 
                 # FR-014: Emit task_retries_total if task has retries
                 if self.request.retries > 0:
-                    emit_metric('counter', 'task_retries_total', self.request.retries, {
-                        'task_name': task_name
-                    })
+                    emit_metric(
+                        "counter",
+                        "task_retries_total",
+                        self.request.retries,
+                        {"task_name": task_name},
+                    )
 
             except Exception as e:
                 # FR-011a: Never propagate exceptions from observability hooks

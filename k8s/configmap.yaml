@@ -17,24 +17,24 @@ data:
   DEBUG: "False"
   ALLOWED_HOSTS: "example.com,www.example.com,api.example.com"
   CSRF_TRUSTED_ORIGINS: "https://example.com,https://www.example.com"
-  
+
   # Security Settings (B03)
   SECURE_SSL_REDIRECT: "True"
   SESSION_COOKIE_SECURE: "True"
   CSRF_COOKIE_SECURE: "True"
   SECURE_HSTS_SECONDS: "31536000"
   SECURE_HSTS_INCLUDE_SUBDOMAINS: "True"
-  
+
   # Logging & Observability (B18)
   LOGGING_LEVEL: "INFO"
   PROMETHEUS_METRICS_ENABLED: "True"
-  
+
   # Celery Configuration (B15)
   CELERY_TASK_ALWAYS_EAGER: "False"
   CELERY_WORKER_CONCURRENCY: "4"
   CELERY_TASK_SOFT_TIME_LIMIT: "300"
   CELERY_TASK_TIME_LIMIT: "600"
-  
+
   # Gunicorn Configuration
   GUNICORN_WORKERS: "4"
   GUNICORN_TIMEOUT: "30"

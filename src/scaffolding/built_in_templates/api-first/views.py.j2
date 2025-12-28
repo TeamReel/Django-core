@@ -58,12 +58,12 @@ class {{ model_name | default("Item") }}ViewSet(viewsets.ModelViewSet):
             Filtered queryset
         """
         queryset = super().get_queryset()
-        
+
         # Filter active items by default
         is_active = self.request.query_params.get("is_active")
         if is_active is not None:
             queryset = queryset.filter(is_active=is_active.lower() == "true")
-        
+
         return queryset
 
     @action(detail=True, methods=["post"])
@@ -81,7 +81,7 @@ class {{ model_name | default("Item") }}ViewSet(viewsets.ModelViewSet):
         item = self.get_object()
         item.is_active = True
         item.save()
-        
+
         serializer = self.get_serializer(item)
         return Response(serializer.data)
 
@@ -100,7 +100,7 @@ class {{ model_name | default("Item") }}ViewSet(viewsets.ModelViewSet):
         item = self.get_object()
         item.is_active = False
         item.save()
-        
+
         serializer = self.get_serializer(item)
         return Response(serializer.data)
 
@@ -117,10 +117,10 @@ class {{ model_name | default("Item") }}ViewSet(viewsets.ModelViewSet):
         """
         queryset = self.get_queryset().filter(is_active=True)
         page = self.paginate_queryset(queryset)
-        
+
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-        
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

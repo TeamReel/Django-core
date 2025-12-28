@@ -2,7 +2,7 @@
 
 !!! note "Consolidated Documentation"
     General testing patterns and guidelines have been moved to the [Contributing: Testing](contributing/testing.md) guide.
-    
+
     This page contains Security Baseline-specific testing information.
 
 ## Quick Reference
@@ -63,10 +63,10 @@ def mock_production_settings():
 def test_rule_violation_detected(mock_insecure_django_settings):
     # Arrange
     rule = DebugModeProductionRule()
-    
+
     # Act
     violation = rule.validate(mock_insecure_django_settings, "production")
-    
+
     # Assert
     assert violation is not None
     assert violation.rule_id == "SEC001-DEBUG-MODE"

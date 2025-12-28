@@ -34,17 +34,17 @@ class TestTemplateRegistry:
     def test_registry_has_discover_method(self):
         """Test TemplateRegistry has discover method."""
         registry = TemplateRegistry()
-        assert callable(getattr(registry, 'discover', None))
+        assert callable(getattr(registry, "discover", None))
 
     def test_registry_has_list_templates_method(self):
         """Test TemplateRegistry has list_templates method."""
         registry = TemplateRegistry()
-        assert callable(getattr(registry, 'list_templates', None))
+        assert callable(getattr(registry, "list_templates", None))
 
     def test_registry_has_get_template_method(self):
         """Test TemplateRegistry has get_template method."""
         registry = TemplateRegistry()
-        assert callable(getattr(registry, 'get_template', None))
+        assert callable(getattr(registry, "get_template", None))
 
 
 class TestTemplateRenderer:
@@ -58,7 +58,7 @@ class TestTemplateRenderer:
     def test_renderer_has_render_method(self):
         """Test TemplateRenderer has render method."""
         renderer = TemplateRenderer()
-        assert callable(getattr(renderer, 'render', None))
+        assert callable(getattr(renderer, "render", None))
 
     def test_render_simple_variable(self):
         """Test rendering a simple variable substitution."""

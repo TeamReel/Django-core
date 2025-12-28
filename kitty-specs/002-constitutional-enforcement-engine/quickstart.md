@@ -63,7 +63,7 @@ rules:
     - mypy-check
     - ruff-check
     - test-coverage
-  
+
   config:
     test-coverage:
       threshold: 75
@@ -100,16 +100,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Full history for Git analysis
-      
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      
+
       - name: Install dependencies
         run: |
           pip install -e .
           pip install -r requirements/local.txt
-      
+
       - name: Run Constitutional Enforcement
         run: |
           constitution-engine \\
@@ -203,10 +203,10 @@ rules:
     - ruff-check
     - test-coverage
     - git-hooks
-  
+
   disabled:
     - experimental-rule
-  
+
   config:
     mypy-check:
       strict: true
@@ -220,11 +220,11 @@ output:
   formats:
     - console
     - json
-  
+
   console:
     color: true
     verbose: false
-  
+
   json:
     path: "constitution-report.json"
     indent: 2

@@ -9,12 +9,8 @@ from .views.routing_logs_views import RoutingDecisionLogViewSet
 app_name = "contextual_notifications"
 
 router = DefaultRouter()
-router.register(
-    r"routing-logs", RoutingDecisionLogViewSet, basename="routing-decision-log"
-)
-router.register(
-    r"preferences", NotificationPreferenceViewSet, basename="notification-preference"
-)
+router.register(r"routing-logs", RoutingDecisionLogViewSet, basename="routing-decision-log")
+router.register(r"preferences", NotificationPreferenceViewSet, basename="notification-preference")
 
 urlpatterns = [
     path("", include(router.urls)),

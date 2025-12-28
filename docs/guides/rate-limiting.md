@@ -64,18 +64,18 @@ import time
 def api_request(url, token, max_retries=3):
     """Make API request with rate limit handling."""
     headers = {'Authorization': f'Bearer {token}'}
-    
+
     for attempt in range(max_retries):
         response = requests.get(url, headers=headers)
-        
+
         if response.status_code == 429:
             retry_after = int(response.headers.get('Retry-After', 60))
             print(f"Rate limited. Waiting {retry_after} seconds...")
             time.sleep(retry_after)
             continue
-        
+
         return response
-    
+
     raise Exception("Max retries exceeded")
 ```
 
@@ -88,7 +88,7 @@ class RateLimitedClient:
         self.headers = {'Authorization': f'Bearer {token}'}
         self.remaining = None
         self.reset_time = None
-    
+
     def request(self, method, path, **kwargs):
         # Check if we should wait
         if self.remaining is not None and self.remaining <= 5:
@@ -96,18 +96,18 @@ class RateLimitedClient:
             if wait_time > 0:
                 print(f"Approaching limit. Waiting {wait_time:.0f}s...")
                 time.sleep(wait_time)
-        
+
         response = requests.request(
             method,
             f'{self.base_url}{path}',
             headers=self.headers,
             **kwargs
         )
-        
+
         # Update rate limit info
         self.remaining = int(response.headers.get('X-RateLimit-Remaining', 1000))
         self.reset_time = int(response.headers.get('X-RateLimit-Reset', 0))
-        
+
         return response
 ```
 
@@ -123,15 +123,15 @@ def batch_fetch(urls, token, rate_limit=10, window=1):
     """Fetch multiple URLs respecting rate limits."""
     headers = {'Authorization': f'Bearer {token}'}
     results = []
-    
+
     for i, url in enumerate(urls):
         # Respect rate limit
         if i > 0 and i % rate_limit == 0:
             time.sleep(window)
-        
+
         response = requests.get(url, headers=headers)
         results.append(response.json())
-    
+
     return results
 ```
 
@@ -143,17 +143,17 @@ def batch_fetch(urls, token, rate_limit=10, window=1):
 async function fetchWithRetry(url, options = {}, maxRetries = 3) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const response = await fetch(url, options);
-    
+
     if (response.status === 429) {
       const retryAfter = parseInt(response.headers.get('Retry-After') || '60');
       console.log(`Rate limited. Waiting ${retryAfter} seconds...`);
       await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
       continue;
     }
-    
+
     return response;
   }
-  
+
   throw new Error('Max retries exceeded');
 }
 ```
@@ -168,7 +168,7 @@ class APIClient {
     this.remaining = null;
     this.resetTime = null;
   }
-  
+
   async request(path, options = {}) {
     // Check if we should wait
     if (this.remaining !== null && this.remaining <= 5) {
@@ -178,7 +178,7 @@ class APIClient {
         await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
       }
     }
-    
+
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...options,
       headers: {
@@ -186,11 +186,11 @@ class APIClient {
         'Authorization': `Bearer ${this.token}`
       }
     });
-    
+
     // Update rate limit info
     this.remaining = parseInt(response.headers.get('X-RateLimit-Remaining') || '1000');
     this.resetTime = parseInt(response.headers.get('X-RateLimit-Reset') || '0');
-    
+
     return response;
   }
 }
@@ -216,13 +216,13 @@ def request_with_backoff(url, token, max_attempts=5):
             url,
             headers={'Authorization': f'Bearer {token}'}
         )
-        
+
         if response.status_code != 429:
             return response
-        
+
         delay = exponential_backoff(attempt)
         time.sleep(delay)
-    
+
     raise Exception("Request failed after max attempts")
 ```
 
@@ -240,25 +240,25 @@ class CachedAPIClient:
         self.token = token
         self.cache_ttl = cache_ttl
         self.cache = {}
-    
+
     def get(self, path):
         cache_key = path
         cached = self.cache.get(cache_key)
-        
+
         if cached:
             data, expires = cached
             if datetime.now() < expires:
                 return data
-        
+
         response = requests.get(
             f'{self.base_url}{path}',
             headers={'Authorization': f'Bearer {self.token}'}
         )
         data = response.json()
-        
+
         expires = datetime.now() + timedelta(seconds=self.cache_ttl)
         self.cache[cache_key] = (data, expires)
-        
+
         return data
 ```
 
@@ -288,7 +288,7 @@ import logging
 def log_rate_limit_status(response):
     remaining = response.headers.get('X-RateLimit-Remaining')
     limit = response.headers.get('X-RateLimit-Limit')
-    
+
     if remaining and limit:
         percent = int(remaining) / int(limit) * 100
         if percent < 20:

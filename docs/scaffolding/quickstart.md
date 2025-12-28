@@ -4,7 +4,7 @@
 
 This tutorial walks you through generating your first Django apps using the scaffolding CLI. You'll learn how to use built-in templates, customize generation with variables, and create your own custom templates.
 
-**Time:** 30 minutes  
+**Time:** 30 minutes
 **Prerequisites:** Django 5.1+, Python 3.12+
 
 ---
@@ -160,7 +160,7 @@ from .models import Product  # Uses custom model name
 
 class ProductSerializer(serializers.ModelSerializer):
     """Serializer for Product model."""
-    
+
     class Meta:
         model = Product
         fields = [
@@ -227,7 +227,7 @@ from .models import Item
 
 class OrderService:
     """Service layer for Order operations."""
-    
+
     @staticmethod
     def get_all(active_only: bool = False) -> List[Item]:
         """Retrieve all items."""
@@ -235,7 +235,7 @@ class OrderService:
         if active_only:
             queryset = queryset.filter(is_active=True)
         return queryset
-    
+
     @staticmethod
     @transaction.atomic
     def create(name: str, description: str = "", **kwargs) -> Item:
@@ -441,7 +441,7 @@ from django.views import View
 
 class HealthCheckView(View):
     """Health check endpoint for {{ app_name }}."""
-    
+
     def get(self, request):
         """Return health status."""
         return JsonResponse({
@@ -453,18 +453,18 @@ class HealthCheckView(View):
 
 class ReadinessCheckView(View):
     """Readiness check endpoint for {{ app_name }}."""
-    
+
     def get(self, request):
         """Return readiness status."""
         # Check database connectivity
         from .models import {{ model_name | default('Item') }}
-        
+
         try:
             {{ model_name | default('Item') }}.objects.exists()
             ready = True
         except Exception:
             ready = False
-        
+
         status_code = 200 if ready else 503
         return JsonResponse({
             'status': 'ready' if ready else 'not_ready',

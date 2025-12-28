@@ -42,7 +42,7 @@ class Test{{ model_name | default("Item") }}Serializer:
             "is_active": True
         }
         serializer = {{ model_name | default("Item") }}Serializer(data=data)
-        
+
         assert serializer.is_valid()
         item = serializer.save()
         assert item.name == "New {{ model_name | default('Item') }}"
@@ -51,7 +51,7 @@ class Test{{ model_name | default("Item") }}Serializer:
         """Test deserializing data missing required field fails."""
         data = {"description": "Missing name"}
         serializer = {{ model_name | default("Item") }}Serializer(data=data)
-        
+
         assert not serializer.is_valid()
         assert "name" in serializer.errors
 
@@ -59,7 +59,7 @@ class Test{{ model_name | default("Item") }}Serializer:
         """Test name validation rejects empty strings."""
         data = {"name": "   ", "is_active": True}
         serializer = {{ model_name | default("Item") }}Serializer(data=data)
-        
+
         assert not serializer.is_valid()
         assert "name" in serializer.errors
 
@@ -67,7 +67,7 @@ class Test{{ model_name | default("Item") }}Serializer:
         """Test name validation rejects short names."""
         data = {"name": "ab", "is_active": True}
         serializer = {{ model_name | default("Item") }}Serializer(data=data)
-        
+
         assert not serializer.is_valid()
         assert "name" in serializer.errors
 
@@ -80,7 +80,7 @@ class Test{{ model_name | default("Item") }}Serializer:
             "created_at": "2020-01-01T00:00:00Z",  # Should be ignored
         }
         serializer = {{ model_name | default("Item") }}Serializer(item, data=data, partial=True)
-        
+
         assert serializer.is_valid()
         updated_item = serializer.save()
         assert updated_item.id == item.id  # Unchanged
@@ -117,7 +117,7 @@ class Test{{ model_name | default("Item") }}CreateSerializer:
             "is_active": False
         }
         serializer = {{ model_name | default("Item") }}CreateSerializer(data=data)
-        
+
         assert serializer.is_valid()
         item = serializer.save()
         assert item.name == "Created {{ model_name | default('Item') }}"

@@ -34,9 +34,7 @@ class TestLivenessView:
         # Even if we register a failing check, liveness should succeed
         failing_check = Mock()
         failing_check.check.return_value = HealthCheckResult(
-            name="failing",
-            status=False,
-            latency_ms=10.0
+            name="failing", status=False, latency_ms=10.0
         )
         register_health_check("failing_test", failing_check, critical=True)
 
@@ -56,9 +54,7 @@ class TestReadinessView:
         # Register mock healthy checks
         healthy_check = Mock()
         healthy_check.check.return_value = HealthCheckResult(
-            name="test",
-            status=True,
-            latency_ms=10.0
+            name="test", status=True, latency_ms=10.0
         )
 
         with patch("observability.health._HEALTH_CHECKS", {"test": (healthy_check, True)}):
@@ -77,9 +73,7 @@ class TestReadinessView:
         # Register mock failing critical check
         failing_check = Mock()
         failing_check.check.return_value = HealthCheckResult(
-            name="database",
-            status=False,
-            latency_ms=50.0
+            name="database", status=False, latency_ms=50.0
         )
 
         with patch("observability.health._HEALTH_CHECKS", {"database": (failing_check, True)}):
@@ -97,14 +91,18 @@ class TestReadinessView:
 
         # Register critical healthy and non-critical failing
         healthy_check = Mock()
-        healthy_check.check.return_value = HealthCheckResult(name="database", status=True, latency_ms=10.0)
+        healthy_check.check.return_value = HealthCheckResult(
+            name="database", status=True, latency_ms=10.0
+        )
 
         failing_check = Mock()
-        failing_check.check.return_value = HealthCheckResult(name="cache", status=False, latency_ms=50.0)
+        failing_check.check.return_value = HealthCheckResult(
+            name="cache", status=False, latency_ms=50.0
+        )
 
         checks = {
             "database": (healthy_check, True),  # Critical
-            "cache": (failing_check, False)  # Non-critical
+            "cache": (failing_check, False),  # Non-critical
         }
 
         with patch("observability.health._HEALTH_CHECKS", checks):
@@ -123,8 +121,10 @@ class TestReadinessView:
 
         # Register slow check that exceeds timeout
         slow_check = Mock()
+
         def slow_check_method():
             import time
+
             time.sleep(0.6)  # 600ms exceeds 500ms timeout
             return HealthCheckResult(name="slow", status=True, latency_ms=600.0)
 
@@ -173,15 +173,16 @@ class TestReadinessView:
 
         # Register mix of checks
         db_check = Mock()
-        db_check.check.return_value = HealthCheckResult(name="database", status=True, latency_ms=10.0)
+        db_check.check.return_value = HealthCheckResult(
+            name="database", status=True, latency_ms=10.0
+        )
 
         cache_check = Mock()
-        cache_check.check.return_value = HealthCheckResult(name="cache", status=False, latency_ms=20.0)
+        cache_check.check.return_value = HealthCheckResult(
+            name="cache", status=False, latency_ms=20.0
+        )
 
-        checks = {
-            "database": (db_check, True),
-            "cache": (cache_check, False)
-        }
+        checks = {"database": (db_check, True), "cache": (cache_check, False)}
 
         with patch("observability.health._HEALTH_CHECKS", checks):
             response = readiness_view(request)
@@ -210,7 +211,9 @@ class TestReadinessViewIntegration:
         request = factory.get("/health/ready")
 
         # Register real database check
-        with patch("observability.health._HEALTH_CHECKS", {"database": (DatabaseHealthCheck(), True)}):
+        with patch(
+            "observability.health._HEALTH_CHECKS", {"database": (DatabaseHealthCheck(), True)}
+        ):
             with patch("observability.health.getattr") as mock_getattr:
                 mock_getattr.return_value = True  # Enable health checks
                 response = readiness_view(request)

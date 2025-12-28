@@ -1,10 +1,10 @@
 # Backend Core v1 Health Assessment (B01-B20)
 
-**Assessment Date:** 2025-12-04  
-**Assessor:** Automated Health Check  
-**Branch:** main  
-**Commit:** 06f5515 (HEAD)  
-**Python:** 3.12.4  
+**Assessment Date:** 2025-12-04
+**Assessor:** Automated Health Check
+**Branch:** main
+**Commit:** 06f5515 (HEAD)
+**Python:** 3.12.4
 **Django:** 5.1.4
 
 ---

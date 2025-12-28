@@ -23,13 +23,13 @@ interface ColorTokens {
   secondary: string;
   secondaryHover: string;
   secondaryActive: string;
-  
+
   // Feedback colors
   success: string;
   warning: string;
   error: string;
   info: string;
-  
+
   // Neutral palette
   background: string;
   backgroundSubtle: string;
@@ -37,7 +37,7 @@ interface ColorTokens {
   surfaceHover: string;
   border: string;
   borderSubtle: string;
-  
+
   // Text colors
   textPrimary: string;
   textSecondary: string;
@@ -45,7 +45,7 @@ interface ColorTokens {
   textInverse: string;
   textLink: string;
   textLinkHover: string;
-  
+
   // Focus
   focusRing: string;
 }
@@ -59,7 +59,7 @@ interface TypographyTokens {
   fontFamilyBase: string;
   fontFamilyHeading: string;
   fontFamilyMono: string;
-  
+
   // Font sizes (rem)
   fontSizeXs: string;   // 0.75rem
   fontSizeSm: string;   // 0.875rem
@@ -69,18 +69,18 @@ interface TypographyTokens {
   fontSize2xl: string;  // 1.5rem
   fontSize3xl: string;  // 1.875rem
   fontSize4xl: string;  // 2.25rem
-  
+
   // Font weights
   fontWeightNormal: string;  // 400
   fontWeightMedium: string;  // 500
   fontWeightSemibold: string; // 600
   fontWeightBold: string;    // 700
-  
+
   // Line heights
   lineHeightTight: string;   // 1.25
   lineHeightNormal: string;  // 1.5
   lineHeightRelaxed: string; // 1.75
-  
+
   // Letter spacing
   letterSpacingTight: string;
   letterSpacingNormal: string;
@@ -171,7 +171,7 @@ interface MotionTokens {
   durationFast: string;    // 150ms
   durationNormal: string;  // 250ms
   durationSlow: string;    // 400ms
-  
+
   // Easing curves
   easingDefault: string;   // cubic-bezier(0.4, 0, 0.2, 1)
   easingIn: string;        // cubic-bezier(0.4, 0, 1, 1)

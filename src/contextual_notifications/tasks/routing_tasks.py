@@ -112,9 +112,7 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
                     "No target users found for event",
                     extra={"event_type": event_type, "task_id": self.request.id},
                 )
-                routing_tasks_total.labels(
-                    event_type=event_type, status="no_targets"
-                ).inc()
+                routing_tasks_total.labels(event_type=event_type, status="no_targets").inc()
 
                 # Log audit for no targets
                 AuditService.log_routing_decision(
@@ -154,9 +152,7 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
                     "All users opted out via preferences",
                     extra={"event_type": event_type, "task_id": self.request.id},
                 )
-                routing_tasks_total.labels(
-                    event_type=event_type, status="all_opted_out"
-                ).inc()
+                routing_tasks_total.labels(event_type=event_type, status="all_opted_out").inc()
 
                 # Log audit for all opted out
                 AuditService.log_routing_decision(
@@ -188,9 +184,7 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
                     "All notifications rate limited during quiet hours",
                     extra={"event_type": event_type, "org_id": org_id, "task_id": self.request.id},
                 )
-                routing_tasks_total.labels(
-                    event_type=event_type, status="rate_limited"
-                ).inc()
+                routing_tasks_total.labels(event_type=event_type, status="rate_limited").inc()
 
                 # TODO: Queue for post-quiet-hours delivery with Celery ETA
                 # For now, just log and skip
@@ -225,9 +219,7 @@ def route_event_task(self, event_dict: dict[str, Any]) -> dict[str, Any]:
                     "All notifications suppressed (duplicates)",
                     extra={"event_type": event_type, "task_id": self.request.id},
                 )
-                routing_tasks_total.labels(
-                    event_type=event_type, status="all_suppressed"
-                ).inc()
+                routing_tasks_total.labels(event_type=event_type, status="all_suppressed").inc()
 
                 # Log audit for all suppressed
                 AuditService.log_routing_decision(
@@ -499,4 +491,3 @@ def _apply_policy_filtering(
 
     # Return empty list (all rate limited) and IDs of affected users
     return [], rate_limited_user_ids
-

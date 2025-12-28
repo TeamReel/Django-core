@@ -135,10 +135,10 @@ from pathlib import Path
 def create_jinja_env(template_dir: Path) -> Environment:
     """
     Create Jinja2 environment for template rendering.
-    
+
     Args:
         template_dir: Path to template directory
-    
+
     Returns:
         Configured Jinja2 environment
     """
@@ -149,11 +149,11 @@ def create_jinja_env(template_dir: Path) -> Environment:
         trim_blocks=True,  # Remove first newline after block
         lstrip_blocks=True  # Strip leading spaces before block
     )
-    
+
     # Add custom filters
     env.filters['snake_case'] = lambda s: s.lower().replace('-', '_').replace(' ', '_')
     env.filters['pascal_case'] = lambda s: ''.join(word.capitalize() for word in s.replace('_', ' ').split())
-    
+
     return env
 ```
 
@@ -189,11 +189,11 @@ class TemplateRenderer:
     """
     Render templates with variable substitution.
     """
-    
+
     def __init__(self, template_dir: Path, variables: Dict[str, Any]):
         """
         Initialize template renderer.
-        
+
         Args:
             template_dir: Path to template directory
             variables: User-provided variables for substitution
@@ -201,17 +201,17 @@ class TemplateRenderer:
         self.template_dir = template_dir
         self.variables = self._merge_with_builtin_variables(variables)
         self.env = create_jinja_env(template_dir)
-    
+
     def render(self, template_file: str) -> str:
         """
         Render template file with variables.
-        
+
         Args:
             template_file: Relative path to template file (e.g., 'models.py.j2')
-        
+
         Returns:
             Rendered content
-        
+
         Raises:
             TemplateError: If rendering fails
         """
@@ -220,7 +220,7 @@ class TemplateRenderer:
             return template.render(**self.variables)
         except TemplateError as e:
             raise TemplateError(f"Failed to render {template_file}: {e}")
-    
+
     def _merge_with_builtin_variables(self, user_vars: Dict[str, Any]) -> Dict[str, Any]:
         """Merge user variables with built-in variables (T020)."""
         # Implementation in T020
@@ -261,7 +261,7 @@ from scaffolding import __version__
 def get_builtin_variables() -> Dict[str, Any]:
     """
     Get built-in template variables.
-    
+
     Returns:
         Dict of built-in variables
     """
@@ -276,7 +276,7 @@ def get_builtin_variables() -> Dict[str, Any]:
         author = result.stdout.strip() if result.returncode == 0 else 'Unknown'
     except Exception:
         author = 'Unknown'
-    
+
     return {
         'timestamp': datetime.now().isoformat(),
         'author': author,
@@ -317,31 +317,31 @@ import shutil
 def render_directory(self, output_dir: Path) -> List[Path]:
     """
     Render all templates in template directory to output directory.
-    
+
     Args:
         output_dir: Path to output directory
-    
+
     Returns:
         List of created file paths
     """
     created_files: List[Path] = []
-    
+
     for template_file in self.template_dir.rglob('*'):
         if template_file.is_dir():
             continue
-        
+
         # Calculate relative path and output path
         rel_path = template_file.relative_to(self.template_dir)
-        
+
         # Skip __template__.yaml manifest
         if rel_path.name == '__template__.yaml':
             continue
-        
+
         # Determine output filename (remove .j2 suffix if present)
         if rel_path.suffix == '.j2':
             output_rel_path = rel_path.with_suffix('')  # Remove .j2
             output_path = output_dir / output_rel_path
-            
+
             # Render template
             try:
                 content = self.render(str(rel_path))
@@ -357,7 +357,7 @@ def render_directory(self, output_dir: Path) -> List[Path]:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(template_file, output_path)
             created_files.append(output_path)
-    
+
     return created_files
 ```
 
@@ -415,11 +415,11 @@ def render_directory(self, output_dir: Path) -> List[Path]:
 def render_with_inheritance(self, template_manifest: TemplateManifest, output_dir: Path) -> List[Path]:
     """
     Render template with inheritance (base + child files).
-    
+
     Args:
         template_manifest: Resolved template manifest (from TemplateRegistry)
         output_dir: Path to output directory
-    
+
     Returns:
         List of created file paths
     """
@@ -518,13 +518,13 @@ def test_variable_substitution(tmp_path):
     template_dir = tmp_path / 'templates'
     template_dir.mkdir()
     (template_dir / 'test.py.j2').write_text('app_name = "{{ app_name }}"')
-    
+
     # Render
     renderer = TemplateRenderer(template_dir, {'app_name': 'payments'})
     output_dir = tmp_path / 'output'
     output_dir.mkdir()
     created_files = renderer.render_directory(output_dir)
-    
+
     # Verify
     assert len(created_files) == 1
     output_file = output_dir / 'test.py'
@@ -541,11 +541,11 @@ def test_builtin_variables(tmp_path):
 # Author: {{ author }}
 # Python {{ python_version }}
 """)
-    
+
     # Render
     renderer = TemplateRenderer(template_dir, {})
     output = renderer.render('header.py.j2')
-    
+
     # Verify built-in variables present
     assert 'Generated on' in output
     assert 'Author:' in output
@@ -558,10 +558,10 @@ def test_jinja2_syntax_error(tmp_path):
     template_dir = tmp_path / 'templates'
     template_dir.mkdir()
     (template_dir / 'bad.py.j2').write_text('{% for item in items %}\n{{ item }}')  # Missing {% endfor %}
-    
+
     # Attempt render
     renderer = TemplateRenderer(template_dir, {'items': ['a', 'b']})
-    
+
     with pytest.raises(Exception, match="Template syntax error"):
         renderer.render('bad.py.j2')
 ```

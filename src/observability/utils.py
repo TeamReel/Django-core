@@ -7,6 +7,7 @@ from typing import Generator
 
 class TimeoutError(Exception):
     """Raised when a timeout expires."""
+
     pass
 
 
@@ -28,6 +29,7 @@ def timeout(seconds: float) -> Generator[None, None, None]:
         >>> with timeout(0.5):
         ...     result = expensive_database_query()
     """
+
     def timeout_handler():
         raise TimeoutError(f"Operation exceeded {seconds}s timeout")
 

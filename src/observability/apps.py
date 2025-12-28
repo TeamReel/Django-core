@@ -29,12 +29,14 @@ class ObservabilityConfig(AppConfig):
         # Register default health checks with criticality flags
         # Critical checks affect readiness probe; non-critical checks are reported only
         register_health_check("database", DatabaseHealthCheck(), critical=True)
-        register_health_check("cache", CacheHealthCheck(), critical=False)  # Non-critical per Clarification #4
+        register_health_check(
+            "cache", CacheHealthCheck(), critical=False
+        )  # Non-critical per Clarification #4
         register_health_check("queue", QueueHealthCheck(), critical=True)
         register_health_check("migrations", MigrationHealthCheck(), critical=True)
 
         # Register metric collector (T033)
-        if getattr(settings, 'OBSERVABILITY_METRICS_ENABLED', False):
+        if getattr(settings, "OBSERVABILITY_METRICS_ENABLED", False):
             from observability.exporters import PrometheusCollector
             from observability.metrics import register_metric_collector
 

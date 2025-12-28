@@ -543,7 +543,7 @@ readinessProbe:
 # Use different thresholds
 livenessProbe:
   failureThreshold: 3  # ← Restart after 3 failures
-  
+
 readinessProbe:
   failureThreshold: 2  # ← Remove from load balancer faster
 ```

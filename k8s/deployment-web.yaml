@@ -42,7 +42,7 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
-      
+
       # Init container: Run database migrations before starting web server
       initContainers:
         - name: migrate
@@ -60,7 +60,7 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "500m"
-      
+
       containers:
         - name: django
           image: your-registry/django-core:latest  # Replace with your image
@@ -92,14 +92,14 @@ spec:
             - name: http
               containerPort: 8000
               protocol: TCP
-          
+
           # Environment variables from ConfigMap and Secret
           envFrom:
             - configMapRef:
                 name: django-core-config
             - secretRef:
                 name: django-core-secrets
-          
+
           # Liveness probe: Is container alive? (B18 integration)
           livenessProbe:
             httpGet:
@@ -110,7 +110,7 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
             successThreshold: 1
-          
+
           # Readiness probe: Can container serve traffic? (B18 integration)
           readinessProbe:
             httpGet:
@@ -121,7 +121,7 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 3
             successThreshold: 1
-          
+
           # Startup probe: Initial container startup (B18 integration)
           startupProbe:
             httpGet:
@@ -132,7 +132,7 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 12  # 60 seconds max startup time
             successThreshold: 1
-          
+
           # Resource requests and limits
           resources:
             requests:
@@ -141,7 +141,7 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
-          
+
           # Security context
           securityContext:
             allowPrivilegeEscalation: false
@@ -149,7 +149,7 @@ spec:
             capabilities:
               drop:
                 - ALL
-      
+
       # Pod anti-affinity: Spread pods across nodes
       affinity:
         podAntiAffinity:
@@ -163,7 +163,7 @@ spec:
                       values:
                         - web
                 topologyKey: kubernetes.io/hostname
-      
+
       # Restart policy
       restartPolicy: Always
 

@@ -15,7 +15,9 @@ from contextual_notifications.services import EventService
 class TestQuietHoursRateLimiting:
     """Integration test for quiet hours policy enforcement."""
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.policy_service.timezone.now")
     def test_notifications_allowed_outside_quiet_hours(
         self, mock_now, mock_handoff, user, organisation, project, org_notification_policy
@@ -50,7 +52,9 @@ class TestQuietHoursRateLimiting:
         # Should call handoff (outside quiet hours)
         assert mock_handoff.called
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.policy_service.timezone.now")
     def test_urgent_notifications_bypass_quiet_hours(
         self, mock_now, mock_handoff, user, organisation, project, org_notification_policy
@@ -85,11 +89,20 @@ class TestQuietHoursRateLimiting:
         # Should call handoff (urgent bypasses quiet hours)
         assert mock_handoff.called
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.policy_service.redis_client")
     @patch("contextual_notifications.services.policy_service.timezone.now")
     def test_normal_notifications_rate_limited_during_quiet_hours(
-        self, mock_now, mock_redis, mock_handoff, user, organisation, project, org_notification_policy
+        self,
+        mock_now,
+        mock_redis,
+        mock_handoff,
+        user,
+        organisation,
+        project,
+        org_notification_policy,
     ):
         """Test that normal priority notifications are rate limited during quiet hours."""
         # Mock time at 23:00 (during quiet hours)
@@ -128,11 +141,20 @@ class TestQuietHoursRateLimiting:
         # Should increment rate limit counter
         mock_redis.incr.assert_called()
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.policy_service.redis_client")
     @patch("contextual_notifications.services.policy_service.timezone.now")
     def test_notifications_blocked_when_rate_limit_exceeded(
-        self, mock_now, mock_redis, mock_handoff, user, organisation, project, org_notification_policy
+        self,
+        mock_now,
+        mock_redis,
+        mock_handoff,
+        user,
+        organisation,
+        project,
+        org_notification_policy,
     ):
         """Test that notifications are blocked when rate limit is exceeded."""
         # Mock time at 23:00 (during quiet hours)
@@ -167,10 +189,18 @@ class TestQuietHoursRateLimiting:
         # Should NOT call handoff (rate limit exceeded)
         assert not mock_handoff.called
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.policy_service.timezone.now")
     def test_no_quiet_hours_policy_allows_all(
-        self, mock_now, mock_handoff, user, organisation2, project2, org_notification_policy_no_quiet_hours
+        self,
+        mock_now,
+        mock_handoff,
+        user,
+        organisation2,
+        project2,
+        org_notification_policy_no_quiet_hours,
     ):
         """Test that orgs without quiet hours policy allow all notifications."""
         # Mock time at 23:00 (would be quiet hours if enabled)

@@ -10,22 +10,22 @@ erDiagram
     USER ||--o{ ROLE_ASSIGNMENT : "has"
     USER ||--o{ AUDIT_EVENT : "performs"
     USER ||--o| USER_PREFERENCE : "has"
-    
+
     ORGANISATION ||--o{ ORGANISATION_MEMBERSHIP : "has"
     ORGANISATION ||--o{ PROJECT : "owns"
     ORGANISATION ||--o{ ROLE : "defines"
     ORGANISATION ||--o{ NOTIFICATION : "receives"
-    
+
     PROJECT ||--o{ ROLE_ASSIGNMENT : "scopes"
     PROJECT ||--o{ TASK : "schedules"
-    
+
     ROLE ||--o{ ROLE_PERMISSION : "grants"
     ROLE ||--o{ ROLE_ASSIGNMENT : "assigned via"
-    
+
     PERMISSION ||--o{ ROLE_PERMISSION : "granted by"
-    
+
     NOTIFICATION ||--o{ NOTIFICATION_DELIVERY : "delivered via"
-    
+
     TRANSACTION ||--o{ TRANSACTION_LINE : "contains"
     LEDGER ||--o{ TRANSACTION_LINE : "records"
 
@@ -36,7 +36,7 @@ erDiagram
         boolean is_active
         datetime created_at
     }
-    
+
     ORGANISATION {
         uuid id PK
         string name
@@ -45,7 +45,7 @@ erDiagram
         datetime created_at
         datetime deleted_at
     }
-    
+
     ORGANISATION_MEMBERSHIP {
         uuid id PK
         uuid user_id FK
@@ -53,7 +53,7 @@ erDiagram
         string role
         datetime joined_at
     }
-    
+
     PROJECT {
         uuid id PK
         string name
@@ -63,7 +63,7 @@ erDiagram
         datetime created_at
         datetime deleted_at
     }
-    
+
     ROLE {
         uuid id PK
         string name
@@ -71,20 +71,20 @@ erDiagram
         uuid organisation_id FK
         boolean is_system
     }
-    
+
     PERMISSION {
         uuid id PK
         string codename UK
         string name
         string category
     }
-    
+
     ROLE_PERMISSION {
         uuid id PK
         uuid role_id FK
         uuid permission_id FK
     }
-    
+
     ROLE_ASSIGNMENT {
         uuid id PK
         uuid user_id FK
@@ -93,7 +93,7 @@ erDiagram
         uuid scope_id
         datetime assigned_at
     }
-    
+
     AUDIT_EVENT {
         uuid id PK
         string event_type
@@ -101,7 +101,7 @@ erDiagram
         json metadata
         datetime timestamp
     }
-    
+
     USER_PREFERENCE {
         uuid id PK
         uuid user_id FK
@@ -109,7 +109,7 @@ erDiagram
         string timezone
         string theme
     }
-    
+
     NOTIFICATION {
         uuid id PK
         uuid organisation_id FK
@@ -119,7 +119,7 @@ erDiagram
         json payload
         datetime created_at
     }
-    
+
     NOTIFICATION_DELIVERY {
         uuid id PK
         uuid notification_id FK
@@ -127,14 +127,14 @@ erDiagram
         string error_message
         datetime sent_at
     }
-    
+
     LEDGER {
         uuid id PK
         string name UK
         string currency
         uuid organisation_id FK
     }
-    
+
     TRANSACTION {
         uuid id PK
         string reference UK
@@ -142,7 +142,7 @@ erDiagram
         datetime created_at
         datetime posted_at
     }
-    
+
     TRANSACTION_LINE {
         uuid id PK
         uuid transaction_id FK
@@ -277,13 +277,13 @@ All tenant-scoped models include `organisation_id`:
 ```python
 class TenantScopedMixin(models.Model):
     """Mixin for organisation-scoped models."""
-    
+
     organisation = models.ForeignKey(
         'organisations.Organisation',
         on_delete=models.CASCADE,
         related_name='%(class)ss',
     )
-    
+
     class Meta:
         abstract = True
 ```
@@ -317,11 +317,11 @@ Models supporting soft delete:
 ```python
 class SoftDeleteMixin(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
-    
+
     def soft_delete(self):
         self.deleted_at = timezone.now()
         self.save(update_fields=['deleted_at'])
-    
+
     class Meta:
         abstract = True
 ```

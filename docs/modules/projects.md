@@ -6,7 +6,7 @@ Project workspace management within organizations.
 
 The `projects` module provides workspace containers within organizations. Projects scope resources and permissions, enabling structured organization of work across teams.
 
-**App location**: `src/projects/`  
+**App location**: `src/projects/`
 **Feature spec**: `kitty-specs/007-projects-workspaces-management/`
 
 ## Configuration
@@ -168,7 +168,7 @@ project.restore()
 # ActiveProjectManager (default)
 Project.objects.all()  # Only active projects
 
-# AllProjectManager 
+# AllProjectManager
 Project.all_objects.all()  # Include archived
 Project.all_objects.archived()  # Only archived
 ```
@@ -226,13 +226,13 @@ Projects scope child resources:
 ```python
 class ProjectScopedModel(models.Model):
     """Base for project-scoped resources."""
-    
+
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
         related_name='%(class)ss',
     )
-    
+
     class Meta:
         abstract = True
 ```

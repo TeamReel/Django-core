@@ -288,16 +288,16 @@ from constitution_engine.core.models import CheckResult, CheckStatus
 
 class MyCustomRule:
     """Custom rule implementation."""
-    
+
     identifier = "my-custom-rule"
     description = "Checks for custom violations"
     severity = Severity.WARNING
     category = "custom"
-    
+
     def execute(self, context: RepositoryContext) -> list[CheckResult]:
         """Execute the rule against the repository context."""
         results = []
-        
+
         # Your custom logic here
         if some_condition:
             results.append(CheckResult(
@@ -306,7 +306,7 @@ class MyCustomRule:
                 message="Custom violation found",
                 severity=self.severity
             ))
-        
+
         return results
 ```
 
@@ -328,10 +328,10 @@ from constitution_engine.core.interfaces import ValidatorProtocol
 
 class MyValidator:
     """Custom validator implementation."""
-    
+
     identifier = "my-validator"
     description = "Custom result post-processing"
-    
+
     def validate(
         self,
         results: list[CheckResult],
@@ -351,10 +351,10 @@ from constitution_engine.core.interfaces import ReporterProtocol
 
 class MyReporter:
     """Custom reporter implementation."""
-    
+
     identifier = "my-reporter"
     description = "Custom output format"
-    
+
     def report(
         self,
         results: list[CheckResult],
@@ -375,10 +375,10 @@ from constitution_engine.core.models import RepositoryContext
 
 class MyProjectAdapter:
     """Custom project adapter."""
-    
+
     def __init__(self, config):
         self.config = config
-    
+
     def build_context(self) -> RepositoryContext:
         """Build repository context from project structure."""
         return RepositoryContext(
@@ -445,7 +445,7 @@ rules:
     - mypy-check
     - ruff-check
     - test-coverage
-  
+
   config:
     test-coverage:
       threshold: 75

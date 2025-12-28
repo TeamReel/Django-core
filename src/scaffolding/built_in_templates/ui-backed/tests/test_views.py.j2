@@ -42,7 +42,7 @@ class Test{{ model_name | default("Item") }}ListView:
         """Test list view redirects to login for unauthenticated users."""
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-list")
         response = client.get(url)
-        
+
         assert response.status_code == 302
         assert "/login" in response.url
 
@@ -50,7 +50,7 @@ class Test{{ model_name | default("Item") }}ListView:
         """Test list view displays items."""
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-list")
         response = logged_in_client.get(url)
-        
+
         assert response.status_code == 200
         assert sample_item.name in str(response.content)
 
@@ -61,7 +61,7 @@ class Test{{ model_name | default("Item") }}ListView:
 
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-list")
         response = logged_in_client.get(url, {"search": "Findable"})
-        
+
         assert response.status_code == 200
         assert "Findable Item" in str(response.content)
         assert "Other Item" not in str(response.content)
@@ -75,7 +75,7 @@ class Test{{ model_name | default("Item") }}DetailView:
         """Test detail view displays item details."""
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-detail", args=[sample_item.pk])
         response = logged_in_client.get(url)
-        
+
         assert response.status_code == 200
         assert sample_item.name in str(response.content)
         assert sample_item.description in str(response.content)
@@ -89,7 +89,7 @@ class Test{{ model_name | default("Item") }}CreateView:
         """Test create view GET request shows form."""
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-create")
         response = logged_in_client.get(url)
-        
+
         assert response.status_code == 200
         assert "form" in str(response.content).lower()
 
@@ -102,7 +102,7 @@ class Test{{ model_name | default("Item") }}CreateView:
             "is_active": True
         }
         response = logged_in_client.post(url, data)
-        
+
         assert response.status_code == 302  # Redirect after success
         assert {{ model_name | default("Item") }}.objects.filter(name="New {{ model_name | default('Item') }}").exists()
 
@@ -120,7 +120,7 @@ class Test{{ model_name | default("Item") }}UpdateView:
             "is_active": sample_item.is_active
         }
         response = logged_in_client.post(url, data)
-        
+
         assert response.status_code == 302
         sample_item.refresh_from_db()
         assert sample_item.name == "Updated Name"
@@ -134,6 +134,6 @@ class Test{{ model_name | default("Item") }}DeleteView:
         """Test deleting {{ model_name | default('item') | lower }}."""
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-delete", args=[sample_item.pk])
         response = logged_in_client.post(url)
-        
+
         assert response.status_code == 302
         assert not {{ model_name | default("Item") }}.objects.filter(pk=sample_item.pk).exists()

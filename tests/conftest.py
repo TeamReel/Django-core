@@ -13,7 +13,8 @@ def _check_redis_available():
     """Check if Redis is available at the configured URL."""
     try:
         import redis
-        client = redis.Redis(host='127.0.0.1', port=6379, socket_timeout=1)
+
+        client = redis.Redis(host="127.0.0.1", port=6379, socket_timeout=1)
         client.ping()
         return True
     except Exception:
@@ -52,8 +53,7 @@ def pytest_configure(config):
 
     # Register custom markers
     config.addinivalue_line(
-        "markers",
-        "requires_redis: mark test as requiring Redis (skip if unavailable)"
+        "markers", "requires_redis: mark test as requiring Redis (skip if unavailable)"
     )
 
 

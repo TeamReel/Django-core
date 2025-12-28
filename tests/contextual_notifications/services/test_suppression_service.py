@@ -126,6 +126,7 @@ class TestSuppressionService:
     @patch("contextual_notifications.services.suppression_service.redis_client")
     def test_check_suppression_multiple_users(self, mock_redis):
         """Test suppression with multiple users."""
+
         # User 1 suppressed, User 2 not suppressed
         def mock_get(key):
             if "user:1:" in key:

@@ -6,7 +6,7 @@ Background task processing with Celery for Django Core-App.
 
 The `tasks` module provides asynchronous task processing using Celery with Redis as the message broker. It handles background jobs, scheduled tasks, and long-running operations.
 
-**App location**: `src/tasks/`  
+**App location**: `src/tasks/`
 **Feature spec**: `kitty-specs/015-tasks-scheduling-foundation/`
 
 ## Configuration
@@ -67,10 +67,10 @@ def generate_report(self, org_id: int) -> dict:
     """Generate org report with progress tracking."""
     org = Organisation.objects.get(id=org_id)
     data = gather_data(org)
-    
+
     # Update progress
     self.update_state(state='PROGRESS', meta={'percent': 50})
-    
+
     report = create_pdf(data)
     return {'url': report.url, 'size': report.size}
 
@@ -172,7 +172,7 @@ from celery import group
 
 # Parallel execution
 tasks = group([
-    process_item.s(item_id) 
+    process_item.s(item_id)
     for item_id in item_ids
 ])
 result = tasks.delay()
@@ -248,7 +248,7 @@ def celery_health_check():
    ```python
    # Good
    process_user.delay(user.id)
-   
+
    # Bad
    process_user.delay(user)  # Serialization issues
    ```

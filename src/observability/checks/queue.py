@@ -38,7 +38,11 @@ class QueueHealthCheck:
                 name="queue",
                 status=True,
                 latency_ms=latency_ms,
-                details={"broker": current_app.conf.broker_url.split("://")[0] if current_app.conf.broker_url else "unknown"}
+                details={
+                    "broker": current_app.conf.broker_url.split("://")[0]
+                    if current_app.conf.broker_url
+                    else "unknown"
+                },
             )
 
         except ImportError:
@@ -48,14 +52,11 @@ class QueueHealthCheck:
                 name="queue",
                 status=False,
                 latency_ms=latency_ms,
-                details={"error": "Celery not installed"}
+                details={"error": "Celery not installed"},
             )
 
         except Exception as e:
             latency_ms = (time.time() - start_time) * 1000
             return HealthCheckResult(
-                name="queue",
-                status=False,
-                latency_ms=latency_ms,
-                details={"error": str(e)}
+                name="queue", status=False, latency_ms=latency_ms, details={"error": str(e)}
             )

@@ -151,7 +151,7 @@ def verify_webhook(payload, signature, secret):
         payload,
         hashlib.sha256
     ).hexdigest()
-    
+
     return hmac.compare_digest(f'sha256={expected}', signature)
 ```
 

@@ -1,6 +1,6 @@
 # Cross-Artifact Analysis Report: B18 Platform Observability Foundation
-*Generated: 2025-12-03*  
-*Analyzer: spec-kitty.analyze workflow*  
+*Generated: 2025-12-03*
+*Analyzer: spec-kitty.analyze workflow*
 *Constitution Version: v1.0.0 (ratified 2025-11-20)*
 
 ---

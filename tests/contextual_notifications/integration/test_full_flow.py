@@ -14,7 +14,9 @@ from contextual_notifications.services import EventService
 class TestEventToNotificationFlow:
     """Integration test for full routing pipeline."""
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.audit_service.audit_log.record")
     def test_full_routing_pipeline(
         self,
@@ -55,10 +57,10 @@ class TestEventToNotificationFlow:
         # Verify audit logging
         assert mock_audit_log.called
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
-    def test_multiple_channels_delivered(
-        self, mock_handoff, user, organisation, project
-    ):
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
+    def test_multiple_channels_delivered(self, mock_handoff, user, organisation, project):
         """Test that user receives notifications on multiple channels."""
         # Create rules for both in_app and email
         RoutingRule.objects.create(
@@ -105,7 +107,9 @@ class TestEventToNotificationFlow:
         assert "in_app" in channels
         assert "email" in channels
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     def test_no_rules_no_notification(self, mock_handoff, user, organisation, project):
         """Test that no notification is sent when no rules match."""
         # No routing rules configured for this event type
@@ -124,7 +128,9 @@ class TestEventToNotificationFlow:
         # Should not call handoff (no matching rules)
         assert not mock_handoff.called
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     def test_disabled_rule_not_processed(
         self, mock_handoff, user, organisation, project, routing_rule_disabled
     ):
@@ -144,7 +150,9 @@ class TestEventToNotificationFlow:
         # Should not call handoff (rule is disabled)
         assert not mock_handoff.called
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     def test_scope_precedence_project_overrides_global(
         self, mock_handoff, user, organisation, project
     ):

@@ -6,8 +6,8 @@ Multi-channel notification delivery for Django Core-App.
 
 The `notifications` module provides a flexible notification system with multiple delivery channels (email, in-app, webhook), template-based content, and reliable delivery with retries.
 
-**App location**: `src/notifications/`  
-**Feature spec**: `kitty-specs/016-notifications-baseline/`  
+**App location**: `src/notifications/`
+**Feature spec**: `kitty-specs/016-notifications-baseline/`
 **ADR**: [ADR-016: Notification Retry Policies](../architecture/adr/index.md#notifications)
 
 ## Configuration
@@ -221,7 +221,7 @@ Following ADR-016, failed deliveries are retried:
 def deliver_notification(self, notification_id):
     notification = Notification.objects.get(id=notification_id)
     channel = get_channel(notification.channel)
-    
+
     try:
         channel.send(notification)
         notification.mark_delivered()
@@ -248,7 +248,7 @@ class UserNotificationPreference(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     email_enabled = models.BooleanField(default=True)
     in_app_enabled = models.BooleanField(default=True)
-    
+
     # Per-type overrides
     type_preferences = models.JSONField(default=dict)
     # {"mentions": {"email": false, "in_app": true}}

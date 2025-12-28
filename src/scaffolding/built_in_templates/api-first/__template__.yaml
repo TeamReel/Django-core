@@ -24,7 +24,7 @@ variables:
 
 files:
   # Inherited from minimal: __init__.py, apps.py, models.py, tests/__init__.py, tests/test_models.py, migrations/__init__.py, locale/.gitkeep
-  
+
   # API-specific files
   - path: "serializers.py"
     template: "serializers.py.j2"

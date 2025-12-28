@@ -233,7 +233,7 @@ class TemplateManifest:
     extends: Optional[str]
     variables: Dict[str, dict]
     files: List[str]
-    
+
     @classmethod
     def from_yaml(cls, path: Path) -> 'TemplateManifest':
         with open(path) as f:
@@ -243,13 +243,13 @@ class TemplateManifest:
 
 class TemplateRegistry:
     _instance = None
-    
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._templates = {}
         return cls._instance
-    
+
     def discover(self) -> None:
         """Discover templates from all sources in precedence order."""
         # 1. Project-local templates/scaffold/
@@ -257,7 +257,7 @@ class TemplateRegistry:
         # 3. Core built-in templates
         # 4. Plugin packages (importlib.metadata)
         pass
-    
+
     def resolve_inheritance(self, template_name: str) -> TemplateManifest:
         """Resolve template inheritance chain (max depth 2)."""
         pass
@@ -320,12 +320,12 @@ class TemplateRenderer:
             autoescape=False,
             undefined=StrictUndefined
         )
-    
+
     def render_file(self, template_path: str, variables: Dict[str, Any]) -> str:
         """Render single template file with variables."""
         template = self.env.get_template(template_path)
         return template.render(**variables)
-    
+
     def render_directory(self, template_name: str, variables: Dict[str, Any], output_dir: Path) -> None:
         """Render all files in template directory to output directory."""
         # Walk template files
@@ -391,28 +391,28 @@ from typing import Dict, Any
 class CodeGenerator:
     def __init__(self, renderer: TemplateRenderer):
         self.renderer = renderer
-    
+
     def generate_app(self, app_name: str, template: str, project_root: Path, validate: bool = True) -> None:
         """Generate Django app with atomic rollback."""
         # Validate app name
         self._validate_app_name(app_name)
-        
+
         # Check for conflicts
         target_dir = project_root / 'src' / app_name
         if target_dir.exists():
             raise ConflictError(f"App {app_name} already exists")
-        
+
         # Create staging directory
         staging_dir = Path(tempfile.mkdtemp(prefix='scaffold_'))
         try:
             # Render template to staging
             variables = {'app_name': app_name, ...}
             self.renderer.render_directory(template, variables, staging_dir)
-            
+
             # Run validation if requested
             if validate:
                 self._validate_generated_code(staging_dir)
-            
+
             # Atomic move staging → target
             shutil.move(str(staging_dir), str(target_dir))
         except Exception as e:
@@ -473,7 +473,7 @@ from typing import Dict, Any
 class ValidationRunner:
     def __init__(self, check_policy_path: Path):
         self.check_policy_path = check_policy_path
-    
+
     def validate_directory(self, target_dir: Path) -> Dict[str, Any]:
         """Run check_policy.py on generated code, return validation report."""
         result = subprocess.run(
@@ -482,14 +482,14 @@ class ValidationRunner:
             text=True,
             timeout=60
         )
-        
+
         if result.returncode == 0:
             return {'passed': True, 'violations': []}
         else:
             # Parse JSON output
             report = json.loads(result.stdout)
             return report
-    
+
     def format_violations(self, report: Dict[str, Any]) -> str:
         """Format validation violations for user-friendly display."""
         # FR-039: Display file paths, line numbers, specific violations
@@ -548,7 +548,7 @@ def prompt_template_selection(available_templates: List[str]) -> str:
     """Prompt user to select template from list."""
     if not auto_interactive():
         return 'minimal'  # Default for non-interactive
-    
+
     return click.prompt(
         'Select template',
         type=click.Choice(available_templates),
@@ -637,18 +637,18 @@ from django.utils.translation import gettext_lazy as _
 # Example model - replace with your business logic
 class ExampleModel(models.Model):
     """Example model for {{ app_name }}."""
-    
+
     name = models.CharField(
         _("name"),
         max_length=255,
         help_text=_("Name of the example")
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         verbose_name = _("example")
         verbose_name_plural = _("examples")
-    
+
     def __str__(self) -> str:
         return self.name
 ```
@@ -712,21 +712,21 @@ def test_scaffold_app_end_to_end(tmp_path):
     # Setup mock project
     project_root = tmp_path / 'myproject'
     project_root.mkdir()
-    
+
     # Run CLI
     result = run_cli(['app', 'payments', '--template', 'api-first'], cwd=project_root)
-    
+
     # Verify structure created
     app_dir = project_root / 'src' / 'payments'
     assert app_dir.exists()
     assert (app_dir / 'models.py').exists()
     assert (app_dir / 'serializers.py').exists()
-    
+
     # Verify code quality
     assert run_ruff(app_dir).returncode == 0
     assert run_mypy(app_dir).returncode == 0
     assert run_check_policy(app_dir).returncode == 0
-    
+
     # Verify tests pass
     assert run_pytest(app_dir).returncode == 0
 ```

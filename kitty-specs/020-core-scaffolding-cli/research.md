@@ -39,7 +39,7 @@ Research findings from planning discovery for B20 Core Scaffolding CLI. All crit
 - Precedence order is intuitive and predictable
 
 **Implementation Details**:
-- **Discovery order**: 
+- **Discovery order**:
   1. Project-local templates (`./templates/scaffold/` or configured path)
   2. Configured filesystem directories (via settings or CLI config)
   3. Core built-in templates (shipped with Core-App package)
@@ -86,7 +86,7 @@ Research findings from planning discovery for B20 Core Scaffolding CLI. All crit
   - B04 i18n patterns (gettext markers in user-facing strings)
   - Code quality (Ruff linting passes, type hints present)
   - Testing structure (tests/ directory, pytest patterns)
-- **Error reporting**: 
+- **Error reporting**:
   - Show violation type, file path, line number, suggested fix
   - Exit with code 1 for CI/CD failure detection
 - **Force flag**: `--force` or `--skip-validation` bypasses checks with warning message
@@ -123,7 +123,7 @@ Research findings from planning discovery for B20 Core Scaffolding CLI. All crit
   3. If not found, check grandparent (if exists, max depth 2)
   4. If still not found, error (required file missing)
 - **Override behavior**: Child file completely replaces parent file (no automatic merging)
-- **Inheritance chain**: 
+- **Inheritance chain**:
   - **Valid**: `custom → core → base` (depth 2)
   - **Valid**: `custom → core` (depth 1)
   - **Invalid**: `custom → intermediate → core → base` (depth 3, fail fast with error)
@@ -397,7 +397,7 @@ All open questions from specification phase resolved during planning:
 1. **Phase 1 Design**: Create data-model.md with template manifest schema, API contracts
 2. **Phase 1 Contracts**: Define CLI interface contracts (commands, flags, exit codes)
 3. **Phase 1 Quickstart**: Document scaffolding workflow for developers
-4. **ADR Creation**: 
+4. **ADR Creation**:
    - ADR-021: Template discovery mechanism (precedence, resolution, package format)
    - ADR-022: Constitutional validation integration (timing, rollback, error reporting)
 5. **Phase 2 Tasks**: Break down into work packages (WP01-WP08)

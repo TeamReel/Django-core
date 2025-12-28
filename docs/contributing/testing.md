@@ -90,10 +90,10 @@ def test_user_can_create_organisation(authenticated_client, user):
         "name": "Acme Corp",
         "description": "A test organisation",
     }
-    
+
     # Act
     response = authenticated_client.post("/api/v1/organisations/", data)
-    
+
     # Assert
     assert response.status_code == 201
     assert response.data["name"] == "Acme Corp"
@@ -108,7 +108,7 @@ import pytest
 
 class TestUserAuthentication:
     """Test suite for user authentication flows."""
-    
+
     def test_login_with_valid_credentials(self, client, user):
         """Test successful login with valid credentials."""
         response = client.post("/api/v1/auth/login/", {
@@ -117,7 +117,7 @@ class TestUserAuthentication:
         })
         assert response.status_code == 200
         assert "access" in response.data
-    
+
     def test_login_with_invalid_password(self, client, user):
         """Test login failure with wrong password."""
         response = client.post("/api/v1/auth/login/", {
@@ -125,7 +125,7 @@ class TestUserAuthentication:
             "password": "wrongpassword",
         })
         assert response.status_code == 401
-    
+
     def test_login_with_nonexistent_user(self, client):
         """Test login failure for unknown user."""
         response = client.post("/api/v1/auth/login/", {
@@ -221,10 +221,10 @@ from organisations.models import Organisation
 
 class UserFactory(DjangoModelFactory):
     """Factory for creating test users."""
-    
+
     class Meta:
         model = User
-    
+
     email = factory.Sequence(lambda n: f"user{n}@example.com")
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
@@ -233,10 +233,10 @@ class UserFactory(DjangoModelFactory):
 
 class OrganisationFactory(DjangoModelFactory):
     """Factory for creating test organisations."""
-    
+
     class Meta:
         model = Organisation
-    
+
     name = factory.Sequence(lambda n: f"Organisation {n}")
     owner = factory.SubFactory(UserFactory)
 ```
@@ -248,7 +248,7 @@ def test_organisation_member_count(db):
     """Test member counting."""
     org = OrganisationFactory()
     UserFactory.create_batch(5)  # Create 5 users
-    
+
     # Add members...
     assert org.member_count == 5
 ```
@@ -266,7 +266,7 @@ from rest_framework.test import APIClient
 def test_list_organisations(authenticated_client, organisation):
     """Test listing organisations."""
     response = authenticated_client.get("/api/v1/organisations/")
-    
+
     assert response.status_code == 200
     assert len(response.data["results"]) >= 1
 
@@ -274,9 +274,9 @@ def test_list_organisations(authenticated_client, organisation):
 def test_create_organisation(authenticated_client):
     """Test creating an organisation."""
     data = {"name": "New Org", "description": "A new org"}
-    
+
     response = authenticated_client.post("/api/v1/organisations/", data)
-    
+
     assert response.status_code == 201
     assert response.data["name"] == "New Org"
 
@@ -287,7 +287,7 @@ def test_update_organisation(authenticated_client, organisation):
         f"/api/v1/organisations/{organisation.id}/",
         {"name": "Updated Name"},
     )
-    
+
     assert response.status_code == 200
     assert response.data["name"] == "Updated Name"
 ```
@@ -299,9 +299,9 @@ def test_non_member_cannot_access(client, user, other_user, organisation):
     """Test that non-members cannot access organisation."""
     # other_user is not a member of organisation
     client.force_authenticate(user=other_user)
-    
+
     response = client.get(f"/api/v1/organisations/{organisation.id}/")
-    
+
     assert response.status_code == 403
 ```
 
@@ -319,9 +319,9 @@ def test_send_welcome_email():
     """Test that welcome email is sent on registration."""
     with patch("accounts.services.send_email") as mock_send:
         mock_send.return_value = True
-        
+
         user = register_user("new@example.com", "password123")
-        
+
         mock_send.assert_called_once()
         assert "Welcome" in mock_send.call_args[1]["subject"]
 ```
@@ -338,9 +338,9 @@ def mock_redis(mocker):
 def test_cache_hit(mock_redis, user):
     """Test permission cache hit."""
     mock_redis.return_value.get.return_value = b'["read", "write"]'
-    
+
     permissions = get_cached_permissions(user.id)
-    
+
     assert permissions == ["read", "write"]
 ```
 
@@ -363,9 +363,9 @@ import pytest
 def test_edit_permission_by_role(role, can_edit, organisation, user):
     """Test edit permission varies by role."""
     assign_role(user, role, organisation)
-    
+
     result = check_permission(user, "organisations.update", organisation)
-    
+
     assert result == can_edit
 
 
@@ -378,7 +378,7 @@ def test_edit_permission_by_role(role, can_edit, organisation, user):
 def test_error_responses(status_code, error_message):
     """Test error response format."""
     response = make_error_response(status_code, error_message)
-    
+
     assert response.status_code == status_code
     assert response.data["detail"] == error_message
 ```
@@ -454,9 +454,9 @@ def test_calculate_balance():
         Transaction(amount=Decimal("-25")),
         Transaction(amount=Decimal("50")),
     ]
-    
+
     balance = calculate_balance(transactions)
-    
+
     assert balance == Decimal("125")
 ```
 
@@ -470,10 +470,10 @@ def test_organisation_creation_flow(user):
     """Test full organisation creation flow."""
     # Create organisation
     org = create_organisation(name="Test Org", owner=user)
-    
+
     # Verify owner is member
     assert org.members.filter(user=user).exists()
-    
+
     # Verify audit event logged
     assert AuditEvent.objects.filter(
         event_type="organisation.created",
@@ -495,7 +495,7 @@ def test_complete_registration_flow(client):
         "password": "securepass123",
     })
     assert response.status_code == 201
-    
+
     # Login
     response = client.post("/api/v1/auth/login/", {
         "email": "new@example.com",
@@ -605,10 +605,10 @@ pytest --pdb -x
 ```python
 def test_complex_logic():
     result = complex_function()
-    
+
     # Add breakpoint
     breakpoint()  # Execution pauses here
-    
+
     assert result == expected
 ```
 

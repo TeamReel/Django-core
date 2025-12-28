@@ -124,10 +124,10 @@ class Note(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-created_at']
-    
+
     def __str__(self):
         return self.title
 ```
@@ -146,12 +146,12 @@ from .models import Note
 
 class NoteSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.email')
-    
+
     class Meta:
         model = Note
         fields = ['id', 'title', 'content', 'author', 'created_at', 'updated_at']
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
-    
+
     def validate_title(self, value):
         if len(value) < 3:
             raise serializers.ValidationError("Title must be at least 3 characters.")
@@ -185,16 +185,16 @@ class NoteViewSet(viewsets.ModelViewSet):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
-    
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-    
+
     def get_queryset(self):
         """Filter notes by current user for list action."""
         if self.action == 'list':
             return self.queryset.filter(author=self.request.user)
         return self.queryset
-    
+
     @action(detail=False, methods=['get'])
     def recent(self, request):
         """Get 5 most recent notes."""
@@ -252,13 +252,13 @@ class TestNotesCRUD:
         })
         assert response.status_code == 201
         assert response.data['title'] == 'Test Note'
-    
+
     def test_list_notes_filtered_by_user(self, authenticated_client, user):
         Note.objects.create(title='My Note', content='...', author=user)
         response = authenticated_client.get('/api/notes/')
         assert response.status_code == 200
         assert len(response.data['results']) == 1
-    
+
     def test_update_own_note(self, authenticated_client, user):
         note = Note.objects.create(title='Old', content='...', author=user)
         response = authenticated_client.patch(f'/api/notes/{note.id}/', {
@@ -266,7 +266,7 @@ class TestNotesCRUD:
         })
         assert response.status_code == 200
         assert response.data['title'] == 'Updated'
-    
+
     def test_cannot_update_others_note(self, authenticated_client, other_user):
         note = Note.objects.create(title='Other', content='...', author=other_user)
         response = authenticated_client.patch(f'/api/notes/{note.id}/', {

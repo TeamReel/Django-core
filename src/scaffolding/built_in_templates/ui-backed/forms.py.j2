@@ -42,19 +42,19 @@ class {{ model_name | default("Item") }}Form(forms.ModelForm):
     def clean_name(self):
         """Validate name field."""
         name = self.cleaned_data.get("name")
-        
+
         if not name or not name.strip():
             raise forms.ValidationError(_("Name is required."))
-        
+
         if len(name.strip()) < 3:
             raise forms.ValidationError(_("Name must be at least 3 characters long."))
-        
+
         # Check for duplicate names (excluding current instance in updates)
         qs = {{ model_name | default("Item") }}.objects.filter(name=name.strip())
         if self.instance.pk:
             qs = qs.exclude(pk=self.instance.pk)
-        
+
         if qs.exists():
             raise forms.ValidationError(_("A {{ model_name | default('item') | lower }} with this name already exists."))
-        
+
         return name.strip()

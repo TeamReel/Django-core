@@ -28,24 +28,24 @@ jobs:
   constitutional-check:
     name: Run Constitutional Checks
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Full history for Git metadata
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip" # Cache pip dependencies
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-      
+
       - name: Run Constitutional Engine
         id: constitution
         run: |
@@ -59,7 +59,7 @@ jobs:
         # - ::error:: / ::warning:: annotations for violations
         # - Step summaries in $GITHUB_STEP_SUMMARY
         continue-on-error: true # Capture results even on failure
-      
+
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
@@ -69,10 +69,9 @@ jobs:
             constitution-results.json
             constitution-report.txt
           retention-days: 30
-      
+
       - name: Check results
         if: steps.constitution.outcome == 'failure'
         run: |
           echo "::error::Constitutional violations detected"
           exit 1
-

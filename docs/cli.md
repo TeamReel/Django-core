@@ -180,13 +180,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Full history for Git metadata
-      
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      
+
       - run: pip install constitution-engine
-      
+
       - run: |
           constitution-engine \
             --config .constitution.yaml \

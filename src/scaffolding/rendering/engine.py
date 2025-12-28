@@ -53,15 +53,11 @@ def create_jinja_env(template_dir: Path) -> Environment:
     )
 
     # Add custom filters for naming conventions
-    env.filters["snake_case"] = lambda s: (
-        s.lower().replace("-", "_").replace(" ", "_")
-    )
+    env.filters["snake_case"] = lambda s: (s.lower().replace("-", "_").replace(" ", "_"))
     env.filters["pascal_case"] = lambda s: "".join(
         word.capitalize() for word in s.replace("_", " ").replace("-", " ").split()
     )
-    env.filters["kebab_case"] = lambda s: (
-        s.lower().replace("_", "-").replace(" ", "-")
-    )
+    env.filters["kebab_case"] = lambda s: (s.lower().replace("_", "-").replace(" ", "-"))
 
     return env
 
@@ -245,9 +241,7 @@ class TemplateRenderer:
         # Just render all files from the manifest's template directory
         return self.render_directory(output_dir)
 
-    def _merge_with_builtin_variables(
-        self, user_vars: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _merge_with_builtin_variables(self, user_vars: Dict[str, Any]) -> Dict[str, Any]:
         """
         Merge user variables with built-in variables.
 

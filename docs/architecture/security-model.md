@@ -62,9 +62,9 @@ sequenceDiagram
     Auth->>Auth: Generate JWT pair
     Auth->>Redis: Store refresh token
     Auth-->>User: {access_token, refresh_token}
-    
+
     Note over User,API: Subsequent requests
-    
+
     User->>API: GET /resource (Authorization: Bearer token)
     API->>Auth: Validate JWT
     Auth->>Auth: Verify signature (RS256)
@@ -139,7 +139,7 @@ class Permission(models.Model):
     codename = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=50)
-    
+
     # Example: 'project.create', 'project.view', 'project.delete'
 
 class Role(models.Model):
@@ -147,7 +147,7 @@ class Role(models.Model):
     organisation = models.ForeignKey(Organisation, on_delete=CASCADE)
     permissions = models.ManyToManyField(Permission)
     scope_type = models.CharField(choices=SCOPE_CHOICES)
-    
+
     # scope_type: 'organisation', 'project'
 ```
 
@@ -158,7 +158,7 @@ class Role(models.Model):
 class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, HasPermission]
     required_permission = 'project.view'
-    
+
     def create(self, request):
         self.check_permission('project.create', request.user, org)
         # ...
@@ -170,17 +170,17 @@ class PermissionEvaluator:
         cached = self.cache.get(user.id, permission, scope)
         if cached is not None:
             return cached
-        
+
         # 2. Check superuser
         if user.is_superuser:
             return True
-        
+
         # 3. Check role assignments
         result = self._evaluate_roles(user, permission, scope)
-        
+
         # 4. Cache result
         self.cache.set(user.id, permission, scope, result)
-        
+
         return result
 ```
 
@@ -238,12 +238,12 @@ class RateLimiter:
     def check(self, key: str, limit: int, window: int) -> bool:
         """Check if request is within rate limit."""
         current = self.redis.incr(key)
-        
+
         if current == 1:
             self.redis.expire(key, window)
-        
+
         return current <= limit
-    
+
     def get_remaining(self, key: str, limit: int) -> int:
         current = self.redis.get(key) or 0
         return max(0, limit - int(current))
@@ -326,7 +326,7 @@ class AuditEvent(models.Model):
     ip_address = models.GenericIPAddressField(null=True)
     user_agent = models.TextField(blank=True)
     metadata = models.JSONField(default=dict)
-    
+
     class Meta:
         indexes = [
             models.Index(fields=['event_type', 'timestamp']),
@@ -385,7 +385,7 @@ SECURITY_MODE = env('SECURITY_MODE', default='strict')
 class SecurityMiddleware:
     def check_policy(self, request):
         violation = self.evaluate(request)
-        
+
         if violation:
             if settings.SECURITY_MODE == 'strict':
                 raise SecurityViolation(violation)

@@ -1,8 +1,8 @@
 # ADR 019: Metric Exporter Pluggability
 
-**Status**: Accepted  
-**Date**: 2025-12-03  
-**Context**: B18 Platform Observability Foundation  
+**Status**: Accepted
+**Date**: 2025-12-03
+**Context**: B18 Platform Observability Foundation
 **Decision Makers**: Platform Architecture Team
 
 ---
@@ -29,15 +29,15 @@ from typing import Protocol
 
 class MetricCollector(Protocol):
     """Protocol for metric collector implementations."""
-    
+
     def increment(self, name: str, value: int = 1, labels: dict[str, str] = {}) -> None:
         """Increment a counter metric."""
         ...
-    
+
     def observe(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         """Record a histogram observation."""
         ...
-    
+
     def set_gauge(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         """Set a gauge value."""
         ...
@@ -200,15 +200,15 @@ entry_points={
 class StatsDCollector:
     def __init__(self, host='localhost', port=8125):
         self.client = statsd.StatsClient(host, port)
-    
+
     def increment(self, name: str, value: int = 1, labels: dict[str, str] = {}) -> None:
         metric_name = f"{name}.{'.'.join(f'{k}_{v}' for k, v in labels.items())}"
         self.client.incr(metric_name, value)
-    
+
     def observe(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         metric_name = f"{name}.{'.'.join(f'{k}_{v}' for k, v in labels.items())}"
         self.client.timing(metric_name, value * 1000)
-    
+
     def set_gauge(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         metric_name = f"{name}.{'.'.join(f'{k}_{v}' for k, v in labels.items())}"
         self.client.gauge(metric_name, value)
@@ -251,8 +251,8 @@ def ready(self):
 
 ## Approval
 
-**Status**: ✅ Accepted  
-**Approved By**: Platform Architecture Team  
+**Status**: ✅ Accepted
+**Approved By**: Platform Architecture Team
 **Date**: 2025-12-03
 
 **Reviewers**:

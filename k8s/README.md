@@ -172,7 +172,7 @@ HorizontalPodAutoscaler scales web pods between 3-10 replicas based on:
 - CPU utilization > 70%
 - Memory utilization > 80%
 
-Scale-up: Aggressive (50% or 2 pods after 60s)  
+Scale-up: Aggressive (50% or 2 pods after 60s)
 Scale-down: Conservative (25% or 1 pod after 300s)
 
 ### Worker Tier (Manual)

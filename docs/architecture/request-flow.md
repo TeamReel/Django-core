@@ -21,29 +21,29 @@ sequenceDiagram
     Client->>Nginx: HTTPS Request
     Nginx->>Gunicorn: Proxy (Unix Socket)
     Gunicorn->>Middleware: WSGI Request
-    
+
     Note over Middleware: Security Checks
     Middleware->>Middleware: CORS, CSRF, Auth
-    
+
     Middleware->>Router: Authenticated Request
     Router->>View: Route to ViewSet
-    
+
     View->>Serializer: Validate Input
     Serializer-->>View: Validated Data
-    
+
     View->>Service: Business Logic
     Service->>Cache: Check Permission Cache
     Cache-->>Service: Cache Hit/Miss
-    
+
     Service->>Model: Database Query
     Model-->>Service: QuerySet Result
-    
+
     Service->>Audit: Log Action
     Service-->>View: Result
-    
+
     View->>Serializer: Serialize Response
     Serializer-->>View: JSON Data
-    
+
     View-->>Client: HTTP Response
 ```
 
@@ -55,34 +55,34 @@ Django Core-App uses a carefully ordered middleware stack:
 MIDDLEWARE = [
     # 1. Security headers
     'django.middleware.security.SecurityMiddleware',
-    
+
     # 2. CORS (before CSRF)
     'corsheaders.middleware.CorsMiddleware',
-    
+
     # 3. Whitenoise for static files
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    
+
     # 4. Session handling
     'django.contrib.sessions.middleware.SessionMiddleware',
-    
+
     # 5. Locale detection
     'django.middleware.locale.LocaleMiddleware',
-    
+
     # 6. Common utilities
     'django.middleware.common.CommonMiddleware',
-    
+
     # 7. CSRF protection
     'django.middleware.csrf.CsrfViewMiddleware',
-    
+
     # 8. Authentication
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    
+
     # 9. JWT token processing
     'accounts.middleware.JWTAuthenticationMiddleware',
-    
+
     # 10. Request logging
     'audit.middleware.RequestLoggingMiddleware',
-    
+
     # 11. Rate limiting
     'security_baseline.middleware.RateLimitMiddleware',
 ]
@@ -121,9 +121,9 @@ sequenceDiagram
 
     Client->>Middleware: Request + Authorization Header
     Middleware->>JWTAuth: Extract Bearer Token
-    
+
     JWTAuth->>JWTAuth: Decode & Verify Signature
-    
+
     alt Token Valid
         JWTAuth->>Cache: Get User from Cache
         alt Cache Hit
@@ -196,17 +196,17 @@ def evaluate_permission(user, permission, resource):
     # 1. Check resource-level permission
     if has_direct_permission(user, permission, resource):
         return True
-    
+
     # 2. Check project-level permission
     if resource.project:
         if has_project_permission(user, permission, resource.project):
             return True
-    
+
     # 3. Check organization-level permission
     if resource.organisation:
         if has_org_permission(user, permission, resource.organisation):
             return True
-    
+
     return False
 ```
 
@@ -251,7 +251,7 @@ graph TD
 def custom_exception_handler(exc, context):
     """Handle exceptions with structured response."""
     response = exception_handler(exc, context)
-    
+
     if response is not None:
         response.data = {
             'type': get_error_type(exc),
@@ -260,7 +260,7 @@ def custom_exception_handler(exc, context):
             'details': getattr(exc, 'details', []),
             'request_id': context['request'].META.get('X-Request-ID'),
         }
-    
+
     return response
 ```
 
@@ -280,7 +280,7 @@ sequenceDiagram
     Client->>RateLimit: Request
     RateLimit->>Redis: INCR key + EXPIRE
     Redis-->>RateLimit: Current Count
-    
+
     alt Under Limit
         RateLimit->>View: Process Request
         View-->>Client: Response + X-RateLimit Headers
@@ -326,7 +326,7 @@ class RequestIDMiddleware:
             str(uuid.uuid4())
         )
         request.id = request_id
-        
+
         response = self.get_response(request)
         response['X-Request-ID'] = request_id
         return response

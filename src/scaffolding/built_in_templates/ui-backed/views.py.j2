@@ -28,17 +28,17 @@ class {{ model_name | default("Item") }}ListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """Filter queryset based on query parameters."""
         queryset = super().get_queryset()
-        
+
         # Filter by active status
         is_active = self.request.GET.get("is_active")
         if is_active:
             queryset = queryset.filter(is_active=is_active.lower() == "true")
-        
+
         # Search by name
         search = self.request.GET.get("search")
         if search:
             queryset = queryset.filter(name__icontains=search)
-        
+
         return queryset
 
 

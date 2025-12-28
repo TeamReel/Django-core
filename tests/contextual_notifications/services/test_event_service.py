@@ -162,9 +162,7 @@ class TestEventServiceEmit:
             )
 
     @patch("contextual_notifications.services.event_service.route_event_task")
-    def test_emit_event_with_invalid_data_does_not_queue(
-        self, mock_route_task, valid_event_data
-    ):
+    def test_emit_event_with_invalid_data_does_not_queue(self, mock_route_task, valid_event_data):
         """Test that invalid events are not queued."""
         with pytest.raises(ValidationError):
             EventService.emit_event(
@@ -177,9 +175,7 @@ class TestEventServiceEmit:
 
     @patch("contextual_notifications.services.event_service.logger")
     @patch("contextual_notifications.services.event_service.route_event_task")
-    def test_emit_event_logs_emission(
-        self, mock_route_task, mock_logger, valid_event_data
-    ):
+    def test_emit_event_logs_emission(self, mock_route_task, mock_logger, valid_event_data):
         """Test that event emission is logged."""
         EventService.emit_event(
             event_type=valid_event_data["event_type"],

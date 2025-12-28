@@ -252,7 +252,7 @@ class {{ model_name }}(models.Model):
 ```jinja
 {# This is a comment - won't appear in generated code #}
 
-{# 
+{#
 Multi-line comment
 Also won't appear
 #}
@@ -282,7 +282,7 @@ variables:
 
 files:
   # Inherited files: __init__.py, models.py, serializers.py, etc.
-  
+
   # Additional files
   - path: "cache.py"
     template: "cache.py.j2"
@@ -392,16 +392,16 @@ variables:
 name: my_template
 description: |
   Detailed description of what this template does.
-  
+
   Use cases:
   - API development
   - Microservices
   - Mobile backends
-  
+
   Requirements:
   - Django 5.1+
   - DRF 3.14+
-  
+
   Generated structure:
   - models.py: Data models
   - serializers.py: DRF serializers

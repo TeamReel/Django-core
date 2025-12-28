@@ -80,7 +80,7 @@ The B20 Core Scaffolding CLI feature demonstrates exceptional planning quality w
     ```yaml
     # Parent template: minimal/__template__.yaml
     files: [models.py.j2, apps.py.j2, tests/__init__.py.j2]
-    
+
     # Child template: api-first/__template__.yaml
     extends: minimal
     files: [serializers.py.j2, views.py.j2]  # Added files

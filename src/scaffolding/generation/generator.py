@@ -181,9 +181,7 @@ class CodeGenerator:
         Returns:
             Path to staging directory
         """
-        staging_dir = Path(
-            tempfile.mkdtemp(prefix="scaffold_", suffix=f"_{name}")
-        )
+        staging_dir = Path(tempfile.mkdtemp(prefix="scaffold_", suffix=f"_{name}"))
         return staging_dir
 
     def _build_files(self, staging_dir: Path) -> List[Path]:
@@ -221,9 +219,7 @@ class CodeGenerator:
 
         # Verify target created successfully
         if not target_dir.exists():
-            raise OSError(
-                f"Atomic move failed: {target_dir} not created after move"
-            )
+            raise OSError(f"Atomic move failed: {target_dir} not created after move")
 
     def _validate_generated_code(
         self, target_dir: Path, project_root: Path, force: bool = False
@@ -248,9 +244,7 @@ class CodeGenerator:
         check_policy_path = project_root / "check_policy.py"
 
         if not check_policy_path.exists():
-            logger.warning(
-                f"check_policy.py not found at {check_policy_path}, skipping validation"
-            )
+            logger.warning(f"check_policy.py not found at {check_policy_path}, skipping validation")
             click.secho(
                 f"⚠ Warning: check_policy.py not found at {check_policy_path}. "
                 "Skipping constitutional validation.",
@@ -277,9 +271,7 @@ class CodeGenerator:
                     fg="yellow",
                     bold=True,
                 )
-                logger.warning(
-                    "Constitutional validation failed but continuing with --force"
-                )
+                logger.warning("Constitutional validation failed but continuing with --force")
             else:
                 # Exit with validation failure
                 logger.error("Constitutional validation failed, aborting")
@@ -328,9 +320,7 @@ class CodeGenerator:
 
         # Check not starting with number
         if name[0].isdigit():
-            raise ValidationError(
-                f"Invalid app name '{name}': cannot start with number"
-            )
+            raise ValidationError(f"Invalid app name '{name}': cannot start with number")
 
         # Check not Python keyword
         if keyword.iskeyword(name):

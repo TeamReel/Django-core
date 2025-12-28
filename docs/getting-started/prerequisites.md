@@ -25,7 +25,7 @@ Django Core-App requires Python 3.12 or higher for modern type hints and perform
 === "Windows"
 
     Download from [python.org](https://www.python.org/downloads/) and run the installer.
-    
+
     !!! warning "Important"
         Check "Add Python to PATH" during installation.
 
@@ -105,14 +105,14 @@ Redis is used for caching, rate limiting, and Celery task queue.
 === "Windows"
 
     Redis doesn't have official Windows support. Use one of these options:
-    
+
     1. **Docker (Recommended)**:
        ```bash
        docker run -d --name redis -p 6379:6379 redis:7
        ```
-    
+
     2. **WSL2**: Install Ubuntu on WSL2 and follow Linux instructions.
-    
+
     3. **Memurai**: Commercial Redis-compatible server for Windows.
 
 **Verify installation:**
@@ -138,7 +138,7 @@ Git is required for version control and contributing to the project.
     ```bash
     # Git comes with Xcode Command Line Tools
     xcode-select --install
-    
+
     # Or via Homebrew
     brew install git
     ```
@@ -167,10 +167,10 @@ Docker simplifies development by containerizing all dependencies.
     # Install Docker
     curl -fsSL https://get.docker.com -o get-docker.sh
     sudo sh get-docker.sh
-    
+
     # Add your user to docker group
     sudo usermod -aG docker $USER
-    
+
     # Install Docker Compose
     sudo apt install docker-compose-plugin
     ```
@@ -182,7 +182,7 @@ Docker simplifies development by containerizing all dependencies.
 === "Windows"
 
     Download [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop) and install.
-    
+
     !!! note
         Docker Desktop requires WSL2 on Windows. The installer will guide you through setup.
 

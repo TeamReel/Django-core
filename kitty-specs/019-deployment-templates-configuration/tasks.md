@@ -1,7 +1,7 @@
 # Implementation Tasks: Deployment Templates & Configuration (B19)
 *Path: kitty-specs/019-deployment-templates-configuration/tasks.md*
 
-**Branch**: `019-deployment-templates-configuration` | **Date**: 2025-12-03  
+**Branch**: `019-deployment-templates-configuration` | **Date**: 2025-12-03
 **Feature Spec**: [spec.md](spec.md) | **Implementation Plan**: [plan.md](plan.md)
 
 ---
@@ -46,8 +46,8 @@ This document breaks down B19 Deployment Templates & Configuration into 4 work p
 ## Phase 1: Foundational Infrastructure (WP01-WP02)
 
 ### WP01: Docker Build & Compose Templates
-**Priority**: P1 (Critical Path)  
-**Goal**: Create production-ready Dockerfile and Docker Compose templates for local, staging, and production environments  
+**Priority**: P1 (Critical Path)
+**Goal**: Create production-ready Dockerfile and Docker Compose templates for local, staging, and production environments
 **Prompt**: [tasks/planned/WP01-docker-build-compose.md](tasks/planned/WP01-docker-build-compose.md)
 
 **Included Subtasks**:
@@ -88,8 +88,8 @@ This document breaks down B19 Deployment Templates & Configuration into 4 work p
 ---
 
 ### WP02: Kubernetes Manifests & Configuration
-**Priority**: P1 (Critical Path)  
-**Goal**: Create well-commented Kubernetes manifests with multi-service separation (web, worker, beat) and configuration management  
+**Priority**: P1 (Critical Path)
+**Goal**: Create well-commented Kubernetes manifests with multi-service separation (web, worker, beat) and configuration management
 **Prompt**: [tasks/planned/WP02-kubernetes-manifests.md](tasks/planned/WP02-kubernetes-manifests.md)
 
 **Included Subtasks**:
@@ -133,8 +133,8 @@ This document breaks down B19 Deployment Templates & Configuration into 4 work p
 ## Phase 2: Configuration & Documentation (WP03-WP04)
 
 ### WP03: Nginx & Environment Configuration
-**Priority**: P2 (Secondary)  
-**Goal**: Create Nginx reverse proxy configurations for all environments and comprehensive environment variable templates  
+**Priority**: P2 (Secondary)
+**Goal**: Create Nginx reverse proxy configurations for all environments and comprehensive environment variable templates
 **Prompt**: [tasks/planned/WP03-nginx-environment-config.md](tasks/planned/WP03-nginx-environment-config.md)
 
 **Included Subtasks**:
@@ -176,8 +176,8 @@ This document breaks down B19 Deployment Templates & Configuration into 4 work p
 ---
 
 ### WP04: Documentation & Validation
-**Priority**: P2 (Secondary)  
-**Goal**: Create comprehensive deployment documentation covering all scenarios and add validation mechanisms  
+**Priority**: P2 (Secondary)
+**Goal**: Create comprehensive deployment documentation covering all scenarios and add validation mechanisms
 **Prompt**: [tasks/planned/WP04-documentation-validation.md](tasks/planned/WP04-documentation-validation.md)
 
 **Included Subtasks**:
@@ -272,7 +272,7 @@ This document breaks down B19 Deployment Templates & Configuration into 4 work p
 WP01 (Docker & Compose)     WP02 (Kubernetes)
 ├─ T001-T006 [parallel]     ├─ T009-T016 [parallel]
 ├─ T007 [depends: T001]     └─ (no internal deps)
-└─ T008 [depends: T003]     
+└─ T008 [depends: T003]
         │                           │
         └───────────┬───────────────┘
                     │
@@ -286,7 +286,7 @@ WP03 (Nginx & Env)      WP04 (Documentation)
 └─ T024 [depends: T006]
 ```
 
-**Critical Path**: T001 → T007 → T008 (Docker build & local verification)  
+**Critical Path**: T001 → T007 → T008 (Docker build & local verification)
 **Parallel Opportunities**: 26 out of 32 subtasks can be parallelized by file/concern
 
 ---

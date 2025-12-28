@@ -29,12 +29,12 @@ The Core Scaffolding CLI is a code generation tool that accelerates creation of 
 **Target Platform**: Cross-platform (Windows, macOS, Linux) with proper path handling
 **Project Type**: Single project (CLI tool with Django integration)
 **Performance Goals**: Module generation <2 minutes, project bootstrap <5 minutes, template discovery <500ms
-**Constraints**: 
+**Constraints**:
 - Must reuse existing `check_policy.py` for constitutional validation (no duplicate logic)
 - Must work in environments without git (filesystem-based template discovery)
 - Generated code must be compatible with both SQLite (dev) and PostgreSQL (production)
 - CLI must handle Windows, macOS, and Linux path conventions correctly
-**Scale/Scope**: 
+**Scale/Scope**:
 - 4 Core built-in templates (minimal, api-first, service, ui-backed)
 - Support 10+ custom templates per project
 - 100+ module generations per developer per year

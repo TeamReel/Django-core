@@ -44,9 +44,7 @@ class TestValidationRunner:
 
         # Mock subprocess returning success
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout="", stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
             report = runner.validate_directory(tmp_path)
 
@@ -248,14 +246,10 @@ class TestValidationIntegration:
 
         # Mock subprocess returning success
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout="", stderr=""
-            )
+            mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
             # Should succeed with validation
-            generator.generate_app(
-                "payments", "minimal", project_root, validate=True, force=False
-            )
+            generator.generate_app("payments", "minimal", project_root, validate=True, force=False)
 
             # Verify app created
             assert (project_root / "src" / "payments").exists()
@@ -337,9 +331,7 @@ class TestValidationIntegration:
             )
 
             # Should succeed with force=True
-            generator.generate_app(
-                "payments", "minimal", project_root, validate=True, force=True
-            )
+            generator.generate_app("payments", "minimal", project_root, validate=True, force=True)
 
             # Verify app created
             assert (project_root / "src" / "payments").exists()
@@ -355,9 +347,7 @@ class TestValidationIntegration:
         generator = CodeGenerator(renderer)
 
         # Should succeed without validation
-        generator.generate_app(
-            "payments", "minimal", project_root, validate=False, force=False
-        )
+        generator.generate_app("payments", "minimal", project_root, validate=False, force=False)
 
         # Verify app created
         assert (project_root / "src" / "payments").exists()
@@ -373,9 +363,7 @@ class TestValidationIntegration:
         generator = CodeGenerator(renderer)
 
         # Should succeed with warning (validation skipped)
-        generator.generate_app(
-            "payments", "minimal", project_root, validate=True, force=False
-        )
+        generator.generate_app("payments", "minimal", project_root, validate=True, force=False)
 
         # Verify app created
         assert (project_root / "src" / "payments").exists()

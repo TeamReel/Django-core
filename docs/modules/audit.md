@@ -6,7 +6,7 @@ Immutable audit logging system for compliance and security tracking.
 
 The `audit` module provides an append-only audit trail for system-wide activity tracking. Every significant action is recorded with context about who did what, when, and where.
 
-**App location**: `src/audit/`  
+**App location**: `src/audit/`
 **Feature spec**: `kitty-specs/009-audit-logging-system/`
 
 ## Configuration
@@ -249,7 +249,7 @@ class AuditEvent(models.Model):
         if self.pk:
             raise ValueError("Audit events cannot be modified")
         super().save(*args, **kwargs)
-    
+
     def delete(self, *args, **kwargs):
         raise ValueError("Audit events cannot be deleted")
 ```
@@ -278,7 +278,7 @@ CREATE TABLE audit_events (
     ...
 ) PARTITION BY RANGE (created_at);
 
-CREATE TABLE audit_events_2024_q1 
+CREATE TABLE audit_events_2024_q1
 PARTITION OF audit_events
 FOR VALUES FROM ('2024-01-01') TO ('2024-04-01');
 ```

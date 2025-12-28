@@ -102,11 +102,7 @@ class Command(BaseCommand):
         ]
 
         if dry_run:
-            self.stdout.write(
-                self.style.WARNING(
-                    "DRY RUN MODE - No rules will be created\n"
-                )
-            )
+            self.stdout.write(self.style.WARNING("DRY RUN MODE - No rules will be created\n"))
 
         created_count = 0
         updated_count = 0
@@ -139,9 +135,7 @@ class Command(BaseCommand):
                                 setattr(existing_rule, key, value)
                             existing_rule.save()
                             self.stdout.write(
-                                self.style.SUCCESS(
-                                    f"✓ Updated: {event_type} ({scope})"
-                                )
+                                self.style.SUCCESS(f"✓ Updated: {event_type} ({scope})")
                             )
                         updated_count += 1
                     else:
@@ -161,27 +155,19 @@ class Command(BaseCommand):
                         )
                     else:
                         RoutingRule.objects.create(**rule_data)
-                        self.stdout.write(
-                            self.style.SUCCESS(f"✓ Created: {event_type} ({scope})")
-                        )
+                        self.stdout.write(self.style.SUCCESS(f"✓ Created: {event_type} ({scope})"))
                     created_count += 1
 
         # Summary
         self.stdout.write("\n" + "=" * 50)
         if dry_run:
-            self.stdout.write(
-                self.style.WARNING("DRY RUN SUMMARY:")
-            )
+            self.stdout.write(self.style.WARNING("DRY RUN SUMMARY:"))
             self.stdout.write(f"  Would create: {created_count} rules")
             self.stdout.write(f"  Would update: {updated_count} rules")
             self.stdout.write(f"  Would skip: {skipped_count} rules")
-            self.stdout.write(
-                "\nRun without --dry-run to apply these changes."
-            )
+            self.stdout.write("\nRun without --dry-run to apply these changes.")
         else:
-            self.stdout.write(
-                self.style.SUCCESS("CONFIGURATION COMPLETE:")
-            )
+            self.stdout.write(self.style.SUCCESS("CONFIGURATION COMPLETE:"))
             self.stdout.write(f"  Created: {created_count} rules")
             self.stdout.write(f"  Updated: {updated_count} rules")
             self.stdout.write(f"  Skipped: {skipped_count} rules")

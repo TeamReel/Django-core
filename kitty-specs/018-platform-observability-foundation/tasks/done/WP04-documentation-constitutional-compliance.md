@@ -124,13 +124,13 @@ import requests
 
 class PaymentGatewayHealthCheck:
     """Health check for external payment gateway."""
-    
+
     def check(self) -> HealthCheckResult:
         start = time.time()
         try:
             response = requests.get('https://api.payment-gateway.com/health', timeout=0.5)
             latency_ms = (time.time() - start) * 1000
-            
+
             return HealthCheckResult(
                 name="payment_gateway",
                 status=response.status_code == 200,
@@ -157,21 +157,21 @@ import statsd
 
 class StatsDCollector:
     """StatsD metric collector implementation."""
-    
+
     def __init__(self, host='localhost', port=8125):
         self.client = statsd.StatsClient(host, port)
-    
+
     def increment(self, name: str, value: int = 1, labels: dict[str, str] = {}) -> None:
         """Increment counter metric."""
         # StatsD doesn't support labels; encode in metric name
         metric_name = f"{name}.{'.'.join(f'{k}_{v}' for k, v in labels.items())}"
         self.client.incr(metric_name, value)
-    
+
     def observe(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         """Record timer observation."""
         metric_name = f"{name}.{'.'.join(f'{k}_{v}' for k, v in labels.items())}"
         self.client.timing(metric_name, value * 1000)  # Convert seconds to milliseconds
-    
+
     def set_gauge(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         """Set gauge value."""
         metric_name = f"{name}.{'.'.join(f'{k}_{v}' for k, v in labels.items())}"
@@ -188,7 +188,7 @@ from observability.logging import PIIRedactionFilter
 
 class CustomPIIRedactionFilter(PIIRedactionFilter):
     """Extended PII redaction for organization-specific fields."""
-    
+
     REDACTED_FIELDS = PIIRedactionFilter.REDACTED_FIELDS | {
         'employee_id', 'badge_number', 'internal_ip'
     }
@@ -242,8 +242,8 @@ LOGGING = {
 ```markdown
 # ADR 019: Metric Exporter Pluggability
 
-**Status**: Accepted  
-**Date**: 2025-12-03  
+**Status**: Accepted
+**Date**: 2025-12-03
 **Context**: B18 Platform Observability Foundation
 
 ## Problem
@@ -300,8 +300,8 @@ Platform Observability Foundation provides:
 - **Structured Logging**: JSON logs with correlation IDs and PII redaction
 - **Metrics**: Prometheus-compatible `/metrics` endpoint with task observability
 
-**Quick Start**: See [docs/observability.md](docs/observability.md)  
-**Extension Guide**: [docs/observability-extension-guide.md](docs/observability-extension-guide.md)  
+**Quick Start**: See [docs/observability.md](docs/observability.md)
+**Extension Guide**: [docs/observability-extension-guide.md](docs/observability-extension-guide.md)
 **Troubleshooting**: [docs/observability-troubleshooting.md](docs/observability-troubleshooting.md)
 ```
 
@@ -329,7 +329,7 @@ spec:
         image: your-registry/django-core-app:latest
         ports:
         - containerPort: 8000
-        
+
         livenessProbe:
           httpGet:
             path: /health/live
@@ -338,7 +338,7 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
-        
+
         readinessProbe:
           httpGet:
             path: /health/ready

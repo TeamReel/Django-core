@@ -1,8 +1,8 @@
 # ADR 005: Routing Rule Evaluation Order
 
-**Status**: Accepted  
-**Date**: 2025-12-03  
-**Deciders**: Architecture Team  
+**Status**: Accepted
+**Date**: 2025-12-03
+**Deciders**: Architecture Team
 **Context**: B17 Contextual Notification Service
 
 ## Context and Problem Statement
@@ -26,7 +26,7 @@ When multiple routing rules match the same event, we need a deterministic way to
 - Execute only the first matching rule
 - Stop evaluation immediately
 
-**Pros**: Fast, simple, predictable  
+**Pros**: Fast, simple, predictable
 **Cons**: Can't combine rules (e.g., both email and in-app)
 
 ### Option 2: Execute All Matching Rules
@@ -34,7 +34,7 @@ When multiple routing rules match the same event, we need a deterministic way to
 - Execute all of them
 - Deduplicate recipients at handoff
 
-**Pros**: Flexible, allows multi-channel notifications  
+**Pros**: Flexible, allows multi-channel notifications
 **Cons**: Slower, potential for spam, complex deduplication
 
 ### Option 3: Scope-Based Precedence with Priority (Selected)
@@ -43,7 +43,7 @@ When multiple routing rules match the same event, we need a deterministic way to
 - Execute **all matching rules** in that order
 - Later rules can't override earlier rules (additive only)
 
-**Pros**: 
+**Pros**:
 - Combines predictability with flexibility
 - Specific rules (project) override general rules (global)
 - Priority within scope gives fine-grained control

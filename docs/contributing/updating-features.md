@@ -152,7 +152,7 @@ When breaking changes are necessary:
 1. **Document in ADR**
    ```markdown
    ## ADR-XXX: Deprecate Legacy Auth Endpoints
-   
+
    ### Breaking Changes
    - `/api/v1/auth/login/` removed in favor of `/api/v2/auth/token/`
    - Response format changed from `{token}` to `{access, refresh}`
@@ -283,7 +283,7 @@ class Migration(migrations.Migration):
 ```python
 class TestUserAvatar:
     """Tests for new avatar functionality."""
-    
+
     def test_upload_avatar(self, authenticated_client, user, image_file):
         """Test avatar upload endpoint."""
         response = authenticated_client.post(

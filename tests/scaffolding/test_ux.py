@@ -57,9 +57,7 @@ class TestPrompts:
         """Test template selection in non-interactive mode uses default."""
         templates = ["minimal", "api-first", "service"]
 
-        result = prompt_for_template(
-            templates, default="minimal", interactive=False
-        )
+        result = prompt_for_template(templates, default="minimal", interactive=False)
         assert result == "minimal"
 
     def test_prompt_for_template_empty_list(self):
@@ -86,29 +84,21 @@ class TestPrompts:
     def test_prompt_for_confirmation_interactive_yes(self):
         """Test confirmation prompt returns True when user confirms."""
         with patch("click.confirm", return_value=True):
-            result = prompt_for_confirmation(
-                "Generate app?", interactive=True
-            )
+            result = prompt_for_confirmation("Generate app?", interactive=True)
             assert result is True
 
     def test_prompt_for_confirmation_interactive_no(self):
         """Test confirmation prompt returns False when user declines."""
         with patch("click.confirm", return_value=False):
-            result = prompt_for_confirmation(
-                "Overwrite?", interactive=True
-            )
+            result = prompt_for_confirmation("Overwrite?", interactive=True)
             assert result is False
 
     def test_prompt_for_confirmation_non_interactive(self):
         """Test confirmation in non-interactive mode uses default."""
-        result = prompt_for_confirmation(
-            "Generate?", default=True, interactive=False
-        )
+        result = prompt_for_confirmation("Generate?", default=True, interactive=False)
         assert result is True
 
-        result = prompt_for_confirmation(
-            "Overwrite?", default=False, interactive=False
-        )
+        result = prompt_for_confirmation("Overwrite?", default=False, interactive=False)
         assert result is False
 
     def test_prompt_for_template_variables_interactive(self):
@@ -117,9 +107,7 @@ class TestPrompts:
         optional = {"author": "Default Author"}
 
         with patch("click.prompt", side_effect=["Payment", "John Doe"]):
-            result = prompt_for_template_variables(
-                required, optional, interactive=True
-            )
+            result = prompt_for_template_variables(required, optional, interactive=True)
             assert result == {"model_name": "Payment", "author": "John Doe"}
 
     def test_prompt_for_template_variables_non_interactive(self):
@@ -127,9 +115,7 @@ class TestPrompts:
         required = {"model_name": "Model class name"}
         optional = {"author": "Default Author"}
 
-        result = prompt_for_template_variables(
-            required, optional, interactive=False
-        )
+        result = prompt_for_template_variables(required, optional, interactive=False)
         # Non-interactive: only optional defaults returned
         assert result == {"author": "Default Author"}
         assert "model_name" not in result  # Required skipped

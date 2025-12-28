@@ -103,12 +103,12 @@ variables:
     description: Name of the Django app
     required: true
     validation: "^[a-z][a-z0-9_]*$"
-  
+
   - name: model_name
     description: Name of the primary model
     required: true
     validation: "^[A-Z][a-zA-Z0-9]*$"
-  
+
   - name: include_tests
     description: Generate test file
     required: false
@@ -118,10 +118,10 @@ variables:
 files:
   - source: models.py.j2
     destination: "{{ app_name }}/models.py"
-  
+
   - source: views.py.j2
     destination: "{{ app_name }}/views.py"
-  
+
   - source: tests.py.j2
     destination: "{{ app_name }}/tests.py"
     condition: "{{ include_tests }}"
@@ -147,7 +147,7 @@ from django.conf import settings
 
 class {{ model_name }}(models.Model):
     """{{ model_name }} model.
-    
+
     TODO: Add your fields here.
     """
     name = models.CharField(max_length=200)
@@ -159,12 +159,12 @@ class {{ model_name }}(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = '{{ model_name }}'
         verbose_name_plural = '{{ model_name }}s'
-    
+
     def __str__(self):
         return self.name
 ```
@@ -189,10 +189,10 @@ class {{ model_name }}ViewSet(viewsets.ModelViewSet):
     queryset = {{ model_name }}.objects.all()
     serializer_class = {{ model_name }}Serializer
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
-    
+
     def get_queryset(self):
         """Filter queryset by user."""
         return self.queryset.filter(created_by=self.request.user)
@@ -227,12 +227,12 @@ def {{ model_name | lower }}(user):
 class Test{{ model_name }}Model:
     def test_str_representation(self, {{ model_name | lower }}):
         assert str({{ model_name | lower }}) == 'Test {{ model_name }}'
-    
+
     def test_ordering(self, user):
         """Test that {{ model_name }}s are ordered by created_at desc."""
         first = {{ model_name }}.objects.create(name='First', created_by=user)
         second = {{ model_name }}.objects.create(name='Second', created_by=user)
-        
+
         items = list({{ model_name }}.objects.all())
         assert items[0] == second
         assert items[1] == first
@@ -246,7 +246,7 @@ class Test{{ model_name }}API:
             'description': 'Description'
         })
         assert response.status_code == 201
-    
+
     def test_list_{{ model_name | lower }}s(self, authenticated_client, {{ model_name | lower }}):
         response = authenticated_client.get('/api/{{ app_name }}/')
         assert response.status_code == 200
@@ -277,7 +277,7 @@ TEMPLATE_DIR = EXAMPLE_DIR / "templates"
 
 def main():
     print("=== Scaffolding Demo ===\n")
-    
+
     # Clean output directory
     for item in OUTPUT_DIR.glob("*"):
         if item.name != ".gitkeep":
@@ -286,14 +286,14 @@ def main():
                 shutil.rmtree(item)
             else:
                 item.unlink()
-    
+
     # Run scaffolding command
     print("Running: kitty scaffold custom-module")
     print("  --app-name=inventory")
     print("  --model-name=Product")
     print("  --include-tests=true")
     print()
-    
+
     cmd = [
         sys.executable, "-m", "kittify", "scaffold",
         "--template-dir", str(TEMPLATE_DIR),
@@ -303,9 +303,9 @@ def main():
         "--model-name", "Product",
         "--include-tests", "true"
     ]
-    
+
     result = subprocess.run(cmd, capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print("✓ Scaffolding successful!")
         print("\nGenerated files:")
@@ -315,7 +315,7 @@ def main():
         print("✗ Scaffolding failed:")
         print(result.stderr)
         return 1
-    
+
     return 0
 
 if __name__ == "__main__":
@@ -345,17 +345,17 @@ class TestManifest:
         manifest_path = TEMPLATE_DIR / "manifest.yaml"
         with open(manifest_path) as f:
             manifest = yaml.safe_load(f)
-        
+
         assert manifest['name'] == 'custom-module'
         assert 'variables' in manifest
         assert 'files' in manifest
-    
+
     def test_manifest_has_required_variables(self):
         """Verify required variables are defined."""
         manifest_path = TEMPLATE_DIR / "manifest.yaml"
         with open(manifest_path) as f:
             manifest = yaml.safe_load(f)
-        
+
         var_names = [v['name'] for v in manifest['variables']]
         assert 'app_name' in var_names
         assert 'model_name' in var_names
@@ -364,25 +364,25 @@ class TestTemplates:
     def test_templates_are_valid_jinja2(self):
         """Verify templates are valid Jinja2."""
         from jinja2 import Environment, FileSystemLoader
-        
+
         env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)))
-        
+
         for template_file in TEMPLATE_DIR.glob("*.j2"):
             template = env.get_template(template_file.name)
             assert template is not None
-    
+
     def test_templates_render_with_variables(self):
         """Verify templates render correctly."""
         from jinja2 import Environment, FileSystemLoader
-        
+
         env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)))
         template = env.get_template("models.py.j2")
-        
+
         result = template.render(
             app_name="inventory",
             model_name="Product"
         )
-        
+
         assert "class Product(models.Model)" in result
         assert "inventory_products" in result
 ```

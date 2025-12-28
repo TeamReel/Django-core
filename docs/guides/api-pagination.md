@@ -73,13 +73,13 @@ def get_all_organisations(api_url, token):
     url = f'{api_url}/api/v1/organisations/'
     headers = {'Authorization': f'Bearer {token}'}
     organisations = []
-    
+
     while url:
         response = requests.get(url, headers=headers)
         data = response.json()
         organisations.extend(data['results'])
         url = data['next']
-    
+
     return organisations
 ```
 
@@ -90,14 +90,14 @@ def iter_organisations(api_url, token, page_size=50):
     """Iterate over organisations without loading all into memory."""
     url = f'{api_url}/api/v1/organisations/?page_size={page_size}'
     headers = {'Authorization': f'Bearer {token}'}
-    
+
     while url:
         response = requests.get(url, headers=headers)
         data = response.json()
-        
+
         for org in data['results']:
             yield org
-        
+
         url = data['next']
 
 # Usage
@@ -119,13 +119,13 @@ async def get_all_organisations(api_url, token):
     headers = {'Authorization': f'Bearer {token}'}
     url = f'{api_url}/api/v1/organisations/'
     organisations = []
-    
+
     async with aiohttp.ClientSession() as session:
         while url:
             data = await fetch_page(session, url, headers)
             organisations.extend(data['results'])
             url = data['next']
-    
+
     return organisations
 ```
 
@@ -137,7 +137,7 @@ async def get_all_organisations(api_url, token):
 async function getAllOrganisations(baseUrl, token) {
   const organisations = [];
   let url = `${baseUrl}/api/v1/organisations/`;
-  
+
   while (url) {
     const response = await fetch(url, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -146,7 +146,7 @@ async function getAllOrganisations(baseUrl, token) {
     organisations.push(...data.results);
     url = data.next;
   }
-  
+
   return organisations;
 }
 ```
@@ -156,17 +156,17 @@ async function getAllOrganisations(baseUrl, token) {
 ```javascript
 async function* iterOrganisations(baseUrl, token) {
   let url = `${baseUrl}/api/v1/organisations/`;
-  
+
   while (url) {
     const response = await fetch(url, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await response.json();
-    
+
     for (const org of data.results) {
       yield org;
     }
-    
+
     url = data.next;
   }
 }
@@ -185,22 +185,22 @@ function useOrganisations() {
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [nextUrl, setNextUrl] = useState('/api/v1/organisations/');
-  
+
   const loadMore = useCallback(async () => {
     if (!nextUrl || loading) return;
-    
+
     setLoading(true);
     const response = await fetch(nextUrl, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await response.json();
-    
+
     setOrganisations(prev => [...prev, ...data.results]);
     setNextUrl(data.next);
     setHasMore(!!data.next);
     setLoading(false);
   }, [nextUrl, loading]);
-  
+
   return { organisations, loading, hasMore, loadMore };
 }
 ```
@@ -233,15 +233,15 @@ import time
 def iter_with_rate_limit(api_url, token, page_size=50):
     url = f'{api_url}/api/v1/organisations/?page_size={page_size}'
     headers = {'Authorization': f'Bearer {token}'}
-    
+
     while url:
         response = requests.get(url, headers=headers)
-        
+
         # Check rate limit headers
         remaining = int(response.headers.get('X-RateLimit-Remaining', 100))
         if remaining < 10:
             time.sleep(1)  # Slow down
-        
+
         data = response.json()
         yield from data['results']
         url = data['next']

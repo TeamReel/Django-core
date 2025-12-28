@@ -61,8 +61,7 @@ class ValidationRunner:
             subprocess.CalledProcessError: If subprocess fails to execute
         """
         logger.debug(
-            f"Running constitutional validation on {target_dir} "
-            f"using {self.check_policy_path}"
+            f"Running constitutional validation on {target_dir} " f"using {self.check_policy_path}"
         )
 
         try:
@@ -85,9 +84,7 @@ class ValidationRunner:
                 }
             else:
                 # Validation failed, parse JSON report
-                logger.warning(
-                    f"Constitutional validation failed (exit code {result.returncode})"
-                )
+                logger.warning(f"Constitutional validation failed (exit code {result.returncode})")
                 try:
                     report = json.loads(result.stdout)
 

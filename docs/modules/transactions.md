@@ -6,8 +6,8 @@ Credits, ledgers, and financial transactions for Django Core-App.
 
 The `transactions` module implements a double-entry bookkeeping system with ledgers, transactions, and credit management. It ensures financial data integrity with atomic operations and audit trails.
 
-**App location**: `src/transactions/`  
-**Feature spec**: `kitty-specs/011-core-transactions-credits/`  
+**App location**: `src/transactions/`
+**Feature spec**: `kitty-specs/011-core-transactions-credits/`
 **ADRs**: [Transactions ADRs](../architecture/adr/index.md#transactions--billing)
 
 ## Configuration
@@ -142,7 +142,7 @@ with transaction.atomic():
         reference='TXN-001',
         idempotency_key='unique-key',
     )
-    
+
     # Debit line
     TransactionLine.objects.create(
         transaction=txn,
@@ -150,7 +150,7 @@ with transaction.atomic():
         amount=Decimal('100.00'),
         direction='debit',
     )
-    
+
     # Credit line
     TransactionLine.objects.create(
         transaction=txn,
@@ -158,7 +158,7 @@ with transaction.atomic():
         amount=Decimal('100.00'),
         direction='credit',
     )
-    
+
     # Post transaction
     txn.post()
 ```
@@ -217,16 +217,16 @@ Every transaction must balance:
 def validate_transaction(transaction):
     """Ensure debits equal credits."""
     lines = transaction.lines.all()
-    
+
     debits = sum(
-        line.amount for line in lines 
+        line.amount for line in lines
         if line.direction == 'debit'
     )
     credits = sum(
-        line.amount for line in lines 
+        line.amount for line in lines
         if line.direction == 'credit'
     )
-    
+
     if debits != credits:
         raise ValidationError("Transaction must balance")
 ```
@@ -245,7 +245,7 @@ def get_ledger_balance(ledger):
         debits=Sum('amount', filter=Q(direction='debit')),
         credits=Sum('amount', filter=Q(direction='credit')),
     )
-    
+
     return (result['credits'] or 0) - (result['debits'] or 0)
 ```
 
@@ -259,11 +259,11 @@ from django.core.cache import cache
 def get_cached_balance(ledger_id):
     cache_key = f'ledger_balance:{ledger_id}'
     balance = cache.get(cache_key)
-    
+
     if balance is None:
         balance = compute_balance(ledger_id)
         cache.set(cache_key, balance, timeout=300)
-    
+
     return balance
 
 # Invalidate on transaction post

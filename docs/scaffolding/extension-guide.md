@@ -93,26 +93,26 @@ from scaffolding.discovery.manifest import Template
 
 class PluginLoader(TemplateLoader):
     """Load templates from installed Python packages."""
-    
+
     def __init__(self, package_name: str):
         self.package_name = package_name
-    
+
     def load(self) -> List[Template]:
         """Load all templates from package."""
         try:
             module = __import__(self.package_name)
             template_dir = Path(module.__file__).parent
-            
+
             templates = []
             for template_path in template_dir.glob('*/'):
                 if (template_path / '__template__.yaml').exists():
                     template = self._load_template(template_path)
                     templates.append(template)
-            
+
             return templates
         except ImportError:
             return []
-    
+
     def _load_template(self, path: Path) -> Template:
         """Load single template from directory."""
         # Implementation details
@@ -150,15 +150,15 @@ from scaffolding.validation.base import Validator, ValidationResult, ValidationI
 
 class SecurityValidator(Validator):
     """Validate code for security issues."""
-    
+
     def validate(self, app_dir: Path) -> ValidationResult:
         """Run security validation."""
         issues = []
-        
+
         # Check for hardcoded secrets
         for file_path in app_dir.rglob('*.py'):
             content = file_path.read_text()
-            
+
             if 'SECRET_KEY =' in content:
                 issues.append(ValidationIssue(
                     level='error',
@@ -166,7 +166,7 @@ class SecurityValidator(Validator):
                     file=str(file_path),
                     line=self._find_line_number(content, 'SECRET_KEY =')
                 ))
-            
+
             if 'password = "' in content.lower():
                 issues.append(ValidationIssue(
                     level='warning',
@@ -174,12 +174,12 @@ class SecurityValidator(Validator):
                     file=str(file_path),
                     line=self._find_line_number(content, 'password = "')
                 ))
-        
+
         return ValidationResult(
             passed=len([i for i in issues if i.level == 'error']) == 0,
             issues=issues
         )
-    
+
     def _find_line_number(self, content: str, search: str) -> int:
         """Find line number of text."""
         for i, line in enumerate(content.splitlines(), 1):
@@ -249,7 +249,7 @@ renderer.add_filter('to_kebab_case', to_kebab_case)
 {# Template using custom filters #}
 class {{ model_name }}Manager:
     """Manager for {{ model_name | pluralize }}."""
-    
+
     def get_all_{{ model_name | pluralize | lower }}(self):
         """Get all {{ model_name | pluralize | lower }}."""
         return {{ model_name }}.objects.all()
@@ -278,14 +278,14 @@ from scaffolding.generation.generator import CodeGenerator
 
 class HookManager:
     """Manage post-generation hooks."""
-    
+
     def __init__(self):
         self.hooks: List[Callable] = []
-    
+
     def register(self, hook: Callable) -> None:
         """Register a hook function."""
         self.hooks.append(hook)
-    
+
     def run(self, app_dir: Path, context: dict) -> None:
         """Run all registered hooks."""
         for hook in self.hooks:
@@ -333,35 +333,35 @@ from scaffolding.cli.main import ScaffoldCLI
 
 class AnalyzeCommand(Command):
     """Analyze existing app structure."""
-    
+
     @staticmethod
     def add_arguments(parser):
         """Add command arguments."""
         parser.add_argument('app_name', help='App to analyze')
         parser.add_argument('--detailed', action='store_true')
-    
+
     def execute(self, args):
         """Execute analyze command."""
         app_dir = Path(args.app_name)
-        
+
         if not app_dir.exists():
             print(f"Error: App '{args.app_name}' not found")
             return 1
-        
+
         # Analyze structure
         python_files = list(app_dir.rglob('*.py'))
         test_files = list(app_dir.rglob('test_*.py'))
-        
+
         print(f"Analysis for {args.app_name}:")
         print(f"  Python files: {len(python_files)}")
         print(f"  Test files: {len(test_files)}")
         print(f"  Test coverage: {len(test_files) / len(python_files) * 100:.1f}%")
-        
+
         if args.detailed:
             print("\nFile listing:")
             for file in python_files:
                 print(f"  - {file.relative_to(app_dir)}")
-        
+
         return 0
 
 # Register command
@@ -437,12 +437,12 @@ template_dirs:
 variables:
   author: "Your Name"
   license: "MIT"
-  
+
 validators:
   - ruff
   - mypy
   - security
-  
+
 hooks:
   post_generate:
     - python manage.py makemigrations {app_name}
@@ -458,10 +458,10 @@ from pathlib import Path
 def load_config() -> dict:
     """Load configuration from .scaffold.yaml"""
     config_path = Path('.scaffold.yaml')
-    
+
     if config_path.exists():
         return yaml.safe_load(config_path.read_text())
-    
+
     return {}
 
 # Use configuration
@@ -486,14 +486,14 @@ def test_custom_template_generates_files():
     generator = CodeGenerator()
     template = MyCustomTemplate()
     output_dir = Path('/tmp/test_output')
-    
+
     result = generator.generate_app(
         template=template,
         app_name='test_app',
         output_dir=output_dir,
         variables={'model_name': 'Product'}
     )
-    
+
     assert result.success
     assert (output_dir / 'test_app' / 'custom_file.py').exists()
 ```
@@ -505,9 +505,9 @@ def test_security_validator():
     """Test security validator detects issues."""
     validator = SecurityValidator()
     app_dir = Path('/path/to/test_app')
-    
+
     result = validator.validate(app_dir)
-    
+
     assert not result.passed
     assert any('SECRET_KEY' in issue.message for issue in result.issues)
 ```

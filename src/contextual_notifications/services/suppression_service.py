@@ -73,9 +73,7 @@ class SuppressionService:
             ttl = SuppressionService.DEFAULT_TTL
 
         # Build cache key
-        cache_key = SuppressionService._build_cache_key(
-            user_id, event_type, resource_id
-        )
+        cache_key = SuppressionService._build_cache_key(user_id, event_type, resource_id)
 
         # Measure check time
         with suppression_check_time_seconds.labels(event_type=event_type).time():
@@ -87,9 +85,7 @@ class SuppressionService:
 
                 if was_set:
                     # Key was set successfully - first occurrence (not suppressed)
-                    suppression_checks_total.labels(
-                        event_type=event_type, result="allowed"
-                    ).inc()
+                    suppression_checks_total.labels(event_type=event_type, result="allowed").inc()
                     logger.debug(
                         "Notification allowed (not suppressed)",
                         extra={
@@ -121,9 +117,7 @@ class SuppressionService:
             except Exception as exc:
                 # Redis failure - gracefully degrade (allow notification)
                 redis_failures_total.labels(operation="check_suppression").inc()
-                suppression_checks_total.labels(
-                    event_type=event_type, result="redis_failure"
-                ).inc()
+                suppression_checks_total.labels(event_type=event_type, result="redis_failure").inc()
                 logger.warning(
                     "Redis failure during suppression check - allowing notification",
                     extra={
@@ -168,9 +162,7 @@ class SuppressionService:
         if ttl is None:
             ttl = SuppressionService.DEFAULT_TTL
 
-        cache_key = SuppressionService._build_cache_key(
-            user_id, event_type, resource_id
-        )
+        cache_key = SuppressionService._build_cache_key(user_id, event_type, resource_id)
 
         try:
             timestamp = datetime.utcnow().isoformat()
@@ -202,9 +194,7 @@ class SuppressionService:
             )
 
     @staticmethod
-    def clear_suppression(
-        user_id: int, event_type: str, resource_id: str | None = None
-    ) -> None:
+    def clear_suppression(user_id: int, event_type: str, resource_id: str | None = None) -> None:
         """
         Clear suppression entry (for testing or manual reset).
 
@@ -217,9 +207,7 @@ class SuppressionService:
             >>> # Clear suppression to allow immediate re-notification
             >>> SuppressionService.clear_suppression(42, "project.updated", "project:123")
         """
-        cache_key = SuppressionService._build_cache_key(
-            user_id, event_type, resource_id
-        )
+        cache_key = SuppressionService._build_cache_key(user_id, event_type, resource_id)
 
         try:
             cache.delete(cache_key)
@@ -249,9 +237,7 @@ class SuppressionService:
             )
 
     @staticmethod
-    def _build_cache_key(
-        user_id: int, event_type: str, resource_id: str | None
-    ) -> str:
+    def _build_cache_key(user_id: int, event_type: str, resource_id: str | None) -> str:
         """
         Build Redis cache key for suppression entry.
 

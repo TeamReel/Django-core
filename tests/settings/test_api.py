@@ -48,9 +48,7 @@ class TestScopeHierarchyResolution(SettingsAPITestCase):
     def test_global_scope_only(self):
         """Test 1: Global flag/setting with no project or org specified."""
         # Create global flag and setting
-        FeatureFlag.objects.create(
-            key="global_flag", enabled=True, scope_type=ScopeType.GLOBAL
-        )
+        FeatureFlag.objects.create(key="global_flag", enabled=True, scope_type=ScopeType.GLOBAL)
         Setting.objects.create(
             key="global_setting",
             value="global_value",

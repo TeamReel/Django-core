@@ -1,6 +1,6 @@
 # Configuration Reference
-**Feature**: B19 Deployment Templates & Configuration  
-**Document Type**: Reference  
+**Feature**: B19 Deployment Templates & Configuration
+**Document Type**: Reference
 **Last Updated**: 2025-12-04
 
 ---
@@ -51,9 +51,9 @@ python -c "import secrets; print(secrets.token_urlsafe(50))"
 
 ### DEBUG
 
-**Purpose**: Enable/disable debug mode  
-**Type**: Boolean  
-**Default**: `False`  
+**Purpose**: Enable/disable debug mode
+**Type**: Boolean
+**Default**: `False`
 **Values**: `True`, `False`
 
 ```bash
@@ -70,8 +70,8 @@ DEBUG=False
 
 ### ALLOWED_HOSTS
 
-**Purpose**: Whitelist of allowed hostnames to prevent Host header attacks  
-**Type**: Comma-separated list  
+**Purpose**: Whitelist of allowed hostnames to prevent Host header attacks
+**Type**: Comma-separated list
 **Default**: `[]` (empty list)
 
 ```bash
@@ -95,8 +95,8 @@ ALLOWED_HOSTS=example.com,www.example.com,api.example.com
 
 ### CSRF_TRUSTED_ORIGINS
 
-**Purpose**: Whitelist of trusted origins for CSRF protection  
-**Type**: Comma-separated list of full URLs with scheme  
+**Purpose**: Whitelist of trusted origins for CSRF protection
+**Type**: Comma-separated list of full URLs with scheme
 **Default**: `[]` (empty list)
 
 ```bash
@@ -119,8 +119,8 @@ CSRF_TRUSTED_ORIGINS=https://example.com,https://www.example.com
 
 ### DATABASE_URL
 
-**Purpose**: PostgreSQL connection string  
-**Type**: URL  
+**Purpose**: PostgreSQL connection string
+**Type**: URL
 **Format**: `postgresql://USER:PASSWORD@HOST:PORT/DATABASE[?options]`
 
 #### Local Development
@@ -175,8 +175,8 @@ DATABASE_URL=postgresql://user:pass@host:5432/db?pool_size=10&max_overflow=20
 
 ### REDIS_URL
 
-**Purpose**: Redis connection for caching and Celery broker  
-**Type**: URL  
+**Purpose**: Redis connection for caching and Celery broker
+**Type**: URL
 **Format**: `redis://[:PASSWORD@]HOST:PORT/DB[?options]`
 
 #### Local Development
@@ -236,8 +236,8 @@ REDIS_URL=redis://:password@myredis.redis.cache.windows.net:6380/0?ssl_cert_reqs
 
 ### CELERY_BROKER_URL
 
-**Purpose**: Celery message broker connection  
-**Type**: URL  
+**Purpose**: Celery message broker connection
+**Type**: URL
 **Default**: Same as `REDIS_URL`
 
 ```bash
@@ -252,8 +252,8 @@ CELERY_BROKER_URL=redis://redis:6379/1
 
 ### CELERY_RESULT_BACKEND
 
-**Purpose**: Store task results (optional)  
-**Type**: URL or empty  
+**Purpose**: Store task results (optional)
+**Type**: URL or empty
 **Default**: Empty (disabled)
 
 ```bash
@@ -273,8 +273,8 @@ CELERY_RESULT_BACKEND=db+postgresql://user:pass@host:5432/db
 
 ### CELERY_TASK_ALWAYS_EAGER
 
-**Purpose**: Run tasks synchronously (development only)  
-**Type**: Boolean  
+**Purpose**: Run tasks synchronously (development only)
+**Type**: Boolean
 **Default**: `False`
 
 ```bash
@@ -291,9 +291,9 @@ CELERY_TASK_ALWAYS_EAGER=False
 
 ### CELERY_WORKER_CONCURRENCY
 
-**Purpose**: Number of worker threads/processes  
-**Type**: Integer  
-**Default**: Number of CPU cores  
+**Purpose**: Number of worker threads/processes
+**Type**: Integer
+**Default**: Number of CPU cores
 **Recommendation**: `(2 * CPU_CORES) + 1`
 
 ```bash
@@ -317,8 +317,8 @@ CELERY_WORKER_CONCURRENCY=17
 
 ### CELERY_TASK_SOFT_TIME_LIMIT
 
-**Purpose**: Soft timeout before task warning (seconds)  
-**Type**: Integer  
+**Purpose**: Soft timeout before task warning (seconds)
+**Type**: Integer
 **Default**: `300` (5 minutes)
 
 ```bash
@@ -335,8 +335,8 @@ CELERY_TASK_SOFT_TIME_LIMIT=600
 
 ### CELERY_TASK_TIME_LIMIT
 
-**Purpose**: Hard timeout before task termination (seconds)  
-**Type**: Integer  
+**Purpose**: Hard timeout before task termination (seconds)
+**Type**: Integer
 **Default**: `600` (10 minutes)
 
 ```bash
@@ -359,8 +359,8 @@ CELERY_TASK_TIME_LIMIT=1200
 
 ### SECURE_SSL_REDIRECT
 
-**Purpose**: Force HTTPS redirect for all requests  
-**Type**: Boolean  
+**Purpose**: Force HTTPS redirect for all requests
+**Type**: Boolean
 **Default**: `False`
 
 ```bash
@@ -377,8 +377,8 @@ SECURE_SSL_REDIRECT=True
 
 ### SESSION_COOKIE_SECURE
 
-**Purpose**: Mark session cookies as secure (HTTPS only)  
-**Type**: Boolean  
+**Purpose**: Mark session cookies as secure (HTTPS only)
+**Type**: Boolean
 **Default**: `False`
 
 ```bash
@@ -397,8 +397,8 @@ SESSION_COOKIE_SECURE=True
 
 ### CSRF_COOKIE_SECURE
 
-**Purpose**: Mark CSRF cookies as secure (HTTPS only)  
-**Type**: Boolean  
+**Purpose**: Mark CSRF cookies as secure (HTTPS only)
+**Type**: Boolean
 **Default**: `False`
 
 ```bash
@@ -417,8 +417,8 @@ CSRF_COOKIE_SECURE=True
 
 ### SECURE_HSTS_SECONDS
 
-**Purpose**: HTTP Strict Transport Security duration (seconds)  
-**Type**: Integer  
+**Purpose**: HTTP Strict Transport Security duration (seconds)
+**Type**: Integer
 **Default**: `0` (disabled)
 
 ```bash
@@ -442,8 +442,8 @@ SECURE_HSTS_SECONDS=31536000
 
 ### SECURE_HSTS_INCLUDE_SUBDOMAINS
 
-**Purpose**: Apply HSTS to all subdomains  
-**Type**: Boolean  
+**Purpose**: Apply HSTS to all subdomains
+**Type**: Boolean
 **Default**: `False`
 
 ```bash
@@ -462,9 +462,9 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS=True
 
 ### LOGGING_LEVEL
 
-**Purpose**: Application logging verbosity  
-**Type**: String  
-**Default**: `INFO`  
+**Purpose**: Application logging verbosity
+**Type**: String
+**Default**: `INFO`
 **Values**: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
 
 ```bash
@@ -489,8 +489,8 @@ LOGGING_LEVEL=WARNING
 
 ### PROMETHEUS_METRICS_ENABLED
 
-**Purpose**: Enable /metrics endpoint for Prometheus scraping  
-**Type**: Boolean  
+**Purpose**: Enable /metrics endpoint for Prometheus scraping
+**Type**: Boolean
 **Default**: `True`
 
 ```bash
@@ -510,8 +510,8 @@ PROMETHEUS_METRICS_ENABLED=False
 
 ### SENTRY_DSN
 
-**Purpose**: Sentry error tracking DSN  
-**Type**: URL or empty  
+**Purpose**: Sentry error tracking DSN
+**Type**: URL or empty
 **Default**: Empty (disabled)
 
 ```bash
@@ -534,8 +534,8 @@ SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
 
 ### DOCKER_IMAGE
 
-**Purpose**: Docker image tag for production deployment  
-**Type**: String  
+**Purpose**: Docker image tag for production deployment
+**Type**: String
 **Default**: N/A (only for docker-compose.prod.yml)
 
 ```bash
@@ -727,7 +727,7 @@ SENTRY_DSN=https://your-dsn@sentry.io/project
 
 ### "Invalid DATABASE_URL format"
 
-**Solution**: Verify URL format: `postgresql://user:pass@host:port/db`  
+**Solution**: Verify URL format: `postgresql://user:pass@host:port/db`
 Check for special characters needing URL encoding.
 
 ---

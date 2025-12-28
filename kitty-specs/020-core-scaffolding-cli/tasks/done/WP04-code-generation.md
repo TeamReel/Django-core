@@ -135,17 +135,17 @@ from scaffolding.rendering.engine import TemplateRenderer
 
 class CodeGenerator:
     """Generate Django apps/projects with atomic rollback."""
-    
+
     def __init__(self, renderer: TemplateRenderer):
         self.renderer = renderer
-    
+
     def _create_staging_dir(self, app_name: str) -> Path:
         """
         Create staging directory for generation.
-        
+
         Args:
             app_name: App name for suffix
-        
+
         Returns:
             Path to staging directory
         """
@@ -176,10 +176,10 @@ class CodeGenerator:
 def _build_files(self, staging_dir: Path) -> List[Path]:
     """
     Build files in staging directory.
-    
+
     Args:
         staging_dir: Path to staging directory
-    
+
     Returns:
         List of created file paths
     """
@@ -212,16 +212,16 @@ import shutil
 def _atomic_move(self, staging_dir: Path, target_dir: Path) -> None:
     """
     Atomically move staging directory to target.
-    
+
     Args:
         staging_dir: Path to staging directory
         target_dir: Path to target directory
-    
+
     Raises:
         OSError: If move fails
     """
     shutil.move(str(staging_dir), str(target_dir))
-    
+
     if not target_dir.exists():
         raise OSError(f"Atomic move failed: {target_dir} not created")
 ```
@@ -251,7 +251,7 @@ def _atomic_move(self, staging_dir: Path, target_dir: Path) -> None:
 def generate_app(self, name: str, template: str, project_root: Path, validate: bool = True) -> None:
     """
     Generate Django app with atomic rollback.
-    
+
     Args:
         name: App name
         template: Template name
@@ -260,25 +260,25 @@ def generate_app(self, name: str, template: str, project_root: Path, validate: b
     """
     # Pre-generation validation (T031-T033)
     self._validate_app_name(name)
-    
+
     target_dir = project_root / 'src' / name
     if target_dir.exists():
         raise ConflictError(f"App '{name}' already exists at {target_dir}")
-    
+
     # Create staging directory
     staging_dir = self._create_staging_dir(name)
-    
+
     try:
         # Render templates to staging
         created_files = self._build_files(staging_dir)
-        
+
         # Validate if requested (WP05 integration point)
         if validate:
             self._validate_generated_code(staging_dir)
-        
+
         # Atomic move staging → target
         self._atomic_move(staging_dir, target_dir)
-        
+
     except Exception as e:
         # Rollback: cleanup staging
         if staging_dir.exists():
@@ -368,10 +368,10 @@ import re
 def _validate_app_name(self, name: str) -> None:
     """
     Validate app name follows Django conventions.
-    
+
     Args:
         name: App name to validate
-    
+
     Raises:
         ValidationError: If name is invalid
     """
@@ -380,15 +380,15 @@ def _validate_app_name(self, name: str) -> None:
         raise ValidationError(
             f"Invalid app name '{name}': must be lowercase with underscores only (snake_case)"
         )
-    
+
     # Check not starting with number
     if name[0].isdigit():
         raise ValidationError(f"Invalid app name '{name}': cannot start with number")
-    
+
     # Check not Python keyword
     if keyword.iskeyword(name):
         raise ValidationError(f"Invalid app name '{name}': cannot be Python keyword")
-    
+
     # Check not Django reserved name
     reserved = ['admin', 'auth', 'contenttypes', 'sessions', 'messages', 'staticfiles']
     if name in reserved:
@@ -422,22 +422,22 @@ import re
 def _validate_project_name(self, name: str) -> str:
     """
     Validate and sanitize project name.
-    
+
     Args:
         name: Project name to sanitize
-    
+
     Returns:
         Sanitized project name (slugified)
-    
+
     Raises:
         ValidationError: If name is invalid
     """
     # Slugify: lowercase, replace spaces with hyphens, remove special chars
     sanitized = re.sub(r'[^a-z0-9-]', '', name.lower().replace(' ', '-'))
-    
+
     if not sanitized:
         raise ValidationError(f"Invalid project name '{name}': no valid characters")
-    
+
     return sanitized
 ```
 
@@ -478,14 +478,14 @@ def test_generate_app_success(tmp_path):
     project_root = tmp_path / 'myproject'
     project_root.mkdir()
     (project_root / 'src').mkdir()
-    
+
     # Setup renderer (mock)
     renderer = MockRenderer()
     generator = CodeGenerator(renderer)
-    
+
     # Generate app
     generator.generate_app('payments', 'minimal', project_root, validate=False)
-    
+
     # Verify app created
     app_dir = project_root / 'src' / 'payments'
     assert app_dir.exists()
@@ -498,19 +498,19 @@ def test_generate_app_rollback_on_error(tmp_path):
     project_root = tmp_path / 'myproject'
     project_root.mkdir()
     (project_root / 'src').mkdir()
-    
+
     # Setup renderer that raises error
     renderer = MockRendererWithError()
     generator = CodeGenerator(renderer)
-    
+
     # Attempt generation (should fail and rollback)
     with pytest.raises(Exception):
         generator.generate_app('payments', 'minimal', project_root, validate=False)
-    
+
     # Verify app NOT created
     app_dir = project_root / 'src' / 'payments'
     assert not app_dir.exists()
-    
+
     # Verify no staging directories left in /tmp
     import tempfile
     tmp_dir = Path(tempfile.gettempdir())
@@ -524,14 +524,14 @@ def test_generate_app_conflict_detection(tmp_path):
     project_root.mkdir()
     src_dir = project_root / 'src'
     src_dir.mkdir()
-    
+
     # Create existing app
     existing_app = src_dir / 'payments'
     existing_app.mkdir()
-    
+
     renderer = MockRenderer()
     generator = CodeGenerator(renderer)
-    
+
     # Attempt to generate same app
     with pytest.raises(ConflictError, match="already exists"):
         generator.generate_app('payments', 'minimal', project_root, validate=False)
@@ -540,20 +540,20 @@ def test_generate_app_conflict_detection(tmp_path):
 def test_validate_app_name_invalid(tmp_path):
     """Test app name validation."""
     generator = CodeGenerator(MockRenderer())
-    
+
     # Test invalid names
     with pytest.raises(ValidationError, match="snake_case"):
         generator._validate_app_name('MyApp')  # PascalCase
-    
+
     with pytest.raises(ValidationError, match="cannot start with number"):
         generator._validate_app_name('123app')
-    
+
     with pytest.raises(ValidationError, match="Python keyword"):
         generator._validate_app_name('import')
-    
+
     with pytest.raises(ValidationError, match="reserved by Django"):
         generator._validate_app_name('admin')
-    
+
     # Test valid name
     generator._validate_app_name('my_valid_app')  # Should not raise
 ```

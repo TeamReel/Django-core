@@ -65,7 +65,7 @@ history:
    ```bash
    # Login
    curl -X POST /api/auth/login/ -d '{"email":"...", "password":"..."}'
-   
+
    # Authenticated request
    curl -H "Authorization: Bearer <token>" /api/users/me/
    ```

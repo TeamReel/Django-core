@@ -4,9 +4,9 @@ Complete documentation for the Constitutional Enforcement Engine.
 
 ## Getting Started
 
-📖 **[Quick Start Guide](./quickstart.md)** - Get up and running in 5 minutes  
-🏗️ **[Architecture Overview](../../src/constitution_engine/README.md)** - Understand how it works  
-🎯 **[Constitutional Alignment](./constitutional-alignment.md)** - Principles and non-goals  
+📖 **[Quick Start Guide](./quickstart.md)** - Get up and running in 5 minutes
+🏗️ **[Architecture Overview](../../src/constitution_engine/README.md)** - Understand how it works
+🎯 **[Constitutional Alignment](./constitutional-alignment.md)** - Principles and non-goals
 
 ## Core Documentation
 
@@ -29,10 +29,10 @@ Complete documentation for the Constitutional Enforcement Engine.
 
 ## How-To Guides
 
-📝 **[Writing Custom Rules](./howto/writing-rules.md)** - Create enforcement rules  
-✅ **[Writing Custom Validators](./howto/writing-validators.md)** - Post-process results  
-📊 **[Writing Custom Reporters](./howto/writing-reporters.md)** - Format output  
-🔌 **[Writing Custom Adapters](./howto/writing-adapters.md)** - Add project types  
+📝 **[Writing Custom Rules](./howto/writing-rules.md)** - Create enforcement rules
+✅ **[Writing Custom Validators](./howto/writing-validators.md)** - Post-process results
+📊 **[Writing Custom Reporters](./howto/writing-reporters.md)** - Format output
+🔌 **[Writing Custom Adapters](./howto/writing-adapters.md)** - Add project types
 
 ## Examples
 

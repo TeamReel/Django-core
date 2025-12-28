@@ -920,9 +920,9 @@ def test_my_rule_passes():
     rule = MyRule()
     context = RepositoryContext(root_path=Path("/tmp/test"))
     config = ConfigurationProfile()
-    
+
     results = rule.execute(context, config)
-    
+
     assert len(results) == 1
     assert results[0].status == CheckStatus.PASS
 
@@ -931,9 +931,9 @@ def test_my_rule_fails():
     rule = MyRule()
     context = RepositoryContext(root_path=Path("/tmp/test"))
     config = ConfigurationProfile()
-    
+
     results = rule.execute(context, config)
-    
+
     assert any(r.status == CheckStatus.FAIL for r in results)
 ```
 
@@ -946,13 +946,13 @@ def test_plugin_discovery():
         discover_builtin_plugins,
         get_global_registry,
     )
-    
+
     registry = get_global_registry()
     discover_builtin_plugins()
-    
+
     rules = registry.list_rules()
     rule_ids = [r.identifier for r in rules]
-    
+
     assert "my-rule-id" in rule_ids
 ```
 
@@ -967,6 +967,5 @@ For questions or issues:
 
 ---
 
-**Last Updated**: 2025-11-22  
+**Last Updated**: 2025-11-22
 **Engine Version**: 0.1.0 (WP04 - Rules & Validators)
-

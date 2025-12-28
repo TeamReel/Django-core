@@ -36,9 +36,7 @@ class TestPolicyService:
                 "user_id": user.id,
                 "channel": "in_app",
                 "event_type": "project.updated",
-                "context": {
-                    "org_id": org_notification_policy_no_quiet_hours.organisation.id
-                },
+                "context": {"org_id": org_notification_policy_no_quiet_hours.organisation.id},
                 "payload": {"title": "Test"},
             }
         ]
@@ -48,9 +46,7 @@ class TestPolicyService:
         assert len(result) == 1
 
     @patch("contextual_notifications.services.policy_service.timezone.now")
-    def test_apply_policies_outside_quiet_hours(
-        self, mock_now, org_notification_policy, user
-    ):
+    def test_apply_policies_outside_quiet_hours(self, mock_now, org_notification_policy, user):
         """Test that notifications go through outside quiet hours."""
         # Mock time at 10:00 AM (outside quiet hours 22:00-08:00)
         mock_now.return_value = datetime(2025, 12, 3, 10, 0, 0)
@@ -193,9 +189,7 @@ class TestPolicyService:
 
         assert result is False
 
-    def test_is_quiet_hours_policy_disabled(
-        self, org_notification_policy_no_quiet_hours
-    ):
+    def test_is_quiet_hours_policy_disabled(self, org_notification_policy_no_quiet_hours):
         """Test quiet hours when policy has quiet hours disabled."""
         result = PolicyService.is_quiet_hours(
             org_notification_policy_no_quiet_hours.organisation.id
@@ -217,7 +211,9 @@ class TestPolicyService:
 
         # Verify key format
         call_args = mock_redis.get.call_args[0][0]
-        assert f"rate_limit:org:{org_notification_policy.organisation.id}:user:{user.id}" in call_args
+        assert (
+            f"rate_limit:org:{org_notification_policy.organisation.id}:user:{user.id}" in call_args
+        )
 
     @patch("contextual_notifications.services.policy_service.redis_client")
     def test_apply_policies_empty_decisions(self, mock_redis):

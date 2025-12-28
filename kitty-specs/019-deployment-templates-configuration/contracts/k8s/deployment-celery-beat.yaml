@@ -36,7 +36,7 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
-      
+
       containers:
         - name: celery-beat
           image: your-registry/django-core:latest  # Replace with your image
@@ -49,14 +49,14 @@ spec:
             - "--loglevel=info"
             - "--pidfile=/tmp/celerybeat.pid"
             - "--schedule=/tmp/celerybeat-schedule"
-          
+
           # Environment variables from ConfigMap and Secret
           envFrom:
             - configMapRef:
                 name: django-core-config
             - secretRef:
                 name: django-core-secrets
-          
+
           # Liveness probe: Beat process running?
           livenessProbe:
             exec:
@@ -69,7 +69,7 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
             successThreshold: 1
-          
+
           # Resource requests and limits
           # Beat is lightweight (just schedules, doesn't execute tasks)
           resources:
@@ -79,7 +79,7 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "500m"
-          
+
           # Security context
           securityContext:
             allowPrivilegeEscalation: false
@@ -87,21 +87,21 @@ spec:
             capabilities:
               drop:
                 - ALL
-          
+
           # Volume mount for beat schedule persistence (optional)
           # Uncomment if you want schedule to persist across restarts
           # volumeMounts:
           #   - name: beat-schedule
           #     mountPath: /tmp
-      
+
       # Volumes (optional, for schedule persistence)
       # volumes:
       #   - name: beat-schedule
       #     emptyDir: {}
-      
+
       # Restart policy
       restartPolicy: Always
-      
+
       # Graceful shutdown
       terminationGracePeriodSeconds: 30
 

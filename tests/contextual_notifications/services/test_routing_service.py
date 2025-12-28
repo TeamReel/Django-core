@@ -11,9 +11,7 @@ from contextual_notifications.services.routing_service import RoutingService
 class TestRoutingService:
     """Tests for RoutingService."""
 
-    def test_evaluate_rules_with_global_rule(
-        self, routing_rule_global, event_data, user, project
-    ):
+    def test_evaluate_rules_with_global_rule(self, routing_rule_global, event_data, user, project):
         """Test routing evaluation with a global rule."""
         # Add user as project member
         project.members.add(user)
@@ -50,9 +48,7 @@ class TestRoutingService:
 
         assert len(decisions) > 0
         # Should route to assignee via in_app (from fixture)
-        assert any(
-            d["user_id"] == user.id and d["channel"] == "in_app" for d in decisions
-        )
+        assert any(d["user_id"] == user.id and d["channel"] == "in_app" for d in decisions)
 
     def test_evaluate_rules_scope_precedence(
         self,
@@ -66,9 +62,7 @@ class TestRoutingService:
     ):
         """Test that scope precedence works: project > org > global."""
         # Create overlapping rules for same event type
-        RoutingRule.objects.filter(id=routing_rule_project.id).update(
-            event_type="project.updated"
-        )
+        RoutingRule.objects.filter(id=routing_rule_project.id).update(event_type="project.updated")
 
         organisation.members.add(user)
         project.members.add(user)
@@ -81,9 +75,7 @@ class TestRoutingService:
         # Then org rule, then global rule
         assert len(decisions) > 0
 
-    def test_evaluate_rules_disabled_rule_ignored(
-        self, routing_rule_disabled, event_data
-    ):
+    def test_evaluate_rules_disabled_rule_ignored(self, routing_rule_disabled, event_data):
         """Test that disabled rules are not evaluated."""
         event_data["event_type"] = "project.deleted"
 
@@ -197,18 +189,14 @@ class TestRoutingService:
         assert "priority" in decision
 
     @patch("contextual_notifications.services.routing_service.logger")
-    def test_evaluate_rules_logs_evaluation(
-        self, mock_logger, routing_rule_global, event_data
-    ):
+    def test_evaluate_rules_logs_evaluation(self, mock_logger, routing_rule_global, event_data):
         """Test that rule evaluation is logged."""
         RoutingService.evaluate_rules(event_data)
 
         # Should log matched rules
         assert mock_logger.info.called or mock_logger.debug.called
 
-    def test_evaluate_rules_multiple_channels_for_same_user(
-        self, user, project, event_data
-    ):
+    def test_evaluate_rules_multiple_channels_for_same_user(self, user, project, event_data):
         """Test that same user can receive multiple notifications on different channels."""
         # Create rules for both in_app and email
         RoutingRule.objects.create(

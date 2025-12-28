@@ -38,7 +38,7 @@ class CacheHealthCheck:
                     name="cache",
                     status=True,
                     latency_ms=latency_ms,
-                    details={"backend": cache.__class__.__name__}
+                    details={"backend": cache.__class__.__name__},
                 )
             else:
                 latency_ms = (time.time() - start_time) * 1000
@@ -46,14 +46,11 @@ class CacheHealthCheck:
                     name="cache",
                     status=False,
                     latency_ms=latency_ms,
-                    details={"error": "Cache get/set mismatch"}
+                    details={"error": "Cache get/set mismatch"},
                 )
 
         except Exception as e:
             latency_ms = (time.time() - start_time) * 1000
             return HealthCheckResult(
-                name="cache",
-                status=False,
-                latency_ms=latency_ms,
-                details={"error": str(e)}
+                name="cache", status=False, latency_ms=latency_ms, details={"error": str(e)}
             )

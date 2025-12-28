@@ -70,9 +70,9 @@ class PolicyService:
             policy_checks_total.labels(org_id=org_id).inc()
 
             try:
-                policy = OrganisationNotificationPolicy.objects.select_related(
-                    "organisation"
-                ).get(organisation_id=org_id)
+                policy = OrganisationNotificationPolicy.objects.select_related("organisation").get(
+                    organisation_id=org_id
+                )
 
                 logger.debug(
                     "Retrieved policy for org",

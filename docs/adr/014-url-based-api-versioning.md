@@ -1,8 +1,8 @@
 # ADR-014: URL-Based API Versioning
 
-**Status**: Accepted  
-**Date**: 2025-11-29  
-**Deciders**: Core Team  
+**Status**: Accepted
+**Date**: 2025-11-29
+**Deciders**: Core Team
 **Feature**: B13 API Foundation & Standards (WP05)
 
 ## Context

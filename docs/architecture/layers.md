@@ -58,7 +58,7 @@ class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
     permission_classes = [permissions.IsAuthenticated, IsOrgAdmin]
-    
+
     def get_queryset(self):
         """Filter by user's organizations."""
         return self.queryset.filter(
@@ -90,10 +90,10 @@ class AuditEventAdmin(admin.ModelAdmin):
 # src/audit/management/commands/audit_cleanup.py
 class Command(BaseCommand):
     help = 'Clean up old audit events'
-    
+
     def add_arguments(self, parser):
         parser.add_argument('--days', type=int, default=365)
-    
+
     def handle(self, *args, **options):
         # Implementation
 ```
@@ -112,10 +112,10 @@ Services encapsulate business logic and coordinate between layers:
 # src/permissions/evaluator.py
 class PermissionEvaluator:
     """Evaluate permissions with hierarchical inheritance."""
-    
+
     def __init__(self, cache_backend=None):
         self.cache = cache_backend or get_cache()
-    
+
     def check_permission(
         self,
         user: User,
@@ -124,25 +124,25 @@ class PermissionEvaluator:
     ) -> bool:
         """Check if user has permission on resource."""
         cache_key = self._build_cache_key(user, permission, resource)
-        
+
         # Check cache first
         cached = self.cache.get(cache_key)
         if cached is not None:
             return cached
-        
+
         # Evaluate permission
         result = self._evaluate(user, permission, resource)
-        
+
         # Cache result
         self.cache.set(cache_key, result, timeout=300)
-        
+
         # Audit the check
         audit_log.record(
             'permission.check',
             user=user,
             metadata={'permission': permission, 'result': result}
         )
-        
+
         return result
 ```
 
@@ -170,11 +170,11 @@ Custom validators enforce business rules:
 # src/accounts/validators.py
 class PasswordStrengthValidator:
     """Validate password meets strength requirements."""
-    
+
     def validate(self, password: str, user=None) -> None:
         if len(password) < 12:
             raise ValidationError('Password must be at least 12 characters')
-        
+
         if not self._has_mixed_case(password):
             raise ValidationError('Password must have mixed case')
 ```
@@ -193,7 +193,7 @@ Models define the data schema:
 # src/organisations/models.py
 class Organisation(models.Model):
     """Multi-tenant organization."""
-    
+
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     owner = models.ForeignKey(
@@ -203,9 +203,9 @@ class Organisation(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
-    
+
     objects = OrganisationManager()
-    
+
     class Meta:
         ordering = ['name']
         indexes = [
@@ -222,11 +222,11 @@ Custom managers encapsulate query logic:
 # src/organisations/managers.py
 class OrganisationManager(models.Manager):
     """Manager for Organisation model."""
-    
+
     def active(self):
         """Return non-deleted organizations."""
         return self.filter(deleted_at__isnull=True)
-    
+
     def for_user(self, user):
         """Return organizations the user belongs to."""
         return self.active().filter(
@@ -268,15 +268,15 @@ from django.core.cache import caches
 
 class PermissionCache:
     """Cache for permission lookups."""
-    
+
     def __init__(self):
         self.cache = caches['permissions']
         self.ttl = 300  # 5 minutes
-    
+
     def get_user_permissions(self, user_id: int) -> Optional[set]:
         key = f'perms:user:{user_id}'
         return self.cache.get(key)
-    
+
     def invalidate_user(self, user_id: int) -> None:
         key = f'perms:user:{user_id}'
         self.cache.delete(key)
@@ -296,7 +296,7 @@ def deliver_notification(self, notification_id: int) -> dict:
     """Deliver a notification via its configured channel."""
     notification = Notification.objects.get(id=notification_id)
     channel = get_channel(notification.channel)
-    
+
     try:
         result = channel.send(notification)
         notification.mark_delivered()

@@ -159,7 +159,7 @@ from datetime import datetime, timedelta
 
 def get_recent_projects(api_url, token, org_id, days=30):
     since = (datetime.now() - timedelta(days=days)).isoformat()
-    
+
     response = requests.get(
         f'{api_url}/api/v1/projects/',
         headers={'Authorization': f'Bearer {token}'},
@@ -181,7 +181,7 @@ def search_organisations(api_url, token, query):
     results = []
     url = f'{api_url}/api/v1/organisations/'
     params = {'search': query}
-    
+
     while url:
         response = requests.get(
             url,
@@ -191,7 +191,7 @@ def search_organisations(api_url, token, query):
         data = response.json()
         results.extend(data['results'])
         url = data['next']
-    
+
     return results
 ```
 
@@ -214,7 +214,7 @@ async function getOrganisations(filters = {}) {
     ordering: filters.orderBy,
     created_at__gte: filters.since?.toISOString(),
   });
-  
+
   const response = await fetch(`/api/v1/organisations/?${query}`, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
@@ -235,7 +235,7 @@ function useOrganisations({ search, active, orderBy }) {
       if (search) params.set('search', search);
       if (active !== undefined) params.set('is_active', active);
       if (orderBy) params.set('ordering', orderBy);
-      
+
       const response = await fetch(
         `/api/v1/organisations/?${params}`,
         { headers: { 'Authorization': `Bearer ${token}` } }
@@ -268,7 +268,7 @@ def get_filtered_projects(api_url, token, **filters):
     }
     # Remove None values
     params = {k: v for k, v in params.items() if v is not None}
-    
+
     response = requests.get(
         f'{api_url}/api/v1/projects/',
         headers={'Authorization': f'Bearer {token}'},

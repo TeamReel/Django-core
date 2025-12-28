@@ -52,6 +52,18 @@ htmlcov/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+coverage.json
+
+# Database
+*.sqlite3
+db.sqlite3
+
+# Security reports
+bandit-report.json
+
+# Logs
+logs/
+*.log
 
 # Environment variables
 .env

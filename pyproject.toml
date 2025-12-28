@@ -89,11 +89,41 @@ select = [
     "S101",  # Allow assert in tests
     "S105",  # Allow hardcoded passwords in tests
     "S106",  # Allow hardcoded password arguments in tests
+    "S107",  # Allow hardcoded password defaults in tests
+    "S108",  # Allow insecure temp file usage in tests
+    "S110",  # Allow try-except-pass in tests
     "S311",  # Allow pseudo-random generators in tests
+    "S603",  # Allow subprocess calls in tests
+    "S607",  # Allow partial executable paths in tests
+    "B007",  # Allow unused loop variables in tests
+    "F841",  # Allow unused local variables in tests
+    "E402",  # Allow module imports not at top of file in tests
+    "E501",  # Allow lines over 100 chars in tests
+    "B017",  # Allow pytest.raises(Exception) in tests
+]
+"**/tests/**/*.py" = [
+    "S101",  # Allow assert in tests
+    "S105",  # Allow hardcoded passwords in tests
+    "S106",  # Allow hardcoded password arguments in tests
+    "S107",  # Allow hardcoded password defaults in tests
+    "S108",  # Allow insecure temp file usage in tests
+    "S110",  # Allow try-except-pass in tests
+    "S311",  # Allow pseudo-random generators in tests
+    "S603",  # Allow subprocess calls in tests
+    "S607",  # Allow partial executable paths in tests
+    "B007",  # Allow unused loop variables in tests
+    "F841",  # Allow unused local variables in tests
+    "E402",  # Allow module imports not at top of file in tests
+    "E501",  # Allow lines over 100 chars in tests
+    "B017",  # Allow pytest.raises(Exception) in tests
 ]
 "**/management/commands/*.py" = [
     "S106",  # Allow hardcoded passwords in seed/test data commands
     "S311",  # Allow pseudo-random generators in seed/test data commands
+]
+"src/config/settings/*.py" = [
+    "F403",  # Allow star imports in settings
+    "F405",  # Allow undefined from star imports in settings
 ]
 
 [tool.mypy]

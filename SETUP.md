@@ -111,7 +111,7 @@ pnpm --filter design-system storybook
 
 ### Volgende Work Package: WP02 - Design Token System
 
-**Status**: Klaar om te starten  
+**Status**: Klaar om te starten
 **Locatie**: `kitty-specs/022-frontend-design-system/tasks/planned/WP02-design-token-system.md`
 
 **Commando om te starten:**
@@ -272,7 +272,7 @@ pnpm --filter design-system format       # Format code
 
 ---
 
-**Laatste update**: 2025-12-06  
-**Status**: WP01 complete, klaar voor WP02  
-**Branch**: 022-frontend-design-system  
+**Laatste update**: 2025-12-06
+**Status**: WP01 complete, klaar voor WP02
+**Branch**: 022-frontend-design-system
 **Next**: Design Token System implementatie

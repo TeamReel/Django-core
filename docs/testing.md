@@ -2,7 +2,7 @@
 
 !!! note "Consolidated Documentation"
     General testing patterns and guidelines have been moved to the [Contributing: Testing](contributing/testing.md) guide.
-    
+
     This page contains Constitution Engine-specific testing information.
 
 ## Quick Reference
@@ -76,4 +76,3 @@ def sample_repository(tmp_path):
 - **Current**: ~80%
 
 See [Contributing: Testing](contributing/testing.md) for general testing patterns.
-

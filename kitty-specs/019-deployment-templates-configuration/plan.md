@@ -9,14 +9,14 @@ B19 provides production-ready deployment templates for Django Core-App using Doc
 
 ## Technical Context
 
-**Language/Version**: Python 3.12+  
-**Primary Dependencies**: Docker 20.10+, Docker Compose 2.0+, Kubernetes 1.24+ (optional), Gunicorn 21+, Nginx 1.25+  
-**Storage**: External PostgreSQL 13+ (AWS RDS, GCP Cloud SQL, Azure Database), External Redis 6+ (AWS ElastiCache, GCP Memorystore, Azure Cache)  
-**Testing**: pytest 8.0+, docker-compose for integration tests  
-**Target Platform**: Linux containers (Docker), Kubernetes clusters (GKE, EKS, AKS, on-prem)  
-**Project Type**: Infrastructure/DevOps feature (deployment automation templates)  
-**Performance Goals**: Local setup <5min, Production deployment <30min, Container build <10min, K8s deployment <2min  
-**Constraints**: Zero-downtime updates, <200ms health check response, Non-root container execution (B03)  
+**Language/Version**: Python 3.12+
+**Primary Dependencies**: Docker 20.10+, Docker Compose 2.0+, Kubernetes 1.24+ (optional), Gunicorn 21+, Nginx 1.25+
+**Storage**: External PostgreSQL 13+ (AWS RDS, GCP Cloud SQL, Azure Database), External Redis 6+ (AWS ElastiCache, GCP Memorystore, Azure Cache)
+**Testing**: pytest 8.0+, docker-compose for integration tests
+**Target Platform**: Linux containers (Docker), Kubernetes clusters (GKE, EKS, AKS, on-prem)
+**Project Type**: Infrastructure/DevOps feature (deployment automation templates)
+**Performance Goals**: Local setup <5min, Production deployment <30min, Container build <10min, K8s deployment <2min
+**Constraints**: Zero-downtime updates, <200ms health check response, Non-root container execution (B03)
 **Scale/Scope**: Single-server multi-container (Docker Compose), Multi-node scalable (Kubernetes with HPA)
 
 ### Planning Decisions
@@ -174,7 +174,7 @@ kitty-specs/019-deployment-templates-configuration/
 
 ```
 # Option 1: Single project (SELECTED - Infrastructure feature, no Django app code)
-# 
+#
 # Deployment templates will be added to repository root:
 #
 # Repository root:

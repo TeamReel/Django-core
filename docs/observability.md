@@ -1,6 +1,6 @@
 ﻿# Platform Observability Foundation
 
-**Feature**: B18 Platform Observability Foundation  
+**Feature**: B18 Platform Observability Foundation
 **Audience**: Platform engineers, DevOps engineers, downstream product developers
 
 ---
@@ -77,7 +77,7 @@ spec:
     image: your-registry/django-core-app:latest
     ports:
     - containerPort: 8000
-    
+
     livenessProbe:
       httpGet:
         path: /health/live
@@ -86,7 +86,7 @@ spec:
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
-    
+
     readinessProbe:
       httpGet:
         path: /health/ready
@@ -234,9 +234,9 @@ def send_email(recipient_email: str, subject: str, body: str):
 
 ```promql
 # Task failure rate > 5%
-sum(rate(tasks_completed_total{status="failure"}[5m])) 
-/ 
-sum(rate(tasks_completed_total[5m])) 
+sum(rate(tasks_completed_total{status="failure"}[5m]))
+/
+sum(rate(tasks_completed_total[5m]))
 > 0.05
 
 # Task queue depth > 1000

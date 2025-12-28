@@ -2,4 +2,4 @@
 
 from .prometheus import PrometheusCollector
 
-__all__ = ['PrometheusCollector']
+__all__ = ["PrometheusCollector"]

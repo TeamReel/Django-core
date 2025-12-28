@@ -109,8 +109,6 @@ class TestOrganisationNotificationPolicyModel:
             quiet_hours_enabled=False,
         )
 
-        with_quiet_hours = OrganisationNotificationPolicy.objects.filter(
-            quiet_hours_enabled=True
-        )
+        with_quiet_hours = OrganisationNotificationPolicy.objects.filter(quiet_hours_enabled=True)
         assert with_quiet_hours.count() == 1
         assert with_quiet_hours.first().organisation == organisation

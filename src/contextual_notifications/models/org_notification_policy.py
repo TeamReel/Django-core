@@ -90,17 +90,21 @@ class OrganisationNotificationPolicy(models.Model):
 
         # Validate timezone
         if self.quiet_hours_timezone and self.quiet_hours_timezone not in pytz.all_timezones:
-            raise ValidationError({
-                "quiet_hours_timezone": f"Invalid timezone: {self.quiet_hours_timezone}. "
-                f"Must be a valid pytz timezone name."
-            })
+            raise ValidationError(
+                {
+                    "quiet_hours_timezone": f"Invalid timezone: {self.quiet_hours_timezone}. "
+                    f"Must be a valid pytz timezone name."
+                }
+            )
 
         # Validate quiet hours consistency
         if self.quiet_hours_enabled:
             if not self.quiet_hours_start or not self.quiet_hours_end:
-                raise ValidationError({
-                    "quiet_hours_enabled": "Quiet hours start and end times must be set when quiet hours are enabled."
-                })
+                raise ValidationError(
+                    {
+                        "quiet_hours_enabled": "Quiet hours start and end times must be set when quiet hours are enabled."
+                    }
+                )
 
     def __str__(self) -> str:
         """Return string representation of organisation notification policy."""

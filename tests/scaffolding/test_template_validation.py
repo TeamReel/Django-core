@@ -36,12 +36,12 @@ class TestValidationRunner:
     def test_runner_has_run_ruff_method(self):
         """Test ValidationRunner has run_ruff method."""
         runner = ValidationRunner()
-        assert callable(getattr(runner, 'run_ruff', None))
+        assert callable(getattr(runner, "run_ruff", None))
 
     def test_runner_has_run_mypy_method(self):
         """Test ValidationRunner has run_mypy method."""
         runner = ValidationRunner()
-        assert callable(getattr(runner, 'run_mypy', None))
+        assert callable(getattr(runner, "run_mypy", None))
 
 
 class TestRuffValidation:

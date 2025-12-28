@@ -1,8 +1,8 @@
 # Research: Platform Observability Foundation
 *Path: [kitty-specs/018-platform-observability-foundation/research.md](kitty-specs/018-platform-observability-foundation/research.md)*
 
-**Feature**: B18 Platform Observability Foundation  
-**Date**: 2025-12-03  
+**Feature**: B18 Platform Observability Foundation
+**Date**: 2025-12-03
 **Status**: Complete
 
 ## Research Questions & Decisions

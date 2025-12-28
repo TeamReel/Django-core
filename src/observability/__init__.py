@@ -18,7 +18,7 @@ from .metrics import emit_metric, register_metric_collector
 from .tasks import ObservableTask
 
 __all__ = [
-    'emit_metric',
-    'register_metric_collector',
-    'ObservableTask',
+    "emit_metric",
+    "register_metric_collector",
+    "ObservableTask",
 ]

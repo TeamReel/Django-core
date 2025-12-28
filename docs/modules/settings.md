@@ -6,7 +6,7 @@ Feature flags and dynamic configuration for Django Core-App.
 
 The `settings` module provides a flexible configuration system with feature flags, tenant-specific settings, and hierarchical overrides. Settings can be modified at runtime without deployment.
 
-**App location**: `src/settings/`  
+**App location**: `src/settings/`
 **Feature spec**: `kitty-specs/010-settings-feature-flags/`
 
 ## Configuration
@@ -157,7 +157,7 @@ def get_setting(key, user=None, organization=None, default=None):
         ).first()
         if user_setting:
             return user_setting.value
-    
+
     # 2. Check org override
     if organization:
         org_setting = Setting.objects.filter(
@@ -165,14 +165,14 @@ def get_setting(key, user=None, organization=None, default=None):
         ).first()
         if org_setting:
             return org_setting.value
-    
+
     # 3. Check global setting
     global_setting = Setting.objects.filter(
         key=key, organization__isnull=True
     ).first()
     if global_setting:
         return global_setting.value
-    
+
     # 4. Return default
     return default
 ```

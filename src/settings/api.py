@@ -47,7 +47,7 @@ def _resolve_scope_hierarchy(
                     organisation_id=None,
                     project_id=None,
                 ).first()
-                if global_flag and global_flag.enabled == False:
+                if global_flag and global_flag.enabled is False:
                     # Global is disabled (master switch) - return global flag instead
                     return global_flag
             return result
@@ -67,7 +67,7 @@ def _resolve_scope_hierarchy(
                     organisation_id=None,
                     project_id=None,
                 ).first()
-                if global_flag and global_flag.enabled == False:
+                if global_flag and global_flag.enabled is False:
                     # Global is disabled (master switch) - return global flag instead
                     return global_flag
             return result
@@ -100,7 +100,7 @@ def _resolve_scope_hierarchy(
                     organisation_id=None,
                     project_id=None,
                 ).first()
-                if global_flag and global_flag.enabled == False:
+                if global_flag and global_flag.enabled is False:
                     # Global is disabled (master switch) - return global flag instead
                     return global_flag
             return result

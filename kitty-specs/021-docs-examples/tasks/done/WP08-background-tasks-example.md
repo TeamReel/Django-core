@@ -131,7 +131,7 @@ logger = logging.getLogger(__name__)
 @shared_task(bind=True, max_retries=3)
 def send_welcome_email(self, user_email: str, user_name: str):
     """Send welcome email to new user.
-    
+
     Demonstrates:
     - Basic async task
     - Retry on failure
@@ -168,7 +168,7 @@ from .models import EmailLog
 @shared_task
 def cleanup_old_logs():
     """Clean up email logs older than 30 days.
-    
+
     Demonstrates:
     - Periodic task pattern
     - Database cleanup
@@ -249,7 +249,7 @@ class EmailLog(models.Model):
     status = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
     error_message = models.TextField(blank=True)
-    
+
     class Meta:
         ordering = ['-created_at']
 ```
@@ -272,22 +272,22 @@ class TestEmailTasks:
         """Test welcome email task sends email."""
         result = send_welcome_email.delay('test@example.com', 'Test User')
         result.get(timeout=10)
-        
+
         assert len(mailoutbox) == 1
         assert mailoutbox[0].to == ['test@example.com']
-    
+
     def test_validate_email_valid(self, celery_app, celery_worker):
         """Test email validation with valid email."""
         result = validate_email.delay('valid@example.com')
         response = result.get(timeout=10)
-        
+
         assert response['is_valid'] is True
-    
+
     def test_validate_email_invalid(self, celery_app, celery_worker):
         """Test email validation with invalid email."""
         result = validate_email.delay('invalid-email')
         response = result.get(timeout=10)
-        
+
         assert response['is_valid'] is False
 ```
 

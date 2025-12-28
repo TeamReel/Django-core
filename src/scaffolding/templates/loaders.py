@@ -50,21 +50,15 @@ class FilesystemLoader:
 
             manifest_path = template_dir / "__template__.yaml"
             if not manifest_path.exists():
-                logger.debug(
-                    f"Skipping {template_dir.name}: no __template__.yaml found"
-                )
+                logger.debug(f"Skipping {template_dir.name}: no __template__.yaml found")
                 continue
 
             try:
                 manifest = TemplateManifest.from_yaml(manifest_path)
                 templates[manifest.name] = manifest
-                logger.debug(
-                    f"Loaded template '{manifest.name}' from {template_dir}"
-                )
+                logger.debug(f"Loaded template '{manifest.name}' from {template_dir}")
             except Exception as e:
-                logger.error(
-                    f"Failed to load template from {template_dir}: {e}"
-                )
+                logger.error(f"Failed to load template from {template_dir}: {e}")
                 continue
 
         return templates
@@ -98,13 +92,9 @@ class PluginLoader:
 
                 # Load templates from plugin package directory
                 module_path = Path(spec.origin).parent
-                logger.debug(
-                    f"Discovering templates from plugin: {dist.name}"
-                )
+                logger.debug(f"Discovering templates from plugin: {dist.name}")
 
-                plugin_templates = FilesystemLoader.load_from_directory(
-                    module_path
-                )
+                plugin_templates = FilesystemLoader.load_from_directory(module_path)
                 templates.update(plugin_templates)
 
                 if plugin_templates:
@@ -113,9 +103,7 @@ class PluginLoader:
                     )
 
             except Exception as e:
-                logger.warning(
-                    f"Failed to load templates from plugin '{dist.name}': {e}"
-                )
+                logger.warning(f"Failed to load templates from plugin '{dist.name}': {e}")
                 continue
 
         return templates

@@ -63,7 +63,7 @@ def decode_jwt_payload(token):
     parts = token.split('.')
     if len(parts) != 3:
         raise ValueError("Invalid JWT format")
-    
+
     payload = parts[1]
     # Add padding if needed
     payload += '=' * (4 - len(payload) % 4)
@@ -99,7 +99,7 @@ def validate_token(token):
         '/api/v1/auth/me/',
         headers={'Authorization': f'Bearer {token}'}
     )
-    
+
     if response.ok:
         print(f"Token valid. User: {response.json()['email']}")
         return True
@@ -116,11 +116,11 @@ def validate_token(token):
 def debug_permissions(token, org_id=None, project_id=None):
     """Debug user permissions."""
     headers = {'Authorization': f'Bearer {token}'}
-    
+
     # Get current user
     user = requests.get('/api/v1/auth/me/', headers=headers).json()
     print(f"User: {user['email']}")
-    
+
     if org_id:
         # Get org membership
         resp = requests.get(
@@ -133,7 +133,7 @@ def debug_permissions(token, org_id=None, project_id=None):
             print(f"Permissions: {member['role']['permissions']}")
         else:
             print(f"Not a member of org {org_id}")
-    
+
     if project_id:
         # Get project membership
         resp = requests.get(
@@ -160,20 +160,20 @@ When you get 403 Forbidden:
 # Example: Debug why project creation fails
 def debug_project_creation(token, org_id):
     headers = {'Authorization': f'Bearer {token}'}
-    
+
     # Check org membership
     resp = requests.get(
         f'/api/v1/organisations/{org_id}/members/me/',
         headers=headers
     )
-    
+
     if not resp.ok:
         print("ERROR: Not a member of this organisation")
         return
-    
+
     member = resp.json()
     permissions = member['role']['permissions']
-    
+
     if 'project.create' not in permissions:
         print(f"ERROR: Missing 'project.create' permission")
         print(f"Current permissions: {permissions}")
@@ -192,33 +192,33 @@ import json
 
 class DebugSession(requests.Session):
     """Requests session with debug logging."""
-    
+
     def request(self, method, url, **kwargs):
         print(f"\n{'='*60}")
         print(f"REQUEST: {method.upper()} {url}")
-        
+
         if 'headers' in kwargs:
             for k, v in kwargs['headers'].items():
                 if k.lower() == 'authorization':
                     print(f"  {k}: Bearer ***")
                 else:
                     print(f"  {k}: {v}")
-        
+
         if 'json' in kwargs:
             print(f"  Body: {json.dumps(kwargs['json'], indent=2)}")
-        
+
         response = super().request(method, url, **kwargs)
-        
+
         print(f"\nRESPONSE: {response.status_code}")
         for k, v in response.headers.items():
             print(f"  {k}: {v}")
-        
+
         try:
             body = response.json()
             print(f"  Body: {json.dumps(body, indent=2)}")
         except:
             print(f"  Body: {response.text[:500]}")
-        
+
         print('='*60)
         return response
 
@@ -235,11 +235,11 @@ def compare_requests(working_response, failing_response):
     print("Status codes:")
     print(f"  Working: {working_response.status_code}")
     print(f"  Failing: {failing_response.status_code}")
-    
+
     print("\nHeader differences:")
     w_headers = set(working_response.headers.keys())
     f_headers = set(failing_response.headers.keys())
-    
+
     for header in w_headers | f_headers:
         w_val = working_response.headers.get(header)
         f_val = failing_response.headers.get(header)

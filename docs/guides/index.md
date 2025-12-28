@@ -99,11 +99,11 @@ Most guides include token refresh handling:
 class APIClient:
     def request(self, method, url, **kwargs):
         response = requests.request(method, url, **kwargs)
-        
+
         if response.status_code == 401:
             self.refresh_token()
             response = requests.request(method, url, **kwargs)
-        
+
         return response
 ```
 

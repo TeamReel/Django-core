@@ -45,9 +45,7 @@ def format_validation_report(report: Dict[str, Any]) -> str:
 
     if violation_count == 0 and warning_count == 0:
         # No issues (shouldn't happen for failure reports, but handle gracefully)
-        lines.append(
-            click.style("✓ Constitutional validation passed", fg="green", bold=True)
-        )
+        lines.append(click.style("✓ Constitutional validation passed", fg="green", bold=True))
         return "\n".join(lines)
 
     # Failure header
@@ -93,10 +91,6 @@ def format_validation_report(report: Dict[str, Any]) -> str:
         lines.append("")
 
     # Actionable suggestion
-    lines.append(
-        click.style(
-            "  → Fix violations or use --force to bypass validation", fg="cyan"
-        )
-    )
+    lines.append(click.style("  → Fix violations or use --force to bypass validation", fg="cyan"))
 
     return "\n".join(lines)

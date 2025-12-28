@@ -20,7 +20,7 @@ class Test{{ model_name | default("Item") }}Form:
             "is_active": True
         }
         form = {{ model_name | default("Item") }}Form(data=form_data)
-        
+
         assert form.is_valid()
 
     def test_form_missing_required_field(self):
@@ -29,7 +29,7 @@ class Test{{ model_name | default("Item") }}Form:
             "description": "Missing name"
         }
         form = {{ model_name | default("Item") }}Form(data=form_data)
-        
+
         assert not form.is_valid()
         assert "name" in form.errors
 
@@ -40,7 +40,7 @@ class Test{{ model_name | default("Item") }}Form:
             "is_active": True
         }
         form = {{ model_name | default("Item") }}Form(data=form_data)
-        
+
         assert not form.is_valid()
         assert "name" in form.errors
 
@@ -51,20 +51,20 @@ class Test{{ model_name | default("Item") }}Form:
             "is_active": True
         }
         form = {{ model_name | default("Item") }}Form(data=form_data)
-        
+
         assert not form.is_valid()
         assert "name" in form.errors
 
     def test_form_duplicate_name(self):
         """Test form with duplicate name."""
         {{ model_name | default("Item") }}.objects.create(name="Existing")
-        
+
         form_data = {
             "name": "Existing",
             "is_active": True
         }
         form = {{ model_name | default("Item") }}Form(data=form_data)
-        
+
         assert not form.is_valid()
         assert "name" in form.errors
 
@@ -76,7 +76,7 @@ class Test{{ model_name | default("Item") }}Form:
             "is_active": False
         }
         form = {{ model_name | default("Item") }}Form(data=form_data)
-        
+
         assert form.is_valid()
         item = form.save()
         assert item.name == "Form {{ model_name | default('Item') }}"
@@ -85,12 +85,12 @@ class Test{{ model_name | default("Item") }}Form:
     def test_form_update_excludes_duplicate_check_for_self(self):
         """Test form update allows same name for same instance."""
         item = {{ model_name | default("Item") }}.objects.create(name="Original")
-        
+
         form_data = {
             "name": "Original",  # Same name
             "description": "Updated description",
             "is_active": True
         }
         form = {{ model_name | default("Item") }}Form(data=form_data, instance=item)
-        
+
         assert form.is_valid()

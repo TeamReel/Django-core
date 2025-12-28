@@ -73,17 +73,17 @@ def process_bulk_import(self, file_path: str, org_id: int) -> dict:
     """Process bulk import with progress tracking."""
     total_rows = count_rows(file_path)
     processed = 0
-    
+
     for row in read_csv(file_path):
         process_row(row, org_id)
         processed += 1
-        
+
         # Update progress
         self.update_state(
             state='PROGRESS',
             meta={'current': processed, 'total': total_rows}
         )
-    
+
     return {
         'status': 'completed',
         'processed': processed,
@@ -181,10 +181,10 @@ def deliver_webhook(self, webhook_id: int) -> dict:
 app.conf.task_routes = {
     # High priority - notifications
     'notifications.*': {'queue': 'notifications'},
-    
+
     # Low priority - cleanup
     'tasks.scheduled.*': {'queue': 'scheduled'},
-    
+
     # Default
     '*': {'queue': 'default'},
 }
@@ -346,7 +346,7 @@ def process_dead_letter(task_info: dict) -> None:
         reason=task_info['exception'],
         retry_count=task_info['retries'],
     )
-    
+
     # Alert operations team
     alert_ops_team(
         f"Task {task_info['task_name']} permanently failed",
@@ -408,7 +408,7 @@ def task_failed(task_id, exception, *args, **kwargs):
    ```python
    # Good
    process_user.delay(user.id)
-   
+
    # Bad - object may be stale
    process_user.delay(user)
    ```

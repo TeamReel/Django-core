@@ -162,9 +162,7 @@ class {{ app_name|pascal_case }}Config:
         (template_dir / "apps.py.j2").write_text(template_content)
 
         # Render
-        renderer = TemplateRenderer(
-            template_dir, {"project_name": "core", "app_name": "payments"}
-        )
+        renderer = TemplateRenderer(template_dir, {"project_name": "core", "app_name": "payments"})
         output = renderer.render("apps.py.j2")
 
         # Verify

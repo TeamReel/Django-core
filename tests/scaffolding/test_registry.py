@@ -121,9 +121,7 @@ def test_manifest_from_yaml_invalid_type(tmp_path):
         TemplateManifest.from_yaml(manifest_path)
 
 
-def test_manifest_validate_missing_file(
-    tmp_path, minimal_manifest_data, create_template_dir
-):
+def test_manifest_validate_missing_file(tmp_path, minimal_manifest_data, create_template_dir):
     """Test validation detects missing files."""
     # Create template but don't create the files
     create_template_dir("minimal", minimal_manifest_data, files=[])
@@ -138,9 +136,7 @@ def test_manifest_validate_missing_file(
     assert any("apps.py" in error for error in errors)
 
 
-def test_manifest_validate_missing_variable_fields(
-    tmp_path, minimal_manifest_data
-):
+def test_manifest_validate_missing_variable_fields(tmp_path, minimal_manifest_data):
     """Test validation detects incomplete variable definitions."""
     # Remove required field from variable
     minimal_manifest_data["variables"]["app_name"] = {
@@ -160,9 +156,7 @@ def test_manifest_validate_missing_variable_fields(
     assert any("'app_name' missing 'required'" in error for error in errors)
 
 
-def test_manifest_validate_circular_inheritance(
-    tmp_path, minimal_manifest_data
-):
+def test_manifest_validate_circular_inheritance(tmp_path, minimal_manifest_data):
     """Test validation detects circular inheritance."""
     minimal_manifest_data["extends"] = "minimal"  # Extends itself
 
@@ -339,15 +333,9 @@ def test_registry_template_precedence_override(
         "_discover_project_templates",
         mock_project_discovery,
     )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_plugin_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_configured_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_validate_all_templates", lambda self: None
-    )
+    monkeypatch.setattr(TemplateRegistry, "_discover_plugin_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_discover_configured_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_validate_all_templates", lambda self: None)
 
     registry = TemplateRegistry()
     registry.discover()
@@ -395,18 +383,10 @@ def test_registry_resolve_inheritance_simple(
         "_discover_builtin_templates",
         mock_discovery,
     )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_plugin_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_configured_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_project_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_validate_all_templates", lambda self: None
-    )
+    monkeypatch.setattr(TemplateRegistry, "_discover_plugin_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_discover_configured_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_discover_project_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_validate_all_templates", lambda self: None)
 
     registry = TemplateRegistry()
     registry.discover()
@@ -479,18 +459,10 @@ def test_registry_resolve_inheritance_depth_limit(
         "_discover_builtin_templates",
         mock_discovery,
     )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_plugin_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_configured_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_project_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_validate_all_templates", lambda self: None
-    )
+    monkeypatch.setattr(TemplateRegistry, "_discover_plugin_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_discover_configured_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_discover_project_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_validate_all_templates", lambda self: None)
 
     registry = TemplateRegistry()
     registry.discover()
@@ -509,9 +481,7 @@ def test_registry_get_template_not_found(clean_registry):
         registry.get_template("missing")
 
 
-def test_registry_list_templates_sorted(
-    clean_registry, tmp_path, monkeypatch, create_template_dir
-):
+def test_registry_list_templates_sorted(clean_registry, tmp_path, monkeypatch, create_template_dir):
     """Test list_templates returns templates sorted by name."""
     create_template_dir(
         "zebra",
@@ -552,18 +522,10 @@ def test_registry_list_templates_sorted(
         "_discover_builtin_templates",
         mock_discovery,
     )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_plugin_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_configured_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_discover_project_templates", lambda self: None
-    )
-    monkeypatch.setattr(
-        TemplateRegistry, "_validate_all_templates", lambda self: None
-    )
+    monkeypatch.setattr(TemplateRegistry, "_discover_plugin_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_discover_configured_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_discover_project_templates", lambda self: None)
+    monkeypatch.setattr(TemplateRegistry, "_validate_all_templates", lambda self: None)
 
     registry = TemplateRegistry()
     registry.discover()

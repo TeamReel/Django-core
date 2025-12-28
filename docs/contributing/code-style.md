@@ -283,7 +283,7 @@ class UserService:
     def __init__(self):
         self._cache = {}          # Single underscore: internal use
         self.__secret_key = ""    # Double underscore: name mangling (avoid)
-    
+
     def _validate_input(self, data: dict) -> bool:
         """Internal validation method."""
         ...
@@ -301,33 +301,33 @@ from django.db import models
 
 class Organisation(models.Model):
     """Organisation model with audit fields."""
-    
+
     # Primary key (explicit for clarity)
     id = models.BigAutoField(primary_key=True)
-    
+
     # Required fields first
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-    
+
     # Optional fields
     description = models.TextField(blank=True)
-    
+
     # Foreign keys
     owner = models.ForeignKey(
         "accounts.User",
         on_delete=models.PROTECT,
         related_name="owned_organisations",
     )
-    
+
     # Audit fields last
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "organisation"
         verbose_name_plural = "organisations"
-    
+
     def __str__(self) -> str:
         return self.name
 ```
@@ -342,17 +342,17 @@ from rest_framework.response import Response
 
 class OrganisationViewSet(viewsets.ModelViewSet):
     """API endpoint for organisations."""
-    
+
     queryset = Organisation.objects.all()
     serializer_class = OrganisationSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter queryset to user's organisations."""
         return super().get_queryset().filter(
             members__user=self.request.user
         )
-    
+
     @action(detail=True, methods=["post"])
     def archive(self, request, pk=None):
         """Archive an organisation."""
@@ -369,10 +369,10 @@ from rest_framework import serializers
 
 class OrganisationSerializer(serializers.ModelSerializer):
     """Serializer for Organisation model."""
-    
+
     owner_email = serializers.EmailField(source="owner.email", read_only=True)
     member_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Organisation
         fields = [
@@ -385,7 +385,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "slug", "created_at"]
-    
+
     def get_member_count(self, obj: Organisation) -> int:
         """Return number of organisation members."""
         return obj.members.count()
@@ -407,22 +407,22 @@ def create_organisation(
     description: str = "",
 ) -> Organisation:
     """Create a new organisation.
-    
+
     Creates an organisation with the given name and owner. The owner
     is automatically added as the first member with the Owner role.
-    
+
     Args:
         name: The organisation name. Must be unique.
         owner: The user who will own the organisation.
         description: Optional description text.
-    
+
     Returns:
         The newly created Organisation instance.
-    
+
     Raises:
         ValidationError: If the name is already taken.
         PermissionError: If the owner cannot create organisations.
-    
+
     Example:
         >>> org = create_organisation("Acme Corp", user)
         >>> org.name
@@ -436,26 +436,26 @@ def create_organisation(
 ```python
 class PermissionChecker:
     """Check user permissions against resources.
-    
+
     The PermissionChecker evaluates whether a user has specific
     permissions on a resource (organisation or project). It uses
     Redis caching to improve performance.
-    
+
     Attributes:
         cache_ttl: Time-to-live for cached permissions in seconds.
         cache: The Redis cache instance.
-    
+
     Example:
         >>> checker = PermissionChecker()
         >>> checker.has_permission(user, "projects.update", project)
         True
     """
-    
+
     cache_ttl: int = 300
-    
+
     def __init__(self, cache: Redis | None = None) -> None:
         """Initialize the permission checker.
-        
+
         Args:
             cache: Optional Redis instance. Uses default if not provided.
         """

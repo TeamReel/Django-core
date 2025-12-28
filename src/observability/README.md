@@ -73,11 +73,11 @@ from django.apps import AppConfig
 
 class MyProductConfig(AppConfig):
     name = 'myproduct'
-    
+
     def ready(self):
         from observability.health import register_health_check
         from .health_checks import PaymentGatewayHealthCheck
-        
+
         # critical=True means failure blocks readiness probe
         register_health_check(PaymentGatewayHealthCheck(), critical=True)
 ```

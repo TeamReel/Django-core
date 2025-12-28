@@ -1,8 +1,8 @@
 # ADR 006: Suppression Strategy
 
-**Status**: Accepted  
-**Date**: 2025-12-03  
-**Deciders**: Architecture Team  
+**Status**: Accepted
+**Date**: 2025-12-03
+**Deciders**: Architecture Team
 **Context**: B17 Contextual Notification Service
 
 ## Context and Problem Statement
@@ -44,7 +44,7 @@ The system must decide:
 - Deliver summary notification after window expires
 - E.g., "Project Alpha was updated 5 times in the last 10 minutes"
 
-**Pros**: No information loss, summary is useful  
+**Pros**: No information loss, summary is useful
 **Cons**: Delayed delivery, complex batching logic, harder to implement
 
 ### Option 3: Rate Limiting Only
@@ -52,7 +52,7 @@ The system must decide:
 - No resource-specific suppression
 - Just prevent user from receiving too many notifications total
 
-**Pros**: Simple, protects user from spam  
+**Pros**: Simple, protects user from spam
 **Cons**: Loses context (which resource?), can miss important updates
 
 ## Decision Outcome
@@ -208,23 +208,23 @@ We also considered integrating suppression with **Quiet Hours** (ADR from Policy
 def test_suppression_within_window():
     """First notification delivered, second suppressed."""
     event = create_event(user=42, resource_id="project_123")
-    
+
     # First notification
     assert not is_suppressed(event)  # Not suppressed
-    
+
     # Second notification within window
     assert is_suppressed(event)  # Suppressed
 
 def test_suppression_window_expires():
     """After window, notification delivered again."""
     event = create_event(user=42, resource_id="project_123")
-    
+
     # First notification
     assert not is_suppressed(event)
-    
+
     # Fast-forward 6 minutes
     time.sleep(360)
-    
+
     # Window expired, notification delivered
     assert not is_suppressed(event)
 ```

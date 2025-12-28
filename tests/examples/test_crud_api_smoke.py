@@ -20,6 +20,7 @@ class TestCrudApiExampleSmoke:
         # and all dependencies are available
         try:
             from examples.crud_api.src.notes.models import Note
+
             assert Note is not None
         except ImportError:
             # Expected if example is not in PYTHONPATH
@@ -33,6 +34,7 @@ class TestCrudApiExampleSmoke:
                 NoteListSerializer,
                 NoteSerializer,
             )
+
             assert NoteSerializer is not None
             assert NoteListSerializer is not None
         except ImportError:
@@ -45,6 +47,7 @@ class TestCrudApiExampleSmoke:
                 IsOwnerOrReadOnly,
                 NoteViewSet,
             )
+
             assert NoteViewSet is not None
             assert IsOwnerOrReadOnly is not None
         except ImportError:
@@ -52,8 +55,8 @@ class TestCrudApiExampleSmoke:
 
     def test_example_readme_exists(self):
         """Verify README.md exists for the example."""
-        from pathlib import Path
         import os
+        from pathlib import Path
 
         # Get the project root (where pytest runs from)
         project_root = Path(os.getcwd())
@@ -62,8 +65,8 @@ class TestCrudApiExampleSmoke:
 
     def test_example_pyproject_exists(self):
         """Verify pyproject.toml exists for the example."""
-        from pathlib import Path
         import os
+        from pathlib import Path
 
         project_root = Path(os.getcwd())
         pyproject_path = project_root / "examples" / "crud-api" / "pyproject.toml"
@@ -71,8 +74,8 @@ class TestCrudApiExampleSmoke:
 
     def test_example_has_required_files(self):
         """Verify all required files exist in the example."""
-        from pathlib import Path
         import os
+        from pathlib import Path
 
         project_root = Path(os.getcwd())
         example_root = project_root / "examples" / "crud-api"

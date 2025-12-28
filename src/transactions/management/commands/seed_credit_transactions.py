@@ -125,7 +125,7 @@ class Command(BaseCommand):
                 try:
                     # Temporarily override timestamp by creating directly
                     # (create_transaction uses auto_now_add which we can't override easily)
-                    txn = Transaction.objects.create(
+                    Transaction.objects.create(
                         amount=template["amount"],
                         organization=org,
                         project=None,  # Credits are org-level

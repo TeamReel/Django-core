@@ -138,7 +138,7 @@ from .loaders import FilesystemLoader, PluginLoader
 class TemplateRegistry:
     """
     Singleton registry for scaffolding templates.
-    
+
     Discovers templates from multiple sources in precedence order:
     1. Project-local templates/scaffold/
     2. SCAFFOLD_TEMPLATE_DIRS from settings
@@ -146,52 +146,52 @@ class TemplateRegistry:
     4. Plugin packages
     """
     _instance: Optional['TemplateRegistry'] = None
-    
+
     def __new__(cls) -> 'TemplateRegistry':
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._templates: Dict[str, TemplateManifest] = {}
             cls._instance._discovered = False
         return cls._instance
-    
+
     def discover(self) -> None:
         """Discover templates from all sources."""
         if self._discovered:
             return
-        
+
         # Clear existing templates
         self._templates.clear()
-        
+
         # Discover from all sources (T010-T012)
         # Precedence: project-local → configured dirs → Core built-in → plugins
         self._discover_builtin_templates()
         self._discover_plugin_templates()
         self._discover_configured_templates()
         self._discover_project_templates()
-        
+
         self._discovered = True
-    
+
     def get_template(self, name: str) -> TemplateManifest:
         """
         Get template by name.
-        
+
         Args:
             name: Template name
-        
+
         Returns:
             Template manifest
-        
+
         Raises:
             KeyError: If template not found
         """
         if not self._discovered:
             self.discover()
         return self._templates[name]
-    
+
     def list_templates(self) -> List[TemplateManifest]:
         """
         List all discovered templates.
-        
+
         Returns:
             List of template manifests, sorted by name
         """
@@ -261,39 +261,39 @@ logger = logging.getLogger(__name__)
 
 class FilesystemLoader:
     """Load templates from filesystem directories."""
-    
+
     @staticmethod
     def load_from_directory(directory: Path) -> Dict[str, TemplateManifest]:
         """
         Load templates from directory.
-        
+
         Args:
             directory: Path to directory containing template subdirectories
-        
+
         Returns:
             Dict of {template_name: TemplateManifest}
         """
         templates: Dict[str, TemplateManifest] = {}
-        
+
         if not directory.exists():
             return templates
-        
+
         for template_dir in directory.iterdir():
             if not template_dir.is_dir():
                 continue
-            
+
             manifest_path = template_dir / '__template__.yaml'
             if not manifest_path.exists():
                 logger.debug(f"Skipping {template_dir}: no __template__.yaml")
                 continue
-            
+
             try:
                 manifest = TemplateManifest.from_yaml(manifest_path)
                 templates[manifest.name] = manifest
             except Exception as e:
                 logger.error(f"Failed to load template from {template_dir}: {e}")
                 continue
-        
+
         return templates
 ```
 
@@ -326,25 +326,25 @@ import importlib.util
 
 class PluginLoader:
     """Load templates from installed plugin packages."""
-    
+
     @staticmethod
     def load_from_plugins() -> Dict[str, TemplateManifest]:
         """
         Load templates from plugin packages.
-        
+
         Searches for packages with 'scaffold_templates' module.
-        
+
         Returns:
             Dict of {template_name: TemplateManifest}
         """
         templates: Dict[str, TemplateManifest] = {}
-        
+
         for dist in importlib.metadata.distributions():
             try:
                 # Check if package has scaffold_templates module
                 module_name = f"{dist.name}.scaffold_templates"
                 spec = importlib.util.find_spec(module_name)
-                
+
                 if spec and spec.origin:
                     module_path = Path(spec.origin).parent
                     plugin_templates = FilesystemLoader.load_from_directory(module_path)
@@ -352,7 +352,7 @@ class PluginLoader:
             except Exception as e:
                 logger.warning(f"Failed to load plugin {dist.name}: {e}")
                 continue
-        
+
         return templates
 ```
 
@@ -394,7 +394,7 @@ import yaml
 class TemplateManifest:
     """
     Template manifest schema.
-    
+
     Defines template metadata, variables, and files.
     """
     name: str
@@ -403,30 +403,30 @@ class TemplateManifest:
     files: List[str]
     template_dir: Path
     extends: Optional[str] = None
-    
+
     @classmethod
     def from_yaml(cls, manifest_path: Path) -> 'TemplateManifest':
         """
         Load template manifest from YAML file.
-        
+
         Args:
             manifest_path: Path to __template__.yaml file
-        
+
         Returns:
             Template manifest
-        
+
         Raises:
             ValueError: If manifest is invalid
         """
         with open(manifest_path, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
-        
+
         # Validate required fields
         required = ['name', 'description', 'variables', 'files']
         for field in required:
             if field not in data:
                 raise ValueError(f"Missing required field: {field}")
-        
+
         # Validate types
         if not isinstance(data['name'], str):
             raise ValueError(f"Field 'name' must be string, got {type(data['name'])}")
@@ -436,7 +436,7 @@ class TemplateManifest:
             raise ValueError(f"Field 'variables' must be dict, got {type(data['variables'])}")
         if not isinstance(data['files'], list):
             raise ValueError(f"Field 'files' must be list, got {type(data['files'])}")
-        
+
         return cls(
             name=data['name'],
             description=data['description'],
@@ -472,27 +472,27 @@ class TemplateManifest:
 def resolve_inheritance(self, template_name: str) -> TemplateManifest:
     """
     Resolve template inheritance chain.
-    
+
     Args:
         template_name: Template name
-    
+
     Returns:
         Resolved template manifest with merged files/variables
-    
+
     Raises:
         ValueError: If inheritance depth > 2 or base template missing
     """
     template = self.get_template(template_name)
-    
+
     if not template.extends:
         return template  # No inheritance
-    
+
     # Resolve base template
     if template.extends not in self._templates:
         raise ValueError(f"Base template '{template.extends}' not found")
-    
+
     base = self.get_template(template.extends)
-    
+
     # Check depth limit
     if base.extends:
         # Depth = 2, resolve grandparent
@@ -501,21 +501,21 @@ def resolve_inheritance(self, template_name: str) -> TemplateManifest:
         grandparent = self.get_template(base.extends)
         if grandparent.extends:
             raise ValueError(f"Template inheritance depth > 2: {template_name} → {base.name} → {grandparent.name} → {grandparent.extends}")
-        
+
         # Merge grandparent + base
         base = self._merge_templates(grandparent, base)
-    
+
     # Merge base + template
     return self._merge_templates(base, template)
 
 def _merge_templates(self, base: TemplateManifest, child: TemplateManifest) -> TemplateManifest:
     """
     Merge base and child templates (file-level override).
-    
+
     Args:
         base: Base template
         child: Child template (overrides base)
-    
+
     Returns:
         Merged template manifest
     """
@@ -523,10 +523,10 @@ def _merge_templates(self, base: TemplateManifest, child: TemplateManifest) -> T
     base_files = {Path(f).name: f for f in base.files}
     child_files = {Path(f).name: f for f in child.files}
     merged_files = {**base_files, **child_files}
-    
+
     # Merge variables (child variables override base variables)
     merged_variables = {**base.variables, **child.variables}
-    
+
     return TemplateManifest(
         name=child.name,
         description=child.description,
@@ -566,7 +566,7 @@ logger = logging.getLogger(__name__)
 def _add_template(self, template: TemplateManifest, source: str) -> None:
     """
     Add template to registry, log warning if overriding existing template.
-    
+
     Args:
         template: Template manifest
         source: Source description (e.g., "Core built-in", "project-local")
@@ -608,18 +608,18 @@ def _add_template(self, template: TemplateManifest, source: str) -> None:
 def validate(self) -> List[str]:
     """
     Validate template structure and manifest.
-    
+
     Returns:
         List of validation errors (empty if valid)
     """
     errors = []
-    
+
     # Check files exist
     for file_path in self.files:
         full_path = self.template_dir / file_path
         if not full_path.exists():
             errors.append(f"File not found: {file_path}")
-    
+
     # Check variable definitions
     for var_name, var_def in self.variables.items():
         if 'type' not in var_def:
@@ -628,11 +628,11 @@ def validate(self) -> List[str]:
             errors.append(f"Variable '{var_name}' missing 'description' field")
         if 'required' not in var_def:
             errors.append(f"Variable '{var_name}' missing 'required' field")
-    
+
     # Check no circular inheritance
     if self.extends == self.name:
         errors.append(f"Template '{self.name}' extends itself (circular inheritance)")
-    
+
     return errors
 ```
 
@@ -689,11 +689,11 @@ files:
   - models.py
   - apps.py
 """)
-    
+
     # Discover templates
     registry = TemplateRegistry()
     registry._discover_builtin_templates()
-    
+
     # Assert template loaded
     templates = registry.list_templates()
     assert len(templates) == 1
@@ -706,16 +706,16 @@ def test_template_precedence_override(tmp_path):
     builtin_dir = tmp_path / 'built_in_templates' / 'minimal'
     builtin_dir.mkdir(parents=True)
     (builtin_dir / '__template__.yaml').write_text("name: minimal\ndescription: Core")
-    
+
     # Setup project-local template with same name
     project_dir = tmp_path / 'templates' / 'scaffold' / 'minimal'
     project_dir.mkdir(parents=True)
     (project_dir / '__template__.yaml').write_text("name: minimal\ndescription: Custom")
-    
+
     # Discover (project-local should override Core)
     registry = TemplateRegistry()
     registry.discover()
-    
+
     template = registry.get_template('minimal')
     assert template.description == 'Custom'  # Project-local wins
 
@@ -726,7 +726,7 @@ def test_template_inheritance_depth_limit(tmp_path):
     # grandgrandparent → grandparent → parent → child
     templates_dir = tmp_path / 'templates'
     templates_dir.mkdir()
-    
+
     # Create 4 templates extending each other
     for i, name in enumerate(['base', 'level1', 'level2', 'level3']):
         template_dir = templates_dir / name
@@ -739,13 +739,13 @@ description: Level {i}
 variables: {{}}
 files: []
 """)
-    
+
     registry = TemplateRegistry()
     # Load templates manually for test
     from scaffolding.templates.loaders import FilesystemLoader
     templates = FilesystemLoader.load_from_directory(templates_dir)
     registry._templates = templates
-    
+
     # Attempt to resolve level3 (depth 3)
     with pytest.raises(ValueError, match="inheritance depth > 2"):
         registry.resolve_inheritance('level3')

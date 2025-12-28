@@ -6,9 +6,9 @@ and can be imported, ensuring the documentation examples work.
 """
 
 import ast
-import pytest
 from pathlib import Path
 
+import pytest
 
 # Get the examples directory
 EXAMPLES_DIR = Path(__file__).parent.parent.parent / "examples"
@@ -79,9 +79,7 @@ class TestBackgroundTasksSyntax:
             source = f.read()
 
         tree = ast.parse(source)
-        class_names = [
-            node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
-        ]
+        class_names = [node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
         assert "EmailLog" in class_names, "EmailLog model not defined"
         assert "Status" in class_names, "Status TextChoices not defined"
 
@@ -92,9 +90,7 @@ class TestBackgroundTasksSyntax:
             source = f.read()
 
         tree = ast.parse(source)
-        function_names = [
-            node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
-        ]
+        function_names = [node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
 
         expected_tasks = [
             "send_welcome_email",
@@ -115,9 +111,7 @@ class TestBackgroundTasksSyntax:
             source = f.read()
 
         tree = ast.parse(source)
-        function_names = [
-            node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
-        ]
+        function_names = [node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
 
         expected_tasks = [
             "cleanup_old_email_logs",
@@ -127,9 +121,7 @@ class TestBackgroundTasksSyntax:
             "retry_failed_emails",
         ]
         for task_name in expected_tasks:
-            assert (
-                task_name in function_names
-            ), f"Expected scheduler task {task_name} not defined"
+            assert task_name in function_names, f"Expected scheduler task {task_name} not defined"
 
 
 class TestBackgroundTasksDocumentation:
@@ -173,9 +165,7 @@ class TestBackgroundTasksDocumentation:
             "Health Check",
         ]
         for pattern in patterns:
-            assert pattern.lower() in content.lower(), (
-                f"README should document {pattern} pattern"
-            )
+            assert pattern.lower() in content.lower(), f"README should document {pattern} pattern"
 
 
 class TestBackgroundTasksConfiguration:
@@ -220,14 +210,12 @@ class TestBackgroundTasksTestSuite:
             source = f.read()
 
         tree = ast.parse(source)
-        function_names = [
-            node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
-        ]
+        function_names = [node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
 
         test_functions = [name for name in function_names if name.startswith("test_")]
-        assert len(test_functions) >= 10, (
-            f"Expected at least 10 test functions, found {len(test_functions)}"
-        )
+        assert (
+            len(test_functions) >= 10
+        ), f"Expected at least 10 test functions, found {len(test_functions)}"
 
     def test_test_classes_cover_main_components(self):
         """Verify test classes cover tasks, scheduler, and models."""
@@ -236,17 +224,14 @@ class TestBackgroundTasksTestSuite:
             source = f.read()
 
         tree = ast.parse(source)
-        class_names = [
-            node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
-        ]
+        class_names = [node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
 
         # Check for coverage of major components (classes test Send, Email, Cleanup, etc.)
-        assert any("Send" in name or "Email" in name for name in class_names), (
-            "Should have email task test class"
-        )
         assert any(
-            "Cleanup" in name or "Statistics" in name or "Health" in name
-            for name in class_names
+            "Send" in name or "Email" in name for name in class_names
+        ), "Should have email task test class"
+        assert any(
+            "Cleanup" in name or "Statistics" in name or "Health" in name for name in class_names
         ), "Should have scheduler-related test class"
 
 

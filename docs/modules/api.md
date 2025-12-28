@@ -6,8 +6,8 @@ REST API foundation and standards for Django Core-App.
 
 The `api` module provides the API infrastructure using Django REST Framework. It defines standards for versioning, authentication, pagination, error handling, and response formats.
 
-**App location**: `src/api/`  
-**Feature spec**: `kitty-specs/013-api-foundation-standards/`  
+**App location**: `src/api/`
+**Feature spec**: `kitty-specs/013-api-foundation-standards/`
 **ADR**: [ADR-014: URL-Based API Versioning](../architecture/adr/index.md#api--routing)
 
 ## Configuration
@@ -27,26 +27,26 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-    
+
     # Permissions
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    
+
     # Pagination
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.CursorPagination',
     'PAGE_SIZE': 50,
-    
+
     # Filtering
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
-    
+
     # Error handling
     'EXCEPTION_HANDLER': 'api.exceptions.custom_exception_handler',
-    
+
     # Versioning
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'DEFAULT_VERSION': 'v1',
@@ -197,7 +197,7 @@ GET /api/v1/organisations/?ordering=-created_at
 # api/exceptions.py
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
-    
+
     if response is not None:
         response.data = {
             'type': get_error_type(exc),
@@ -206,7 +206,7 @@ def custom_exception_handler(exc, context):
             'details': getattr(exc, 'details', []),
             'request_id': context['request'].META.get('X-Request-ID'),
         }
-    
+
     return response
 ```
 
@@ -251,7 +251,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
 class OrganisationDetailSerializer(OrganisationSerializer):
     """Extended serializer for detail views."""
     members_count = serializers.IntegerField(read_only=True)
-    
+
     class Meta(OrganisationSerializer.Meta):
         fields = OrganisationSerializer.Meta.fields + ['members_count', 'description']
 ```
@@ -277,13 +277,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, HasPermission]
     required_permission = 'projects.view'
-    
+
     def get_queryset(self):
         """Filter to user's organizations."""
         return self.queryset.filter(
             organisation__memberships__user=self.request.user
         )
-    
+
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
 ```
@@ -294,7 +294,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 from rest_framework.decorators import action
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    
+
     @action(detail=True, methods=['post'])
     def archive(self, request, pk=None):
         project = self.get_object()

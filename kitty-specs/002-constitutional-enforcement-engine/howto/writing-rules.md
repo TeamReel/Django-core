@@ -20,13 +20,13 @@ from constitution_engine.core.models import CheckResult, RepositoryContext
 
 class RuleProtocol(Protocol):
     """Protocol that all rules must implement."""
-    
+
     identifier: str          # Unique rule ID
     description: str         # Human-readable description
     severity: Severity      # Default severity level
     category: str           # Rule category
     enabled: bool           # Whether rule is active
-    
+
     def execute(self, context: RepositoryContext) -> list[CheckResult]:
         """Execute the rule and return results."""
         ...
@@ -45,13 +45,13 @@ from constitution_engine.core.models import (
 
 class NoHardcodedSecretsRule:
     """Rule that checks for hardcoded secrets."""
-    
+
     identifier = "no-hardcoded-secrets"
     description = "Detects potential hardcoded secrets in source files"
     severity = Severity.CRITICAL
     category = "security"
     enabled = True
-    
+
     # Patterns that might indicate secrets
     SECRET_PATTERNS = [
         "password = ",
@@ -59,19 +59,19 @@ class NoHardcodedSecretsRule:
         "secret_key = ",
         "private_key = ",
     ]
-    
+
     def execute(self, context: RepositoryContext) -> list[CheckResult]:
         """Scan files for hardcoded secrets."""
         results = []
-        
+
         # Get all Python files
         python_files = self._find_python_files(context.root_path)
-        
+
         for file_path in python_files:
             # Skip test files and migrations
             if "test" in str(file_path) or "migration" in str(file_path):
                 continue
-            
+
             violations = self._check_file(file_path)
             if violations:
                 results.append(CheckResult(
@@ -82,7 +82,7 @@ class NoHardcodedSecretsRule:
                     severity=self.severity,
                     details={"violations": violations}
                 ))
-        
+
         # If no violations found, return success
         if not results:
             results.append(CheckResult(
@@ -91,17 +91,17 @@ class NoHardcodedSecretsRule:
                 message="No hardcoded secrets detected",
                 severity=self.severity
             ))
-        
+
         return results
-    
+
     def _find_python_files(self, root_path: Path) -> list[Path]:
         """Find all Python files in the repository."""
         return list(root_path.rglob("*.py"))
-    
+
     def _check_file(self, file_path: Path) -> list[dict]:
         """Check a single file for secret patterns."""
         violations = []
-        
+
         try:
             content = file_path.read_text()
             for line_num, line in enumerate(content.splitlines(), 1):
@@ -115,7 +115,7 @@ class NoHardcodedSecretsRule:
         except Exception as e:
             # Log error but don't fail the rule
             pass
-        
+
         return violations
 ```
 
@@ -176,20 +176,20 @@ Accept configuration through metadata:
 ```python
 class CoverageRule:
     """Rule that checks test coverage."""
-    
+
     identifier = "test-coverage"
     description = "Enforces minimum test coverage"
     severity = Severity.ERROR
     category = "testing"
     enabled = True
-    
+
     def __init__(self, threshold: int = 75):
         """Initialize rule with configuration."""
         self.threshold = threshold
-    
+
     def execute(self, context: RepositoryContext) -> list[CheckResult]:
         coverage = self._measure_coverage(context)
-        
+
         if coverage < self.threshold:
             return [CheckResult(
                 rule_identifier=self.identifier,
@@ -198,7 +198,7 @@ class CoverageRule:
                 severity=self.severity,
                 details={"coverage": coverage, "threshold": self.threshold}
             )]
-        
+
         return [CheckResult(
             rule_identifier=self.identifier,
             status=CheckStatus.PASS,
@@ -240,13 +240,13 @@ from constitution_engine.core.models import CheckResult, CheckStatus
 
 class MypyRule:
     """Rule that runs mypy type checker."""
-    
+
     identifier = "mypy-check"
     description = "Runs mypy static type checker"
     severity = Severity.ERROR
     category = "quality"
     enabled = True
-    
+
     def execute(self, context: RepositoryContext) -> list[CheckResult]:
         """Run mypy and parse results."""
         try:
@@ -256,7 +256,7 @@ class MypyRule:
                 text=True,
                 timeout=300  # 5 minute timeout
             )
-            
+
             if result.returncode == 0:
                 return [CheckResult(
                     rule_identifier=self.identifier,
@@ -264,10 +264,10 @@ class MypyRule:
                     message="Mypy found no type errors",
                     severity=self.severity
                 )]
-            
+
             # Parse mypy output
             errors = self._parse_mypy_output(result.stdout)
-            
+
             return [CheckResult(
                 rule_identifier=self.identifier,
                 status=CheckStatus.FAIL,
@@ -275,7 +275,7 @@ class MypyRule:
                 severity=self.severity,
                 details={"errors": errors, "output": result.stdout}
             )]
-            
+
         except FileNotFoundError:
             return [CheckResult(
                 rule_identifier=self.identifier,
@@ -290,7 +290,7 @@ class MypyRule:
                 message="Mypy execution timed out",
                 severity=Severity.HIGH
             )]
-    
+
     def _parse_mypy_output(self, output: str) -> list[dict]:
         """Parse mypy output into structured errors."""
         errors = []
@@ -328,7 +328,7 @@ version: "1.0"
 rules:
   enabled:
     - my-custom-rule
-  
+
   config:
     my-custom-rule:
       threshold: 80
@@ -356,16 +356,16 @@ from constitution_engine.core.models import RepositoryContext, CheckStatus
 def test_no_hardcoded_secrets_rule():
     """Test the no hardcoded secrets rule."""
     rule = NoHardcodedSecretsRule()
-    
+
     # Create mock context
     context = RepositoryContext(
         root_path=Path("/tmp/test-repo"),
         detected_languages={"python"}
     )
-    
+
     # Execute rule
     results = rule.execute(context)
-    
+
     # Verify results
     assert len(results) > 0
     assert results[0].rule_identifier == "no-hardcoded-secrets"
@@ -374,13 +374,13 @@ def test_no_hardcoded_secrets_rule():
 def test_rule_handles_errors():
     """Test that rule handles errors gracefully."""
     rule = MyCustomRule()
-    
+
     # Create context with nonexistent path
     context = RepositoryContext(
         root_path=Path("/nonexistent"),
         detected_languages={"python"}
     )
-    
+
     # Should not raise exception
     results = rule.execute(context)
     assert len(results) > 0
@@ -404,7 +404,7 @@ class SafeRule:
 class UnsafeRule:
     def __init__(self):
         self.results = []  # Shared state!
-    
+
     def execute(self, context):
         self.results.append(...)  # Race condition!
         return self.results
@@ -419,11 +419,11 @@ def execute(self, context: RepositoryContext) -> list[CheckResult]:
     # Check if this is a Django project
     if "django" in context.tags:
         return self._check_django_specific(context)
-    
+
     # Check detected languages
     if "python" in context.detected_languages:
         return self._check_python(context)
-    
+
     # Skip if not applicable
     return [CheckResult(
         rule_identifier=self.identifier,
@@ -441,11 +441,11 @@ def execute(self, context: RepositoryContext) -> list[CheckResult]:
     if context.git_branch == "main":
         # Stricter checks on main branch
         self.severity = Severity.CRITICAL
-    
+
     # Access commit info
     if context.git_commit:
         message = f"Checking commit {context.git_commit[:8]}"
-    
+
     # Your rule logic here
     return results
 ```

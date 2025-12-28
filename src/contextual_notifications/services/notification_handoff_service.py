@@ -104,9 +104,7 @@ class NotificationHandoffService:
             b16_payload = NotificationHandoffService._map_to_b16_format(event_payload)
 
             # Get or create notification type for event
-            notification_type = NotificationHandoffService._get_notification_type(
-                event_type
-            )
+            notification_type = NotificationHandoffService._get_notification_type(event_type)
 
             # Create notifications per user
             results = {
@@ -148,11 +146,13 @@ class NotificationHandoffService:
                 except Exception as exc:
                     # Per-user error - log but don't block batch
                     results["failed"] += 1
-                    results["errors"].append({
-                        "user_id": user_id,
-                        "channel": channel,
-                        "error": str(exc),
-                    })
+                    results["errors"].append(
+                        {
+                            "user_id": user_id,
+                            "channel": channel,
+                            "error": str(exc),
+                        }
+                    )
 
                     # Increment failure metric
                     error_type = type(exc).__name__

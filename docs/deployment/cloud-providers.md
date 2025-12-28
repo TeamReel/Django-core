@@ -1,6 +1,6 @@
 # Cloud Provider Deployment Guide
-**Feature**: B19 Deployment Templates & Configuration  
-**Document Type**: Cloud Provider Guide  
+**Feature**: B19 Deployment Templates & Configuration
+**Document Type**: Cloud Provider Guide
 **Last Updated**: 2025-12-04
 
 ---

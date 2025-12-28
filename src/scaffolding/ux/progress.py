@@ -131,9 +131,7 @@ class ProgressReporter:
             raise
 
     @contextmanager
-    def progress_bar(
-        self, total: int, label: str = "Progress"
-    ) -> Iterator[click.progressbar]:
+    def progress_bar(self, total: int, label: str = "Progress") -> Iterator[click.progressbar]:
         """
         Context manager for progress bar.
 
@@ -173,9 +171,7 @@ class ProgressReporter:
             return
 
         # Interactive: show progress bar
-        with click.progressbar(
-            length=total, label=label, show_eta=True, show_percent=True
-        ) as bar:
+        with click.progressbar(length=total, label=label, show_eta=True, show_percent=True) as bar:
             yield bar
 
     def file_created(self, file_path: str) -> None:

@@ -27,10 +27,10 @@ def getattribute(obj, attr):
     """
     try:
         # Try direct attribute access
-        return getattr(obj, attr, '')
+        return getattr(obj, attr, "")
     except (AttributeError, TypeError):
         # Fallback for dict-like objects
         try:
             return obj[attr]
         except (KeyError, TypeError):
-            return ''
+            return ""

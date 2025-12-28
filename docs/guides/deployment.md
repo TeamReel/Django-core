@@ -190,10 +190,10 @@ upstream django {
 server {
     listen 443 ssl;
     server_name api.example.com;
-    
+
     ssl_certificate /etc/letsencrypt/live/api.example.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/api.example.com/privkey.pem;
-    
+
     location / {
         proxy_pass http://django;
         proxy_set_header Host $host;
@@ -201,7 +201,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-    
+
     location /static/ {
         alias /opt/django-core-app/staticfiles/;
     }

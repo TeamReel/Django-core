@@ -12,9 +12,7 @@ from ..models import (
 class RoutingRuleSerializer(serializers.ModelSerializer):
     """Serializer for RoutingRule model."""
 
-    organisation_name = serializers.CharField(
-        source="organisation.name", read_only=True
-    )
+    organisation_name = serializers.CharField(source="organisation.name", read_only=True)
     project_name = serializers.CharField(source="project.name", read_only=True)
 
     class Meta:
@@ -62,9 +60,7 @@ class NotificationPreferenceSerializer(serializers.ModelSerializer):
 class OrganisationNotificationPolicySerializer(serializers.ModelSerializer):
     """Serializer for OrganisationNotificationPolicy model."""
 
-    organisation_name = serializers.CharField(
-        source="organisation.name", read_only=True
-    )
+    organisation_name = serializers.CharField(source="organisation.name", read_only=True)
 
     class Meta:
         model = OrganisationNotificationPolicy
@@ -91,21 +87,15 @@ class RoutingDecisionLogSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(read_only=True)
     event_type = serializers.CharField(read_only=True)
     user_id = serializers.IntegerField(source="user.id", read_only=True, allow_null=True)
-    user_email = serializers.EmailField(
-        source="user.email", read_only=True, allow_null=True
-    )
+    user_email = serializers.EmailField(source="user.email", read_only=True, allow_null=True)
     organization_id = serializers.IntegerField(
         source="organization.id", read_only=True, allow_null=True
     )
     organization_name = serializers.CharField(
         source="organization.name", read_only=True, allow_null=True
     )
-    project_id = serializers.IntegerField(
-        source="project.id", read_only=True, allow_null=True
-    )
-    project_name = serializers.CharField(
-        source="project.name", read_only=True, allow_null=True
-    )
+    project_id = serializers.IntegerField(source="project.id", read_only=True, allow_null=True)
+    project_name = serializers.CharField(source="project.name", read_only=True, allow_null=True)
     metadata = serializers.JSONField(read_only=True)
 
     class Meta:

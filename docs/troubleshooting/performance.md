@@ -25,29 +25,29 @@ import time
 def timed_request(method, url, **kwargs):
     """Time different phases of a request."""
     times = {}
-    
+
     start = time.time()
-    
+
     # DNS + connection
     session = requests.Session()
     prepared = session.prepare_request(requests.Request(method, url, **kwargs))
     times['prepare'] = time.time() - start
-    
+
     # Send request
     start = time.time()
     response = session.send(prepared)
     times['send'] = time.time() - start
-    
+
     # Read response
     start = time.time()
     _ = response.content
     times['read'] = time.time() - start
-    
+
     print(f"Prepare: {times['prepare']*1000:.1f}ms")
     print(f"Send:    {times['send']*1000:.1f}ms")
     print(f"Read:    {times['read']*1000:.1f}ms")
     print(f"Total:   {sum(times.values())*1000:.1f}ms")
-    
+
     return response
 ```
 
@@ -68,7 +68,7 @@ def timed_request(method, url, **kwargs):
    ```python
    # Bad: Fetch all records
    response = requests.get('/api/v1/users/')  # May timeout
-   
+
    # Good: Paginate
    response = requests.get('/api/v1/users/', params={'limit': 100})
    ```
@@ -84,7 +84,7 @@ def timed_request(method, url, **kwargs):
    # Bad: Fetch all, filter client-side
    response = requests.get('/api/v1/users/')
    active = [u for u in response.json()['results'] if u['is_active']]
-   
+
    # Good: Filter server-side
    response = requests.get('/api/v1/users/', params={'is_active': True})
    ```
@@ -145,22 +145,22 @@ class CachedClient:
         self.token = token
         self.cache = {}
         self.cache_ttl = 300  # 5 minutes
-    
+
     def get(self, path, use_cache=True):
         if use_cache and path in self.cache:
             data, expires = self.cache[path]
             if datetime.now() < expires:
                 return data
-        
+
         response = requests.get(
             f'{self.base_url}{path}',
             headers={'Authorization': f'Bearer {self.token}'}
         )
         data = response.json()
-        
+
         expires = datetime.now() + timedelta(seconds=self.cache_ttl)
         self.cache[path] = (data, expires)
-        
+
         return data
 ```
 
@@ -192,13 +192,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 def fetch_parallel(urls, token, max_workers=5):
     """Fetch multiple URLs in parallel."""
     headers = {'Authorization': f'Bearer {token}'}
-    
+
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_url = {
             executor.submit(requests.get, url, headers=headers): url
             for url in urls
         }
-        
+
         results = {}
         for future in as_completed(future_to_url):
             url = future_to_url[future]
@@ -206,7 +206,7 @@ def fetch_parallel(urls, token, max_workers=5):
                 results[url] = future.result().json()
             except Exception as e:
                 results[url] = {'error': str(e)}
-        
+
         return results
 
 # Fetch multiple resources in parallel
@@ -228,15 +228,15 @@ import aiohttp
 async def fetch_async(urls, token):
     """Fetch multiple URLs asynchronously."""
     headers = {'Authorization': f'Bearer {token}'}
-    
+
     async with aiohttp.ClientSession(headers=headers) as session:
         tasks = [session.get(url) for url in urls]
         responses = await asyncio.gather(*tasks)
-        
+
         results = []
         for response in responses:
             results.append(await response.json())
-        
+
         return results
 
 # Usage
@@ -255,14 +255,14 @@ def paginate(url, token, page_size=100):
     """Memory-efficient pagination using generator."""
     headers = {'Authorization': f'Bearer {token}'}
     params = {'limit': page_size}
-    
+
     while url:
         response = requests.get(url, headers=headers, params=params)
         data = response.json()
-        
+
         for item in data['results']:
             yield item
-        
+
         url = data.get('next')
         params = {}  # Next URL includes params
 
@@ -303,22 +303,22 @@ class MetricsClient:
         self.base_url = base_url
         self.token = token
         self.metrics = defaultdict(list)
-    
+
     def request(self, method, path, **kwargs):
         start = time.time()
-        
+
         response = requests.request(
             method,
             f'{self.base_url}{path}',
             headers={'Authorization': f'Bearer {self.token}'},
             **kwargs
         )
-        
+
         duration = time.time() - start
         self.metrics[path].append(duration)
-        
+
         return response
-    
+
     def report(self):
         print("Performance Report")
         print("-" * 50)
@@ -337,14 +337,14 @@ class MetricsClient:
 def analyze_response_times(metrics_client):
     """Identify slow endpoints."""
     slow_endpoints = []
-    
+
     for path, durations in metrics_client.metrics.items():
         avg = sum(durations) / len(durations)
         if avg > 1.0:  # Slower than 1 second
             slow_endpoints.append((path, avg))
-    
+
     slow_endpoints.sort(key=lambda x: x[1], reverse=True)
-    
+
     print("Slow Endpoints (>1s average):")
     for path, avg in slow_endpoints:
         print(f"  {path}: {avg:.2f}s")

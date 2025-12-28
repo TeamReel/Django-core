@@ -384,14 +384,14 @@ def test_project_update_notification(mock_handoff):
         enabled=True,
         target_role="member"
     )
-    
+
     # Emit event
     EventService.emit_event(
         event_type="project.updated",
         context={"org_id": 1, "project_id": 42, "user_id": 5},
         payload={"title": "Project updated"}
     )
-    
+
     # Verify handoff called
     assert mock_handoff.called
 ```

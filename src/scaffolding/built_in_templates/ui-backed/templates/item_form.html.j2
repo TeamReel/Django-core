@@ -22,7 +22,7 @@
 
 <form method="post" class="form">
     {% csrf_token %}
-    
+
     {% if form.non_field_errors %}
         <div class="alert alert-danger">
             {{ form.non_field_errors }}

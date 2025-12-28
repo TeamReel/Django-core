@@ -1,7 +1,7 @@
 # Data Model: Platform Observability Foundation
 *Path: [kitty-specs/018-platform-observability-foundation/data-model.md](kitty-specs/018-platform-observability-foundation/data-model.md)*
 
-**Feature**: B18 Platform Observability Foundation  
+**Feature**: B18 Platform Observability Foundation
 **Date**: 2025-12-03
 
 ## Overview
@@ -172,7 +172,7 @@ def run_health_checks(liveness: bool = False) -> dict[str, HealthCheckResult]:
     for name, (check, is_critical) in HEALTH_CHECKS.items():
         if liveness and not is_critical:
             continue  # Skip non-critical checks for liveness probe
-        
+
         try:
             with timeout(0.5):  # 500ms timeout
                 result = check.check()
@@ -219,7 +219,7 @@ def emit_metric(metric_type: str, name: str, value: float, labels: dict[str, str
     active_collector = METRIC_COLLECTORS.get(settings.OBSERVABILITY_METRICS_EXPORTER)
     if not active_collector:
         return  # Graceful degradation if no collector configured
-    
+
     try:
         if metric_type == "counter":
             active_collector.increment(name, int(value), labels)

@@ -1,8 +1,8 @@
 # ADR-013: JWT Authentication Strategy
 
-**Status**: Accepted  
-**Date**: 2025-11-29  
-**Deciders**: Core Team  
+**Status**: Accepted
+**Date**: 2025-11-29
+**Deciders**: Core Team
 **Feature**: B13 API Foundation & Standards (WP02)
 
 ## Context

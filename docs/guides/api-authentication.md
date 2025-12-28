@@ -13,14 +13,14 @@ sequenceDiagram
     participant Client
     participant API
     participant Auth
-    
+
     Client->>API: POST /api/v1/auth/login
     API->>Auth: Validate credentials
     Auth-->>API: User verified
     API-->>Client: {access_token, refresh_token}
-    
+
     Note over Client: Store tokens securely
-    
+
     Client->>API: GET /api/v1/resource
     Note right of Client: Authorization: Bearer {access_token}
     API-->>Client: Resource data
@@ -136,7 +136,7 @@ class APIClient:
         self.access_token = None
         self.refresh_token = None
         self.token_expires = None
-    
+
     def login(self, email, password):
         response = requests.post(
             f'{self.base_url}/api/v1/auth/login/',
@@ -146,7 +146,7 @@ class APIClient:
         self.access_token = tokens['access']
         self.refresh_token = tokens['refresh']
         self.token_expires = datetime.now() + timedelta(minutes=14)
-    
+
     def refresh(self):
         response = requests.post(
             f'{self.base_url}/api/v1/auth/token/refresh/',
@@ -154,15 +154,15 @@ class APIClient:
         )
         self.access_token = response.json()['access']
         self.token_expires = datetime.now() + timedelta(minutes=14)
-    
+
     def request(self, method, path, **kwargs):
         # Auto-refresh if token expiring soon
         if self.token_expires and datetime.now() > self.token_expires:
             self.refresh()
-        
+
         headers = kwargs.pop('headers', {})
         headers['Authorization'] = f'Bearer {self.access_token}'
-        
+
         return requests.request(
             method,
             f'{self.base_url}{path}',
@@ -215,10 +215,10 @@ async function apiRequest(url, options = {}) {
       'Authorization': `Bearer ${accessToken}`
     }
   });
-  
+
   if (response.status === 401) {
     const error = await response.json();
-    
+
     if (error.code === 'token_not_valid') {
       // Try to refresh
       const refreshed = await refreshTokens();
@@ -231,7 +231,7 @@ async function apiRequest(url, options = {}) {
       }
     }
   }
-  
+
   return response;
 }
 ```

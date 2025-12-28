@@ -21,10 +21,7 @@ class TestHealthCheckResult:
     def test_create_result_with_all_fields(self):
         """Test creating HealthCheckResult with all fields."""
         result = HealthCheckResult(
-            name="test_check",
-            status=True,
-            latency_ms=15.5,
-            details={"key": "value"}
+            name="test_check", status=True, latency_ms=15.5, details={"key": "value"}
         )
 
         assert result.name == "test_check"
@@ -34,11 +31,7 @@ class TestHealthCheckResult:
 
     def test_create_result_without_details(self):
         """Test creating HealthCheckResult without details field."""
-        result = HealthCheckResult(
-            name="simple_check",
-            status=False,
-            latency_ms=10.0
-        )
+        result = HealthCheckResult(name="simple_check", status=False, latency_ms=10.0)
 
         assert result.name == "simple_check"
         assert result.status is False
@@ -94,10 +87,13 @@ class TestDatabaseHealthCheck:
 
     def test_database_query_timeout(self, mock_database_connection):
         """Test database health check with slow query."""
+
         def slow_execute(*args):
             time.sleep(0.6)  # Exceeds 500ms timeout
 
-        mock_database_connection.cursor.return_value.__enter__.return_value.execute.side_effect = slow_execute
+        mock_database_connection.cursor.return_value.__enter__.return_value.execute.side_effect = (
+            slow_execute
+        )
 
         check = DatabaseHealthCheck()
         # Note: Timeout enforcement is in readiness_view, not in check itself
@@ -157,7 +153,9 @@ class TestQueueHealthCheck:
 
     def test_queue_connection_failure(self, mock_celery_connection):
         """Test queue health check when broker connection fails."""
-        mock_celery_connection.connection.return_value.ensure_connection.side_effect = Exception("Broker unreachable")
+        mock_celery_connection.connection.return_value.ensure_connection.side_effect = Exception(
+            "Broker unreachable"
+        )
 
         check = QueueHealthCheck()
         result = check.check()
@@ -186,7 +184,9 @@ class TestMigrationHealthCheck:
         mock_migration_executor.return_value.migration_plan.return_value = []
 
         # Mock no table locks
-        mock_database_connection.cursor.return_value.__enter__.return_value.fetchone.return_value = (0,)
+        mock_database_connection.cursor.return_value.__enter__.return_value.fetchone.return_value = (
+            0,
+        )
 
         check = MigrationHealthCheck()
         result = check.check()
@@ -200,7 +200,7 @@ class TestMigrationHealthCheck:
         # Mock pending migrations
         mock_migration_executor.return_value.migration_plan.return_value = [
             ("app1", "0001_initial"),
-            ("app1", "0002_add_field")
+            ("app1", "0002_add_field"),
         ]
 
         check = MigrationHealthCheck()
@@ -217,7 +217,9 @@ class TestMigrationHealthCheck:
         mock_migration_executor.return_value.migration_plan.return_value = []
 
         # Mock table lock present (migrations running)
-        mock_database_connection.cursor.return_value.__enter__.return_value.fetchone.return_value = (1,)
+        mock_database_connection.cursor.return_value.__enter__.return_value.fetchone.return_value = (
+            1,
+        )
 
         check = MigrationHealthCheck()
         result = check.check()
@@ -227,13 +229,15 @@ class TestMigrationHealthCheck:
         assert "currently running" in result.details["error"]
         assert result.details["lock_count"] == 1
 
-    def test_migrations_lock_check_postgresql_only(self, mock_migration_executor, mock_database_connection):
+    def test_migrations_lock_check_postgresql_only(
+        self, mock_migration_executor, mock_database_connection
+    ):
         """Test that lock check is skipped on non-PostgreSQL databases."""
         # Mock no pending migrations
         mock_migration_executor.return_value.migration_plan.return_value = []
 
         # Simulate non-PostgreSQL database (e.g., SQLite)
-        mock_database_connection.vendor = 'sqlite'
+        mock_database_connection.vendor = "sqlite"
 
         check = MigrationHealthCheck()
         result = check.check()

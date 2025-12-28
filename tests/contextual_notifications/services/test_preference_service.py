@@ -45,9 +45,7 @@ class TestPreferenceService:
         # Should be filtered out
         assert len(filtered) == 0
 
-    def test_filter_by_preferences_different_channel_allowed(
-        self, user, notification_preference
-    ):
+    def test_filter_by_preferences_different_channel_allowed(self, user, notification_preference):
         """Test that user opted out of email still receives in_app."""
         # User opted out of email but not in_app
 
@@ -85,9 +83,7 @@ class TestPreferenceService:
         # Should NOT be filtered (different event type)
         assert len(filtered) == 1
 
-    def test_filter_by_preferences_multiple_users(
-        self, user, user2, notification_preference
-    ):
+    def test_filter_by_preferences_multiple_users(self, user, user2, notification_preference):
         """Test filtering with multiple users."""
         # user has opt-out, user2 does not
 
@@ -128,9 +124,7 @@ class TestPreferenceService:
 
         assert result is False  # User opted out
 
-    def test_check_preference_exists_enabled(
-        self, user, notification_preference_in_app
-    ):
+    def test_check_preference_exists_enabled(self, user, notification_preference_in_app):
         """Test checking if preference exists and is enabled."""
         result = PreferenceService.check_preference(
             user_id=user.id,
@@ -155,9 +149,7 @@ class TestPreferenceService:
         prefs = PreferenceService.get_user_preferences(user.id)
 
         assert len(prefs) >= 1
-        assert any(
-            p.event_type == "project.updated" and p.channel == "email" for p in prefs
-        )
+        assert any(p.event_type == "project.updated" and p.channel == "email" for p in prefs)
 
     def test_set_preference_creates_new(self, user):
         """Test setting a preference creates new record."""

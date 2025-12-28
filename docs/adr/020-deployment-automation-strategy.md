@@ -1,8 +1,8 @@
 # ADR-020: Deployment Automation Strategy
 
-**Status**: Accepted  
-**Date**: 2025-12-04  
-**Decision Makers**: Platform Team  
+**Status**: Accepted
+**Date**: 2025-12-04
+**Decision Makers**: Platform Team
 **Related**: B19 Deployment Templates & Configuration
 
 ---
@@ -216,26 +216,26 @@ Adopt **Docker Compose** for local/staging/production deployments and **Kubernet
 
 ### Positive
 
-✅ **Developer Experience**: `docker-compose up` gets entire stack running in <5 minutes  
-✅ **Production Parity**: Staging environment identical to production configuration  
-✅ **Scalability**: Kubernetes path for horizontal scaling when needed  
-✅ **Cloud Portability**: Works on AWS, GCP, Azure, bare metal VPS  
-✅ **Standard Tools**: Docker, Kubernetes, Nginx are industry standards with large communities  
-✅ **Constitution Compliance**: Meets B03 (security headers, TLS), B15 (Celery), B18 (health checks, metrics)  
-✅ **Low Barrier**: Minimal infrastructure knowledge required (Docker Compose)  
-✅ **Flexibility**: Can deploy to single VPS or multi-node cluster with same images  
+✅ **Developer Experience**: `docker-compose up` gets entire stack running in <5 minutes
+✅ **Production Parity**: Staging environment identical to production configuration
+✅ **Scalability**: Kubernetes path for horizontal scaling when needed
+✅ **Cloud Portability**: Works on AWS, GCP, Azure, bare metal VPS
+✅ **Standard Tools**: Docker, Kubernetes, Nginx are industry standards with large communities
+✅ **Constitution Compliance**: Meets B03 (security headers, TLS), B15 (Celery), B18 (health checks, metrics)
+✅ **Low Barrier**: Minimal infrastructure knowledge required (Docker Compose)
+✅ **Flexibility**: Can deploy to single VPS or multi-node cluster with same images
 
 ### Negative
 
-❌ **Learning Curve**: Kubernetes has steep learning curve (mitigated by providing pre-built manifests)  
-❌ **Operational Overhead**: K8s requires cluster management (mitigated by managed services: EKS, GKE, AKS)  
-❌ **Not Cloud-Agnostic IaC**: Manual cloud resource provisioning (Terraform recommended for automation)  
-❌ **Nginx Configuration Complexity**: SSL setup requires manual steps (mitigated by comprehensive docs)  
+❌ **Learning Curve**: Kubernetes has steep learning curve (mitigated by providing pre-built manifests)
+❌ **Operational Overhead**: K8s requires cluster management (mitigated by managed services: EKS, GKE, AKS)
+❌ **Not Cloud-Agnostic IaC**: Manual cloud resource provisioning (Terraform recommended for automation)
+❌ **Nginx Configuration Complexity**: SSL setup requires manual steps (mitigated by comprehensive docs)
 
 ### Neutral
 
-🔵 **Docker Dependency**: Requires Docker Desktop (development) or Docker Engine (production) - acceptable tradeoff for reproducibility  
-🔵 **Multiple Configuration Files**: 3 Docker Compose variants + K8s manifests - organized in clear directory structure  
+🔵 **Docker Dependency**: Requires Docker Desktop (development) or Docker Engine (production) - acceptable tradeoff for reproducibility
+🔵 **Multiple Configuration Files**: 3 Docker Compose variants + K8s manifests - organized in clear directory structure
 
 ---
 

@@ -134,31 +134,31 @@ from typing import Dict, Any
 
 class ValidationRunner:
     """Run constitutional validation via check_policy.py subprocess."""
-    
+
     def __init__(self, check_policy_path: Path):
         """
         Initialize validation runner.
-        
+
         Args:
             check_policy_path: Path to check_policy.py script
-        
+
         Raises:
             FileNotFoundError: If check_policy.py not found
         """
         if not check_policy_path.exists():
             raise FileNotFoundError(f"check_policy.py not found at {check_policy_path}")
         self.check_policy_path = check_policy_path
-    
+
     def validate_directory(self, target_dir: Path) -> Dict[str, Any]:
         """
         Run constitutional validation on directory.
-        
+
         Args:
             target_dir: Directory to validate
-        
+
         Returns:
             Validation report dict with 'passed', 'violations', 'warnings' keys
-        
+
         Raises:
             subprocess.TimeoutExpired: If validation takes >60s
             subprocess.CalledProcessError: If subprocess fails
@@ -171,7 +171,7 @@ class ValidationRunner:
                 timeout=60,
                 check=False  # Don't raise on non-zero exit
             )
-            
+
             if result.returncode == 0:
                 # Validation passed
                 return {
@@ -191,7 +191,7 @@ class ValidationRunner:
                         'violations': [f"Validation failed: {result.stderr}"],
                         'warnings': []
                     }
-        
+
         except subprocess.TimeoutExpired:
             raise TimeoutError("Constitutional validation timed out after 60 seconds")
 ```
@@ -257,18 +257,18 @@ from typing import Dict, Any
 def format_validation_report(report: Dict[str, Any]) -> str:
     """
     Format validation report for display.
-    
+
     Args:
         report: Validation report dict
-    
+
     Returns:
         Formatted report string
     """
     violations = report.get('violations', [])
     warnings = report.get('warnings', [])
-    
+
     lines = []
-    
+
     # Header
     violation_count = len(violations)
     warning_count = len(warnings)
@@ -276,7 +276,7 @@ def format_validation_report(report: Dict[str, Any]) -> str:
         f"✗ Constitutional validation failed: {violation_count} violations, {warning_count} warnings",
         fg='red', bold=True
     ))
-    
+
     # Violations
     if violations:
         lines.append(click.style("  Violations:", fg='red'))
@@ -285,7 +285,7 @@ def format_validation_report(report: Dict[str, Any]) -> str:
             rule = v.get('rule', 'UNKNOWN')
             message = v.get('message', 'No message')
             lines.append(f"    • {file_loc} - [{rule}] {message}")
-    
+
     # Warnings
     if warnings:
         lines.append(click.style("  Warnings:", fg='yellow'))
@@ -294,13 +294,13 @@ def format_validation_report(report: Dict[str, Any]) -> str:
             rule = w.get('rule', 'UNKNOWN')
             message = w.get('message', 'No message')
             lines.append(f"    • {file_loc} - [{rule}] {message}")
-    
+
     # Suggestion
     lines.append(click.style(
         "  → Fix violations or use --force to bypass validation",
         fg='cyan'
     ))
-    
+
     return "\n".join(lines)
 ```
 
@@ -329,21 +329,21 @@ def format_validation_report(report: Dict[str, Any]) -> str:
 def generate_app(self, name: str, template: str, project_root: Path, validate: bool = True) -> None:
     """Generate Django app with optional validation."""
     # ... existing code ...
-    
+
     # Atomic move staging → target
     self._atomic_move(staging_dir, target_dir)
-    
+
     # Validate if requested
     if validate:
         runner = ValidationRunner(project_root / 'check_policy.py')
         report = runner.validate_directory(target_dir)
-        
+
         if not report['passed']:
             # Format and display violations
             from scaffolding.validation.formatter import format_validation_report
             error_msg = format_validation_report(report)
             click.echo(error_msg, err=True)
-            
+
             # Exit with validation failure code
             raise ValidationFailure("Constitutional validation failed")
 ```
@@ -400,12 +400,12 @@ def app(ctx: click.Context, name: str, template: str, validate: bool, force: boo
 if validate:
     runner = ValidationRunner(project_root / 'check_policy.py')
     report = runner.validate_directory(target_dir)
-    
+
     if not report['passed']:
         # Format and display violations
         error_msg = format_validation_report(report)
         click.echo(error_msg, err=True)
-        
+
         if force:
             # Warning but continue
             click.secho("⚠ Validation failed but continuing due to --force flag", fg='yellow')
@@ -498,15 +498,15 @@ def test_validation_passes(tmp_path):
     """Test validation success."""
     check_policy = tmp_path / 'check_policy.py'
     check_policy.touch()
-    
+
     runner = ValidationRunner(check_policy)
-    
+
     # Mock subprocess returning success
     with patch('subprocess.run') as mock_run:
         mock_run.return_value = MagicMock(returncode=0, stdout='', stderr='')
-        
+
         report = runner.validate_directory(tmp_path)
-        
+
         assert report['passed'] is True
         assert len(report['violations']) == 0
 
@@ -515,9 +515,9 @@ def test_validation_fails_with_violations(tmp_path):
     """Test validation failure with violations."""
     check_policy = tmp_path / 'check_policy.py'
     check_policy.touch()
-    
+
     runner = ValidationRunner(check_policy)
-    
+
     # Mock subprocess returning failure with JSON
     mock_report = {
         "passed": False,
@@ -526,16 +526,16 @@ def test_validation_fails_with_violations(tmp_path):
         ],
         "warnings": []
     }
-    
+
     with patch('subprocess.run') as mock_run:
         mock_run.return_value = MagicMock(
             returncode=1,
             stdout=json.dumps(mock_report),
             stderr=''
         )
-        
+
         report = runner.validate_directory(tmp_path)
-        
+
         assert report['passed'] is False
         assert len(report['violations']) == 1
         assert report['violations'][0]['rule'] == 'B03-001'
@@ -545,13 +545,13 @@ def test_validation_timeout(tmp_path):
     """Test validation timeout handling."""
     check_policy = tmp_path / 'check_policy.py'
     check_policy.touch()
-    
+
     runner = ValidationRunner(check_policy)
-    
+
     # Mock subprocess raising timeout
     with patch('subprocess.run') as mock_run:
         mock_run.side_effect = subprocess.TimeoutExpired('cmd', 60)
-        
+
         with pytest.raises(TimeoutError, match="timed out"):
             runner.validate_directory(tmp_path)
 
@@ -560,11 +560,11 @@ def test_force_flag_bypasses_validation_failure(tmp_path):
     """Test --force flag allows generation despite validation failure."""
     # Setup project with validation failure
     # ... setup code ...
-    
+
     # Generate with force=True
     generator = CodeGenerator(renderer)
     generator.generate_app('payments', 'minimal', project_root, validate=True, force=True)
-    
+
     # Verify app created despite validation failure
     assert (project_root / 'src' / 'payments').exists()
 ```

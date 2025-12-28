@@ -63,9 +63,7 @@ def prompt_for_template(
     return template_choice
 
 
-def prompt_for_app_name(
-    default: Optional[str] = None, interactive: bool = True
-) -> str:
+def prompt_for_app_name(default: Optional[str] = None, interactive: bool = True) -> str:
     """
     Prompt user for app name with validation.
 
@@ -115,9 +113,7 @@ def prompt_for_app_name(
     return app_name.strip()
 
 
-def prompt_for_confirmation(
-    message: str, default: bool = True, interactive: bool = True
-) -> bool:
+def prompt_for_confirmation(message: str, default: bool = True, interactive: bool = True) -> bool:
     """
     Prompt user for yes/no confirmation.
 

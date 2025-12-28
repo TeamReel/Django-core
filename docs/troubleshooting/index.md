@@ -84,7 +84,7 @@ def check_rate_limit(response):
     limit = response.headers.get('X-RateLimit-Limit')
     remaining = response.headers.get('X-RateLimit-Remaining')
     reset = response.headers.get('X-RateLimit-Reset')
-    
+
     print(f"Limit: {limit}")
     print(f"Remaining: {remaining}")
     print(f"Reset at: {reset}")
@@ -129,7 +129,7 @@ Request:
 
 Response:
   403 Forbidden
-  {"type": "permission_denied", "code": "permission_denied", 
+  {"type": "permission_denied", "code": "permission_denied",
    "message": "You do not have permission to perform this action."}
 
 Expected: Project should be created (user is org admin)

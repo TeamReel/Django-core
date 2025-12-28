@@ -251,9 +251,7 @@ def mock_b16_handoff(mocker):
 @pytest.fixture
 def mock_audit_log(mocker):
     """Mock audit logging service."""
-    return mocker.patch(
-        "contextual_notifications.services.audit_service.audit_log.record"
-    )
+    return mocker.patch("contextual_notifications.services.audit_service.audit_log.record")
 
 
 @pytest.fixture(autouse=True)

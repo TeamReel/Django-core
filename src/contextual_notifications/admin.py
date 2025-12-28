@@ -85,17 +85,13 @@ class RoutingRuleAdmin(admin.ModelAdmin):
     actions = ["enable_selected_rules", "disable_selected_rules"]
 
     @admin.action(description="Enable selected routing rules")
-    def enable_selected_rules(
-        self, request: HttpRequest, queryset: QuerySet[RoutingRule]
-    ) -> None:
+    def enable_selected_rules(self, request: HttpRequest, queryset: QuerySet[RoutingRule]) -> None:
         """Enable selected routing rules."""
         updated = queryset.update(is_enabled=True)
         self.message_user(request, f"Enabled {updated} routing rule(s).")
 
     @admin.action(description="Disable selected routing rules")
-    def disable_selected_rules(
-        self, request: HttpRequest, queryset: QuerySet[RoutingRule]
-    ) -> None:
+    def disable_selected_rules(self, request: HttpRequest, queryset: QuerySet[RoutingRule]) -> None:
         """Disable selected routing rules."""
         updated = queryset.update(is_enabled=False)
         self.message_user(request, f"Disabled {updated} routing rule(s).")
@@ -216,4 +212,3 @@ class OrganisationNotificationPolicyAdmin(admin.ModelAdmin):
             },
         ),
     )
-

@@ -395,7 +395,7 @@ graph TD
     WP01 --> WP04[WP04: Architecture]
     WP01 --> WP05[WP05: Modules]
     WP01 --> WP06[WP06: Guides]
-    
+
     WP07[WP07: CRUD Example] --> WP10[WP10: Integration]
     WP08[WP08: Tasks Example] --> WP10
     WP09[WP09: Scaffolding Example] --> WP10

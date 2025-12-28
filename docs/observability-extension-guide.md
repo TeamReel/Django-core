@@ -19,13 +19,13 @@ import time
 
 class PaymentGatewayHealthCheck:
     """Health check for external payment gateway."""
-    
+
     def check(self) -> HealthCheckResult:
         start = time.time()
         try:
             response = requests.get('https://api.payment-gateway.com/health', timeout=0.5)
             latency_ms = (time.time() - start) * 1000
-            
+
             return HealthCheckResult(
                 name="payment_gateway",
                 status=response.status_code == 200,
@@ -53,11 +53,11 @@ from django.apps import AppConfig
 
 class MyProductConfig(AppConfig):
     name = 'myproduct'
-    
+
     def ready(self):
         from observability.health import register_health_check
         from .health_checks import PaymentGatewayHealthCheck
-        
+
         # critical=True means failure blocks readiness probe
         register_health_check(PaymentGatewayHealthCheck(), critical=True)
 ```
@@ -97,21 +97,21 @@ import statsd
 
 class StatsDCollector:
     """StatsD metric collector implementation."""
-    
+
     def __init__(self, host='localhost', port=8125):
         self.client = statsd.StatsClient(host, port)
-    
+
     def increment(self, name: str, value: int = 1, labels: dict[str, str] = {}) -> None:
         """Increment counter metric."""
         # StatsD doesn't support labels; encode in metric name
         metric_name = f"{name}.{'.'.join(f'{k}_{v}' for k, v in labels.items())}"
         self.client.incr(metric_name, value)
-    
+
     def observe(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         """Record timer observation."""
         metric_name = f"{name}.{'.'.join(f'{k}_{v}' for k, v in labels.items())}"
         self.client.timing(metric_name, value * 1000)  # Convert seconds to milliseconds
-    
+
     def set_gauge(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         """Set gauge value."""
         metric_name = f"{name}.{'.'.join(f'{k}_{v}' for k, v in labels.items())}"
@@ -129,11 +129,11 @@ from django.apps import AppConfig
 
 class MyProductConfig(AppConfig):
     name = 'myproduct'
-    
+
     def ready(self):
         from observability.metrics import register_metric_collector
         from .exporters.statsd import StatsDCollector
-        
+
         register_metric_collector(StatsDCollector(host='statsd.internal', port=8125))
 ```
 
@@ -169,7 +169,7 @@ from observability.logging import PIIRedactionFilter
 
 class CustomPIIRedactionFilter(PIIRedactionFilter):
     """Extended PII redaction for organization-specific fields."""
-    
+
     REDACTED_FIELDS = PIIRedactionFilter.REDACTED_FIELDS | {
         'employee_id',
         'badge_number',
@@ -260,7 +260,7 @@ def track_api_latency(api_name: str):
             try:
                 result = func(*args, **kwargs)
                 duration = time.time() - start
-                
+
                 # Emit histogram for percentile calculations
                 emit_metric(
                     metric_type='histogram',
@@ -268,11 +268,11 @@ def track_api_latency(api_name: str):
                     value=duration,
                     labels={'api_name': api_name, 'status': 'success'}
                 )
-                
+
                 return result
             except Exception as e:
                 duration = time.time() - start
-                
+
                 # Track failures separately
                 emit_metric(
                     metric_type='histogram',
@@ -280,16 +280,16 @@ def track_api_latency(api_name: str):
                     value=duration,
                     labels={'api_name': api_name, 'status': 'failure'}
                 )
-                
+
                 emit_metric(
                     metric_type='counter',
                     name='api_call_failures_total',
                     value=1,
                     labels={'api_name': api_name, 'error_type': type(e).__name__}
                 )
-                
+
                 raise
-        
+
         return wrapper
     return decorator
 

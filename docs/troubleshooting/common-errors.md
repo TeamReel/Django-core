@@ -299,12 +299,12 @@ class APIError(Exception):
 def handle_response(response):
     if response.ok:
         return response.json()
-    
+
     try:
         error = response.json()
     except ValueError:
         error = {'message': response.text}
-    
+
     raise APIError(
         status=response.status_code,
         type=error.get('type', 'unknown'),
@@ -331,9 +331,9 @@ async function handleResponse(response) {
   if (response.ok) {
     return response.json();
   }
-  
+
   const error = await response.json().catch(() => ({}));
-  
+
   throw new APIError(
     response.status,
     error.type || 'unknown',

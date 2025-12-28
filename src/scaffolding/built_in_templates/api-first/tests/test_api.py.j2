@@ -50,7 +50,7 @@ class Test{{ model_name | default("Item") }}ListAPI:
         """Test listing {{ model_name | default("items") | lower }} with authentication succeeds."""
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-list")
         response = authenticated_client.get(url)
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) > 0
 
@@ -61,7 +61,7 @@ class Test{{ model_name | default("Item") }}ListAPI:
 
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-list")
         response = authenticated_client.get(url, {"is_active": "true"})
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert all(item["is_active"] for item in response.data)
 
@@ -79,7 +79,7 @@ class Test{{ model_name | default("Item") }}CreateAPI:
             "is_active": True
         }
         response = authenticated_client.post(url, data, format="json")
-        
+
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["name"] == "New {{ model_name | default('Item') }}"
         assert {{ model_name | default("Item") }}.objects.filter(name="New {{ model_name | default('Item') }}").exists()
@@ -89,7 +89,7 @@ class Test{{ model_name | default("Item") }}CreateAPI:
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-list")
         data = {"description": "Missing name field"}
         response = authenticated_client.post(url, data, format="json")
-        
+
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "name" in response.data
 
@@ -102,7 +102,7 @@ class Test{{ model_name | default("Item") }}RetrieveAPI:
         """Test retrieving specific {{ model_name | default("item") | lower }}."""
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-detail", args=[sample_item.pk])
         response = authenticated_client.get(url)
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == sample_item.pk
         assert response.data["name"] == sample_item.name
@@ -111,7 +111,7 @@ class Test{{ model_name | default("Item") }}RetrieveAPI:
         """Test retrieving non-existent {{ model_name | default("item") | lower }} returns 404."""
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-detail", args=[9999])
         response = authenticated_client.get(url)
-        
+
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -128,10 +128,10 @@ class Test{{ model_name | default("Item") }}UpdateAPI:
             "is_active": True
         }
         response = authenticated_client.put(url, data, format="json")
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "Updated {{ model_name | default('Item') }}"
-        
+
         sample_item.refresh_from_db()
         assert sample_item.name == "Updated {{ model_name | default('Item') }}"
 
@@ -140,10 +140,10 @@ class Test{{ model_name | default("Item") }}UpdateAPI:
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-detail", args=[sample_item.pk])
         data = {"name": "Patched Name"}
         response = authenticated_client.patch(url, data, format="json")
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "Patched Name"
-        
+
         sample_item.refresh_from_db()
         assert sample_item.name == "Patched Name"
         assert sample_item.description == "A test {{ model_name | default('item') | lower }}"  # Unchanged
@@ -157,7 +157,7 @@ class Test{{ model_name | default("Item") }}DeleteAPI:
         """Test deleting {{ model_name | default("item") | lower }}."""
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-detail", args=[sample_item.pk])
         response = authenticated_client.delete(url)
-        
+
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not {{ model_name | default("Item") }}.objects.filter(pk=sample_item.pk).exists()
 
@@ -171,10 +171,10 @@ class Test{{ model_name | default("Item") }}CustomActions:
         item = {{ model_name | default("Item") }}.objects.create(name="Inactive", is_active=False)
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-activate", args=[item.pk])
         response = authenticated_client.post(url)
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert response.data["is_active"] is True
-        
+
         item.refresh_from_db()
         assert item.is_active is True
 
@@ -182,10 +182,10 @@ class Test{{ model_name | default("Item") }}CustomActions:
         """Test deactivating {{ model_name | default("item") | lower }} via custom action."""
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-deactivate", args=[sample_item.pk])
         response = authenticated_client.post(url)
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert response.data["is_active"] is False
-        
+
         sample_item.refresh_from_db()
         assert sample_item.is_active is False
 
@@ -196,7 +196,7 @@ class Test{{ model_name | default("Item") }}CustomActions:
 
         url = reverse("{{ app_name }}:{{ model_name | default('item') | lower }}-active")
         response = authenticated_client.get(url)
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
         assert response.data[0]["name"] == "Active"

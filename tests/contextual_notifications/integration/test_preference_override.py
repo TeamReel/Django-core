@@ -14,7 +14,9 @@ from contextual_notifications.services import EventService
 class TestPreferenceOverride:
     """Integration test for preference filtering."""
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     def test_user_opted_out_blocks_notification(
         self, mock_handoff, user, organisation, project, notification_preference
     ):
@@ -50,7 +52,9 @@ class TestPreferenceOverride:
         ]
         assert len(email_calls) == 0
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     def test_user_opted_out_one_channel_receives_other(
         self, mock_handoff, user, organisation, project, notification_preference
     ):
@@ -89,9 +93,7 @@ class TestPreferenceOverride:
 
         # Should receive in_app but not email
         in_app_calls = [
-            call
-            for call in mock_handoff.call_args_list
-            if call[1]["channel"] == "in_app"
+            call for call in mock_handoff.call_args_list if call[1]["channel"] == "in_app"
         ]
         email_calls = [
             call for call in mock_handoff.call_args_list if call[1]["channel"] == "email"
@@ -100,7 +102,9 @@ class TestPreferenceOverride:
         assert len(in_app_calls) > 0
         assert len(email_calls) == 0
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     def test_multiple_users_different_preferences(
         self, mock_handoff, user, user2, organisation, project
     ):
@@ -141,10 +145,10 @@ class TestPreferenceOverride:
         assert user2.id in user_ids
         assert user.id not in user_ids
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
-    def test_no_preference_allows_notification(
-        self, mock_handoff, user, organisation, project
-    ):
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
+    def test_no_preference_allows_notification(self, mock_handoff, user, organisation, project):
         """Test that users without preferences receive notifications (default: enabled)."""
         # No preference configured for user
 

@@ -229,7 +229,7 @@ class FeatureFlagViewSet(viewsets.ModelViewSet):
             if org_flag:
                 # MASTER SWITCH: If global flag is explicitly disabled, it overrides everything
                 # (but org overrides remain stored and will become active if global is re-enabled)
-                if g_flag and g_flag.enabled == False:
+                if g_flag and g_flag.enabled is False:
                     # Global is disabled (master switch) - feature is disabled everywhere
                     enabled = False
                     org_val = org_flag.enabled  # Store the override value

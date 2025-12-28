@@ -120,9 +120,7 @@ class TestInitCommand:
 
     def test_init_with_project_name(self, runner):
         """Test scaffold init with custom project name."""
-        result = runner.invoke(
-            scaffold, ["init", "my-project", "--project-name", "My Project"]
-        )
+        result = runner.invoke(scaffold, ["init", "my-project", "--project-name", "My Project"])
         assert result.exit_code == EXIT_SYSTEM_ERROR  # Placeholder
 
 

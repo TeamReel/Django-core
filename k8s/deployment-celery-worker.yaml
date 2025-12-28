@@ -42,7 +42,7 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
-      
+
       containers:
         - name: celery-worker
           image: your-registry/django-core:latest  # Replace with your image
@@ -56,14 +56,14 @@ spec:
             - "--concurrency=4"
             - "--max-tasks-per-child=1000"
             - "--task-events"
-          
+
           # Environment variables from ConfigMap and Secret
           envFrom:
             - configMapRef:
                 name: django-core-config
             - secretRef:
                 name: django-core-secrets
-          
+
           # Liveness probe: Worker process running?
           # Note: Celery workers don't expose HTTP endpoints by default
           # Using exec probe to check process health
@@ -82,7 +82,7 @@ spec:
             timeoutSeconds: 10
             failureThreshold: 3
             successThreshold: 1
-          
+
           # Readiness probe: Worker ready to accept tasks?
           readinessProbe:
             exec:
@@ -97,7 +97,7 @@ spec:
             timeoutSeconds: 10
             failureThreshold: 3
             successThreshold: 1
-          
+
           # Resource requests and limits
           # Workers typically need more memory for task processing
           resources:
@@ -107,7 +107,7 @@ spec:
             limits:
               memory: "1Gi"
               cpu: "1000m"
-          
+
           # Security context
           securityContext:
             allowPrivilegeEscalation: false
@@ -115,7 +115,7 @@ spec:
             capabilities:
               drop:
                 - ALL
-      
+
       # Pod anti-affinity: Spread workers across nodes
       affinity:
         podAntiAffinity:
@@ -129,10 +129,10 @@ spec:
                       values:
                         - celery-worker
                 topologyKey: kubernetes.io/hostname
-      
+
       # Restart policy
       restartPolicy: Always
-      
+
       # Graceful shutdown: Allow workers to finish current tasks
       terminationGracePeriodSeconds: 300  # 5 minutes
 

@@ -14,7 +14,9 @@ from contextual_notifications.services import EventService
 class TestSuppressionWindow:
     """Integration test for suppression service."""
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.suppression_service.redis_client")
     def test_first_notification_goes_through(
         self, mock_redis, mock_handoff, user, organisation, project
@@ -59,7 +61,9 @@ class TestSuppressionWindow:
         # Verify TTL (300 seconds = 5 minutes)
         assert ttl == 300
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.suppression_service.redis_client")
     def test_duplicate_notification_suppressed(
         self, mock_redis, mock_handoff, user, organisation, project
@@ -95,7 +99,9 @@ class TestSuppressionWindow:
         # Should NOT set new suppression key
         mock_redis.setex.assert_not_called()
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.suppression_service.redis_client")
     def test_different_resources_not_suppressed(
         self, mock_redis, mock_handoff, user, organisation, project, project2
@@ -144,7 +150,9 @@ class TestSuppressionWindow:
         # Both should go through (different resources)
         assert mock_handoff.call_count >= 2
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.suppression_service.redis_client")
     def test_different_channels_not_suppressed(
         self, mock_redis, mock_handoff, user, organisation, project
@@ -190,7 +198,9 @@ class TestSuppressionWindow:
         assert "in_app" in channels
         assert "email" in channels
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.suppression_service.redis_client")
     def test_missing_resource_id_bypasses_suppression(
         self, mock_redis, mock_handoff, user, organisation, project
@@ -224,7 +234,9 @@ class TestSuppressionWindow:
         # Should NOT call Redis (no suppression)
         mock_redis.get.assert_not_called()
 
-    @patch("contextual_notifications.services.notification_handoff_service.NotificationService.create_notification")
+    @patch(
+        "contextual_notifications.services.notification_handoff_service.NotificationService.create_notification"
+    )
     @patch("contextual_notifications.services.suppression_service.redis_client")
     @patch("contextual_notifications.services.suppression_service.logger")
     def test_redis_failure_allows_notification(

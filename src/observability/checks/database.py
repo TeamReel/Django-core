@@ -35,14 +35,11 @@ class DatabaseHealthCheck:
                 name="database",
                 status=True,
                 latency_ms=latency_ms,
-                details={"engine": connection.vendor}
+                details={"engine": connection.vendor},
             )
 
         except Exception as e:
             latency_ms = (time.time() - start_time) * 1000
             return HealthCheckResult(
-                name="database",
-                status=False,
-                latency_ms=latency_ms,
-                details={"error": str(e)}
+                name="database", status=False, latency_ms=latency_ms, details={"error": str(e)}
             )

@@ -37,9 +37,7 @@ class PreferenceService:
     """
 
     @staticmethod
-    def check_preferences(
-        user_ids: list[int], event_type: str, channel: str
-    ) -> list[int]:
+    def check_preferences(user_ids: list[int], event_type: str, channel: str) -> list[int]:
         """
         Filter user IDs based on notification preferences.
 
@@ -74,14 +72,10 @@ class PreferenceService:
             event_type=event_type, channel=channel
         ).time():
             # Bulk query preferences for all users
-            disabled_users = PreferenceService._get_disabled_users(
-                user_ids, event_type, channel
-            )
+            disabled_users = PreferenceService._get_disabled_users(user_ids, event_type, channel)
 
             # Filter out disabled users
-            filtered_user_ids = [
-                user_id for user_id in user_ids if user_id not in disabled_users
-            ]
+            filtered_user_ids = [user_id for user_id in user_ids if user_id not in disabled_users]
 
             # Log filtering results
             filtered_count = len(user_ids) - len(filtered_user_ids)
@@ -104,9 +98,7 @@ class PreferenceService:
             return filtered_user_ids
 
     @staticmethod
-    def _get_disabled_users(
-        user_ids: list[int], event_type: str, channel: str
-    ) -> set[int]:
+    def _get_disabled_users(user_ids: list[int], event_type: str, channel: str) -> set[int]:
         """
         Get set of user IDs who have disabled notifications for (event_type, channel).
 
@@ -180,9 +172,7 @@ class PreferenceService:
         return result
 
     @staticmethod
-    def set_user_preference(
-        user_id: int, event_type: str, channel: str, enabled: bool
-    ) -> None:
+    def set_user_preference(user_id: int, event_type: str, channel: str, enabled: bool) -> None:
         """
         Set notification preference for user (create or update).
 

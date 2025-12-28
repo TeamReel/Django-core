@@ -152,7 +152,7 @@ All critical and major issues from the initial review have been successfully add
 - [test_metrics.py](tests/observability/test_metrics.py#L87): `assert METRIC_COLLECTORS[0] == collector` - assumes list indexing
 - [apps.py](src/observability/apps.py#L41): `register_metric_collector(PrometheusCollector())` - passes ONE parameter
 
-**Impact**: 
+**Impact**:
 - All tests will fail with `TypeError: register_metric_collector() missing 1 required positional argument: 'collector'`
 - Application startup will crash when registering PrometheusCollector
 - FR-012 (Prometheus exporter) **cannot function**
@@ -236,7 +236,7 @@ def metrics_view(request):
     """Expose metrics from shared Prometheus registry."""
     from django.http import HttpResponse
     from prometheus_client import CONTENT_TYPE_LATEST
-    
+
     # Use REGISTRY, not generate_latest() which creates isolated metrics
     metrics_data = generate_latest(REGISTRY)
     return HttpResponse(metrics_data, content_type=CONTENT_TYPE_LATEST)
@@ -290,7 +290,7 @@ class PrometheusCollector:
 
 **Impact**: Not critical, but inconsistent with Constitution. Python 3.12 adds new features (e.g., PEP 695 type parameter syntax).
 
-**Required Fix**: 
+**Required Fix**:
 Use `from __future__ import annotations` for forward compatibility, OR upgrade to Python 3.12-specific features if mandated.
 
 ---
@@ -303,7 +303,7 @@ Use `from __future__ import annotations` for forward compatibility, OR upgrade t
 
 **Evidence**: [settings/base.py](src/config/settings/base.py#L58-L59) shows django-prometheus middleware active.
 
-**Recommendation**: 
+**Recommendation**:
 - Check if django-prometheus metrics (`django_http_requests_total`, etc.) are sufficient
 - If custom metrics needed, document WHY (e.g., different labels, cardinality control)
 - Ensure metric names don't conflict: `http_requests_total` (custom) vs `django_http_requests_total` (django-prometheus)
@@ -324,9 +324,9 @@ Use `from __future__ import annotations` for forward compatibility, OR upgrade t
 def test_metrics_endpoint_integration(client):
     """Integration test: emit metric, verify in /metrics response."""
     from observability import emit_metric
-    
+
     emit_metric('counter', 'test_integration_counter', 5, {'label': 'value'})
-    
+
     response = client.get('/metrics')
     assert response.status_code == 200
     assert b'test_integration_counter' in response.content
@@ -374,7 +374,7 @@ After fixing issues, verify:
 
 1. **Registry Fix**: Run `pytest tests/observability/test_metrics.py::TestMetricRegistry -v` - should pass
 2. **Application Startup**: Run `python manage.py runserver` - no errors loading PrometheusCollector
-3. **Metrics Endpoint**: 
+3. **Metrics Endpoint**:
    ```bash
    curl http://localhost:8000/metrics | grep http_requests_total
    # Should see custom metrics, not just django-prometheus defaults
@@ -456,15 +456,15 @@ from typing import Protocol
 
 class MetricCollector(Protocol):
     """Interface for metric exporter backends."""
-    
+
     def increment(self, name: str, value: int = 1, labels: dict[str, str] = {}) -> None:
         """Increment counter metric."""
         ...
-    
+
     def observe(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         """Record histogram/summary observation."""
         ...
-    
+
     def set_gauge(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         """Set gauge value."""
         ...
@@ -482,11 +482,11 @@ def register_metric_collector(name: str, collector: MetricCollector) -> None:
 def emit_metric(metric_type: str, name: str, value: float, labels: dict[str, str] = {}) -> None:
     """Emit metric to active collector."""
     from django.conf import settings
-    
+
     active_collector = METRIC_COLLECTORS.get(settings.OBSERVABILITY_METRICS_EXPORTER)
     if not active_collector:
         return  # Graceful degradation
-    
+
     try:
         if metric_type == "counter":
             active_collector.increment(name, int(value), labels)
@@ -523,24 +523,24 @@ from observability.metrics import MetricCollector
 
 class PrometheusCollector:
     """Prometheus metric collector implementation."""
-    
+
     def __init__(self):
         self._counters = {}
         self._histograms = {}
         self._gauges = {}
-    
+
     def increment(self, name: str, value: int = 1, labels: dict[str, str] = {}) -> None:
         """Increment counter metric."""
         if name not in self._counters:
             self._counters[name] = Counter(name, f'Counter: {name}', labelnames=list(labels.keys()))
         self._counters[name].labels(**labels).inc(value)
-    
+
     def observe(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         """Record histogram observation."""
         if name not in self._histograms:
             self._histograms[name] = Histogram(name, f'Histogram: {name}', labelnames=list(labels.keys()))
         self._histograms[name].labels(**labels).observe(value)
-    
+
     def set_gauge(self, name: str, value: float, labels: dict[str, str] = {}) -> None:
         """Set gauge value."""
         if name not in self._gauges:
@@ -587,7 +587,7 @@ ALLOWED_HTTP_STATUS_GROUPS = {'2xx', '3xx', '4xx', '5xx'}
 def validate_label_cardinality(labels: dict[str, str]) -> dict[str, str]:
     """Validate and sanitize metric labels per FR-013."""
     sanitized = {}
-    
+
     for key, value in labels.items():
         if key == 'method' and value not in ALLOWED_HTTP_METHODS:
             sanitized[key] = 'other'
@@ -605,7 +605,7 @@ def validate_label_cardinality(labels: dict[str, str]) -> dict[str, str]:
                 sanitized[key] = 'other'
         else:
             sanitized[key] = value
-    
+
     return sanitized
 ```
 
@@ -620,24 +620,24 @@ from observability.metrics import emit_metric, validate_label_cardinality
 
 class HTTPMetricsMiddleware(MiddlewareMixin):
     """Middleware to collect HTTP request metrics."""
-    
+
     def process_request(self, request):
         """Record request start time."""
         request._start_time = time.time()
-    
+
     def process_response(self, request, response):
         """Emit HTTP metrics."""
         if hasattr(request, '_start_time'):
             duration = time.time() - request._start_time
-            
+
             labels = validate_label_cardinality({
                 'method': request.method,
                 'status': str(response.status_code)
             })
-            
+
             emit_metric('counter', 'http_requests_total', 1, labels)
             emit_metric('histogram', 'http_request_duration_seconds', duration, labels)
-        
+
         return response
 ```
 
@@ -655,39 +655,39 @@ from observability.logging import set_correlation_id
 
 class ObservableTask(Task):
     """Celery Task base class with observability hooks."""
-    
+
     def __call__(self, *args, **kwargs):
         """Override __call__ to add instrumentation."""
         # Extract correlation ID from task headers
         correlation_id = self.request.get('correlation_id')
         if correlation_id:
             set_correlation_id(correlation_id)
-        
+
         try:
             # Emit task_started_total
             emit_metric('counter', 'tasks_started_total', 1, {
                 'task_name': self.name,
                 'queue': self.request.delivery_info.get('routing_key', 'default')
             })
-            
+
             start_time = time.time()
             result = super().__call__(*args, **kwargs)
             duration = time.time() - start_time
-            
+
             # Emit success metrics
             emit_metric('histogram', 'task_duration_seconds', duration, {'task_name': self.name})
             emit_metric('counter', 'tasks_completed_total', 1, {'task_name': self.name, 'status': 'success'})
-            
+
             # Emit retry metric if applicable
             if self.request.retries > 0:
                 emit_metric('counter', 'task_retries_total', self.request.retries, {'task_name': self.name})
-            
+
             return result
-        
+
         except Exception as e:
             # Emit failure metric
             emit_metric('counter', 'tasks_completed_total', 1, {'task_name': self.name, 'status': 'failure'})
-            
+
             # Log structured error
             import logging
             logger = logging.getLogger(__name__)
@@ -699,9 +699,9 @@ class ObservableTask(Task):
                     'retry_count': self.request.retries
                 }
             })
-            
+
             raise
-        
+
         except BaseException as e:
             # Catch KeyboardInterrupt, SystemExit
             emit_metric('counter', 'observability_signal_failure_total', 1, {

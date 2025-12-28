@@ -215,7 +215,7 @@ describe('SignInPage Accessibility', () => {
 
       // Check for aria-invalid on invalid fields
       const emailInput = screen.getByLabelText(/email/i);
-      
+
       // Note: aria-invalid and aria-describedby should be set by F01 Input component
       // This test verifies the integration works correctly
       // If F01 Input doesn't set these, this test will document the gap
@@ -249,7 +249,7 @@ describe('SignInPage Accessibility', () => {
       // Verify error messages are present and accessible
       // Error messages should have role="alert" or aria-live="polite"
       const errorMessages = screen.queryAllByRole('alert');
-      
+
       // Note: This depends on F01 Alert component implementation
       // Test documents expected behavior
     });

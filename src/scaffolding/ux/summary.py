@@ -111,13 +111,17 @@ def print_generation_summary(
     # Additional tips based on template
     if template_name == "api-first":
         click.secho("API-specific tips:", fg="yellow")
-        click.echo(f"  • Add app URLs to project urls.py: path('api/{app_name}/', include('{app_name}.urls'))")
+        click.echo(
+            f"  • Add app URLs to project urls.py: path('api/{app_name}/', include('{app_name}.urls'))"
+        )
         click.echo("  • Test API endpoints: python manage.py test")
         click.echo()
 
     elif template_name == "ui-backed":
         click.secho("UI-specific tips:", fg="yellow")
-        click.echo(f"  • Add app URLs to project urls.py: path('{app_name}/', include('{app_name}.urls'))")
+        click.echo(
+            f"  • Add app URLs to project urls.py: path('{app_name}/', include('{app_name}.urls'))"
+        )
         click.echo("  • Collect static files: python manage.py collectstatic")
         click.echo(f"  • View UI at: http://localhost:8000/{app_name}/")
         click.echo()

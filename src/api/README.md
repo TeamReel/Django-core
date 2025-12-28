@@ -1,7 +1,7 @@
 # API Foundation & Standards (B13)
 
-**Feature**: B13 API Foundation & Standards  
-**Version**: 1.0.0  
+**Feature**: B13 API Foundation & Standards
+**Version**: 1.0.0
 **Status**: Production Ready
 
 ## Overview
@@ -249,7 +249,7 @@ from .serializers import MyModelSerializer
 class MyModelViewSet(BaseAPIViewSet):
     """
     ViewSet for MyModel operations.
-    
+
     Provides standard CRUD operations with pagination and rate limiting.
     """
     queryset = MyModel.objects.all()

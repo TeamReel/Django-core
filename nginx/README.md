@@ -183,7 +183,7 @@ Add to `nginx.conf` http block:
 ```nginx
 http {
     limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
-    
+
     # In server block:
     limit_req zone=api_limit burst=20 nodelay;
 }
@@ -198,7 +198,7 @@ Production config includes metrics endpoint:
 ```nginx
 location /metrics {
     proxy_pass http://django;
-    
+
     # Restrict to monitoring systems only
     allow 10.0.0.0/8;  # Internal network
     deny all;

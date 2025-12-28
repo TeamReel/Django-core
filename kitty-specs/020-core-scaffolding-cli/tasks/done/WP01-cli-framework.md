@@ -245,7 +245,7 @@ import sys
 
 class Command(BaseCommand):
     help = 'Core scaffolding CLI for Django apps and projects'
-    
+
     def handle(self, *args, **options):
         """Run scaffolding CLI via Django management command."""
         try:
@@ -415,7 +415,7 @@ EXIT_CONFLICT = 5         # Name collision, target directory exists
 def exit_with_code(ctx: click.Context, code: int, message: str) -> None:
     """
     Exit CLI with specified code and message.
-    
+
     Args:
         ctx: Click context object
         code: Exit code (use EXIT_* constants)
@@ -473,12 +473,12 @@ from typing import List
 def format_error(title: str, details: str, suggestion: str) -> str:
     """
     Format error message with title, details, and suggestion.
-    
+
     Args:
         title: Short error title (e.g., "Invalid app name")
         details: Detailed explanation of the error
         suggestion: Suggested action to fix the error
-    
+
     Returns:
         Formatted error message with color coding
     """
@@ -493,10 +493,10 @@ def format_error(title: str, details: str, suggestion: str) -> str:
 def format_validation_error(violations: List[str]) -> str:
     """
     Format constitutional validation violations as bullet list.
-    
+
     Args:
         violations: List of validation violation messages
-    
+
     Returns:
         Formatted validation error with bullet list
     """
@@ -510,11 +510,11 @@ def format_validation_error(violations: List[str]) -> str:
 def format_success(message: str, files_created: List[str]) -> str:
     """
     Format success message with list of created files.
-    
+
     Args:
         message: Success message (e.g., "App 'payments' created successfully")
         files_created: List of file paths created
-    
+
     Returns:
         Formatted success message with file list
     """
@@ -572,14 +572,14 @@ from scaffolding.utils.exit_codes import EXIT_SYSTEM_ERROR
 def generate_app(name: str, template: str, validate: bool, interactive: bool, verbose: bool) -> int:
     """
     Generate new Django app/module (placeholder).
-    
+
     Args:
         name: App name (snake_case)
         template: Template to use
         validate: Whether to run constitutional validation
         interactive: Whether to prompt user
         verbose: Whether to show verbose output
-    
+
     Returns:
         Exit code (0=success, non-zero=error)
     """
@@ -590,13 +590,13 @@ def generate_app(name: str, template: str, validate: bool, interactive: bool, ve
 def bootstrap_project(name: str, project_name: Optional[str], interactive: bool, verbose: bool) -> int:
     """
     Bootstrap new downstream project (placeholder).
-    
+
     Args:
         name: Project directory name
         project_name: Custom display name (optional)
         interactive: Whether to prompt user
         verbose: Whether to show verbose output
-    
+
     Returns:
         Exit code (0=success, non-zero=error)
     """
@@ -607,11 +607,11 @@ def bootstrap_project(name: str, project_name: Optional[str], interactive: bool,
 def list_available_templates(interactive: bool, verbose: bool) -> int:
     """
     List available scaffolding templates (placeholder).
-    
+
     Args:
         interactive: Whether to prompt user
         verbose: Whether to show verbose output
-    
+
     Returns:
         Exit code (0=success, non-zero=error)
     """
@@ -622,11 +622,11 @@ def list_available_templates(interactive: bool, verbose: bool) -> int:
 def validate_directory(path: str, verbose: bool) -> int:
     """
     Validate generated code against constitution (placeholder).
-    
+
     Args:
         path: Directory to validate
         verbose: Whether to show verbose output
-    
+
     Returns:
         Exit code (0=success, 3=validation failure)
     """

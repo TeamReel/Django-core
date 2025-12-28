@@ -19,7 +19,7 @@ class CorrelationIDMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         """Extract X-Correlation-ID header or generate UUID."""
-        correlation_id = request.META.get('HTTP_X_CORRELATION_ID')
+        correlation_id = request.META.get("HTTP_X_CORRELATION_ID")
 
         if not correlation_id:
             correlation_id = str(uuid.uuid4())
@@ -44,25 +44,22 @@ class HTTPMetricsMiddleware(MiddlewareMixin):
 
     def process_response(self, request, response):
         """Emit HTTP metrics."""
-        if hasattr(request, '_metrics_start_time'):
+        if hasattr(request, "_metrics_start_time"):
             try:
                 from .metrics import emit_metric
 
                 duration = time.time() - request._metrics_start_time
 
-                labels = {
-                    'method': request.method,
-                    'status': str(response.status_code)
-                }
+                labels = {"method": request.method, "status": str(response.status_code)}
 
-                emit_metric('counter', 'http_requests_total', 1, labels)
-                emit_metric('histogram', 'http_request_duration_seconds', duration, labels)
+                emit_metric("counter", "http_requests_total", 1, labels)
+                emit_metric("histogram", "http_request_duration_seconds", duration, labels)
 
             except Exception as e:
                 # FR-011a: Never propagate exceptions from observability hooks
                 import logging
+
                 logger = logging.getLogger(__name__)
                 logger.error(f"HTTP metrics emission failed: {e}")
 
         return response
-

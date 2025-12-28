@@ -1,8 +1,8 @@
 # ADR-022: Constitutional Validation Integration
 
-**Status**: Proposed  
-**Date**: 2025-12-04  
-**Feature**: B20 Core Scaffolding CLI  
+**Status**: Proposed
+**Date**: 2025-12-04
+**Feature**: B20 Core Scaffolding CLI
 **Context**: Need to ensure generated code complies with Core-App constitutional principles without manual review
 
 ---
@@ -65,7 +65,7 @@ def create_staging_dir() -> Path:
     return staging_dir
 ```
 
-**Rationale**: 
+**Rationale**:
 - Isolated from project directory (no partial state on failure)
 - Unique ID prevents collisions if multiple generations run concurrently
 - System temp directory automatically cleaned up on reboot
@@ -76,18 +76,18 @@ def create_staging_dir() -> Path:
 def generate_to_staging(template: Template, variables: dict, staging_dir: Path) -> List[Path]:
     """Render all template files to staging directory."""
     generated_files = []
-    
+
     for template_file in template.files:
         # Render Jinja2 template
         rendered_content = render_template(template_file, variables)
-        
+
         # Write to staging
         target_path = staging_dir / template_file.relative_path
         target_path.parent.mkdir(parents=True, exist_ok=True)
         target_path.write_text(rendered_content)
-        
+
         generated_files.append(target_path)
-    
+
     return generated_files
 ```
 
@@ -100,7 +100,7 @@ import subprocess
 
 def validate_code(staging_dir: Path) -> ValidationReport:
     """Run check_policy.py against staged code."""
-    
+
     # Run constitutional enforcement engine
     result = subprocess.run(
         ["python", "check_policy.py", "--path", str(staging_dir), "--json"],
@@ -108,10 +108,10 @@ def validate_code(staging_dir: Path) -> ValidationReport:
         text=True,
         timeout=60  # Validation timeout: 1 minute
     )
-    
+
     # Parse JSON output
     validation_data = json.loads(result.stdout)
-    
+
     return ValidationReport(
         passed=result.returncode == 0,
         violations=parse_violations(validation_data),
@@ -138,17 +138,17 @@ import shutil
 
 def atomically_move(staging_dir: Path, target_dir: Path):
     """Move staged files to target location atomically."""
-    
+
     # Verify target doesn't exist (prevent overwrite without --force)
     if target_dir.exists():
         raise FileExistsError(f"Target directory already exists: {target_dir}")
-    
+
     # Atomic move (rename operation)
     # On same filesystem, this is atomic. On different filesystems, falls back to copy+delete.
     shutil.move(str(staging_dir), str(target_dir))
 ```
 
-**Rationale**: 
+**Rationale**:
 - `shutil.move()` is atomic on same filesystem (rename syscall)
 - Cross-filesystem fallback ensures portability
 - All-or-nothing guarantee: either all files appear or none
@@ -176,18 +176,18 @@ class ValidationReport:
     warnings: List[Warning]
     checks_run: List[str]
     execution_time: float
-    
+
     def format_for_display(self) -> str:
         """Human-readable CLI output."""
         lines = ["", "Constitutional Validation Report", "=" * 40, ""]
-        
+
         # Show check results
         for check in self.checks_run:
             status = "✅ PASS" if check not in [v.check for v in self.violations] else "❌ FAIL"
             lines.append(f"{status} {check}")
-        
+
         lines.append("")
-        
+
         # Show violations
         if self.violations:
             lines.append(f"Violations ({len(self.violations)}):")
@@ -198,14 +198,14 @@ class ValidationReport:
                 lines.append(f"    Code: {v.code_snippet}")
                 lines.append(f"    Fix:  {v.suggested_fix}")
                 lines.append("")
-        
+
         # Show result
         result = "✅ PASSED" if self.passed else "❌ FAILED"
         lines.append(f"Validation Result: {result}")
-        
+
         if not self.passed:
             lines.append("Run with --force to bypass validation (not recommended)")
-        
+
         return "\n".join(lines)
 ```
 
@@ -246,7 +246,7 @@ Run with --force to bypass validation (not recommended)
 @click.option("--force", is_flag=True, help="Bypass validation (⚠️ generates non-compliant code)")
 def module_command(app_name: str, force: bool, ...):
     # ... generate to staging ...
-    
+
     if not force:
         report = validate_code(staging_dir)
         if not report.passed:
@@ -258,12 +258,12 @@ def module_command(app_name: str, force: bool, ...):
     else:
         click.secho("⚠️  WARNING: Skipping validation (--force flag)", fg="yellow")
         click.secho("⚠️  Generated code may not comply with Core-App standards", fg="yellow")
-    
+
     # Move to target
     atomically_move(staging_dir, target_dir)
 ```
 
-**Rationale**: 
+**Rationale**:
 - Explicit opt-out requires intentional flag
 - Warning message makes consequences clear
 - Useful for experimentation, edge cases, prototyping
@@ -274,18 +274,18 @@ def module_command(app_name: str, force: bool, ...):
 
 ### Positive
 
-✅ **Guarantees compliance**: No non-compliant code reaches project unless explicitly bypassed  
-✅ **Clean rollback**: Atomic move/rollback prevents partial state  
-✅ **Clear feedback**: Structured violation report shows exactly what to fix  
-✅ **Reuses infrastructure**: No duplicate validation logic (uses check_policy.py)  
-✅ **CI/CD friendly**: Exit code 1 on failure enables automated quality gates  
-✅ **Escape hatch**: `--force` flag for advanced users and edge cases  
+✅ **Guarantees compliance**: No non-compliant code reaches project unless explicitly bypassed
+✅ **Clean rollback**: Atomic move/rollback prevents partial state
+✅ **Clear feedback**: Structured violation report shows exactly what to fix
+✅ **Reuses infrastructure**: No duplicate validation logic (uses check_policy.py)
+✅ **CI/CD friendly**: Exit code 1 on failure enables automated quality gates
+✅ **Escape hatch**: `--force` flag for advanced users and edge cases
 
 ### Negative
 
-⚠️ **Validation overhead**: Adds time to generation (typically <5 seconds for module)  
-⚠️ **Temporary disk usage**: Staging directory uses temp disk space  
-⚠️ **Coupling to check_policy.py**: CLI depends on external validation script  
+⚠️ **Validation overhead**: Adds time to generation (typically <5 seconds for module)
+⚠️ **Temporary disk usage**: Staging directory uses temp disk space
+⚠️ **Coupling to check_policy.py**: CLI depends on external validation script
 
 ### Mitigation
 
@@ -447,5 +447,5 @@ def test_force_flag_bypasses_validation():
 
 ---
 
-**Decision Makers**: Planning phase architectural decisions  
+**Decision Makers**: Planning phase architectural decisions
 **Stakeholders**: Core-App developers, downstream product teams, DevOps engineers

@@ -7,27 +7,27 @@ Welcome to the Django Core-App documentation. This platform provides reusable, p
 <div class="grid cards" markdown>
 
 - :material-rocket-launch: **[Getting Started](getting-started/index.md)**
-  
+
   Set up your development environment and make your first contribution.
 
 - :material-sitemap: **[Architecture](architecture/index.md)**
-  
+
   Understand system design, layering, and extension points.
 
 - :material-book-open-variant: **[Guides](guides/index.md)**
-  
+
   Learn how to use Core APIs effectively.
 
 - :material-puzzle: **[Modules](modules/index.md)**
-  
+
   Reference documentation for each Core module.
 
 - :material-code-tags: **[Examples](examples/index.md)**
-  
+
   Working code examples demonstrating Core patterns.
 
 - :material-account-group: **[Contributing](contributing/index.md)**
-  
+
   Contribution guidelines and workflow documentation.
 
 </div>

@@ -190,7 +190,9 @@ class YamlConfigLoader(ConfigLoader):
             return self._dict_to_config_schema(config_dict)
 
         except (yaml.YAMLError, OSError) as e:
-            raise ConfigurationError(f"Failed to load YAML configuration from {config_path}: {e}")
+            raise ConfigurationError(
+                f"Failed to load YAML configuration from {config_path}: {e}"
+            ) from e
 
 
 class TomlConfigLoader(ConfigLoader):
@@ -215,7 +217,9 @@ class TomlConfigLoader(ConfigLoader):
             return self._dict_to_config_schema(config_dict)
 
         except (OSError, tomllib.TOMLDecodeError) as e:
-            raise ConfigurationError(f"Failed to load TOML configuration from {config_path}: {e}")
+            raise ConfigurationError(
+                f"Failed to load TOML configuration from {config_path}: {e}"
+            ) from e
 
     def _dict_to_config_schema(self, config_dict: Dict[str, Any]) -> ConfigSchema:
         """Convert dictionary to ConfigSchema with proper type conversion."""

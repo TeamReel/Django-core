@@ -216,29 +216,29 @@ The engine will not:
 
 ### In Scope
 
-✅ Static file analysis  
-✅ Subprocess-based tool execution  
-✅ CI/CD integration  
-✅ Report generation  
-✅ Plugin system  
-✅ Configuration management  
+✅ Static file analysis
+✅ Subprocess-based tool execution
+✅ CI/CD integration
+✅ Report generation
+✅ Plugin system
+✅ Configuration management
 
 ### Out of Scope
 
-❌ Runtime code execution  
-❌ Code modification  
-❌ IDE integration  
-❌ Web interfaces  
-❌ Database persistence  
-❌ Complex query languages  
+❌ Runtime code execution
+❌ Code modification
+❌ IDE integration
+❌ Web interfaces
+❌ Database persistence
+❌ Complex query languages
 
 ### Maybe Later
 
-🤔 Built-in common rules  
-🤔 More adapters (FastAPI, Flask, etc.)  
-🤔 More reporters (HTML, PDF, etc.)  
-🤔 Rule composition/chaining  
-🤔 Performance profiling  
+🤔 Built-in common rules
+🤔 More adapters (FastAPI, Flask, etc.)
+🤔 More reporters (HTML, PDF, etc.)
+🤔 Rule composition/chaining
+🤔 Performance profiling
 
 ## When to Use This Engine
 

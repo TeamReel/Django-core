@@ -46,12 +46,16 @@ class TestUS1EndToEndGeneration:
         """Test end-to-end generation of minimal app."""
         app_name = "test_minimal_app"
 
-        result = runner.invoke(scaffold, [
-            "app",
-            app_name,
-            "--template", "minimal",
-            "--no-validate",
-        ])
+        result = runner.invoke(
+            scaffold,
+            [
+                "app",
+                app_name,
+                "--template",
+                "minimal",
+                "--no-validate",
+            ],
+        )
 
         # When implemented, should succeed
         assert result.exit_code == 0
@@ -59,19 +63,23 @@ class TestUS1EndToEndGeneration:
         # Verify app directory structure
         app_dir = temp_workspace / app_name
         assert app_dir.exists()
-        assert (app_dir / '__init__.py').exists()
+        assert (app_dir / "__init__.py").exists()
 
     @pytest.mark.skip(reason="Placeholder implementation - WP04 will implement")
     def test_generate_api_first_app_e2e(self, runner, temp_workspace):
         """Test end-to-end generation of API-first app."""
         app_name = "test_api_app"
 
-        result = runner.invoke(scaffold, [
-            "app",
-            app_name,
-            "--template", "api-first",
-            "--no-validate",
-        ])
+        result = runner.invoke(
+            scaffold,
+            [
+                "app",
+                app_name,
+                "--template",
+                "api-first",
+                "--no-validate",
+            ],
+        )
 
         assert result.exit_code == 0
 
@@ -88,11 +96,14 @@ class TestUS2ProjectBootstrap:
         """Test end-to-end project bootstrap."""
         project_name = "test_project"
 
-        result = runner.invoke(scaffold, [
-            "init",
-            project_name,
-            "--no-validate",
-        ])
+        result = runner.invoke(
+            scaffold,
+            [
+                "init",
+                project_name,
+                "--no-validate",
+            ],
+        )
 
         assert result.exit_code == 0
 
@@ -115,11 +126,14 @@ class TestUS7CIAutomation:
 
     def test_non_interactive_mode_no_prompts(self, runner):
         """Test --no-interactive flag prevents any prompts."""
-        result = runner.invoke(scaffold, [
-            "--no-interactive",
-            "app",
-            "ci_test_app",
-        ])
+        result = runner.invoke(
+            scaffold,
+            [
+                "--no-interactive",
+                "app",
+                "ci_test_app",
+            ],
+        )
 
         # Should not hang waiting for input
         # Currently returns SYSTEM_ERROR (placeholder)
@@ -137,7 +151,7 @@ class TestTemplateRegistry:
     def test_registry_has_discover_method(self):
         """Test TemplateRegistry has discover method."""
         registry = TemplateRegistry()
-        assert hasattr(registry, 'discover')
+        assert hasattr(registry, "discover")
 
 
 class TestCodeGenerator:
@@ -151,4 +165,4 @@ class TestCodeGenerator:
     def test_generator_has_generate_app_method(self):
         """Test CodeGenerator has generate_app method."""
         generator = CodeGenerator()
-        assert hasattr(generator, 'generate_app')
+        assert hasattr(generator, "generate_app")

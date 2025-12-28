@@ -66,7 +66,7 @@ export interface UseSignOutResult {
  */
 export const useSignOut = (): UseSignOutResult => {
   const context = useContext(AuthContext);
-  
+
   if (!context) {
     throw new Error('useSignOut must be used within an AuthProvider');
   }

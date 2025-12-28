@@ -23,6 +23,7 @@ class HealthCheckResult:
         latency_ms: Time taken to execute check in milliseconds
         details: Optional dict with additional context (error messages, metadata)
     """
+
     name: str
     status: bool
     latency_ms: float
@@ -55,11 +56,7 @@ class HealthCheck(Protocol):
 _HEALTH_CHECKS: Dict[str, tuple[HealthCheck, bool]] = {}
 
 
-def register_health_check(
-    name: str,
-    check: HealthCheck,
-    critical: bool = True
-) -> None:
+def register_health_check(name: str, check: HealthCheck, critical: bool = True) -> None:
     """
     Register a health check in the global registry.
 
@@ -143,10 +140,4 @@ def readiness_view(request):
     status_code = 200 if all_critical_healthy else 503
     response_status = "healthy" if all_critical_healthy else "unhealthy"
 
-    return JsonResponse(
-        {
-            "status": response_status,
-            "checks": results
-        },
-        status=status_code
-    )
+    return JsonResponse({"status": response_status, "checks": results}, status=status_code)

@@ -20,10 +20,10 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: django-web
-  
+
   minReplicas: 3  # Minimum for high availability
   maxReplicas: 10  # Adjust based on expected max load
-  
+
   metrics:
     # Scale based on CPU utilization
     - type: Resource
@@ -32,7 +32,7 @@ spec:
         target:
           type: Utilization
           averageUtilization: 70  # Scale up when average CPU > 70%
-    
+
     # Scale based on memory utilization
     - type: Resource
       resource:
@@ -40,7 +40,7 @@ spec:
         target:
           type: Utilization
           averageUtilization: 80  # Scale up when average memory > 80%
-  
+
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 60  # Wait 60s before scaling up
@@ -52,7 +52,7 @@ spec:
           value: 2  # Or add 2 pods at a time (whichever is larger)
           periodSeconds: 60
       selectPolicy: Max  # Use the policy that scales up faster
-    
+
     scaleDown:
       stabilizationWindowSeconds: 300  # Wait 5 minutes before scaling down
       policies:

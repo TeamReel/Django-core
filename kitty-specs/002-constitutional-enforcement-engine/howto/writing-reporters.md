@@ -20,10 +20,10 @@ from constitution_engine.core.models import CheckResult, RepositoryContext
 
 class ReporterProtocol(Protocol):
     """Protocol that all reporters must implement."""
-    
+
     identifier: str          # Unique reporter ID
     description: str         # Human-readable description
-    
+
     def report(
         self,
         results: list[CheckResult],
@@ -40,14 +40,14 @@ from constitution_engine.core.models import CheckResult, CheckStatus, Repository
 
 class MarkdownReporter:
     """Reporter that generates Markdown format output."""
-    
+
     identifier = "markdown"
     description = "Generates Markdown formatted reports"
-    
+
     def __init__(self, output_path: str = "constitution-report.md"):
         """Initialize reporter with output configuration."""
         self.output_path = output_path
-    
+
     def report(
         self,
         results: list[CheckResult],
@@ -55,7 +55,7 @@ class MarkdownReporter:
     ) -> None:
         """Generate Markdown report."""
         lines = []
-        
+
         # Header
         lines.append("# Constitutional Enforcement Report")
         lines.append("")
@@ -65,7 +65,7 @@ class MarkdownReporter:
         if context.git_commit:
             lines.append(f"**Commit:** `{context.git_commit}`")
         lines.append("")
-        
+
         # Summary
         summary = self._generate_summary(results)
         lines.append("## Summary")
@@ -76,21 +76,21 @@ class MarkdownReporter:
         lines.append(f"- **Skipped:** ⏭️ {summary['skipped']}")
         lines.append(f"- **Errors:** ⚠️ {summary['errors']}")
         lines.append("")
-        
+
         # Details
         lines.append("## Details")
         lines.append("")
-        
+
         for result in results:
             if result.status != CheckStatus.PASS:
                 lines.extend(self._format_result(result))
-        
+
         # Write to file
         with open(self.output_path, "w") as f:
             f.write("\n".join(lines))
-        
+
         print(f"Report written to: {self.output_path}")
-    
+
     def _generate_summary(self, results: list[CheckResult]) -> dict:
         """Generate summary statistics."""
         return {
@@ -100,11 +100,11 @@ class MarkdownReporter:
             "skipped": sum(1 for r in results if r.status == CheckStatus.SKIP),
             "errors": sum(1 for r in results if r.status == CheckStatus.ERROR),
         }
-    
+
     def _format_result(self, result: CheckResult) -> list[str]:
         """Format a single result as Markdown."""
         lines = []
-        
+
         # Status emoji
         emoji = {
             CheckStatus.PASS: "✅",
@@ -112,18 +112,18 @@ class MarkdownReporter:
             CheckStatus.SKIP: "⏭️",
             CheckStatus.ERROR: "⚠️",
         }[result.status]
-        
+
         lines.append(f"### {emoji} {result.rule_identifier}")
         lines.append("")
         lines.append(f"**Message:** {result.message}")
         lines.append(f"**Severity:** `{result.severity.value.upper()}`")
-        
+
         if result.affected_paths:
             lines.append("")
             lines.append("**Affected Files:**")
             for path in result.affected_paths:
                 lines.append(f"- `{path}`")
-        
+
         if result.details:
             lines.append("")
             lines.append("<details>")
@@ -134,7 +134,7 @@ class MarkdownReporter:
             lines.append(json.dumps(result.details, indent=2))
             lines.append("```")
             lines.append("</details>")
-        
+
         lines.append("")
         return lines
 ```
@@ -148,7 +148,7 @@ def report(self, results: list[CheckResult], context: RepositoryContext) -> None
     if not results:
         print("No results to report")
         return
-    
+
     # Generate report
     ...
 ```
@@ -186,10 +186,10 @@ def report(self, results, context):
 ```python
 def report(self, results, context):
     print(f"Generating report for {len(results)} results...")
-    
+
     # Generate report
     report_data = self._format(results)
-    
+
     print(f"Report written to {self.output_file}")
 ```
 
@@ -230,16 +230,16 @@ reporter.report(results, context)
 ```python
 class HTMLReporter:
     """Generates HTML report with styling."""
-    
+
     identifier = "html"
     description = "Generates styled HTML reports"
-    
+
     def report(self, results, context):
         html = self._generate_html(results, context)
-        
+
         with open("constitution-report.html", "w") as f:
             f.write(html)
-    
+
     def _generate_html(self, results, context):
         return f"""
 <!DOCTYPE html>
@@ -260,7 +260,7 @@ class HTMLReporter:
 <body>
     <h1>Constitutional Enforcement Report</h1>
     <p><strong>Repository:</strong> {context.root_path}</p>
-    
+
     <h2>Results</h2>
     <table>
         <tr>
@@ -274,7 +274,7 @@ class HTMLReporter:
 </body>
 </html>
 """
-    
+
     def _format_row(self, result):
         status_class = result.status.value
         return f"""
@@ -297,10 +297,10 @@ from datetime import datetime
 
 class SARIFReporter:
     """Generates SARIF format for security tools."""
-    
+
     identifier = "sarif"
     description = "Generates SARIF 2.1.0 format output"
-    
+
     def report(self, results, context):
         sarif = {
             "version": "2.1.0",
@@ -316,10 +316,10 @@ class SARIFReporter:
                 "results": [self._to_sarif_result(r) for r in results if r.is_failure]
             }]
         }
-        
+
         with open("constitution.sarif", "w") as f:
             json.dump(sarif, f, indent=2)
-    
+
     def _to_sarif_result(self, result):
         return {
             "ruleId": result.rule_identifier,
@@ -334,7 +334,7 @@ class SARIFReporter:
                 for path in result.affected_paths
             ]
         }
-    
+
     def _severity_to_level(self, severity):
         mapping = {
             "low": "note",
@@ -354,7 +354,7 @@ from constitution_engine.core.models import CheckResult, CheckStatus, Repository
 def test_markdown_reporter():
     """Test Markdown reporter generates correct output."""
     reporter = MarkdownReporter(output_path="/tmp/test-report.md")
-    
+
     results = [
         CheckResult(
             rule_identifier="test-rule",
@@ -363,14 +363,14 @@ def test_markdown_reporter():
             severity=Severity.HIGH
         )
     ]
-    
+
     context = RepositoryContext(root_path=Path("/tmp/test"))
-    
+
     reporter.report(results, context)
-    
+
     # Verify file was created
     assert Path("/tmp/test-report.md").exists()
-    
+
     # Verify content
     content = Path("/tmp/test-report.md").read_text()
     assert "test-rule" in content

@@ -21,23 +21,23 @@ spec:
     matchLabels:
       app: django-core
       component: web
-  
+
   template:
     metadata:
       labels:
         app: django-core
         component: web
-    
+
     spec:
       containers:
       - name: django-app
         image: your-registry/django-core-app:latest
-        
+
         ports:
         - name: http
           containerPort: 8000
           protocol: TCP
-        
+
         env:
         - name: DJANGO_SETTINGS_MODULE
           value: "config.settings.production"
@@ -55,7 +55,7 @@ spec:
           value: "true"
         - name: OBSERVABILITY_METRICS_ENABLED
           value: "true"
-        
+
         # Liveness Probe: Checks if process is alive
         livenessProbe:
           httpGet:
@@ -67,7 +67,7 @@ spec:
           timeoutSeconds: 5         # Request must complete within 5s
           successThreshold: 1       # 1 success = healthy
           failureThreshold: 3       # 3 failures = restart container
-        
+
         # Readiness Probe: Checks if app can serve traffic
         readinessProbe:
           httpGet:
@@ -79,7 +79,7 @@ spec:
           timeoutSeconds: 5         # Request must complete within 5s
           successThreshold: 1       # 1 success = add to load balancer
           failureThreshold: 2       # 2 failures = remove from load balancer
-        
+
         # Resource limits
         resources:
           requests:

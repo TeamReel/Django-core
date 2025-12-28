@@ -115,13 +115,13 @@ User Input (CLI)
 ```python
 class TemplateRegistry:
     """Central registry for all templates."""
-    
+
     def discover_built_in_templates(self) -> None:
         """Load templates from src/scaffolding/built_in_templates/"""
-    
+
     def discover_templates(self, directory: Path) -> None:
         """Load templates from custom directory."""
-    
+
     def get_template(self, name: str) -> Template:
         """Retrieve template by name."""
 ```
@@ -145,10 +145,10 @@ class TemplateRegistry:
 ```python
 class TemplateRenderer:
     """Renders Jinja2 templates."""
-    
+
     def render_file(self, template_path: Path, context: dict) -> str:
         """Render single template file."""
-    
+
     def render_template(self, template: Template, variables: dict) -> dict:
         """Render all files in template."""
 ```
@@ -173,7 +173,7 @@ class TemplateRenderer:
 ```python
 class CodeGenerator:
     """Generates code from templates."""
-    
+
     def generate_app(
         self,
         template: Template,
@@ -296,7 +296,7 @@ Implement `TemplateLoader` interface:
 ```python
 class PluginLoader(TemplateLoader):
     """Load templates from Python packages."""
-    
+
     def load(self, package_name: str) -> List[Template]:
         # Load templates from installed package
         pass
@@ -309,7 +309,7 @@ Implement `Validator` interface:
 ```python
 class CustomValidator(Validator):
     """Custom code validation."""
-    
+
     def validate(self, app_dir: Path) -> ValidationResult:
         # Custom validation logic
         pass
@@ -389,10 +389,10 @@ Compare generated output to expected output.
 ```python
 def test_golden_files():
     generator.generate_app(template, 'test_app', output_dir)
-    
+
     actual = (output_dir / 'test_app' / 'models.py').read_text()
     expected = (golden_dir / 'models.py').read_text()
-    
+
     assert actual == expected
 ```
 
@@ -408,7 +408,7 @@ Templates are loaded once and cached in memory:
 class TemplateRegistry:
     def __init__(self):
         self._cache = {}
-    
+
     def get_template(self, name: str) -> Template:
         if name not in self._cache:
             self._cache[name] = self._load_template(name)
@@ -447,7 +447,7 @@ def validate_output_path(path: Path) -> None:
     """Ensure path is safe."""
     if '..' in str(path):
         raise ValueError("Path traversal not allowed")
-    
+
     resolved = path.resolve()
     if not resolved.is_relative_to(workspace):
         raise ValueError("Path outside workspace")

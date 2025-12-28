@@ -1,6 +1,6 @@
 # Deployment Alternatives Guide
-**Feature**: B19 Deployment Templates & Configuration  
-**Document Type**: Alternatives  
+**Feature**: B19 Deployment Templates & Configuration
+**Document Type**: Alternatives
 **Last Updated**: 2025-12-04
 
 ---
@@ -150,16 +150,16 @@ spec:
 # Caddyfile
 example.com {
     # Automatic HTTPS (no SSL config needed!)
-    
+
     # Reverse proxy to Django
     reverse_proxy web:8000
-    
+
     # Static files
     handle /static/* {
         root * /app/staticfiles
         file_server
     }
-    
+
     # Security headers
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
@@ -167,10 +167,10 @@ example.com {
         X-Frame-Options "DENY"
         X-XSS-Protection "1; mode=block"
     }
-    
+
     # Compression
     encode gzip zstd
-    
+
     # Rate limiting (plugin required)
     rate_limit {
         zone dynamic {
@@ -179,7 +179,7 @@ example.com {
             window 1m
         }
     }
-    
+
     # Health check bypass (no caching)
     @health path /health/*
     handle @health {
@@ -809,31 +809,31 @@ flyctl redis create
   vars:
     app_dir: /opt/django-core
     docker_image: your-registry/django-core:latest
-  
+
   tasks:
     - name: Install Docker
       apt:
         name: docker.io
         state: present
         update_cache: yes
-    
+
     - name: Pull Docker image
       docker_image:
         name: "{{ docker_image }}"
         source: pull
-    
+
     - name: Create .env file
       template:
         src: templates/env.j2
         dest: "{{ app_dir }}/.env"
         mode: '0600'
-    
+
     - name: Start Docker Compose stack
       docker_compose:
         project_src: "{{ app_dir }}"
         state: present
         pull: yes
-    
+
     - name: Run database migrations
       docker_container:
         name: django-migrate
@@ -876,7 +876,7 @@ resource "aws_ecs_task_definition" "django_web" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "512"
   memory                   = "1024"
-  
+
   container_definitions = jsonencode([{
     name      = "django-web"
     image     = "your-registry/django-core:latest"

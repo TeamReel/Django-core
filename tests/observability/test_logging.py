@@ -77,10 +77,7 @@ class TestJSONFormatter:
 
     def test_log_with_context(self):
         """Test logging with additional context."""
-        self.logger.info(
-            "User action",
-            extra={"context": {"user_id": 123, "action": "login"}}
-        )
+        self.logger.info("User action", extra={"context": {"user_id": 123, "action": "login"}})
 
         log_output = self.stream.getvalue().strip()
         log_data = json.loads(log_output)
@@ -133,8 +130,7 @@ class TestPIIRedactionFilter:
     def test_redact_password_field(self):
         """Test that password fields are redacted."""
         self.logger.info(
-            "User login",
-            extra={"context": {"username": "alice", "password": "secret123"}}
+            "User login", extra={"context": {"username": "alice", "password": "secret123"}}
         )
 
         log_output = self.stream.getvalue().strip()
@@ -147,13 +143,15 @@ class TestPIIRedactionFilter:
         """Test redaction of multiple PII fields."""
         self.logger.info(
             "User data",
-            extra={"context": {
-                "email": "alice@example.com",
-                "phone_number": "555-1234",
-                "ssn": "123-45-6789",
-                "credit_card": "1234-5678-9012-3456",
-                "name": "Alice"
-            }}
+            extra={
+                "context": {
+                    "email": "alice@example.com",
+                    "phone_number": "555-1234",
+                    "ssn": "123-45-6789",
+                    "credit_card": "1234-5678-9012-3456",
+                    "name": "Alice",
+                }
+            },
         )
 
         log_output = self.stream.getvalue().strip()
@@ -169,13 +167,12 @@ class TestPIIRedactionFilter:
         """Test redaction in nested dictionaries."""
         self.logger.info(
             "Payment",
-            extra={"context": {
-                "user": {
-                    "email": "bob@example.com",
-                    "api_key": "abc123"
-                },
-                "amount": 100
-            }}
+            extra={
+                "context": {
+                    "user": {"email": "bob@example.com", "api_key": "abc123"},
+                    "amount": 100,
+                }
+            },
         )
 
         log_output = self.stream.getvalue().strip()
@@ -219,11 +216,9 @@ class TestPIIRedactionFilter:
         """Test redaction of fields ending with _token."""
         self.logger.info(
             "Auth",
-            extra={"context": {
-                "access_token": "xyz789",
-                "refresh_token": "abc123",
-                "user_id": 456
-            }}
+            extra={
+                "context": {"access_token": "xyz789", "refresh_token": "abc123", "user_id": 456}
+            },
         )
 
         log_output = self.stream.getvalue().strip()
@@ -237,12 +232,14 @@ class TestPIIRedactionFilter:
         """Test that lists in context are handled correctly."""
         self.logger.info(
             "Multiple users",
-            extra={"context": {
-                "users": [
-                    {"name": "Alice", "email": "alice@example.com"},
-                    {"name": "Bob", "email": "bob@example.com"}
-                ]
-            }}
+            extra={
+                "context": {
+                    "users": [
+                        {"name": "Alice", "email": "alice@example.com"},
+                        {"name": "Bob", "email": "bob@example.com"},
+                    ]
+                }
+            },
         )
 
         log_output = self.stream.getvalue().strip()
@@ -256,12 +253,14 @@ class TestPIIRedactionFilter:
         """Test that non-PII fields are not redacted."""
         self.logger.info(
             "Safe data",
-            extra={"context": {
-                "username": "alice",
-                "user_id": 123,
-                "status": "active",
-                "created_at": "2025-12-03T14:00:00Z"
-            }}
+            extra={
+                "context": {
+                    "username": "alice",
+                    "user_id": 123,
+                    "status": "active",
+                    "created_at": "2025-12-03T14:00:00Z",
+                }
+            },
         )
 
         log_output = self.stream.getvalue().strip()
@@ -327,7 +326,7 @@ class TestRedactSQLParams:
         """Test redaction of string parameters with double quotes."""
         sql = 'SELECT * FROM users WHERE name="Alice"'
         redacted = redact_sql_params(sql)
-        assert redacted == 'SELECT * FROM users WHERE name=?'
+        assert redacted == "SELECT * FROM users WHERE name=?"
 
     def test_redact_in_clause(self):
         """Test redaction of IN clause."""
@@ -373,15 +372,17 @@ class TestJSONParsability:
         for i in range(1000):
             self.logger.info(
                 f"Log {i}",
-                extra={"context": {
-                    "iteration": i,
-                    "email": f"user{i}@example.com",
-                    "password": f"secret{i}"
-                }}
+                extra={
+                    "context": {
+                        "iteration": i,
+                        "email": f"user{i}@example.com",
+                        "password": f"secret{i}",
+                    }
+                },
             )
 
         # Parse all logs
-        log_lines = self.stream.getvalue().strip().split('\n')
+        log_lines = self.stream.getvalue().strip().split("\n")
         assert len(log_lines) == 1000
 
         parse_errors = 0

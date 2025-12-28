@@ -73,15 +73,15 @@ from typing import Protocol
 
 class MetricCollector(Protocol):
     """Protocol for metric collection backends."""
-    
+
     def increment(self, name: str, value: float, labels: dict[str, str]) -> None:
         """Increment counter metric."""
         ...
-    
+
     def observe(self, name: str, value: float, labels: dict[str, str]) -> None:
         """Record histogram observation."""
         ...
-    
+
     def set_gauge(self, name: str, value: float, labels: dict[str, str]) -> None:
         """Set gauge value."""
         ...

@@ -1,8 +1,8 @@
 # ADR-021: Template Discovery Mechanism
 
-**Status**: Proposed  
-**Date**: 2025-12-04  
-**Feature**: B20 Core Scaffolding CLI  
+**Status**: Proposed
+**Date**: 2025-12-04
+**Feature**: B20 Core Scaffolding CLI
 **Context**: Need a flexible, predictable template discovery system that works out-of-the-box while supporting customization
 
 ---
@@ -160,17 +160,17 @@ class TemplateRegistry:
     def __init__(self):
         self._cache: Dict[str, Template] = {}
         self._discovered = False
-    
+
     def discover(self):
         if self._discovered:
             return
-        
+
         # Discover in precedence order
         self._discover_project_local()
         self._discover_configured_dirs()
         self._discover_core_builtin()
         self._discover_plugin_packages()
-        
+
         self._discovered = True
 ```
 
@@ -182,18 +182,18 @@ class TemplateRegistry:
 
 ### Positive
 
-✅ **Zero configuration for Core templates**: Developers can use `api-first`, `service`, etc. immediately  
-✅ **Easy customization**: Drop templates into `./templates/scaffold/` without configuration  
-✅ **Predictable precedence**: Clear, documented order prevents confusion  
-✅ **Package distribution**: Third-party templates can be shared via pip  
-✅ **Team-wide sharing**: Configured directories support centralized template repositories  
-✅ **Override safety**: Warnings prevent silent overrides  
+✅ **Zero configuration for Core templates**: Developers can use `api-first`, `service`, etc. immediately
+✅ **Easy customization**: Drop templates into `./templates/scaffold/` without configuration
+✅ **Predictable precedence**: Clear, documented order prevents confusion
+✅ **Package distribution**: Third-party templates can be shared via pip
+✅ **Team-wide sharing**: Configured directories support centralized template repositories
+✅ **Override safety**: Warnings prevent silent overrides
 
 ### Negative
 
-⚠️ **Discovery complexity**: Four sources to search increases debugging surface  
-⚠️ **Override conflicts**: Multiple templates with same name require careful management  
-⚠️ **Package dependencies**: Plugin packages add external dependencies  
+⚠️ **Discovery complexity**: Four sources to search increases debugging surface
+⚠️ **Override conflicts**: Multiple templates with same name require careful management
+⚠️ **Package dependencies**: Plugin packages add external dependencies
 
 ### Mitigation
 
@@ -290,5 +290,5 @@ django-core-scaffold validate-template custom-api
 
 ---
 
-**Decision Makers**: Planning phase architectural decisions  
+**Decision Makers**: Planning phase architectural decisions
 **Stakeholders**: Core-App developers, downstream product teams, template authors
