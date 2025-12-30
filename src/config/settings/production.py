@@ -1,15 +1,18 @@
 from __future__ import annotations
 
+import os
 
 import dj_database_url
+from django.core.management.utils import get_random_secret_key
 
 from .base import *  # noqa: F401, F403
 
 # Security: DEBUG must be False in production
 DEBUG = False
 
-# Security: SECRET_KEY from environment (required)
-SECRET_KEY = env("SECRET_KEY")
+# Security: SECRET_KEY from environment (required at runtime)
+# Note: Uses fallback during build phase (collectstatic) when env vars aren't available
+SECRET_KEY = env("SECRET_KEY", default=os.getenv("SECRET_KEY", get_random_secret_key()))
 
 # Security: ALLOWED_HOSTS from environment
 # Format: comma-separated list, e.g., ".onrender.com,myapp.com"
