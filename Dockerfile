@@ -59,10 +59,6 @@ WORKDIR /app
 # Copy application code
 COPY --chown=django:django . /app
 
-# Ensure entrypoint is executable and has Unix line endings (fix for Windows dev)
-RUN chmod +x /app/scripts/entrypoint.sh && \
-    sed -i 's/\r$//g' /app/scripts/entrypoint.sh
-
 # Switch to non-root user (before collectstatic for proper ownership)
 USER django
 
@@ -76,5 +72,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/health/live')" || exit 1
 
-# Default command: Run Gunicorn via entrypoint script
-ENTRYPOINT ["/app/scripts/entrypoint.sh"]
+# Default command: Run Gunicorn via Python startup script
+CMD ["python", "/app/scripts/start.py"]
