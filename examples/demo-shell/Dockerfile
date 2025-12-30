@@ -5,17 +5,16 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json ./
 
-# Install pnpm and dependencies
-RUN npm install -g pnpm@8.15.0 && \
-    pnpm install --frozen-lockfile
+# Install dependencies using npm (no lockfile required for standalone build)
+RUN npm install
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN pnpm build
+RUN npm run build
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
