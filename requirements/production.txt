@@ -1,7 +1,7 @@
 # Production dependencies
 # Install with: pip install -r requirements/production.txt
 
--r base.txt
+-r requirements/base.txt
 
 # WSGI HTTP Server
 gunicorn==21.2.0
