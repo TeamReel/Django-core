@@ -65,22 +65,22 @@ USER django
 # Collect static files (served by Nginx in production)
 RUN python manage.py collectstatic --noinput --clear
 
-# Expose port for Gunicorn
+# Expose port for Gunicorn (Railway sets PORT dynamically)
 EXPOSE 8000
 
 # Health check using B18 endpoints
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/health/live')" || exit 1
 
 # Default command: Run Gunicorn WSGI server
-CMD ["gunicorn", \
-     "config.wsgi:application", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "4", \
-     "--worker-class", "sync", \
-     "--max-requests", "1000", \
-     "--max-requests-jitter", "50", \
-     "--timeout", "30", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-", \
-     "--log-level", "info"]
+# Use shell form to allow $PORT environment variable expansion (required for Railway)
+CMD gunicorn config.wsgi:application \
+     --bind 0.0.0.0:${PORT:-8000} \
+     --workers 4 \
+     --worker-class sync \
+     --max-requests 1000 \
+     --max-requests-jitter 50 \
+     --timeout 30 \
+     --access-logfile - \
+     --error-logfile - \
+     --log-level info
