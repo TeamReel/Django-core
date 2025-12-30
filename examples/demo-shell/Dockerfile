@@ -4,26 +4,31 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json ./
+# Install pnpm
+RUN npm install -g pnpm@8.15.0
 
-# Install dependencies using npm (no lockfile required for standalone build)
-RUN npm install
+# Copy workspace configuration
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 
-# Copy source code
-COPY . .
+# Copy all packages and the demo-shell
+COPY packages/ ./packages/
+COPY examples/demo-shell/ ./examples/demo-shell/
 
-# Build the application
-RUN npm run build
+# Install dependencies for the workspace
+RUN pnpm install --frozen-lockfile
+
+# Build the demo-shell
+WORKDIR /app/examples/demo-shell
+RUN pnpm build
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
 
 # Copy built files from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/examples/demo-shell/dist /usr/share/nginx/html
 
 # Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY examples/demo-shell/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
