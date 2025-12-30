@@ -11,9 +11,14 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 
 env = environ.Env()
 
-# Ensure logs directory exists
+# Ensure logs directory exists (handle permission errors in production)
 LOGS_DIR = Path(BASE_DIR).parent / "logs"
-LOGS_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+except (PermissionError, OSError):
+    # In production environments like Railway/Docker, use /tmp for logs
+    LOGS_DIR = Path("/tmp/logs")
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 
