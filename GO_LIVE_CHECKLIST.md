@@ -44,7 +44,7 @@ services:
     region: frankfurt  # or oregon
     plan: free  # or starter ($7/mo)
     buildCommand: "pip install -r requirements/production.txt && python src/manage.py collectstatic --noinput"
-    startCommand: "gunicorn --chdir src config.wsgi:application --bind 0.0.0.0:$PORT"
+    startCommand: "sh -c 'python /app/scripts/start.py'"
     healthCheckPath: /health/
     envVars:
       - key: PYTHON_VERSION
