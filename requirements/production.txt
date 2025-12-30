@@ -1,7 +1,67 @@
 # Production dependencies
 # Install with: pip install -r requirements/production.txt
 
--r base.txt
+# ============================================================================
+# Core Dependencies (from base.txt)
+# ============================================================================
+
+# Core Django framework
+Django==5.1.4
+
+# PostgreSQL database adapter
+psycopg2-binary==2.9.9
+
+# Django REST Framework for API development
+djangorestframework==3.14.0
+
+# JWT authentication for API (Feature 013)
+djangorestframework-simplejwt==5.3.1
+
+# OpenAPI documentation generation (Feature 013)
+drf-spectacular==0.27.0
+
+# CORS headers for frontend development
+django-cors-headers==4.3.1
+
+# Django Redis for caching and rate limiting
+django-redis==5.4.0
+
+# Prometheus metrics and monitoring
+django-prometheus==2.3.1
+prometheus-client==0.19.0
+
+# Environment variable management
+django-environ==0.11.2
+
+# Security Baseline Runtime Dependencies (Feature 003)
+# YAML parsing for security manifests
+pyyaml>=6.0.1
+
+# Bloom filter for password breach detection (SEC020)
+pybloom-live>=3.1.0
+
+# Filtering support
+django-filter==24.2
+
+# Async Task Execution (B15)
+celery[redis]>=5.3.0,<6.0
+redis>=5.0.0,<6.0
+
+# Scaffolding CLI (B20)
+click>=8.1.0,<9.0
+jinja2>=3.1.0,<4.0  # Template rendering engine
+
+# WebSocket Infrastructure (B23)
+channels[daphne]>=4.0.0,<5.0
+channels-redis>=4.1.0,<5.0
+PyJWT>=2.8.0,<3.0
+
+# Image processing (WP03)
+Pillow>=10.0.0,<11.0
+
+# ============================================================================
+# Production-Only Dependencies
+# ============================================================================
 
 # WSGI HTTP Server
 gunicorn==21.2.0
@@ -9,14 +69,8 @@ gunicorn==21.2.0
 # Static files serving with compression
 whitenoise==6.6.0
 
-# Database URL parsing for Render/Heroku
+# Database URL parsing for Render/Railway
 dj-database-url==2.1.0
-
-# Redis cache backend
-django-redis==5.4.0
 
 # Structured logging for production
 python-json-logger==2.0.7
-
-# PostgreSQL database adapter
-psycopg2-binary==2.9.9
