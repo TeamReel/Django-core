@@ -16,7 +16,8 @@ SECRET_KEY = env("SECRET_KEY", default=os.getenv("SECRET_KEY", get_random_secret
 
 # Security: ALLOWED_HOSTS from environment
 # Format: comma-separated list, e.g., ".onrender.com,myapp.com"
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[".onrender.com"])
+# Default includes Railway and Render domains, plus localhost for health checks
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[".onrender.com", ".railway.app", "localhost", "127.0.0.1", "*"])
 
 # Security: Force HTTPS
 SECURE_SSL_REDIRECT = True
