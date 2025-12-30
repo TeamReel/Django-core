@@ -1,0 +1,61 @@
+services:
+  # Django Web Service
+  - type: web
+    name: django-core-app
+    runtime: python
+    region: frankfurt  # EU region (or use 'oregon' for US)
+    plan: free  # Free tier ($0/month) - upgrade to 'starter' ($7/month) for better performance
+    buildCommand: "pip install -r requirements/production.txt && python src/manage.py collectstatic --noinput"
+    startCommand: "gunicorn --chdir src config.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
+    healthCheckPath: /health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.4
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DJANGO_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: django-core-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: django-core-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: django-core-redis
+          type: redis
+          property: connectionString
+      # Email configuration (optional - configure in Render dashboard if needed)
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USE_TLS
+        value: True
+      # CORS - Add your frontend domain after deploying to Vercel/Netlify
+      # Example: https://django-core-demo.vercel.app
+      - key: CORS_ALLOWED_ORIGINS
+        value: http://localhost:3000,http://localhost:5173
+
+databases:
+  # PostgreSQL Database
+  - name: django-core-db
+    databaseName: django_core_production
+    user: django_core_user
+    plan: free  # 90 days free, then $7/month for 256MB storage
+    ipAllowList: []  # Empty = allow all (Render internal network)
+
+  # Redis Cache & Celery Broker
+  - type: redis
+    name: django-core-redis
+    plan: free  # 25MB storage, enough for cache + celery queues
+    maxmemoryPolicy: allkeys-lru  # Evict least recently used keys when full
+    ipAllowList: []  # Empty = allow all (Render internal network)
