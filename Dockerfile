@@ -39,7 +39,7 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
-    PYTHONPATH="/app/src:$PYTHONPATH" \
+    PYTHONPATH="/app/src" \
     DJANGO_SETTINGS_MODULE=config.settings.production
 
 # Install runtime system dependencies only
@@ -59,8 +59,9 @@ WORKDIR /app
 # Copy application code
 COPY --chown=django:django . /app
 
-# Ensure entrypoint is executable
-RUN chmod +x /app/scripts/entrypoint.sh
+# Ensure entrypoint is executable and has Unix line endings (fix for Windows dev)
+RUN chmod +x /app/scripts/entrypoint.sh && \
+    sed -i 's/\r$//g' /app/scripts/entrypoint.sh
 
 # Switch to non-root user (before collectstatic for proper ownership)
 USER django
