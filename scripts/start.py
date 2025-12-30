@@ -7,7 +7,18 @@ import sys
 
 def main():
     """Start Gunicorn with Railway PORT."""
+    # Railway provides PORT env var, but fallback to 8080
     port = os.environ.get("PORT", "8080")
+    
+    # Validate port is numeric
+    try:
+        port_int = int(port)
+        if not (1 <= port_int <= 65535):
+            print(f"WARNING: Invalid PORT {port}, using 8080")
+            port = "8080"
+    except ValueError:
+        print(f"ERROR: PORT env var is not numeric: '{port}', using 8080")
+        port = "8080"
 
     print(f"Starting Django Core-App on port {port}...")
     print(f"DJANGO_SETTINGS_MODULE: {os.environ.get('DJANGO_SETTINGS_MODULE', 'NOT SET')}")
