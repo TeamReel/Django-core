@@ -31,6 +31,7 @@ CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
+SECURE_REDIRECT_EXEMPT = [r"^health/"]  # Allow HTTP for health checks
 
 # WP08: Security enforcement mode for Constitutional Engine integration
 SECURITY_ENFORCEMENT_MODE = "strict"
