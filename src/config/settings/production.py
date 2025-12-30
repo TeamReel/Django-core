@@ -55,11 +55,12 @@ except (ValueError, NameError):
     # Fallback: append if SecurityMiddleware not found
     MIDDLEWARE.append("whitenoise.middleware.WhiteNoiseMiddleware")  # noqa: F405
 
-# Cache: Redis (via REDIS_URL from Render)
+# Cache: Redis (via REDIS_URL from Render/Railway)
+# Note: Provides fallback during build phase when env vars aren't available
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env("REDIS_URL"),
+        "LOCATION": env("REDIS_URL", default="redis://localhost:6379/0"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "SOCKET_CONNECT_TIMEOUT": 5,
@@ -70,8 +71,9 @@ CACHES = {
 }
 
 # Celery: Redis broker and result backend
-CELERY_BROKER_URL = env("CELERY_BROKER_URL")
-CELERY_RESULT_BACKEND = env("REDIS_URL")
+# Note: Provides fallback during build phase when env vars aren't available
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
 
 # Email Configuration (Production)
 # Uses SMTP for sending emails
