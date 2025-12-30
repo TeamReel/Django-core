@@ -42,6 +42,7 @@ DATABASES = {
 }
 
 # Static Files: Whitenoise for serving static files
+STATIC_ROOT = BASE_DIR / "staticfiles"  # noqa: F405
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Middleware: Insert WhiteNoise immediately after SecurityMiddleware
