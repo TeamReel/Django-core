@@ -73,4 +73,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8080}/health/')" || exit 1
 
 # Default command: Run Gunicorn via Python startup script
-CMD ["python", "/app/scripts/start.py"]
+CMD ["sh", "-c", "python /app/scripts/start.py"]
