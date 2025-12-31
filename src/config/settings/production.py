@@ -111,6 +111,10 @@ else:
         },
     }
 
+    # Fallback: Celery (avoid connecting to missing Redis)
+    CELERY_BROKER_URL = "memory://"
+    CELERY_RESULT_BACKEND = "cache+memory://"
+
 # Email Configuration (Production)
 # Uses SMTP for sending emails
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
