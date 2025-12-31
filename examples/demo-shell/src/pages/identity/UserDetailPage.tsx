@@ -18,12 +18,13 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import UserEditModal from './UserEditModal';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
+import LoadingState from '../../components/LoadingState';
 
 export const UserDetailPage: React.FC = () => {
   const { userId, orgId } = useParams<{ userId: string; orgId?: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
-  const { organisations: contextOrganisations } = useContextSwitcher();
+  const { organisations: contextOrganisations, context } = useContextSwitcher();
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +101,15 @@ export const UserDetailPage: React.FC = () => {
 
     fetchOrgUsers();
   }, [orgId]);
+
+  // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
+  if (orgId && context.isLoading) {
+    return (
+      <AppShell>
+        <LoadingState message="Loading organisation context..." />
+      </AppShell>
+    );
+  }
 
   const fetchUser = async () => {
     try {

@@ -4,6 +4,7 @@ import AppShell from './AppShell';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
+  location?: { pathname: string };
 }
 
 interface ErrorBoundaryState {
@@ -48,6 +49,14 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
     // In production, you would send this to an error reporting service
     // e.g., Sentry, LogRocket, etc.
+  }
+
+  componentDidUpdate(prevProps: ErrorBoundaryProps) {
+    if (this.props.location?.pathname !== prevProps.location?.pathname) {
+      if (this.state.hasError) {
+        this.handleReset();
+      }
+    }
   }
 
   handleReset = () => {

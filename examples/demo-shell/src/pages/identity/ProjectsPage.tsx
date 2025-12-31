@@ -16,6 +16,7 @@ import AppShell from '../../components/AppShell';
 import { canCreateProject, canEditProject, canDeleteProject } from '../../utils/permissions';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
+import LoadingState from '../../components/LoadingState';
 
 /**
  * T008 - Projects List Page
@@ -192,6 +193,16 @@ export const ProjectsPage: React.FC = () => {
   useEffect(() => {
     fetchProjects();
   }, [sort, order, search, orgId]);
+
+  // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
+  // This prevents "undefined" org context errors during navigation.
+  if (orgId && context.isLoading) {
+    return (
+      <AppShell>
+        <LoadingState message="Loading organisation context..." />
+      </AppShell>
+    );
+  }
 
   const handleSaveProject = async (projectData: Partial<Project>) => {
     if (!selectedProject) return;

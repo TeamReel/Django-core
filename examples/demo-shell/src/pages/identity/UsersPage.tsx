@@ -11,6 +11,7 @@ import UserDetailModal from './UserDetailModal';
 import InviteMemberModal from './InviteMemberModal';
 import CreateUserModal from './CreateUserModal';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
+import LoadingState from '../../components/LoadingState';
 
 interface User {
   id: string;
@@ -122,6 +123,15 @@ export default function UsersPage() {
           fetchOrgs();
       }
   }, [isSuperAdmin]);
+
+  // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
+  if (orgIdParam && context.isLoading) {
+    return (
+      <AppShell>
+        <LoadingState message="Loading organisation context..." />
+      </AppShell>
+    );
+  }
 
   const fetchUsers = async () => {
     setIsLoading(true);

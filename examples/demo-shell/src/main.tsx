@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, useLocation } from 'react-router-dom';
 import { AuthProvider } from '@django-core/auth-ui';
 import type { AuthConfig } from '@django-core/auth-ui';
 import { ContextSwitcherProvider } from '@django-core/context-switcher';
@@ -42,6 +42,7 @@ const authConfig: AuthConfig = {
  */
 function AppWithProviders() {
   const routerAdapter = useReactRouterAdapter();
+  const location = useLocation();
 
   const contextConfig: ContextSwitcherConfig = {
     routerAdapter,
@@ -62,7 +63,7 @@ function AppWithProviders() {
     <ThemeProvider storage={themeStorage}>
       <AuthProvider config={authConfig}>
         <ContextSwitcherProvider config={contextConfig}>
-          <ErrorBoundary>
+          <ErrorBoundary location={location}>
             <App />
           </ErrorBoundary>
         </ContextSwitcherProvider>

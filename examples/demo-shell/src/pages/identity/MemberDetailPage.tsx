@@ -14,6 +14,7 @@ import {
 } from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
+import LoadingState from '../../components/LoadingState';
 
 export const MemberDetailPage: React.FC = () => {
   const { id, memberId } = useParams<{ id: string; memberId: string }>();
@@ -27,7 +28,7 @@ export const MemberDetailPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [orgMembers, setOrgMembers] = useState<any[]>([]);
 
-  const { organisations } = useContextSwitcher();
+  const { organisations, context } = useContextSwitcher();
 
   // Use 'id' from params as orgId/slug
   const orgSlug = id;
@@ -74,6 +75,15 @@ export const MemberDetailPage: React.FC = () => {
       setIsEditing(true);
     }
   }, [searchParams]);
+
+  // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
+  if (id && context.isLoading) {
+    return (
+      <AppShell>
+        <LoadingState message="Loading organisation context..." />
+      </AppShell>
+    );
+  }
 
   // Fetch org members for user switcher
   useEffect(() => {
