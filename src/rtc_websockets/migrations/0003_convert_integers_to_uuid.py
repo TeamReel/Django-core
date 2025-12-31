@@ -21,10 +21,18 @@ def clear_rtc_tables(apps, schema_editor):
     from django.db import connection
 
     with connection.cursor() as cursor:
-        cursor.execute("DELETE FROM realtime_activity_event")
-        cursor.execute("DELETE FROM realtime_presence_status")
-        cursor.execute("DELETE FROM realtime_message")
-        cursor.execute("DELETE FROM realtime_websocket_connection")
+        # Use TRUNCATE CASCADE to ensure everything is gone and fast
+        # Fallback to DELETE if TRUNCATE fails (e.g. permissions)
+        try:
+            cursor.execute("TRUNCATE TABLE realtime_activity_event CASCADE")
+            cursor.execute("TRUNCATE TABLE realtime_presence_status CASCADE")
+            cursor.execute("TRUNCATE TABLE realtime_message CASCADE")
+            cursor.execute("TRUNCATE TABLE realtime_websocket_connection CASCADE")
+        except Exception:
+            cursor.execute("DELETE FROM realtime_activity_event")
+            cursor.execute("DELETE FROM realtime_presence_status")
+            cursor.execute("DELETE FROM realtime_message")
+            cursor.execute("DELETE FROM realtime_websocket_connection")
 
 
 def reverse_clear(apps, schema_editor):
