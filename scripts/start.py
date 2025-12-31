@@ -23,6 +23,19 @@ def main():
     print(f"Starting Django Core-App on port {port}...")
     print(f"DJANGO_SETTINGS_MODULE: {os.environ.get('DJANGO_SETTINGS_MODULE', 'NOT SET')}")
 
+    # Run migrations before starting server
+    print("\nRunning database migrations...")
+    try:
+        subprocess.run(
+            ["python", "manage.py", "migrate", "--noinput"],
+            check=True,
+            cwd="/app"
+        )
+        print("✓ Migrations completed successfully")
+    except subprocess.CalledProcessError as e:
+        print(f"✗ Migration failed with exit code {e.returncode}")
+        sys.exit(1)
+
     # Build Gunicorn command
     cmd = [
         "gunicorn",
