@@ -806,6 +806,9 @@ class Command(BaseCommand):
                         # Always update password for demo users
                         coach.set_password(demo_password)
                         coach.save()
+                        self.stdout.write(
+                            f"      • Updated coach password: {coach.get_full_name()} ({coach.email})"
+                        )
 
                     # Assign Project Admin role
                     assignment, created = RoleAssignment.objects.get_or_create(
@@ -865,6 +868,10 @@ class Command(BaseCommand):
                             # Always update password for demo users
                             player.set_password(demo_password)
                             player.save()
+                            if idx == 0:
+                                self.stdout.write(
+                                    f"      • Updated player passwords for {club_data['name']}..."
+                                )
 
                         # Assign Project Member role
                         assignment, created = RoleAssignment.objects.get_or_create(
