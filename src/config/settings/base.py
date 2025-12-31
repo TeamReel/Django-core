@@ -184,7 +184,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Database-backed
 SESSION_COOKIE_AGE = 604800  # 7 days in seconds (absolute timeout)
 SESSION_SAVE_EVERY_REQUEST = False  # Only save when modified
 SESSION_COOKIE_HTTPONLY = True  # Security: no JS access
-SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
+SESSION_COOKIE_SAMESITE = env("SESSION_COOKIE_SAMESITE", default="Lax")  # CSRF protection
 SESSION_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
 
 # Custom: Inactive timeout enforced via middleware (24 hours)
@@ -193,7 +193,7 @@ SESSION_INACTIVITY_TIMEOUT = 86400  # 24 hours in seconds
 # CSRF Configuration
 # Ensure CSRF cookie is sent with every response for SPA compatibility
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF token
-CSRF_COOKIE_SAMESITE = "Lax"  # CSRF protection
+CSRF_COOKIE_SAMESITE = env("CSRF_COOKIE_SAMESITE", default="Lax")  # CSRF protection
 CSRF_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
 CSRF_USE_SESSIONS = False  # Use cookie-based CSRF tokens (not session)
 CSRF_COOKIE_NAME = "csrftoken"  # Default cookie name
@@ -322,12 +322,6 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Development 
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@example.com")
 EMAIL_SUBJECT_PREFIX = "[Django Core] "
 
-# Session Configuration
-SESSION_COOKIE_AGE = 604800  # 7 days (absolute timeout)
-SESSION_SAVE_EVERY_REQUEST = False  # Only save on modification
-SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
-SESSION_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
-SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
 
 # Password Reset Configuration
 # Django's default_token_generator uses PASSWORD_RESET_TIMEOUT setting

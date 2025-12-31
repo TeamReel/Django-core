@@ -48,7 +48,8 @@
     "@django-core/api-client": "workspace:*",
     "@django-core/design-system": "workspace:*",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0"
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^12.0.0",

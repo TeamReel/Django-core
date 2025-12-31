@@ -36,7 +36,8 @@
     "@django-core/auth-ui": "workspace:*",
     "@django-core/context-switcher": "workspace:*",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.0",

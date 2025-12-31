@@ -31,7 +31,7 @@ export default defineConfig({
     rollupOptions: {
       // Externalize peer dependencies to avoid bundling (reduces bundle size)
       // React + design-system provided by consuming application
-      external: ['react', 'react-dom', 'react/jsx-runtime', '@django-core/design-system'],
+      external: ['react', 'react-dom', 'react-router-dom', 'react/jsx-runtime', '@django-core/design-system'],
       output: {
         globals: {
           react: 'React',

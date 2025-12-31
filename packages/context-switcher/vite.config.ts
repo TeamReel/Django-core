@@ -12,7 +12,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['react', 'react-dom', '@django-core/api-client', '@django-core/design-system'],
+      external: ['react', 'react-dom', 'react-router-dom', '@django-core/api-client', '@django-core/design-system'],
     },
     sourcemap: true,
     minify: 'terser',

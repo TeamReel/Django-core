@@ -34,10 +34,18 @@ def _get_actor_from_instance(instance: Any) -> Optional[Any]:
 def _get_scope_context(instance: Any) -> Dict[str, Any]:
     """Extract organization/project context from instance."""
     context = {}
-    if hasattr(instance, "organisation") and instance.organisation:
-        context["organization"] = instance.organisation
-    if hasattr(instance, "project") and instance.project:
-        context["project"] = instance.project
+    try:
+        if hasattr(instance, "organisation") and instance.organisation:
+            context["organization"] = instance.organisation
+    except Exception:
+        pass
+
+    try:
+        if hasattr(instance, "project") and instance.project:
+            context["project"] = instance.project
+    except Exception:
+        pass
+
     return context
 
 

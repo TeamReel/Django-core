@@ -12,11 +12,12 @@ export default defineConfig({
       fileName: (format) => `index.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
-      external: ['react', 'react-dom', '@django-core/design-system'],
+      external: ['react', 'react-dom', 'react-router-dom', '@django-core/design-system'],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
+          'react-router-dom': 'ReactRouterDOM',
           '@django-core/design-system': 'DjangoCoreDesignSystem',
         },
       },

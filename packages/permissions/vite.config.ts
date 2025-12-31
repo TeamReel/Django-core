@@ -15,6 +15,7 @@ export default defineConfig({
       external: [
         'react',
         'react-dom',
+        'react-router-dom',
         'react/jsx-runtime',
         '@django-core/api-client',
         '@django-core/auth-ui',
