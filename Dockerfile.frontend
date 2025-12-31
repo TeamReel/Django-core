@@ -1,0 +1,37 @@
+# Build stage
+FROM node:20-slim AS builder
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+WORKDIR /app
+
+# Copy workspace configuration
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy packages and application source
+COPY packages/ ./packages/
+COPY examples/demo-shell/ ./examples/demo-shell/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build the demo-shell application
+RUN pnpm -C examples/demo-shell build
+
+# Production stage
+FROM node:20-alpine
+WORKDIR /app
+
+# Install serve to host the static files
+RUN npm install -g serve
+
+# Copy built assets from builder stage
+COPY --from=builder /app/examples/demo-shell/dist ./dist
+
+# Railway injects the PORT environment variable
+ENV PORT=3000
+EXPOSE $PORT
+
+# Serve the application on 0.0.0.0:$PORT
+CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:$PORT"]
