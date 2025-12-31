@@ -19,7 +19,7 @@ import './index.css';
 const themeStorage = new LocalStorageAdapter('django_core_theme');
 
 const authConfig: AuthConfig = {
-  apiBaseUrl: '', // Use relative path to leverage Vite proxy
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '', // Use env var for prod, relative for dev proxy
   endpoints: {
     signIn: '/api/v1/auth/login/',
     signUp: '/api/v1/auth/register/',
@@ -45,7 +45,7 @@ function AppWithProviders() {
 
   const contextConfig: ContextSwitcherConfig = {
     routerAdapter,
-    apiBaseUrl: '/api/v1', // Use relative path to leverage Vite proxy
+    apiBaseUrl: import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api/v1` : '/api/v1',
     onContextError: (error: any) => {
       console.warn('Context switch error:', error);
       // Handle 401 Unauthorized by redirecting to login
