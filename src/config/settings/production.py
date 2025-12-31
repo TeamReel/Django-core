@@ -62,33 +62,54 @@ except (ValueError, NameError):
 
 # Cache: Redis (via REDIS_URL from Render/Railway)
 # Note: Provides fallback during build phase when env vars aren't available
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env("REDIS_URL", default="redis://localhost:6379/0"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "SOCKET_CONNECT_TIMEOUT": 5,
-            "SOCKET_TIMEOUT": 5,
-        },
-        "KEY_PREFIX": "django-core",
+REDIS_URL = env("REDIS_URL", default=None)
+
+# Treat empty string as None (common in some deployment environments)
+if REDIS_URL == "":
+    REDIS_URL = None
+
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "SOCKET_CONNECT_TIMEOUT": 5,
+                "SOCKET_TIMEOUT": 5,
+            },
+            "KEY_PREFIX": "django-core",
+        }
     }
-}
 
-# Celery: Redis broker and result backend
-# Note: Provides fallback during build phase when env vars aren't available
-CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
+    # Celery: Redis broker and result backend
+    CELERY_BROKER_URL = env("CELERY_BROKER_URL", default=REDIS_URL)
+    CELERY_RESULT_BACKEND = env("REDIS_URL", default=REDIS_URL)
 
-# Channels: Redis Channel Layer
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [env("REDIS_URL", default="redis://localhost:6379/0")],
+    # Channels: Redis Channel Layer
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [REDIS_URL],
+            },
         },
-    },
-}
+    }
+else:
+    # Fallback: In-memory cache (prevents crashes if Redis is missing)
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
+        }
+    }
+
+    # Fallback: In-memory Channel Layer
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
 
 # Email Configuration (Production)
 # Uses SMTP for sending emails
