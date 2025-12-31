@@ -36,8 +36,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--password",
             type=str,
-            default=os.getenv("DEMO_PASSWORD", "demo123"),
-            help="Password for all demo accounts (default: demo123 or DEMO_PASSWORD env var)",
+            default=os.getenv("DEMO_PASSWORD", "Basis123."),
+            help="Password for all demo accounts (default: Basis123. or DEMO_PASSWORD env var)",
         )
 
     @transaction.atomic
@@ -723,6 +723,7 @@ class Command(BaseCommand):
                         "first_name": bondscoach_data["first_name"],
                         "last_name": bondscoach_data["last_name"],
                         "is_active": True,
+                        "email_verified": True,
                     },
                 )
                 if user_created:
@@ -787,6 +788,7 @@ class Command(BaseCommand):
                             "first_name": coach_data["first_name"],
                             "last_name": coach_data["last_name"],
                             "is_active": True,
+                            "email_verified": True,
                         },
                     )
                     if user_created:
@@ -841,6 +843,7 @@ class Command(BaseCommand):
                                 "first_name": player_name,
                                 "last_name": f"({club_data['name']})",
                                 "is_active": True,
+                                "email_verified": True,
                             },
                         )
                         if user_created:
@@ -903,23 +906,31 @@ class Command(BaseCommand):
 
             # Group by organization
             for comp_data in competitions_data:
-                org_logins = [l for l in login_info if l["org"] == comp_data["name"]]
+                org_logins = [entry for entry in login_info if entry["org"] == comp_data["name"]]
                 if org_logins:
                     self.stdout.write(self.style.HTTP_INFO(f"\n{comp_data['name']}:"))
 
                     # Organization Admin
-                    org_admins = [l for l in org_logins if l["role"] == "Organization Admin"]
+                    org_admins = [
+                        entry for entry in org_logins if entry["role"] == "Organization Admin"
+                    ]
                     if org_admins:
                         self.stdout.write("  Organization Admin:")
                         for login in org_admins:
                             self.stdout.write(f"    • {login['name']}: {login['email']}")
 
                     # Project Admins (grouped by club)
-                    clubs = list(set([l.get("project") for l in org_logins if l.get("project")]))
+                    clubs = list(
+                        set([entry.get("project") for entry in org_logins if entry.get("project")])
+                    )
                     for club in clubs:
-                        club_logins = [l for l in org_logins if l.get("project") == club]
-                        project_admins = [l for l in club_logins if "Coach" in l["role"]]
-                        players = [l for l in club_logins if "Player" in l["role"]]
+                        club_logins = [
+                            entry for entry in org_logins if entry.get("project") == club
+                        ]
+                        project_admins = [
+                            entry for entry in club_logins if "Coach" in entry["role"]
+                        ]
+                        players = [entry for entry in club_logins if "Player" in entry["role"]]
 
                         if project_admins or players:
                             self.stdout.write(f"\n  {club}:")
