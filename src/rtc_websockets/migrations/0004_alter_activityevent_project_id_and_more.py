@@ -6,10 +6,15 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("rtc_websockets", "0003_alter_activityevent_organization_id_and_more"),
+        ("rtc_websockets", "0002_partial_indexes"),
     ]
 
     operations = [
+        migrations.AlterField(
+            model_name="activityevent",
+            name="organization_id",
+            field=models.UUIDField(help_text="Organization context"),
+        ),
         migrations.AlterField(
             model_name="activityevent",
             name="project_id",

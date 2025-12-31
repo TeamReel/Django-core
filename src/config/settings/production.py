@@ -80,6 +80,16 @@ CACHES = {
 CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
 
+# Channels: Redis Channel Layer
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [env("REDIS_URL", default="redis://localhost:6379/0")],
+        },
+    },
+}
+
 # Email Configuration (Production)
 # Uses SMTP for sending emails
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
