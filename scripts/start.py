@@ -34,10 +34,10 @@ def main():
                 "import django; django.setup(); "
                 "from django.db import connection; "
                 "cursor = connection.cursor(); "
-                "cursor.execute('DROP TABLE IF EXISTS rtc_websockets_websocketconnection CASCADE'); "
-                "cursor.execute('DROP TABLE IF EXISTS rtc_websockets_presencestatus CASCADE'); "
-                "cursor.execute('DROP TABLE IF EXISTS rtc_websockets_realtimemessage CASCADE'); "
-                "cursor.execute('DROP TABLE IF EXISTS rtc_websockets_activityevent CASCADE'); "
+                "cursor.execute('DROP TABLE IF EXISTS realtime_websocket_connection CASCADE'); "
+                "cursor.execute('DROP TABLE IF EXISTS realtime_presence_status CASCADE'); "
+                "cursor.execute('DROP TABLE IF EXISTS realtime_message CASCADE'); "
+                "cursor.execute('DROP TABLE IF EXISTS realtime_activity_event CASCADE'); "
                 "cursor.execute(\"DELETE FROM django_migrations WHERE app = 'rtc_websockets'\"); "
                 "print('✓ Reset rtc_websockets schema and migration state')",
             ],
