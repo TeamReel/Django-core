@@ -99,7 +99,9 @@ export function PermissionsProvider({
   cacheTTL = 5 * 60 * 1000, // 5 minutes default
 }: PermissionsProviderProps) {
   const { user, isLoading: authLoading } = useAuth();
-  const { selectedOrganization, selectedProject } = useMultiTenancyContext();
+  const { context } = useMultiTenancyContext();
+  const selectedOrganization = context.organisation;
+  const selectedProject = context.project;
 
   const [permissions, setPermissions] = useState<PermissionMap | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -142,7 +144,7 @@ export function PermissionsProvider({
     }
 
     const cacheKey = getCacheKey({
-      userId: user.id,
+      userId: String(user.id),
       organizationId: selectedOrganization?.id,
       projectId: selectedProject?.id,
     });

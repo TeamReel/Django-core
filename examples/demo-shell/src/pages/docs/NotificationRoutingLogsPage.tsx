@@ -9,6 +9,7 @@ import {
   PageContent,
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
+  type BreadcrumbSwitcherOption,
 } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -47,12 +48,12 @@ export const NotificationRoutingLogsPage: React.FC = () => {
     organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
     projects: [],
     users: [],
-    context: { currentOrgId },
+    context: { currentOrgId: currentOrgId || undefined },
     basePath: '',
   });
 
   // Handler to switch organisation without page reload
-  const handleOrganisationSwitch = async (option: { id: string; label: string; slug: string }) => {
+  const handleOrganisationSwitch = async (option: BreadcrumbSwitcherOption) => {
     console.log('[NotificationRoutingLogsPage] Switching to org:', option.label, option.id);
 
     if (option.id === '' || option.label === 'Global') {
@@ -186,7 +187,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
       case 'delivered': return 'success';
       case 'filtered': return 'warning';
       case 'failed': return 'error';
-      default: return 'secondary';
+      default: return 'default';
     }
   };
 
@@ -363,7 +364,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
                         <td style={{ padding: '12px' }}>
                           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                             {log.delivery_channels.map((channel) => (
-                              <Badge key={channel} variant="secondary">
+                              <Badge key={channel} variant="default">
                                 {channel}
                               </Badge>
                             ))}

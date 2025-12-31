@@ -2,15 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import {
-  PageHeader,
-  PageContent,
   Input,
   Badge,
   Card,
-  Table,
   Alert,
   Button,
 } from '@django-core/design-system';
+import { Table } from '../../shims/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { AuditEvent, ListResponse } from '../../types';
 
@@ -107,7 +109,7 @@ export const AuditLogPage: React.FC = () => {
 
         // Apply outcome filter client-side
         if (outcome) {
-          filteredEvents = filteredEvents.filter(event => {
+          filteredEvents = filteredEvents.filter((event: AuditEvent) => {
             const eventOutcome = getEventOutcome(event);
             return eventOutcome === outcome;
           });
@@ -394,14 +396,14 @@ export const AuditLogPage: React.FC = () => {
 
         {/* Error state */}
         {error && !loading && (
-          <Alert type="error" className="mb-4" data-testid="audit-error-alert">
+          <Alert variant="error" className="mb-4" data-testid="audit-error-alert">
             {error}
           </Alert>
         )}
 
         {/* Empty state */}
         {!loading && !error && events.length === 0 && (
-          <Alert type="info" data-testid="audit-empty-state">
+          <Alert variant="info" data-testid="audit-empty-state">
             {eventType || user
               ? 'No audit events found matching your filters.'
               : 'No audit events recorded yet.'}
@@ -476,7 +478,7 @@ export const AuditLogPage: React.FC = () => {
                       }
 
                       const outcomeStr = String(outcome).toLowerCase();
-                      let variant: 'success' | 'error' | 'secondary' = 'secondary';
+                      let variant: 'success' | 'error' | 'default' = 'default';
 
                       if (outcomeStr === 'success' || outcomeStr === 'allowed') {
                         variant = 'success';

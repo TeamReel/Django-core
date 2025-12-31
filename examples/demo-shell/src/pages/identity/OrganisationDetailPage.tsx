@@ -5,9 +5,9 @@ import {
   Card,
   Badge,
   Alert,
-  Table,
   Input,
 } from '@django-core/design-system';
+import { Table } from '../../shims/design-system';
 import {
   PageHeader,
   PageContent,
@@ -52,7 +52,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
   // Resolve slug from ID if needed
   const resolvedOrg = organisations.find(o =>
-    o.slug.toLowerCase() === id?.toLowerCase() || o.id === id
+    o.slug?.toLowerCase() === id?.toLowerCase() || o.id === id
   );
   const currentOrgSlug = resolvedOrg?.slug || id?.toLowerCase(); // Use slug for API calls
   const currentOrgId = resolvedOrg?.id; // Keep ID for headers if needed
@@ -60,7 +60,7 @@ export const OrganisationDetailPage: React.FC = () => {
   // Permission checks using centralized helper
   const isSuperAdmin = (user as any)?.role === 'superadmin';
   const permissionContext = {
-    currentOrganisation: org || resolvedOrg,
+    currentOrganisation: (org || resolvedOrg) as any,
     isSuperAdmin,
   };
   const userCanEditOrg = canEditOrganisation(permissionContext);
@@ -74,10 +74,10 @@ export const OrganisationDetailPage: React.FC = () => {
   const {
     organisationOptions,
   } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
     projects: [],
     users: [],
-    context: { currentOrgId: resolvedOrg?.id },
+    context: { currentOrgId: resolvedOrg?.id ? String(resolvedOrg.id) : undefined },
     basePath: '',
   });
 
@@ -138,7 +138,7 @@ export const OrganisationDetailPage: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': currentOrgId || '',
+            'X-Organisation-ID': String(currentOrgId || ''),
           },
           credentials: 'include',
         }
@@ -211,7 +211,7 @@ export const OrganisationDetailPage: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': currentOrgId || '',
+            'X-Organisation-ID': String(currentOrgId || ''),
           },
           credentials: 'include',
         });
@@ -233,7 +233,7 @@ export const OrganisationDetailPage: React.FC = () => {
             headers: {
               'Content-Type': 'application/json',
               'X-Requested-With': 'XMLHttpRequest',
-              'X-Organisation-ID': currentOrgId || '',
+              'X-Organisation-ID': String(currentOrgId || ''),
             },
             credentials: 'include',
           }
@@ -279,7 +279,7 @@ export const OrganisationDetailPage: React.FC = () => {
             headers: {
               'Content-Type': 'application/json',
               'X-Requested-With': 'XMLHttpRequest',
-              'X-Organisation-ID': currentOrgId || '',
+              'X-Organisation-ID': String(currentOrgId || ''),
             },
             credentials: 'include',
           }
@@ -341,7 +341,7 @@ export const OrganisationDetailPage: React.FC = () => {
             ]}
           />
           <PageContent>
-            <Alert type="error" data-testid="org-detail-error">
+            <Alert variant="error" data-testid="org-detail-error">
               {error || 'Organisation not found'}
             </Alert>
             <Button variant="secondary" onClick={() => navigate('/organisations')}>
@@ -544,7 +544,7 @@ export const OrganisationDetailPage: React.FC = () => {
                       </td>
                       <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
                       <td>
-                        <Badge variant="secondary" data-testid={`member-role-${user.id}`}>
+                        <Badge variant="default" data-testid={`member-role-${user.id}`}>
                           {role}
                         </Badge>
                       </td>
@@ -609,7 +609,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         headers: {
                                           'Content-Type': 'application/json',
                                           'X-Requested-With': 'XMLHttpRequest',
-                                          'X-Organisation-ID': currentOrgId || '',
+                                          'X-Organisation-ID': String(currentOrgId || ''),
                                         },
                                         credentials: 'include',
                                       }
@@ -649,7 +649,7 @@ export const OrganisationDetailPage: React.FC = () => {
             </Table>
             </Card>
           ) : (
-            <Alert type="info">No members yet</Alert>
+            <Alert variant="info">No members yet</Alert>
           )}
         </Card>
 
@@ -690,7 +690,7 @@ export const OrganisationDetailPage: React.FC = () => {
                       </Link>
                     </td>
                     <td>
-                      <Badge variant="secondary">{project.member_count || 0}</Badge>
+                      <Badge variant="default">{project.member_count || 0}</Badge>
                     </td>
                     <td>
                       <Badge
@@ -759,7 +759,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                                   headers: {
                                                       'Content-Type': 'application/json',
                                                       'X-Requested-With': 'XMLHttpRequest',
-                                                      'X-Organisation-ID': currentOrgId || '',
+                                                      'X-Organisation-ID': String(currentOrgId || ''),
                                                   },
                                                   credentials: 'include',
                                               }
@@ -796,7 +796,7 @@ export const OrganisationDetailPage: React.FC = () => {
             </Table>
             </Card>
           ) : (
-            <Alert type="info">No projects yet</Alert>
+            <Alert variant="info">No projects yet</Alert>
           )}
         </Card>
       </PageContent>

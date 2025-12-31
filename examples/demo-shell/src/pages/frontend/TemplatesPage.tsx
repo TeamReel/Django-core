@@ -10,12 +10,12 @@ import {
   Input,
   Select,
   SelectOption
-} from '@django-core/design-system';
+} from '../../shims/design-system';
 import {
   Dashboard,
   ListDetail,
   Settings
-} from '@django-core/page-templates';
+} from '../../shims/page-templates';
 import { Toast } from '@django-core/notifications-hub';
 import AppShell from '../../components/AppShell';
 

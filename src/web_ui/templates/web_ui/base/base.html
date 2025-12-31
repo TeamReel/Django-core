@@ -25,7 +25,7 @@
         {% block header_structure %}
         <div class="ui-header__inner">
             <div class="ui-header__brand">
-                <a href="{% url 'ui_home' %}" class="ui-brand-link">{{ site_name|default:"Django Core" }}</a>
+                <a href="{% url 'web_ui:ui_home' %}" class="ui-brand-link">{{ site_name|default:"Django Core" }}</a>
             </div>
             <nav class="ui-nav">
                 {% comment %}

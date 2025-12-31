@@ -15,20 +15,20 @@
             <ul class="ui-list">
                 {% if can_view_orgs %}
                 <li class="ui-list-item">
-                    <a href="{% url 'ui_organisations_list' %}" class="ui-link">View Organisations</a>
+                    <a href="{% url 'web_ui:ui_organisations_list' %}" class="ui-link">View Organisations</a>
                 </li>
                 {% endif %}
                 {% if can_view_projects %}
                 <li class="ui-list-item">
-                    <a href="{% url 'ui_projects_list' %}" class="ui-link">View Projects</a>
+                    <a href="{% url 'web_ui:ui_projects_list' %}" class="ui-link">View Projects</a>
                 </li>
                 {% endif %}
                 <li class="ui-list-item">
-                    <a href="{% url 'ui_account_profile' %}" class="ui-link">View Profile</a>
+                    <a href="{% url 'web_ui:ui_account_profile' %}" class="ui-link">View Profile</a>
                 </li>
             </ul>
         {% else %}
-            <p class="ui-text">Please <a href="{% url 'accounts:login' %}" class="ui-link">login</a> or <a href="{% url 'accounts:register' %}" class="ui-link">register</a> to get started.</p>
+            <p class="ui-text">Please <a href="{% url 'login' %}" class="ui-link">login</a> or <a href="{% url 'register' %}" class="ui-link">register</a> to get started.</p>
         {% endif %}
     </section>
 </article>

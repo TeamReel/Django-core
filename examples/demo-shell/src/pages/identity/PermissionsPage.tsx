@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {
-  PageHeader,
-  PageContent,
   Card,
   Badge,
   Alert,
-  Table,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
+import { Table } from '../../shims/design-system';
 import { Permission, Role } from '../../types';
 import AppShell from '../../components/AppShell';
 
@@ -243,7 +245,7 @@ export const PermissionsPage: React.FC = () => {
 
       <PageContent>
         {error && (
-          <Alert type="warning" className="mb-4" data-testid="permissions-warning">
+          <Alert variant="warning" className="mb-4" data-testid="permissions-warning">
             Some permission data could not be loaded, but role matrix is available.
           </Alert>
         )}

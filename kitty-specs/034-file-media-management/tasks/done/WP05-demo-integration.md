@@ -31,7 +31,7 @@ We need to verify the entire feature works by building a demo page in the `demo-
     *   Add a "Delete" button (calls DELETE `/api/files/{id}/`).
 4.  **Manual Verification**:
     *   Verify the full flow: Upload -> Thumbnail appears (after refresh/poll) -> Download works -> Delete removes it from list.
-    *   Document the steps in `DEMO_TEST_GUIDE.md`.
+    *   Document the steps in `docs/testing/demo-guide.md`.
 5.  **E2E Testing (Playwright)**:
     *   Create `tests/e2e/files.spec.ts`.
     *   Test case: User can upload a file (mock file input).

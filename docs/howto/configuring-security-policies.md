@@ -351,7 +351,7 @@ enforcement_mode: "strict"
 
 ## Related Documentation
 
-- [Testing Guide](../TESTING_GUIDE.md)
+- [Testing Guide](../testing/security-baseline.md)
 - [Security Checklist](../security-checklist.md)
 - [Quickstart Guide](../../kitty-specs/003-core-security-baseline/quickstart.md)
 - [ADR-004: Security Enforcement Modes](../adr/004-security-enforcement-modes.md)

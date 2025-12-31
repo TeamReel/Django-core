@@ -13,11 +13,11 @@ export * from './hooks';
 export * from './components/states';
 
 // Export PageHeader and PageContent
-export * from './components/PageHeader';
-export * from './components/PageContent';
+export { PageHeader, type PageHeaderProps, type BreadcrumbItem } from './components/PageHeader';
+export { PageContent, type PageContentProps } from './components/PageContent';
 
 // Export BreadcrumbContextSwitcher
-export * from './components/BreadcrumbContextSwitcher';
+export { BreadcrumbContextSwitcher, type BreadcrumbContextSwitcherProps, type BreadcrumbSwitcherOption } from './components/BreadcrumbContextSwitcher';
 export * from './hooks/useBreadcrumbContextSwitcher';
 
 // Export Dashboard template

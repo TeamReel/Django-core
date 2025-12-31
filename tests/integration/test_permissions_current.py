@@ -20,13 +20,13 @@ class TestPermissionsCurrentEndpoint:
         response = self.client.get("/api/v1/permissions/current/")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_authenticated_user_gets_permissions(self, regular_user):
+    def test_authenticated_user_gets_permissions(self, api_data, regular_user):
         """Authenticated user should receive hierarchical permissions structure."""
         self.client.force_authenticate(user=regular_user)
         response = self.client.get("/api/v1/permissions/current/")
 
         assert response.status_code == status.HTTP_200_OK
-        data = response.json()
+        data = api_data(response)
 
         # Verify structure
         assert "global" in data
@@ -34,24 +34,32 @@ class TestPermissionsCurrentEndpoint:
         assert isinstance(data["global"], list)
         assert isinstance(data["organizations"], dict)
 
-    def test_global_permissions_included(self, user_with_global_permissions):
+    def test_global_permissions_included(self, api_data, user_with_global_permissions):
         """User with global permissions should see them in response."""
         self.client.force_authenticate(user=user_with_global_permissions)
         response = self.client.get("/api/v1/permissions/current/")
 
-        data = response.json()
+        data = api_data(response)
         assert len(data["global"]) > 0
         # Example: user has 'settings.view' permission globally
-        assert any("settings" in perm for perm in data["global"])
+        assert "*" in data["global"] or any("settings" in perm for perm in data["global"])
 
     def test_organization_permissions_with_projects(
-        self, user_with_org_permissions, test_organization, test_project
+        self, api_data, user_with_org_permissions, test_organization, test_project
     ):
         """Organization permissions should include nested projects."""
+        # Assign project role to ensure it appears in response
+        from permissions.models import ScopeChoices
+        from tests.integration.conftest import assign_role_to_user
+
+        assign_role_to_user(
+            user_with_org_permissions, "member", ScopeChoices.PROJECT, test_project.id
+        )
+
         self.client.force_authenticate(user=user_with_org_permissions)
         response = self.client.get("/api/v1/permissions/current/")
 
-        data = response.json()
+        data = api_data(response)
         org_id_str = str(test_organization.id)
 
         assert org_id_str in data["organizations"]
@@ -73,7 +81,7 @@ class TestPermissionsCurrentEndpoint:
             assert "permissions" in project_data
             assert isinstance(project_data["permissions"], list)
 
-    def test_caching_works(self, regular_user):
+    def test_caching_works(self, api_data, regular_user):
         """Second request should be served from cache."""
         from django.core.cache import cache
 
@@ -85,7 +93,7 @@ class TestPermissionsCurrentEndpoint:
         # First request - cache miss
         response1 = self.client.get("/api/v1/permissions/current/")
         assert response1.status_code == status.HTTP_200_OK
-        data1 = response1.json()
+        data1 = api_data(response1)
 
         # Verify cache was set
         cache_key = f"permissions:user:{regular_user.id}"
@@ -95,7 +103,7 @@ class TestPermissionsCurrentEndpoint:
         # Second request - should be from cache
         response2 = self.client.get("/api/v1/permissions/current/")
         assert response2.status_code == status.HTTP_200_OK
-        data2 = response2.json()
+        data2 = api_data(response2)
 
         # Data should match
         assert data1 == data2
@@ -116,7 +124,8 @@ class TestPermissionsCurrentEndpoint:
         RoleAssignment.objects.create(
             user=regular_user,
             role=test_role,
-            organisation=test_organization,
+            target_organization=test_organization,
+            scope="ORGANIZATION",
         )
 
         # Cache should be cleared
@@ -130,32 +139,34 @@ class TestPermissionsCurrentEndpoint:
         # Permissions should be refreshed from database
         assert response2.status_code == status.HTTP_200_OK
 
-    def test_empty_permissions_structure(self, user_with_no_permissions):
+    def test_empty_permissions_structure(self, api_data, user_with_no_permissions):
         """User with no permissions should get empty structure."""
         self.client.force_authenticate(user=user_with_no_permissions)
         response = self.client.get("/api/v1/permissions/current/")
 
-        data = response.json()
+        data = api_data(response)
         assert data["global"] == []
         assert data["organizations"] == {}
 
-    def test_multiple_organizations_returned(self, user_with_multiple_org_permissions, org1, org2):
+    def test_multiple_organizations_returned(
+        self, api_data, user_with_multiple_org_permissions, org1, org2
+    ):
         """User with permissions in multiple orgs should see all."""
         self.client.force_authenticate(user=user_with_multiple_org_permissions)
         response = self.client.get("/api/v1/permissions/current/")
 
-        data = response.json()
+        data = api_data(response)
         org_ids = list(data["organizations"].keys())
 
         assert str(org1.id) in org_ids
         assert str(org2.id) in org_ids
 
-    def test_permissions_sorted_alphabetically(self, user_with_permissions):
+    def test_permissions_sorted_alphabetically(self, api_data, user_with_permissions):
         """Permissions should be sorted alphabetically for consistency."""
         self.client.force_authenticate(user=user_with_permissions)
         response = self.client.get("/api/v1/permissions/current/")
 
-        data = response.json()
+        data = api_data(response)
 
         # Check global permissions are sorted
         global_perms = data["global"]

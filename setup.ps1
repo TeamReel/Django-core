@@ -138,7 +138,7 @@ if ($typecheckResult -eq 0 -and $lintResult -eq 0 -and $testResult -eq 0 -and $b
     Write-Host "🎉 All checks passed! You're ready to continue development." -ForegroundColor Green
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Cyan
-    Write-Host "  1. Read SETUP.md for detailed instructions" -ForegroundColor White
+    Write-Host "  1. Read docs/getting-started/quickstart.md for detailed instructions" -ForegroundColor White
     Write-Host "  2. Start implementing WP02 (Design Token System)" -ForegroundColor White
     Write-Host "  3. Or run: pnpm --filter design-system storybook" -ForegroundColor White
 } else {
@@ -147,7 +147,7 @@ if ($typecheckResult -eq 0 -and $lintResult -eq 0 -and $testResult -eq 0 -and $b
     Write-Host "Common fixes:" -ForegroundColor Cyan
     Write-Host "  - Clear cache: pnpm store prune" -ForegroundColor White
     Write-Host "  - Reinstall: pnpm install --force" -ForegroundColor White
-    Write-Host "  - Check SETUP.md troubleshooting section" -ForegroundColor White
+    Write-Host "  - Check docs/getting-started/quickstart.md troubleshooting section" -ForegroundColor White
 }
 
 Write-Host ""

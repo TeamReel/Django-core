@@ -1,80 +1,36 @@
-﻿## Current Mode: Manual Core Validation (Demo-First)
+﻿## Current Mode: Repository Analysis & Release Stabilisation (Go-Live Track)
 
-We are currently in a MANUAL VALIDATION phase of the Django Core-App.
-This is not feature development and not Spec Kitty work.
+We are currently in a REPOSITORY ANALYSIS + STABILISATION phase for the Django Core-App.
+Goal: make the repository “releaseable” so we can bring the demo webapp live with a real database and a real URL.
 
-Goal:
-Validate that existing Core modules work correctly together in the demo shell:
-- frontend
-- backend
-- API communication
-- permissions
-- context propagation
-- UX behaviour
+This is not new feature development. Do not expand scope.
 
-The demo UI is the source of truth.
+What “done” means in this phase:
+- The application boots and core end-to-end flows work in the webapp (frontend + backend + API + auth + context + permissions).
+- The repository is internally consistent: tests, factories, fixtures, URLs, and API contracts match the current implementation.
+- CI-quality expectation: test suite should be green. If a test is stale, it must be updated or removed with an explicit justification in the PR/commit message (do not ignore or skip silently).
+- Prefer minimal, targeted changes. No refactors unless required to fix a concrete failing test or broken runtime behavior.
 
-Your role:
-- Act as a stabilisation assistant during manual testing.
-- Fix only concrete, observed issues found during demo walkthroughs.
-- Prefer small, targeted changes over refactors or abstractions.
-- Never “expand scope” unless explicitly instructed.
+Source of truth hierarchy:
+1) Current implementation + documented go-live constraints (triage/fix summaries)
+2) Engineering Constitution quality rules (tests must pass in CI; tests should be intention-revealing)
+3) Roadmap/Architecture docs for intended shape (avoid inventing new systems)
 
-Very important constraints:
-1) This work is OUTSIDE the Spec Kitty workflow.
-   - Do NOT create new specs, plans, tasks or features.
-   - Do NOT redesign architecture or introduce new systems.
-2) Only change what is required to make the demo behave correctly.
-3) If behaviour is ambiguous, ASK before implementing.
+How to work (lean):
+- Cluster failures, fix the highest-blast-radius root causes first (e.g., factories/fixtures breaking many tests).
+- For each fix, state:
+  - observed failure (test name + error)
+  - the minimal code change (file-level)
+  - how to verify (targeted test command or quick manual check)
+- Run targeted tests first; run full suite only after major clusters are resolved.
 
-Current test domains (all are in scope):
-- Permissions & role-based visibility (Admin, Org Admin, Coach, Player)
-- Context propagation and context switching
-- Users / Organisations / Projects flows
-- API correctness and error handling
-- Frontend–backend integration
-- Theme system behaviour
-- Audit logging visibility
-- Security baseline behaviour (no leaks, correct status codes)
-- Observability pages (if implemented)
-- Responsive behaviour (basic, no redesign)
-- Browser compatibility issues (only if reproducible)
-- CLI scaffolding sanity (only basic smoke checks)
+Explicit constraints:
+- The “demo-shell” is a real reference webapp. Do not add demo-only hacks in core.
+- If behavior is ambiguous, ask before changing public API/contracts.
+- Do not add unrelated improvements “while we’re here”.
 
-Explicit UX decisions (do not reinterpret):
-- Context switching is hierarchical.
-- No combined “Organisation / Project” switcher.
-- One switcher per breadcrumb segment (Organisation, Project, User).
-- Breadcrumb separator “/” is plain text, never part of a dropdown label.
-
-Role rules (already decided):
-- Admin: full access.
-- Org Admin: full CRUD within own org.
-- Coach: read-only within org.
-- Player:
-  - sees only self on /users
-  - can view + edit own profile
-  - can view org and projects
-  - no create/edit/delete elsewhere
-
-How to work:
-- When fixing something, explicitly state:
-  - what was observed during manual testing
-  - what was changed (file-level)
-  - how to manually verify the fix in the demo UI
-- If a fix touches permissions or context:
-  - verify with at least two roles
-- Never reply with “tests added” or “docs updated” if the demo behaviour is still wrong.
-
-Out of scope unless explicitly requested:
-- New roles or permission models
-- New UI concepts
-- Major refactors
-- Extensive documentation
-- Generalisation or “future-proofing”
-
-Primary success criterion:
-> Manual demo testing passes for the current test guide being executed.
-
-Secondary criterion:
-> No regressions in previously validated areas.
+Priority order for stabilisation (typical):
+- Factories/fixtures regressions (User model fields, Organisation.creator NOT NULL, required Notification fields)
+- URL slashes/NoReverseMatch mismatches
+- Contract mismatches (API envelopes/pagination)
+- Cache/test isolation issues (clear cache or unique identifiers where needed)

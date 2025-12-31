@@ -54,7 +54,7 @@ class TestProjectModel:
         assert project1.organisation != project2.organisation
 
     def test_slug_collision_same_organisation(self, organisation, admin_user):
-        """Test slug uniqueness constraint within same organisation."""
+        """Test slug collision is handled by auto-generating new slug."""
         Project.objects.create(
             organisation=organisation,
             creator=admin_user,
@@ -63,13 +63,16 @@ class TestProjectModel:
         )
 
         # Attempt to create project with same slug in same org
-        with pytest.raises(IntegrityError):
-            Project.objects.create(
-                organisation=organisation,
-                creator=admin_user,
-                name="Project Two",
-                slug="my-project",
-            )
+        # Should not raise IntegrityError, but generate new slug
+        project2 = Project.objects.create(
+            organisation=organisation,
+            creator=admin_user,
+            name="Project Two",
+            slug="my-project",
+        )
+
+        assert project2.slug != "my-project"
+        assert project2.slug.startswith("my-project-")
 
     def test_name_case_insensitive_uniqueness(self, organisation, admin_user):
         """Test name is unique (case-insensitive) per organisation."""
@@ -81,7 +84,8 @@ class TestProjectModel:
         )
 
         # Different case should violate uniqueness
-        with pytest.raises(IntegrityError):
+        # Note: Project.save() calls full_clean(), so ValidationError is raised before IntegrityError
+        with pytest.raises((IntegrityError, ValidationError)):
             Project.objects.create(
                 organisation=organisation,
                 creator=admin_user,
@@ -91,11 +95,11 @@ class TestProjectModel:
 
     def test_str_representation(self, project):
         """Test string representation."""
-        assert str(project) == f"{project.organisation.name} / {project.name}"
+        assert str(project) == f"{project.organisation.name}/{project.name}"
 
     def test_get_absolute_url(self, project):
         """Test get_absolute_url returns correct nested URL."""
-        expected = f"/api/organisations/{project.organisation.slug}/projects/{project.slug}/"
+        expected = f"/api/v1/organisations/{project.organisation.slug}/projects/{project.slug}/"
         assert project.get_absolute_url() == expected
 
 
@@ -150,25 +154,24 @@ class TestProjectValidation:
     """Test Project model validation."""
 
     def test_archived_at_set_when_inactive(self, project):
-        """Test archived_at is set when is_active is False."""
+        """Test archived_at is automatically set when is_active is False."""
         project.is_active = False
         project.archived_at = None  # Try to violate consistency
 
-        # Model validation should catch this
-        with pytest.raises(ValidationError) as exc_info:
-            project.full_clean()
+        # Model clean() should fix this
+        project.full_clean()
 
-        assert "archived_at" in exc_info.value.error_dict
+        assert project.archived_at is not None
 
     def test_archived_at_none_when_active(self, archived_project):
-        """Test archived_at is None when is_active is True."""
+        """Test archived_at is automatically cleared when is_active is True."""
         archived_project.is_active = True
         # archived_at still set - violates consistency
 
-        with pytest.raises(ValidationError) as exc_info:
-            archived_project.full_clean()
+        # Model clean() should fix this
+        archived_project.full_clean()
 
-        assert "archived_at" in exc_info.value.error_dict
+        assert archived_project.archived_at is None
 
     def test_name_not_blank(self, organisation, admin_user):
         """Test name cannot be blank."""
@@ -243,7 +246,7 @@ class TestProjectRelationships:
     def test_cascade_delete_organisation(self, project, organisation):
         """Test project is deleted when organisation is deleted."""
         project_id = project.id
-        organisation.delete()
+        organisation.delete(hard=True)
 
         assert not Project.all_objects.filter(id=project_id).exists()
 

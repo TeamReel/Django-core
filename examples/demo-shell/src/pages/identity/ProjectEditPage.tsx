@@ -12,7 +12,7 @@ import {
   PageContent,
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
-} from '@django-core/page-templates';
+} from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import { Project } from '../../types';
@@ -34,8 +34,8 @@ export const ProjectEditPage: React.FC = () => {
   const resolvedOrg = organisations.find(o => o.slug === orgId || o.id === orgId) || context.organisation;
 
   // Try to find project in context first (if loaded), otherwise use projectId as slug
-  const resolvedProject = projects.find(p => p.slug === projectId || p.id === projectId);
-  const currentProjectSlug = resolvedProject?.slug || projectId; // Use slug for API calls
+  const resolvedProject = projects.find(p => (p as any).slug === projectId || p.id === projectId);
+  const currentProjectSlug = (resolvedProject as any)?.slug || projectId; // Use slug for API calls
 
   const {
     organisationOptions,
@@ -43,17 +43,17 @@ export const ProjectEditPage: React.FC = () => {
     handleOrganisationSwitch,
     handleProjectSwitch,
   } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
     projects: projects.map(p => ({
-      id: p.id,
+      id: String(p.id),
       name: p.name,
-      slug: p.slug,
-      organisation_id: p.organisation_id
+      slug: p.slug || '',
+      organisation_id: String(p.organisation_id)
     })),
     users: [],
     context: {
-      currentOrgId: resolvedOrg?.id,
-      currentProjectId: resolvedProject?.id || projectId,
+      currentOrgId: resolvedOrg?.id ? String(resolvedOrg.id) : undefined,
+      currentProjectId: resolvedProject?.id ? String(resolvedProject.id) : projectId,
     },
     basePath: '',
   });
@@ -217,7 +217,7 @@ export const ProjectEditPage: React.FC = () => {
       <PageContent>
         <Card className="max-w-2xl mx-auto">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && <Alert type="error">{error}</Alert>}
+            {error && <Alert variant="error">{error}</Alert>}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

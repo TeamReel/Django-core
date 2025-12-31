@@ -62,6 +62,12 @@ class Organisation(models.Model):
     is_active = models.BooleanField(default=True, db_index=True)
     deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
+    # Feature flags
+    enable_theme_toggle = models.BooleanField(
+        default=True,
+        help_text="Allow users in this organisation to toggle between light and dark themes",
+    )
+
     objects = OrganisationManager()
 
     class Meta:

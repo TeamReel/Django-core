@@ -1,6 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from organisations.models import Membership, Organisation
+from audit.models import AuditEvent
 from rest_framework.test import APIClient
 
 User = get_user_model()
@@ -28,6 +29,14 @@ class TestSecurityEventsViewRBAC:
         Membership.objects.create(user=self.org_admin, organisation=self.org, role="admin")
         Membership.objects.create(user=self.member, organisation=self.org, role="member")
 
+        # Create a security event for the org
+        self.event = AuditEvent.objects.create(
+            event_type="auth.login_failed",
+            organization=self.org,
+            user=self.org_admin,
+            metadata={"reason": "bad_password"},
+        )
+
     def test_system_admin_access_global(self):
         self.client.force_authenticate(user=self.system_admin)
         response = self.client.get(self.url)
@@ -38,8 +47,8 @@ class TestSecurityEventsViewRBAC:
         response = self.client.get(self.url, {"org": "test-org"})
         assert response.status_code == 200
         assert "events" in response.data
-        # Check for fake org event
-        assert any(e["id"] == "ORG-001" for e in response.data["events"])
+        # Check for the real org event
+        assert any(e["id"] == str(self.event.id) for e in response.data["events"])
 
     def test_org_admin_access_own_org(self):
         self.client.force_authenticate(user=self.org_admin)

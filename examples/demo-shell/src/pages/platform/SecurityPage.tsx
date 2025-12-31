@@ -3,12 +3,14 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
-  PageHeader,
-  PageContent,
   Card,
   Badge,
   Alert,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 
 /**
@@ -113,11 +115,11 @@ export const SecurityPage: React.FC = () => {
   // Enforce Org Admin Scoping (preserve other params)
   useEffect(() => {
     if (!isSystemAdmin && isOrgAdmin) {
-      const currentOrg = organisations.find(o => o.id === context.currentOrgId);
+      const currentOrg = organisations.find(o => o.id === context.organisation?.id);
       let targetSlug = '';
 
       if (currentOrg) {
-        targetSlug = currentOrg.slug;
+        targetSlug = currentOrg.slug || '';
       } else if (!currentOrg && organisations.length > 0 && !currentOrgSlug) {
          // Fallback to first org if no context
          const firstAdminOrg = (user as any)?.organisations?.find((o: any) =>
@@ -137,7 +139,7 @@ export const SecurityPage: React.FC = () => {
         });
       }
     }
-  }, [isSystemAdmin, isOrgAdmin, context.currentOrgId, organisations, currentOrgSlug, setSearchParams, user]);
+  }, [isSystemAdmin, isOrgAdmin, context.organisation?.id, organisations, currentOrgSlug, setSearchParams, user]);
 
   useEffect(() => {
     const fetchSecurity = async () => {
@@ -239,7 +241,7 @@ export const SecurityPage: React.FC = () => {
           ]}
         />
         <PageContent>
-          <Alert type="error" data-testid="security-error">
+          <Alert variant="error" data-testid="security-error">
             {error}
           </Alert>
         </PageContent>

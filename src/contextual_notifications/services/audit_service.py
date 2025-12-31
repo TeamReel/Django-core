@@ -1,6 +1,7 @@
 """Audit service for logging routing decisions."""
 
 import logging
+import uuid
 from datetime import datetime
 from typing import Any
 
@@ -102,6 +103,18 @@ class AuditService:
 
                 if error_message:
                     metadata["error_message"] = error_message
+
+                # Sanitize metadata for JSON serialization
+                def sanitize(obj):
+                    if isinstance(obj, uuid.UUID):
+                        return str(obj)
+                    if isinstance(obj, dict):
+                        return {k: sanitize(v) for k, v in obj.items()}
+                    if isinstance(obj, list):
+                        return [sanitize(v) for v in obj]
+                    return obj
+
+                metadata = sanitize(metadata)
 
                 # Create AuditEvent via B09 model
                 with transaction.atomic():

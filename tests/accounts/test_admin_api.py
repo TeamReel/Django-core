@@ -14,7 +14,7 @@ class TestAdminUserListAPI:
 
     def test_list_users_as_admin(self, admin_client, regular_user, admin_user):
         """Test admin can list all users."""
-        response = admin_client.get("/api/v1/admin/users")
+        response = admin_client.get("/api/v1/admin/users/")
 
         assert response.status_code == status.HTTP_200_OK
         assert "results" in response.data
@@ -22,22 +22,22 @@ class TestAdminUserListAPI:
 
     def test_list_users_as_superadmin(self, superadmin_client, regular_user):
         """Test superadmin can list all users."""
-        response = superadmin_client.get("/api/v1/admin/users")
+        response = superadmin_client.get("/api/v1/admin/users/")
 
         assert response.status_code == status.HTTP_200_OK
         assert "results" in response.data
 
     def test_list_users_as_regular_user_denied(self, authenticated_client):
         """Test regular user cannot list users."""
-        response = authenticated_client.get("/api/v1/admin/users")
+        response = authenticated_client.get("/api/v1/admin/users/")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_list_users_unauthenticated_denied(self, api_client):
         """Test unauthenticated user cannot list users."""
-        response = api_client.get("/api/v1/admin/users")
+        response = api_client.get("/api/v1/admin/users/")
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_list_users_filter_by_active(self, admin_client, db):
         """Test filtering users by active status."""
@@ -46,7 +46,7 @@ class TestAdminUserListAPI:
         )
         User.objects.create_user(email="inactive@test.com", password="Test123!@#", is_active=False)
 
-        response = admin_client.get("/api/v1/admin/users?is_active=true")
+        response = admin_client.get("/api/v1/admin/users/?is_active=true")
 
         assert response.status_code == status.HTTP_200_OK
         for user in response.data["results"]:
@@ -61,7 +61,7 @@ class TestAdminUserListAPI:
             email="unverified@test.com", password="Test123!@#", email_verified=False
         )
 
-        response = admin_client.get("/api/v1/admin/users?email_verified=true")
+        response = admin_client.get("/api/v1/admin/users/?email_verified=true")
 
         assert response.status_code == status.HTTP_200_OK
         for user in response.data["results"]:
@@ -69,7 +69,7 @@ class TestAdminUserListAPI:
 
     def test_list_users_filter_by_role(self, admin_client, superadmin_user):
         """Test filtering users by role."""
-        response = admin_client.get("/api/v1/admin/users?role=superadmin")
+        response = admin_client.get("/api/v1/admin/users/?role=superadmin")
 
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) >= 1
@@ -87,7 +87,7 @@ class TestAdminUserListAPI:
                 is_active=True,
             )
 
-        response = admin_client.get("/api/v1/admin/users")
+        response = admin_client.get("/api/v1/admin/users/")
 
         assert response.status_code == status.HTTP_200_OK
         assert "results" in response.data
@@ -103,7 +103,7 @@ class TestAdminUserDetailAPI:
 
     def test_get_user_detail_as_admin(self, admin_client, regular_user):
         """Test admin can get user details."""
-        response = admin_client.get(f"/api/v1/admin/users/{regular_user.id}")
+        response = admin_client.get(f"/api/v1/admin/users/{regular_user.id}/")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["email"] == regular_user.email
@@ -111,29 +111,29 @@ class TestAdminUserDetailAPI:
 
     def test_get_user_detail_as_superadmin(self, superadmin_client, admin_user):
         """Test superadmin can get admin user details."""
-        response = superadmin_client.get(f"/api/v1/admin/users/{admin_user.id}")
+        response = superadmin_client.get(f"/api/v1/admin/users/{admin_user.id}/")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["email"] == admin_user.email
 
     def test_get_user_detail_not_found(self, admin_client):
         """Test getting non-existent user returns 404."""
-        response = admin_client.get("/api/v1/admin/users/99999")
+        response = admin_client.get("/api/v1/admin/users/99999/")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert response.data["error"] == "not_found"
 
     def test_get_user_detail_as_regular_user_denied(self, authenticated_client, admin_user):
         """Test regular user cannot get user details."""
-        response = authenticated_client.get(f"/api/v1/admin/users/{admin_user.id}")
+        response = authenticated_client.get(f"/api/v1/admin/users/{admin_user.id}/")
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_get_user_detail_unauthenticated_denied(self, api_client, regular_user):
         """Test unauthenticated user cannot get user details."""
-        response = api_client.get(f"/api/v1/admin/users/{regular_user.id}")
+        response = api_client.get(f"/api/v1/admin/users/{regular_user.id}/")
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.api
@@ -146,7 +146,7 @@ class TestAdminUserActivateAPI:
             email="inactive@test.com", password="Test123!@#", is_active=False, email_verified=True
         )
 
-        response = admin_client.patch(f"/api/v1/admin/users/{user.id}/activate")
+        response = admin_client.patch(f"/api/v1/admin/users/{user.id}/activate/")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["is_active"] is True
@@ -156,14 +156,14 @@ class TestAdminUserActivateAPI:
 
     def test_activate_already_active_user(self, admin_client, regular_user):
         """Test activating already active user fails."""
-        response = admin_client.patch(f"/api/v1/admin/users/{regular_user.id}/activate")
+        response = admin_client.patch(f"/api/v1/admin/users/{regular_user.id}/activate/")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["error"] == "bad_request"
 
     def test_activate_user_not_found(self, admin_client):
         """Test activating non-existent user returns 404."""
-        response = admin_client.patch("/api/v1/admin/users/99999/activate")
+        response = admin_client.patch("/api/v1/admin/users/99999/activate/")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -173,7 +173,7 @@ class TestAdminUserActivateAPI:
             email="inactive@test.com", password="Test123!@#", is_active=False
         )
 
-        response = authenticated_client.patch(f"/api/v1/admin/users/{user.id}/activate")
+        response = authenticated_client.patch(f"/api/v1/admin/users/{user.id}/activate/")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -184,7 +184,7 @@ class TestAdminUserDeactivateAPI:
 
     def test_deactivate_user_as_admin(self, admin_client, regular_user):
         """Test admin can deactivate regular user."""
-        response = admin_client.patch(f"/api/v1/admin/users/{regular_user.id}/deactivate")
+        response = admin_client.patch(f"/api/v1/admin/users/{regular_user.id}/deactivate/")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["is_active"] is False
@@ -194,7 +194,7 @@ class TestAdminUserDeactivateAPI:
 
     def test_deactivate_self_denied(self, admin_client, admin_user):
         """Test admin cannot deactivate their own account."""
-        response = admin_client.patch(f"/api/v1/admin/users/{admin_user.id}/deactivate")
+        response = admin_client.patch(f"/api/v1/admin/users/{admin_user.id}/deactivate/")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["error"] == "bad_request"
@@ -211,21 +211,21 @@ class TestAdminUserDeactivateAPI:
         )
         other_admin.groups.add(admin_group)
 
-        response = admin_client.patch(f"/api/v1/admin/users/{other_admin.id}/deactivate")
+        response = admin_client.patch(f"/api/v1/admin/users/{other_admin.id}/deactivate/")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert response.data["error"] == "permission_denied"
 
     def test_admin_cannot_deactivate_superadmin(self, admin_client, superadmin_user):
         """Test admin cannot deactivate superadmin."""
-        response = admin_client.patch(f"/api/v1/admin/users/{superadmin_user.id}/deactivate")
+        response = admin_client.patch(f"/api/v1/admin/users/{superadmin_user.id}/deactivate/")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert response.data["error"] == "permission_denied"
 
     def test_superadmin_can_deactivate_admin(self, superadmin_client, admin_user):
         """Test superadmin can deactivate admin user."""
-        response = superadmin_client.patch(f"/api/v1/admin/users/{admin_user.id}/deactivate")
+        response = superadmin_client.patch(f"/api/v1/admin/users/{admin_user.id}/deactivate/")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["is_active"] is False
@@ -236,14 +236,14 @@ class TestAdminUserDeactivateAPI:
             email="inactive@test.com", password="Test123!@#", is_active=False
         )
 
-        response = admin_client.patch(f"/api/v1/admin/users/{user.id}/deactivate")
+        response = admin_client.patch(f"/api/v1/admin/users/{user.id}/deactivate/")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["error"] == "bad_request"
 
     def test_deactivate_user_as_regular_user_denied(self, authenticated_client, admin_user):
         """Test regular user cannot deactivate users."""
-        response = authenticated_client.patch(f"/api/v1/admin/users/{admin_user.id}/deactivate")
+        response = authenticated_client.patch(f"/api/v1/admin/users/{admin_user.id}/deactivate/")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -254,7 +254,7 @@ class TestAdminPasswordResetAPI:
 
     def test_admin_reset_user_password(self, admin_client, regular_user):
         """Test admin can send password reset email to user."""
-        response = admin_client.post(f"/api/v1/admin/users/{regular_user.id}/reset-password")
+        response = admin_client.post(f"/api/v1/admin/users/{regular_user.id}/reset-password/")
 
         assert response.status_code == status.HTTP_200_OK
         assert "message" in response.data
@@ -270,7 +270,7 @@ class TestAdminPasswordResetAPI:
             email="inactive@test.com", password="Test123!@#", is_active=False, email_verified=True
         )
 
-        response = admin_client.post(f"/api/v1/admin/users/{user.id}/reset-password")
+        response = admin_client.post(f"/api/v1/admin/users/{user.id}/reset-password/")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["error"] == "bad_request"
@@ -278,23 +278,30 @@ class TestAdminPasswordResetAPI:
 
     def test_admin_reset_unverified_user_password_denied(self, admin_client, unverified_user):
         """Test admin cannot reset password for unverified user."""
-        response = admin_client.post(f"/api/v1/admin/users/{unverified_user.id}/reset-password")
+        response = admin_client.post(f"/api/v1/admin/users/{unverified_user.id}/reset-password/")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["error"] == "bad_request"
-        assert "unverified" in response.data["message"].lower()
+        assert "inactive" in response.data["message"].lower()
 
     def test_admin_reset_nonexistent_user_password(self, admin_client):
         """Test resetting password for non-existent user returns 404."""
-        response = admin_client.post("/api/v1/admin/users/99999/reset-password")
+        response = admin_client.post("/api/v1/admin/users/99999/reset-password/")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_regular_user_cannot_reset_password(self, authenticated_client, admin_user):
         """Test regular user cannot initiate password reset."""
-        response = authenticated_client.post(f"/api/v1/admin/users/{admin_user.id}/reset-password")
+        response = authenticated_client.post(f"/api/v1/admin/users/{admin_user.id}/reset-password/")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_admin_cannot_reset_superadmin_password(self, admin_client, superadmin_user):
+        """Test admin cannot reset password for superadmin."""
+        response = admin_client.post(f"/api/v1/admin/users/{superadmin_user.id}/reset-password/")
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.data["error"] == "permission_denied"
 
 
 @pytest.mark.api
@@ -305,7 +312,7 @@ class TestAdminChangeRoleAPI:
         """Test superadmin can promote user to admin."""
         data = {"role": "admin"}
         response = superadmin_client.patch(
-            f"/api/v1/admin/users/{regular_user.id}/role", data, format="json"
+            f"/api/v1/admin/users/{regular_user.id}/role/", data, format="json"
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -318,7 +325,7 @@ class TestAdminChangeRoleAPI:
         """Test superadmin can demote admin to user."""
         data = {"role": "user"}
         response = superadmin_client.patch(
-            f"/api/v1/admin/users/{admin_user.id}/role", data, format="json"
+            f"/api/v1/admin/users/{admin_user.id}/role/", data, format="json"
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -332,7 +339,7 @@ class TestAdminChangeRoleAPI:
         """Test admin cannot promote user to superadmin."""
         data = {"role": "superadmin"}
         response = admin_client.patch(
-            f"/api/v1/admin/users/{regular_user.id}/role", data, format="json"
+            f"/api/v1/admin/users/{regular_user.id}/role/", data, format="json"
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -341,7 +348,7 @@ class TestAdminChangeRoleAPI:
         """Test superadmin can promote to superadmin."""
         data = {"role": "superadmin"}
         response = superadmin_client.patch(
-            f"/api/v1/admin/users/{admin_user.id}/role", data, format="json"
+            f"/api/v1/admin/users/{admin_user.id}/role/", data, format="json"
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -353,7 +360,7 @@ class TestAdminChangeRoleAPI:
         """Test admin cannot change superadmin's role."""
         data = {"role": "user"}
         response = admin_client.patch(
-            f"/api/v1/admin/users/{superadmin_user.id}/role", data, format="json"
+            f"/api/v1/admin/users/{superadmin_user.id}/role/", data, format="json"
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -362,7 +369,7 @@ class TestAdminChangeRoleAPI:
         """Test admin cannot change their own role."""
         data = {"role": "user"}
         response = admin_client.patch(
-            f"/api/v1/admin/users/{admin_user.id}/role", data, format="json"
+            f"/api/v1/admin/users/{admin_user.id}/role/", data, format="json"
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -372,7 +379,7 @@ class TestAdminChangeRoleAPI:
         """Test changing to invalid role fails."""
         data = {"role": "invalid_role"}
         response = superadmin_client.patch(
-            f"/api/v1/admin/users/{regular_user.id}/role", data, format="json"
+            f"/api/v1/admin/users/{regular_user.id}/role/", data, format="json"
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -380,7 +387,7 @@ class TestAdminChangeRoleAPI:
     def test_change_role_user_not_found(self, superadmin_client):
         """Test changing role for non-existent user returns 404."""
         data = {"role": "admin"}
-        response = superadmin_client.patch("/api/v1/admin/users/99999/role", data, format="json")
+        response = superadmin_client.patch("/api/v1/admin/users/99999/role/", data, format="json")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -388,7 +395,7 @@ class TestAdminChangeRoleAPI:
         """Test regular user cannot change roles."""
         data = {"role": "user"}
         response = authenticated_client.patch(
-            f"/api/v1/admin/users/{admin_user.id}/role", data, format="json"
+            f"/api/v1/admin/users/{admin_user.id}/role/", data, format="json"
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN

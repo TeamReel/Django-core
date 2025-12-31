@@ -11,7 +11,7 @@
  * @internal This is an internal utility, not exported from package
  */
 
-import { getCsrfToken as sharedGetCsrfToken } from '@django-core/api-client/src/csrfToken';
+import { getCsrfToken as sharedGetCsrfToken } from '@django-core/api-client';
 
 /**
  * Get CSRF token from cookies.

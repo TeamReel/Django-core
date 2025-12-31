@@ -9,7 +9,7 @@ import {
 import {
   PageHeader,
   PageContent,
-} from '@django-core/page-templates';
+} from '../../shims/page-templates';
 import AppShell from '../../components/AppShell';
 
 /**
@@ -107,7 +107,7 @@ export const OrganisationCreatePage: React.FC = () => {
                 placeholder="e.g. Acme Corp"
                 required
                 disabled={loading}
-                fullWidth
+                className="w-full"
               />
             </div>
 
@@ -121,7 +121,7 @@ export const OrganisationCreatePage: React.FC = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional description"
                 disabled={loading}
-                fullWidth
+                className="w-full"
               />
             </div>
 

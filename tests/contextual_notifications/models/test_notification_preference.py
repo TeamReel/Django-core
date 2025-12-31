@@ -31,7 +31,7 @@ class TestNotificationPreferenceModel:
             enabled=True,
         )
 
-        expected = f"{user.username}: task.assigned → in_app (enabled)"
+        expected = f"{user.email} - task.assigned (in_app): enabled"
         assert str(pref) == expected
 
     def test_unique_constraint(self, user):

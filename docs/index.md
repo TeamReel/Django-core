@@ -22,6 +22,18 @@ Welcome to the Django Core-App documentation. This platform provides reusable, p
 
   Reference documentation for each Core module.
 
+- :material-star: **[Features](features/index.md)**
+
+  Documentation for specific features and sub-systems.
+
+- :material-shield-check: **[Security](security/index.md)**
+
+  Security checklists and audit reports.
+
+- :material-test-tube: **[Testing](testing/index.md)**
+
+  Testing guides, checklists, and status.
+
 - :material-code-tags: **[Examples](examples/index.md)**
 
   Working code examples demonstrating Core patterns.

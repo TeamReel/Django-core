@@ -18,6 +18,7 @@ Django Core-App is a modular, product-agnostic platform providing reusable infra
 
 - **[Request Flow](request-flow.md)** - HTTP request lifecycle from edge to response
 - **[Async Patterns](async-patterns.md)** - Celery task patterns and background processing
+- **[Django Adapter](django-adapter.md)** - Integration patterns for Django Core.
 
 ### Security & Decisions
 

@@ -3,7 +3,6 @@
 import logging
 
 from celery import shared_task
-from django.db import transaction
 from django.utils import timezone
 
 from notifications.channels.email import EmailChannel
@@ -72,10 +71,9 @@ def deliver_email_notification(self, notification_id: str):
         ).inc()
 
         # Update notification status atomically
-        with transaction.atomic():
-            notification.status = "sent"
-            notification.updated_at = timezone.now()
-            notification.save()
+        Notification.objects.filter(pk=notification.pk).update(
+            status="sent", updated_at=timezone.now()
+        )
 
         logger.info(
             "Email delivered successfully",
@@ -108,10 +106,9 @@ def deliver_email_notification(self, notification_id: str):
             failure_type="permanent",
         ).inc()
 
-        with transaction.atomic():
-            notification.status = "failed"
-            notification.updated_at = timezone.now()
-            notification.save()
+        Notification.objects.filter(pk=notification.pk).update(
+            status="failed", updated_at=timezone.now()
+        )
 
     except TransientChannelError as e:
         # Transient failure - retry if within policy limits
@@ -163,10 +160,9 @@ def deliver_email_notification(self, notification_id: str):
                 failure_type="transient_exhausted",
             ).inc()
 
-            with transaction.atomic():
-                notification.status = "failed"
-                notification.updated_at = timezone.now()
-                notification.save()
+            Notification.objects.filter(pk=notification.pk).update(
+                status="failed", updated_at=timezone.now()
+            )
         else:
             # Calculate retry delay using RetryService
             next_attempt = self.request.retries + 2  # Next attempt number (1-indexed)

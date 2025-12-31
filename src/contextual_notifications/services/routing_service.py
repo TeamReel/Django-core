@@ -181,7 +181,7 @@ class RoutingService:
         Returns:
             List of (user_id, channel) tuples (deduplicated)
         """
-        from permissions.models import Role, RoleAssignment
+        from permissions.models import Role, RoleAssignment, ScopeChoices
 
         targets: set[tuple[int, str]] = set()
 
@@ -197,34 +197,41 @@ class RoutingService:
             # Query Role by name (target_role is role name)
             try:
                 role = Role.objects.get(name=rule.target_role)
+                logger.info(f"DEBUG: Found role {role.name} (id={role.id}) for rule {rule.id}")
             except Role.DoesNotExist:
+                all_roles = list(Role.objects.values_list("name", flat=True))
                 logger.warning(
                     "Target role not found",
                     extra={
                         "rule_id": rule.id,
                         "target_role": rule.target_role,
                         "event_type": rule.event_type,
+                        "available_roles": all_roles,
                     },
                 )
                 continue
 
             # Query RoleAssignment for users with this role at appropriate scope
             role_assignments = RoleAssignment.objects.filter(role=role)
+            logger.info(f"DEBUG: Initial assignments count: {role_assignments.count()}")
 
             # Apply scope filtering based on rule scope
             if rule.scope == RoutingRule.SCOPE_PROJECT and project_id:
                 # Project scope: users assigned to this specific project
                 role_assignments = role_assignments.filter(
-                    scope=RoleAssignment.PROJECT, target_project_id=project_id
+                    scope=ScopeChoices.PROJECT, target_project_id=project_id
                 )
+                logger.info(f"DEBUG: Filtered by PROJECT scope. Count: {role_assignments.count()}")
             elif rule.scope == RoutingRule.SCOPE_ORG and org_id:
                 # Org scope: users assigned to this organisation
                 role_assignments = role_assignments.filter(
-                    scope=RoleAssignment.ORGANIZATION, target_organization_id=org_id
+                    scope=ScopeChoices.ORGANIZATION, target_organization_id=org_id
                 )
+                logger.info(f"DEBUG: Filtered by ORG scope. Count: {role_assignments.count()}")
             elif rule.scope == RoutingRule.SCOPE_GLOBAL:
                 # Global scope: users assigned globally
-                role_assignments = role_assignments.filter(scope=RoleAssignment.GLOBAL)
+                role_assignments = role_assignments.filter(scope=ScopeChoices.GLOBAL)
+                logger.info(f"DEBUG: Filtered by GLOBAL scope. Count: {role_assignments.count()}")
             else:
                 # Invalid scope or missing context
                 logger.warning(
@@ -243,8 +250,14 @@ class RoutingService:
 
             # Extract user IDs and pair with channel
             for assignment in role_assignments:
+                logger.info(
+                    f"DEBUG: Processing assignment for user {assignment.user_id}. Active: {assignment.user.is_active}"
+                )
                 if assignment.user and assignment.user.is_active:
                     targets.add((assignment.user.id, rule.channel))
+                    logger.info(
+                        f"DEBUG: Added target {assignment.user.id} for channel {rule.channel}"
+                    )
 
             logger.debug(
                 "Resolved users for rule",

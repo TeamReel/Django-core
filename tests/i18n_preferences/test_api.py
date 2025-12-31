@@ -20,18 +20,19 @@ class TestUserPreferenceAPI:
         self.user = User.objects.create_user(email="test@example.com", password="testpass123")
         self.client.force_authenticate(self.user)
 
-    def test_get_user_preferences_empty(self):
+    def test_get_user_preferences_empty(self, api_data):
         """Test GET /me/ returns nulls for user with no preferences."""
         response = self.client.get("/api/v1/preferences/me/")
 
         assert response.status_code == 200
-        assert response.json() == {
+        data = api_data(response)
+        assert data == {
             "language": None,
             "locale": None,
             "timezone": None,
         }
 
-    def test_get_user_preferences_populated(self):
+    def test_get_user_preferences_populated(self, api_data):
         """Test GET /me/ returns stored preferences."""
         # Create preference setting
         Setting.objects.create(
@@ -46,12 +47,12 @@ class TestUserPreferenceAPI:
         response = self.client.get("/api/v1/preferences/me/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = api_data(response)
         assert data["language"] == "nl"
         assert data["locale"] == "nl-NL"
         assert data["timezone"] == "Europe/Amsterdam"
 
-    def test_update_user_preferences_full(self):
+    def test_update_user_preferences_full(self, api_data):
         """Test PATCH /me/ updates all preference fields."""
         response = self.client.patch(
             "/api/v1/preferences/me/",
@@ -60,7 +61,7 @@ class TestUserPreferenceAPI:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = api_data(response)
         assert data["language"] == "en"
         assert data["locale"] == "en-GB"
         assert data["timezone"] == "Europe/London"
@@ -73,7 +74,7 @@ class TestUserPreferenceAPI:
         assert setting.value["locale"] == "en-GB"
         assert setting.value["timezone"] == "Europe/London"
 
-    def test_update_user_preferences_partial(self):
+    def test_update_user_preferences_partial(self, api_data):
         """Test PATCH /me/ supports partial updates."""
         # Create initial preferences
         Setting.objects.create(
@@ -91,29 +92,31 @@ class TestUserPreferenceAPI:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = api_data(response)
         assert data["language"] == "en"  # Unchanged
         # Other fields should remain unchanged or updated
         assert data["locale"] == "en-US"
         assert data["timezone"] == "Europe/Paris"  # Updated
 
-    def test_update_invalid_language(self):
+    def test_update_invalid_language(self, api_data):
         """Test PATCH /me/ returns 400 for invalid language code."""
         response = self.client.patch(
             "/api/v1/preferences/me/", {"language": "invalid"}, format="json"
         )
 
         assert response.status_code == 400
-        assert "language" in response.json()
+        data = api_data(response)
+        assert "language" in data
 
-    def test_update_invalid_timezone(self):
+    def test_update_invalid_timezone(self, api_data):
         """Test PATCH /me/ returns 400 for invalid timezone."""
         response = self.client.patch(
             "/api/v1/preferences/me/", {"timezone": "Invalid/Zone"}, format="json"
         )
 
         assert response.status_code == 400
-        assert "timezone" in response.json()
+        data = api_data(response)
+        assert "timezone" in data
 
 
 class TestEffectivePreferenceAPI:
@@ -128,7 +131,7 @@ class TestEffectivePreferenceAPI:
         self.user.save()
         self.client.force_authenticate(self.user)
 
-    def test_get_effective_preferences(self):
+    def test_get_effective_preferences(self, api_data):
         """Test GET /effective/ returns resolved preferences with source attribution."""
         # Create user preference
         Setting.objects.create(
@@ -153,7 +156,7 @@ class TestEffectivePreferenceAPI:
         response = self.client.get("/api/v1/preferences/effective/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = api_data(response)
         assert data["language"] == "en"
         assert data["language_source"] == "user"
         assert data["timezone"] == "Europe/Amsterdam"
@@ -161,7 +164,7 @@ class TestEffectivePreferenceAPI:
         # locale should fall back to global
         assert data["locale_source"] == "global"
 
-    def test_effective_preferences_user_over_org(self):
+    def test_effective_preferences_user_over_org(self, api_data):
         """Test user preferences take precedence over organisation defaults."""
         # Create both user and org preferences for same field
         # User sets timezone, org sets different timezone
@@ -185,7 +188,7 @@ class TestEffectivePreferenceAPI:
         response = self.client.get("/api/v1/preferences/effective/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = api_data(response)
         # User preference should win
         assert data["timezone"] == "Europe/London"
         assert data["timezone_source"] == "user"
@@ -214,7 +217,7 @@ class TestOrganisationPreferenceAPI:
             role="admin",
         )
 
-    def test_get_org_preferences_as_admin(self):
+    def test_get_org_preferences_as_admin(self, api_data):
         """Test GET /organisations/{id}/ works for organisation admin."""
         self.client.force_authenticate(self.admin_user)
 
@@ -231,11 +234,11 @@ class TestOrganisationPreferenceAPI:
         response = self.client.get(f"/api/v1/preferences/organisations/{self.org.id}/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = api_data(response)
         assert data["language"] == "en"
         assert data["timezone"] == "Europe/Amsterdam"
 
-    def test_update_org_preferences_as_admin(self):
+    def test_update_org_preferences_as_admin(self, api_data):
         """Test PATCH /organisations/{id}/ works for organisation admin."""
         self.client.force_authenticate(self.admin_user)
 
@@ -246,7 +249,7 @@ class TestOrganisationPreferenceAPI:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = api_data(response)
         assert data["language"] == "en"
         assert data["timezone"] == "Europe/Berlin"
 
@@ -279,10 +282,10 @@ class TestAuthentication:
         self.client = APIClient()
 
     def test_unauthenticated_request(self):
-        """Test all endpoints return 403 for unauthenticated requests.
+        """Test all endpoints return 401 for unauthenticated requests.
 
-        Note: DRF returns 403 (Forbidden) when IsAuthenticated permission class
-        fails, not 401 (Unauthorized). This is standard DRF behavior.
+        The API returns 401 (Unauthorized) for unauthenticated requests,
+        which is the correct HTTP status code for missing authentication.
         """
         endpoints = [
             "/api/v1/preferences/me/",
@@ -291,4 +294,4 @@ class TestAuthentication:
 
         for endpoint in endpoints:
             response = self.client.get(endpoint)
-            assert response.status_code == 403, f"Expected 403 for {endpoint}"
+            assert response.status_code == 401, f"Expected 401 for {endpoint}"

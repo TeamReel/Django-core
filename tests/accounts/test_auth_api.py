@@ -24,7 +24,7 @@ class TestRegistrationAPI:
             "first_name": "Test",
             "last_name": "User",
         }
-        response = api_client.post("/api/v1/auth/register", data, format="json")
+        response = api_client.post("/api/v1/auth/register/", data, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["email"] == "newuser@test.com"
@@ -53,7 +53,7 @@ class TestRegistrationAPI:
             "first_name": "Test",
             "last_name": "User",
         }
-        response = api_client.post("/api/v1/auth/register", data, format="json")
+        response = api_client.post("/api/v1/auth/register/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "email" in response.data
@@ -67,7 +67,7 @@ class TestRegistrationAPI:
             "first_name": "Test",
             "last_name": "User",
         }
-        response = api_client.post("/api/v1/auth/register", data, format="json")
+        response = api_client.post("/api/v1/auth/register/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "password_confirm" in response.data or "non_field_errors" in response.data
@@ -81,7 +81,7 @@ class TestRegistrationAPI:
             "first_name": "Test",
             "last_name": "User",
         }
-        response = api_client.post("/api/v1/auth/register", data, format="json")
+        response = api_client.post("/api/v1/auth/register/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "password" in response.data
@@ -89,7 +89,7 @@ class TestRegistrationAPI:
     def test_register_missing_fields(self, api_client):
         """Test registration with missing required fields fails."""
         data = {"email": "newuser@test.com"}
-        response = api_client.post("/api/v1/auth/register", data, format="json")
+        response = api_client.post("/api/v1/auth/register/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "password" in response.data
@@ -148,7 +148,7 @@ class TestLoginAPI:
     def test_login_success(self, api_client, regular_user):
         """Test successful login."""
         data = {"email": regular_user.email, "password": "Test123!@#"}
-        response = api_client.post("/api/v1/auth/login", data, format="json")
+        response = api_client.post("/api/v1/auth/login/", data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["email"] == regular_user.email
@@ -158,7 +158,7 @@ class TestLoginAPI:
     def test_login_admin_role(self, api_client, admin_user):
         """Test login returns correct role for admin."""
         data = {"email": admin_user.email, "password": "Test123!@#"}
-        response = api_client.post("/api/v1/auth/login", data, format="json")
+        response = api_client.post("/api/v1/auth/login/", data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["role"] == "admin"
@@ -166,7 +166,7 @@ class TestLoginAPI:
     def test_login_superadmin_role(self, api_client, superadmin_user):
         """Test login returns correct role for superadmin."""
         data = {"email": superadmin_user.email, "password": "Test123!@#"}
-        response = api_client.post("/api/v1/auth/login", data, format="json")
+        response = api_client.post("/api/v1/auth/login/", data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["role"] == "superadmin"
@@ -174,7 +174,7 @@ class TestLoginAPI:
     def test_login_invalid_credentials(self, api_client, regular_user):
         """Test login with invalid password fails."""
         data = {"email": regular_user.email, "password": "WrongPassword123!"}
-        response = api_client.post("/api/v1/auth/login", data, format="json")
+        response = api_client.post("/api/v1/auth/login/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["error"] == "invalid_credentials"
@@ -182,7 +182,7 @@ class TestLoginAPI:
     def test_login_unverified_email(self, api_client, unverified_user):
         """Test login with unverified email fails."""
         data = {"email": unverified_user.email, "password": "Test123!@#"}
-        response = api_client.post("/api/v1/auth/login", data, format="json")
+        response = api_client.post("/api/v1/auth/login/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["error"] == "email_not_verified"
@@ -193,7 +193,7 @@ class TestLoginAPI:
         regular_user.save()
 
         data = {"email": regular_user.email, "password": "Test123!@#"}
-        response = api_client.post("/api/v1/auth/login", data, format="json")
+        response = api_client.post("/api/v1/auth/login/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["error"] == "account_inactive"
@@ -201,7 +201,7 @@ class TestLoginAPI:
     def test_login_missing_fields(self, api_client):
         """Test login with missing fields fails."""
         data = {"email": "test@test.com"}
-        response = api_client.post("/api/v1/auth/login", data, format="json")
+        response = api_client.post("/api/v1/auth/login/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -213,13 +213,13 @@ class TestLogoutAPI:
 
     def test_logout_authenticated(self, authenticated_client):
         """Test logout for authenticated user."""
-        response = authenticated_client.post("/api/v1/auth/logout")
+        response = authenticated_client.post("/api/v1/auth/logout/")
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_logout_unauthenticated(self, api_client):
         """Test logout for unauthenticated user (should still succeed)."""
-        response = api_client.post("/api/v1/auth/logout")
+        response = api_client.post("/api/v1/auth/logout/")
 
         # Logout should work even if not authenticated
         assert response.status_code == status.HTTP_204_NO_CONTENT
@@ -233,7 +233,7 @@ class TestPasswordResetAPI:
     def test_password_reset_request_success(self, api_client, regular_user):
         """Test successful password reset request."""
         data = {"email": regular_user.email}
-        response = api_client.post("/api/v1/auth/password-reset", data, format="json")
+        response = api_client.post("/api/v1/auth/password-reset/", data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
         assert "message" in response.data
@@ -246,7 +246,7 @@ class TestPasswordResetAPI:
     def test_password_reset_request_no_enumeration(self, api_client):
         """Test password reset doesn't reveal if email exists."""
         data = {"email": "nonexistent@test.com"}
-        response = api_client.post("/api/v1/auth/password-reset", data, format="json")
+        response = api_client.post("/api/v1/auth/password-reset/", data, format="json")
 
         # Should return success to prevent email enumeration
         assert response.status_code == status.HTTP_200_OK
@@ -261,7 +261,7 @@ class TestPasswordResetAPI:
         regular_user.save()
 
         data = {"email": regular_user.email}
-        response = api_client.post("/api/v1/auth/password-reset", data, format="json")
+        response = api_client.post("/api/v1/auth/password-reset/", data, format="json")
 
         # Returns success but no email sent
         assert response.status_code == status.HTTP_200_OK
@@ -278,7 +278,7 @@ class TestPasswordResetAPI:
             "new_password": "NewSecurePass123!",
             "new_password_confirm": "NewSecurePass123!",
         }
-        response = api_client.post("/api/v1/auth/password-reset-confirm", data, format="json")
+        response = api_client.post("/api/v1/auth/password-reset-confirm/", data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
         assert "message" in response.data
@@ -297,7 +297,7 @@ class TestPasswordResetAPI:
             "new_password": "NewSecurePass123!",
             "new_password_confirm": "NewSecurePass123!",
         }
-        response = api_client.post("/api/v1/auth/password-reset-confirm", data, format="json")
+        response = api_client.post("/api/v1/auth/password-reset-confirm/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["error"] == "invalid_token"
@@ -313,7 +313,7 @@ class TestPasswordResetAPI:
             "new_password": "NewSecurePass123!",
             "new_password_confirm": "DifferentPass456!",
         }
-        response = api_client.post("/api/v1/auth/password-reset-confirm", data, format="json")
+        response = api_client.post("/api/v1/auth/password-reset-confirm/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -328,6 +328,6 @@ class TestPasswordResetAPI:
             "new_password": "weak",
             "new_password_confirm": "weak",
         }
-        response = api_client.post("/api/v1/auth/password-reset-confirm", data, format="json")
+        response = api_client.post("/api/v1/auth/password-reset-confirm/", data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST

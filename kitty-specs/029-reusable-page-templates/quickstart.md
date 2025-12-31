@@ -969,7 +969,7 @@ it('renders custom loading state', () => {
 - **API Reference**: See [data-model.md](data-model.md) for complete TypeScript interfaces
 - **Examples**: Browse `examples/page-templates/` for full working examples
 - **Storybook**: Run `pnpm storybook` to explore interactive component demos (including state override stories)
-- **Testing**: See [testing guide](../../docs/TESTING_GUIDE.md) for testing patterns
+- **Testing**: See [testing guide](../../docs/contributing/testing.md) for testing patterns
 
 ---
 

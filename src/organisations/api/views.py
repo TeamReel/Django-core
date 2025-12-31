@@ -50,6 +50,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Filter organisations to only those the user is a member of.
+        Superusers can see all organisations.
+        Excludes soft-deleted organisations (name contains '_del_').
 
         Optimizations:
         - select_related('creator'): Avoid N+1 for creator field
@@ -59,14 +61,24 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         Query Parameters:
         - include_inactive: If 'false', filter out inactive organisations (default: true)
         """
-        queryset = (
-            Organisation.objects.filter(
-                memberships__user=self.request.user, memberships__is_active=True
+        # Superusers see all organisations
+        if self.request.user.is_superuser:
+            queryset = (
+                Organisation.objects.all()
+                .exclude(name__contains="_del_")  # Exclude soft-deleted
+                .select_related("creator")
+                .prefetch_related("memberships", "projects")
             )
-            .select_related("creator")
-            .prefetch_related("memberships", "projects")
-            .distinct()
-        )
+        else:
+            queryset = (
+                Organisation.objects.filter(
+                    memberships__user=self.request.user, memberships__is_active=True
+                )
+                .exclude(name__contains="_del_")  # Exclude soft-deleted
+                .select_related("creator")
+                .prefetch_related("memberships", "projects")
+                .distinct()
+            )
 
         # Filter inactive organisations based on query parameter
         include_inactive = self.request.query_params.get("include_inactive", "true").lower()

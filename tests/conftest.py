@@ -178,3 +178,69 @@ def redis_config(celery_app):
     celery_app.conf.broker_url = original_broker
     celery_app.conf.result_backend = original_backend
     celery_app.conf.task_always_eager = original_eager
+
+
+# Envelope response helpers for API tests
+@pytest.fixture
+def api_data():
+    """Fixture that returns a function to extract data from envelope responses.
+
+    Usage in tests:
+        def test_something(api_data):
+            response = client.get('/api/endpoint/')
+            data = api_data(response)
+            assert data['field'] == value
+    """
+
+    def unwrap(response):
+        if isinstance(response.data, dict) and "data" in response.data:
+            return response.data["data"]
+        return response.data
+
+    return unwrap
+
+
+def unwrap_envelope_data(response):
+    """Extract data from envelope response format.
+
+    API responses use envelope format: {"status": "success", "data": {...}, "meta": {...}}
+    This helper extracts the data field for cleaner test assertions.
+
+    Args:
+        response: DRF Response object
+
+    Returns:
+        The data field from the envelope, or response.data if no envelope
+    """
+    if isinstance(response.data, dict) and "data" in response.data:
+        return response.data["data"]
+    return response.data
+
+
+def unwrap_envelope_error(response):
+    """Extract error from envelope error response format.
+
+    Error responses use envelope format: {"status": "error", "error": {...}}
+
+    Args:
+        response: DRF Response object
+
+    Returns:
+        The error field from the envelope, or response.data if no envelope
+    """
+    if isinstance(response.data, dict) and "error" in response.data:
+        return response.data["error"]
+    return response.data
+
+
+@pytest.fixture(autouse=True)
+def ensure_roles(db):
+    """Ensure default roles exist for every test."""
+    from permissions.models import Role
+
+    # Check if Global Admin exists as a proxy for all roles
+    if not Role.objects.filter(name="Global Admin").exists():
+        from django.core.management import call_command
+
+        # Suppress output to keep test logs clean
+        call_command("seed_default_roles", verbosity=0)

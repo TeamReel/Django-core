@@ -56,6 +56,23 @@ class NotificationPreferenceSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
+    def create(self, validated_data):
+        """
+        Create or update preference using update_or_create to avoid duplicates.
+        The unique constraint is (user, event_type, channel).
+        """
+        user = validated_data.get("user")
+        event_type = validated_data.get("event_type")
+        channel = validated_data.get("channel")
+        enabled = validated_data.get("enabled", True)
+
+        # Use update_or_create to avoid duplicate entries
+        preference, created = NotificationPreference.objects.update_or_create(
+            user=user, event_type=event_type, channel=channel, defaults={"enabled": enabled}
+        )
+
+        return preference
+
 
 class OrganisationNotificationPolicySerializer(serializers.ModelSerializer):
     """Serializer for OrganisationNotificationPolicy model."""
@@ -88,14 +105,14 @@ class RoutingDecisionLogSerializer(serializers.Serializer):
     event_type = serializers.CharField(read_only=True)
     user_id = serializers.IntegerField(source="user.id", read_only=True, allow_null=True)
     user_email = serializers.EmailField(source="user.email", read_only=True, allow_null=True)
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id", read_only=True, allow_null=True
     )
     organization_name = serializers.CharField(
         source="organization.name", read_only=True, allow_null=True
     )
-    project_id = serializers.IntegerField(source="project.id", read_only=True, allow_null=True)
-    project_name = serializers.CharField(source="project.name", read_only=True, allow_null=True)
+    project_id = serializers.SerializerMethodField()
+    project_name = serializers.SerializerMethodField()
     metadata = serializers.JSONField(read_only=True)
 
     class Meta:
@@ -111,3 +128,9 @@ class RoutingDecisionLogSerializer(serializers.Serializer):
             "project_name",
             "metadata",
         ]
+
+    def get_project_id(self, obj):
+        return obj.project.id if obj.project else None
+
+    def get_project_name(self, obj):
+        return obj.project.name if obj.project else None

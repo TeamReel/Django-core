@@ -8,14 +8,14 @@ Provides:
 - HTTP request metrics middleware
 - B15 task observability (ObservableTask base class)
 
-See docs/observability.md for usage guide.
+See docs/features/observability/overview.md for usage guide.
 """
-
-default_app_config = "observability.apps.ObservabilityConfig"
 
 # Export key components for easy importing
 from .metrics import emit_metric, register_metric_collector
 from .tasks import ObservableTask
+
+default_app_config = "observability.apps.ObservabilityConfig"
 
 __all__ = [
     "emit_metric",

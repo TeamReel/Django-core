@@ -47,7 +47,7 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
 
         // Check useAuth user object
         if (!isSuperadmin && user) {
-          if (user.is_superuser || (user as any).role === 'superadmin') {
+          if ((user as any).is_superuser || (user as any).role === 'superadmin') {
             isSuperadmin = true;
             console.log(`[useFeatureFlag] useAuth check: isSuperadmin=${isSuperadmin}`);
           }

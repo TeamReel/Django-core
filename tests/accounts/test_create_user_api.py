@@ -18,6 +18,7 @@ def test_admin_create_user():
     data = {
         "email": "newuser@example.com",
         "password": "SecurePassword123!",
+        "password_confirm": "SecurePassword123!",
         "first_name": "New",
         "last_name": "User",
     }

@@ -97,12 +97,15 @@ class TestASVSCoverageCalculator:
         """Test basic coverage calculation."""
         coverage = calculator.calculate_coverage(mock_rules, sample_violations)
 
-        # Should have 3 categories + "Other"
-        assert len(coverage) == 4
+        # Should have 3 categories + "Other" + 3 summary fields
+        assert len(coverage) == 7
         assert "V14 - Configuration" in coverage
         assert "V3 - Session Management" in coverage
         assert "V4 - Access Control" in coverage
         assert "Other" in coverage
+        assert "total_controls_checked" in coverage
+        assert "level_1_coverage_percent" in coverage
+        assert "categories" in coverage
 
         # V14 category (2 rules, 1 violation)
         v14_coverage = coverage["V14 - Configuration"]
@@ -194,6 +197,12 @@ class TestASVSCoverageCalculator:
 
         # All categories should have 100% coverage
         for category_name, category_coverage in coverage.items():
+            if category_name in [
+                "total_controls_checked",
+                "level_1_coverage_percent",
+                "categories",
+            ]:
+                continue
             assert category_coverage.failed_rules == 0
             assert category_coverage.passed_rules == category_coverage.total_rules
             assert category_coverage.coverage_percentage == 100.0

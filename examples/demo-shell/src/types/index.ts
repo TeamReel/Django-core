@@ -26,12 +26,14 @@ export interface User {
 export interface Organisation {
   id: string;
   name: string;
+  slug?: string;
   description?: string;
   member_count?: number;
   project_count?: number;
   credit_balance?: number;
   marketing_hub_balance?: number;
-  is_active: boolean;
+  is_active?: boolean;
+  enable_theme_toggle?: boolean;
   created_at?: string;
   updated_at?: string;
   logo_url?: string;

@@ -3,6 +3,7 @@
 import logging
 import re
 from typing import Any
+from uuid import UUID
 
 from prometheus_client import Counter
 
@@ -148,17 +149,17 @@ class EventService:
             org_id = context.get("org_id")
             if org_id is None:
                 errors["context.org_id"] = "Organisation ID is required in context"
-            elif not isinstance(org_id, int):
-                errors["context.org_id"] = "Organisation ID must be an integer"
+            elif not isinstance(org_id, (int, str, UUID)):
+                errors["context.org_id"] = "Organisation ID must be an integer, string, or UUID"
 
             # Validate optional context fields
             project_id = context.get("project_id")
-            if project_id is not None and not isinstance(project_id, int):
-                errors["context.project_id"] = "Project ID must be an integer"
+            if project_id is not None and not isinstance(project_id, (int, str, UUID)):
+                errors["context.project_id"] = "Project ID must be an integer, string, or UUID"
 
             user_id = context.get("user_id")
-            if user_id is not None and not isinstance(user_id, int):
-                errors["context.user_id"] = "User ID must be an integer"
+            if user_id is not None and not isinstance(user_id, (int, str, UUID)):
+                errors["context.user_id"] = "User ID must be an integer, string, or UUID"
 
             resource_id = context.get("resource_id")
             if resource_id is not None and not isinstance(resource_id, str):

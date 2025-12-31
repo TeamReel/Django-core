@@ -3,10 +3,10 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Button,
   Badge,
-  Table,
   Alert,
   Card,
 } from '@django-core/design-system';
+import { Table } from '../../shims/design-system';
 import {
   PageHeader,
   PageContent,
@@ -194,14 +194,14 @@ export const OrganisationsPage: React.FC = () => {
       <PageContent>
         {/* Error state */}
         {error && (
-          <Alert type="error" className="mb-4" data-testid="org-error-alert">
+          <Alert variant="error" className="mb-4" data-testid="org-error-alert">
             {error}
           </Alert>
         )}
 
         {/* Empty state */}
         {!loading && organisations.length === 0 && (
-          <Alert type="info" data-testid="org-empty-state">
+          <Alert variant="info" data-testid="org-empty-state">
             No organisations found. Try adjusting your search or create a new organisation.
           </Alert>
         )}
@@ -221,7 +221,7 @@ export const OrganisationsPage: React.FC = () => {
           // Show empty state if filters result in no data
           if (filteredOrganisations.length === 0) {
             return (
-              <Alert type="info" data-testid="org-filtered-empty">
+              <Alert variant="info" data-testid="org-filtered-empty">
                 No organisations match the current filters.
               </Alert>
             );
@@ -253,7 +253,7 @@ export const OrganisationsPage: React.FC = () => {
                 // Check if user can edit/delete this specific org
                 const orgWithRole = myOrganisations.find(o => o.id === org.id);
                 const permissionContext = {
-                  currentOrganisation: orgWithRole,
+                  currentOrganisation: orgWithRole as any,
                   isSuperAdmin,
                 };
                 const userCanEdit = canPerformAction('update', 'organisation', permissionContext);
@@ -277,12 +277,12 @@ export const OrganisationsPage: React.FC = () => {
                       </span>
                     </td>
                     <td>
-                      <Badge variant="secondary" data-testid={`org-members-${org.id}`}>
+                      <Badge variant="default" data-testid={`org-members-${org.id}`}>
                         {org.member_count || 0}
                       </Badge>
                     </td>
                     <td>
-                      <Badge variant="secondary" data-testid={`org-projects-${org.id}`}>
+                      <Badge variant="default" data-testid={`org-projects-${org.id}`}>
                         {org.project_count || 0}
                       </Badge>
                     </td>

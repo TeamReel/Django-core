@@ -12,6 +12,7 @@ Step-by-step guides for working with the API:
 | [API Pagination](api-pagination.md) | Cursor pagination, iterating results |
 | [API Filtering](api-filtering.md) | Filter syntax, search, ordering |
 | [Rate Limiting](rate-limiting.md) | Rate limits, headers, handling 429s |
+| [CLI Usage](cli.md) | Using the command line interface |
 
 ## Webhook Integration
 

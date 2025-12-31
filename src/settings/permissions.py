@@ -87,14 +87,7 @@ class ScopeAwarePermission(BasePermission):
         # USER scope: users can only manage their own settings
         if obj.scope_type == ScopeType.USER:
             if obj.user_id != request.user.id:
-                raise PermissionDenied(
-                    {
-                        "error": "forbidden",
-                        "permission": permission_code,
-                        "detail": "You can only manage your own user-scoped settings",
-                        "scope": "USER",
-                    }
-                )
+                return False
             return True
 
         # Get scope from object for other scopes

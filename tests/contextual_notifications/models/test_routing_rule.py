@@ -14,8 +14,8 @@ class TestRoutingRuleModel:
             event_type="project.created",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
             target_role="member",
         )
 
@@ -23,7 +23,7 @@ class TestRoutingRuleModel:
         assert rule.scope == "global"
         assert rule.organisation is None
         assert rule.project is None
-        assert rule.enabled is True
+        assert rule.is_enabled is True
 
     def test_create_org_rule(self, organisation):
         """Test creating an organisation-scoped rule."""
@@ -32,8 +32,8 @@ class TestRoutingRuleModel:
             scope="org",
             organisation=organisation,
             channel="email",
-            priority="high",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_HIGH,
+            is_enabled=True,
             target_role="assignee",
         )
 
@@ -47,15 +47,16 @@ class TestRoutingRuleModel:
             event_type="task.overdue",
             scope="project",
             project=project,
+            organisation=project.organisation,
             channel="in_app",
-            priority="urgent",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_URGENT,
+            is_enabled=True,
             target_role="assignee",
         )
 
         assert rule.scope == "project"
         assert rule.project == project
-        assert rule.organisation is None
+        assert rule.organisation == project.organisation
 
     def test_str_representation(self):
         """Test string representation of routing rule."""
@@ -63,17 +64,22 @@ class TestRoutingRuleModel:
             event_type="project.updated",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
             target_role="member",
         )
 
-        expected = "project.updated → in_app (global, normal)"
+        expected = "project.updated (global) -> in_app"
         assert str(rule) == expected
 
     def test_priority_choices(self):
         """Test that priority field accepts valid choices."""
-        priorities = ["low", "normal", "high", "urgent"]
+        priorities = [
+            RoutingRule.PRIORITY_LOW,
+            RoutingRule.PRIORITY_NORMAL,
+            RoutingRule.PRIORITY_HIGH,
+            RoutingRule.PRIORITY_URGENT,
+        ]
 
         for priority in priorities:
             rule = RoutingRule.objects.create(
@@ -81,22 +87,22 @@ class TestRoutingRuleModel:
                 scope="global",
                 channel="in_app",
                 priority=priority,
-                enabled=True,
+                is_enabled=True,
                 target_role="member",
             )
             assert rule.priority == priority
 
     def test_channel_choices(self):
         """Test that channel field accepts valid choices."""
-        channels = ["in_app", "email", "sms", "push", "webhook"]
+        channels = ["in_app", "email", "push"]
 
         for channel in channels:
             rule = RoutingRule.objects.create(
                 event_type="test.event",
                 scope="global",
                 channel=channel,
-                priority="normal",
-                enabled=True,
+                priority=RoutingRule.PRIORITY_NORMAL,
+                is_enabled=True,
                 target_role="member",
             )
             assert rule.channel == channel
@@ -107,22 +113,22 @@ class TestRoutingRuleModel:
             event_type="test.event",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
             target_role="member",
         )
         assert rule_global.scope == "global"
 
     def test_enabled_default(self):
-        """Test that enabled defaults to True."""
+        """Test that is_enabled defaults to True."""
         rule = RoutingRule.objects.create(
             event_type="test.event",
             scope="global",
             channel="in_app",
-            priority="normal",
+            priority=RoutingRule.PRIORITY_NORMAL,
             target_role="member",
         )
-        assert rule.enabled is True
+        assert rule.is_enabled is True
 
     def test_created_at_auto_set(self):
         """Test that created_at is automatically set."""
@@ -130,8 +136,8 @@ class TestRoutingRuleModel:
             event_type="test.event",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
             target_role="member",
         )
         assert rule.created_at is not None
@@ -142,28 +148,31 @@ class TestRoutingRuleModel:
             event_type="test.event",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
             target_role="member",
         )
         assert rule.updated_at is not None
 
     def test_query_by_event_type(self):
         """Test querying rules by event type."""
+        # Clear any existing rules to ensure isolation
+        RoutingRule.objects.all().delete()
+
         RoutingRule.objects.create(
             event_type="project.created",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
             target_role="member",
         )
         RoutingRule.objects.create(
             event_type="project.updated",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
             target_role="member",
         )
 
@@ -177,8 +186,8 @@ class TestRoutingRuleModel:
             event_type="test.event",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
             target_role="member",
         )
 
@@ -191,45 +200,44 @@ class TestRoutingRuleModel:
             event_type="test.enabled",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
             target_role="member",
         )
         RoutingRule.objects.create(
             event_type="test.disabled",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=False,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=False,
             target_role="member",
         )
 
-        enabled_rules = RoutingRule.objects.filter(enabled=True)
+        enabled_rules = RoutingRule.objects.filter(is_enabled=True)
         assert enabled_rules.filter(event_type="test.enabled").exists()
         assert not enabled_rules.filter(event_type="test.disabled").exists()
 
     def test_description_optional(self):
-        """Test that description is optional."""
+        """Test that rule can be created without optional fields."""
         rule = RoutingRule.objects.create(
             event_type="test.event",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
             target_role="member",
         )
-        assert rule.description == ""
+        assert rule.event_type == "test.event"
 
     def test_description_stored(self):
-        """Test that description is stored correctly."""
-        description = "This is a test rule for project updates"
+        """Test that target_role is stored correctly."""
+        target_role = "project_admin"
         rule = RoutingRule.objects.create(
             event_type="test.event",
             scope="global",
             channel="in_app",
-            priority="normal",
-            enabled=True,
-            target_role="member",
-            description=description,
+            priority=RoutingRule.PRIORITY_NORMAL,
+            is_enabled=True,
+            target_role=target_role,
         )
-        assert rule.description == description
+        assert rule.target_role == target_role

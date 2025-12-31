@@ -43,32 +43,7 @@ def check_permission(
 ) -> bool:
     """
     Check if user has a specific permission.
-
-    Evaluation order:
-    1. Check cache
-    2. Query global roles (short-circuit if wildcard found)
-    3. Query organization roles (if resource_id provided and belongs to org)
-    4. Query project roles (if resource_id provided and is project)
-    5. Union all permissions from matched roles
-    6. Return True if permission in set, False otherwise
-    7. Cache result
-
-    Args:
-        user_id: UUID of user to check
-        permission: Permission string (e.g., 'projects.delete')
-        resource_id: Optional UUID of resource being accessed
-        resource_type: Type of resource ('project', 'organisation', 'generic')
-
-    Returns:
-        True if user has permission, False otherwise (deny-by-default)
-
-    Example:
-        has_perm = check_permission(
-            user.id,
-            'projects.delete',
-            project.id,
-            'project'
-        )
+    ...
     """
     # Check cache first
     cached = get_cached_evaluation(user_id, permission, resource_type, resource_id)
@@ -149,55 +124,29 @@ def check_permission(
     # Cache result
     set_cached_evaluation(user_id, permission, resource_type, resource_id, decision)
 
-    # NEW: Log permission check to audit system (B09 integration)
-    if AUDIT_AVAILABLE:
-        try:
-            # Get user object for audit context
-            from django.contrib.auth import get_user_model
+    # Emit audit event via configured backend
+    # This handles B09 integration and fallback to Django logging
+    try:
+        # Prepare context for audit
+        context = {
+            "scope": "UNKNOWN",  # We don't track scope in check_permission easily without refactoring
+            "evaluated_roles": (
+                [str(a.role_id) for a in assignments] if "assignments" in locals() else []
+            ),
+        }
 
-            user_model = get_user_model()
-            try:
-                user = user_model.objects.get(id=user_id)
-            except user_model.DoesNotExist:
-                user = None
+        audit_backend.emit(
+            user_id=str(user_id),
+            permission=permission,
+            resource_type=resource_type,
+            resource_id=str(resource_id) if resource_id else None,
+            decision="grant" if decision else "deny",
+            context=context,
+        )
+    except Exception as e:
+        logger.warning(f"Failed to emit audit event: {e}")
 
-            # Get organization/project context if resource_id provided
-            organization = None
-            project = None
-
-            if resource_id:
-                if resource_type == "organisation":
-                    from organisations.models import Organisation
-
-                    try:
-                        organization = Organisation.objects.get(id=resource_id)
-                    except Organisation.DoesNotExist:
-                        pass
-                elif resource_type == "project":
-                    from projects.models import Project
-
-                    try:
-                        project = Project.objects.get(id=resource_id)
-                        organization = project.organisation if project else None
-                    except Project.DoesNotExist:
-                        pass
-
-            # Record permission check event
-            audit_log.record(
-                "permission.checked",
-                user=user,
-                organization=organization,
-                project=project,
-                metadata={
-                    "permission": permission,
-                    "result": "allowed" if decision else "denied",
-                    "resource_type": resource_type,
-                    "resource_id": str(resource_id) if resource_id else None,
-                },
-            )
-        except Exception as e:
-            # Graceful degradation: audit failure doesn't break permission check
-            logger.warning("Failed to log permission check to audit system: %s", e)
+    return decision
 
     # Emit audit event if permission is sensitive or decision is deny (legacy B08 audit)
     try:

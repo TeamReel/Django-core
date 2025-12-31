@@ -11,7 +11,7 @@ import {
   PageContent,
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
-} from '@django-core/page-templates';
+} from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 
@@ -41,7 +41,7 @@ export const MemberDetailPage: React.FC = () => {
     handleOrganisationSwitch,
     handleUserSwitch,
   } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
     projects: [],
     users: orgMembers.map(m => ({
       id: m.id,
@@ -236,7 +236,7 @@ export const MemberDetailPage: React.FC = () => {
             ]}
           />
           <PageContent>
-            <Alert type="error">{error || 'Member not found'}</Alert>
+            <Alert variant="error">{error || 'Member not found'}</Alert>
             <Button variant="secondary" onClick={() => navigate(`/organisations/${orgSlug}`)}>
                 Back to Organisation
             </Button>
@@ -400,7 +400,7 @@ export const MemberDetailPage: React.FC = () => {
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2">
-                                        <Badge variant="secondary">{member.role}</Badge>
+                                        <Badge variant="default">{member.role}</Badge>
                                     </div>
                                 )}
                                 {isEditing && (

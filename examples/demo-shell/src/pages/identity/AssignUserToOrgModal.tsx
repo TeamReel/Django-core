@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
 interface Organisation {
-    id: string;
+    id: string | number;
     name: string;
-    slug: string;
+    slug?: string;
 }
 
 interface User {

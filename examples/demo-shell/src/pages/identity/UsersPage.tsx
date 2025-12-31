@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { Button, Card, Table, Badge } from '@django-core/design-system';
+import { Button, Card, Badge } from '@django-core/design-system';
+import { Table } from '../../shims/design-system';
 import { PageHeader, BreadcrumbContextSwitcher, useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import UserEditModal from './UserEditModal';
@@ -37,7 +38,7 @@ export default function UsersPage() {
     organisationOptions,
     handleOrganisationSwitch,
   } = useBreadcrumbContextSwitcher({
-    organisations: myOrganisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    organisations: myOrganisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
     projects: [],
     users: [],
     context: { currentOrgId: orgId },
@@ -83,7 +84,7 @@ export default function UsersPage() {
   // Determine if current user has admin rights in the current context
   const currentOrgSlug = (orgIdParam || context.organisation?.slug)?.toLowerCase();
   // Use organisations from context switcher which contains user_role from API
-  const currentOrg = myOrganisations.find(o => o.slug.toLowerCase() === currentOrgSlug);
+  const currentOrg = myOrganisations.find(o => o.slug?.toLowerCase() === currentOrgSlug);
   const isOrgAdmin = (currentOrg as any)?.user_role === 'admin';
 
   const canManageUsers = isSuperAdmin || isOrgAdmin;
@@ -95,7 +96,7 @@ export default function UsersPage() {
               setSelectedOrgId(orgIdParam);
           } else if (context.organisation && !isSuperAdmin) {
               // Default to context organisation for non-superadmin users
-              setSelectedOrgId(context.organisation.id);
+              setSelectedOrgId(String(context.organisation.id));
           }
           setHasInitializedFilters(true);
       }
@@ -272,7 +273,7 @@ export default function UsersPage() {
   }
 
   // Construct breadcrumbs
-  const breadcrumbs = [
+  const breadcrumbs: any[] = [
     { label: 'Home', href: '/' },
   ];
 
@@ -426,7 +427,7 @@ export default function UsersPage() {
                       </td>
                       <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
                       <td>
-                        <Badge variant="secondary">
+                        <Badge variant="default">
                           {displayRole}
                         </Badge>
                       </td>

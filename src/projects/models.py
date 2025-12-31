@@ -84,6 +84,15 @@ class Project(models.Model):
         """Return string representation of project."""
         return f"{self.organisation.name}/{self.name}"
 
+    def get_absolute_url(self) -> str:
+        """Return absolute URL for project detail."""
+        from django.urls import reverse
+
+        return reverse(
+            "api_v1:organisation-projects-detail",
+            kwargs={"organisation_id": self.organisation.slug, "slug": self.slug},
+        )
+
     def _generate_unique_slug(self, base_slug: str = None) -> str:
         """
         Generate unique slug with sequential suffix for collisions.
@@ -146,6 +155,8 @@ class Project(models.Model):
 
     def archive(self) -> None:
         """Archive this project (soft deletion)."""
+        if not self.is_active:
+            return
         self.is_active = False
         self.archived_at = timezone.now()
         self.save()

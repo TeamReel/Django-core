@@ -72,6 +72,14 @@ def envelope_exception_handler(exc, context):
 
     # Sanitize message - remove sensitive details
     error_message = str(exc)
+
+    # Check for structured PermissionDenied
+    structured_data = None
+    if isinstance(exc, PermissionDenied) and isinstance(exc.detail, dict):
+        structured_data = exc.detail
+        # Use a generic message for the envelope message
+        error_message = structured_data.get("detail", "Permission denied")
+
     if "database" in error_message.lower() or "sql" in error_message.lower():
         error_message = "A data access error occurred. Please try again."
 
@@ -88,6 +96,10 @@ def envelope_exception_handler(exc, context):
     # Add validation details if present
     if isinstance(exc, ValidationError) and isinstance(response.data, dict):
         error_envelope["error"]["details"] = response.data
+
+    # Add structured permission denied details
+    if structured_data:
+        error_envelope["error"]["details"] = structured_data
 
     # Add error ID for server errors (500-level)
     if response.status_code >= 500:

@@ -82,23 +82,34 @@ class TestFeatureFlagViewSet(TestCase):
 
     def test_perform_update(self):
         """Test perform_update sets updated_by."""
+        from rest_framework.request import Request
+
         request = self.factory.patch("/")
         request.user = self.user
+        drf_request = Request(request)
+        drf_request._user = self.user  # Explicitly set user on DRF request
 
         serializer = Mock()
-        self.viewset.request = request
+        serializer.instance = self.feature_flag  # Provide instance for hierarchy check
+        self.viewset.request = drf_request
+        self.viewset.get_object = Mock(return_value=self.feature_flag)
         self.viewset.perform_update(serializer)
 
         serializer.save.assert_called_once_with(updated_by=self.user)
 
     def test_perform_update_unauthenticated(self):
         """Test perform_update with unauthenticated user."""
+        from rest_framework.request import Request
+
         request = self.factory.patch("/")
         request.user = Mock()
         request.user.is_authenticated = False
+        drf_request = Request(request)
 
         serializer = Mock()
-        self.viewset.request = request
+        serializer.instance = self.feature_flag
+        self.viewset.request = drf_request
+        self.viewset.get_object = Mock(return_value=self.feature_flag)
         self.viewset.perform_update(serializer)
 
         serializer.save.assert_called_once_with(updated_by=None)

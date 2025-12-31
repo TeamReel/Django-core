@@ -12,6 +12,7 @@ import {
   PageContent,
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
+  type BreadcrumbSwitcherOption,
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
@@ -40,7 +41,7 @@ export const UserDetailPage: React.FC = () => {
   const {
     userOptions,
   } = useBreadcrumbContextSwitcher({
-    organisations: contextOrganisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    organisations: contextOrganisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
     projects: [],
     users: orgUsers.map(u => ({
       id: u.id.toString(),
@@ -49,14 +50,14 @@ export const UserDetailPage: React.FC = () => {
       slug: u.id.toString(),
     })),
     context: {
-      currentOrgId: currentOrg?.id,
+      currentOrgId: currentOrg?.id ? String(currentOrg.id) : undefined,
       currentUserId: userId,
     },
     basePath: '',
   });
 
   // Custom handler for user navigation
-  const handleUserSwitch = (option: { id: string; label: string; slug: string }) => {
+  const handleUserSwitch = (option: BreadcrumbSwitcherOption) => {
     if (orgId) {
       navigate(`/organisations/${orgId}/users/${option.slug || option.id}`);
     } else {
@@ -272,7 +273,8 @@ export const UserDetailPage: React.FC = () => {
                 currentId={userId || ''}
                 options={userOptions.map(u => ({
                   id: u.id,
-                  label: u.name || u.label || u.id  // Use name from useBreadcrumbContextSwitcher
+                  label: u.label || u.id,
+                  slug: u.slug
                 }))}
                 onSelect={handleUserSwitch}
                 hasDropdown={true}
@@ -348,7 +350,7 @@ export const UserDetailPage: React.FC = () => {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>System Role</label>
-                <Badge variant={user.role === 'superadmin' ? 'primary' : 'neutral'}>
+                <Badge variant={user.role === 'superadmin' ? 'primary' : 'default'}>
                   {user.role}
                 </Badge>
               </div>
@@ -391,7 +393,7 @@ export const UserDetailPage: React.FC = () => {
                                 <div style={{ fontSize: '12px', color: '#666' }}>{org.slug}</div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Badge variant="neutral">{org.role}</Badge>
+                                <Badge variant="default">{org.role}</Badge>
                                 {canRemove && (
                                     <button
                                         onClick={() => handleRemoveFromOrg(org.slug, org.membership_id)}

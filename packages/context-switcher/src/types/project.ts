@@ -22,6 +22,9 @@ export interface Project {
   /** Parent organisation ID */
   organisationId: string;
 
+  /** Parent organisation ID (snake_case alias) */
+  organisation_id?: string;
+
   /** Optional metadata */
   metadata?: ProjectMetadata;
 }

@@ -36,10 +36,6 @@ class TestUsageEventAPI:
 
         response = client.post(url, data, format="json")
 
-        # Debug output
-        if response.status_code != status.HTTP_201_CREATED:
-            print(f"\nDEBUG: Status={response.status_code}, Data={response.data}")
-
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["event_type"] == "api_call"
         assert response.data["idempotency_key"] == "test-usage-001"
@@ -234,7 +230,6 @@ class TestTransactionAPI:
 
         # Second request returns 409
         response2 = client.post(url, data, format="json")
-        print(f"DEBUG: response2.status_code={response2.status_code}, data={response2.data}")
         assert response2.status_code == status.HTTP_409_CONFLICT
         assert response2.data["error"] == "duplicate_idempotency_key"
         assert response2.data["existing_transaction_id"] == txn_id_1

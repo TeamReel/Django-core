@@ -16,18 +16,36 @@ export { Textarea, type TextareaProps, type TextareaState, type TextareaSize, ty
 export { Checkbox, type CheckboxProps, type CheckboxState, type CheckboxSize } from './components/Checkbox';
 export { Radio, RadioGroup, type RadioProps, type RadioGroupProps, type RadioState, type RadioSize } from './components/Radio';
 export { FileUpload, type FileUploadProps, type FileUploadFile } from './components/FileUpload';
+export * from './components/Select';
 
 // Data Display Components
-export { Card, type CardProps } from './components/Card';
-export { Badge, type BadgeProps } from './components/Badge';
+export * from './components/Badge';
+export * from './components/Card';
+export * from './components/Modal';
+export * from './components/Tabs';
+export * from './components/Tooltip';
+export * from './components/Alert';
+export * from './components/Progress';
+export * from './components/Spinner';
+
+// Layout Components
+export * from './components/Container';
+export * from './components/Grid';
+export * from './components/Stack';
+
+// Typography
+export * from './components/Heading';
+export * from './components/Text';
+// export { Card, type CardProps } from './components/Card'; // Removed duplicate
+// export { Badge, type BadgeProps } from './components/Badge'; // Removed duplicate
 export type { BadgeVariant, BadgeSize } from './components/Badge/Badge.css';
-export { Progress, type ProgressProps } from './components/Progress';
+// export { Progress, type ProgressProps } from './components/Progress'; // Removed duplicate
 export type { ProgressSize } from './components/Progress/Progress.css';
 
 // Feedback Components
-export { Alert, type AlertProps } from './components/Alert';
+// export { Alert, type AlertProps } from './components/Alert'; // Removed duplicate
 export type { AlertVariant } from './components/Alert/Alert.css';
-export { Spinner, type SpinnerProps } from './components/Spinner';
+// export { Spinner, type SpinnerProps } from './components/Spinner'; // Removed duplicate
 export type { SpinnerSize } from './components/Spinner/Spinner.css';
 
 // Typography Components

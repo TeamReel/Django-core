@@ -11,7 +11,7 @@ import {
   PageContent,
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
-} from '@django-core/page-templates';
+} from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import { Organisation } from '../../types';
@@ -28,6 +28,7 @@ export const OrganisationEditPage: React.FC = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isActive, setIsActive] = useState(true);
+  const [enableThemeToggle, setEnableThemeToggle] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,10 +42,10 @@ export const OrganisationEditPage: React.FC = () => {
     organisationOptions,
     handleOrganisationSwitch,
   } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
     projects: [],
     users: [],
-    context: { currentOrgId: resolvedOrg?.id },
+    context: { currentOrgId: resolvedOrg?.id ? String(resolvedOrg.id) : undefined },
     basePath: '',
   });
 
@@ -59,7 +60,7 @@ export const OrganisationEditPage: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': currentOrgId || '',
+            'X-Organisation-ID': String(currentOrgId || ''),
           },
           credentials: 'include',
         });
@@ -74,6 +75,7 @@ export const OrganisationEditPage: React.FC = () => {
         setName(data.name);
         setDescription(data.description || '');
         setIsActive(data.is_active !== undefined ? data.is_active : true);
+        setEnableThemeToggle(data.enable_theme_toggle !== undefined ? data.enable_theme_toggle : true);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -105,13 +107,14 @@ export const OrganisationEditPage: React.FC = () => {
           'Content-Type': 'application/json',
           'X-CSRFToken': csrfToken || '',
           'X-Requested-With': 'XMLHttpRequest',
-          'X-Organisation-ID': currentOrgId || '',
+          'X-Organisation-ID': String(currentOrgId || ''),
         },
         credentials: 'include',
         body: JSON.stringify({
           name,
           description,
           is_active: isActive,
+          enable_theme_toggle: enableThemeToggle,
         }),
       });
 
@@ -192,7 +195,7 @@ export const OrganisationEditPage: React.FC = () => {
                 placeholder="e.g. Acme Corp"
                 required
                 disabled={saving}
-                fullWidth
+                className="w-full"
               />
             </div>
 
@@ -206,7 +209,7 @@ export const OrganisationEditPage: React.FC = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional description"
                 disabled={saving}
-                fullWidth
+                className="w-full"
               />
             </div>
 
@@ -222,6 +225,23 @@ export const OrganisationEditPage: React.FC = () => {
               <label htmlFor="is_active" style={{ fontWeight: 500 }}>
                 Active
               </label>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="checkbox"
+                id="enable_theme_toggle"
+                checked={enableThemeToggle}
+                onChange={(e) => setEnableThemeToggle(e.target.checked)}
+                disabled={saving}
+                style={{ width: '1rem', height: '1rem' }}
+              />
+              <label htmlFor="enable_theme_toggle" style={{ fontWeight: 500 }}>
+                Enable Theme Toggle
+              </label>
+              <span style={{ fontSize: '0.875rem', color: 'var(--app-text-secondary)', marginLeft: '0.5rem' }}>
+                (Allow users to switch between light and dark themes)
+              </span>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>

@@ -325,6 +325,6 @@ Before deploying production Nginx:
 ## Related Documentation
 
 - [B03 Security Baseline](../docs/security-audit-wp10.md)
-- [B18 Platform Observability](../docs/observability.md)
+- [B18 Platform Observability](../docs/features/observability/overview.md)
 - [Docker Compose Configuration](../docker-compose.*.yml)
 - [Environment Variables](.env.example)

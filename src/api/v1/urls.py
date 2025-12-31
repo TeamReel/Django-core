@@ -7,7 +7,6 @@ from rest_framework_simplejwt.views import (
 )
 
 from api.v1.views import api_root
-from api.views import LogoutView
 
 # DRF Router for domain viewsets (WP05)
 router = DefaultRouter()
@@ -25,7 +24,7 @@ urlpatterns = [
     path("auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-    path("auth/logout/", LogoutView.as_view(), name="logout"),
+    # path("auth/logout/", LogoutView.as_view(), name="logout"),
     # Domain API routes (existing from B05, B06, B07) - consolidated under v1
     path("", include("accounts.api.urls")),  # /api/v1/users/
     path("organisations/", include("organisations.api.urls")),  # /api/v1/organisations/

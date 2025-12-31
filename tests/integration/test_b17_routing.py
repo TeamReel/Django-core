@@ -46,8 +46,12 @@ class TestB17RoutingLogsACL:
         self.org_b = Organisation.objects.create(name="Org B", creator=self._create_temp_user())
 
         # Create test users
-        self.admin_user_a = User.objects.create_user(email="admin_a@test.com", password="testpass")
-        self.regular_user = User.objects.create_user(email="regular@test.com", password="testpass")
+        self.admin_user_a = User.objects.create_user(
+            email="admin_a@test.com", password="testpass", is_active=True
+        )
+        self.regular_user = User.objects.create_user(
+            email="regular@test.com", password="testpass", is_active=True
+        )
 
         # Add admin_user_a as admin of org_a
         Membership.objects.create(user=self.admin_user_a, organisation=self.org_a, role="admin")
@@ -82,6 +86,7 @@ class TestB17RoutingLogsACL:
         return User.objects.create_user(
             email=f"temp_{uuid.uuid4().hex[:8]}@test.com",
             password="testpass",
+            is_active=True,
         )
 
     def test_admin_can_view_routing_logs_for_own_org(self):
@@ -93,9 +98,9 @@ class TestB17RoutingLogsACL:
         assert response.status_code == 200
         # Should only see events for org_a
         data = response.json()
-        results = data.get("results", [])
+        results = data["data"].get("results", [])
         assert len(results) > 0
-        assert all(r["organization"]["id"] == str(self.org_a.id) for r in results)
+        assert all(r["organization_id"] == str(self.org_a.id) for r in results)
 
         # Verify B09 audit event for permission check
         audit_events = AuditEvent.objects.filter(
@@ -113,10 +118,10 @@ class TestB17RoutingLogsACL:
 
         assert response.status_code == 200
         data = response.json()
-        results = data.get("results", [])
+        results = data["data"].get("results", [])
 
         # Should NOT include org_b events
-        org_b_events = [r for r in results if r["organization"]["id"] == str(self.org_b.id)]
+        org_b_events = [r for r in results if r["organization_id"] == str(self.org_b.id)]
         assert len(org_b_events) == 0, "Should not see events from unauthorized organization"
 
     def test_regular_user_cannot_view_routing_logs(self):
@@ -127,7 +132,7 @@ class TestB17RoutingLogsACL:
 
         assert response.status_code == 200  # Endpoint accessible
         data = response.json()
-        results = data.get("results", [])
+        results = data["data"].get("results", [])
 
         # Should return empty results (queryset.none())
         assert len(results) == 0, "Regular users should not see any routing logs"
@@ -144,9 +149,9 @@ class TestB17NotificationPreferencesACL:
 
         # Create permission for viewing members
         self.view_members_perm, _ = Permission.objects.get_or_create(
-            permission="org.view_members",
+            permission="organization.view_members",
             defaults={
-                "resource_type": "org",
+                "resource_type": "organization",
                 "description": "View organisation members",
             },
         )
@@ -161,10 +166,14 @@ class TestB17NotificationPreferencesACL:
         self.org = Organisation.objects.create(name="Test Org", creator=self._create_temp_user())
 
         # Create users
-        self.admin_user = User.objects.create_user(email="admin@test.com", password="testpass")
-        self.team_member = User.objects.create_user(email="member@test.com", password="testpass")
+        self.admin_user = User.objects.create_user(
+            email="admin@test.com", password="testpass", is_active=True
+        )
+        self.team_member = User.objects.create_user(
+            email="member@test.com", password="testpass", is_active=True
+        )
         self.external_user = User.objects.create_user(
-            email="external@test.com", password="testpass"
+            email="external@test.com", password="testpass", is_active=True
         )
 
         # Add memberships
@@ -207,10 +216,10 @@ class TestB17NotificationPreferencesACL:
 
         assert response.status_code == 200
         data = response.json()
-        results = data.get("results", [])
+        results = data["data"].get("results", [])
 
         # Should see preferences for admin and team member
-        user_ids = [r["user"]["id"] for r in results]
+        user_ids = [r["user"] for r in results]
         assert self.admin_user.id in user_ids
         assert self.team_member.id in user_ids
         assert self.external_user.id not in user_ids, "Should not see external user preferences"
@@ -223,11 +232,11 @@ class TestB17NotificationPreferencesACL:
 
         assert response.status_code == 200
         data = response.json()
-        results = data.get("results", [])
+        results = data["data"].get("results", [])
 
         # Should only see own preference
         assert len(results) == 1
-        assert results[0]["user"]["id"] == self.team_member.id
+        assert results[0]["user"] == self.team_member.id
 
     def test_external_user_cannot_view_team_preferences(self):
         """User not in organization cannot see team preferences."""
@@ -237,13 +246,13 @@ class TestB17NotificationPreferencesACL:
 
         assert response.status_code == 200
         data = response.json()
-        results = data.get("results", [])
+        results = data["data"].get("results", [])
 
         # Should only see own preference
         assert len(results) == 1
-        assert results[0]["user"]["id"] == self.external_user.id
+        assert results[0]["user"] == self.external_user.id
 
         # Should NOT see admin or member preferences
-        user_ids = [r["user"]["id"] for r in results]
+        user_ids = [r["user"] for r in results]
         assert self.admin_user.id not in user_ids
         assert self.team_member.id not in user_ids

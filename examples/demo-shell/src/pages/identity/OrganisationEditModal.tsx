@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 interface Organisation {
   id: string;
   name: string;
-  slug: string;
+  slug?: string;
   description?: string;
-  is_active: boolean;
+  is_active?: boolean;
 }
 
 interface OrganisationEditModalProps {

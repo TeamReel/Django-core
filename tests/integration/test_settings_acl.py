@@ -24,13 +24,13 @@ User = get_user_model()
 @pytest.fixture
 def setup_org_and_users(db):
     """Create organisation and users with different roles."""
-    org = Organisation.objects.create(name="Test Org")
-
     # Create users
     admin = User.objects.create_user(email="admin@test.com")
     member = User.objects.create_user(email="member@test.com")
     viewer = User.objects.create_user(email="viewer@test.com")
     external = User.objects.create_user(email="external@test.com")
+
+    org = Organisation.objects.create(name="Test Org", creator=admin)
 
     # Get roles
     admin_role = Role.objects.get(name="Organization Admin")
@@ -42,19 +42,19 @@ def setup_org_and_users(db):
         user=admin,
         role=admin_role,
         scope="ORGANIZATION",
-        organization_id=org.id,
+        target_organization_id=org.id,
     )
     RoleAssignment.objects.create(
         user=member,
         role=member_role,
         scope="ORGANIZATION",
-        organization_id=org.id,
+        target_organization_id=org.id,
     )
     RoleAssignment.objects.create(
         user=viewer,
         role=viewer_role,
         scope="ORGANIZATION",
-        organization_id=org.id,
+        target_organization_id=org.id,
     )
 
     return {
@@ -74,7 +74,7 @@ def setup_project(setup_org_and_users):
     project = Project.objects.create(
         name="Test Project",
         organisation=org,
-        created_by=admin,
+        creator=admin,
     )
     return {**setup_org_and_users, "project": project}
 
@@ -94,6 +94,7 @@ def test_org_admin_can_view_org_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="test.setting",
         value="test_value",
+        default_value="default",
         scope_type=ScopeType.ORGANISATION,
         organisation=org,
     )
@@ -116,6 +117,7 @@ def test_org_admin_can_edit_org_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="test.setting",
         value="old_value",
+        default_value="default",
         scope_type=ScopeType.ORGANISATION,
         organisation=org,
     )
@@ -143,6 +145,7 @@ def test_org_member_can_view_org_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="test.setting",
         value="test_value",
+        default_value="default",
         scope_type=ScopeType.ORGANISATION,
         organisation=org,
     )
@@ -165,6 +168,7 @@ def test_org_member_can_edit_org_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="test.setting",
         value="old_value",
+        default_value="default",
         scope_type=ScopeType.ORGANISATION,
         organisation=org,
     )
@@ -192,6 +196,7 @@ def test_org_viewer_can_view_org_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="test.setting",
         value="test_value",
+        default_value="default",
         scope_type=ScopeType.ORGANISATION,
         organisation=org,
     )
@@ -214,6 +219,7 @@ def test_org_viewer_cannot_edit_org_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="test.setting",
         value="old_value",
+        default_value="default",
         scope_type=ScopeType.ORGANISATION,
         organisation=org,
     )
@@ -239,6 +245,7 @@ def test_external_user_cannot_view_org_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="test.setting",
         value="test_value",
+        default_value="default",
         scope_type=ScopeType.ORGANISATION,
         organisation=org,
     )
@@ -265,6 +272,7 @@ def test_org_admin_can_view_project_settings(setup_project):
     setting = Setting.objects.create(
         key="test.setting",
         value="test_value",
+        default_value="default",
         scope_type=ScopeType.PROJECT,
         project=project,
     )
@@ -287,6 +295,7 @@ def test_org_admin_can_edit_project_settings(setup_project):
     setting = Setting.objects.create(
         key="test.setting",
         value="old_value",
+        default_value="default",
         scope_type=ScopeType.PROJECT,
         project=project,
     )
@@ -388,6 +397,7 @@ def test_user_can_view_own_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="user.preference",
         value="dark_mode",
+        default_value="default",
         scope_type=ScopeType.USER,
         user=member,
     )
@@ -410,6 +420,7 @@ def test_user_cannot_view_other_user_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="user.preference",
         value="dark_mode",
+        default_value="default",
         scope_type=ScopeType.USER,
         user=member,
     )
@@ -438,6 +449,7 @@ def test_superuser_can_view_global_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="global.config",
         value="system_wide",
+        default_value="default",
         scope_type=ScopeType.GLOBAL,
     )
 
@@ -458,6 +470,7 @@ def test_org_admin_cannot_view_global_settings(setup_org_and_users):
     setting = Setting.objects.create(
         key="global.config",
         value="system_wide",
+        default_value="default",
         scope_type=ScopeType.GLOBAL,
     )
 

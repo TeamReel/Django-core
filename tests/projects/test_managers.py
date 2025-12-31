@@ -35,7 +35,7 @@ class TestProjectManagers:
 
         assert active_proj in org_projects
         assert archived_proj not in org_projects
-        assert org_projects.count() == 2  # project fixture + active_proj
+        assert org_projects.count() == 1  # active_proj only
 
     def test_filter_by_organisation_all_objects(self, organisation, project_factory, admin_user):
         """Test filtering by organisation with all_objects manager."""
@@ -48,7 +48,7 @@ class TestProjectManagers:
 
         assert active_proj in all_org_projects
         assert archived_proj in all_org_projects
-        assert all_org_projects.count() == 3  # project fixture + active + archived
+        assert all_org_projects.count() == 2  # active + archived
 
     def test_get_active_project(self, project):
         """Test retrieving a specific active project."""

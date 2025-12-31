@@ -21,7 +21,7 @@ export interface FeatureFlag {
   description: string;
   enabled: boolean;
   provisioned?: boolean;
-  resolutionSource?: 'global' | 'override' | 'provisioning_restriction';
+  resolutionSource?: 'global' | 'override' | 'provisioning_restriction' | 'global_disabled' | 'organisation';
   rollout_percentage: number;
   created_at: string;
   updated_at: string;

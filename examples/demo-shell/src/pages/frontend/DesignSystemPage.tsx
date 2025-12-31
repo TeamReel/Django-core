@@ -149,7 +149,7 @@ export function DesignSystemPage() {
                 <Badge variant="primary">Primary</Badge>
                 <Badge variant="success">Success</Badge>
                 <Badge variant="warning">Warning</Badge>
-                <Badge variant="danger">Danger</Badge>
+                <Badge variant="error">Danger</Badge>
               </div>
             </Card>
             <Card variant="filled" style={{ padding: '16px' }}>
@@ -176,7 +176,7 @@ export function DesignSystemPage() {
               <Alert variant="warning">
                 ⚠️ {inputValue.length > 20 ? 'Text is getting quite long!' : 'Warning alert - type more than 20 characters'}
               </Alert>
-              <Alert variant="danger">
+              <Alert variant="error">
                 🚨 {isLoading ? 'System is processing - please wait' : 'Danger alert - click Toggle Loading button'}
               </Alert>
               <Alert variant="info">

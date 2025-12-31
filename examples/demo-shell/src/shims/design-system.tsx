@@ -1,10 +1,7 @@
 import type { ReactNode, TableHTMLAttributes, CSSProperties } from 'react';
-// @ts-expect-error: dist package has no bundled .d.ts in this snapshot
-import * as RealDesignSystem from '../../../../packages/design-system/dist/index.js';
-import { themeVars } from '@django-core/theme-system';
+import { themeVars } from '@django-core/design-system';
 
-// @ts-expect-error: dist package has no bundled .d.ts in this snapshot
-export * from '../../../../packages/design-system/dist/index.js';
+export * from '@django-core/design-system';
 
 export type PageHeaderProps = {
   title?: ReactNode;
@@ -91,11 +88,3 @@ export const Table = ({ children, columns, rows, loading, style, ...rest }: Tabl
   );
 };
 
-// Fallbacks for named exports expected by demos
-// We need to explicitly export these if they are not found in RealDesignSystem
-// But since we do export * from ..., they should be there.
-// However, if RealDesignSystem is a CJS module, the named exports might be on .default
-const DS = (RealDesignSystem as any).default || RealDesignSystem;
-
-export const { Card, Button, Badge, Text, Spinner, Alert, Modal, Input, Stack, ThemeProvider } =
-  DS as Record<string, unknown>;

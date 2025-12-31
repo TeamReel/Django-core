@@ -3,13 +3,51 @@
 from typing import Any, Callable
 
 import pytest
+from django.core.cache import cache
 from rest_framework.test import APIClient
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    """Clear Django cache before and after each test."""
+    cache.clear()
+    yield
+    cache.clear()
 
 
 @pytest.fixture
 def api_client():
     """API client for testing."""
     return APIClient()
+
+
+@pytest.fixture
+def admin_user(db):
+    """Admin user for testing."""
+    from django.contrib.auth import get_user_model
+    from permissions.models import Role, ScopeChoices, RoleAssignment
+
+    User = get_user_model()
+    user = User.objects.create_user(
+        email="admin@example.com",
+        password="password",
+        is_staff=True,
+        is_superuser=True,
+        is_active=True,
+    )
+
+    # Assign Global Admin role
+    role = Role.objects.get(name="Global Admin", scope=ScopeChoices.GLOBAL)
+    RoleAssignment.objects.create(user=user, role=role, scope=ScopeChoices.GLOBAL)
+
+    return user
+
+
+@pytest.fixture
+def authenticated_client(api_client, admin_user):
+    """Authenticated API client."""
+    api_client.force_authenticate(user=admin_user)
+    return api_client
 
 
 @pytest.fixture

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
-  PageHeader,
-  PageContent,
   Card,
   Badge,
   Alert,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
 import { HealthStatus } from '../../types';
 import AppShell from '../../components/AppShell';
 
@@ -81,19 +83,19 @@ export const HealthCheckPage: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     if (status === 'healthy') {
-      return <Badge type="success">Healthy</Badge>;
+      return <Badge variant="success">Healthy</Badge>;
     } else if (status === 'degraded') {
-      return <Badge type="warning">Degraded</Badge>;
+      return <Badge variant="warning">Degraded</Badge>;
     } else {
-      return <Badge type="error">Unhealthy</Badge>;
+      return <Badge variant="error">Unhealthy</Badge>;
     }
   };
 
   const getCheckStatus = (checked: boolean | undefined) => {
     return checked ? (
-      <Badge type="success">✓ OK</Badge>
+      <Badge variant="success">✓ OK</Badge>
     ) : (
-      <Badge type="error">✗ Failed</Badge>
+      <Badge variant="error">✗ Failed</Badge>
     );
   };
 
@@ -131,7 +133,7 @@ export const HealthCheckPage: React.FC = () => {
           ]}
         />
         <PageContent>
-          <Alert type="error" data-testid="health-error">
+          <Alert variant="error" data-testid="health-error">
             {error}
           </Alert>
         </PageContent>
@@ -151,7 +153,7 @@ export const HealthCheckPage: React.FC = () => {
         ]}
       />
       <PageContent>
-        <Alert type="info" className="mb-4">
+        <Alert variant="info" className="mb-4">
           <strong>Demo Mode:</strong> This page shows mock health status data. API endpoints are not yet implemented.
         </Alert>
         <Card data-testid="health-status-card" className="mb-4">

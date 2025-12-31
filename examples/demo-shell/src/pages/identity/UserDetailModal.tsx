@@ -63,7 +63,7 @@ export default function UserDetailModal({ opened, onClose, user }: UserDetailMod
               {user.role && (
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>System Role</label>
-                  <Badge variant={user.role === 'superadmin' ? 'primary' : 'neutral'}>
+                  <Badge variant={user.role === 'superadmin' ? 'primary' : 'default'}>
                     {user.role}
                   </Badge>
                 </div>

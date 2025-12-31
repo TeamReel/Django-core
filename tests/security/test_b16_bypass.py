@@ -9,9 +9,10 @@ Tests verify:
 """
 
 import pytest
+from django.core.cache import cache
 from accounts.models import User
 from audit.models import AuditEvent
-from notifications.models import Notification, NotificationType
+from notifications.models import Notification, NotificationType, RetryPolicy
 from organisations.models import Membership, Organisation
 from permissions.models import Permission, Role, RoleAssignment
 from rest_framework.test import APIClient
@@ -24,23 +25,35 @@ class TestB16NotificationBypass:
     @pytest.fixture(autouse=True)
     def setup(self):
         """Set up test fixtures."""
+        cache.clear()
         self.client = APIClient()
+
+        # Create retry policy
+        retry_policy = RetryPolicy.objects.create(
+            name="test-policy",
+            max_attempts=3,
+            retry_window_seconds=3600,
+            backoff_strategy="exponential",
+            backoff_multiplier=5.0,
+            initial_delay_seconds=60,
+        )
 
         # Create notification type
         self.notification_type = NotificationType.objects.create(
             code="test_notification",
             name="Test Notification",
             description="Test notification type",
+            default_channel="email",
+            retry_policy=retry_policy,
         )
 
     def create_user_with_permission(self, username="testuser"):
         """Create user with notifications.view permission."""
-        org = Organisation.objects.create(name=f"Test Org {username}")
         user = User.objects.create_user(
-            username=username,
             email=f"{username}@example.com",
             password="testpass123",
         )
+        org = Organisation.objects.create(name=f"Test Org {username}", creator=user)
         Membership.objects.create(user=user, organisation=org, role="member")
 
         perm, _ = Permission.objects.get_or_create(
@@ -53,19 +66,18 @@ class TestB16NotificationBypass:
         )
         role.permissions.add(perm)
         RoleAssignment.objects.create(
-            user=user, role=role, scope="ORGANIZATION", resource_id=str(org.id)
+            user=user, role=role, scope="ORGANIZATION", target_organization_id=org.id
         )
 
         return user
 
     def create_user_without_permission(self, username="nopermuser"):
         """Create user without notifications.view permission."""
-        org = Organisation.objects.create(name=f"Test Org {username}")
         user = User.objects.create_user(
-            username=username,
             email=f"{username}@example.com",
             password="testpass123",
         )
+        org = Organisation.objects.create(name=f"Test Org {username}", creator=user)
         Membership.objects.create(user=user, organisation=org, role="member")
         return user
 
@@ -79,7 +91,7 @@ class TestB16NotificationBypass:
         notif_b = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user_b.username,
+            recipient=user_b.email,
             recipient_user=user_b,
             payload={"title": "Bob's secret notification"},
             status="sent",
@@ -87,7 +99,7 @@ class TestB16NotificationBypass:
 
         # Execute - Alice tries to retrieve Bob's notification
         self.client.force_authenticate(user=user_a)
-        response = self.client.get(f"/api/notifications/{notif_b.id}/")
+        response = self.client.get(f"/api/v1/notifications/{notif_b.id}/")
 
         # Assert - Returns 404 (DRF convention: filtered queryset returns 404, not 403)
         assert response.status_code == 404
@@ -95,7 +107,7 @@ class TestB16NotificationBypass:
         # Verify audit event logged for permission check
         audit_events = AuditEvent.objects.filter(
             user=user_a,
-            event_type="permission.check",
+            event_type="permission.granted",
         )
         assert audit_events.exists()
 
@@ -111,7 +123,7 @@ class TestB16NotificationBypass:
             notif = Notification.objects.create(
                 type=self.notification_type,
                 channel="in_app",
-                recipient=user_b.username,
+                recipient=user_b.email,
                 recipient_user=user_b,
                 payload={"title": f"Bob notification {i}"},
                 status="sent",
@@ -123,7 +135,7 @@ class TestB16NotificationBypass:
 
         leaked_notifications = []
         for notif_id in notif_ids_b:
-            response = self.client.get(f"/api/notifications/{notif_id}/")
+            response = self.client.get(f"/api/v1/notifications/{notif_id}/")
             if response.status_code == 200:
                 leaked_notifications.append(notif_id)
 
@@ -133,7 +145,7 @@ class TestB16NotificationBypass:
         # Verify audit events logged for all attempts
         audit_events = AuditEvent.objects.filter(
             user=user_a,
-            event_type="permission.check",
+            event_type="permission.granted",
         )
         assert audit_events.count() >= 5  # At least one per attempt
 
@@ -146,7 +158,7 @@ class TestB16NotificationBypass:
         notification = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user.username,
+            recipient=user.email,
             recipient_user=user,
             payload={"title": "Attacker notification"},
             status="sent",
@@ -155,8 +167,8 @@ class TestB16NotificationBypass:
         # Execute - Try both list and retrieve
         self.client.force_authenticate(user=user)
 
-        list_response = self.client.get("/api/notifications/")
-        retrieve_response = self.client.get(f"/api/notifications/{notification.id}/")
+        list_response = self.client.get("/api/v1/notifications/")
+        retrieve_response = self.client.get(f"/api/v1/notifications/{notification.id}/")
 
         # Assert - Both blocked with 403
         assert list_response.status_code == 403
@@ -168,8 +180,7 @@ class TestB16NotificationBypass:
         # Verify audit events logged for both denials
         audit_events = AuditEvent.objects.filter(
             user=user,
-            event_type="permission.check",
-            outcome="failure",
+            event_type="permission.denied",
         )
         assert audit_events.count() >= 2  # One for list, one for retrieve
 
@@ -180,15 +191,15 @@ class TestB16NotificationBypass:
         notification = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user.username,
+            recipient=user.email,
             recipient_user=user,
             payload={"title": "Test"},
             status="sent",
         )
 
         # Execute (no authentication)
-        list_response = self.client.get("/api/notifications/")
-        retrieve_response = self.client.get(f"/api/notifications/{notification.id}/")
+        list_response = self.client.get("/api/v1/notifications/")
+        retrieve_response = self.client.get(f"/api/v1/notifications/{notification.id}/")
 
         # Assert
         assert list_response.status_code == 401
@@ -201,7 +212,7 @@ class TestB16NotificationBypass:
 
         # Execute - Request nonexistent notification
         self.client.force_authenticate(user=user)
-        response = self.client.get("/api/notifications/00000000-0000-0000-0000-000000000000/")
+        response = self.client.get("/api/v1/notifications/00000000-0000-0000-0000-000000000000/")
 
         # Assert
         assert response.status_code == 404
@@ -213,7 +224,7 @@ class TestB16NotificationBypass:
 
         # Execute - Request with malformed ID
         self.client.force_authenticate(user=user)
-        response = self.client.get("/api/notifications/invalid-uuid/")
+        response = self.client.get("/api/v1/notifications/invalid-uuid/")
 
         # Assert
         assert response.status_code == 404
@@ -228,7 +239,7 @@ class TestB16NotificationBypass:
         notif_a = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user_a.username,
+            recipient=user_a.email,
             recipient_user=user_a,
             payload={"title": "Alice notification"},
             status="sent",
@@ -237,7 +248,7 @@ class TestB16NotificationBypass:
         notif_b = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user_b.username,
+            recipient=user_b.email,
             recipient_user=user_b,
             payload={"title": "Bob notification"},
             status="sent",
@@ -245,9 +256,9 @@ class TestB16NotificationBypass:
 
         # Execute - Alice's session
         self.client.force_authenticate(user=user_a)
-        alice_list = self.client.get("/api/notifications/")
-        alice_retrieve_own = self.client.get(f"/api/notifications/{notif_a.id}/")
-        alice_retrieve_bobs = self.client.get(f"/api/notifications/{notif_b.id}/")
+        alice_list = self.client.get("/api/v1/notifications/")
+        alice_retrieve_own = self.client.get(f"/api/v1/notifications/{notif_a.id}/")
+        alice_retrieve_bobs = self.client.get(f"/api/v1/notifications/{notif_b.id}/")
 
         # Assert - Alice sees only her notification
         assert alice_list.status_code == 200
@@ -259,9 +270,9 @@ class TestB16NotificationBypass:
 
         # Execute - Bob's session
         self.client.force_authenticate(user=user_b)
-        bob_list = self.client.get("/api/notifications/")
-        bob_retrieve_own = self.client.get(f"/api/notifications/{notif_b.id}/")
-        bob_retrieve_alices = self.client.get(f"/api/notifications/{notif_a.id}/")
+        bob_list = self.client.get("/api/v1/notifications/")
+        bob_retrieve_own = self.client.get(f"/api/v1/notifications/{notif_b.id}/")
+        bob_retrieve_alices = self.client.get(f"/api/v1/notifications/{notif_a.id}/")
 
         # Assert - Bob sees only his notification
         assert bob_list.status_code == 200
@@ -275,7 +286,6 @@ class TestB16NotificationBypass:
         """Staff user without notifications.view permission is still blocked."""
         # Setup
         staff_user = User.objects.create_user(
-            username="staffuser",
             email="staff@example.com",
             password="testpass123",
             is_staff=True,
@@ -283,7 +293,7 @@ class TestB16NotificationBypass:
 
         # Execute - Staff user tries to access without permission
         self.client.force_authenticate(user=staff_user)
-        response = self.client.get("/api/notifications/")
+        response = self.client.get("/api/v1/notifications/")
 
         # Assert - Still blocked (staff status doesn't bypass permissions)
         assert response.status_code == 403
@@ -291,8 +301,7 @@ class TestB16NotificationBypass:
         # Verify audit event logged
         audit_events = AuditEvent.objects.filter(
             user=staff_user,
-            event_type="permission.check",
-            outcome="failure",
+            event_type="permission.denied",
         )
         assert audit_events.exists()
 
@@ -306,7 +315,7 @@ class TestB16NotificationBypass:
         notification = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=victim.username,
+            recipient=victim.email,
             recipient_user=victim,
             payload={"title": "Victim notification"},
             status="sent",
@@ -316,25 +325,22 @@ class TestB16NotificationBypass:
         self.client.force_authenticate(user=attacker)
 
         # Attempt 1: List notifications
-        self.client.get("/api/notifications/")
+        self.client.get("/api/v1/notifications/")
 
         # Attempt 2: Retrieve victim's notification
-        self.client.get(f"/api/notifications/{notification.id}/")
+        self.client.get(f"/api/v1/notifications/{notification.id}/")
 
         # Attempt 3: List again (persistent attacker)
-        self.client.get("/api/notifications/")
+        self.client.get("/api/v1/notifications/")
 
         # Assert - All attempts logged
         audit_events = AuditEvent.objects.filter(
             user=attacker,
-            event_type="permission.check",
+            event_type="permission.denied",
         )
         assert audit_events.count() >= 3
 
-        # All should be failures
-        failure_events = audit_events.filter(outcome="failure")
-        assert failure_events.count() >= 3
-
         # All should reference notifications.view permission
-        for event in failure_events:
+        for event in audit_events:
             assert event.metadata["permission"] == "notifications.view"
+            assert event.metadata["outcome"] == "denied"

@@ -5,13 +5,14 @@ import {
   Card,
   Badge,
   Alert,
-  Table,
 } from '@django-core/design-system';
+import { Table } from '../../shims/design-system';
 import {
   PageHeader,
   PageContent,
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
+  type BreadcrumbSwitcherOption,
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Project, User, AuditEvent } from '../../types';
@@ -47,22 +48,22 @@ export const ProjectDetailPage: React.FC = () => {
 
   // Try to find project in context first (if loaded), otherwise use targetId as slug
   const resolvedProject = (targetId
-    ? contextProjects.find(p => p.slug.toLowerCase() === targetId?.toLowerCase() || p.id === targetId)
+    ? contextProjects.find(p => (p as any).slug?.toLowerCase() === targetId?.toLowerCase() || p.id === targetId)
     : context.project) || context.project;
 
-  const currentProjectSlug = resolvedProject?.slug || targetId?.toLowerCase(); // Use slug for API calls
+  const currentProjectSlug = (resolvedProject as any)?.slug || targetId?.toLowerCase(); // Use slug for API calls
 
   // Breadcrumb context switcher setup
   const {
     organisationOptions,
     projectOptions,
   } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
-    projects: orgProjects.map(p => ({ id: p.id, name: p.name, slug: p.slug, organisation_id: p.organisation_id })),
+    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
+    projects: orgProjects.map(p => ({ id: String(p.id), name: p.name, slug: p.slug || '', organisation_id: String(p.organisation_id) })),
     users: [],
     context: {
-      currentOrgId: resolvedOrg?.id || project?.organisation_id,
-      currentProjectId: resolvedProject?.id || project?.id,
+      currentOrgId: resolvedOrg?.id ? String(resolvedOrg.id) : (project?.organisation_id ? String(project.organisation_id) : undefined),
+      currentProjectId: resolvedProject?.id ? String(resolvedProject.id) : (project?.id ? String(project.id) : undefined),
     },
     basePath: '',
   });
@@ -72,7 +73,7 @@ export const ProjectDetailPage: React.FC = () => {
     navigate(`/organisations/${option.slug || option.id}`);
   };
 
-  const handleProjectSwitch = (option: { id: string; label: string; slug: string }) => {
+  const handleProjectSwitch = (option: BreadcrumbSwitcherOption) => {
     navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${option.slug || option.id}`);
   };
 
@@ -87,7 +88,6 @@ export const ProjectDetailPage: React.FC = () => {
       name: p.name,
       id: p.id,
       organisation_id: p.organisation_id,
-      organisation: p.organisation
     }))
   });
 
@@ -284,7 +284,7 @@ export const ProjectDetailPage: React.FC = () => {
             ]}
           />
           <PageContent>
-            <Alert type="error" data-testid="project-detail-error">
+            <Alert variant="error" data-testid="project-detail-error">
               {error || 'Project not found'}
             </Alert>
             <Button variant="secondary" onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`)}>
@@ -323,7 +323,11 @@ export const ProjectDetailPage: React.FC = () => {
                 onChange={(e) => {
                   const value = e.target.value;
                   const selectedProject = effectiveProjectOptions.find(p => (p.slug || p.id) === value);
-                  if (selectedProject) handleProjectSwitch(selectedProject);
+                  if (selectedProject) handleProjectSwitch({
+                    id: selectedProject.id,
+                    label: selectedProject.label,
+                    slug: selectedProject.slug || ''
+                  });
                 }}
                 style={{
                   padding: '4px 8px',
@@ -459,7 +463,7 @@ export const ProjectDetailPage: React.FC = () => {
                       </td>
                       <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
                       <td>
-                        <Badge variant="secondary" data-testid={`team-role-${user.id}`}>
+                        <Badge variant="default" data-testid={`team-role-${user.id}`}>
                           {role}
                         </Badge>
                       </td>
@@ -474,7 +478,7 @@ export const ProjectDetailPage: React.FC = () => {
               </tbody>
             </Table>
           ) : (
-            <Alert type="info">No team members yet</Alert>
+            <Alert variant="info">No team members yet</Alert>
           )}
         </Card>
 
@@ -494,7 +498,7 @@ export const ProjectDetailPage: React.FC = () => {
                 {recentEvents.map((event) => (
                   <tr key={event.id}>
                     <td>
-                      <Badge variant="secondary" data-testid={`event-type-${event.id}`}>
+                      <Badge variant="default" data-testid={`event-type-${event.id}`}>
                         {event.event_type}
                       </Badge>
                     </td>
@@ -509,7 +513,7 @@ export const ProjectDetailPage: React.FC = () => {
               </tbody>
             </Table>
           ) : (
-            <Alert type="info">No recent activity</Alert>
+            <Alert variant="info">No recent activity</Alert>
           )}
         </Card>
       </PageContent>

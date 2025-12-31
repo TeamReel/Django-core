@@ -152,7 +152,8 @@ class TestAdditiveInheritance:
         )
 
         # Project role: can delete
-        project_admin = Role.objects.create(name="Project Admin", scope="project")
+        project_admin = Role.objects.get(name="Project Admin")
+        # Ensure permissions are set as expected for the test
         project_admin.permissions.add(perm_projects_delete, perm_projects_view)
         RoleAssignment.objects.create(
             user=user, role=project_admin, scope="project", target_project=project
@@ -187,7 +188,9 @@ class TestCacheBehavior:
         """Verify cache distinguishes between different resource IDs."""
         from projects.models import Project
 
-        project2 = Project.objects.create(name="Project 2", organisation=project.organisation)
+        project2 = Project.objects.create(
+            name="Project 2", organisation=project.organisation, creator=user
+        )
 
         # Grant access only to project1
         RoleAssignment.objects.create(

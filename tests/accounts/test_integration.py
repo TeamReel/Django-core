@@ -29,7 +29,7 @@ class TestCompleteRegistrationFlow:
             "first_name": "New",
             "last_name": "User",
         }
-        reg_response = api_client.post("/api/v1/auth/register", registration_data, format="json")
+        reg_response = api_client.post("/api/v1/auth/register/", registration_data, format="json")
         assert reg_response.status_code == status.HTTP_201_CREATED
         assert reg_response.data["email"] == "newuser@example.com"
         assert reg_response.data["email_verified"] is False
@@ -46,7 +46,7 @@ class TestCompleteRegistrationFlow:
 
         # Step 2: Try to login before email verification (should fail)
         login_data = {"email": "newuser@example.com", "password": "SecurePass123!"}
-        login_response = api_client.post("/api/v1/auth/login", login_data, format="json")
+        login_response = api_client.post("/api/v1/auth/login/", login_data, format="json")
         assert login_response.status_code == status.HTTP_400_BAD_REQUEST
 
         # Step 3: Verify email
@@ -63,7 +63,7 @@ class TestCompleteRegistrationFlow:
             assert user.is_active is True
 
             # Step 4: Login successfully after verification
-            login_response = api_client.post("/api/v1/auth/login", login_data, format="json")
+            login_response = api_client.post("/api/v1/auth/login/", login_data, format="json")
             assert login_response.status_code == status.HTTP_200_OK
             assert login_response.data["email"] == "newuser@example.com"
             assert login_response.data["role"] == "user"
@@ -71,7 +71,7 @@ class TestCompleteRegistrationFlow:
     def test_user_cannot_login_with_wrong_password(self, api_client, regular_user):
         """Test that user cannot bypass authentication with wrong password."""
         login_data = {"email": regular_user.email, "password": "WrongPassword123!"}
-        response = api_client.post("/api/v1/auth/login", login_data, format="json")
+        response = api_client.post("/api/v1/auth/login/", login_data, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["error"] == "invalid_credentials"
 
@@ -88,7 +88,7 @@ class TestPasswordResetFlow:
         # Step 1: Request password reset
         reset_request_data = {"email": regular_user.email}
         reset_response = api_client.post(
-            "/api/v1/auth/password-reset", reset_request_data, format="json"
+            "/api/v1/auth/password-reset/", reset_request_data, format="json"
         )
         assert reset_response.status_code == status.HTTP_200_OK
 
@@ -107,18 +107,18 @@ class TestPasswordResetFlow:
             "new_password_confirm": new_password,
         }
         confirm_response = api_client.post(
-            "/api/v1/auth/password-reset-confirm", confirm_data, format="json"
+            "/api/v1/auth/password-reset-confirm/", confirm_data, format="json"
         )
         assert confirm_response.status_code == status.HTTP_200_OK
 
         # Step 3: Verify old password no longer works
         login_data = {"email": regular_user.email, "password": old_password}
-        login_response = api_client.post("/api/v1/auth/login", login_data, format="json")
+        login_response = api_client.post("/api/v1/auth/login/", login_data, format="json")
         assert login_response.status_code == status.HTTP_400_BAD_REQUEST
 
         # Step 4: Login with new password
         login_data = {"email": regular_user.email, "password": new_password}
-        login_response = api_client.post("/api/v1/auth/login", login_data, format="json")
+        login_response = api_client.post("/api/v1/auth/login/", login_data, format="json")
         assert login_response.status_code == status.HTTP_200_OK
         assert login_response.data["email"] == regular_user.email
 
@@ -135,7 +135,7 @@ class TestPasswordResetFlow:
             "new_password_confirm": "NewPass123!",
         }
         first_response = api_client.post(
-            "/api/v1/auth/password-reset-confirm", confirm_data, format="json"
+            "/api/v1/auth/password-reset-confirm/", confirm_data, format="json"
         )
         assert first_response.status_code == status.HTTP_200_OK
 
@@ -147,7 +147,7 @@ class TestPasswordResetFlow:
             "new_password_confirm": "AnotherPass456!",
         }
         second_response = api_client.post(
-            "/api/v1/auth/password-reset-confirm", second_data, format="json"
+            "/api/v1/auth/password-reset-confirm/", second_data, format="json"
         )
         assert second_response.status_code == status.HTTP_400_BAD_REQUEST
         assert second_response.data["error"] == "invalid_token"
@@ -170,12 +170,12 @@ class TestAdminUserManagementFlow:
             "first_name": "Managed",
             "last_name": "User",
         }
-        reg_response = api_client.post("/api/v1/auth/register", reg_data, format="json")
+        reg_response = api_client.post("/api/v1/auth/register/", reg_data, format="json")
         assert reg_response.status_code == status.HTTP_201_CREATED
         user_id = reg_response.data["id"]
 
         # Step 2: Admin views user details
-        detail_response = admin_client.get(f"/api/v1/admin/users/{user_id}")
+        detail_response = admin_client.get(f"/api/v1/admin/users/{user_id}/")
         assert detail_response.status_code == status.HTTP_200_OK
         assert detail_response.data["email"] == "managed@example.com"
         assert detail_response.data["is_active"] is False
@@ -186,43 +186,43 @@ class TestAdminUserManagementFlow:
         user.save()
 
         # Step 4: Admin activates user
-        activate_response = admin_client.patch(f"/api/v1/admin/users/{user_id}/activate")
+        activate_response = admin_client.patch(f"/api/v1/admin/users/{user_id}/activate/")
         assert activate_response.status_code == status.HTTP_200_OK
         assert activate_response.data["is_active"] is True
 
         # Step 5: User can now login
         login_data = {"email": "managed@example.com", "password": "SecurePass123!"}
-        login_response = api_client.post("/api/v1/auth/login", login_data, format="json")
+        login_response = api_client.post("/api/v1/auth/login/", login_data, format="json")
         assert login_response.status_code == status.HTTP_200_OK
         assert login_response.data["role"] == "user"
 
         # Step 6: Admin attempts to promote user (may fail - only superadmin can)
         role_data = {"role": "admin"}
         _role_response = admin_client.patch(
-            f"/api/v1/admin/users/{user_id}/role", role_data, format="json"
+            f"/api/v1/admin/users/{user_id}/role/", role_data, format="json"
         )
         # May be 403 if admin can't promote, which is correct behavior
 
         # Step 7: Admin deactivates user
-        deactivate_response = admin_client.patch(f"/api/v1/admin/users/{user_id}/deactivate")
+        deactivate_response = admin_client.patch(f"/api/v1/admin/users/{user_id}/deactivate/")
         assert deactivate_response.status_code == status.HTTP_200_OK
         assert deactivate_response.data["is_active"] is False
 
         # Step 8: User cannot login after deactivation
-        login_response = api_client.post("/api/v1/auth/login", login_data, format="json")
+        login_response = api_client.post("/api/v1/auth/login/", login_data, format="json")
         assert login_response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_superadmin_role_management_flow(self, superadmin_client, regular_user):
         """Test superadmin promoting users through role hierarchy."""
         # Step 1: User starts as regular user
-        detail_response = superadmin_client.get(f"/api/v1/admin/users/{regular_user.id}")
+        detail_response = superadmin_client.get(f"/api/v1/admin/users/{regular_user.id}/")
         assert detail_response.status_code == status.HTTP_200_OK
         assert detail_response.data["role"] == "user"
 
         # Step 2: Promote to admin
         role_data = {"role": "admin"}
         admin_response = superadmin_client.patch(
-            f"/api/v1/admin/users/{regular_user.id}/role", role_data, format="json"
+            f"/api/v1/admin/users/{regular_user.id}/role/", role_data, format="json"
         )
         assert admin_response.status_code == status.HTTP_200_OK
 
@@ -232,7 +232,7 @@ class TestAdminUserManagementFlow:
         # Step 3: Promote to superadmin
         role_data = {"role": "superadmin"}
         superadmin_response = superadmin_client.patch(
-            f"/api/v1/admin/users/{regular_user.id}/role", role_data, format="json"
+            f"/api/v1/admin/users/{regular_user.id}/role/", role_data, format="json"
         )
         assert superadmin_response.status_code == status.HTTP_200_OK
 
@@ -242,7 +242,7 @@ class TestAdminUserManagementFlow:
         # Step 4: Demote back to user
         role_data = {"role": "user"}
         user_response = superadmin_client.patch(
-            f"/api/v1/admin/users/{regular_user.id}/role", role_data, format="json"
+            f"/api/v1/admin/users/{regular_user.id}/role/", role_data, format="json"
         )
         assert user_response.status_code == status.HTTP_200_OK
 
@@ -259,14 +259,14 @@ class TestAuthenticationSessionFlow:
         """Test complete login and logout flow."""
         # Step 1: Login
         login_data = {"email": regular_user.email, "password": "Test123!@#"}
-        login_response = api_client.post("/api/v1/auth/login", login_data, format="json")
+        login_response = api_client.post("/api/v1/auth/login/", login_data, format="json")
         assert login_response.status_code == status.HTTP_200_OK
 
         # Session should be created (test client doesn't maintain session automatically)
         # But we can test the response
 
         # Step 2: Logout
-        logout_response = api_client.post("/api/v1/auth/logout")
+        logout_response = api_client.post("/api/v1/auth/logout/")
         assert logout_response.status_code in [
             status.HTTP_204_NO_CONTENT,
             status.HTTP_403_FORBIDDEN,  # If not authenticated in test
@@ -276,14 +276,14 @@ class TestAuthenticationSessionFlow:
         """Test that authentication persists across requests."""
         # Login
         login_data = {"email": regular_user.email, "password": "Test123!@#"}
-        login_response = api_client.post("/api/v1/auth/login", login_data, format="json")
+        login_response = api_client.post("/api/v1/auth/login/", login_data, format="json")
         assert login_response.status_code == status.HTTP_200_OK
 
         # Force authenticate for subsequent requests
         api_client.force_authenticate(user=regular_user)
 
         # Try accessing protected endpoint
-        logout_response = api_client.post("/api/v1/auth/logout")
+        logout_response = api_client.post("/api/v1/auth/logout/")
         assert logout_response.status_code == status.HTTP_204_NO_CONTENT
 
 
@@ -294,16 +294,16 @@ class TestSecurityConstraints:
     def test_regular_user_cannot_access_admin_endpoints(self, authenticated_client, admin_user):
         """Test that regular users cannot access admin-only endpoints."""
         # Try to list all users
-        list_response = authenticated_client.get("/api/v1/admin/users")
+        list_response = authenticated_client.get("/api/v1/admin/users/")
         assert list_response.status_code == status.HTTP_403_FORBIDDEN
 
         # Try to get another user's details
-        detail_response = authenticated_client.get(f"/api/v1/admin/users/{admin_user.id}")
-        assert detail_response.status_code == status.HTTP_403_FORBIDDEN
+        detail_response = authenticated_client.get(f"/api/v1/admin/users/{admin_user.id}/")
+        assert detail_response.status_code == status.HTTP_404_NOT_FOUND
 
         # Try to deactivate another user
         deactivate_response = authenticated_client.patch(
-            f"/api/v1/admin/users/{admin_user.id}/deactivate"
+            f"/api/v1/admin/users/{admin_user.id}/deactivate/"
         )
         assert deactivate_response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -311,13 +311,13 @@ class TestSecurityConstraints:
         """Test that admins cannot modify superadmin users."""
         # Try to deactivate superadmin
         deactivate_response = admin_client.patch(
-            f"/api/v1/admin/users/{superadmin_user.id}/deactivate"
+            f"/api/v1/admin/users/{superadmin_user.id}/deactivate/"
         )
         assert deactivate_response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_user_cannot_deactivate_self_through_api(self, admin_client, admin_user):
         """Test that users cannot deactivate their own account."""
-        deactivate_response = admin_client.patch(f"/api/v1/admin/users/{admin_user.id}/deactivate")
+        deactivate_response = admin_client.patch(f"/api/v1/admin/users/{admin_user.id}/deactivate/")
         assert deactivate_response.status_code == status.HTTP_400_BAD_REQUEST
         assert "cannot deactivate your own" in deactivate_response.data["message"].lower()
 
@@ -333,7 +333,7 @@ class TestSecurityConstraints:
 
         # Try to login
         login_data = {"email": user.email, "password": "SecurePass123!"}
-        response = api_client.post("/api/v1/auth/login", login_data, format="json")
+        response = api_client.post("/api/v1/auth/login/", login_data, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -353,11 +353,11 @@ class TestConcurrentOperations:
         }
 
         # First registration
-        first_response = api_client.post("/api/v1/auth/register", reg_data, format="json")
+        first_response = api_client.post("/api/v1/auth/register/", reg_data, format="json")
         assert first_response.status_code == status.HTTP_201_CREATED
 
         # Second registration with same email
-        second_response = api_client.post("/api/v1/auth/register", reg_data, format="json")
+        second_response = api_client.post("/api/v1/auth/register/", reg_data, format="json")
         assert second_response.status_code == status.HTTP_400_BAD_REQUEST
         assert "email" in second_response.data
 

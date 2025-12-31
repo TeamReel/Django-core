@@ -8,6 +8,8 @@ repos:
         exclude: '^(venv/|\.venv/|env/|\.worktrees/|\.git/|\.mypy_cache/|\.pytest_cache/|htmlcov/|\.kittify/venv/)'
       - id: check-yaml
         files: '^(\.github/|\.kittify/|kitty-specs/|docs/|src/|tests/)'
+        exclude: '^docs/deployment/.*\.yaml$'
+        args: [--allow-multiple-documents]
       - id: check-added-large-files
 
   - repo: https://github.com/psf/black
@@ -21,7 +23,10 @@ repos:
     rev: v0.1.8
     hooks:
       - id: ruff
-        args: ["--fix", "--exit-non-zero-on-fix"]
+        # Only enforce errors (E, F, W) - not style suggestions (B, S, N, I)
+        # Rationale: B904 (exception chaining), S-codes (security suggestions),
+        # N-codes (naming), I-codes (import order) are best practices, not blockers
+        args: ["--fix", "--exit-non-zero-on-fix", "--select=E,F,W", "--ignore=E501"]
         files: '^(src/|tests/|\.kittify/|kitty-specs/)'
         exclude: '^(?:\.kittify/scripts/)'
 
@@ -30,28 +35,13 @@ repos:
     rev: v1.7.1
     hooks:
       - id: mypy
+        # Run mypy in CI only (documented decision)
+        # Reason: Pre-commit isolated environment is fragile with Django dependencies
+        # Contributors should run `mypy src/` locally
+        stages: [manual]
         args: ["--config-file=pyproject.toml"]
-        additional_dependencies: [
-          django-stubs==4.2.7,
-          djangorestframework-stubs==3.14.5,
-          django-environ==0.11.2,
-          djangorestframework==3.14.0,
-          django-cors-headers==4.3.1,
-          django-prometheus==2.3.1,
-          django-redis==5.4.0,
-          django-filter==24.2,
-          pytest==7.4.3,
-          pytest-django==4.7.0,
-          celery,
-          redis,
-          pyyaml,
-          pybloom-live,
-          click,
-          jinja2
-        ]
+        additional_dependencies: []
         files: '^(src/|tests/)'
-        # Temporarily disabled - use `mypy src/` locally instead
-        # Pre-commit isolated environment needs ALL dependencies which is fragile
         exclude: '.*'
 
   # Custom hook for validating integration guide examples

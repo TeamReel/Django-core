@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {
-  PageHeader,
-  PageContent,
   Card,
   Badge,
   Alert,
-  Table,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
+import { Table } from '../../shims/design-system';
 import AppShell from '../../components/AppShell';
 
 /**
@@ -110,7 +112,7 @@ export const ConstitutionPage: React.FC = () => {
             ]}
           />
           <PageContent>
-            <Alert type="error" data-testid="constitution-error">
+            <Alert variant="error" data-testid="constitution-error">
               {error}
             </Alert>
           </PageContent>
@@ -166,7 +168,7 @@ export const ConstitutionPage: React.FC = () => {
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-gray-800">{category}</h3>
-                      <Badge type="info">{categoryRules.length} Rules</Badge>
+                      <Badge variant="info">{categoryRules.length} Rules</Badge>
                     </div>
                     <div style={{ overflowX: 'auto' }}>
                       <Table
@@ -183,7 +185,7 @@ export const ConstitutionPage: React.FC = () => {
                           name: <span className="text-gray-700">{rule.name}</span>,
                           severity: (
                             <Badge
-                              type={
+                              variant={
                                 rule.severity === 'critical' ? 'error' :
                                 rule.severity === 'high' ? 'warning' :
                                 'info'
@@ -206,9 +208,9 @@ export const ConstitutionPage: React.FC = () => {
                             </div>
                           ),
                           status: rule.active ? (
-                            <Badge type="success">Active</Badge>
+                            <Badge variant="success">Active</Badge>
                           ) : (
-                            <Badge type="gray">Inactive</Badge>
+                            <Badge variant="default">Inactive</Badge>
                           ),
                           violations: (
                             <span className="font-medium text-gray-900">

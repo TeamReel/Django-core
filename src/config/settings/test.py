@@ -26,7 +26,9 @@ CHANNEL_LAYERS = {
 
 # Enable migrations for test database setup
 # This ensures all required tables are created properly
-# MIGRATION_MODULES = {}  # Enable all migrations
+MIGRATION_MODULES = {
+    "tests": None,  # Disable migrations for tests app to allow on-the-fly table creation
+}
 
 # Disable logging during tests
 LOGGING = {
@@ -41,3 +43,11 @@ LOGGING = {
         "handlers": ["null"],
     },
 }
+
+# Webhook settings for testing
+WEBHOOK_SECRET_KEY = "test-secret-key"
+
+# Disable rate limiting/throttling in tests (Cluster A fix)
+# Tests run multiple auth requests rapidly which would trigger rate limits
+REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {}

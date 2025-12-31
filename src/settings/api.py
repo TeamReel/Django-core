@@ -38,18 +38,6 @@ def _resolve_scope_hierarchy(
             key=key, scope_type=ScopeType.USER, user_id=user_id
         ).first()
         if result:
-            # MASTER SWITCH: For FeatureFlag, check if global is explicitly disabled
-            if model_class == FeatureFlag:
-                global_flag = model_class.objects.filter(
-                    key=key,
-                    scope_type=ScopeType.GLOBAL,
-                    user_id=None,
-                    organisation_id=None,
-                    project_id=None,
-                ).first()
-                if global_flag and global_flag.enabled is False:
-                    # Global is disabled (master switch) - return global flag instead
-                    return global_flag
             return result
 
     # Try project scope
@@ -58,18 +46,6 @@ def _resolve_scope_hierarchy(
             key=key, scope_type=ScopeType.PROJECT, project_id=project_id
         ).first()
         if result:
-            # MASTER SWITCH: For FeatureFlag, check if global is explicitly disabled
-            if model_class == FeatureFlag:
-                global_flag = model_class.objects.filter(
-                    key=key,
-                    scope_type=ScopeType.GLOBAL,
-                    user_id=None,
-                    organisation_id=None,
-                    project_id=None,
-                ).first()
-                if global_flag and global_flag.enabled is False:
-                    # Global is disabled (master switch) - return global flag instead
-                    return global_flag
             return result
 
         # Infer organisation_id from project if not provided
@@ -89,20 +65,6 @@ def _resolve_scope_hierarchy(
             project_id=None,
         ).first()
         if result:
-            # MASTER SWITCH: For FeatureFlag, check if global is explicitly disabled
-            # If global is disabled, return the global flag (which is disabled)
-            # This preserves org overrides in DB but makes global=disabled act as master switch
-            if model_class == FeatureFlag:
-                global_flag = model_class.objects.filter(
-                    key=key,
-                    scope_type=ScopeType.GLOBAL,
-                    user_id=None,
-                    organisation_id=None,
-                    project_id=None,
-                ).first()
-                if global_flag and global_flag.enabled is False:
-                    # Global is disabled (master switch) - return global flag instead
-                    return global_flag
             return result
 
     # Fallback to global scope

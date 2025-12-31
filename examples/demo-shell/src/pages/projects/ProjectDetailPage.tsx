@@ -28,9 +28,9 @@ export default function ProjectDetailPage() {
   // Permission checks using centralized helper
   const isSuperAdmin = (user as any)?.role === 'superadmin';
   const currentOrgSlug = (orgId || context.organisation?.slug)?.toLowerCase();
-  const currentOrg = organisations.find(o => o.slug.toLowerCase() === currentOrgSlug);
+  const currentOrg = organisations.find(o => o.slug?.toLowerCase() === currentOrgSlug);
   const permissionContext = {
-    currentOrganisation: currentOrg,
+    currentOrganisation: currentOrg as any,
     isSuperAdmin,
   };
   const userCanEdit = canEditProject(permissionContext);

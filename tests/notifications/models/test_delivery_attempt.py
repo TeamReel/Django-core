@@ -130,7 +130,9 @@ class TestDeliveryAttempt:
 
     def test_http_status_code_webhook(self, notification_factory: Notification) -> None:
         """Test HTTP status code for webhook deliveries."""
-        notification = notification_factory(channel="webhook")
+        notification = notification_factory(
+            channel="webhook", recipient="https://example.com/webhook"
+        )
 
         attempt = DeliveryAttempt.objects.create(
             notification=notification,
@@ -291,8 +293,20 @@ class TestDeliveryAttempt:
 
     def test_ordering(self, notification_factory: Notification) -> None:
         """Test queryset ordering by notification, attempt_number."""
+        from django.utils import timezone
+        from datetime import timedelta
+        from notifications.models import Notification
+
+        now = timezone.now()
+
+        # Create notifications with explicit timestamps to ensure ordering
+        # Notification ordering is -created_at (newest first)
+        # We want notification1 to be first, so it must be newer
         notification1 = notification_factory()
+        Notification.objects.filter(pk=notification1.pk).update(created_at=now)
+
         notification2 = notification_factory()
+        Notification.objects.filter(pk=notification2.pk).update(created_at=now - timedelta(hours=1))
 
         # Create attempts in mixed order
         attempt1_2 = DeliveryAttempt.objects.create(
@@ -317,7 +331,7 @@ class TestDeliveryAttempt:
         attempts = list(DeliveryAttempt.objects.all())
 
         # Ordering: (notification, attempt_number)
-        # notification1 should come before notification2
+        # notification1 (newer) should come before notification2 (older)
         # Within notification1: attempt 1 before attempt 2
         assert attempts[0] == attempt1_1
         assert attempts[1] == attempt1_2

@@ -44,6 +44,7 @@ class SuppressionService:
         event_type: str,
         resource_id: str | None = None,
         ttl: int | None = None,
+        channel: str | None = None,
     ) -> bool:
         """
         Check if notification should be suppressed (duplicate).
@@ -56,6 +57,7 @@ class SuppressionService:
             event_type: Event type identifier
             resource_id: Optional resource identifier for scoping (e.g., project_id:123)
             ttl: Time-to-live in seconds (default: 300)
+            channel: Optional channel identifier (e.g., "email", "in_app")
 
         Returns:
             True if notification should be suppressed (duplicate within window)
@@ -73,7 +75,7 @@ class SuppressionService:
             ttl = SuppressionService.DEFAULT_TTL
 
         # Build cache key
-        cache_key = SuppressionService._build_cache_key(user_id, event_type, resource_id)
+        cache_key = SuppressionService._build_cache_key(user_id, event_type, resource_id, channel)
 
         # Measure check time
         with suppression_check_time_seconds.labels(event_type=event_type).time():
@@ -92,6 +94,7 @@ class SuppressionService:
                             "user_id": user_id,
                             "event_type": event_type,
                             "resource_id": resource_id,
+                            "channel": channel,
                             "cache_key": cache_key,
                             "ttl": ttl,
                         },
@@ -137,6 +140,7 @@ class SuppressionService:
         event_type: str,
         resource_id: str | None = None,
         ttl: int | None = None,
+        channel: str | None = None,
     ) -> None:
         """
         Manually record suppression entry (for testing or pre-emptive blocking).
@@ -149,6 +153,7 @@ class SuppressionService:
             event_type: Event type identifier
             resource_id: Optional resource identifier
             ttl: Time-to-live in seconds (default: 300)
+            channel: Optional channel identifier
 
         Example:
             >>> # Pre-emptively block notifications for 10 minutes
@@ -162,7 +167,7 @@ class SuppressionService:
         if ttl is None:
             ttl = SuppressionService.DEFAULT_TTL
 
-        cache_key = SuppressionService._build_cache_key(user_id, event_type, resource_id)
+        cache_key = SuppressionService._build_cache_key(user_id, event_type, resource_id, channel)
 
         try:
             timestamp = datetime.utcnow().isoformat()
@@ -174,6 +179,7 @@ class SuppressionService:
                     "user_id": user_id,
                     "event_type": event_type,
                     "resource_id": resource_id,
+                    "channel": channel,
                     "cache_key": cache_key,
                     "ttl": ttl,
                 },
@@ -187,6 +193,7 @@ class SuppressionService:
                     "user_id": user_id,
                     "event_type": event_type,
                     "resource_id": resource_id,
+                    "channel": channel,
                     "cache_key": cache_key,
                     "error": str(exc),
                 },
@@ -194,7 +201,12 @@ class SuppressionService:
             )
 
     @staticmethod
-    def clear_suppression(user_id: int, event_type: str, resource_id: str | None = None) -> None:
+    def clear_suppression(
+        user_id: int,
+        event_type: str,
+        resource_id: str | None = None,
+        channel: str | None = None,
+    ) -> None:
         """
         Clear suppression entry (for testing or manual reset).
 
@@ -202,12 +214,13 @@ class SuppressionService:
             user_id: Target user ID
             event_type: Event type identifier
             resource_id: Optional resource identifier
+            channel: Optional channel identifier
 
         Example:
             >>> # Clear suppression to allow immediate re-notification
             >>> SuppressionService.clear_suppression(42, "project.updated", "project:123")
         """
-        cache_key = SuppressionService._build_cache_key(user_id, event_type, resource_id)
+        cache_key = SuppressionService._build_cache_key(user_id, event_type, resource_id, channel)
 
         try:
             cache.delete(cache_key)
@@ -218,6 +231,7 @@ class SuppressionService:
                     "user_id": user_id,
                     "event_type": event_type,
                     "resource_id": resource_id,
+                    "channel": channel,
                     "cache_key": cache_key,
                 },
             )
@@ -230,6 +244,7 @@ class SuppressionService:
                     "user_id": user_id,
                     "event_type": event_type,
                     "resource_id": resource_id,
+                    "channel": channel,
                     "cache_key": cache_key,
                     "error": str(exc),
                 },
@@ -237,16 +252,19 @@ class SuppressionService:
             )
 
     @staticmethod
-    def _build_cache_key(user_id: int, event_type: str, resource_id: str | None) -> str:
+    def _build_cache_key(
+        user_id: int, event_type: str, resource_id: str | None, channel: str | None = None
+    ) -> str:
         """
         Build Redis cache key for suppression entry.
 
-        Format: suppression:{user_id}:{event_type}:{resource_id}
+        Format: suppression:{user_id}:{event_type}:{resource_id}[:{channel}]
 
         Args:
             user_id: Target user ID
             event_type: Event type identifier
             resource_id: Optional resource identifier (uses "global" if None)
+            channel: Optional channel identifier (e.g., "email", "in_app")
 
         Returns:
             Cache key string
@@ -256,6 +274,11 @@ class SuppressionService:
             'suppression:42:project.updated:project:123'
             >>> SuppressionService._build_cache_key(42, "task.assigned", None)
             'suppression:42:task.assigned:global'
+            >>> SuppressionService._build_cache_key(42, "project.updated", "project:123", "email")
+            'suppression:42:project.updated:project:123:email'
         """
         resource_part = resource_id if resource_id else "global"
-        return f"suppression:{user_id}:{event_type}:{resource_part}"
+        base_key = f"suppression:{user_id}:{event_type}:{resource_part}"
+        if channel:
+            return f"{base_key}:{channel}"
+        return base_key

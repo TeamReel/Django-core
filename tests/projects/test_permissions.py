@@ -19,7 +19,7 @@ class TestIsOrganisationMemberOrAdmin:
         request.user = admin_user
 
         permission = IsOrganisationMemberOrAdmin()
-        view = type("MockView", (), {"kwargs": {"organisation_slug": organisation.slug}})()
+        view = type("MockView", (), {"kwargs": {"organisation_id": organisation.slug}})()
 
         assert permission.has_permission(request, view)
 
@@ -30,7 +30,7 @@ class TestIsOrganisationMemberOrAdmin:
         request.user = member_user
 
         permission = IsOrganisationMemberOrAdmin()
-        view = type("MockView", (), {"kwargs": {"organisation_slug": organisation.slug}})()
+        view = type("MockView", (), {"kwargs": {"organisation_id": organisation.slug}})()
 
         assert permission.has_permission(request, view)
 
@@ -41,7 +41,7 @@ class TestIsOrganisationMemberOrAdmin:
         request.user = member_user
 
         permission = IsOrganisationMemberOrAdmin()
-        view = type("MockView", (), {"kwargs": {"organisation_slug": organisation.slug}})()
+        view = type("MockView", (), {"kwargs": {"organisation_id": organisation.slug}})()
 
         assert not permission.has_permission(request, view)
 
@@ -53,7 +53,7 @@ class TestIsOrganisationMemberOrAdmin:
         request.user = non_member
 
         permission = IsOrganisationMemberOrAdmin()
-        view = type("MockView", (), {"kwargs": {"organisation_slug": organisation.slug}})()
+        view = type("MockView", (), {"kwargs": {"organisation_id": organisation.slug}})()
 
         assert not permission.has_permission(request, view)
 
@@ -66,7 +66,7 @@ class TestIsOrganisationMemberOrAdmin:
         request.user = AnonymousUser()
 
         permission = IsOrganisationMemberOrAdmin()
-        view = type("MockView", (), {"kwargs": {"organisation_slug": organisation.slug}})()
+        view = type("MockView", (), {"kwargs": {"organisation_id": organisation.slug}})()
 
         assert not permission.has_permission(request, view)
 
@@ -77,7 +77,9 @@ class TestProjectPermissions:
 
     def test_list_requires_authentication(self, api_client, organisation):
         """Test listing projects requires authentication."""
-        url = reverse("project-list", kwargs={"organisation_slug": organisation.slug})
+        url = reverse(
+            "api_v1:organisation-projects-list", kwargs={"organisation_id": organisation.slug}
+        )
         response = api_client.get(url)
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -87,7 +89,9 @@ class TestProjectPermissions:
         non_member = user_factory(email="nonmember@example.com")
         api_client.force_authenticate(user=non_member)
 
-        url = reverse("project-list", kwargs={"organisation_slug": organisation.slug})
+        url = reverse(
+            "api_v1:organisation-projects-list", kwargs={"organisation_id": organisation.slug}
+        )
         response = api_client.get(url)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -96,7 +100,9 @@ class TestProjectPermissions:
         """Test creating projects requires admin role."""
         api_client.force_authenticate(user=member_user)
 
-        url = reverse("project-list", kwargs={"organisation_slug": organisation.slug})
+        url = reverse(
+            "api_v1:organisation-projects-list", kwargs={"organisation_id": organisation.slug}
+        )
         response = api_client.post(url, {"name": "Test Project"}, format="json")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -106,8 +112,8 @@ class TestProjectPermissions:
         api_client.force_authenticate(user=member_user)
 
         url = reverse(
-            "project-detail",
-            kwargs={"organisation_slug": project.organisation.slug, "id": project.id},
+            "api_v1:organisation-projects-detail",
+            kwargs={"organisation_id": project.organisation.slug, "slug": project.slug},
         )
         response = api_client.patch(url, {"name": "Updated"}, format="json")
 
@@ -118,8 +124,8 @@ class TestProjectPermissions:
         api_client.force_authenticate(user=member_user)
 
         url = reverse(
-            "project-archive",
-            kwargs={"organisation_slug": project.organisation.slug, "id": project.id},
+            "api_v1:organisation-projects-archive",
+            kwargs={"organisation_id": project.organisation.slug, "slug": project.slug},
         )
         response = api_client.post(url)
 
@@ -130,10 +136,10 @@ class TestProjectPermissions:
         api_client.force_authenticate(user=member_user)
 
         url = reverse(
-            "project-restore",
+            "api_v1:organisation-projects-restore",
             kwargs={
-                "organisation_slug": archived_project.organisation.slug,
-                "id": archived_project.id,
+                "organisation_id": archived_project.organisation.slug,
+                "slug": archived_project.slug,
             },
         )
         response = api_client.post(f"{url}?include_archived=true")
@@ -142,7 +148,9 @@ class TestProjectPermissions:
 
     def test_admin_can_create(self, authenticated_client, organisation):
         """Test admin can create projects."""
-        url = reverse("project-list", kwargs={"organisation_slug": organisation.slug})
+        url = reverse(
+            "api_v1:organisation-projects-list", kwargs={"organisation_id": organisation.slug}
+        )
         response = authenticated_client.post(url, {"name": "New Project"}, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -150,8 +158,8 @@ class TestProjectPermissions:
     def test_admin_can_update(self, authenticated_client, project):
         """Test admin can update projects."""
         url = reverse(
-            "project-detail",
-            kwargs={"organisation_slug": project.organisation.slug, "id": project.id},
+            "api_v1:organisation-projects-detail",
+            kwargs={"organisation_id": project.organisation.slug, "slug": project.slug},
         )
         response = authenticated_client.patch(url, {"name": "Updated"}, format="json")
 
@@ -160,8 +168,8 @@ class TestProjectPermissions:
     def test_admin_can_archive(self, authenticated_client, project):
         """Test admin can archive projects."""
         url = reverse(
-            "project-archive",
-            kwargs={"organisation_slug": project.organisation.slug, "id": project.id},
+            "api_v1:organisation-projects-archive",
+            kwargs={"organisation_id": project.organisation.slug, "slug": project.slug},
         )
         response = authenticated_client.post(url)
 
@@ -170,8 +178,8 @@ class TestProjectPermissions:
     def test_member_can_read(self, member_client, project):
         """Test member can read projects."""
         url = reverse(
-            "project-detail",
-            kwargs={"organisation_slug": project.organisation.slug, "id": project.id},
+            "api_v1:organisation-projects-detail",
+            kwargs={"organisation_id": project.organisation.slug, "slug": project.slug},
         )
         response = member_client.get(url)
 
@@ -202,8 +210,8 @@ class TestCrossOrganisationPermissions:
         # user1 tries to access org2 project
         api_client.force_authenticate(user=user1)
         url = reverse(
-            "project-detail",
-            kwargs={"organisation_slug": org2.slug, "id": proj2.id},
+            "api_v1:organisation-projects-detail",
+            kwargs={"organisation_id": org2.slug, "slug": proj2.slug},
         )
         response = api_client.get(url)
 
@@ -221,7 +229,7 @@ class TestCrossOrganisationPermissions:
 
         # user1 tries to create in org2
         api_client.force_authenticate(user=user1)
-        url = reverse("project-list", kwargs={"organisation_slug": org2.slug})
+        url = reverse("api_v1:organisation-projects-list", kwargs={"organisation_id": org2.slug})
         response = api_client.post(url, {"name": "Test"}, format="json")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -246,21 +254,23 @@ class TestCrossOrganisationPermissions:
 
         # Can read from org1
         url1 = reverse(
-            "project-detail",
-            kwargs={"organisation_slug": org1.slug, "id": proj1.id},
+            "api_v1:organisation-projects-detail",
+            kwargs={"organisation_id": org1.slug, "slug": proj1.slug},
         )
         response1 = api_client.get(url1)
         assert response1.status_code == status.HTTP_200_OK
 
         # Can read and write in org2 (admin)
         url2 = reverse(
-            "project-detail",
-            kwargs={"organisation_slug": org2.slug, "id": proj2.id},
+            "api_v1:organisation-projects-detail",
+            kwargs={"organisation_id": org2.slug, "slug": proj2.slug},
         )
         response2 = api_client.get(url2)
         assert response2.status_code == status.HTTP_200_OK
 
         # Can create in org2 (admin)
-        create_url = reverse("project-list", kwargs={"organisation_slug": org2.slug})
+        create_url = reverse(
+            "api_v1:organisation-projects-list", kwargs={"organisation_id": org2.slug}
+        )
         response3 = api_client.post(create_url, {"name": "New"}, format="json")
         assert response3.status_code == status.HTTP_201_CREATED

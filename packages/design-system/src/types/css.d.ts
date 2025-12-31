@@ -11,7 +11,7 @@ declare module '*.module.css' {
   export default content;
 }
 
-declare module '*.css.ts' {
+declare module '*.css' {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const content: any;
   export default content;

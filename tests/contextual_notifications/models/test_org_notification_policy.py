@@ -18,7 +18,6 @@ class TestOrganisationNotificationPolicyModel:
             quiet_hours_start=time(22, 0),
             quiet_hours_end=time(8, 0),
             quiet_hours_rate_limit=5,
-            rate_limit_window_seconds=300,
         )
 
         assert policy.organisation == organisation
@@ -43,9 +42,11 @@ class TestOrganisationNotificationPolicyModel:
         policy = OrganisationNotificationPolicy.objects.create(
             organisation=organisation,
             quiet_hours_enabled=True,
+            quiet_hours_start=time(22, 0),
+            quiet_hours_end=time(8, 0),
         )
 
-        expected = f"Notification policy for {organisation.name}"
+        expected = f"{organisation.name} - Quiet Hours: enabled"
         assert str(policy) == expected
 
     def test_unique_organisation(self, organisation):
@@ -70,7 +71,6 @@ class TestOrganisationNotificationPolicyModel:
 
         assert policy.quiet_hours_enabled is False
         assert policy.quiet_hours_rate_limit == 10  # Default from model
-        assert policy.rate_limit_window_seconds == 300  # Default
 
     def test_created_at_set(self, organisation):
         """Test that created_at is automatically set."""
@@ -103,6 +103,8 @@ class TestOrganisationNotificationPolicyModel:
         OrganisationNotificationPolicy.objects.create(
             organisation=organisation,
             quiet_hours_enabled=True,
+            quiet_hours_start=time(22, 0),
+            quiet_hours_end=time(8, 0),
         )
         OrganisationNotificationPolicy.objects.create(
             organisation=organisation2,

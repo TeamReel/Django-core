@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added Prometheus exporter (default), StatsD exporter (example), OpenMetrics support (via protocol)
 
 - **Documentation**:
-  - Added [Platform Observability Guide](docs/observability.md) with quickstart and configuration examples
+  - Added [Platform Observability Guide](docs/features/observability/overview.md) with quickstart and configuration examples
   - Added [Extension Guide](docs/observability-extension-guide.md) with custom health check, metric exporter, and PII redaction examples
   - Added [Troubleshooting Guide](docs/observability-troubleshooting.md) covering 7 common issues and solutions
   - Added [ADR-019: Metric Exporter Pluggability](docs/adr/019-metric-exporter-pluggability.md) documenting Protocol pattern decision

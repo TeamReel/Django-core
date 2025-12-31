@@ -24,26 +24,42 @@ class TestB16NotificationACL:
     @pytest.fixture(autouse=True)
     def setup(self):
         """Set up test fixtures."""
+        from django.core.cache import cache
+        from notifications.models import RetryPolicy
+
+        cache.clear()
+
         self.client = APIClient()
 
-        # Create notification type
+        # Create retry policy
+        retry_policy = RetryPolicy.objects.create(
+            name="test-policy",
+            max_attempts=3,
+            retry_window_seconds=3600,
+            backoff_strategy="exponential",
+            backoff_multiplier=5.0,
+            initial_delay_seconds=60,
+        )
+
+        # Create notification type with required fields
         self.notification_type = NotificationType.objects.create(
             code="test_notification",
             name="Test Notification",
             description="Test notification type",
+            default_channel="email",
+            retry_policy=retry_policy,
         )
 
     def create_user_with_permission(self, username="testuser"):
         """Create user with notifications.view permission."""
-        # Create organization
-        org = Organisation.objects.create(name=f"Test Org {username}")
-
-        # Create user
+        # Create user first
         user = User.objects.create_user(
-            username=username,
             email=f"{username}@example.com",
             password="testpass123",
         )
+
+        # Create organization with creator
+        org = Organisation.objects.create(name=f"Test Org {username}", creator=user)
 
         # Add user to organization
         Membership.objects.create(
@@ -76,22 +92,21 @@ class TestB16NotificationACL:
             user=user,
             role=role,
             scope="ORGANIZATION",
-            resource_id=str(org.id),
+            target_organization_id=str(org.id),
         )
 
         return user
 
     def create_user_without_permission(self, username="nopermuser"):
         """Create user without notifications.view permission."""
-        # Create organization
-        org = Organisation.objects.create(name=f"Test Org {username}")
-
-        # Create user
+        # Create user first
         user = User.objects.create_user(
-            username=username,
             email=f"{username}@example.com",
             password="testpass123",
         )
+
+        # Create organization with creator
+        org = Organisation.objects.create(name=f"Test Org {username}", creator=user)
 
         # Add user to organization (but no notification permission)
         Membership.objects.create(
@@ -111,7 +126,7 @@ class TestB16NotificationACL:
         notification = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user.username,
+            recipient=user.email,
             recipient_user=user,
             payload={"title": "Test notification"},
             status="sent",
@@ -119,7 +134,7 @@ class TestB16NotificationACL:
 
         # Execute
         self.client.force_authenticate(user=user)
-        response = self.client.get("/api/notifications/")
+        response = self.client.get("/api/v1/notifications/")
 
         # Assert
         assert response.status_code == 200
@@ -129,11 +144,11 @@ class TestB16NotificationACL:
         # Verify audit event created
         audit_events = AuditEvent.objects.filter(
             user=user,
-            event_type="permission.check",
+            event_type="permission.checked",
         )
         assert audit_events.exists()
-        latest_event = audit_events.latest("timestamp")
-        assert latest_event.outcome == "success"
+        latest_event = audit_events.latest("created_at")
+        assert latest_event.metadata["decision"] == "grant"
         assert latest_event.metadata["permission"] == "notifications.view"
 
     def test_list_notifications_denied_without_permission(self):
@@ -145,7 +160,7 @@ class TestB16NotificationACL:
         Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user.username,
+            recipient=user.email,
             recipient_user=user,
             payload={"title": "Test notification"},
             status="sent",
@@ -153,7 +168,7 @@ class TestB16NotificationACL:
 
         # Execute
         self.client.force_authenticate(user=user)
-        response = self.client.get("/api/notifications/")
+        response = self.client.get("/api/v1/notifications/")
 
         # Assert
         assert response.status_code == 403
@@ -162,11 +177,11 @@ class TestB16NotificationACL:
         # Verify audit event created for denial
         audit_events = AuditEvent.objects.filter(
             user=user,
-            event_type="permission.check",
+            event_type="permission.checked",
         )
         assert audit_events.exists()
-        latest_event = audit_events.latest("timestamp")
-        assert latest_event.outcome == "failure"
+        latest_event = audit_events.latest("created_at")
+        assert latest_event.metadata["decision"] == "deny"
         assert latest_event.metadata["permission"] == "notifications.view"
 
     def test_retrieve_notification_allowed_with_permission(self):
@@ -178,7 +193,7 @@ class TestB16NotificationACL:
         notification = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user.username,
+            recipient=user.email,
             recipient_user=user,
             payload={"title": "Test notification", "body": "Details here"},
             status="sent",
@@ -186,7 +201,7 @@ class TestB16NotificationACL:
 
         # Execute
         self.client.force_authenticate(user=user)
-        response = self.client.get(f"/api/notifications/{notification.id}/")
+        response = self.client.get(f"/api/v1/notifications/{notification.id}/")
 
         # Assert
         assert response.status_code == 200
@@ -196,11 +211,11 @@ class TestB16NotificationACL:
         # Verify audit event
         audit_events = AuditEvent.objects.filter(
             user=user,
-            event_type="permission.check",
+            event_type="permission.checked",
         )
         assert audit_events.exists()
-        latest_event = audit_events.latest("timestamp")
-        assert latest_event.outcome == "success"
+        latest_event = audit_events.latest("created_at")
+        assert latest_event.metadata["decision"] == "grant"
 
     def test_retrieve_notification_denied_without_permission(self):
         """User without notifications.view permission cannot retrieve notification details."""
@@ -211,7 +226,7 @@ class TestB16NotificationACL:
         notification = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user.username,
+            recipient=user.email,
             recipient_user=user,
             payload={"title": "Test notification"},
             status="sent",
@@ -219,7 +234,7 @@ class TestB16NotificationACL:
 
         # Execute
         self.client.force_authenticate(user=user)
-        response = self.client.get(f"/api/notifications/{notification.id}/")
+        response = self.client.get(f"/api/v1/notifications/{notification.id}/")
 
         # Assert
         assert response.status_code == 403
@@ -228,16 +243,16 @@ class TestB16NotificationACL:
         # Verify audit event for denial
         audit_events = AuditEvent.objects.filter(
             user=user,
-            event_type="permission.check",
+            event_type="permission.checked",
         )
         assert audit_events.exists()
-        latest_event = audit_events.latest("timestamp")
-        assert latest_event.outcome == "failure"
+        latest_event = audit_events.latest("created_at")
+        assert latest_event.metadata["decision"] == "deny"
 
     def test_unauthenticated_user_cannot_list_notifications(self):
         """Unauthenticated user gets 401 when listing notifications."""
         # Execute (no authentication)
-        response = self.client.get("/api/notifications/")
+        response = self.client.get("/api/v1/notifications/")
 
         # Assert
         assert response.status_code == 401
@@ -252,7 +267,7 @@ class TestB16NotificationACL:
         notif_a = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user_a.username,
+            recipient=user_a.email,
             recipient_user=user_a,
             payload={"title": "Alice notification"},
             status="sent",
@@ -261,7 +276,7 @@ class TestB16NotificationACL:
         notif_b = Notification.objects.create(
             type=self.notification_type,
             channel="in_app",
-            recipient=user_b.username,
+            recipient=user_b.email,
             recipient_user=user_b,
             payload={"title": "Bob notification"},
             status="sent",
@@ -269,7 +284,7 @@ class TestB16NotificationACL:
 
         # Execute - Alice lists notifications
         self.client.force_authenticate(user=user_a)
-        response = self.client.get("/api/notifications/")
+        response = self.client.get("/api/v1/notifications/")
 
         # Assert - Alice only sees her notification
         assert response.status_code == 200
@@ -279,7 +294,7 @@ class TestB16NotificationACL:
 
         # Execute - Bob lists notifications
         self.client.force_authenticate(user=user_b)
-        response = self.client.get("/api/notifications/")
+        response = self.client.get("/api/v1/notifications/")
 
         # Assert - Bob only sees his notification
         assert response.status_code == 200

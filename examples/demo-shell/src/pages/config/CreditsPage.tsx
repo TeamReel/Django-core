@@ -13,6 +13,7 @@ import {
   PageContent,
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
+  type BreadcrumbSwitcherOption,
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { createApiClient } from '@django-core/api-client';
@@ -80,12 +81,12 @@ export const CreditsPage: React.FC = () => {
     organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
     projects: [],
     users: [],
-    context: { currentOrgId },
+    context: { currentOrgId: currentOrgId || undefined },
     basePath: '',
   });
 
   // Handler to switch organisation without page reload
-  const handleOrganisationSwitch = async (option: { id: string; label: string; slug: string }) => {
+  const handleOrganisationSwitch = async (option: BreadcrumbSwitcherOption) => {
     console.log('[CreditsPage] Switching to org:', option.label, option.id);
 
     // SIMPLIFIED APPROACH FOR NON-ORG-SCOPED ROUTES:
@@ -285,9 +286,9 @@ export const CreditsPage: React.FC = () => {
 
         if (response.error) {
           console.error('[CreditsPage] Error fetching credits:', response.error);
-          if (response.error.status === 404) {
+          if (response.error.code === 404) {
             setError('No credits balance found for this organisation');
-          } else if (response.error.status === 403) {
+          } else if (response.error.code === 403) {
             setError('You do not have permission to view credits for this organisation');
           } else {
             setError(response.error.message || 'Failed to load credits balance');
@@ -530,13 +531,13 @@ export const CreditsPage: React.FC = () => {
         )}
 
         {!currentOrgId && !loading && (
-          <Alert type="info">
+          <Alert variant="info">
             Please select an organisation to view credits.
           </Alert>
         )}
 
         {error && !loading && currentOrgId && (
-          <Alert type="info" style={{ marginBottom: '16px' }}>
+          <Alert variant="info" style={{ marginBottom: '16px' }}>
             {error}
           </Alert>
         )}
@@ -545,7 +546,7 @@ export const CreditsPage: React.FC = () => {
           <>
             {/* Low Balance Alert */}
             {credits.current_balance < 500 && (
-              <Alert type="warning" style={{ marginBottom: '24px' }}>
+              <Alert variant="warning" style={{ marginBottom: '24px' }}>
                 <strong>⚠️ Low Credit Balance</strong>
                 <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
                   Your balance is {credits.current_balance} credits. Consider adding more credits to avoid service interruption.
@@ -900,7 +901,7 @@ export const CreditsPage: React.FC = () => {
             )}
 
             {!transactionsLoading && transactions.length === 0 && (
-              <Alert type="info" style={{ marginBottom: '16px' }}>
+              <Alert variant="info" style={{ marginBottom: '16px' }}>
                 No credit transactions yet.
               </Alert>
             )}

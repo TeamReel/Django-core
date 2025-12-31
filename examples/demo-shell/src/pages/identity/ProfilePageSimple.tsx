@@ -1,5 +1,6 @@
 import React from 'react';
-import { PageHeader, PageContent, Card, Alert } from '@django-core/design-system';
+import { Card, Alert } from '@django-core/design-system';
+import { PageHeader, PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 
 /**
@@ -24,7 +25,7 @@ export const ProfilePage: React.FC = () => {
             <p>Welcome to your profile page!</p>
           </Card>
 
-          <Alert type="info" className="mt-4">
+          <Alert variant="info" className="mt-4">
             API endpoint /api/users/me/ returned 404. This is expected in demo mode.
           </Alert>
         </PageContent>

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  PageHeader,
-  PageContent,
   Card,
   Badge,
   Button,
   Alert,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
 // Removed usePolling import - using direct useEffect instead
 import { ObservabilityCharts } from '../../components/ObservabilityCharts';
 import type { ObservabilityMetrics } from '../../types/chart';
@@ -159,7 +161,7 @@ export const ObservabilityPage: React.FC = () => {
               backgroundColor: 'var(--app-surface)',
               border: '1px solid var(--app-border)'
             }}>
-              <Alert type="error" data-testid="observability-error">
+              <Alert variant="error" data-testid="observability-error">
                 Observability data unavailable (backend error): {error}
               </Alert>
               <div style={{ marginTop: '16px' }}>
@@ -215,7 +217,7 @@ export const ObservabilityPage: React.FC = () => {
               <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--app-text)', margin: '0 0 8px 0' }}>
                 Status
               </h3>
-              <Alert type="info">
+              <Alert variant="info">
                 No observability metrics configured yet. {backendMetrics?.message}
               </Alert>
             </div>
@@ -321,7 +323,7 @@ export const ObservabilityPage: React.FC = () => {
                       {backendMetrics.error_rate_4xx != null ? backendMetrics.error_rate_4xx.toFixed(2) : 'N/A'}%
                     </div>
                     {backendMetrics.error_rate_4xx != null && backendMetrics.error_rate_4xx > 5 && (
-                      <Badge type="warning">Elevated</Badge>
+                      <Badge variant="warning">Elevated</Badge>
                     )}
                   </div>
                 </div>
@@ -332,7 +334,7 @@ export const ObservabilityPage: React.FC = () => {
                       {backendMetrics.error_rate_5xx != null ? backendMetrics.error_rate_5xx.toFixed(2) : 'N/A'}%
                     </div>
                     {backendMetrics.error_rate_5xx != null && backendMetrics.error_rate_5xx > 1 && (
-                      <Badge type="error">Critical</Badge>
+                      <Badge variant="error">Critical</Badge>
                     )}
                   </div>
                 </div>

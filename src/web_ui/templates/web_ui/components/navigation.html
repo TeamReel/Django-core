@@ -11,7 +11,7 @@ Uses precomputed permission flags from context processor:
 <ul class="nav-list">
     {% comment %}Home link - always visible{% endcomment %}
     <li class="nav-item">
-        <a href="{% url 'ui_home' %}" class="nav-link">Home</a>
+        <a href="{% url 'web_ui:ui_home' %}" class="nav-link">Home</a>
     </li>
 
     {% if is_authenticated %}
@@ -19,18 +19,18 @@ Uses precomputed permission flags from context processor:
 
         {% if can_view_orgs %}
         <li class="nav-item">
-            <a href="{% url 'ui_organisations_list' %}" class="nav-link">Organisations</a>
+            <a href="{% url 'web_ui:ui_organisations_list' %}" class="nav-link">Organisations</a>
         </li>
         {% endif %}
 
         {% if can_view_projects %}
         <li class="nav-item">
-            <a href="{% url 'ui_projects_list' %}" class="nav-link">Projects</a>
+            <a href="{% url 'web_ui:ui_projects_list' %}" class="nav-link">Projects</a>
         </li>
         {% endif %}
 
         <li class="nav-item">
-            <a href="{% url 'ui_websocket_demo' %}" class="nav-link">WebSocket Demo</a>
+            <a href="{% url 'web_ui:ui_websocket_demo' %}" class="nav-link">WebSocket Demo</a>
         </li>
 
         {% comment %}User menu{% endcomment %}
@@ -38,10 +38,10 @@ Uses precomputed permission flags from context processor:
             <span class="nav-label">{{ user.email|truncatechars:20 }}</span>
             <ul class="nav-submenu">
                 <li class="nav-submenu-item">
-                    <a href="{% url 'ui_account_profile' %}" class="nav-submenu-link">Profile</a>
+                    <a href="{% url 'web_ui:ui_account_profile' %}" class="nav-submenu-link">Profile</a>
                 </li>
                 <li class="nav-submenu-item">
-                    <a href="{% url 'accounts:logout' %}" class="nav-submenu-link">Logout</a>
+                    <a href="{% url 'logout' %}" class="nav-submenu-link">Logout</a>
                 </li>
             </ul>
         </li>
@@ -49,10 +49,10 @@ Uses precomputed permission flags from context processor:
     {% else %}
         {% comment %}Anonymous user navigation{% endcomment %}
         <li class="nav-item">
-            <a href="{% url 'accounts:login' %}" class="nav-link">Login</a>
+            <a href="{% url 'login' %}" class="nav-link">Login</a>
         </li>
         <li class="nav-item">
-            <a href="{% url 'accounts:register' %}" class="nav-link">Register</a>
+            <a href="{% url 'register' %}" class="nav-link">Register</a>
         </li>
     {% endif %}
 

@@ -1,13 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@django-core/auth-ui';
 import {
-  PageHeader,
-  PageContent,
   Card,
   Button,
   Badge,
   Input,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 
 interface LogMessage {
@@ -201,7 +203,7 @@ export const WebSocketTestPage: React.FC = () => {
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>WebSocket URL</label>
                   <Input
                     value={wsUrl}
-                    onChange={(e) => setWsUrl(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWsUrl(e.target.value)}
                     disabled={isConnected}
                     placeholder="ws://localhost:8000/ws/test/"
                   />
@@ -241,7 +243,7 @@ export const WebSocketTestPage: React.FC = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <Input
                     value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessageInput(e.target.value)}
                     placeholder="Type a message (default: ping)"
                     disabled={!isConnected}
                   />

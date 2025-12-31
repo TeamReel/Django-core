@@ -132,7 +132,7 @@ def send_email(recipient, subject, body):
 
 ## Documentation
 
-- **Platform Observability Guide**: [docs/observability.md](../../docs/observability.md)
+- **Platform Observability Guide**: [docs/features/observability/overview.md](../../docs/features/observability/overview.md)
 - **Extension Guide**: [docs/observability-extension-guide.md](../../docs/observability-extension-guide.md)
 - **Troubleshooting**: [docs/observability-troubleshooting.md](../../docs/observability-troubleshooting.md)
 - **ADR 019**: [docs/adr/019-metric-exporter-pluggability.md](../../docs/adr/019-metric-exporter-pluggability.md)

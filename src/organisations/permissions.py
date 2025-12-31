@@ -20,8 +20,11 @@ class IsOrganisationAdmin(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """Check if user is admin of the organisation specified in URL."""
+        # Superusers always have permission
+        if request.user.is_superuser:
+            return True
+
         org_slug = view.kwargs.get("organisation_pk") or view.kwargs.get("slug")
-        print(f"DEBUG: IsOrganisationAdmin checking slug={org_slug} user={request.user}")
         if not org_slug:
             return False
 
@@ -34,15 +37,17 @@ class IsOrganisationAdmin(permissions.BasePermission):
         except Organisation.DoesNotExist:
             return False
 
-        print(f"DEBUG: Checking membership for org_id={org_id}")
         has_perm = Membership.objects.filter(
             user=request.user, organisation_id=org_id, role="admin", is_active=True
         ).exists()
-        print(f"DEBUG: has_perm={has_perm}")
         return has_perm
 
     def has_object_permission(self, request, view, obj):
         """Check if user is admin of the organisation object."""
+        # Superusers always have permission
+        if request.user.is_superuser:
+            return True
+
         return Membership.objects.filter(
             user=request.user, organisation=obj, role="admin", is_active=True
         ).exists()

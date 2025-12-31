@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {
-  PageHeader,
-  PageContent,
   Card,
   Button,
   Badge,
   Alert,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
 import { useTheme } from '@django-core/theme-system';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useAuth } from "@django-core/auth-ui";
@@ -163,7 +165,7 @@ export const PreferencesPage: React.FC = () => {
   // Sync local state with global mode changes (e.g. when storage loads)
   useEffect(() => {
     if (preferences && initialPreferences) {
-      const currentGlobalTheme = mode === 'system' ? 'auto' : mode;
+      const currentGlobalTheme = (mode === 'system' ? 'auto' : mode) as 'auto' | 'dark' | 'light';
 
       // If the global mode is different from our local state,
       // AND our local state hasn't been modified by the user (matches initial),
@@ -561,7 +563,7 @@ export const PreferencesPage: React.FC = () => {
       <PageContent>
           {success && (
             <div style={{ marginBottom: '24px' }}>
-                <Alert type="success" data-testid="prefs-success-alert">
+                <Alert variant="success" data-testid="prefs-success-alert">
                 Preferences saved successfully
                 </Alert>
             </div>
@@ -642,7 +644,7 @@ export const PreferencesPage: React.FC = () => {
             ) : (
               <Card>
                 <h3 className="text-lg font-semibold mb-4">Appearance</h3>
-                <Alert type="info">
+                <Alert variant="info">
                   <strong>Theme settings disabled</strong> - The dark mode feature is currently disabled by a feature flag.
                   Contact your administrator to enable theme customization.
                 </Alert>

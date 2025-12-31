@@ -5,15 +5,16 @@ import {
   PageContent,
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
+  type BreadcrumbSwitcherOption,
 } from '@django-core/page-templates';
 import {
   Card,
-  Table,
   Badge,
   Alert,
   Button,
   Input,
 } from '@django-core/design-system';
+import { Table } from '../../shims/design-system';
 import AppShell from '../../components/AppShell';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
@@ -74,12 +75,12 @@ export const UsageEventsPage: React.FC = () => {
     organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
     projects: [],
     users: [],
-    context: { currentOrgId },
+    context: { currentOrgId: currentOrgId || undefined },
     basePath: '',
   });
 
   // Custom handler to switch organisation without page reload
-  const handleOrganisationSwitch = async (option: { id: string; label: string; slug: string }) => {
+  const handleOrganisationSwitch = async (option: BreadcrumbSwitcherOption) => {
     console.log('[UsageEventsPage] Switching to org:', option.label, option.id);
 
     // Update localStorage and automatically switch to org mode
@@ -558,38 +559,38 @@ export const UsageEventsPage: React.FC = () => {
 
         {/* Context Info */}
         {!isSuperadmin && currentOrgName && (
-          <Alert type="info" className="mb-4">
+          <Alert variant="info" className="mb-4">
             <strong>Organisation Context:</strong> Viewing usage events for <strong>{currentOrgName}</strong>.
             {currentProject && ` / Project: ${currentProject.name}`}
           </Alert>
         )}
 
         {isSuperadmin && editMode === 'org' && !currentOrgId && (
-          <Alert type="info" className="mb-4">
+          <Alert variant="info" className="mb-4">
             <strong>Select Organisation:</strong> Please select an organisation from the dropdown above to view its events.
           </Alert>
         )}
 
         {isSuperadmin && editMode === 'global' && (
-          <Alert type="info" className="mb-4">
+          <Alert variant="info" className="mb-4">
             <strong>Global View Mode:</strong> Viewing all usage events across all organisations.
           </Alert>
         )}
 
         {demoMode && (
-          <Alert type="warning" className="mb-4">
+          <Alert variant="warning" className="mb-4">
             <strong>Demo Mode:</strong> Using mock data. Backend API not available.
           </Alert>
         )}
 
           {success && (
-            <Alert type="success" className="mb-4">
+            <Alert variant="success" className="mb-4">
               Test usage event generated successfully!
             </Alert>
           )}
 
           {error && (
-            <Alert type="error" className="mb-4">
+            <Alert variant="error" className="mb-4">
               <strong>Error:</strong> {error}
             </Alert>
           )}

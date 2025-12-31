@@ -162,6 +162,7 @@ class TestNotificationType:
         notification_type = NotificationType.objects.create(
             code="test_type",
             name="Test Type",
+            default_channel="email",
             retry_policy=retry_policy,
         )
 

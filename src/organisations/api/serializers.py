@@ -39,7 +39,16 @@ class OrganisationListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organisation
-        fields = ["id", "name", "slug", "is_active", "member_count", "project_count", "user_role"]
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "is_active",
+            "member_count",
+            "project_count",
+            "user_role",
+            "enable_theme_toggle",
+        ]
         read_only_fields = fields
 
     def get_member_count(self, obj):
@@ -94,6 +103,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "admin_count",
             "project_count",
             "user_role",
+            "enable_theme_toggle",
         ]
         read_only_fields = fields
 
@@ -133,7 +143,7 @@ class OrganisationCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organisation
-        fields = ["id", "name", "slug", "description", "is_active"]
+        fields = ["id", "name", "slug", "description", "is_active", "enable_theme_toggle"]
         read_only_fields = ["id", "slug"]
 
     def validate_name(self, value):

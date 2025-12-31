@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
-  PageHeader,
-  PageContent,
   Card,
   Alert,
   Button,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 
 /**

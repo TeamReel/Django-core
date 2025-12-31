@@ -19,7 +19,7 @@
 
             <dt class="ui-definition-term">Organisation</dt>
             <dd class="ui-definition-value">
-                <a href="{% url 'ui_organisations_detail' project.organisation.pk %}" class="ui-link">
+                <a href="{% url 'web_ui:ui_organisations_detail' project.organisation.pk %}" class="ui-link">
                     {{ project.organisation.name }}
                 </a>
             </dd>
@@ -42,7 +42,7 @@
             <em>Note: This is a stub view. Full project management functionality will be added in future releases.</em>
         </p>
         <p class="ui-text">
-            <a href="{% url 'ui_projects_list' %}" class="ui-link">← Back to Projects</a>
+            <a href="{% url 'web_ui:ui_projects_list' %}" class="ui-link">← Back to Projects</a>
         </p>
     </footer>
 </article>

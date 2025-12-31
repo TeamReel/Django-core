@@ -740,7 +740,7 @@ If you have an existing notification system:
 
 1. **Customize type mappings**: Define display rules for your notification types
 2. **Add router integration**: Connect notification actions to your routing system
-3. **Configure observability**: Integrate error logging with your monitoring stack (see `docs/observability.md`)
+3. **Configure observability**: Integrate error logging with your monitoring stack (see `docs/features/observability/overview.md`)
 4. **Test thoroughly**: Write integration tests for key user flows
 5. **Deploy backend**: Ensure B13/B16/B17 are deployed and API accessible
 

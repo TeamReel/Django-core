@@ -25,6 +25,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, useSignOut } from '@django-core/auth-ui';
 import { useTheme } from '@django-core/theme-system';
+import { useContextSwitcher } from '@django-core/context-switcher';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { useUserRole } from './PermissionGuards';
 import ProfileAvatarDropdown from './ProfileAvatarDropdown';
@@ -115,7 +116,9 @@ export default function TopNavbar() {
   const { user } = useAuth();
   const { signOut, loading: signOutLoading } = useSignOut();
   const { mode, setTheme } = useTheme();
-  const darkModeEnabled = useFeatureFlag('dark_mode', true); // Default enabled
+  const { context } = useContextSwitcher();
+  const themeToggleEnabled = useFeatureFlag('theme_toggle', true); // Theme toggle feature flag (resolved with org overrides)
+  const [themeToggleGlobalEnabled, setThemeToggleGlobalEnabled] = useState<boolean>(true); // Global flag value (for superadmins)
   const { isSystemAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -215,6 +218,57 @@ export default function TopNavbar() {
       setOpenDropdown(null);
     }
   }, []);
+
+  // For superadmins: Fetch the global flag value (not resolved with org overrides)
+  useEffect(() => {
+    if (!isSystemAdmin) return; // Only for superadmins
+
+    const fetchGlobalFlag = async () => {
+      try {
+        // Fetch flags without org context to get global values
+        const response = await fetch('/api/v1/settings/feature-flags/resolve-all/', {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const flags = data.data?.results || data.results || data.data || data || [];
+          const themeFlag = flags.find((f: any) => f.key === 'theme_toggle');
+
+          if (themeFlag) {
+            // For superadmins, ONLY use global_value (ignore resolved/org overrides)
+            const globalValue = themeFlag.global_value !== null && themeFlag.global_value !== undefined
+              ? themeFlag.global_value
+              : true; // Default to true if no global value found
+            console.log('[TopNavbar] Global theme_toggle flag for superadmin:', globalValue, 'raw:', themeFlag);
+            setThemeToggleGlobalEnabled(globalValue);
+          }
+        }
+      } catch (err) {
+        console.error('[TopNavbar] Error fetching global flag:', err);
+      }
+    };
+
+    fetchGlobalFlag();
+
+    // Listen for feature flag changes
+    const handleFlagChange = () => {
+      console.log('[TopNavbar] Feature flags changed, refetching global flag');
+      fetchGlobalFlag();
+    };
+
+    window.addEventListener('storage', handleFlagChange);
+    window.addEventListener('featureFlagsChanged' as any, handleFlagChange);
+
+    return () => {
+      window.removeEventListener('storage', handleFlagChange);
+      window.removeEventListener('featureFlagsChanged' as any, handleFlagChange);
+    };
+  }, [isSystemAdmin]);
 
   // Load language from localStorage
   useEffect(() => {
@@ -600,8 +654,8 @@ export default function TopNavbar() {
           {/* Right side: User controls */}
           {user && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Theme Toggle - gated by dark_mode feature flag */}
-            {darkModeEnabled && (
+            {/* Theme Toggle - for superadmin: check global flag only, for others: check resolved flag (with org overrides) */}
+            {(isSystemAdmin ? themeToggleGlobalEnabled : (themeToggleEnabled && context.organisation?.enable_theme_toggle)) && (
               <button
                 onClick={toggleTheme}
                 style={{

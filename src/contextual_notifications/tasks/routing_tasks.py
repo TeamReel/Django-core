@@ -413,6 +413,7 @@ def _apply_suppression(
             event_type=event_type,
             resource_id=resource_id,
             ttl=300,  # 5 minutes
+            channel=channel,
         )
 
         if is_suppressed:

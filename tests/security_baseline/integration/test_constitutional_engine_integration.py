@@ -22,6 +22,7 @@ class TestConstitutionalEngineIntegration:
         with override_settings(SECURITY_ENFORCEMENT_MODE="strict"):
             # Simulate a critical violation by patching enforcement helper
             from security_baseline import enforcement
+            from unittest.mock import patch, MagicMock
 
             orig_enforce = enforcement.enforce_security
 
@@ -29,11 +30,25 @@ class TestConstitutionalEngineIntegration:
                 return False
 
             enforcement.enforce_security = always_block
-            try:
-                with pytest.raises(RuntimeError, match="blocking startup"):
-                    apps.get_app_config("security_baseline").ready()
-            finally:
-                enforcement.enforce_security = orig_enforce
+
+            # Mock engine to return a violation so the error message is correct
+            mock_violation = MagicMock()
+            mock_violation.is_failure = True
+            mock_violation.severity = "CRITICAL"
+            mock_violation.violated_setting = "DEBUG"
+            mock_violation.rule_id = "SEC001"
+            mock_violation.message = "Debug mode enabled"
+            mock_violation.current_value = "True"
+            mock_violation.expected_value = "False"
+
+            with patch(
+                "constitution_engine.core.engine.Engine.run_once", return_value=[mock_violation]
+            ):
+                try:
+                    with pytest.raises(RuntimeError, match="Security enforcement failed"):
+                        apps.get_app_config("security_baseline").ready()
+                finally:
+                    enforcement.enforce_security = orig_enforce
 
     def test_reporter_integration(self):
         """SecurityReporter is registered and produces a report."""
@@ -49,7 +64,9 @@ class TestConstitutionalEngineIntegration:
             message = "DEBUG mode enabled in production."
 
         results = [DummyResult()]
-        report = reporter.report(results, None, None)
-        assert "Security Baseline Report" in report
-        assert "SEC001-DEBUG-MODE" in report
-        assert "CRITICAL" in report
+        report = reporter.report(results, {}, {})
+
+        assert report.report_type == "runtime_startup"
+        assert len(report.violations) == 1
+        assert report.violations[0].rule_id == "SEC001-DEBUG-MODE"
+        assert report.violations[0].severity == "CRITICAL"

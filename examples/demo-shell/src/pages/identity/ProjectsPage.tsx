@@ -3,10 +3,10 @@ import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import {
   Button,
   Badge,
-  Table,
   Alert,
   Card,
 } from '@django-core/design-system';
+import { Table } from '../../shims/design-system';
 import { PageHeader, PageContent, BreadcrumbContextSwitcher, useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
@@ -68,10 +68,10 @@ export const ProjectsPage: React.FC = () => {
     organisationOptions,
     handleOrganisationSwitch,
   } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
     projects: [],
     users: [],
-    context: { currentOrgId: resolvedOrg?.id },
+    context: { currentOrgId: resolvedOrg?.id ? String(resolvedOrg.id) : undefined },
     basePath: ''
   });
 
@@ -501,21 +501,21 @@ export const ProjectsPage: React.FC = () => {
       <PageContent>
         {/* Success message */}
         {successMessage && (
-          <Alert type="success" className="mb-4" data-testid="project-success-alert">
+          <Alert variant="success" className="mb-4" data-testid="project-success-alert">
             {successMessage}
           </Alert>
         )}
 
         {/* Error state */}
         {error && (
-          <Alert type="error" className="mb-4" data-testid="project-error-alert">
+          <Alert variant="error" className="mb-4" data-testid="project-error-alert">
             {error}
           </Alert>
         )}
 
         {/* Empty state */}
         {!loading && projects.length === 0 && (
-          <Alert type="info" data-testid="project-empty-state">
+          <Alert variant="info" data-testid="project-empty-state">
             No projects found. {currentOrgSlug ? 'Create a new project to get started.' : 'No accessible projects.'}
           </Alert>
         )}
@@ -545,7 +545,7 @@ export const ProjectsPage: React.FC = () => {
 
           if (filteredProjects.length === 0) {
             return (
-              <Alert type="info" data-testid="project-filtered-empty">
+              <Alert variant="info" data-testid="project-filtered-empty">
                 No projects match the current filters.
               </Alert>
             );
@@ -612,7 +612,7 @@ export const ProjectsPage: React.FC = () => {
                       {project.description || '-'}
                     </td>
                     <td>
-                      <Badge variant="secondary" data-testid={`project-members-${project.id}`}>
+                      <Badge variant="default" data-testid={`project-members-${project.id}`}>
                         {project.member_count || 0}
                       </Badge>
                     </td>

@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  PageHeader,
-  PageContent,
   Card,
   Badge,
   Alert,
 } from '@django-core/design-system';
+import {
+  PageHeader,
+  PageContent,
+} from '@django-core/page-templates';
 import { User } from '../../types';
 import AppShell from '../../components/AppShell';
 
@@ -100,7 +102,7 @@ export const ProfilePage: React.FC = () => {
           ]}
         />
         <PageContent>
-          <Alert type="error" data-testid="profile-error">
+          <Alert variant="error" data-testid="profile-error">
             {error || 'Could not load profile'}
           </Alert>
         </PageContent>
@@ -147,9 +149,7 @@ export const ProfilePage: React.FC = () => {
                 Full Name
               </label>
               <div style={{ fontWeight: 500, color: 'var(--app-text)' }} data-testid="profile-name">
-                {user.first_name && user.last_name
-                  ? `${user.first_name} ${user.last_name}`
-                  : user.email}
+                {user.name || user.email}
               </div>
             </div>
             <div>
@@ -165,7 +165,7 @@ export const ProfilePage: React.FC = () => {
                 System Role
               </label>
               <div data-testid="profile-role-badge">
-                <Badge variant="secondary">
+                <Badge variant="default">
                   {user.role || 'User'}
                 </Badge>
               </div>

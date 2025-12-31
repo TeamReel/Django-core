@@ -148,7 +148,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "description", "is_active"]
+        fields = ["name", "description"]
 
     def validate_name(self, value):
         """Validate name length and format."""

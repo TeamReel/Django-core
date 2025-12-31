@@ -8,6 +8,7 @@ the application. All audit recording should go through this module.
 import json
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Optional
+from uuid import UUID
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -24,6 +25,15 @@ else:
     UserType = User  # type: ignore[misc,assignment]
 
 logger = logging.getLogger(__name__)
+
+
+class UUIDEncoder(json.JSONEncoder):
+    """JSON encoder that handles UUID objects."""
+
+    def default(self, obj: Any) -> Any:
+        if isinstance(obj, UUID):
+            return str(obj)
+        return super().default(obj)
 
 
 class AuditLog:
@@ -82,7 +92,7 @@ class AuditLog:
             )
 
         # Validation: Metadata size limit (10KB)
-        metadata_json = json.dumps(metadata)
+        metadata_json = json.dumps(metadata, cls=UUIDEncoder)
         metadata_size_kb = len(metadata_json.encode("utf-8")) / 1024
         if metadata_size_kb > 10:
             raise ValueError(
@@ -90,10 +100,13 @@ class AuditLog:
                 f"Reduce metadata or store large data elsewhere."
             )
 
+        # Sanitize metadata for Django JSONField (convert UUIDs to strings)
+        sanitized_metadata = json.loads(metadata_json)
+
         # Auto-capture IP and user agent from request
         if request:
-            metadata.setdefault("ip", request.META.get("REMOTE_ADDR"))
-            metadata.setdefault("user_agent", request.META.get("HTTP_USER_AGENT"))
+            sanitized_metadata.setdefault("ip", request.META.get("REMOTE_ADDR"))
+            sanitized_metadata.setdefault("user_agent", request.META.get("HTTP_USER_AGENT"))
 
         # Graceful failure: Never break application flow
         try:
@@ -103,7 +116,7 @@ class AuditLog:
                     user=user,
                     organization=organization,
                     project=project,
-                    metadata=metadata,
+                    metadata=sanitized_metadata,
                 )
 
             # Metrics: Increment success counter

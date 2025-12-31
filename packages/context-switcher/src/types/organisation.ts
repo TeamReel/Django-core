@@ -19,8 +19,17 @@ export interface Organisation {
   /** URL-safe slug for routing (e.g., "acme-corp") */
   slug: string;
 
+  /** Optional description */
+  description?: string;
+
+  /** Whether the organisation is active */
+  is_active?: boolean;
+
   /** Optional logo/avatar URL */
   logo?: string;
+
+  /** Whether theme toggle is enabled for this organisation */
+  enable_theme_toggle?: boolean;
 
   /** Optional metadata for sorting/filtering */
   metadata?: OrganisationMetadata;

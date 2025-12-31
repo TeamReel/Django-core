@@ -86,10 +86,44 @@ class B09Backend:
                     if user_id:
                         try:
                             user = User.objects.get(id=user_id)
-                        except User.DoesNotExist:
+                        except (User.DoesNotExist, ValueError):
                             pass
 
-                    audit_log.record(event_type, user=user, metadata=data)
+                    # Resolve context objects
+                    organization = None
+                    project = None
+
+                    resource_type = data.get("resource_type")
+                    resource_id = data.get("resource_id")
+
+                    if resource_id:
+                        try:
+                            # Lazy import to avoid circular dependencies
+                            from organisations.models import Organisation
+                            from projects.models import Project
+
+                            if resource_type and resource_type.lower() == "organisation":
+                                try:
+                                    organization = Organisation.objects.get(id=resource_id)
+                                except (Organisation.DoesNotExist, ValueError):
+                                    pass
+                            elif resource_type and resource_type.lower() == "project":
+                                try:
+                                    project_obj = Project.objects.get(id=resource_id)
+                                    project = project_obj
+                                    organization = project_obj.organisation
+                                except (Project.DoesNotExist, ValueError):
+                                    pass
+                        except ImportError:
+                            pass
+
+                    audit_log.record(
+                        event_type,
+                        user=user,
+                        organization=organization,
+                        project=project,
+                        metadata=data,
+                    )
 
                 self.emit_event = emit_event_adapter
                 self.b09_available = True
@@ -219,7 +253,7 @@ def emit_role_assignment_audit(
 
         try:
             user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
+        except (User.DoesNotExist, ValueError):
             user = None
 
         audit_log.record(
@@ -355,6 +389,15 @@ def evaluate_permission(
     if resource is not None:
         resource_type = resource.__class__.__name__
         resource_id = getattr(resource, "id", None)
+    else:
+        # Fallback to context if resource object not provided
+        # This ensures check_permission receives the correct scope context
+        if scope == "ORGANIZATION" and organization_id:
+            resource_type = "Organisation"
+            resource_id = organization_id
+        elif scope == "PROJECT" and project_id:
+            resource_type = "Project"
+            resource_id = project_id
 
     # Evaluate permission using existing evaluator
     # Convert User instance to UUID for evaluator (if user has uuid field)
@@ -363,6 +406,10 @@ def evaluate_permission(
     resource_uuid: Optional[Any] = getattr(resource, "uuid", None) if resource else None
     if resource and resource_uuid is None:
         resource_uuid = getattr(resource, "id", None)
+
+    # If we derived resource_id from context, use it as resource_uuid
+    if resource_uuid is None and resource_id is not None:
+        resource_uuid = resource_id
 
     # Call existing check_permission function
     # This performs the actual permission resolution via role assignments
@@ -404,10 +451,10 @@ def evaluate_permission(
     # Emit audit event to B09 with Django logging fallback
     # Use B09's actual API as specified in T002
     try:
-        from audit.services import create_audit_event
+        from audit.api import audit_log
 
         # Call B09 with structured fields as individual kwargs (FR-002)
-        create_audit_event(
+        audit_log.record(
             event_type=event_type,
             user=user,
             organization=organization,
@@ -416,9 +463,11 @@ def evaluate_permission(
                 "permission": permission,
                 "outcome": outcome,
                 "resource_type": resource_type,
-                "resource_id": resource_id,
+                "resource_id": str(resource_id) if resource_id else None,
                 "scope": scope,
                 "request_id": request_id,
+                "organization_id": organization_id,
+                "project_id": project_id,
             },
         )
     except ImportError as e:

@@ -26,6 +26,10 @@ class EnvelopeJSONRenderer(JSONRenderer):
         if response and response.status_code >= 400:
             return super().render(data, accepted_media_type, renderer_context)
 
+        # Do not envelope 204 No Content responses
+        if response and response.status_code == 204:
+            return super().render(data, accepted_media_type, renderer_context)
+
         # Extract meta field if present in data dict
         meta = None
         if isinstance(data, dict) and "meta" in data:

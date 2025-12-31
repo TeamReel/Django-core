@@ -33,13 +33,20 @@ def permission_setup(db):
     )
 
     # Register permissions
-    Permission.objects.create(permission="projects.create", description="Create projects")
-    Permission.objects.create(permission="projects.delete", description="Delete projects")
-    Permission.objects.create(permission="projects.view", description="View projects")
+    Permission.objects.get_or_create(
+        permission="projects.create", defaults={"description": "Create projects"}
+    )
+    Permission.objects.get_or_create(
+        permission="projects.delete", defaults={"description": "Delete projects"}
+    )
+    Permission.objects.get_or_create(
+        permission="projects.view", defaults={"description": "View projects"}
+    )
 
     # Create admin role
-    admin_role = Role.objects.create(
-        name="Admin", description="Administrator role", scope=ScopeChoices.ORGANIZATION
+    admin_role, _ = Role.objects.get_or_create(
+        name="Admin",
+        defaults={"description": "Administrator role", "scope": ScopeChoices.ORGANIZATION},
     )
 
     # Register audit event types
@@ -97,7 +104,7 @@ class TestPermissionCheckAudit:
         assert event.user == user
         assert event.organization == org
         assert event.metadata["permission"] == "projects.create"
-        assert event.metadata["result"] == "allowed"
+        assert event.metadata["decision"] == "grant"
 
     def test_denied_permission_creates_audit_event(self, permission_setup):
         """Denied permission check creates audit event with result='denied'."""
@@ -116,7 +123,7 @@ class TestPermissionCheckAudit:
         assert event is not None
         assert event.user == user
         assert event.metadata["permission"] == "projects.delete"
-        assert event.metadata["result"] == "denied"
+        assert event.metadata["decision"] == "deny"
 
     def test_permission_check_with_resource_logs_resource_info(self, permission_setup):
         """Permission check with resource includes resource type and ID in metadata."""

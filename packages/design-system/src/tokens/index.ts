@@ -1,9 +1,9 @@
-export { colorVars } from './colors.css.ts';
-export { typographyVars } from './typography.css.ts';
-export { spacingVars } from './spacing.css.ts';
-export { radiusVars } from './radius.css.ts';
-export { shadowVars } from './shadows.css.ts';
-export { zIndexVars } from './zIndex.css.ts';
-export { motionVars } from './motion.css.ts';
-export { breakpoints, type Breakpoint } from './breakpoints.css.ts';
-export { themeVars, type ThemeVars } from './theme.css.ts';
+export { colorVars } from './colors.css';
+export { typographyVars } from './typography.css';
+export { spacingVars } from './spacing.css';
+export { radiusVars } from './radius.css';
+export { shadowVars } from './shadows.css';
+export { zIndexVars } from './zIndex.css';
+export { motionVars } from './motion.css';
+export { breakpoints, type Breakpoint } from './breakpoints.css';
+export { themeVars, type ThemeVars } from './theme.css';

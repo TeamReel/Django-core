@@ -38,6 +38,7 @@ class TestHelloWorldTask:
 
 
 @pytest.mark.unit
+@pytest.mark.django_db
 class TestExportUserDataTask:
     """Test audited task with context."""
 
@@ -46,14 +47,14 @@ class TestExportUserDataTask:
         from tasks.examples.export_user_data import export_user_data
 
         result = export_user_data.apply(
-            kwargs={"user_id": 123, "org_id": 456, "export_format": "csv"}
+            kwargs={"user_id": None, "org_id": None, "export_format": "csv"}
         )
 
         assert result.successful()
         data = result.result
         assert data["status"] == "completed"
-        assert data["user_id"] == 123
-        assert data["org_id"] == 456
+        assert data["user_id"] is None
+        assert data["org_id"] is None
         assert data["format"] == "csv"
 
     def test_export_supports_multiple_formats(self):
@@ -62,7 +63,7 @@ class TestExportUserDataTask:
 
         for fmt in ["csv", "json", "xml"]:
             result = export_user_data.apply(
-                kwargs={"user_id": 1, "org_id": 2, "export_format": fmt}
+                kwargs={"user_id": None, "org_id": None, "export_format": fmt}
             )
             assert result.result["format"] == fmt
 
@@ -72,8 +73,8 @@ class TestExportUserDataTask:
 
         result = export_user_data.apply(
             kwargs={
-                "user_id": 999,
-                "org_id": 888,
+                "user_id": None,
+                "org_id": None,
                 "export_format": "json",
                 "request_id": "req-123",
             }

@@ -2,7 +2,7 @@
 
 import pytest
 from django.core.exceptions import ValidationError
-from django.test import SimpleTestCase, override_settings
+from django.test import TestCase, override_settings
 from i18n_preferences.validators import (
     validate_language_code,
     validate_locale_code,
@@ -18,7 +18,7 @@ from i18n_preferences.validators import (
         ("fr", "French"),
     ]
 )
-class TestLanguageCodeValidation(SimpleTestCase):
+class TestLanguageCodeValidation(TestCase):
     """Test language code validation."""
 
     def test_valid_language_code(self):
@@ -35,7 +35,7 @@ class TestLanguageCodeValidation(SimpleTestCase):
         assert "Invalid language code 'invalid'" in str(exc_info.value)
 
 
-class TestLocaleCodeValidation(SimpleTestCase):
+class TestLocaleCodeValidation(TestCase):
     """Test locale code validation."""
 
     def test_valid_locale_code(self):
@@ -57,7 +57,7 @@ class TestLocaleCodeValidation(SimpleTestCase):
             pass
 
 
-class TestTimezoneValidation(SimpleTestCase):
+class TestTimezoneValidation(TestCase):
     """Test timezone validation."""
 
     def test_valid_timezone(self):

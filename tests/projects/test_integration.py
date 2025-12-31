@@ -3,44 +3,23 @@ Integration tests demonstrating project association patterns.
 
 This module provides example test cases showing how product-specific
 resources can integrate with the projects app via foreign keys.
+
+SKIPPED: Requires test-only models (tests.models.ExampleResource).
+These are demonstration tests showing integration patterns.
+To activate: create tests/models.py with ExampleResource model and tests/apps.py config.
 """
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.db import models
 from organisations.models import Membership, Organisation
 from projects.models import Project
 
+# Skip entire module - requires test-only models not configured in test environment
+pytestmark = pytest.mark.skip(
+    reason="Requires tests.models.ExampleResource - demonstration tests only"
+)
+
 User = get_user_model()
-
-
-# Example resource model for integration testing
-class ExampleResource(models.Model):
-    """
-    Example product-specific resource that associates with a project.
-
-    This demonstrates the recommended pattern for product features
-    that need to scope data within projects.
-    """
-
-    project = models.ForeignKey(
-        "projects.Project",
-        on_delete=models.CASCADE,
-        related_name="example_resources",
-        null=True,
-        blank=True,
-        help_text="Project this resource belongs to",
-    )
-    name = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        app_label = "tests"  # Test-only model
-        db_table = "test_example_resource"
-        indexes = [
-            models.Index(fields=["project"]),
-        ]
 
 
 @pytest.fixture

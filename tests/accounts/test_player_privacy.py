@@ -20,13 +20,16 @@ class TestPlayerPrivacy:
     @pytest.fixture(autouse=True)
     def setup(self):
         """Create test data."""
-        # Create organisation
-        self.org = Organisation.objects.create(name="Test Bundesliga", slug="test-bundesliga")
-
         # Create admin user
         self.admin = User.objects.create_user(
             email="admin@test.de", password="password123", first_name="Admin", last_name="User"
         )
+
+        # Create organisation
+        self.org = Organisation.objects.create(
+            name="Test Bundesliga", slug="test-bundesliga", creator=self.admin
+        )
+
         Membership.objects.create(
             user=self.admin, organisation=self.org, role="admin", is_active=True
         )
@@ -56,12 +59,16 @@ class TestPlayerPrivacy:
         response = self.client.get(f"/api/v1/admin/users/?organisation_id={self.org.slug}")
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.data
 
         # Should return only 1 user (self)
-        assert data["count"] == 1
-        assert len(data["results"]) == 1
-        assert data["results"][0]["email"] == self.player.email
+        if isinstance(data, list):
+            assert len(data) == 1
+            assert data[0]["email"] == self.player.email
+        else:
+            assert data["count"] == 1
+            assert len(data["results"]) == 1
+            assert data["results"][0]["email"] == self.player.email
 
     def test_player_can_view_self_detail(self):
         """Player can view their own user detail."""
@@ -70,7 +77,7 @@ class TestPlayerPrivacy:
         response = self.client.get(f"/api/v1/admin/users/{self.player.id}/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.data
         assert data["email"] == self.player.email
 
     def test_player_cannot_view_other_user_detail(self):
@@ -81,7 +88,7 @@ class TestPlayerPrivacy:
 
         # Should return 404 to prevent information leakage
         assert response.status_code == 404
-        data = response.json()
+        data = response.data
         assert data["error"] == "not_found"
 
     def test_player_cannot_edit_other_user(self):
@@ -111,7 +118,7 @@ class TestPlayerPrivacy:
         response = self.client.get(f"/api/v1/admin/users/?organisation_id={self.org.slug}")
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.data
 
         # Should return all 3 users (admin + 2 players)
         assert data["count"] == 3
@@ -125,7 +132,7 @@ class TestPlayerPrivacy:
         response = self.client.get(f"/api/v1/admin/users/{self.player.id}/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.data
         assert data["email"] == self.player.email
 
     def test_player_cannot_create_user(self):

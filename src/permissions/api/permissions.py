@@ -117,6 +117,49 @@ class HasPermission(BasePermission):
 
         return has_perm
 
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if request user has permission on the object.
+
+        Args:
+            request: DRF request object
+            view: DRF view object
+            obj: The object to check permission against
+
+        Returns:
+            True if user has permission, False otherwise
+        """
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Use centralized evaluator for audit logging (WP01-T008)
+        try:
+            has_perm = evaluate_permission(
+                user=request.user,
+                permission=self.permission,
+                resource=obj,
+                context={
+                    "scope": "GENERIC",
+                    "request_id": request.META.get("HTTP_X_REQUEST_ID"),
+                },
+            )
+        except Exception:
+            # Fail closed on evaluation errors
+            has_perm = False
+
+        if not has_perm:
+            # Raise structured 403 response (WP06-T035)
+            raise PermissionDenied(
+                {
+                    "error": "forbidden",
+                    "permission": self.permission,
+                    "detail": f"Permission denied: '{self.permission}' required",
+                    "scope": "GENERIC",
+                }
+            )
+
+        return has_perm
+
 
 class HasOrganizationPermission(BasePermission):
     """

@@ -190,8 +190,8 @@ class TestProjectDetailSerializer:
             context={"organisation": project.organisation, "request": request},
         )
 
-        # Should still fail due to case-insensitive check
-        assert not serializer.is_valid()
+        # Should be valid as it is the same instance
+        assert serializer.is_valid()
 
 
 @pytest.mark.django_db

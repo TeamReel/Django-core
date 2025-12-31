@@ -4,6 +4,8 @@ import type { Organisation } from '@django-core/context-switcher';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@django-core/theme-system';
+import { useFeatureFlag } from '../hooks/useFeatureFlag';
+import { useUserRole } from '../hooks/useUserRole';
 
 interface NotificationResponse {
   count: number;
@@ -20,9 +22,61 @@ export default function TopNavigation() {
   const { context, organisations, switchContext } = useContextSwitcher();
   const [hasSelectedOrg, setHasSelectedOrg] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { theme, setTheme } = useTheme();
+  const { mode: theme, setTheme } = useTheme();
   const [language, setLanguage] = useState<'EN' | 'NL' | 'DE'>('EN');
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
+  const { isSystemAdmin } = useUserRole();
+
+  // Check if theme toggle feature is enabled (from feature flags system)
+  const themeToggleEnabled = useFeatureFlag('theme_toggle', true); // Resolved with org overrides
+  const [themeToggleGlobalEnabled, setThemeToggleGlobalEnabled] = useState<boolean>(true); // Global value for superadmins
+
+  // For superadmins: Fetch the global flag value (not resolved with org overrides)
+  useEffect(() => {
+    if (!isSystemAdmin) return;
+
+    const fetchGlobalFlag = async () => {
+      try {
+        const response = await fetch('/api/v1/settings/feature-flags/resolve-all/', {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const flags = data.data?.results || data.results || data.data || data || [];
+          const themeFlag = flags.find((f: any) => f.key === 'theme_toggle');
+
+          if (themeFlag) {
+            const globalValue = themeFlag.global_value !== null && themeFlag.global_value !== undefined
+              ? themeFlag.global_value
+              : true;
+            setThemeToggleGlobalEnabled(globalValue);
+          }
+        }
+      } catch (err) {
+        console.error('[TopNavigation] Error fetching global flag:', err);
+      }
+    };
+
+    fetchGlobalFlag();
+
+    // Listen for feature flag changes
+    const handleFlagChange = () => {
+      fetchGlobalFlag();
+    };
+
+    window.addEventListener('storage', handleFlagChange);
+    window.addEventListener('featureFlagsChanged' as any, handleFlagChange);
+
+    return () => {
+      window.removeEventListener('storage', handleFlagChange);
+      window.removeEventListener('featureFlagsChanged' as any, handleFlagChange);
+    };
+  }, [isSystemAdmin]);
 
   // Load language from localStorage
   useEffect(() => {
@@ -54,11 +108,11 @@ export default function TopNavigation() {
   };
 
   const toggleTheme = () => {
-    const newMode = theme?.mode === 'light' ? 'dark' : 'light';
+    const newMode = theme === 'light' ? 'dark' : 'light';
     setTheme({ mode: newMode });
   };
 
-  const currentThemeMode = theme?.mode || 'light';
+  const currentThemeMode = theme || 'light';
 
   // Save selected org to localStorage
   useEffect(() => {
@@ -120,22 +174,24 @@ export default function TopNavigation() {
 
       {user && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            style={{
-              padding: '8px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '20px',
-            }}
-            title={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
-            aria-label={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {currentThemeMode === 'light' ? '🌙' : '☀️'}
-          </button>
+          {/* Theme Toggle - for superadmin: check global flag only, for others: check resolved flag (with org overrides) */}
+          {(isSystemAdmin ? themeToggleGlobalEnabled : (themeToggleEnabled && context.organisation?.enable_theme_toggle)) && (
+            <button
+              onClick={toggleTheme}
+              style={{
+                padding: '8px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '20px',
+              }}
+              title={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
+              aria-label={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {currentThemeMode === 'light' ? '🌙' : '☀️'}
+            </button>
+          )}
 
           {/* Language Switcher */}
           <div className="language-menu-container" style={{ position: 'relative' }}>

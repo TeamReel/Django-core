@@ -4,14 +4,15 @@ import {
   Card,
   Badge,
   Alert,
-  Table,
   Button,
 } from '@django-core/design-system';
+import { Table } from '../../shims/design-system';
 import {
   PageHeader,
   PageContent,
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
+  type BreadcrumbSwitcherOption,
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
@@ -73,12 +74,12 @@ export const FeatureFlagsPage: React.FC = () => {
     organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
     projects: [],
     users: [],
-    context: { currentOrgId },
+    context: { currentOrgId: currentOrgId || undefined },
     basePath: '',
   });
 
   // Custom handler to switch organisation without page reload
-  const handleOrganisationSwitch = async (option: { id: string; label: string; slug: string }) => {
+  const handleOrganisationSwitch = async (option: BreadcrumbSwitcherOption) => {
     console.log('[FeatureFlagsPage] Switching to org:', option.label, option.id);
 
     // SIMPLIFIED APPROACH FOR NON-ORG-SCOPED ROUTES:
@@ -222,7 +223,6 @@ export const FeatureFlagsPage: React.FC = () => {
       newState,
       isSuperadmin,
       currentOrgId,
-      userRole,
       editMode,
       useApi
     });
@@ -480,26 +480,26 @@ export const FeatureFlagsPage: React.FC = () => {
       <PageContent>
         {/* Context Info */}
         {!isSuperadmin && currentOrgName && (
-          <Alert type="info" className="mb-4">
+          <Alert variant="info" className="mb-4">
             <strong>Organisation Context:</strong> Managing flags for <strong>{currentOrgName}</strong>.
             You can enable/disable provisioned features for your users.
           </Alert>
         )}
 
         {isSuperadmin && editMode === 'org' && !currentOrgId && (
-          <Alert type="info" className="mb-4">
+          <Alert variant="info" className="mb-4">
             <strong>Select Organisation:</strong> Please select an organisation from the dropdown above to manage its overrides.
           </Alert>
         )}
 
         {isSuperadmin && editMode === 'global' && (
-          <Alert type="info" className="mb-4">
+          <Alert variant="info" className="mb-4">
             <strong>Global Defaults Mode:</strong> Changes affect all organisations without specific overrides.
           </Alert>
         )}
 
         {isSuperadmin && currentOrgId && editMode === 'org' && (
-          <Alert type="warning" className="mb-4">
+          <Alert variant="warning" className="mb-4">
             <strong>Organisation Overrides Mode:</strong> Managing overrides for <strong>{currentOrgName}</strong>.
             Use "Provision" to enable availability, then "Enable" to set the default state for this org.
           </Alert>
@@ -593,7 +593,7 @@ export const FeatureFlagsPage: React.FC = () => {
                 let globalSettingNode: React.ReactNode = <span className="text-gray-400">-</span>;
                 if (editMode === 'org' && globalValue !== null && globalValue !== undefined) {
                   globalSettingNode = (
-                    <Badge variant={globalValue ? 'success' : 'secondary'}>
+                    <Badge variant={globalValue ? 'success' : 'default'}>
                       {globalValue ? 'Enabled' : 'Disabled'}
                     </Badge>
                   );
@@ -604,7 +604,7 @@ export const FeatureFlagsPage: React.FC = () => {
                 if (editMode === 'org') {
                   if (orgValue !== null && orgValue !== undefined) {
                     orgSettingNode = (
-                      <Badge variant={orgValue ? 'success' : 'secondary'}>
+                      <Badge variant={orgValue ? 'success' : 'default'}>
                         {orgValue ? 'Enabled' : 'Disabled'}
                       </Badge>
                     );
@@ -624,7 +624,7 @@ export const FeatureFlagsPage: React.FC = () => {
                     // Global disabled overrides org enabled
                     effectiveValueNode = (
                       <div>
-                        <Badge variant="secondary">Disabled</Badge>
+                        <Badge variant="default">Disabled</Badge>
                         <div className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
                           <span>⚠️</span>
                           <span>Overridden by global setting</span>
@@ -634,7 +634,7 @@ export const FeatureFlagsPage: React.FC = () => {
                   } else {
                     // Normal case
                     effectiveValueNode = (
-                      <Badge variant={displayEnabled ? 'success' : 'secondary'}>
+                      <Badge variant={displayEnabled ? 'success' : 'default'}>
                         {displayEnabled ? 'Enabled' : 'Disabled'}
                       </Badge>
                     );
@@ -695,7 +695,7 @@ export const FeatureFlagsPage: React.FC = () => {
                   rowData.effective_value = effectiveValueNode;
                 } else {
                   rowData.enabled = (
-                    <Badge variant={displayEnabled ? 'success' : 'secondary'}>
+                    <Badge variant={displayEnabled ? 'success' : 'default'}>
                       {displayEnabled ? 'Enabled' : 'Disabled'}
                     </Badge>
                   );
@@ -709,7 +709,7 @@ export const FeatureFlagsPage: React.FC = () => {
 
         {/* Info Footer */}
         {editMode === 'org' ? (
-          <Alert type="info" className="mt-4">
+          <Alert variant="info" className="mt-4">
             <strong>Organisation Feature Flags:</strong>
             <ul className="mt-2 ml-4 list-disc space-y-1">
               <li><strong>Global Setting</strong>: The baseline value set by administrators for all organisations.</li>
@@ -721,7 +721,7 @@ export const FeatureFlagsPage: React.FC = () => {
             </ul>
           </Alert>
         ) : (
-          <Alert type="info" className="mt-4">
+          <Alert variant="info" className="mt-4">
             <strong>Global Feature Flags:</strong>
             <ul className="mt-2 ml-4 list-disc space-y-1">
               <li><strong>Setting</strong>: The baseline value that applies to all organisations by default.</li>

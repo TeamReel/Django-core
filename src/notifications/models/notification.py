@@ -191,5 +191,6 @@ class Notification(models.Model):
         if self.channel != "in_app":
             raise ValueError("Only in-app notifications can be marked as read")
 
-        self.read_at = timezone.now()
-        self.save(update_fields=["read_at"])
+        if not self.read_at:
+            self.read_at = timezone.now()
+            self.save(update_fields=["read_at"])

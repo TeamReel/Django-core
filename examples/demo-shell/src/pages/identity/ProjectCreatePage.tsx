@@ -11,7 +11,7 @@ import {
   PageContent,
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
-} from '@django-core/page-templates';
+} from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 
@@ -33,10 +33,10 @@ export const ProjectCreatePage: React.FC = () => {
     organisationOptions,
     handleOrganisationSwitch,
   } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
+    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
     projects: [],
     users: [],
-    context: { currentOrgId: resolvedOrg?.id },
+    context: { currentOrgId: resolvedOrg?.id ? String(resolvedOrg.id) : undefined },
     basePath: '',
   });
 
@@ -112,7 +112,7 @@ export const ProjectCreatePage: React.FC = () => {
       <PageContent>
         <Card className="max-w-2xl mx-auto">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && <Alert type="error">{error}</Alert>}
+            {error && <Alert variant="error">{error}</Alert>}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

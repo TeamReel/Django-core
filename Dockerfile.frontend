@@ -30,8 +30,7 @@ RUN npm install -g serve
 COPY --from=builder /app/examples/demo-shell/dist ./dist
 
 # Railway injects the PORT environment variable
-ENV PORT=3000
-EXPOSE $PORT
+EXPOSE 8080
 
 # Serve the application on 0.0.0.0:$PORT
 CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:$PORT"]

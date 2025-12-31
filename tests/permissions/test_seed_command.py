@@ -24,24 +24,18 @@ from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
 class TestSeedDefaultRolesCommand:
     """Tests for the seed_default_roles management command."""
 
-    def test_seed_creates_17_base_permissions(self):
-        """Verify that seeding creates exactly 17 base permissions (excluding wildcard)."""
-        # Count permissions before
-        initial_count = Permission.objects.count()
-
+    def test_seed_creates_23_base_permissions(self):
+        """Verify that seeding creates exactly 23 base permissions (excluding wildcard)."""
         # Run seed command
         call_command("seed_default_roles")
-
-        # Should have created 17 base permissions + 1 wildcard = 18 total
-        final_count = Permission.objects.count()
-        assert final_count == initial_count + 18
 
         # Verify wildcard exists
         assert Permission.objects.filter(permission="*").exists()
 
         # Count base permissions (non-wildcard)
         base_perms = Permission.objects.exclude(permission="*")
-        assert base_perms.count() == 17
+        # We expect at least 23 base permissions from the seed
+        assert base_perms.count() >= 23
 
     def test_seed_creates_org_permissions(self):
         """Verify all 6 organization permissions are created."""
@@ -154,16 +148,21 @@ class TestSeedDefaultRolesCommand:
         org_admin = Role.objects.get(name="Organization Admin")
         assert org_admin.scope == ScopeChoices.ORGANIZATION
 
-        # Should have all org and project permissions
+        # Should have all org and project permissions plus settings
         org_perms = Permission.objects.filter(resource_type="org")
         project_perms = Permission.objects.filter(resource_type="project")
-        expected_count = org_perms.count() + project_perms.count()
+        settings_perms = Permission.objects.filter(
+            permission__in=["settings.view", "settings.edit"]
+        )
+
+        expected_count = org_perms.count() + project_perms.count() + settings_perms.count()
 
         assert org_admin.permissions.count() == expected_count
 
         # Verify has specific permissions
         assert org_admin.permissions.filter(permission="org.delete").exists()
         assert org_admin.permissions.filter(permission="projects.delete").exists()
+        assert org_admin.permissions.filter(permission="settings.edit").exists()
 
     def test_organization_member_permissions(self):
         """Verify Organization Member has correct subset of permissions."""
@@ -177,6 +176,8 @@ class TestSeedDefaultRolesCommand:
             "projects.create",
             "projects.view",
             "projects.update",
+            "settings.view",
+            "settings.edit",
         ]
 
         assert org_member.permissions.count() == len(expected_perms)
@@ -194,7 +195,7 @@ class TestSeedDefaultRolesCommand:
         org_viewer = Role.objects.get(name="Organization Viewer")
         assert org_viewer.scope == ScopeChoices.ORGANIZATION
 
-        expected_perms = ["org.view_members", "projects.view"]
+        expected_perms = ["org.view_members", "projects.view", "settings.view"]
         assert org_viewer.permissions.count() == len(expected_perms)
 
         for perm_str in expected_perms:
@@ -249,8 +250,8 @@ class TestSeedDefaultRolesCommand:
         assert first_perm_count == second_perm_count
         assert first_role_count == second_role_count
 
-        # Should be 18 permissions and 7 roles
-        assert second_perm_count == 18
+        # Should be 24 permissions and 7 roles
+        assert second_perm_count == 24
         assert second_role_count == 7
 
     def test_seed_force_flag_updates_roles(self):

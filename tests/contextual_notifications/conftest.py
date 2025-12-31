@@ -12,18 +12,38 @@ from contextual_notifications.models import (
 )
 from django.contrib.auth import get_user_model
 from organisations.models import Organisation
+from permissions.models import Role, RoleAssignment, ScopeChoices
 from projects.models import Project
 
 User = get_user_model()
+
+
+def assign_role_to_user(user, role_name="member", scope=ScopeChoices.GLOBAL, **scope_kwargs):
+    """
+    Helper to assign a role to a user with proper B08 RoleAssignment.
+
+    Args:
+        user: User instance
+        role_name: Name of the role (default: "member")
+        scope: Scope from ScopeChoices (GLOBAL, ORGANIZATION, PROJECT)
+        **scope_kwargs: target_organization_id or target_project_id depending on scope
+
+    Returns:
+        RoleAssignment instance
+    """
+    role, _ = Role.objects.get_or_create(
+        name=role_name, defaults={"description": f"{role_name.capitalize()} role"}
+    )
+    return RoleAssignment.objects.create(user=user, role=role, scope=scope, **scope_kwargs)
 
 
 @pytest.fixture
 def user(db):
     """Create a test user."""
     return User.objects.create_user(
-        username="testuser",
         email="test@example.com",
         password="testpass123",
+        is_active=True,
     )
 
 
@@ -31,9 +51,9 @@ def user(db):
 def user2(db):
     """Create a second test user."""
     return User.objects.create_user(
-        username="testuser2",
         email="test2@example.com",
         password="testpass123",
+        is_active=True,
     )
 
 
@@ -41,7 +61,6 @@ def user2(db):
 def admin_user(db):
     """Create an admin user."""
     return User.objects.create_superuser(
-        username="admin",
         email="admin@example.com",
         password="adminpass123",
     )
@@ -53,7 +72,7 @@ def organisation(db, admin_user):
     return Organisation.objects.create(
         name="Test Org",
         slug="test-org",
-        created_by=admin_user,
+        creator=admin_user,
     )
 
 
@@ -63,7 +82,7 @@ def organisation2(db, admin_user):
     return Organisation.objects.create(
         name="Test Org 2",
         slug="test-org-2",
-        created_by=admin_user,
+        creator=admin_user,
     )
 
 
@@ -74,7 +93,7 @@ def project(db, organisation, user):
         name="Test Project",
         slug="test-project",
         organisation=organisation,
-        created_by=user,
+        creator=user,
     )
 
 
@@ -85,7 +104,7 @@ def project2(db, organisation, user):
         name="Test Project 2",
         slug="test-project-2",
         organisation=organisation,
-        created_by=user,
+        creator=user,
     )
 
 
@@ -96,10 +115,9 @@ def routing_rule_global(db):
         event_type="project.updated",
         scope="global",
         channel="in_app",
-        priority="normal",
-        enabled=True,
+        priority=1,  # PRIORITY_NORMAL
+        is_enabled=True,
         target_role="member",
-        description="Global rule for project updates",
     )
 
 
@@ -111,10 +129,9 @@ def routing_rule_org(db, organisation):
         scope="org",
         organisation=organisation,
         channel="email",
-        priority="high",
-        enabled=True,
+        priority=2,  # PRIORITY_HIGH
+        is_enabled=True,
         target_role="member",
-        description="Org-level rule for project updates",
     )
 
 
@@ -126,10 +143,9 @@ def routing_rule_project(db, project):
         scope="project",
         project=project,
         channel="in_app",
-        priority="urgent",
-        enabled=True,
+        priority=3,  # PRIORITY_URGENT
+        is_enabled=True,
         target_role="assignee",
-        description="Project-level rule for task assignments",
     )
 
 
@@ -140,10 +156,9 @@ def routing_rule_disabled(db):
         event_type="project.deleted",
         scope="global",
         channel="in_app",
-        priority="normal",
-        enabled=False,
+        priority=1,  # PRIORITY_NORMAL
+        is_enabled=False,
         target_role="member",
-        description="Disabled rule",
     )
 
 
@@ -178,7 +193,6 @@ def org_notification_policy(db, organisation):
         quiet_hours_start="22:00:00",
         quiet_hours_end="08:00:00",
         quiet_hours_rate_limit=5,
-        rate_limit_window_seconds=300,
     )
 
 

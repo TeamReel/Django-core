@@ -56,5 +56,5 @@
 - [x] **T022**: Integrate `FileUpload` component with `POST /api/files/upload`.
 - [x] **T023**: Fetch and display file list (with thumbnails if available).
 - [x] **T024**: Implement delete action (soft delete) in the UI.
-- [x] **T025**: Document manual verification steps in `DEMO_TEST_GUIDE.md`.
+- [x] **T025**: Document manual verification steps in `docs/testing/demo-guide.md`.
 - [x] **T026**: Implement Playwright E2E tests for file upload flow.

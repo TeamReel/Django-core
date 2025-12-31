@@ -316,13 +316,13 @@ const FilesPage: React.FC = () => {
 
             {/* Status Messages */}
             {error && (
-              <Alert variant="error" onClose={() => setError(null)}>
+              <Alert variant="error">
                 {error}
               </Alert>
             )}
 
             {success && (
-              <Alert variant="success" onClose={() => setSuccess(null)}>
+              <Alert variant="success">
                 {success}
               </Alert>
             )}
@@ -428,10 +428,10 @@ const FilesPage: React.FC = () => {
                             </p>
 
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                              <Badge variant="secondary" size="sm">
+                              <Badge variant="default" size="sm">
                                 {formatFileSize(file.file_size)}
                               </Badge>
-                              <Badge variant="secondary" size="sm">
+                              <Badge variant="default" size="sm">
                                 {file.content_type}
                               </Badge>
                               {file.is_public && (

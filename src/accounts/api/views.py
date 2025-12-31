@@ -160,7 +160,25 @@ def login_api(request):
 
         # Audit log: Failed login
         # Try to find user to attach to audit log (for org-scoped visibility)
-        failed_user = User.objects.filter(email=serializer.validated_data.get("email")).first()
+        email = serializer.validated_data.get("email")
+        failed_user = User.objects.filter(email=email).first()
+        if failed_user:
+            if not failed_user.email_verified:
+                return Response(
+                    {
+                        "error": "email_not_verified",
+                        "message": ("Please verify your email address before signing in."),
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if not failed_user.is_active:
+                return Response(
+                    {
+                        "error": "account_inactive",
+                        "message": "Your account has been deactivated.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         audit_log.record(
             "auth.login_failed",
@@ -179,7 +197,40 @@ def login_api(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+
+from rest_framework.views import APIView
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
+class LogoutView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        # JWT Blacklisting
+        refresh_token = request.data.get("refresh")
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception:
+                pass
+
+        if request.user.is_authenticated:
+            audit_log.record("auth.logout", user=request.user, request=request)
+
+        auth_logout(request)
+
+        response = Response(status=status.HTTP_204_NO_CONTENT)
+        response.delete_cookie(settings.SESSION_COOKIE_NAME)
+        return response
+
+
 @api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def logout_api(request):
     """API endpoint for user logout."""
     if request.user.is_authenticated:
@@ -542,6 +593,12 @@ def admin_user_list(request):
             # Creating a user requires an organization context for non-global admins
             return Response(
                 {"detail": "Organization ID required to create users."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        else:
+            # Regular users cannot list all users in the system without an organization context
+            return Response(
+                {"detail": "You do not have permission to view all users."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -1078,6 +1135,16 @@ def admin_user_reset_password(request, user_id):
             status=status.HTTP_404_NOT_FOUND,
         )
 
+    # Prevent non-superusers from resetting superusers
+    if user.is_superuser and not request.user.is_superuser:
+        return Response(
+            {
+                "error": "permission_denied",
+                "message": "You cannot reset password for a superadmin account.",
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     if not user.is_active:
         return Response(
             {
@@ -1136,6 +1203,16 @@ def admin_change_role(request, user_id):
         return Response(
             {"error": "bad_request", "message": "You cannot change your own role."},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Prevent non-superusers from modifying superusers
+    if user.is_superuser and not request.user.is_superuser:
+        return Response(
+            {
+                "error": "permission_denied",
+                "message": "You cannot modify a superadmin account.",
+            },
+            status=status.HTTP_403_FORBIDDEN,
         )
 
     serializer = ChangeRoleSerializer(data=request.data)
