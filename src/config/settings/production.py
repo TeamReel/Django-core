@@ -26,6 +26,8 @@ SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = "None"  # Allow cross-site cookies for separated frontend/backend
+CSRF_COOKIE_SAMESITE = "None"
 
 # Security: Additional headers
 SECURE_HSTS_SECONDS = 31536000  # 1 year
