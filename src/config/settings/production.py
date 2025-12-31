@@ -133,7 +133,7 @@ CORS_ALLOWED_ORIGINS = env.list(
     default=[
         "http://localhost:3000",  # Local dev
         "http://localhost:5173",  # Vite dev
-        "https://django-core-production.up.railway.app",
+        "https://django-core-app-production.up.railway.app",
         # Add your deployed frontend URLs here:
         # "https://django-core-demo.vercel.app",
         # "https://django-core-demo.netlify.app",
@@ -146,7 +146,7 @@ CSRF_TRUSTED_ORIGINS = env.list(
     default=[
         "https://*.onrender.com",
         "https://*.railway.app",
-        "https://django-core-production.up.railway.app",
+        "https://django-core-app-production.up.railway.app",
         # Add your deployed frontend URLs here:
         # "https://django-core-demo.vercel.app",
         # "https://django-core-demo.netlify.app",
