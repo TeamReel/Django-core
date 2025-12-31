@@ -733,6 +733,13 @@ class Command(BaseCommand):
                     self.stdout.write(
                         f"    + Created bondscoach: {bondscoach.get_full_name()} ({bondscoach.email})"
                     )
+                else:
+                    # Always update password for demo users to ensure consistency
+                    bondscoach.set_password(demo_password)
+                    bondscoach.save()
+                    self.stdout.write(
+                        f"    • Updated bondscoach password: {bondscoach.get_full_name()} ({bondscoach.email})"
+                    )
 
                 # Assign Organization Admin role
                 assignment, created = RoleAssignment.objects.get_or_create(
@@ -795,6 +802,10 @@ class Command(BaseCommand):
                         coach.set_password(demo_password)
                         coach.save()
                         stats["users_created"] += 1
+                    else:
+                        # Always update password for demo users
+                        coach.set_password(demo_password)
+                        coach.save()
 
                     # Assign Project Admin role
                     assignment, created = RoleAssignment.objects.get_or_create(
@@ -850,6 +861,10 @@ class Command(BaseCommand):
                             player.set_password(demo_password)
                             player.save()
                             stats["users_created"] += 1
+                        else:
+                            # Always update password for demo users
+                            player.set_password(demo_password)
+                            player.save()
 
                         # Assign Project Member role
                         assignment, created = RoleAssignment.objects.get_or_create(
