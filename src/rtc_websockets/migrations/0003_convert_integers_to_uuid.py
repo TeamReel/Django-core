@@ -16,10 +16,15 @@ def clear_rtc_tables(apps, schema_editor):
     WebSocketConnection = apps.get_model("rtc_websockets", "WebSocketConnection")
 
     # Delete all records to allow schema migration
-    ActivityEvent.objects.all().delete()
-    PresenceStatus.objects.all().delete()
-    RealtimeMessage.objects.all().delete()
-    WebSocketConnection.objects.all().delete()
+    # Note: We use raw SQL delete to avoid any model validation issues during migration
+    # and to ensure we hit the correct table names even if models drift
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM realtime_activity_event")
+        cursor.execute("DELETE FROM realtime_presence_status")
+        cursor.execute("DELETE FROM realtime_message")
+        cursor.execute("DELETE FROM realtime_websocket_connection")
 
 
 def reverse_clear(apps, schema_editor):
