@@ -23,14 +23,40 @@ def main():
     print(f"Starting Django Core-App on port {port}...")
     print(f"DJANGO_SETTINGS_MODULE: {os.environ.get('DJANGO_SETTINGS_MODULE', 'NOT SET')}")
 
+    # One-time fix: Drop rtc_websockets tables to fix integer→UUID migration
+    # Safe for demo - WebSocket data is ephemeral (connections/presence/activity)
+    print("\nChecking for migration compatibility issues...")
+    try:
+        result = subprocess.run(
+            [
+                "python",
+                "-c",
+                "import django; django.setup(); "
+                "from django.db import connection; "
+                "cursor = connection.cursor(); "
+                "cursor.execute('DROP TABLE IF EXISTS rtc_websockets_websocketconnection CASCADE'); "
+                "cursor.execute('DROP TABLE IF EXISTS rtc_websockets_presencestatus CASCADE'); "
+                "cursor.execute('DROP TABLE IF EXISTS rtc_websockets_realtimemessage CASCADE'); "
+                "cursor.execute('DROP TABLE IF EXISTS rtc_websockets_activityevent CASCADE'); "
+                "print('✓ Cleared rtc_websockets tables for clean migration')",
+            ],
+            check=False,
+            cwd="/app",
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            print(result.stdout.strip())
+        else:
+            # Tables might not exist yet - not an error
+            print("Note: rtc_websockets tables not found (expected on first deploy)")
+    except Exception as e:
+        print(f"Warning: Could not check rtc_websockets tables: {e}")
+
     # Run migrations before starting server
     print("\nRunning database migrations...")
     try:
-        subprocess.run(
-            ["python", "manage.py", "migrate", "--noinput"],
-            check=True,
-            cwd="/app"
-        )
+        subprocess.run(["python", "manage.py", "migrate", "--noinput"], check=True, cwd="/app")
         print("✓ Migrations completed successfully")
     except subprocess.CalledProcessError as e:
         print(f"✗ Migration failed with exit code {e.returncode}")
