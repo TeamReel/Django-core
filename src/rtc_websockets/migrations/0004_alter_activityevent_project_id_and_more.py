@@ -2,6 +2,7 @@
 
 import django.core.validators
 from django.db import migrations, models
+import uuid
 
 
 class Migration(migrations.Migration):
@@ -10,31 +11,72 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        # ActivityEvent
+        migrations.RemoveField(
             model_name="activityevent",
             name="organization_id",
-            field=models.UUIDField(help_text="Organization context"),
         ),
-        migrations.AlterField(
+        migrations.AddField(
+            model_name="activityevent",
+            name="organization_id",
+            field=models.UUIDField(help_text="Organization context", default=uuid.uuid4),
+            preserve_default=False,
+        ),
+        migrations.RemoveField(
+            model_name="activityevent",
+            name="project_id",
+        ),
+        migrations.AddField(
             model_name="activityevent",
             name="project_id",
             field=models.UUIDField(blank=True, help_text="Optional project context", null=True),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
             model_name="activityevent",
             name="resource_id",
-            field=models.UUIDField(help_text="ID of the affected resource"),
         ),
-        migrations.AlterField(
+        migrations.AddField(
+            model_name="activityevent",
+            name="resource_id",
+            field=models.UUIDField(help_text="ID of the affected resource", default=uuid.uuid4),
+            preserve_default=False,
+        ),
+        # PresenceStatus
+        migrations.RemoveField(
+            model_name="presencestatus",
+            name="project_id",
+        ),
+        migrations.AddField(
             model_name="presencestatus",
             name="project_id",
             field=models.UUIDField(blank=True, help_text="Optional project scope", null=True),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name="presencestatus",
+            name="organization_id",
+        ),
+        migrations.AddField(
+            model_name="presencestatus",
+            name="organization_id",
+            field=models.UUIDField(
+                help_text="Organization scope for presence visibility", default=uuid.uuid4
+            ),
+            preserve_default=False,
+        ),
+        # RealtimeMessage
+        migrations.RemoveField(
             model_name="realtimemessage",
             name="scope_id",
-            field=models.UUIDField(help_text="ID of the scope (user_id, org_id, project_id)"),
         ),
+        migrations.AddField(
+            model_name="realtimemessage",
+            name="scope_id",
+            field=models.UUIDField(
+                help_text="ID of the scope (user_id, org_id, project_id)", default=uuid.uuid4
+            ),
+            preserve_default=False,
+        ),
+        # WebSocketConnection
         migrations.AlterField(
             model_name="websocketconnection",
             name="channel_name",
