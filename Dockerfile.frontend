@@ -16,8 +16,8 @@ COPY examples/demo-shell/ ./examples/demo-shell/
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Build the demo-shell application
-RUN pnpm -C examples/demo-shell build
+# Build the demo-shell application and its dependencies
+RUN pnpm --filter ...@django-core/demo-shell build
 
 # Production stage
 FROM node:20-alpine
