@@ -47,7 +47,8 @@ export const ConstitutionPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('/api/constitution/rules/', {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${baseUrl}/api/constitution/rules/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',

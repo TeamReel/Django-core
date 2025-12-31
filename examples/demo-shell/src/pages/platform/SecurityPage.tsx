@@ -159,7 +159,8 @@ export const SecurityPage: React.FC = () => {
         if (filterSeverity !== 'all') query.append('severity', filterSeverity);
         if (filterStatus !== 'all') query.append('status', filterStatus);
 
-        const response = await fetch(`/api/security/events/?${query.toString()}`, {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${baseUrl}/api/security/events/?${query.toString()}`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',

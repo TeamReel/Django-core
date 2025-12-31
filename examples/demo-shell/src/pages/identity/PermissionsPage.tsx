@@ -34,7 +34,8 @@ export const PermissionsPage: React.FC = () => {
         setError(null);
 
         // Fetch current user to determine role
-        const userResponse = await fetch('/api/users/me/', {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const userResponse = await fetch(`${baseUrl}/api/users/me/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -49,7 +50,7 @@ export const PermissionsPage: React.FC = () => {
         }
 
         // Fetch permissions
-        const permissionsResponse = await fetch('/api/permissions/', {
+        const permissionsResponse = await fetch(`${baseUrl}/api/permissions/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -65,7 +66,7 @@ export const PermissionsPage: React.FC = () => {
         }
 
         // Fetch roles
-        const rolesResponse = await fetch('/api/roles/', {
+        const rolesResponse = await fetch(`${baseUrl}/api/roles/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',

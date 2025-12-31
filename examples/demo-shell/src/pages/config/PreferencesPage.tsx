@@ -119,7 +119,8 @@ export const PreferencesPage: React.FC = () => {
 
       // Fetch effective i18n preferences from backend (or demo data)
       try {
-        const response = await fetch('/api/v1/i18n-preferences/me/', {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${baseUrl}/api/v1/i18n-preferences/me/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -210,7 +211,8 @@ export const PreferencesPage: React.FC = () => {
       console.log('[PreferencesPage] Loading channel preferences for user ID:', userId);
 
       try {
-        const response = await fetch(`/api/v1/contextual-notifications/preferences/?user=${userId}`, {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${baseUrl}/api/v1/contextual-notifications/preferences/?user=${userId}`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -356,8 +358,9 @@ export const PreferencesPage: React.FC = () => {
       }
 
       // Find existing preference ID for this combination
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
       const response = await fetch(
-        `/api/v1/contextual-notifications/preferences/?user=${userId}&event_type=${eventType}&channel=${channel}`,
+        `${baseUrl}/api/v1/contextual-notifications/preferences/?user=${userId}&event_type=${eventType}&channel=${channel}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -390,7 +393,7 @@ export const PreferencesPage: React.FC = () => {
           console.log('[PreferencesPage] PATCH preference ID:', existingPref.id, 'enabled:', newEnabledValue);
 
           const updateResponse = await fetch(
-            `/api/v1/contextual-notifications/preferences/${existingPref.id}/`,
+            `${baseUrl}/api/v1/contextual-notifications/preferences/${existingPref.id}/`,
             {
               method: 'PATCH',
               headers: {
@@ -423,7 +426,7 @@ export const PreferencesPage: React.FC = () => {
             throw new Error('User ID not available');
           }
 
-          const createResponse = await fetch('/api/v1/contextual-notifications/preferences/', {
+          const createResponse = await fetch(`${baseUrl}/api/v1/contextual-notifications/preferences/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

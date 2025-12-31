@@ -31,7 +31,8 @@ export const ApiDocsPage: React.FC = () => {
     // Try to fetch API schema to extract metadata
     const fetchMeta = async () => {
       try {
-        const response = await fetch('/api/schema/?format=json', {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${baseUrl}/api/schema/?format=json`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',

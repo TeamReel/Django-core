@@ -298,7 +298,8 @@ export const UsageEventsPage: React.FC = () => {
       if (!demoMode) {
         // Try to POST to backend
         const csrfToken = getCookie('csrftoken');
-        const response = await fetch('/api/v1/usage-events/', {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${baseUrl}/api/v1/usage-events/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

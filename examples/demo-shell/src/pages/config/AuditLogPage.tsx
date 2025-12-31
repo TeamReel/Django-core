@@ -141,7 +141,8 @@ export const AuditLogPage: React.FC = () => {
     const connect = async () => {
       try {
         // Fetch WebSocket token via Vite proxy (handles cookies correctly)
-        const tokenResponse = await fetch(`/api/ws/token/`, {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const tokenResponse = await fetch(`${baseUrl}/api/ws/token/`, {
             credentials: 'include',
         });
 

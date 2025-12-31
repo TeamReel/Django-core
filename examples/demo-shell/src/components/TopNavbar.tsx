@@ -226,7 +226,8 @@ export default function TopNavbar() {
     const fetchGlobalFlag = async () => {
       try {
         // Fetch flags without org context to get global values
-        const response = await fetch('/api/v1/settings/feature-flags/resolve-all/', {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${baseUrl}/api/v1/settings/feature-flags/resolve-all/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
