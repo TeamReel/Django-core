@@ -92,11 +92,13 @@ EMAIL_FROM = env("EMAIL_FROM", default="noreply@example.com")
 
 # CORS: Allow frontend domains
 # Add your Vercel/Netlify frontend domain here
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
     default=[
         "http://localhost:3000",  # Local dev
         "http://localhost:5173",  # Vite dev
+        "https://django-core-production.up.railway.app",
         # Add your deployed frontend URLs here:
         # "https://django-core-demo.vercel.app",
         # "https://django-core-demo.netlify.app",
@@ -109,6 +111,7 @@ CSRF_TRUSTED_ORIGINS = env.list(
     default=[
         "https://*.onrender.com",
         "https://*.railway.app",
+        "https://django-core-production.up.railway.app",
         # Add your deployed frontend URLs here:
         # "https://django-core-demo.vercel.app",
         # "https://django-core-demo.netlify.app",
