@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 import dj_database_url
+from corsheaders.defaults import default_headers
 from django.core.management.utils import get_random_secret_key
 
 from .base import *  # noqa: F401, F403
@@ -141,6 +142,11 @@ CORS_ALLOWED_ORIGINS = env.list(
         # "https://django-core-demo.netlify.app",
     ],
 )
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-organisation-id",
+    "x-project-id",
+]
 
 # CSRF: Trust frontend domains
 CSRF_TRUSTED_ORIGINS = env.list(
