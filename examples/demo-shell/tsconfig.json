@@ -19,9 +19,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      // "@django-core/design-system": ["../../packages/design-system/src/index.ts"],
+      "@django-core/design-system": ["../../packages/design-system/src/index.ts"],
       "@django-core/context-switcher": ["../../packages/context-switcher/src/index.ts"],
-      // "@django-core/page-templates": ["../../packages/page-templates/src/index.ts"],
+      "@django-core/page-templates": ["../../packages/page-templates/src/index.ts"],
       "@django-core/auth-ui": ["../../packages/auth/src/index.ts"],
       "@django-core/theme-system": ["../../packages/theme-system/src/index.ts"],
       "@django-core/api-client": ["../../packages/api-client/src/index.ts"],
