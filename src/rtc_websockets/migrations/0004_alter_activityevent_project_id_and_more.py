@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("rtc_websockets", "0002_partial_indexes"),
+        ("rtc_websockets", "0003_convert_integers_to_uuid"),
     ]
 
     operations = [
