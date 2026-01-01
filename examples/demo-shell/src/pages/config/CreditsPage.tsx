@@ -602,13 +602,13 @@ export const CreditsPage: React.FC = () => {
                 margin: '8px 0',
                 color: credits.current_balance < 500 ? 'var(--app-warning)' : 'var(--app-success)'
               }}>
-                {credits.current_balance.toLocaleString()}
+                {(credits.current_balance || 0).toLocaleString()}
               </div>
               <div style={{ fontSize: '20px', opacity: 0.7, marginBottom: '12px' }}>
                 credits
               </div>
               <div style={{ opacity: 0.5, fontSize: '13px' }}>
-                {credits.organisation_name} • Last updated {new Date(credits.updated_at).toLocaleString()}
+                {credits.organisation_name} • Last updated {credits.updated_at ? new Date(credits.updated_at).toLocaleString() : 'Just now'}
               </div>
             </Card>
 
