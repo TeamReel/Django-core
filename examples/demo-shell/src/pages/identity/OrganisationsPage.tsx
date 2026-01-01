@@ -350,7 +350,7 @@ export const OrganisationsPage: React.FC = () => {
                         )}
                         {userCanDelete && (
                           <button
-                            onClick={() => handleDelete(org.id)}
+                            onClick={() => handleDelete(org.slug || org.id)}
                             style={{
                                 padding: '6px 12px',
                                 borderRadius: '4px',
