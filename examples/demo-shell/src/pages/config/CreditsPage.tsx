@@ -356,13 +356,43 @@ export const CreditsPage: React.FC = () => {
 
         // Refetch both credits balance and transactions
         // Force refetch by switching tab and back (triggers useEffect)
+        console.log('[CreditsPage] Refetching data. ActiveTab:', activeTab);
+
         if (activeTab === 'transactions') {
-          // Already on transactions, need to manually refetch
+          // Rebuild params exactly as in useEffect to ensure consistency
+          const params = new URLSearchParams();
+          params.append('organization_id', currentOrgId);
+          if (sourceTypeFilter) params.append('source_type', sourceTypeFilter);
+          if (userFilter) params.append('created_by__email__icontains', userFilter);
+          if (dateFromFilter) params.append('timestamp__gte', `${dateFromFilter}T00:00:00`);
+          if (dateToFilter) params.append('timestamp__lte', `${dateToFilter}T23:59:59`);
+
+          console.log('[CreditsPage] Refetching transactions with params:', params.toString());
+
           const txnResponse = await client.get<Transaction[]>(
-            `/api/v1/transactions/?organization_id=${currentOrgId}&source_type=adjustment`
+            `/api/v1/transactions/?${params.toString()}`
           );
+
           if (!txnResponse.error && txnResponse.data) {
-            const allTransactions = Array.isArray(txnResponse.data) ? txnResponse.data : [];
+            const rawData = txnResponse.data as any;
+            console.log('[CreditsPage] Refetch response rawData:', rawData);
+
+            let allTransactions: any[] = [];
+
+            if (Array.isArray(rawData)) {
+              allTransactions = rawData;
+            } else if (Array.isArray(rawData.data?.data)) {
+              allTransactions = rawData.data.data;
+            } else if (Array.isArray(rawData.data?.results)) {
+              allTransactions = rawData.data.results;
+            } else if (Array.isArray(rawData.results)) {
+              allTransactions = rawData.results;
+            } else if (Array.isArray(rawData.data)) {
+              allTransactions = rawData.data;
+            }
+
+            console.log('[CreditsPage] Refetched transactions count:', allTransactions.length);
+
             const creditTransactions = allTransactions.filter(
               (txn: Transaction & { project?: string | null }) => !txn.project
             );
