@@ -117,7 +117,7 @@ export default function TopNavbar() {
   const { signOut, loading: signOutLoading } = useSignOut();
   const { mode, setTheme } = useTheme();
   const { context } = useContextSwitcher();
-  const themeToggleEnabled = useFeatureFlag('theme_toggle', true); // Theme toggle feature flag (resolved with org overrides)
+  const themeToggleEnabled = useFeatureFlag('dark_mode', true); // Theme toggle feature flag (resolved with org overrides)
   const [themeToggleGlobalEnabled, setThemeToggleGlobalEnabled] = useState<boolean>(true); // Global flag value (for superadmins)
   const { isSystemAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -238,14 +238,14 @@ export default function TopNavbar() {
         if (response.ok) {
           const data = await response.json();
           const flags = data.data?.results || data.results || data.data || data || [];
-          const themeFlag = flags.find((f: any) => f.key === 'theme_toggle');
+          const themeFlag = flags.find((f: any) => f.key === 'dark_mode');
 
           if (themeFlag) {
             // For superadmins, ONLY use global_value (ignore resolved/org overrides)
             const globalValue = themeFlag.global_value !== null && themeFlag.global_value !== undefined
               ? themeFlag.global_value
               : true; // Default to true if no global value found
-            console.log('[TopNavbar] Global theme_toggle flag for superadmin:', globalValue, 'raw:', themeFlag);
+            console.log('[TopNavbar] Global dark_mode flag for superadmin:', globalValue, 'raw:', themeFlag);
             setThemeToggleGlobalEnabled(globalValue);
           }
         }
@@ -656,7 +656,7 @@ export default function TopNavbar() {
           {user && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Theme Toggle - for superadmin: check global flag only, for others: check resolved flag (with org overrides) */}
-            {(isSystemAdmin ? themeToggleGlobalEnabled : (themeToggleEnabled && context.organisation?.enable_theme_toggle)) && (
+            {(isSystemAdmin ? themeToggleGlobalEnabled : themeToggleEnabled) && (
               <button
                 onClick={toggleTheme}
                 style={{

@@ -28,7 +28,6 @@ export const OrganisationEditPage: React.FC = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isActive, setIsActive] = useState(true);
-  const [enableThemeToggle, setEnableThemeToggle] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +74,6 @@ export const OrganisationEditPage: React.FC = () => {
         setName(data.name);
         setDescription(data.description || '');
         setIsActive(data.is_active !== undefined ? data.is_active : true);
-        setEnableThemeToggle(data.enable_theme_toggle !== undefined ? data.enable_theme_toggle : true);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -114,7 +112,6 @@ export const OrganisationEditPage: React.FC = () => {
           name,
           description,
           is_active: isActive,
-          enable_theme_toggle: enableThemeToggle,
         }),
       });
 
@@ -225,23 +222,6 @@ export const OrganisationEditPage: React.FC = () => {
               <label htmlFor="is_active" style={{ fontWeight: 500 }}>
                 Active
               </label>
-            </div>
-
-            <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input
-                type="checkbox"
-                id="enable_theme_toggle"
-                checked={enableThemeToggle}
-                onChange={(e) => setEnableThemeToggle(e.target.checked)}
-                disabled={saving}
-                style={{ width: '1rem', height: '1rem' }}
-              />
-              <label htmlFor="enable_theme_toggle" style={{ fontWeight: 500 }}>
-                Enable Theme Toggle
-              </label>
-              <span style={{ fontSize: '0.875rem', color: 'var(--app-text-secondary)', marginLeft: '0.5rem' }}>
-                (Allow users to switch between light and dark themes)
-              </span>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>

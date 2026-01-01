@@ -138,12 +138,7 @@ export async function deleteOrgOverride(overrideId: string): Promise<void> {
 
 export async function seedDefaultFlags(): Promise<void> {
   const defaults = [
-    { key: 'advanced_analytics', description: 'Enable advanced analytics dashboard with real-time insights', enabled: true },
     { key: 'dark_mode', description: 'Enable dark mode theme support', enabled: true },
-    { key: 'new_dashboard_ui', description: 'Enable the new dashboard layout (beta)', enabled: false },
-    { key: 'api_keys', description: 'Allow users to generate API keys', enabled: true },
-    { key: 'webhooks', description: 'Enable webhook integrations', enabled: true },
-    { key: 'custom_domains', description: 'Allow custom domain configuration', enabled: false },
   ];
 
   for (const flag of defaults) {

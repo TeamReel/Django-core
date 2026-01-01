@@ -35,16 +35,6 @@ export interface FlagStorage {
 
 const DEFAULT_FLAGS: FeatureFlag[] = [
   {
-    id: '1',
-    name: 'Advanced Analytics',
-    key: 'advanced_analytics',
-    description: 'Enable advanced analytics dashboard with real-time insights',
-    enabled: true,
-    rollout_percentage: 100,
-    created_at: '2024-01-15T10:00:00Z',
-    updated_at: '2024-12-20T14:30:00Z',
-  },
-  {
     id: '2',
     name: 'Dark Mode',
     key: 'dark_mode',
@@ -53,46 +43,6 @@ const DEFAULT_FLAGS: FeatureFlag[] = [
     rollout_percentage: 100,
     created_at: '2024-02-10T09:00:00Z',
     updated_at: '2024-12-15T11:20:00Z',
-  },
-  {
-    id: '3',
-    name: 'New Dashboard UI',
-    key: 'new_dashboard_ui',
-    description: 'Beta: Redesigned dashboard with improved UX',
-    enabled: false,
-    rollout_percentage: 25,
-    created_at: '2024-11-01T08:00:00Z',
-    updated_at: '2024-12-22T16:45:00Z',
-  },
-  {
-    id: '4',
-    name: 'API Keys Management',
-    key: 'api_keys',
-    description: 'Generate and manage API keys for programmatic access',
-    enabled: true,
-    rollout_percentage: 100,
-    created_at: '2024-03-05T12:00:00Z',
-    updated_at: '2024-12-18T10:15:00Z',
-  },
-  {
-    id: '5',
-    name: 'Webhook Integrations',
-    key: 'webhooks',
-    description: 'Configure webhooks for external service integrations',
-    enabled: false,
-    rollout_percentage: 0,
-    created_at: '2024-10-20T14:00:00Z',
-    updated_at: '2024-12-21T13:00:00Z',
-  },
-  {
-    id: '6',
-    name: 'Custom Domains',
-    key: 'custom_domains',
-    description: 'Use your own domain for branded experience',
-    enabled: false,
-    rollout_percentage: 0,
-    created_at: '2024-09-15T11:00:00Z',
-    updated_at: '2024-12-19T15:30:00Z',
   },
 ];
 
