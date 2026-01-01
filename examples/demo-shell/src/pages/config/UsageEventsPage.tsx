@@ -108,7 +108,8 @@ export const UsageEventsPage: React.FC = () => {
       setError(null);
 
       // Build query params based on mode
-      let url = '/api/v1/usage-events/';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      let url = `${baseUrl}/api/v1/usage-events/`;
       const params = new URLSearchParams();
 
       // In org mode, filter by current organization
