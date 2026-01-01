@@ -125,7 +125,8 @@ export async function updateOrgOverride(overrideId: string, enabled: boolean): P
 }
 
 export async function deleteOrgOverride(overrideId: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/${overrideId}/`, {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const response = await fetch(`${baseUrl}${API_BASE}/${overrideId}/`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -145,17 +146,20 @@ export async function seedDefaultFlags(): Promise<void> {
     { key: 'dark_mode', description: 'Enable dark mode theme support', enabled: true },
   ];
 
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+
   for (const flag of defaults) {
     // Check if exists first (optional, but good for idempotency if we had a check endpoint)
     // For now, just try to create. If it fails (unique constraint), we ignore.
     try {
-      await fetch(`${API_BASE}/`, {
+      await fetch(`${baseUrl}${API_BASE}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRFToken': getCsrfToken(),
         },
+        credentials: 'include',
         body: JSON.stringify({
           scope_type: 'GLOBAL',
           key: flag.key,
