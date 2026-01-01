@@ -10,7 +10,8 @@ export interface ApiFeatureFlag extends FeatureFlag {
 }
 
 export async function fetchFlags(orgId: string | null): Promise<ApiFeatureFlag[]> {
-  const url = new URL(`${API_BASE}/resolve-all/`, window.location.origin);
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const url = new URL(`${baseUrl}${API_BASE}/resolve-all/`);
   if (orgId) {
     url.searchParams.append('organisation_id', orgId);
   }
@@ -33,7 +34,8 @@ export async function fetchFlags(orgId: string | null): Promise<ApiFeatureFlag[]
 }
 
 export async function updateGlobalFlag(flagId: string, enabled: boolean): Promise<void> {
-  const response = await fetch(`${API_BASE}/${flagId}/`, {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const response = await fetch(`${baseUrl}${API_BASE}/${flagId}/`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -50,7 +52,8 @@ export async function updateGlobalFlag(flagId: string, enabled: boolean): Promis
 }
 
 export async function createOrgOverride(orgId: string, key: string, enabled: boolean): Promise<void> {
-  const response = await fetch(`${API_BASE}/`, {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const response = await fetch(`${baseUrl}${API_BASE}/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -74,7 +77,8 @@ export async function createOrgOverride(orgId: string, key: string, enabled: boo
 export async function updateOrgOverride(overrideId: string, enabled: boolean): Promise<void> {
   console.log('[featureFlagsApi] updateOrgOverride called:', { overrideId, enabled });
 
-  const url = `${API_BASE}/${overrideId}/`;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const url = `${baseUrl}${API_BASE}/${overrideId}/`;
   console.log('[featureFlagsApi] Making PATCH request to:', url);
 
   const controller = new AbortController();
