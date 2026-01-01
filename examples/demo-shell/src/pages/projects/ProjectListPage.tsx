@@ -108,7 +108,7 @@ export default function ProjectListPage() {
         <div style={{
           display: 'grid',
           gap: '20px',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+          gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))'
         }}>
           {projects.map(project => (
             <div

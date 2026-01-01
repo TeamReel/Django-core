@@ -231,23 +231,24 @@ export const OrganisationsPage: React.FC = () => {
 
           return (
           <Card>
-          <Table>
+            <div className="overflow-x-auto">
+              <Table>
             <thead>
               <tr>
-                <th onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>
+                <th onClick={() => handleSort('name')} style={{ cursor: 'pointer', minWidth: '150px' }}>
                   Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('member_count')} style={{ cursor: 'pointer' }}>
+                <th onClick={() => handleSort('member_count')} style={{ cursor: 'pointer', minWidth: '100px' }}>
                   Members {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('project_count')} style={{ cursor: 'pointer' }}>
+                <th onClick={() => handleSort('project_count')} style={{ cursor: 'pointer', minWidth: '100px' }}>
                   Projects {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('credit_balance')} style={{ cursor: 'pointer' }}>
+                <th onClick={() => handleSort('credit_balance')} style={{ cursor: 'pointer', minWidth: '100px' }}>
                   Credits {sort === 'credit_balance' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th style={{ minWidth: '100px' }}>Status</th>
+                <th style={{ minWidth: '150px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -371,6 +372,7 @@ export const OrganisationsPage: React.FC = () => {
               })}
             </tbody>
           </Table>
+            </div>
           </Card>
         );
         })()}

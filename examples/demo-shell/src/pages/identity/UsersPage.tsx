@@ -380,15 +380,16 @@ export default function UsersPage() {
         <div>Loading users...</div>
       ) : (
         <Card>
-          <Table>
+          <div className="overflow-x-auto">
+            <Table>
             <thead>
               <tr>
-                <th>User</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Organisations</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th style={{ minWidth: '150px' }}>User</th>
+                <th style={{ minWidth: '200px' }}>Email</th>
+                <th style={{ minWidth: '100px' }}>Role</th>
+                <th style={{ minWidth: '100px' }}>Status</th>
+                <th style={{ minWidth: '150px' }}>Organisations</th>
+                <th style={{ textAlign: 'right', minWidth: '150px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -655,6 +656,7 @@ export default function UsersPage() {
               )}
             </tbody>
           </Table>
+          </div>
         </Card>
       )}
 

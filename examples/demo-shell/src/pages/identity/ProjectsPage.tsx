@@ -564,7 +564,8 @@ export const ProjectsPage: React.FC = () => {
 
           return (
           <Card>
-          <Table>
+            <div className="overflow-x-auto">
+              <Table>
             <thead>
               <tr>
                 <th onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>
@@ -700,6 +701,7 @@ export const ProjectsPage: React.FC = () => {
               })}
             </tbody>
           </Table>
+            </div>
           </Card>
           );
         })()}

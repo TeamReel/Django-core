@@ -24,6 +24,7 @@ export default function DashboardPage() {
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
+            flexWrap: 'wrap',
             color: 'var(--app-text)'
           }}>
             <span style={{ fontSize: '24px' }}>⚠️</span>
