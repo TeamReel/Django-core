@@ -537,12 +537,18 @@ export const FeatureFlagsPage: React.FC = () => {
                         <Button
                           variant="primary"
                           onClick={async () => {
-                            setLoading(true);
-                            await seedDefaultFlags();
-                            // Reload
-                            const apiFlags = await fetchFlags(editMode === 'org' ? currentOrgId : null);
-                            setFlags(apiFlags);
-                            setLoading(false);
+                            try {
+                              setLoading(true);
+                              await seedDefaultFlags();
+                              // Reload
+                              const apiFlags = await fetchFlags(editMode === 'org' ? currentOrgId : null);
+                              setFlags(apiFlags);
+                            } catch (err) {
+                              console.error('Failed to seed flags:', err);
+                              setApiError('Failed to seed flags. Check console for details.');
+                            } finally {
+                              setLoading(false);
+                            }
                           }}
                         >
                           Seed Default Flags
