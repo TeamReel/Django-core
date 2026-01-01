@@ -105,13 +105,9 @@ export const UserDetailPage: React.FC = () => {
   }, [orgId]);
 
   // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
-  if (orgId && context.isLoading) {
-    return (
-      <AppShell>
-        <LoadingState message="Loading organisation context..." />
-      </AppShell>
-    );
-  }
+  // IMPORTANT: We must NOT return early here if it causes hooks (like useEffect below) to be skipped.
+  // Instead, we'll render the loading state but keep the hooks execution order consistent.
+  const isLoadingContext = orgId && context.isLoading;
 
   const fetchUser = async () => {
     try {
@@ -180,6 +176,14 @@ export const UserDetailPage: React.FC = () => {
     }
     return () => { isMounted = false; };
   }, [userId]);
+
+  if (isLoadingContext) {
+    return (
+      <AppShell>
+        <LoadingState message="Loading organisation context..." />
+      </AppShell>
+    );
+  }
 
   const handleSaveUser = async (updatedUser: any) => {
       try {
