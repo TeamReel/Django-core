@@ -22,6 +22,9 @@ ALLOWED_HOSTS = env.list(
     "ALLOWED_HOSTS",
     default=[".onrender.com", ".railway.app", "localhost", "127.0.0.1", "*", ".teamreel.app"],
 )
+# Ensure teamreel.app is always allowed, even if ALLOWED_HOSTS is set in env
+if ".teamreel.app" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(".teamreel.app")
 
 # Security: Force HTTPS
 SECURE_SSL_REDIRECT = True
@@ -150,6 +153,11 @@ CORS_ALLOWED_ORIGINS = env.list(
         # "https://django-core-demo.netlify.app",
     ],
 )
+# Ensure teamreel domains are always allowed for CORS
+if "https://demo.teamreel.app" not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append("https://demo.teamreel.app")
+if "https://teamreel.app" not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append("https://teamreel.app")
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "x-organisation-id",
@@ -171,6 +179,11 @@ CSRF_TRUSTED_ORIGINS = env.list(
         # "https://django-core-demo.netlify.app",
     ],
 )
+# Ensure teamreel domains are always trusted for CSRF
+if "https://demo.teamreel.app" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append("https://demo.teamreel.app")
+if "https://api.teamreel.app" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append("https://api.teamreel.app")
 
 # Logging: Structured JSON logging for production
 LOGGING = {
