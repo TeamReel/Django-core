@@ -68,6 +68,7 @@ export const UserDetailPage: React.FC = () => {
 
   // Fetch users for the current organisation (for switcher dropdown)
   useEffect(() => {
+    let isMounted = true;
     const fetchOrgUsers = async () => {
       if (!orgId) return;
 
@@ -85,7 +86,7 @@ export const UserDetailPage: React.FC = () => {
           }
         );
 
-        if (response.ok) {
+        if (response.ok && isMounted) {
           const rawData = await response.json();
           // Handle B13 envelope and extract user data from members
           const data = rawData.data || rawData;
@@ -100,6 +101,7 @@ export const UserDetailPage: React.FC = () => {
     };
 
     fetchOrgUsers();
+    return () => { isMounted = false; };
   }, [orgId]);
 
   // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
@@ -165,10 +167,18 @@ export const UserDetailPage: React.FC = () => {
   };
 
   useEffect(() => {
+    let isMounted = true;
     if (userId) {
-      fetchUser();
-      fetchOrganisations();
+      // Wrap fetch calls to respect isMounted
+      const loadData = async () => {
+          if (!isMounted) return;
+          await fetchUser();
+          if (!isMounted) return;
+          await fetchOrganisations();
+      };
+      loadData();
     }
+    return () => { isMounted = false; };
   }, [userId]);
 
   const handleSaveUser = async (updatedUser: any) => {
