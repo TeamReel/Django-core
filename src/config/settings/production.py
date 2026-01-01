@@ -19,7 +19,8 @@ SECRET_KEY = env("SECRET_KEY", default=os.getenv("SECRET_KEY", get_random_secret
 # Format: comma-separated list, e.g., ".onrender.com,myapp.com"
 # Default includes Railway and Render domains, plus localhost for health checks
 ALLOWED_HOSTS = env.list(
-    "ALLOWED_HOSTS", default=[".onrender.com", ".railway.app", "localhost", "127.0.0.1", "*"]
+    "ALLOWED_HOSTS",
+    default=[".onrender.com", ".railway.app", "localhost", "127.0.0.1", "*", ".teamreel.app"],
 )
 
 # Security: Force HTTPS
@@ -27,8 +28,13 @@ SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = "None"  # Allow cross-site cookies for separated frontend/backend
-CSRF_COOKIE_SAMESITE = "None"
+# SESSION_COOKIE_SAMESITE = "None"  # Allow cross-site cookies for separated frontend/backend
+# CSRF_COOKIE_SAMESITE = "None"
+# ITP Fix: Share cookies across subdomains (api.teamreel.app & demo.teamreel.app)
+SESSION_COOKIE_DOMAIN = ".teamreel.app"
+CSRF_COOKIE_DOMAIN = ".teamreel.app"
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
 
 # Security: Additional headers
 SECURE_HSTS_SECONDS = 31536000  # 1 year
@@ -137,6 +143,8 @@ CORS_ALLOWED_ORIGINS = env.list(
         "http://localhost:3000",  # Local dev
         "http://localhost:5173",  # Vite dev
         "https://django-core-app-production.up.railway.app",
+        "https://demo.teamreel.app",
+        "https://teamreel.app",
         # Add your deployed frontend URLs here:
         # "https://django-core-demo.vercel.app",
         # "https://django-core-demo.netlify.app",
@@ -155,6 +163,9 @@ CSRF_TRUSTED_ORIGINS = env.list(
         "https://*.onrender.com",
         "https://*.railway.app",
         "https://django-core-app-production.up.railway.app",
+        "https://demo.teamreel.app",
+        "https://teamreel.app",
+        "https://api.teamreel.app",
         # Add your deployed frontend URLs here:
         # "https://django-core-demo.vercel.app",
         # "https://django-core-demo.netlify.app",
