@@ -86,8 +86,9 @@ export const AuditLogPage: React.FC = () => {
         }
 
         // Use relative URL to leverage Vite proxy (handles cookies correctly)
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
         const response = await fetch(
-          `/api/audit/?${params.toString()}`,
+          `${baseUrl}/api/audit/?${params.toString()}`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -156,7 +157,9 @@ export const AuditLogPage: React.FC = () => {
         if (!isMounted) return;
 
         // Connect directly to backend (token-based auth bypasses CORS issues)
-        const wsUrl = `ws://localhost:8000/ws/notifications/?token=${token}`;
+        // Replace http/https with ws/wss
+        const wsBaseUrl = baseUrl.replace(/^http/, 'ws');
+        const wsUrl = `${wsBaseUrl}/ws/notifications/?token=${token}`;
 
         console.log(`[AuditLog] Connecting to WebSocket at ${wsUrl}...`);
         ws = new WebSocket(wsUrl);
