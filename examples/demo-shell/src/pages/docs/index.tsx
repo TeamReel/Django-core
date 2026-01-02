@@ -399,24 +399,65 @@ export function DeploymentPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call - /api/deployment/status/
-    setTimeout(() => {
-      setServices([
-        { name: 'Backend API', status: 'healthy', version: '1.0.0', uptime: '7 days', cpu: '15%', memory: '512MB' },
-        { name: 'Frontend', status: 'healthy', version: '1.0.0', uptime: '7 days', cpu: '5%', memory: '128MB' },
-        { name: 'PostgreSQL', status: 'healthy', version: '16.0', uptime: '14 days', cpu: '8%', memory: '2GB' },
-        { name: 'Redis', status: 'healthy', version: '7.2', uptime: '14 days', cpu: '3%', memory: '256MB' },
-        { name: 'Celery Worker', status: 'degraded', version: '5.3.0', uptime: '2 days', cpu: '25%', memory: '1GB' },
-      ]);
-      setLoading(false);
-    }, 500);
+    const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+    const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+
+    fetch(`${baseUrl}/api/observability/demo-health/`)
+      .then(r => r.json())
+      .then(data => {
+        setServices([
+          {
+            name: 'Backend API',
+            status: data.core_services?.auth?.status === 'active' ? 'healthy' : 'degraded',
+            version: '1.0.0',
+            type: 'Service',
+            detail: data.core_services?.auth?.message
+          },
+          {
+            name: 'Frontend',
+            status: 'healthy',
+            version: '1.0.0',
+            type: 'Client',
+            detail: 'Active Session'
+          },
+          {
+            name: 'PostgreSQL',
+            status: data.core_services?.database?.status === 'healthy' ? 'healthy' : 'degraded',
+            version: '16.0',
+            type: 'Database',
+            detail: data.core_services?.database?.latency_ms ? `${data.core_services.database.latency_ms}ms latency` : undefined
+          },
+          {
+            name: 'Redis',
+            status: data.core_services?.cache?.status === 'healthy' ? 'healthy' : 'degraded',
+            version: '7.2',
+            type: 'Cache',
+            detail: data.core_services?.cache?.latency_ms ? `${data.core_services.cache.latency_ms}ms latency` : undefined
+          },
+        ]);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        // Fallback to basic info if fetch fails
+        setServices([
+          { name: 'Backend API', status: 'down', version: '1.0.0', type: 'Service' },
+          { name: 'Frontend', status: 'healthy', version: '1.0.0', type: 'Client' },
+        ]);
+        setLoading(false);
+      });
   }, []);
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'healthy': return <Badge variant="success">Healthy</Badge>;
+    switch (status?.toLowerCase()) {
+      case 'healthy':
+      case 'active':
+        return <Badge variant="success">Healthy</Badge>;
       case 'degraded': return <Badge variant="warning">Degraded</Badge>;
-      case 'down': return <Badge variant="error">Down</Badge>;
+      case 'down':
+      case 'error':
+      case 'unhealthy':
+        return <Badge variant="error">Down</Badge>;
       default: return <Badge>{status}</Badge>;
     }
   };
@@ -433,9 +474,9 @@ export function DeploymentPage() {
           ) : (
             <>
               <Alert variant="info" style={{ marginBottom: '24px' }}>
-                <strong>Environment:</strong> Development (033-demo-pages-for branch)
+                <strong>Environment:</strong> Demo / Production
                 <br />
-                <strong>Deployment:</strong> Docker Compose
+                <strong>Deployment:</strong> Railway (Backend) + Vercel (Frontend)
               </Alert>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
@@ -445,23 +486,15 @@ export function DeploymentPage() {
                       <div>
                         <h4 style={{ margin: 0 }}>{service.name}</h4>
                         <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-                          v{service.version}
+                          {service.type} • v{service.version}
                         </div>
                       </div>
                       {getStatusBadge(service.status)}
                     </div>
                     <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '12px', fontSize: '14px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: '#6b7280' }}>Uptime:</span>
-                        <span>{service.uptime}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: '#6b7280' }}>CPU:</span>
-                        <span>{service.cpu}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: '#6b7280' }}>Memory:</span>
-                        <span>{service.memory}</span>
+                        <span style={{ color: '#6b7280' }}>Status Detail:</span>
+                        <span>{service.detail || 'Running'}</span>
                       </div>
                     </div>
                   </Card>
