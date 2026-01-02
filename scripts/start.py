@@ -64,15 +64,16 @@ def main():
         sys.exit(1)
 
     # Build Gunicorn command
+    # Use Uvicorn worker for WebSocket support (ASGI)
     cmd = [
         "gunicorn",
-        "config.wsgi:application",
+        "config.asgi:application",
         "--bind",
         f"0.0.0.0:{port}",
         "--workers",
         "4",
         "--worker-class",
-        "sync",
+        "uvicorn.workers.UvicornWorker",
         "--max-requests",
         "1000",
         "--max-requests-jitter",
