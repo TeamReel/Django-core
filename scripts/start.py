@@ -63,35 +63,20 @@ def main():
         print(f"✗ Migration failed with exit code {e.returncode}")
         sys.exit(1)
 
-    # Build Gunicorn command
-    # Use Uvicorn worker for WebSocket support (ASGI)
+    # Build Daphne command (Reference ASGI server for Channels)
     cmd = [
-        "gunicorn",
+        "daphne",
+        "-b",
+        "0.0.0.0",
+        "-p",
+        port,
         "config.asgi:application",
-        "--bind",
-        f"0.0.0.0:{port}",
-        "--workers",
-        "4",
-        "--worker-class",
-        "uvicorn.workers.UvicornWorker",
-        "--max-requests",
-        "1000",
-        "--max-requests-jitter",
-        "50",
-        "--timeout",
-        "30",
-        "--access-logfile",
-        "-",
-        "--error-logfile",
-        "-",
-        "--log-level",
-        "info",
     ]
 
     print(f"Executing: {' '.join(cmd)}")
 
-    # Replace current process with Gunicorn
-    os.execvp("gunicorn", cmd)
+    # Replace current process with Daphne
+    os.execvp("daphne", cmd)
 
 
 if __name__ == "__main__":
