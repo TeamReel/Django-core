@@ -28,7 +28,12 @@ export default function HealthStatusPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/observability/demo-health/')
+    // Use VITE_API_BASE_URL if available, otherwise fallback to relative path
+    const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+    // Ensure no double slash if apiBase ends with /
+    const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+
+    fetch(`${baseUrl}/api/observability/demo-health/`)
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
