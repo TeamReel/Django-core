@@ -1,29 +1,40 @@
 import { useEffect, useState } from 'react';
 import AppShell from '../../components/AppShell';
 
-interface HealthCheck {
-  status: 'healthy' | 'unhealthy' | 'degraded';
+interface DemoHealthResponse {
   timestamp: string;
-  checks?: {
-    database?: { status: string; response_time_ms?: number };
-    cache?: { status: string; response_time_ms?: number };
-    tasks?: { status: string; workers?: number };
+  environment: string;
+  core_services: {
+    database?: { status: string; latency_ms?: number };
+    cache?: { status: string; latency_ms?: number };
+    auth?: { status: string; message?: string };
+    balance_integrity?: { status: string; message?: string };
   };
+  data_integrity: {
+    organisations_total?: number;
+    organisations_active?: number;
+    users_total?: number;
+    users_active?: number;
+    organisations_with_transactions?: number;
+    organisations_with_balances?: number;
+    error?: string;
+  };
+  features: Record<string, string>;
 }
 
 export default function HealthStatusPage() {
-  const [health, setHealth] = useState<HealthCheck | null>(null);
+  const [data, setData] = useState<DemoHealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/health/')
+    fetch('/api/observability/demo-health/')
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
-      .then((data: HealthCheck) => {
-        setHealth(data);
+      .then((data: DemoHealthResponse) => {
+        setData(data);
         setLoading(false);
       })
       .catch((err) => {
@@ -32,12 +43,46 @@ export default function HealthStatusPage() {
       });
   }, []);
 
+  const getStatusIcon = (status: string = 'unknown') => {
+    switch (status.toLowerCase()) {
+      case 'healthy':
+      case 'active':
+      case 'ok':
+        return '✅';
+      case 'degraded':
+      case 'planned':
+        return '⚠️';
+      case 'unhealthy':
+      case 'error':
+        return '❌';
+      default:
+        return '❓';
+    }
+  };
+
+  const getStatusColor = (status: string = 'unknown') => {
+    switch (status.toLowerCase()) {
+      case 'healthy':
+      case 'active':
+      case 'ok':
+        return '#d1e7dd';
+      case 'degraded':
+      case 'planned':
+        return '#fff3cd';
+      case 'unhealthy':
+      case 'error':
+        return '#f8d7da';
+      default:
+        return '#e2e3e5';
+    }
+  };
+
   if (loading) {
     return (
       <AppShell>
         <div style={{ padding: '24px' }}>
           <h1>System Health</h1>
-          <p>Loading health check data...</p>
+          <p>Loading demo health check data...</p>
         </div>
       </AppShell>
     );
@@ -62,158 +107,116 @@ export default function HealthStatusPage() {
     );
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'healthy':
-      case 'ok':
-        return '✅';
-      case 'degraded':
-      case 'warning':
-        return '⚠️';
-      case 'unhealthy':
-      case 'error':
-        return '❌';
-      default:
-        return '❓';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy':
-      case 'ok':
-        return '#d1e7dd';
-      case 'degraded':
-      case 'warning':
-        return '#fff3cd';
-      case 'unhealthy':
-      case 'error':
-        return '#f8d7da';
-      default:
-        return '#e2e3e5';
-    }
-  };
+  if (!data) return null;
 
   return (
     <AppShell>
-      <div style={{ padding: '24px' }}>
-        <h1>System Health</h1>
-
-        {/* Overall Status */}
-        <div style={{
-          marginBottom: '24px',
-          padding: '16px',
-          backgroundColor: getStatusColor(health?.status || 'unknown'),
-          border: `1px solid ${health?.status === 'healthy' ? '#badbcc' : '#f5c2c7'}`,
-          borderRadius: '4px'
-        }}>
-          <h2 style={{ marginTop: 0 }}>
-            {getStatusIcon(health?.status || 'unknown')} Overall Status: {health?.status || 'Unknown'}
-          </h2>
-          {health?.timestamp && (
-            <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#666' }}>
-              Last checked: {new Date(health.timestamp).toLocaleString()}
-            </p>
-          )}
+      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h1 style={{ margin: 0 }}>System Health</h1>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '14px', color: '#666' }}>Last Checked: {new Date(data.timestamp).toLocaleString()}</div>
+            <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+              Demo environment – status based on application-level health checks.
+            </div>
+          </div>
         </div>
 
-        {/* Component Checks */}
-        {health?.checks && (
-          <div>
-            <h2>Component Status</h2>
+        <p style={{ marginBottom: '32px', fontSize: '16px', color: '#444' }}>
+          This environment uses controlled demo data to validate application behaviour and data consistency.
+        </p>
 
-            {/* Database */}
-            {health.checks.database && (
-              <div style={{
-                marginBottom: '16px',
-                padding: '12px',
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderRadius: '4px'
-              }}>
-                <h3 style={{ marginTop: 0, fontSize: '16px' }}>
-                  {getStatusIcon(health.checks.database.status)} Database
-                </h3>
-                <p style={{ margin: '4px 0', fontSize: '14px' }}>
-                  <strong>Status:</strong> {health.checks.database.status}
-                </p>
-                {health.checks.database.response_time_ms !== undefined && (
-                  <p style={{ margin: '4px 0', fontSize: '14px' }}>
-                    <strong>Response Time:</strong> {health.checks.database.response_time_ms}ms
-                  </p>
-                )}
-              </div>
-            )}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
 
-            {/* Cache */}
-            {health.checks.cache && (
-              <div style={{
-                marginBottom: '16px',
-                padding: '12px',
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderRadius: '4px'
-              }}>
-                <h3 style={{ marginTop: 0, fontSize: '16px' }}>
-                  {getStatusIcon(health.checks.cache.status)} Cache
-                </h3>
-                <p style={{ margin: '4px 0', fontSize: '14px' }}>
-                  <strong>Status:</strong> {health.checks.cache.status}
-                </p>
-                {health.checks.cache.response_time_ms !== undefined && (
-                  <p style={{ margin: '4px 0', fontSize: '14px' }}>
-                    <strong>Response Time:</strong> {health.checks.cache.response_time_ms}ms
-                  </p>
-                )}
-              </div>
-            )}
+          {/* Core Service Checks */}
+          <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
+            <h2 style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Core Services</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <ServiceRow label="Database Connectivity" status={data.core_services.database?.status} detail={data.core_services.database?.latency_ms ? `${data.core_services.database.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Cache Availability" status={data.core_services.cache?.status} detail={data.core_services.cache?.latency_ms ? `${data.core_services.cache.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Auth & Permissions" status={data.core_services.auth?.status} detail={data.core_services.auth?.message} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Balance Integrity" status={data.core_services.balance_integrity?.status} detail={data.core_services.balance_integrity?.message} getIcon={getStatusIcon} getColor={getStatusColor} />
+            </div>
+          </div>
 
-            {/* Tasks/Workers */}
-            {health.checks.tasks && (
-              <div style={{
-                marginBottom: '16px',
-                padding: '12px',
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderRadius: '4px'
-              }}>
-                <h3 style={{ marginTop: 0, fontSize: '16px' }}>
-                  {getStatusIcon(health.checks.tasks.status)} Background Tasks
-                </h3>
-                <p style={{ margin: '4px 0', fontSize: '14px' }}>
-                  <strong>Status:</strong> {health.checks.tasks.status}
-                </p>
-                {health.checks.tasks.workers !== undefined && (
-                  <p style={{ margin: '4px 0', fontSize: '14px' }}>
-                    <strong>Active Workers:</strong> {health.checks.tasks.workers}
-                  </p>
-                )}
+          {/* Data Integrity */}
+          <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
+            <h2 style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Data Integrity</h2>
+            {data.data_integrity.error ? (
+               <div style={{ color: 'red' }}>{data.data_integrity.error}</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <IntegrityRow label="Total Organisations" count={data.data_integrity.organisations_total} min={1} />
+                <IntegrityRow label="Active Organisations (with members)" count={data.data_integrity.organisations_active} min={1} />
+                <IntegrityRow label="Total Users" count={data.data_integrity.users_total} min={10} />
+                <IntegrityRow label="Active Users (in orgs)" count={data.data_integrity.users_active} min={10} />
+                <IntegrityRow label="Orgs with Transactions" count={data.data_integrity.organisations_with_transactions} min={1} />
+                <IntegrityRow label="Orgs with Balances" count={data.data_integrity.organisations_with_balances} min={1} />
               </div>
             )}
           </div>
-        )}
 
-        {/* Frontend Info */}
-        <div style={{ marginTop: '32px' }}>
-          <h2>Frontend Information</h2>
-          <div style={{
-            padding: '12px',
-            backgroundColor: '#f8f9fa',
-            border: '1px solid #dee2e6',
-            borderRadius: '4px'
-          }}>
-            <p style={{ margin: '4px 0', fontSize: '14px' }}>
-              <strong>Version:</strong> {import.meta.env.VITE_APP_VERSION || '1.0.0'}
-            </p>
-            <p style={{ margin: '4px 0', fontSize: '14px' }}>
-              <strong>Environment:</strong> {import.meta.env.MODE}
-            </p>
-            <p style={{ margin: '4px 0', fontSize: '14px' }}>
-              <strong>Build Time:</strong> {new Date().toLocaleString()}
-            </p>
+          {/* Feature Availability */}
+          <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
+            <h2 style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Feature Availability</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <ServiceRow label="Identity & Context" status={data.features.identity_context} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Projects & Memberships" status={data.features.projects_memberships} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Notifications" status={data.features.notifications} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Transactions & Balances" status={data.features.transactions_balances} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Integrations" status={data.features.integrations} getIcon={getStatusIcon} getColor={getStatusColor} />
+            </div>
           </div>
+
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function ServiceRow({ label, status, detail, getIcon, getColor }: any) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+      <span style={{ fontWeight: 500 }}>{label}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {detail && <span style={{ fontSize: '12px', color: '#666' }}>{detail}</span>}
+        <span style={{
+          padding: '4px 8px',
+          borderRadius: '12px',
+          backgroundColor: getColor(status),
+          fontSize: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px'
+        }}>
+          {getIcon(status)} {status?.toUpperCase() || 'UNKNOWN'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function IntegrityRow({ label, count, min }: { label: string, count?: number, min: number }) {
+  const isGood = (count || 0) >= min;
+  const isPartial = (count || 0) > 0 && (count || 0) < min;
+
+  let color = '#d1e7dd'; // Green
+  if (isPartial) color = '#fff3cd'; // Yellow
+  if (!count) color = '#f8d7da'; // Red
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+      <span style={{ fontWeight: 500 }}>{label}</span>
+      <span style={{
+        padding: '4px 12px',
+        borderRadius: '12px',
+        backgroundColor: color,
+        fontWeight: 'bold',
+        minWidth: '40px',
+        textAlign: 'center'
+      }}>
+        {count ?? 0}
+      </span>
+    </div>
   );
 }

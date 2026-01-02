@@ -87,3 +87,158 @@ def metrics_summary(request):
             },
             status=200,
         )  # Still return 200 to avoid breaking the UI
+
+
+@require_http_methods(["GET"])
+def demo_health_check(request):
+    """
+    Application-level health check for the Demo environment.
+
+    Provides a realistic overview of system health, data integrity, and feature readiness
+    without exposing sensitive infrastructure details.
+    """
+    import time
+    from django.db import connection
+    from django.core.cache import cache
+    from django.utils import timezone
+    from django.db.models import Sum
+
+    from accounts.models import User
+    from organisations.models import Organisation
+    from transactions.models import Transaction
+    from credits.models import CreditsBalance
+
+    response_data = {
+        "timestamp": timezone.now().isoformat(),
+        "environment": "demo",
+        "core_services": {},
+        "data_integrity": {},
+        "features": {},
+    }
+
+    # 1. Core Service Checks
+    # Database
+    try:
+        start = time.time()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        db_latency = (time.time() - start) * 1000
+        response_data["core_services"]["database"] = {
+            "status": "healthy",
+            "latency_ms": round(db_latency, 2),
+        }
+    except Exception:
+        response_data["core_services"]["database"] = {"status": "unhealthy"}
+
+    # Cache
+    try:
+        start = time.time()
+        cache.set("health_check", "ok", 10)
+        if cache.get("health_check") == "ok":
+            cache_latency = (time.time() - start) * 1000
+            response_data["core_services"]["cache"] = {
+                "status": "healthy",
+                "latency_ms": round(cache_latency, 2),
+            }
+        else:
+            response_data["core_services"]["cache"] = {"status": "degraded"}
+    except Exception:
+        response_data["core_services"]["cache"] = {"status": "unhealthy"}
+
+    # Auth/Permissions Sanity
+    try:
+        user_count = User.objects.count()
+        if user_count > 0:
+            response_data["core_services"]["auth"] = {
+                "status": "healthy",
+                "message": "Users loaded",
+            }
+        else:
+            response_data["core_services"]["auth"] = {
+                "status": "degraded",
+                "message": "No users found",
+            }
+    except Exception:
+        response_data["core_services"]["auth"] = {"status": "unhealthy"}
+
+    # Balance Integrity
+    try:
+        # Check up to 3 random orgs
+        orgs = Organisation.objects.filter(transactions__isnull=False).distinct()[:3]
+        integrity_ok = True
+        checked_count = 0
+
+        for org in orgs:
+            checked_count += 1
+            tx_sum = (
+                Transaction.objects.filter(organization=org).aggregate(Sum("amount"))["amount__sum"]
+                or 0
+            )
+
+            # Try to get balance, handle if missing
+            try:
+                balance_obj = CreditsBalance.objects.get(organization=org)
+                balance_val = balance_obj.balance
+            except CreditsBalance.DoesNotExist:
+                # If transactions exist but no balance record, that's an issue
+                integrity_ok = False
+                break
+
+            # Allow small floating point diffs if using floats, but Decimal should be exact
+            if tx_sum != balance_val:
+                integrity_ok = False
+                break
+
+        if checked_count == 0:
+            response_data["core_services"]["balance_integrity"] = {
+                "status": "healthy",
+                "message": "No data to verify",
+            }
+        elif integrity_ok:
+            response_data["core_services"]["balance_integrity"] = {
+                "status": "healthy",
+                "message": "Verified",
+            }
+        else:
+            response_data["core_services"]["balance_integrity"] = {
+                "status": "degraded",
+                "message": "Mismatch detected",
+            }
+
+    except Exception:
+        response_data["core_services"]["balance_integrity"] = {"status": "unknown"}
+
+    # 2. Data Integrity
+    try:
+        response_data["data_integrity"] = {
+            "organisations_total": Organisation.objects.count(),
+            "organisations_active": Organisation.objects.filter(memberships__isnull=False)
+            .distinct()
+            .count(),
+            "users_total": User.objects.count(),
+            "users_active": User.objects.filter(memberships__isnull=False).distinct().count(),
+            "organisations_with_transactions": Organisation.objects.filter(
+                transactions__isnull=False
+            )
+            .distinct()
+            .count(),
+            "organisations_with_balances": Organisation.objects.filter(
+                credits_balance__isnull=False
+            )
+            .distinct()
+            .count(),
+        }
+    except Exception:
+        response_data["data_integrity"] = {"error": "Could not calculate stats"}
+
+    # 3. Feature Availability (Static/Config)
+    response_data["features"] = {
+        "identity_context": "active",
+        "projects_memberships": "active",
+        "notifications": "active",
+        "transactions_balances": "active",
+        "integrations": "planned",
+    }
+
+    return JsonResponse(response_data)
