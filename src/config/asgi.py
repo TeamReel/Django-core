@@ -21,12 +21,23 @@ django_asgi_app = get_asgi_application()
 from rtc_websockets import routing  # noqa: E402
 from rtc_websockets.middleware import JWTAuthMiddleware  # noqa: E402
 
+
+def get_allowed_origins():
+    """
+    Return a list of allowed origins for WebSocket connections.
+    Combines CSRF_TRUSTED_ORIGINS (for production) and CORS_ALLOWED_ORIGINS (for dev/frontend).
+    """
+    return getattr(settings, "CSRF_TRUSTED_ORIGINS", []) + getattr(
+        settings, "CORS_ALLOWED_ORIGINS", []
+    )
+
+
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
         "websocket": OriginValidator(
             AuthMiddlewareStack(JWTAuthMiddleware(URLRouter(routing.websocket_urlpatterns))),
-            settings.CSRF_TRUSTED_ORIGINS,
+            get_allowed_origins(),
         ),
     }
 )
