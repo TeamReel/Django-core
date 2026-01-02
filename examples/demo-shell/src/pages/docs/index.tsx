@@ -408,7 +408,7 @@ export function DeploymentPage() {
         setServices([
           {
             name: 'Backend API',
-            status: data.core_services?.auth?.status === 'active' ? 'healthy' : 'degraded',
+            status: (data.core_services?.auth?.status === 'active' || data.core_services?.auth?.status === 'healthy') ? 'healthy' : 'degraded',
             version: '1.0.0',
             type: 'Service',
             detail: data.core_services?.auth?.message
