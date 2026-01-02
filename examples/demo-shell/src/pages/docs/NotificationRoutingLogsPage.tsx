@@ -80,8 +80,12 @@ export const NotificationRoutingLogsPage: React.FC = () => {
         setError(null);
         setDemoMode(false);
 
+        // Determine Base URL
+        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+
         // Build URL with org filter
-        let url = '/api/v1/contextual-notifications/routing-logs/';
+        let url = `${baseUrl}/api/v1/contextual-notifications/routing-logs/`;
 
         // In global mode, no org filter (show all)
         // In org mode, filter by currentOrgId
