@@ -120,7 +120,8 @@ export const PreferencesPage: React.FC = () => {
       // Fetch effective i18n preferences from backend (or demo data)
       try {
         const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-        const response = await fetch(`${baseUrl}/api/v1/i18n-preferences/me/`, {
+        // Correct endpoint is /api/v1/preferences/me/ (mapped in config/urls.py)
+        const response = await fetch(`${baseUrl}/api/v1/preferences/me/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -238,10 +239,10 @@ export const PreferencesPage: React.FC = () => {
 
           console.log('[PreferencesPage] Extracted preferences:', prefs);
 
-          // If no preferences exist, use demo data
+          // If no preferences exist, use default structure but allow saving (not demo mode)
           if (prefs.length === 0) {
-            console.log('[PreferencesPage] No preferences found for current user, using demo data');
-            setDemoMode(true);
+            console.log('[PreferencesPage] No preferences found, initializing with defaults');
+            setDemoMode(false); // Allow saving to backend
             setChannelPrefs(getMockChannelPreferences());
           } else {
             // Group by event_type
@@ -487,8 +488,34 @@ export const PreferencesPage: React.FC = () => {
     setSaving(true);
     setSuccess(false);
 
-    // Simulate API save
-    await new Promise(r => setTimeout(r, 600));
+    // Save to backend (i18n preferences)
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const getCsrfToken = () => {
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+      };
+
+      await fetch(`${baseUrl}/api/v1/preferences/me/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          language: preferences.language,
+          timezone: preferences.timezone,
+        }),
+      });
+    } catch (err) {
+      console.error('[PreferencesPage] Failed to save preferences to backend:', err);
+      // Continue to update local state anyway
+    }
+
+    // Simulate API save (legacy delay)
+    await new Promise(r => setTimeout(r, 300));
 
     // 1. Apply Theme
     if (preferences.theme === 'auto') {
