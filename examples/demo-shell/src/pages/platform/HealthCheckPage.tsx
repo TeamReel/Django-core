@@ -1,214 +1,227 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Card,
-  Badge,
-  Alert,
-} from '@django-core/design-system';
-import {
-  PageHeader,
-  PageContent,
-} from '@django-core/page-templates';
-import { HealthStatus } from '../../types';
 import AppShell from '../../components/AppShell';
 
-/**
- * T016 - Health Check Page
- *
- * Purpose: Display system health status and versions
- * - Shows health status for services: database, cache, api, django, python
- * - Displays version information
- * - Green indicators for healthy services
- */
+interface DemoHealthResponse {
+  timestamp: string;
+  environment: string;
+  core_services: {
+    database?: { status: string; latency_ms?: number };
+    cache?: { status: string; latency_ms?: number };
+    auth?: { status: string; message?: string };
+    balance_integrity?: { status: string; message?: string };
+  };
+  data_integrity: {
+    organisations_total?: number;
+    organisations_active?: number;
+    users_total?: number;
+    users_active?: number;
+    organisations_with_transactions?: number;
+    organisations_with_balances?: number;
+    error?: string;
+  };
+  features: Record<string, string>;
+}
+
 export const HealthCheckPage: React.FC = () => {
-  const [health, setHealth] = useState<HealthStatus | null>(null);
+  const [data, setData] = useState<DemoHealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchHealth = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    // Use VITE_API_BASE_URL if available, otherwise fallback to relative path
+    const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+    // Ensure no double slash if apiBase ends with /
+    const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
 
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-        console.log('[HealthCheckPage] Fetching health from:', `${apiBaseUrl}/api/v1/health/`);
-        const response = await fetch(`${apiBaseUrl}/api/v1/health/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
-
-        console.log('[HealthCheckPage] Response status:', response.status);
-
-        if (response.ok) {
-          const rawData = await response.json();
-          console.log('[HealthCheckPage] Raw response:', rawData);
-
-          // Handle B13 envelope if present
-          const data: HealthStatus = (rawData as any).data || rawData;
-          console.log('[HealthCheckPage] Parsed health data:', data);
-          setHealth(data);
-        } else if (response.status === 404) {
-          console.log('[HealthCheckPage] 404 - Using demo mode');
-          // Demo mode: Use mock health data
-          const demoHealth: HealthStatus = {
-            status: 'healthy',
-            timestamp: new Date().toISOString(),
-            uptime: 86400, // 1 day
-            checks: {
-              database: true,
-              cache: true,
-              api: true,
-              django: true,
-              python: true
-            },
-            details: 'All systems operational (demo mode)'
-          };
-          setHealth(demoHealth);
-        } else {
-          throw new Error(`API error: ${response.status}`);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch health status');
-        console.error('Health fetch error:', err);
-      } finally {
+    fetch(`${baseUrl}/api/observability/demo-health/`)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data: DemoHealthResponse) => {
+        setData(data);
         setLoading(false);
-      }
-    };
-
-    fetchHealth();
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
-  const getStatusBadge = (status: string) => {
-    if (status === 'healthy') {
-      return <Badge variant="success">Healthy</Badge>;
-    } else if (status === 'degraded') {
-      return <Badge variant="warning">Degraded</Badge>;
-    } else {
-      return <Badge variant="error">Unhealthy</Badge>;
+  const getStatusIcon = (status: string = 'unknown') => {
+    switch (status.toLowerCase()) {
+      case 'healthy':
+      case 'active':
+      case 'ok':
+        return '✅';
+      case 'degraded':
+      case 'planned':
+        return '⚠️';
+      case 'unhealthy':
+      case 'error':
+        return '❌';
+      default:
+        return '❓';
     }
   };
 
-  const getCheckStatus = (checked: boolean | undefined) => {
-    return checked ? (
-      <Badge variant="success">✓ OK</Badge>
-    ) : (
-      <Badge variant="error">✗ Failed</Badge>
-    );
+  const getStatusColor = (status: string = 'unknown') => {
+    switch (status.toLowerCase()) {
+      case 'healthy':
+      case 'active':
+      case 'ok':
+        return '#d1e7dd';
+      case 'degraded':
+      case 'planned':
+        return '#fff3cd';
+      case 'unhealthy':
+      case 'error':
+        return '#f8d7da';
+      default:
+        return '#e2e3e5';
+    }
   };
 
   if (loading) {
     return (
-      <div>
-        <PageHeader
-          title="System Health"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Platform' },
-            { label: 'Health' },
-          ]}
-        />
-        <PageContent>
-          <Card>
-            <div className="text-center py-8 text-gray-500">
-              Loading health status...
-            </div>
-          </Card>
-        </PageContent>
-      </div>
+      <AppShell>
+        <div style={{ padding: '24px' }}>
+          <h1>System Health</h1>
+          <p>Loading demo health check data...</p>
+        </div>
+      </AppShell>
     );
   }
 
   if (error) {
     return (
-      <div>
-        <PageHeader
-          title="System Health"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Platform' },
-            { label: 'Health' },
-          ]}
-        />
-        <PageContent>
-          <Alert variant="error" data-testid="health-error">
-            {error}
-          </Alert>
-        </PageContent>
-      </div>
+      <AppShell>
+        <div style={{ padding: '24px' }}>
+          <h1>System Health</h1>
+          <div style={{
+            padding: '16px',
+            backgroundColor: '#f8d7da',
+            border: '1px solid #f5c2c7',
+            borderRadius: '4px',
+            color: '#842029'
+          }}>
+            <strong>❌ Error:</strong> Unable to fetch health data ({error})
+          </div>
+        </div>
+      </AppShell>
     );
   }
 
+  if (!data) return null;
+
   return (
     <AppShell>
-      <div>
-        <PageHeader
-        title="System Health"
-        breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Platform' },
-          { label: 'Health' },
-        ]}
-      />
-      <PageContent>
-        <Alert variant="info" className="mb-4">
-          <strong>Demo Mode:</strong> This page shows mock health status data. API endpoints are not yet implemented.
-        </Alert>
-        <Card data-testid="health-status-card" className="mb-4">
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Overall Status</h2>
-              {health && getStatusBadge(health.status)}
+      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h1 style={{ margin: 0 }}>System Health</h1>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '14px', color: '#666' }}>Last Checked: {new Date(data.timestamp).toLocaleString()}</div>
+            <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+              Demo environment – status based on application-level health checks.
             </div>
-            {health && (
-              <div className="text-sm text-gray-600">
-                Last updated: {new Date(health.timestamp).toLocaleString()}
+          </div>
+        </div>
+
+        <p style={{ marginBottom: '32px', fontSize: '16px', color: '#444' }}>
+          This environment uses controlled demo data to validate application behaviour and data consistency.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
+
+          {/* Core Service Checks */}
+          <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
+            <h2 style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Core Services</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <ServiceRow label="Database Connectivity" status={data.core_services.database?.status} detail={data.core_services.database?.latency_ms ? `${data.core_services.database.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Cache Availability" status={data.core_services.cache?.status} detail={data.core_services.cache?.latency_ms ? `${data.core_services.cache.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Auth & Permissions" status={data.core_services.auth?.status} detail={data.core_services.auth?.message} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Balance Integrity" status={data.core_services.balance_integrity?.status} detail={data.core_services.balance_integrity?.message} getIcon={getStatusIcon} getColor={getStatusColor} />
+            </div>
+          </div>
+
+          {/* Data Integrity */}
+          <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
+            <h2 style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Data Integrity</h2>
+            {data.data_integrity.error ? (
+               <div style={{ color: 'red' }}>{data.data_integrity.error}</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <IntegrityRow label="Total Organisations" count={data.data_integrity.organisations_total} min={1} />
+                <IntegrityRow label="Active Organisations (with members)" count={data.data_integrity.organisations_active} min={1} />
+                <IntegrityRow label="Total Users" count={data.data_integrity.users_total} min={10} />
+                <IntegrityRow label="Active Users (in orgs)" count={data.data_integrity.users_active} min={10} />
+                <IntegrityRow label="Orgs with Transactions" count={data.data_integrity.organisations_with_transactions} min={1} />
+                <IntegrityRow label="Orgs with Balances" count={data.data_integrity.organisations_with_balances} min={1} />
               </div>
             )}
           </div>
-        </Card>
 
-        {health?.checks && (
-          <Card data-testid="health-checks-card">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Service Checks</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(health.checks).map(([service, status]) => (
-                  <div key={service} className="flex justify-between items-center p-3 border rounded" data-testid={`check-${service}`}>
-                    <span className="font-medium capitalize">{service}</span>
-                    {getCheckStatus(status)}
-                  </div>
-                ))}
-              </div>
+          {/* Feature Availability */}
+          <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
+            <h2 style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Feature Availability</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <ServiceRow label="Identity & Context" status={data.features.identity_context} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Projects & Memberships" status={data.features.projects_memberships} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Notifications" status={data.features.notifications} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Transactions & Balances" status={data.features.transactions_balances} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Integrations" status={data.features.integrations} getIcon={getStatusIcon} getColor={getStatusColor} />
             </div>
-          </Card>
-        )}
+          </div>
 
-        {health?.uptime && (
-          <Card data-testid="health-uptime-card" className="mt-4">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-2">Uptime</h3>
-              <div className="text-2xl font-bold text-green-600">
-                {Math.floor(health.uptime / 3600)}h {Math.floor((health.uptime % 3600) / 60)}m
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {health?.details && (
-          <Card data-testid="health-details-card" className="mt-4">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-2">Details</h3>
-              <p className="text-gray-700">{health.details}</p>
-            </div>
-          </Card>
-        )}
-      </PageContent>
+        </div>
       </div>
     </AppShell>
   );
 };
 
-export default HealthCheckPage;
+function ServiceRow({ label, status, detail, getIcon, getColor }: any) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+      <span style={{ fontWeight: 500 }}>{label}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {detail && <span style={{ fontSize: '12px', color: '#666' }}>{detail}</span>}
+        <span style={{
+          padding: '4px 8px',
+          borderRadius: '12px',
+          backgroundColor: getColor(status),
+          fontSize: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px'
+        }}>
+          {getIcon(status)} {status?.toUpperCase() || 'UNKNOWN'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function IntegrityRow({ label, count, min }: { label: string, count?: number, min: number }) {
+  const isGood = (count || 0) >= min;
+  const isPartial = (count || 0) > 0 && (count || 0) < min;
+
+  let color = '#d1e7dd'; // Green
+  if (isPartial) color = '#fff3cd'; // Yellow
+  if (!count) color = '#f8d7da'; // Red
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+      <span style={{ fontWeight: 500 }}>{label}</span>
+      <span style={{
+        padding: '4px 12px',
+        borderRadius: '12px',
+        backgroundColor: color,
+        fontWeight: 'bold',
+        minWidth: '40px',
+        textAlign: 'center'
+      }}>
+        {count ?? 0}
+      </span>
+    </div>
+  );
+}
