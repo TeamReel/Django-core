@@ -1,36 +1,48 @@
-﻿## Current Mode: Repository Analysis & Release Stabilisation (Go-Live Track)
+## Current Mode: Demo Finalization & Verification (Go-Live Track)
 
-We are currently in a REPOSITORY ANALYSIS + STABILISATION phase for the Django Core-App.
-Goal: make the repository “releaseable” so we can bring the demo webapp live with a real database and a real URL.
+We are currently in the **DEMO FINALIZATION** phase.
+**Goal:** Ensure the production demo (Railway) is fully populated, stable, and visually correct for all core pages.
 
-This is not new feature development. Do not expand scope.
+**Project Context:**
+- **System:** Django Core-App (SaaS Boilerplate).
+- **Architecture:** Django REST Framework (Backend) + React/Vite (Frontend).
+- **Demo Scenario:** "Football Leagues" (Organisations = Leagues, Projects = Teams/Seasons).
+- **Key Capabilities:** Auth, RBAC, Audit Logging, Transactions/Credits, Notifications.
 
-What “done” means in this phase:
-- The application boots and core end-to-end flows work in the webapp (frontend + backend + API + auth + context + permissions).
-- The repository is internally consistent: tests, factories, fixtures, URLs, and API contracts match the current implementation.
-- CI-quality expectation: test suite should be green. If a test is stale, it must be updated or removed with an explicit justification in the PR/commit message (do not ignore or skip silently).
-- Prefer minimal, targeted changes. No refactors unless required to fix a concrete failing test or broken runtime behavior.
+**Infrastructure & Deployment:**
+- **Backend:** Deployed on **Railway** (Service: `backend`).
+- **Database:** PostgreSQL (Railway Plugin).
+- **Cache:** Redis (Railway Plugin).
+- **Frontend:** Deployed on Vercel/Netlify (consumes Backend API).
+- **Reference Docs:**
+    - `docs/railway/RAILWAY_SETUP.md`: Deployment variables and troubleshooting.
+    - `docs/demo/DEMO_DB_STATUS.md`: Current data population status.
 
-Source of truth hierarchy:
-1) Current implementation + documented go-live constraints (triage/fix summaries)
-2) Engineering Constitution quality rules (tests must pass in CI; tests should be intention-revealing)
-3) Roadmap/Architecture docs for intended shape (avoid inventing new systems)
+**What "Done" Means:**
+- All core pages (Dashboard, Usage Events, Health, Projects, etc.) render with realistic data.
+- No "Empty State" placeholders unless intentionally designed.
+- System Health page shows "Green" status with real backend checks.
+- `docs/demo/DEMO_DB_STATUS.md` shows "READY" for all critical models.
 
-How to work (lean):
-- Cluster failures, fix the highest-blast-radius root causes first (e.g., factories/fixtures breaking many tests).
-- For each fix, state:
-  - observed failure (test name + error)
-  - the minimal code change (file-level)
-  - how to verify (targeted test command or quick manual check)
-- Run targeted tests first; run full suite only after major clusters are resolved.
+**Workflow:**
+1.  **Check Status:** Consult `docs/demo/DEMO_DB_STATUS.md` to see which models are empty.
+2.  **Verify UI:** Check the corresponding frontend page (e.g., `/usage-events`).
+3.  **Populate:** If empty, create/run a specific seeder (e.g., `seed_usage_events`).
+4.  **Validate:** Verify the page renders correctly with the new data.
 
-Explicit constraints:
-- The “demo-shell” is a real reference webapp. Do not add demo-only hacks in core.
-- If behavior is ambiguous, ask before changing public API/contracts.
-- Do not add unrelated improvements “while we’re here”.
+**Source of Truth Hierarchy:**
+1.  `docs/demo/DEMO_DB_STATUS.md` (Data State)
+2.  Current Production Behavior (Railway)
+3.  Codebase Implementation
 
-Priority order for stabilisation (typical):
-- Factories/fixtures regressions (User model fields, Organisation.creator NOT NULL, required Notification fields)
-- URL slashes/NoReverseMatch mismatches
-- Contract mismatches (API envelopes/pagination)
-- Cache/test isolation issues (clear cache or unique identifiers where needed)
+**Explicit Constraints:**
+- **No Mock Data:** Replace hardcoded frontend mocks with real API calls.
+- **Safe Seeding:** Seeding commands must be idempotent or safe to run multiple times (check for existing data).
+- **Production Safe:** Do not drop tables or flush the database. Use `update_or_create` or `get_or_create` patterns.
+
+**Priority Order:**
+1.  System Health & Observability (Completed)
+2.  Usage Events & Transactions (Completed)
+3.  Projects & Memberships (Next)
+4.  Notifications & Activity Feeds
+5.  Settings & Feature Flags

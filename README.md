@@ -11,6 +11,13 @@ Enterprise-ready Django foundation with authentication, organizations, projects,
 | [First Contribution](docs/getting-started/first-contribution.md) | [Testing Guide](docs/contributing/testing.md) | [ADRs](docs/adr/) |
 | [Project Structure](docs/getting-started/project-structure.md) | [Spec Kitty](docs/contributing/spec-kitty-workflow.md) | [Troubleshooting](docs/troubleshooting/index.md) |
 
+## Documentation
+
+See [docs/INDEX.md](docs/INDEX.md) for:
+- **Demo & Testing**: Database status, seeding guides, smoke tests.
+- **Go-Live**: Checklists, readiness criteria, deployment artifacts.
+- **Infrastructure**: Railway setup and configuration.
+
 ## Examples
 
 | Example | Description |

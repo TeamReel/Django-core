@@ -1,86 +1,19 @@
-# Django Core-App Documentation
+# Documentation Index
 
-Welcome to the Django Core-App documentation. This platform provides reusable, product-agnostic infrastructure for Django-based applications.
+## Demo & Testing
+- [Demo Database Status](demo/DEMO_DB_STATUS.md) - Current population status of the demo environment.
+- [Demo Seeding Guide](demo/DEMO_SEED.md) - Instructions for seeding the demo database.
+- [Smoke Test Results](demo/SMOKE_TEST_RESULTS.md) - Results from the latest smoke tests.
 
-## Quick Links
+## Go-Live & Deployment
+- [Go-Live Checklist](go-live/GO_LIVE_CHECKLIST.md) - Master checklist for production release.
+- [Release Readiness](go-live/RELEASE_READINESS.md) - Criteria for release approval.
+- [Deployment Artifacts](go-live/DEPLOYMENT_ARTIFACTS.md) - List of build artifacts.
+- [Pre-Go-Live Complete](go-live/PRE_GOLIVE_COMPLETE.md) - Verification of pre-release tasks.
 
-<div class="grid cards" markdown>
+## Infrastructure
+- [Railway Setup](railway/RAILWAY_SETUP.md) - Configuration guide for Railway backend.
 
-- :material-rocket-launch: **[Getting Started](getting-started/index.md)**
-
-  Set up your development environment and make your first contribution.
-
-- :material-sitemap: **[Architecture](architecture/index.md)**
-
-  Understand system design, layering, and extension points.
-
-- :material-book-open-variant: **[Guides](guides/index.md)**
-
-  Learn how to use Core APIs effectively.
-
-- :material-puzzle: **[Modules](modules/index.md)**
-
-  Reference documentation for each Core module.
-
-- :material-star: **[Features](features/index.md)**
-
-  Documentation for specific features and sub-systems.
-
-- :material-shield-check: **[Security](security/index.md)**
-
-  Security checklists and audit reports.
-
-- :material-test-tube: **[Testing](testing/index.md)**
-
-  Testing guides, checklists, and status.
-
-- :material-code-tags: **[Examples](examples/index.md)**
-
-  Working code examples demonstrating Core patterns.
-
-- :material-account-group: **[Contributing](contributing/index.md)**
-
-  Contribution guidelines and workflow documentation.
-
-</div>
-
-## What is Django Core-App?
-
-Django Core-App is a modular platform providing:
-
-- **Authentication & Authorization** - JWT-based auth with hierarchical RBAC
-- **Multi-tenancy** - Organisation and project management
-- **Background Tasks** - Celery-based async processing with observability
-- **Audit Logging** - Comprehensive event tracking
-- **API Foundation** - Django REST Framework with consistent patterns
-
-## Core Principles
-
-1. **Product-Agnostic** - No product-specific logic; extend via downstream projects
-2. **Security First** - Secure defaults, centralized auth, audit trails
-3. **Observable** - Structured logging, metrics, health checks
-4. **Developer Friendly** - Clear documentation, consistent APIs, easy setup
-
-## Getting Help
-
-- **Troubleshooting**: [Common issues and solutions](troubleshooting/index.md)
-- **Architecture Decisions**: [ADRs explaining design choices](adr/)
-- **API Reference**: [Swagger UI](/api/docs/)
-
-## Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/your-org/django-core.git
-cd django-core
-
-# Set up environment
-cp .env.example .env
-docker-compose up -d
-
-# Run migrations and start
-python manage.py migrate
-python manage.py runserver
-```
-
-For detailed setup instructions, see [Getting Started → Quickstart](getting-started/quickstart.md).
+## Archive
+- [Project Update Email](archive/PROJECT_UPDATE_EMAIL.md) - Archived communication.
+- [Response to Arjen](archive/RESPONSE_TO_ARJEN.md) - Archived communication.
