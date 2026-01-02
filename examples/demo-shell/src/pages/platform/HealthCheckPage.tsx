@@ -70,15 +70,32 @@ export const HealthCheckPage: React.FC = () => {
       case 'healthy':
       case 'active':
       case 'ok':
-        return '#d1e7dd';
+        return 'var(--app-success)';
       case 'degraded':
       case 'planned':
-        return '#fff3cd';
+        return 'var(--app-warning)';
       case 'unhealthy':
       case 'error':
-        return '#f8d7da';
+        return 'var(--app-error)';
       default:
-        return '#e2e3e5';
+        return 'var(--app-muted-text)';
+    }
+  };
+
+  const getStatusTextColor = (status: string = 'unknown') => {
+    switch (status.toLowerCase()) {
+      case 'healthy':
+      case 'active':
+      case 'ok':
+        return '#000'; // Dark text on green
+      case 'degraded':
+      case 'planned':
+        return '#000'; // Dark text on yellow
+      case 'unhealthy':
+      case 'error':
+        return '#fff'; // White text on red
+      default:
+        return '#fff';
     }
   };
 
@@ -86,8 +103,8 @@ export const HealthCheckPage: React.FC = () => {
     return (
       <AppShell>
         <div style={{ padding: '24px' }}>
-          <h1>System Health</h1>
-          <p>Loading demo health check data...</p>
+          <h1 style={{ color: 'var(--app-text)' }}>System Health</h1>
+          <p style={{ color: 'var(--app-text)' }}>Loading demo health check data...</p>
         </div>
       </AppShell>
     );
@@ -97,13 +114,14 @@ export const HealthCheckPage: React.FC = () => {
     return (
       <AppShell>
         <div style={{ padding: '24px' }}>
-          <h1>System Health</h1>
+          <h1 style={{ color: 'var(--app-text)' }}>System Health</h1>
           <div style={{
             padding: '16px',
-            backgroundColor: '#f8d7da',
-            border: '1px solid #f5c2c7',
+            backgroundColor: 'var(--app-error)',
+            opacity: 0.9,
+            border: '1px solid var(--app-error)',
             borderRadius: '4px',
-            color: '#842029'
+            color: '#fff'
           }}>
             <strong>❌ Error:</strong> Unable to fetch health data ({error})
           </div>
@@ -118,37 +136,47 @@ export const HealthCheckPage: React.FC = () => {
     <AppShell>
       <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h1 style={{ margin: 0 }}>System Health</h1>
+          <h1 style={{ margin: 0, color: 'var(--app-text)' }}>System Health</h1>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '14px', color: '#666' }}>Last Checked: {new Date(data.timestamp).toLocaleString()}</div>
-            <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+            <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Last Checked: {new Date(data.timestamp).toLocaleString()}</div>
+            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
               Demo environment – status based on application-level health checks.
             </div>
           </div>
         </div>
 
-        <p style={{ marginBottom: '32px', fontSize: '16px', color: '#444' }}>
+        <p style={{ marginBottom: '32px', fontSize: '16px', color: 'var(--app-text)' }}>
           This environment uses controlled demo data to validate application behaviour and data consistency.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
 
           {/* Core Service Checks */}
-          <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
-            <h2 style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Core Services</h2>
+          <div style={{
+            border: '1px solid var(--app-border)',
+            borderRadius: '8px',
+            padding: '20px',
+            backgroundColor: 'var(--app-surface-2)'
+          }}>
+            <h2 style={{ marginTop: 0, borderBottom: '1px solid var(--app-border)', paddingBottom: '12px', color: 'var(--app-text)' }}>Core Services</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <ServiceRow label="Database Connectivity" status={data.core_services.database?.status} detail={data.core_services.database?.latency_ms ? `${data.core_services.database.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} />
-              <ServiceRow label="Cache Availability" status={data.core_services.cache?.status} detail={data.core_services.cache?.latency_ms ? `${data.core_services.cache.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} />
-              <ServiceRow label="Auth & Permissions" status={data.core_services.auth?.status} detail={data.core_services.auth?.message} getIcon={getStatusIcon} getColor={getStatusColor} />
-              <ServiceRow label="Balance Integrity" status={data.core_services.balance_integrity?.status} detail={data.core_services.balance_integrity?.message} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Database Connectivity" status={data.core_services.database?.status} detail={data.core_services.database?.latency_ms ? `${data.core_services.database.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
+              <ServiceRow label="Cache Availability" status={data.core_services.cache?.status} detail={data.core_services.cache?.latency_ms ? `${data.core_services.cache.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
+              <ServiceRow label="Auth & Permissions" status={data.core_services.auth?.status} detail={data.core_services.auth?.message} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
+              <ServiceRow label="Balance Integrity" status={data.core_services.balance_integrity?.status} detail={data.core_services.balance_integrity?.message} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
             </div>
           </div>
 
           {/* Data Integrity */}
-          <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
-            <h2 style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Data Integrity</h2>
+          <div style={{
+            border: '1px solid var(--app-border)',
+            borderRadius: '8px',
+            padding: '20px',
+            backgroundColor: 'var(--app-surface-2)'
+          }}>
+            <h2 style={{ marginTop: 0, borderBottom: '1px solid var(--app-border)', paddingBottom: '12px', color: 'var(--app-text)' }}>Data Integrity</h2>
             {data.data_integrity.error ? (
-               <div style={{ color: 'red' }}>{data.data_integrity.error}</div>
+               <div style={{ color: 'var(--app-error)' }}>{data.data_integrity.error}</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <IntegrityRow label="Total Organisations" count={data.data_integrity.organisations_total} min={1} />
@@ -162,14 +190,19 @@ export const HealthCheckPage: React.FC = () => {
           </div>
 
           {/* Feature Availability */}
-          <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
-            <h2 style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Feature Availability</h2>
+          <div style={{
+            border: '1px solid var(--app-border)',
+            borderRadius: '8px',
+            padding: '20px',
+            backgroundColor: 'var(--app-surface-2)'
+          }}>
+            <h2 style={{ marginTop: 0, borderBottom: '1px solid var(--app-border)', paddingBottom: '12px', color: 'var(--app-text)' }}>Feature Availability</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <ServiceRow label="Identity & Context" status={data.features.identity_context} getIcon={getStatusIcon} getColor={getStatusColor} />
-              <ServiceRow label="Projects & Memberships" status={data.features.projects_memberships} getIcon={getStatusIcon} getColor={getStatusColor} />
-              <ServiceRow label="Notifications" status={data.features.notifications} getIcon={getStatusIcon} getColor={getStatusColor} />
-              <ServiceRow label="Transactions & Balances" status={data.features.transactions_balances} getIcon={getStatusIcon} getColor={getStatusColor} />
-              <ServiceRow label="Integrations" status={data.features.integrations} getIcon={getStatusIcon} getColor={getStatusColor} />
+              <ServiceRow label="Identity & Context" status={data.features.identity_context} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
+              <ServiceRow label="Projects & Memberships" status={data.features.projects_memberships} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
+              <ServiceRow label="Notifications" status={data.features.notifications} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
+              <ServiceRow label="Transactions & Balances" status={data.features.transactions_balances} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
+              <ServiceRow label="Integrations" status={data.features.integrations} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
             </div>
           </div>
 
@@ -179,20 +212,30 @@ export const HealthCheckPage: React.FC = () => {
   );
 };
 
-function ServiceRow({ label, status, detail, getIcon, getColor }: any) {
+function ServiceRow({ label, status, detail, getIcon, getColor, getTextColor }: any) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
-      <span style={{ fontWeight: 500 }}>{label}</span>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '8px',
+      backgroundColor: 'var(--app-surface)',
+      borderRadius: '4px',
+      border: '1px solid var(--app-border)'
+    }}>
+      <span style={{ fontWeight: 500, color: 'var(--app-text)' }}>{label}</span>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {detail && <span style={{ fontSize: '12px', color: '#666' }}>{detail}</span>}
+        {detail && <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>{detail}</span>}
         <span style={{
           padding: '4px 8px',
           borderRadius: '12px',
           backgroundColor: getColor(status),
+          color: getTextColor(status),
           fontSize: '12px',
           display: 'flex',
           alignItems: 'center',
-          gap: '4px'
+          gap: '4px',
+          fontWeight: 'bold'
         }}>
           {getIcon(status)} {status?.toUpperCase() || 'UNKNOWN'}
         </span>
@@ -205,17 +248,34 @@ function IntegrityRow({ label, count, min }: { label: string, count?: number, mi
   const isGood = (count || 0) >= min;
   const isPartial = (count || 0) > 0 && (count || 0) < min;
 
-  let color = '#d1e7dd'; // Green
-  if (isPartial) color = '#fff3cd'; // Yellow
-  if (!count) color = '#f8d7da'; // Red
+  let color = 'var(--app-success)'; // Green
+  let textColor = '#000';
+
+  if (isPartial) {
+    color = 'var(--app-warning)'; // Yellow
+    textColor = '#000';
+  }
+  if (!count) {
+    color = 'var(--app-error)'; // Red
+    textColor = '#fff';
+  }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
-      <span style={{ fontWeight: 500 }}>{label}</span>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '8px',
+      backgroundColor: 'var(--app-surface)',
+      borderRadius: '4px',
+      border: '1px solid var(--app-border)'
+    }}>
+      <span style={{ fontWeight: 500, color: 'var(--app-text)' }}>{label}</span>
       <span style={{
         padding: '4px 12px',
         borderRadius: '12px',
         backgroundColor: color,
+        color: textColor,
         fontWeight: 'bold',
         minWidth: '40px',
         textAlign: 'center'
