@@ -76,7 +76,7 @@ class Command(BaseCommand):
         for org in orgs:
             # Get a valid user for this org (creator or any member)
             # We try to find a member first
-            memberships = Membership.objects.filter(organization=org)
+            memberships = Membership.objects.filter(organisation=org)
             if memberships.exists():
                 user = memberships.first().user
             else:
