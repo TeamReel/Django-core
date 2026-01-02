@@ -122,7 +122,7 @@ export default function TopNavbar() {
   const { isSystemAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<'EN' | 'NL' | 'DE'>('EN');
+  const [language, setLanguage] = useState<'EN' | 'NL' | 'DE' | 'IT' | 'FR'>('EN');
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -279,7 +279,7 @@ export default function TopNavbar() {
     }
   }, []);
 
-  const handleLanguageChange = (lang: 'EN' | 'NL' | 'DE') => {
+  const handleLanguageChange = (lang: 'EN' | 'NL' | 'DE' | 'IT' | 'FR') => {
     console.log('Language change clicked:', lang);
     setLanguage(lang);
     localStorage.setItem('demo_language', lang);
@@ -712,7 +712,7 @@ export default function TopNavbar() {
                   minWidth: '120px',
                   zIndex: 1000,
                 }}>
-                  {(['EN', 'NL', 'DE'] as const).map(lang => (
+                  {(['EN', 'NL', 'DE', 'IT', 'FR'] as const).map(lang => (
                     <button
                       key={lang}
                       onClick={() => handleLanguageChange(lang)}
@@ -727,7 +727,7 @@ export default function TopNavbar() {
                         fontWeight: language === lang ? 600 : 400,
                         fontSize: '14px',
                         cursor: 'pointer',
-                        borderBottom: lang !== 'DE' ? '1px solid var(--app-border)' : 'none',
+                        borderBottom: lang !== 'FR' ? '1px solid var(--app-border)' : 'none',
                       }}
                       onMouseEnter={(e) => {
                         if (language !== lang) {
