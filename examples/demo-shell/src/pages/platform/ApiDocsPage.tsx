@@ -27,11 +27,16 @@ interface ApiDocsMeta {
 export const ApiDocsPage: React.FC = () => {
   const [meta, setMeta] = useState<ApiDocsMeta | null>(null);
 
+  // Determine Base URL
+  // Default to localhost:8000 if env var is missing (for local dev without .env)
+  // In production, VITE_API_BASE_URL must be set.
+  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+
   useEffect(() => {
     // Try to fetch API schema to extract metadata
     const fetchMeta = async () => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
         const response = await fetch(`${baseUrl}/api/schema/?format=json`, {
           headers: {
             'Content-Type': 'application/json',
@@ -58,7 +63,7 @@ export const ApiDocsPage: React.FC = () => {
     };
 
     fetchMeta();
-  }, []);
+  }, [baseUrl]);
 
   return (
     <AppShell>
@@ -102,14 +107,14 @@ export const ApiDocsPage: React.FC = () => {
             </p>
             <div className="flex justify-center gap-4">
               <a
-                href="http://localhost:8000/api/docs/"
+                href={`${baseUrl}/api/docs/`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <Button variant="primary">Open Interactive API Docs</Button>
               </a>
               <a
-                href="http://localhost:8000/api/schema/?format=json"
+                href={`${baseUrl}/api/schema/?format=json`}
                 target="_blank"
                 rel="noopener noreferrer"
                 download="openapi-schema.json"
@@ -127,7 +132,7 @@ export const ApiDocsPage: React.FC = () => {
               <div>
                 <h4 className="font-medium mb-2">Base URL</h4>
                 <code className="bg-gray-100 px-3 py-2 rounded block text-sm font-mono">
-                  http://localhost:8000/api/
+                  {baseUrl}/api/
                 </code>
               </div>
               <div>
@@ -143,7 +148,7 @@ export const ApiDocsPage: React.FC = () => {
                 <h4 className="font-medium mb-2">Example Request</h4>
                 <code className="bg-gray-100 px-3 py-2 rounded block text-sm font-mono overflow-auto">
                   curl -H "Authorization: Bearer YOUR_TOKEN" \{'\n'}
-                  &nbsp;&nbsp;http://localhost:8000/api/v1/organisations/
+                  &nbsp;&nbsp;{baseUrl}/api/v1/organisations/
                 </code>
               </div>
             </div>
