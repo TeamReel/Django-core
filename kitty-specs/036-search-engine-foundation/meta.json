@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "036",
+    "slug":  "036-search-engine-foundation",
+    "friendly_name":  "Search Engine Foundation",
+    "source_description":  "feature=B24-fulltext-search-foundation\n\n[feature summary]\nPostgreSQL full-text search with permissions-aware results and adapter pattern for future search engines.\n\n[goals]\n- PostgreSQL tsvector + trigram indexes\n- Search API with query parsing\n- Grouped + ranked results\n- Permission filtering (B08 integration)\n- Adapter interface for Elasticsearch\n\n[demo requirements]\nDemo page: /demo/search\n- Search input (debounced)\n- Grouped results (users, orgs, projects)\n- Highlighting + relevance ranking\n- Permission checks\n- Tests: search  results  verify access",
+    "created_at":  "2026-01-03T09:38:40Z"
+}
