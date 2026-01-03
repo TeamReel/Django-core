@@ -61,7 +61,14 @@ class SearchAPIView(APIView):
         # backend.search uses sanitize_query internally.
         clean_query = sanitize_query(query_string)
         if clean_query:
-            search_query = SearchQuery(clean_query)
+            # Reconstruct the prefix query for highlighting to match the search behavior
+            terms = [term for term in clean_query.split() if term]
+            if terms:
+                prefix_query = " & ".join(f"{term}:*" for term in terms)
+                search_query = SearchQuery(prefix_query, search_type="raw")
+            else:
+                search_query = SearchQuery(clean_query)
+
             queryset = queryset.annotate(
                 highlight=SearchHeadline(
                     "body_text",
