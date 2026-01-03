@@ -44,9 +44,23 @@ export function useSearch() {
     setError(null);
 
     try {
-      const api = createApiClient();
+      // Use VITE_API_BASE_URL if available, otherwise fallback to empty string (relative)
+      // Note: Other parts of the app seem to use https://api.teamreel.app/api/v1
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.teamreel.app';
+      const api = createApiClient({ baseUrl });
+
       const params = new URLSearchParams({ q: query });
-      const response = await api.get<GroupedSearchResults>(`/api/v1/search/?${params.toString()}`, {
+      // Ensure we don't double-slash if baseUrl ends with / and endpoint starts with /
+      // But createApiClient usually handles concatenation.
+      // However, the endpoint here includes /api/v1/search/ which duplicates /api/v1 if baseUrl has it.
+      // Let's check if baseUrl already includes /api/v1
+
+      let endpoint = '/api/v1/search/';
+      if (baseUrl.includes('/api/v1')) {
+         endpoint = '/search/';
+      }
+
+      const response = await api.get<GroupedSearchResults>(`${endpoint}?${params.toString()}`, {
         signal: abortControllerRef.current.signal,
       });
 
@@ -78,13 +92,20 @@ export function useSearch() {
       setError(null);
 
       try {
-        const api = createApiClient();
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.teamreel.app';
+        const api = createApiClient({ baseUrl });
+
+        let endpoint = '/api/v1/search/';
+        if (baseUrl.includes('/api/v1')) {
+           endpoint = '/search/';
+        }
+
         const params = new URLSearchParams({
           q: query,
           types: types.join(','),
           page: page.toString(),
         });
-        const response = await api.get<PaginatedSearchResults>(`/api/v1/search/?${params.toString()}`, {
+        const response = await api.get<PaginatedSearchResults>(`${endpoint}?${params.toString()}`, {
           signal: abortControllerRef.current.signal,
         });
 
