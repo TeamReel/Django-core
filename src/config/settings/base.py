@@ -62,14 +62,13 @@ INSTALLED_APPS = [
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
     "api",  # B13: API Foundation & Standards
     "tasks.apps.TasksConfig",  # B15: Tasks & Scheduling
+    "search.apps.SearchConfig",  # Search Engine
     "observability.apps.ObservabilityConfig",  # B18: Observability
     "notifications.apps.NotificationsConfig",  # B16: Notifications
     # B17: Contextual Notification Service
     "contextual_notifications.apps.ContextualNotificationsConfig",
     # B22: File & Media Management
     "files.apps.FilesConfig",
-    # B24: Search Engine Foundation
-    "search.apps.SearchConfig",
     # B20: CLI & Scaffolding
     "scaffolding",
 ]

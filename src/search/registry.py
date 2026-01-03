@@ -1,7 +1,6 @@
 from typing import Type
 
 from django.db import models
-from django.contrib.postgres.search import SearchVector
 
 
 class SearchIndex:
@@ -11,8 +10,8 @@ class SearchIndex:
 
     model: Type[models.Model]
 
-    def get_vector(self, obj) -> SearchVector:
-        """Returns the SearchVector for the object."""
+    def get_body_text(self, obj) -> str:
+        """Returns the full text content to be indexed."""
         raise NotImplementedError
 
     def get_title(self, obj) -> str:

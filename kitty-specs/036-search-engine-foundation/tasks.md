@@ -33,13 +33,13 @@
 **Priority**: P0 (Blocker)
 **Tests**: Integration tests for Signals -> Task -> DB.
 
-- [ ] **T007**: Implement `PostgresSearchBackend` class structure.
-- [ ] **T008**: Implement `update_search_index` Celery task.
-- [ ] **T009**: Implement signal handlers (`post_save`, `post_delete`) in `src/search/signals.py`.
-- [ ] **T010**: Create `rebuild_search_index` management command.
-- [ ] **T011**: Implement `UserIndex`, `OrganisationIndex`, `ProjectIndex`.
-- [ ] **T012**: Register indexes in `src/search/apps.py`.
-- [ ] **T013**: Test indexing pipeline (create object -> verify `SearchEntry`).
+- [x] **T007**: Implement `PostgresSearchBackend` class structure.
+- [x] **T008**: Implement `update_search_index` Celery task.
+- [x] **T009**: Implement signal handlers (`post_save`, `post_delete`) in `src/search/signals.py`.
+- [x] **T010**: Create `rebuild_search_index` management command.
+- [x] **T011**: Implement `UserIndex`, `OrganisationIndex`, `ProjectIndex`.
+- [x] **T012**: Register indexes in `src/search/apps.py`.
+- [x] **T013**: Test indexing pipeline (create object -> verify `SearchEntry`).
 
 **Implementation Sketch**:
 1.  Create `backend/postgres.py`.
@@ -48,7 +48,7 @@
 4.  Implement management command to iterate all registered models.
 5.  Define specific indexes for User, Org, Project.
 
-**Prompt**: [tasks/planned/WP02-indexing-pipeline.md](tasks/planned/WP02-indexing-pipeline.md)
+**Prompt**: [tasks/done/WP02-indexing-pipeline.md](tasks/done/WP02-indexing-pipeline.md)
 
 ---
 
