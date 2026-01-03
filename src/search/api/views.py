@@ -31,6 +31,12 @@ class SearchAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         query_string = request.query_params.get("q", "").strip()
+
+        # Debug logging
+        print(
+            f"Search request: q='{query_string}', user='{request.user}', auth={request.user.is_authenticated}, super={request.user.is_superuser}"
+        )
+
         if not query_string:
             return Response({"results": []}, status=status.HTTP_200_OK)
 
@@ -43,6 +49,8 @@ class SearchAPIView(APIView):
         backend = PostgresSearchBackend()
         # Get base queryset from backend (includes permission filtering and ranking)
         queryset = backend.search(query_string, request.user, types=types)
+
+        print(f"Search backend returned {queryset.count()} results")
 
         # Ensure unique results
         queryset = queryset.distinct()
