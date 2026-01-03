@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
     # Third-party apps
     "corsheaders",  # CORS headers for frontend dev
     "rest_framework",
@@ -61,6 +62,7 @@ INSTALLED_APPS = [
     "i18n_preferences.apps.I18nPreferencesConfig",  # User & Org i18n Preferences (B12)
     "api",  # B13: API Foundation & Standards
     "tasks.apps.TasksConfig",  # B15: Tasks & Scheduling
+    "search.apps.SearchConfig",  # Search Engine
     "observability.apps.ObservabilityConfig",  # B18: Observability
     "notifications.apps.NotificationsConfig",  # B16: Notifications
     # B17: Contextual Notification Service

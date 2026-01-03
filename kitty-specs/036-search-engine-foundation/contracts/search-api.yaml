@@ -1,0 +1,49 @@
+openapi: 3.0.0
+info:
+  title: Search API
+  version: 1.0.0
+paths:
+  /api/search/:
+    get:
+      summary: Global Search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The search query
+        - name: types
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated list of content types to filter by (e.g., 'projects,users')
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                        description:
+                          type: string
+                        url:
+                          type: string
+                        image_url:
+                          type: string
+                        type:
+                          type: string
+                        highlight:
+                          type: string

@@ -1,4 +1,4 @@
-## Current Mode: Demo Finalization & Verification (Go-Live Track)
+﻿## Current Mode: Demo Finalization & Verification (Go-Live Track)
 
 We are currently in the **DEMO FINALIZATION** phase.
 **Goal:** Ensure the production demo (Railway) is fully populated, stable, and visually correct for all core pages.
