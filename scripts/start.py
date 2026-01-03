@@ -64,12 +64,14 @@ def main():
         sys.exit(1)
 
     # Rebuild search index (ensure demo data is searchable)
-    print("\nRebuilding search index...")
-    try:
-        subprocess.run(["python", "manage.py", "rebuild_search_index"], check=True, cwd="/app")
-        print("✓ Search index rebuilt successfully")
-    except subprocess.CalledProcessError as e:
-        print(f"Warning: Search index rebuild failed: {e}")
+    # NOTE: Disabled for now to prevent DB connection exhaustion on startup
+    # Should be run manually via Railway CLI: railway run python manage.py rebuild_search_index
+    # print("\nRebuilding search index...")
+    # try:
+    #     subprocess.run(["python", "manage.py", "rebuild_search_index"], check=True, cwd="/app")
+    #     print("✓ Search index rebuilt successfully")
+    # except subprocess.CalledProcessError as e:
+    #     print(f"Warning: Search index rebuild failed: {e}")
         # Don't exit, app can still run
 
     # Build Daphne command (Reference ASGI server for Channels)

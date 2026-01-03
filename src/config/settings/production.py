@@ -52,7 +52,7 @@ SECURITY_ENFORCEMENT_MODE = "strict"
 # Database: PostgreSQL via DATABASE_URL (Render provides this)
 DATABASES = {
     "default": dj_database_url.config(
-        conn_max_age=600,  # Connection pooling (10 minutes)
+        conn_max_age=60,  # Reduced to 60s to prevent "too many clients" on shared DBs
         conn_health_checks=True,  # Enable connection health checks
         ssl_require=True,  # Require SSL for database connections
     )
