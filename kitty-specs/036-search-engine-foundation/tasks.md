@@ -57,10 +57,10 @@
 **Priority**: P1 (Core Feature)
 **Tests**: Security tests for permission enforcement.
 
-- [ ] **T014**: Implement `PostgresSearchBackend.search()` with `ts_query`.
-- [ ] **T015**: Implement query sanitization ("Smart Cleanup").
-- [ ] **T016**: Implement permission filtering logic (joining source tables).
-- [ ] **T017**: Test search execution and permission enforcement.
+- [x] **T014**: Implement `PostgresSearchBackend.search()` with `ts_query`.
+- [x] **T015**: Implement query sanitization ("Smart Cleanup").
+- [x] **T016**: Implement permission filtering logic (joining source tables).
+- [x] **T017**: Test search execution and permission enforcement.
 
 **Implementation Sketch**:
 1.  Enhance `PostgresSearchBackend` with `search` method.
@@ -68,7 +68,7 @@
 3.  Implement `_apply_permissions` method using `get_objects_for_user`.
 4.  Write tests ensuring unauthorized objects are excluded.
 
-**Prompt**: [tasks/planned/WP03-search-backend-logic.md](tasks/planned/WP03-search-backend-logic.md)
+**Prompt**: [tasks/done/WP03-search-backend-logic.md](tasks/done/WP03-search-backend-logic.md)
 
 ---
 
