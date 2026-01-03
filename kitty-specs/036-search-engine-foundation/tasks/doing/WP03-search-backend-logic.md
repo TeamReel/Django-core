@@ -5,7 +5,9 @@ subtasks:
   - T015
   - T016
   - T017
-lane: planned
+lane: "doing"
+agent: "GitHub Copilot"
+shell_pid: "15772"
 history:
   - date: 2026-01-03
     action: Created
@@ -64,3 +66,7 @@ The search backend must be secure by default. We cannot rely on the API to filte
 - Invalid queries do not crash the search.
 - Permission filtering is applied at the database level.
 - Security tests pass.
+
+## Activity Log
+
+- 2026-01-03T11:12:03Z – GitHub Copilot – shell_pid=15772 – lane=doing – Started implementation
