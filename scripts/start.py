@@ -63,6 +63,15 @@ def main():
         print(f"✗ Migration failed with exit code {e.returncode}")
         sys.exit(1)
 
+    # Rebuild search index (ensure demo data is searchable)
+    print("\nRebuilding search index...")
+    try:
+        subprocess.run(["python", "manage.py", "rebuild_search_index"], check=True, cwd="/app")
+        print("✓ Search index rebuilt successfully")
+    except subprocess.CalledProcessError as e:
+        print(f"Warning: Search index rebuild failed: {e}")
+        # Don't exit, app can still run
+
     # Build Daphne command (Reference ASGI server for Channels)
     cmd = [
         "daphne",

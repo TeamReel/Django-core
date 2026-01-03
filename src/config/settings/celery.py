@@ -11,10 +11,15 @@ from celery.schedules import crontab
 env = environ.Env()
 
 # Broker Configuration
-CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+# Fallback to REDIS_URL if CELERY_BROKER_URL is not set (common in Railway/Heroku)
+CELERY_BROKER_URL = env(
+    "CELERY_BROKER_URL", default=env("REDIS_URL", default="redis://localhost:6379/0")
+)
 
 # Result Backend Configuration (lightweight status tracking)
-CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = env(
+    "CELERY_RESULT_BACKEND", default=env("REDIS_URL", default="redis://localhost:6379/0")
+)
 CELERY_RESULT_EXTENDED = True  # Store task args/kwargs for debugging
 CELERY_RESULT_EXPIRES = 86400  # 24 hours TTL
 
