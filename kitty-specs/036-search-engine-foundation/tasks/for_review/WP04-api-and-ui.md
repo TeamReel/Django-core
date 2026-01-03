@@ -5,7 +5,7 @@ subtasks:
   - T019
   - T020
   - T021
-lane: "doing"
+lane: "for_review"
 agent: "claude-sonnet-4.5"
 shell_pid: "13964"
 review_status: "acknowledged"
@@ -135,3 +135,4 @@ The frontend needs a flexible API. The default mode is "Global Search" which ret
 - 2026-01-03T14:47:40Z – GitHub Copilot – shell_pid=15772 – lane=planned – Code review complete: needs integration tests and API key consistency fixes
 - 2026-01-03T14:50:39Z – claude-sonnet-4.5 – shell_pid=13964 – lane=doing – Addressing review feedback: adding integration tests and fixing API key format
 - 2026-01-03T14:55:12Z – claude-sonnet-4.5 – shell_pid=13964 – lane=doing – Addressed feedback: Fixed API plural keys (projects/users/organisations), added integration test suite with fixtures, updated unit tests. Migration issue noted as out-of-scope.
+- 2026-01-03T14:55:28Z – claude-sonnet-4.5 – shell_pid=13964 – lane=for_review – Addressed review feedback: plural API keys implemented, integration tests added, all unit tests passing
