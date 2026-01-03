@@ -38,7 +38,7 @@ The codebase (`src/config/settings/production.py`) has smart defaults, but you n
 
 ## 4. Create Superuser (CLI)
 
-Since you cannot run interactive commands easily in the cloud console, use the Railway CLI on your laptop:
+**Important:** You do not have access to the Railway Shell in the browser. All management commands must be run from your local terminal using the Railway CLI or by connecting directly to the database via the Public URL.
 
 1.  **Login** (if not already):
     ```powershell
@@ -58,3 +58,37 @@ Since you cannot run interactive commands easily in the cloud console, use the R
     *Follow the prompts to set username and password.*
 
 > **Note:** If this fails with a database connection error, you may need to temporarily enable "Public Networking" on your PostgreSQL service in Railway, or use the `DATABASE_PUBLIC_URL` variable.
+
+## 5. Running Management Commands Locally
+
+To run management commands (like `rebuild_search_index` or `migrate`) from your local machine against the production database, you need to use the **Public URL** because the internal private URL is not accessible outside Railway's network.
+
+1.  **Get the Public URL**:
+    - Go to Railway Dashboard -> PostgreSQL Service -> Connect -> Public Networking.
+    - Copy the `PostgreSQL Connection URL`.
+
+2.  **Run the command**:
+    Set the `DATABASE_URL` environment variable to the public URL before running the command.
+
+    **PowerShell:**
+    ```powershell
+    $env:DATABASE_URL="postgresql://postgres:PASSWORD@host:port/railway"
+    python manage.py rebuild_search_index
+    ```
+
+    **Bash:**
+    ```bash
+    DATABASE_URL="postgresql://postgres:PASSWORD@host:port/railway" python manage.py rebuild_search_index
+    ```
+
+> **Warning:** Be careful when running commands against production data. Ensure you do not commit real credentials to version control.
+
+## 6. Troubleshooting
+
+### Database Error: "FATAL: sorry, too many clients already"
+This error occurs when the PostgreSQL database has reached its maximum number of concurrent connections. This often happens if `CONN_MAX_AGE` is set too high or if many local commands are run without closing connections.
+
+**Solution:**
+1.  **Restart the Database:** Go to the Railway Dashboard, select the PostgreSQL service, and click "Restart".
+2.  **Restart the Backend:** Restarting the backend service will also close its open connections.
+3.  **Check Configuration:** Ensure `CONN_MAX_AGE` in `production.py` is set to a reasonable value (e.g., `60`).

@@ -14,6 +14,7 @@ We are currently in the **DEMO FINALIZATION** phase.
 - **Database:** PostgreSQL (Railway Plugin).
 - **Cache:** Redis (Railway Plugin).
 - **Frontend:** Deployed on Vercel/Netlify (consumes Backend API).
+- **Management Commands:** User does NOT have access to Railway Shell. All commands must be run locally using the `DATABASE_URL` environment variable pointing to the Railway Public URL.
 - **Reference Docs:**
     - `docs/railway/RAILWAY_SETUP.md`: Deployment variables and troubleshooting.
     - `docs/demo/DEMO_DB_STATUS.md`: Current data population status.
