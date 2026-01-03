@@ -13,8 +13,19 @@ def handle_save(sender, instance, **kwargs):
         # Use on_commit to ensure DB transaction is complete before task runs
         # But we need to import transaction
         from django.db import transaction
+        import logging
 
-        transaction.on_commit(lambda: update_search_index.delay(content_type.id, instance.pk))
+        logger = logging.getLogger(__name__)
+
+        def schedule_update():
+            try:
+                update_search_index.delay(content_type.id, instance.pk)
+            except Exception as e:
+                logger.warning(
+                    f"Failed to schedule search index update for {sender.__name__} {instance.pk}: {e}"
+                )
+
+        transaction.on_commit(schedule_update)
 
 
 def handle_delete(sender, instance, **kwargs):
