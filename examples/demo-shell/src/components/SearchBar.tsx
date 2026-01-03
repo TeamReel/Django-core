@@ -90,7 +90,6 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => query.trim().length >= 2 && setIsOpen(true)}
           placeholder={placeholder}
           style={{
             width: '100%',

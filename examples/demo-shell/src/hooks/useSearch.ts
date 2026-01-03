@@ -50,7 +50,7 @@ export function useSearch() {
         signal: abortControllerRef.current.signal,
       });
 
-      return response.data;
+      return response.data ?? null;
     } catch (err: any) {
       if (err.name === 'AbortError') {
         return null;
@@ -88,7 +88,7 @@ export function useSearch() {
           signal: abortControllerRef.current.signal,
         });
 
-        return response.data;
+        return response.data ?? null;
       } catch (err: any) {
         if (err.name === 'AbortError') {
           return null;
