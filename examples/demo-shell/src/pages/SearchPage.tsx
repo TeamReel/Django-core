@@ -133,7 +133,7 @@ export function SearchPage() {
         <div>
           {(Object.keys(groupedResults) as Array<keyof GroupedSearchResults>).map((category) => {
             const categoryResults = groupedResults[category];
-            if (!categoryResults || categoryResults.length === 0) return null;
+            if (!categoryResults || !Array.isArray(categoryResults) || categoryResults.length === 0) return null;
 
             return (
               <div
