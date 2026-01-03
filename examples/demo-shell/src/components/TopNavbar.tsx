@@ -29,6 +29,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { useUserRole } from './PermissionGuards';
 import ProfileAvatarDropdown from './ProfileAvatarDropdown';
+import { SearchBar } from './SearchBar';
 
 interface NavGroup {
   id: string;
@@ -655,6 +656,11 @@ export default function TopNavbar() {
           {/* Right side: User controls */}
           {user && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Search Bar */}
+            <div style={{ width: '300px', maxWidth: '300px' }}>
+              <SearchBar placeholder="Search..." />
+            </div>
+
             {/* Theme Toggle - for superadmin: check global flag only, for others: check resolved flag (with org overrides) */}
             {(isSystemAdmin ? themeToggleGlobalEnabled : themeToggleEnabled) && (
               <button
