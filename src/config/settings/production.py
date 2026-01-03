@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 
 import dj_database_url
 from corsheaders.defaults import default_headers
@@ -13,7 +12,9 @@ DEBUG = False
 
 # Security: SECRET_KEY from environment (required at runtime)
 # Note: Uses fallback during build phase (collectstatic) when env vars aren't available
-SECRET_KEY = env("SECRET_KEY", default=os.getenv("SECRET_KEY", get_random_secret_key()))
+SECRET_KEY = env("SECRET_KEY", default=None)
+if not SECRET_KEY:
+    SECRET_KEY = get_random_secret_key()
 
 # Security: ALLOWED_HOSTS from environment
 # Format: comma-separated list, e.g., ".onrender.com,myapp.com"
