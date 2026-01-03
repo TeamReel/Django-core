@@ -15,7 +15,7 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
   const navigate = useNavigate();
 
   const { searchGlobal, isSearching } = useSearch();
-  const debouncedQuery = useDebounce(query, 300);
+  const debouncedQuery = useDebounce(query, 500);
 
   // Perform search when debounced query changes
   useEffect(() => {

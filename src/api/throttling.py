@@ -33,7 +33,7 @@ class AuthenticatedUserThrottle(SimpleRateThrottle):
         """
         Return rate limit for authenticated users.
         """
-        return "100/min"  # FR-020: 100 requests per minute
+        return "1000/min"  # FR-020: 1000 requests per minute (Increased for Demo)
 
 
 class AnonymousUserThrottle(SimpleRateThrottle):
@@ -71,4 +71,4 @@ class AnonymousUserThrottle(SimpleRateThrottle):
         """
         Return rate limit for anonymous users.
         """
-        return "10/min"  # FR-021: 10 requests per minute
+        return "60/min"  # FR-021: 60 requests per minute (Increased for Demo)
