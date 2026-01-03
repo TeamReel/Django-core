@@ -23,6 +23,14 @@
   --app-info: #2563eb;
   --app-text-muted: #6b7280;
   --app-surface-active: #eff6ff;
+
+  /* Mapping for SearchBar and other components using design system tokens */
+  --color-text-primary: var(--app-text);
+  --color-text-secondary: var(--app-muted-text);
+  --color-background-primary: var(--app-surface);
+  --color-background-secondary: var(--app-surface-2);
+  --color-border: var(--app-border);
+  --color-primary: var(--app-link);
 }
 
 [data-theme="dark"] {
