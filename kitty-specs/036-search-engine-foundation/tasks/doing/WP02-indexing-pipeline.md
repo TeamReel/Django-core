@@ -8,7 +8,9 @@ subtasks:
   - T011
   - T012
   - T013
-lane: planned
+lane: "doing"
+agent: "GitHub Copilot"
+shell_pid: "15772"
 history:
   - date: 2026-01-03
     action: Created
@@ -80,3 +82,7 @@ We need to keep the search index up-to-date with the source models. We use an "A
 - `rebuild_search_index` command works.
 - Core models (User, Org, Project) are indexed.
 - Integration tests pass.
+
+## Activity Log
+
+- 2026-01-03T10:51:38Z – GitHub Copilot – shell_pid=15772 – lane=doing – Started implementation
