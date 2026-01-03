@@ -24,7 +24,7 @@
 4.  Define `SearchEntry` in `models.py`.
 5.  Create `registry.py` for `SearchIndex` and `SearchRegistry`.
 
-**Prompt**: [tasks/for_review/WP01-core-infrastructure.md](tasks/for_review/WP01-core-infrastructure.md)
+**Prompt**: [tasks/done/WP01-core-infrastructure.md](tasks/done/WP01-core-infrastructure.md)
 
 ---
 
