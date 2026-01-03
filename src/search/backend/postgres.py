@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction
+from django.db import transaction, connection
 from django.db.models import Q
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 
@@ -71,9 +71,14 @@ class PostgresSearchBackend:
             queryset = queryset.filter(permission_filter)
 
         # 3. Apply Search Query and Ranking
-        queryset = queryset.filter(search_vector=search_query)
-        queryset = queryset.annotate(rank=SearchRank("search_vector", search_query))
-        queryset = queryset.order_by("-rank")
+        if connection.vendor == "postgresql":
+            queryset = queryset.filter(search_vector=search_query)
+            queryset = queryset.annotate(rank=SearchRank("search_vector", search_query))
+            queryset = queryset.order_by("-rank")
+        else:
+            # Fallback for SQLite (Development)
+            queryset = queryset.filter(body_text__icontains=clean_query)
+            queryset = queryset.order_by("-last_updated")
 
         return queryset
 
@@ -125,8 +130,11 @@ class PostgresSearchBackend:
                 },
             )
 
-            # Explicitly update the search vector from the body text
-            SearchEntry.objects.filter(pk=entry.pk).update(search_vector=SearchVector("body_text"))
+            if connection.vendor == "postgresql":
+                # Explicitly update the search vector from the body text
+                SearchEntry.objects.filter(pk=entry.pk).update(
+                    search_vector=SearchVector("body_text")
+                )
 
     def delete_entry(self, obj):
         """

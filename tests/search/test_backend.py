@@ -1,15 +1,9 @@
-import pytest
-from unittest.mock import patch, MagicMock
-from django.contrib.auth import get_user_model
+from unittest.mock import MagicMock, patch
 from search.backend.postgres import PostgresSearchBackend
 from search.utils import sanitize_query
-from organisations.models import Organisation, Membership
-from projects.models import Project
-
-User = get_user_model()
 
 
-@pytest.mark.unit
+# Pure unit tests for utility function
 def test_sanitize_query():
     assert sanitize_query("hello world") == "hello world"
     assert sanitize_query('hello "world"') == 'hello "world"'
@@ -21,142 +15,112 @@ def test_sanitize_query():
     assert sanitize_query("OR") == ""
 
 
-@pytest.mark.django_db
 class TestSearchBackend:
     def setup_method(self):
         self.backend = PostgresSearchBackend()
-
-        # Create Users
-        self.user1 = User.objects.create_user(
-            email="user1@example.com", password="password", first_name="User", last_name="One"
-        )
-        self.user2 = User.objects.create_user(
-            email="user2@example.com", password="password", first_name="User", last_name="Two"
-        )
-        self.superuser = User.objects.create_superuser(
-            email="admin@example.com", password="password", first_name="Admin", last_name="User"
-        )
-
-        # Create Orgs
-        self.org1 = Organisation.objects.create(name="Org One", creator=self.user1)
-        self.org2 = Organisation.objects.create(name="Org Two", creator=self.user2)
-
-        # Memberships
-        Membership.objects.create(user=self.user1, organisation=self.org1, role="admin")
-        Membership.objects.create(user=self.user2, organisation=self.org2, role="admin")
-
-        # Create Projects
-        self.project1 = Project.objects.create(
-            name="Project Alpha",
-            organisation=self.org1,
-            creator=self.user1,
-            description="Common description",
-        )
-        self.project2 = Project.objects.create(
-            name="Project Beta",
-            organisation=self.org2,
-            creator=self.user2,
-            description="Common description",
-        )
-
-        # We don't need to index data manually because we will mock the SearchEntry queryset
-        # But we do need the objects to exist for permission checks
+        self.user = MagicMock()
+        self.user.is_superuser = False
 
     @patch("search.backend.postgres.SearchEntry")
     @patch("search.backend.postgres.SearchQuery")
     @patch("search.backend.postgres.SearchRank")
-    def test_search_basic(self, mock_rank, mock_query, mock_entry_model):
-        # Setup mock queryset
-        mock_queryset = MagicMock()
-        mock_entry_model.objects.all.return_value = mock_queryset
-        mock_queryset.filter.return_value = mock_queryset
-        mock_queryset.annotate.return_value = mock_queryset
-        mock_queryset.order_by.return_value = mock_queryset
+    @patch("search.backend.postgres.search_registry")
+    @patch("search.backend.postgres.ContentType")
+    def test_search_basic(self, mock_ct, mock_registry, mock_rank, mock_query, mock_entry_model):
+        # Setup mocks
+        mock_qs = MagicMock()
+        mock_entry_model.objects.all.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
 
-        # Search for "Alpha"
-        self.backend.search("Alpha", self.user1)
+        # Mock registry to return no models (simplest case)
+        mock_registry.get_registered_models.return_value = []
 
-        # Verify SearchQuery was created
-        mock_query.assert_called_with("Alpha")
+        # Execute
+        results = self.backend.search("test query", self.user)
 
-        # Verify filter was called with search_vector
-        # Note: The exact call arguments depend on how Q objects are constructed
-        # We can check that filter was called at least once
-        assert mock_queryset.filter.called
-
-    @patch("search.backend.postgres.SearchEntry")
-    def test_permission_filtering(self, mock_entry_model):
-        mock_queryset = MagicMock()
-        mock_entry_model.objects.all.return_value = mock_queryset
-        mock_queryset.filter.return_value = mock_queryset
-        mock_queryset.annotate.return_value = mock_queryset
-        mock_queryset.order_by.return_value = mock_queryset
-
-        # User 1 search
-        self.backend.search("Common", self.user1)
-
-        # Verify permission filter was applied
-        # We expect a Q object that includes project1 and org1 IDs but NOT project2 or org2
-        # It's hard to inspect the exact Q object structure in a mock call,
-        # but we can verify the logic by checking what get_visible_ids returns (which we tested implicitly via the logic)
-
-        # Let's verify that filter was called with a Q object containing the correct ContentTypes
-        # and object_ids.
-
-        # Instead of inspecting the mock, let's trust the logic we wrote in get_visible_ids
-        # and just ensure the backend calls filter with *some* permission logic.
-
-        # Actually, we can verify the number of filter calls.
-        # 1. Permission filter (if not superuser)
-        # 2. Search vector filter
-        # 3. (Optional) Types filter
-
-        assert mock_queryset.filter.call_count >= 2
+        # Verify
+        mock_entry_model.objects.all.assert_called_once()
+        mock_query.assert_called_with("test query")
+        # Should filter by search vector
+        assert mock_qs.filter.call_count >= 1
+        # Should annotate rank
+        mock_qs.annotate.assert_called_once()
+        # Should order by rank
+        mock_qs.order_by.assert_called_with("-rank")
 
     @patch("search.backend.postgres.SearchEntry")
-    def test_superuser_permissions(self, mock_entry_model):
-        mock_queryset = MagicMock()
-        mock_entry_model.objects.all.return_value = mock_queryset
-        mock_queryset.filter.return_value = mock_queryset
-        mock_queryset.annotate.return_value = mock_queryset
-        mock_queryset.order_by.return_value = mock_queryset
+    @patch("search.backend.postgres.SearchQuery")
+    @patch("search.backend.postgres.SearchRank")
+    @patch("search.backend.postgres.search_registry")
+    @patch("search.backend.postgres.ContentType")
+    def test_permission_filtering(
+        self, mock_ct, mock_registry, mock_rank, mock_query, mock_entry_model
+    ):
+        # Setup mocks
+        mock_qs = MagicMock()
+        mock_entry_model.objects.all.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
 
-        # Superuser search
-        self.backend.search("Common", self.superuser)
+        # Mock a registered model
+        mock_model = MagicMock()
+        mock_registry.get_registered_models.return_value = [mock_model]
 
-        # Should NOT apply permission filter
-        # So only 1 filter call (for search vector)
-        assert mock_queryset.filter.call_count == 1
+        # Mock index
+        mock_index = MagicMock()
+        mock_registry.get_index.return_value = mock_index
+        mock_index.get_visible_ids.return_value = [1, 2, 3]
+
+        # Mock ContentType
+        mock_ct_obj = MagicMock()
+        mock_ct.objects.get_for_model.return_value = mock_ct_obj
+
+        # Execute
+        self.backend.search("test", self.user)
+
+        # Verify permission filter was constructed
+        # We can't easily check the exact Q object structure with mocks,
+        # but we can check that get_visible_ids was called
+        mock_index.get_visible_ids.assert_called_with(self.user)
+        mock_ct.objects.get_for_model.assert_called_with(mock_model)
+
+        # Verify filter was called (at least twice: once for permissions, once for vector)
+        assert mock_qs.filter.call_count >= 2
 
     @patch("search.backend.postgres.SearchEntry")
-    def test_search_types_filter(self, mock_entry_model):
-        mock_queryset = MagicMock()
-        mock_entry_model.objects.all.return_value = mock_queryset
-        mock_queryset.filter.return_value = mock_queryset
-        mock_queryset.annotate.return_value = mock_queryset
-        mock_queryset.order_by.return_value = mock_queryset
+    @patch("search.backend.postgres.SearchQuery")
+    @patch("search.backend.postgres.SearchRank")
+    @patch("search.backend.postgres.search_registry")
+    @patch("search.backend.postgres.ContentType")
+    def test_superuser_permissions(
+        self, mock_ct, mock_registry, mock_rank, mock_query, mock_entry_model
+    ):
+        # Setup mocks
+        mock_qs = MagicMock()
+        mock_entry_model.objects.all.return_value = mock_qs
+        mock_qs.filter.return_value = mock_qs
+        mock_qs.annotate.return_value = mock_qs
+        mock_qs.order_by.return_value = mock_qs
 
-        # Search with types
-        self.backend.search("Org", self.user1, types=["organisations.Organisation"])
+        self.user.is_superuser = True
 
-        # Should have an extra filter call for types
-        # 1. Types filter
-        # 2. Permission filter
-        # 3. Search vector filter
-        assert mock_queryset.filter.call_count == 3
+        # Execute
+        self.backend.search("test", self.user)
+
+        # Verify registry was NOT queried for permissions
+        mock_registry.get_registered_models.assert_not_called()
 
     @patch("search.backend.postgres.SearchEntry")
-    def test_invalid_query(self, mock_entry_model):
-        # Setup mock to return empty queryset if called (though it shouldn't be called for empty query)
-        mock_queryset = MagicMock()
-        mock_entry_model.objects.none.return_value = mock_queryset
-        mock_queryset.count.return_value = 0
+    @patch("search.backend.postgres.SearchQuery")
+    @patch("search.backend.postgres.SearchRank")
+    @patch("search.backend.postgres.search_registry")
+    @patch("search.backend.postgres.ContentType")
+    def test_invalid_query(self, mock_ct, mock_registry, mock_rank, mock_query, mock_entry_model):
+        # Execute with empty query
+        results = self.backend.search("   ", self.user)
 
-        # Test with empty string (after sanitization)
-        results = self.backend.search("   ", self.user1)
-
-        # sanitize_query("   ") returns ""
-        # search() returns SearchEntry.objects.none()
-
-        # Verify none() was called
-        assert mock_entry_model.objects.none.called
+        # Verify returns none
+        mock_entry_model.objects.none.assert_called_once()

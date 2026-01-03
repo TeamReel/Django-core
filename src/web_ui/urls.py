@@ -21,6 +21,8 @@ urlpatterns = [
     path("projects/<int:pk>/", views.projects_detail, name="ui_projects_detail"),
     # Account
     path("account/profile/", views.account_profile, name="ui_account_profile"),
+    # Search
+    path("search/", views.search_page, name="ui_search"),
     # Demo
     path("demo/websockets/", views.websocket_demo, name="ui_websocket_demo"),
 ]

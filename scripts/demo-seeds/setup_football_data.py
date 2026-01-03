@@ -7,16 +7,35 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 django.setup()
 
+# Disable Celery for seeding
+from django.conf import settings
+
+settings.CELERY_TASK_ALWAYS_EAGER = True
+settings.CELERY_BROKER_URL = "memory://"
+
 from django.contrib.auth import get_user_model
 from organisations.models import Organisation
 from projects.models import Project
 from permissions.models import Role, RoleAssignment
+import django.contrib.contenttypes.models
 
 User = get_user_model()
 
 
 def create_football_test_data():
     print("🏆 Creating football competition test data...\n")
+
+    # Create System User for Creator
+    try:
+        print("Creating system user...", flush=True)
+        system_user, _ = User.objects.get_or_create(
+            email="system@example.com",
+            defaults={"is_active": True, "first_name": "System", "last_name": "User"},
+        )
+        print(f"System User ID: {system_user.id}", flush=True)
+    except Exception as e:
+        print(f"Error creating user: {e}", flush=True)
+        return
 
     # Create Competitions (Organizations)
     competitions = [
@@ -39,7 +58,11 @@ def create_football_test_data():
     for comp_data in competitions:
         org, created = Organisation.objects.get_or_create(
             slug=comp_data["slug"],
-            defaults={"name": comp_data["name"], "description": comp_data["description"]},
+            defaults={
+                "name": comp_data["name"],
+                "description": comp_data["description"],
+                "creator": system_user,
+            },
         )
         created_orgs[comp_data["slug"]] = org
         status = "✅ NEW" if created else "♻️  EXISTS"
@@ -62,7 +85,7 @@ def create_football_test_data():
         # Premier League
         {
             "name": "Arsenal FC",
-            "description": "The Gunners",
+            "description": "The Gunners. The quick brown fox jumps over the lazy dog.",
             "slug": "arsenal",
             "org": "premier-league",
         },
@@ -150,6 +173,7 @@ def create_football_test_data():
                 "name": club_data["name"],
                 "description": club_data["description"],
                 "organisation": org,
+                "creator": system_user,
             },
         )
         created_clubs[club_data["slug"]] = project
@@ -172,7 +196,9 @@ def create_football_test_data():
     created_roles = {}
     for role_data in roles:
         role, created = Role.objects.get_or_create(
-            name=role_data["name"], defaults={"description": role_data["description"]}
+            name=role_data["name"],
+            scope="project",
+            defaults={"description": role_data["description"]},
         )
         created_roles[role_data["slug"]] = role
         status = "✅ NEW" if created else "♻️  EXISTS"
@@ -257,6 +283,25 @@ def create_football_test_data():
             "role": "legend",
             "club": "bayern-munich",
         },
+        # Manual Test Users
+        {
+            "email": "alice.referee@example.com",
+            "name": "Alice Referee",
+            "role": "legend",
+            "club": "arsenal",
+        },
+        {
+            "email": "bob.manager@example.com",
+            "name": "Bob Manager",
+            "role": "coach",
+            "club": "chelsea",
+        },
+        {
+            "email": "charlie.fan@example.com",
+            "name": "Charlie Fan",
+            "role": "player",
+            "club": "liverpool",
+        },
     ]
 
     created_users = {}
@@ -264,7 +309,6 @@ def create_football_test_data():
         user, created = User.objects.get_or_create(
             email=person_data["email"],
             defaults={
-                "username": person_data["email"],
                 "first_name": person_data["name"].split()[0],
                 "last_name": " ".join(person_data["name"].split()[1:]),
                 "is_active": True,
@@ -276,9 +320,22 @@ def create_football_test_data():
 
         created_users[person_data["email"]] = user
         status = "✅ NEW" if created else "♻️  EXISTS"
-        club = created_clubs[person_data["club"]]
-        role = created_roles[person_data["role"]]
-        print(f'{status} {person_data["name"]} ({role.name} at {club.name})')
+
+        # Handle club assignment
+        if person_data["club"] in created_clubs:
+            club = created_clubs[person_data["club"]]
+            role = created_roles[person_data["role"]]
+
+            # Create RoleAssignment
+            RoleAssignment.objects.get_or_create(
+                user=user,
+                role=role,
+                scope="project",
+                target_project=club,
+            )
+            print(f'{status} {person_data["name"]} ({role.name} at {club.name})')
+        else:
+            print(f'{status} {person_data["name"]} (No club assigned)')
 
     print(f"\n👤 Created/Found {len(created_users)} football personalities\n")
 
