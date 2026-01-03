@@ -5,7 +5,9 @@ subtasks:
   - T023
   - T024
   - T025
-lane: planned
+lane: "doing"
+agent: "GitHub Copilot"
+shell_pid: "15772"
 history:
   - date: 2026-01-03
     action: Created
@@ -65,3 +67,7 @@ Per Constitution Principle XIV (Demo-First Development), every feature must be v
 - "Football Leagues" data is searchable.
 - `manual-tests/036-search-foundation.md` exists and covers the user stories.
 - Performance is verified.
+
+## Activity Log
+
+- 2026-01-03T11:39:50Z – GitHub Copilot – shell_pid=15772 – lane=doing – Started WP05

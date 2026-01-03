@@ -76,17 +76,18 @@
 **Goal**: Expose search functionality via API with grouping and highlighting.
 **Priority**: P1 (Core Feature)
 **Tests**: API integration tests.
+**Status**: 🔄 Needs Revision (Review Complete: 2026-01-03)
 
-- [ ] **T018**: Create `SearchSerializer` with highlighting support.
-- [ ] **T019**: Implement `SearchAPIView` with `q` and `types` parameters.
-- [ ] **T020**: Implement result grouping (Global Search) and pagination (Filtered Search).
-- [ ] **T021**: Add integration tests for API endpoints.
+- [~] **T018**: Create `SearchSerializer` with highlighting support. *(Implemented, needs integration tests)*
+- [~] **T019**: Implement `SearchAPIView` with `q` and `types` parameters. *(Implemented, needs API key consistency fix)*
+- [~] **T020**: Implement result grouping (Global Search) and pagination (Filtered Search). *(Implemented, needs key naming decision)*
+- [~] **T021**: Add integration tests for API endpoints. *(Only unit tests with mocks - needs real DB tests)*
 
-**Implementation Sketch**:
-1.  Create `api/serializers.py`.
-2.  Create `api/views.py` using `APIView` or `ViewSet`.
-3.  Handle `types` query param for drill-down.
-4.  Format response according to spec (grouped vs flat).
+**Review Feedback Summary**:
+- ✅ Core implementation complete (serializer, view, routing, highlighting)
+- ❌ Missing integration tests with actual database queries
+- ❌ API response key inconsistency (singular vs plural model names)
+- ⚠️  Database migration issue blocks full test validation (unrelated to this WP)
 
 **Prompt**: [tasks/planned/WP04-api-and-ui.md](tasks/planned/WP04-api-and-ui.md)
 
