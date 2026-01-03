@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useSearch, type GroupedSearchResults, type PaginatedSearchResults, type SearchResult } from '../hooks/useSearch';
 import AppShell from '../components/AppShell';
@@ -6,7 +6,9 @@ import AppShell from '../components/AppShell';
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const types = searchParams.get('types')?.split(',').filter(Boolean) || [];
+  const typesParam = searchParams.get('types');
+  // Memoize types array to prevent infinite loop in useEffect
+  const types = useMemo(() => typesParam?.split(',').filter(Boolean) || [], [typesParam]);
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   const [groupedResults, setGroupedResults] = useState<GroupedSearchResults | null>(null);
