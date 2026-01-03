@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
     # Third-party apps
     "corsheaders",  # CORS headers for frontend dev
     "rest_framework",
@@ -67,6 +68,8 @@ INSTALLED_APPS = [
     "contextual_notifications.apps.ContextualNotificationsConfig",
     # B22: File & Media Management
     "files.apps.FilesConfig",
+    # B24: Search Engine Foundation
+    "search.apps.SearchConfig",
     # B20: CLI & Scaffolding
     "scaffolding",
 ]

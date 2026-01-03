@@ -10,12 +10,12 @@
 **Priority**: P0 (Blocker)
 **Tests**: Unit tests for Registry and Model creation.
 
-- [ ] **T001**: Create `src/search` app and configure `INSTALLED_APPS`.
-- [ ] **T002**: Create migration to enable `pg_trgm` extension.
-- [ ] **T003**: Define `SearchEntry` model with `SearchVectorField` and GIN index.
-- [ ] **T004**: Implement `SearchIndex` abstract base class.
-- [ ] **T005**: Implement `SearchRegistry` singleton and discovery logic.
-- [ ] **T006**: Test `SearchRegistry` registration and retrieval.
+- [x] **T001**: Create `src/search` app and configure `INSTALLED_APPS`.
+- [x] **T002**: Create migration to enable `pg_trgm` extension.
+- [x] **T003**: Define `SearchEntry` model with `SearchVectorField` and GIN index.
+- [x] **T004**: Implement `SearchIndex` abstract base class.
+- [x] **T005**: Implement `SearchRegistry` singleton and discovery logic.
+- [x] **T006**: Test `SearchRegistry` registration and retrieval.
 
 **Implementation Sketch**:
 1.  Run `startapp search`.
@@ -24,7 +24,7 @@
 4.  Define `SearchEntry` in `models.py`.
 5.  Create `registry.py` for `SearchIndex` and `SearchRegistry`.
 
-**Prompt**: [tasks/planned/WP01-core-infrastructure.md](tasks/planned/WP01-core-infrastructure.md)
+**Prompt**: [tasks/for_review/WP01-core-infrastructure.md](tasks/for_review/WP01-core-infrastructure.md)
 
 ---
 

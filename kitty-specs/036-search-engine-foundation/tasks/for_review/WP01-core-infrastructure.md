@@ -7,7 +7,11 @@ subtasks:
   - T004
   - T005
   - T006
-lane: planned
+lane: "for_review"
+review_status: "approved without changes"
+reviewed_by: "GitHub Copilot"
+agent: "GitHub Copilot"
+shell_pid: "15772"
 history:
   - date: 2026-01-03
     action: Created
@@ -80,3 +84,7 @@ This is the foundation for the search engine. We need a unified table (`SearchEn
 - `pg_trgm` extension is enabled.
 - `SearchRegistry` is implemented and tested.
 - `pytest tests/search/test_registry.py` passes.
+
+## Activity Log
+
+- 2026-01-03T10:34:28Z – GitHub Copilot – shell_pid=15772 – lane=doing – Started implementation
