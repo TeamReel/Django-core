@@ -60,10 +60,14 @@ export function useSearch() {
          endpoint = '/search/';
       }
 
-      const response = await api.get<GroupedSearchResults>(`${endpoint}?${params.toString()}`, {
+      const response = await api.get<any>(`${endpoint}?${params.toString()}`, {
         signal: abortControllerRef.current.signal,
       });
 
+      // Handle envelope format { status: 'success', data: { ... } }
+      if (response.data && response.data.data) {
+          return response.data.data;
+      }
       return response.data ?? null;
     } catch (err: any) {
       if (err.name === 'AbortError') {
@@ -105,10 +109,14 @@ export function useSearch() {
           types: types.join(','),
           page: page.toString(),
         });
-        const response = await api.get<PaginatedSearchResults>(`${endpoint}?${params.toString()}`, {
+        const response = await api.get<any>(`${endpoint}?${params.toString()}`, {
           signal: abortControllerRef.current.signal,
         });
 
+        // Handle envelope format { status: 'success', data: { ... } }
+        if (response.data && response.data.data) {
+            return response.data.data;
+        }
         return response.data ?? null;
       } catch (err: any) {
         if (err.name === 'AbortError') {
