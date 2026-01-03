@@ -77,6 +77,6 @@ def test_search_index_defaults():
     del obj.get_absolute_url
     assert index.get_url(obj) == ""
 
-    # Test get_vector raises NotImplementedError
+    # Test get_body_text raises NotImplementedError (abstract method)
     with pytest.raises(NotImplementedError):
-        index.get_vector(obj)
+        index.get_body_text(obj)

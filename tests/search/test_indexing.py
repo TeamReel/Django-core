@@ -31,11 +31,13 @@ def test_backend_update_entry():
         patch("search.backend.postgres.ContentType") as mock_ct,
         patch("search.backend.postgres.SearchEntry") as mock_entry,
         patch("search.backend.postgres.transaction"),
+        patch("search.backend.postgres.connection") as mock_connection,
     ):
         mock_registry.get_index.return_value = MockIndex()
         mock_ct.objects.get_for_model.return_value = MagicMock(id=1)
         mock_entry_instance = MagicMock()
         mock_entry.objects.update_or_create.return_value = (mock_entry_instance, True)
+        mock_connection.vendor = "postgresql"  # Enable vector update path
 
         backend = PostgresSearchBackend()
         obj = MockModel()
