@@ -8,6 +8,7 @@ subtasks:
 lane: "done"
 agent: "claude-sonnet-4.5"
 shell_pid: "13964"
+assignee: "claude-sonnet-4.5"
 review_status: "approved without changes"
 reviewed_by: "claude-sonnet-4.5"
 history:
@@ -88,3 +89,5 @@ Per Constitution Principle XIV (Demo-First Development), every feature must be v
 ## Activity Log
 
 - 2026-01-03T11:39:50Z – GitHub Copilot – shell_pid=15772 – lane=doing – Started WP05
+- 2026-01-03T11:48:36Z – claude-sonnet-4.5 – shell_pid=13964 – lane=for_review – Completed WP05: Enhanced search.html, verified demo data, created 369-line manual test guide
+- 2026-01-03T14:59:58Z – claude-sonnet-4.5 – shell_pid=13964 – lane=done – Review approved, moved to done
