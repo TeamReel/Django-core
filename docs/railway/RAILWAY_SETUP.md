@@ -72,13 +72,15 @@ To run management commands (like `rebuild_search_index` or `migrate`) from your 
 
     **PowerShell:**
     ```powershell
-    $env:DATABASE_URL="postgresql://postgres:PASSWORD@host:port/railway"
+    # Note: Replace 'postgres.railway.internal' with the Public Domain from Railway Dashboard if running locally
+    $env:DATABASE_URL="postgresql://postgres:PASSWORD@switchback.proxy.rlwy.net:17304/railway"
     python manage.py rebuild_search_index
     ```
 
     **Bash:**
     ```bash
-    DATABASE_URL="postgresql://postgres:PASSWORD@host:port/railway" python manage.py rebuild_search_index
+    # Note: Replace 'postgres.railway.internal' with the Public Domain from Railway Dashboard if running locally
+    DATABASE_URL="postgresql://postgres:PASSWORD@switchback.proxy.rlwy.net:17304/railway" python manage.py rebuild_search_index
     ```
 
 > **Warning:** Be careful when running commands against production data. Ensure you do not commit real credentials to version control.

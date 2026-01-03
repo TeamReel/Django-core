@@ -44,6 +44,9 @@ class SearchAPIView(APIView):
         # Get base queryset from backend (includes permission filtering and ranking)
         queryset = backend.search(query_string, request.user, types=types)
 
+        # Ensure unique results
+        queryset = queryset.distinct()
+
         # Add Highlighting
         # We need to reconstruct the SearchQuery to use in SearchHeadline
         # Ideally backend.search would return the query object or we re-parse it.

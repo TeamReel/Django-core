@@ -233,7 +233,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
-        return queryset
+        # Ensure distinct is always applied to prevent duplicates
+        return queryset.distinct()
 
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
