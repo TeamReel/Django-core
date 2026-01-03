@@ -20,7 +20,9 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
   // Perform search when debounced query changes
   useEffect(() => {
     if (debouncedQuery.trim().length >= 2) {
+      console.log('[SearchBar] Searching for:', debouncedQuery);
       searchGlobal(debouncedQuery).then((data) => {
+        console.log('[SearchBar] Results:', data);
         setResults(data);
         setIsOpen(true);
       });
