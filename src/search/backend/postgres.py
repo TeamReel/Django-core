@@ -30,7 +30,16 @@ class PostgresSearchBackend:
         if not clean_query:
             return SearchEntry.objects.none()
 
-        search_query = SearchQuery(clean_query)
+        # Use raw search query with prefix matching for partial words
+        # e.g. "aja" -> "aja:*"
+        terms = [term for term in clean_query.split() if term]
+        if terms:
+            # Join terms with AND (&) and append prefix wildcard (*)
+            prefix_query = " & ".join(f"{term}:*" for term in terms)
+            search_query = SearchQuery(prefix_query, search_type="raw")
+        else:
+            search_query = SearchQuery(clean_query)
+
         queryset = SearchEntry.objects.all()
 
         # 1. Filter by content types if requested

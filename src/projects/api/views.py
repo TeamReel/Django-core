@@ -166,6 +166,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 | Q(id__in=assigned_project_ids)
                 | Q(organisation_id__in=assigned_org_ids)
             ).distinct()
+        else:
+            # Ensure distinct results for superusers as well, just in case
+            queryset = queryset.distinct()
 
         # Check if this is a nested route (organisation_id slug in URL)
         organisation_slug = self.kwargs.get("organisation_id")

@@ -298,11 +298,11 @@ export const ProjectDetailPage: React.FC = () => {
 
   // Ensure current project is in options for the switcher
   const effectiveProjectOptions = [...projectOptions];
-  if (project && !effectiveProjectOptions.find(p => p.id === project.id)) {
+  if (project && !effectiveProjectOptions.find(p => String(p.id) === String(project.id))) {
     effectiveProjectOptions.push({
-      id: project.id,
+      id: String(project.id),
       label: project.name,
-      slug: project.slug || project.id
+      slug: project.slug || String(project.id)
     });
   }
 
