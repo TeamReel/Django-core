@@ -657,7 +657,7 @@ export default function TopNavbar() {
           {user && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Search Bar */}
-            <div style={{ width: '300px', maxWidth: '300px' }}>
+            <div className="nav-search-container" style={{ width: '300px', maxWidth: '300px' }}>
               <SearchBar placeholder="Search..." />
             </div>
 
@@ -805,6 +805,11 @@ export default function TopNavbar() {
           #mega-menu-panel {
             display: none !important;
           }
+          .nav-search-container {
+            width: auto !important;
+            flex: 1;
+            min-width: 120px;
+          }
         }
         @media (max-width: 480px) {
           .language-menu-container {
@@ -812,6 +817,9 @@ export default function TopNavbar() {
           }
           .hide-on-mobile {
             display: none !important;
+          }
+          .nav-search-container {
+            min-width: 80px;
           }
         }
       `}</style>
