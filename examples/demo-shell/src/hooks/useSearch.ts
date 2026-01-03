@@ -60,9 +60,13 @@ export function useSearch() {
          endpoint = '/search/';
       }
 
+      console.log(`[useSearch] Searching global: "${query}" at ${baseUrl}${endpoint}`);
+
       const response = await api.get<any>(`${endpoint}?${params.toString()}`, {
         signal: abortControllerRef.current.signal,
       });
+
+      console.log('[useSearch] Response:', response);
 
       // Handle envelope format { status: 'success', data: { ... } }
       if (response.data && response.data.data) {
@@ -70,6 +74,7 @@ export function useSearch() {
       }
       return response.data ?? null;
     } catch (err: any) {
+      console.error('[useSearch] Error:', err);
       if (err.name === 'AbortError') {
         return null;
       }
