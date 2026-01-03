@@ -5,7 +5,7 @@ subtasks:
   - T019
   - T020
   - T021
-lane: "doing"
+lane: "for_review"
 agent: "GitHub Copilot"
 shell_pid: "15772"
 history:
@@ -71,3 +71,4 @@ The frontend needs a flexible API. The default mode is "Global Search" which ret
 ## Activity Log
 
 - 2026-01-03T11:31:24Z – GitHub Copilot – shell_pid=15772 – lane=doing – Started implementation
+- 2026-01-03T11:38:21Z – GitHub Copilot – shell_pid=15772 – lane=for_review – Ready for review
