@@ -5,13 +5,21 @@ subtasks:
   - T015
   - T016
   - T017
-lane: "doing"
+lane: "for_review"
 agent: "GitHub Copilot"
 shell_pid: "15772"
 history:
   - date: 2026-01-03
     action: Created
     agent: GitHub Copilot
+  - date: 2026-01-03
+    action: Started
+    agent: GitHub Copilot
+    note: "Started implementation"
+  - date: 2026-01-03
+    action: Completed
+    agent: GitHub Copilot
+    note: "Implemented search logic, sanitization, and permission filtering."
 ---
 
 # Work Package: Search Backend Logic
@@ -70,3 +78,4 @@ The search backend must be secure by default. We cannot rely on the API to filte
 ## Activity Log
 
 - 2026-01-03T11:12:03Z – GitHub Copilot – shell_pid=15772 – lane=doing – Started implementation
+- 2026-01-03T11:19:44Z – GitHub Copilot – shell_pid=15772 – lane=for_review – Ready for review

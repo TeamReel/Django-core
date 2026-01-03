@@ -32,6 +32,13 @@ class SearchIndex:
         """Returns the image URL for the search result."""
         return None
 
+    def get_visible_ids(self, user) -> list | models.QuerySet:
+        """
+        Returns a list or QuerySet of object IDs visible to the given user.
+        Used for permission filtering during search.
+        """
+        return []
+
 
 class SearchRegistry:
     """

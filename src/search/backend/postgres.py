@@ -1,16 +1,81 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from django.contrib.postgres.search import SearchVector
+from django.db.models import Q
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 
 from search.models import SearchEntry
 from search.registry import search_registry
+from search.utils import sanitize_query
 
 
 class PostgresSearchBackend:
     """
     Adapter for PostgreSQL-based search operations.
-    Handles updating and deleting SearchEntry records.
+    Handles updating, deleting, and querying SearchEntry records.
     """
+
+    def search(self, query_string, user, types=None):
+        """
+        Perform a full-text search with permission filtering.
+
+        Args:
+            query_string (str): The raw search query.
+            user (User): The user performing the search.
+            types (list, optional): List of model labels (e.g. 'projects.Project') to filter by.
+
+        Returns:
+            QuerySet: Ranked SearchEntry results visible to the user.
+        """
+        clean_query = sanitize_query(query_string)
+        if not clean_query:
+            return SearchEntry.objects.none()
+
+        search_query = SearchQuery(clean_query)
+        queryset = SearchEntry.objects.all()
+
+        # 1. Filter by content types if requested
+        if types:
+            # types is expected to be a list of 'app_label.model_name' strings
+            # We need to convert them to ContentType objects
+            q_types = Q()
+            for type_label in types:
+                try:
+                    app_label, model = type_label.split(".")
+                    ct = ContentType.objects.get(app_label=app_label, model=model.lower())
+                    q_types |= Q(content_type=ct)
+                except (ValueError, ContentType.DoesNotExist):
+                    continue
+            queryset = queryset.filter(q_types)
+
+        # 2. Apply Permission Filtering
+        # If superuser, skip permission checks (see everything)
+        if not user.is_superuser:
+            permission_filter = Q()
+            registered_models = search_registry.get_registered_models()
+
+            for model in registered_models:
+                index = search_registry.get_index(model)
+                if not index:
+                    continue
+
+                # Get visible IDs for this model
+                visible_ids = index.get_visible_ids(user)
+
+                # Get ContentType for this model
+                ct = ContentType.objects.get_for_model(model)
+
+                # Add to permission filter
+                # We use object_id__in with the subquery/list
+                permission_filter |= Q(content_type=ct, object_id__in=visible_ids)
+
+            queryset = queryset.filter(permission_filter)
+
+        # 3. Apply Search Query and Ranking
+        queryset = queryset.filter(search_vector=search_query)
+        queryset = queryset.annotate(rank=SearchRank("search_vector", search_query))
+        queryset = queryset.order_by("-rank")
+
+        return queryset
 
     def update_entry(self, obj):
         """
