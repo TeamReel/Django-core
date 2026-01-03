@@ -124,7 +124,7 @@ export default function SearchPage() {
 
         {!isSearching && !error && groupedResults && !isFiltered && (
           <div style={{ display: 'grid', gap: '32px' }}>
-            {Object.entries(groupedResults).map(([category, results]) => {
+            {(Object.entries(groupedResults) as [string, SearchResult[]][]).map(([category, results]) => {
               if (!results || results.length === 0) return null;
               return (
                 <div key={category}>
