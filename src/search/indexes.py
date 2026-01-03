@@ -1,3 +1,5 @@
+from django.db.models import CharField
+from django.db.models.functions import Cast
 from search.registry import SearchIndex
 from accounts.models import User
 from organisations.models import Organisation
@@ -23,7 +25,9 @@ class UserIndex(SearchIndex):
 
     def get_visible_ids(self, user):
         if user.is_superuser:
-            return User.objects.all().values_list("id", flat=True)
+            return User.objects.annotate(id_str=Cast("id", CharField())).values_list(
+                "id_str", flat=True
+            )
         # Users can see other users in the same organisations
         return (
             User.objects.filter(
@@ -31,7 +35,8 @@ class UserIndex(SearchIndex):
                 organisation_memberships__organisation__memberships__is_active=True,
             )
             .distinct()
-            .values_list("id", flat=True)
+            .annotate(id_str=Cast("id", CharField()))
+            .values_list("id_str", flat=True)
         )
 
 
@@ -48,15 +53,18 @@ class OrganisationIndex(SearchIndex):
         return f"Organisation: {obj.name}"
 
     def get_url(self, obj):
-        return f"/organisations/{obj.pk}"
+        return f"/organisations/{obj.slug}"
 
     def get_visible_ids(self, user):
         if user.is_superuser:
-            return Organisation.objects.all().values_list("id", flat=True)
+            return Organisation.objects.annotate(id_str=Cast("id", CharField())).values_list(
+                "id_str", flat=True
+            )
         return (
             Organisation.objects.filter(memberships__user=user, memberships__is_active=True)
             .distinct()
-            .values_list("id", flat=True)
+            .annotate(id_str=Cast("id", CharField()))
+            .values_list("id_str", flat=True)
         )
 
 
@@ -78,16 +86,19 @@ class ProjectIndex(SearchIndex):
         return obj.description or ""
 
     def get_url(self, obj):
-        return f"/projects/{obj.pk}"
+        return f"/organisations/{obj.organisation.slug}/projects/{obj.slug}"
 
     def get_visible_ids(self, user):
         if user.is_superuser:
-            return Project.objects.all().values_list("id", flat=True)
+            return Project.objects.annotate(id_str=Cast("id", CharField())).values_list(
+                "id_str", flat=True
+            )
         return (
             Project.objects.filter(
                 organisation__memberships__user=user,
                 organisation__memberships__is_active=True,
             )
             .distinct()
-            .values_list("id", flat=True)
+            .annotate(id_str=Cast("id", CharField()))
+            .values_list("id_str", flat=True)
         )

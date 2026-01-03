@@ -17,7 +17,7 @@ class SearchEntry(models.Model):
 
     # Source Object Link
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.UUIDField()
+    object_id = models.CharField(max_length=255)
     content_object = GenericForeignKey("content_type", "object_id")
 
     # Search Data

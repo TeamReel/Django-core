@@ -86,7 +86,7 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
     : 0;
 
   return (
-    <div ref={searchRef} className={`search-bar ${className}`} style={{ position: 'relative', width: '100%' }}>
+    <div ref={searchRef} className={`search-bar ${className}`} style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
       <form onSubmit={handleSubmit} style={{ width: '100%' }}>
         <input
           type="text"
@@ -96,7 +96,7 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
           style={{
             width: '100%',
             padding: '8px 12px 8px 36px',
-            fontSize: '14px',
+            fontSize: '16px',
             border: '1px solid var(--color-border)',
             borderRadius: '6px',
             backgroundColor: 'var(--color-background-secondary)',
