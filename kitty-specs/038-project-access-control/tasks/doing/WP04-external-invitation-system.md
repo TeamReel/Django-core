@@ -1,11 +1,19 @@
 ---
 work_package_id: WP04
 title: External Invitation System (US2)
-lane: planned
+lane: "doing"
 subtasks: [T019, T020, T021, T022, T023, T024, T025, T026]
 priority: P1
 estimated_effort: 3-4 days
 dependencies: [WP01, WP02, WP03]
+agent: "claude"
+shell_pid: "22952"
+history:
+  - date: 2026-01-04
+    action: started
+    author: claude
+    shell_pid: "22952"
+    notes: "Starting WP04 implementation - External Invitation System"
 ---
 
 # WP04: External Invitation System (US2)
@@ -49,3 +57,7 @@ DELETE /api/v1/projects/{id}/invitations/{invite_id}
 - Email mismatch warning shown
 - Expired invites rejected
 - Pending invites visible in admin UI
+
+## Activity Log
+
+- 2026-01-04T19:10:17Z – system – shell_pid= – lane=doing – Started implementation
