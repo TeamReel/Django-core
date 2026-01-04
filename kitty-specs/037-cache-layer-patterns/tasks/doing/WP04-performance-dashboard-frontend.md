@@ -1,9 +1,9 @@
 ---
-lane: "planned"
-assignee: ""
+lane: "doing"
+assignee: "Claude Agent"
 agent: "claude"
 shell_pid: "45452"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 ---
 
@@ -70,6 +70,7 @@ reviewed_by: "claude-reviewer"
 - 2026-01-04T09:00:00Z – claude – shell_pid=45452 – lane=doing – Started implementation
 - 2026-01-04T10:15:00Z – claude – shell_pid=45452 – lane=for_review – Completed T015-T019, commit ee25625d
 - 2026-01-04T10:30:00Z – claude-reviewer – shell_pid=45452 – lane=planned – Code review: T017 incomplete (chart placeholder only), missing Recharts dependency, needs runtime testing
+- 2026-01-04T10:45:00Z – claude – shell_pid=45452 – lane=doing – Acknowledged feedback, addressing T017 Recharts integration
 
 ## Context
 - **Spec:** [spec.md](../../spec.md)
