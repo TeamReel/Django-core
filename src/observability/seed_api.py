@@ -7,10 +7,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from django.core.management import call_command
+from django.http import HttpResponse
 from io import StringIO
 
 
-@api_view(["POST"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAdminUser])
 def seed_metrics(request):
     """
@@ -18,7 +19,8 @@ def seed_metrics(request):
 
     **Security**: Only accessible by superadmin users.
 
-    **POST /api/v1/system/seed-cache-metrics/**
+    **GET /api/v1/system/seed-cache-metrics/** - Show HTML form
+    **POST /api/v1/system/seed-cache-metrics/** - Execute seeding
 
     Query Parameters:
     - days (int): Number of days to seed (default: 7)
@@ -30,6 +32,75 @@ def seed_metrics(request):
     - 403: Forbidden (not superadmin)
     - 500: Seeding failed
     """
+    # Handle GET request - show HTML form
+    if request.method == "GET":
+        html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Seed Cache Metrics</title>
+            <style>
+                body { font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+                h1 { color: #2563eb; }
+                form { background: #f9fafb; padding: 20px; border-radius: 8px; }
+                label { display: block; margin: 15px 0 5px; font-weight: 600; }
+                input { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; }
+                button { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; }
+                button:hover { background: #1d4ed8; }
+                .info { background: #dbeafe; padding: 15px; border-radius: 4px; margin: 20px 0; }
+                pre { background: #1f2937; color: #10b981; padding: 15px; border-radius: 4px; overflow-x: auto; }
+            </style>
+        </head>
+        <body>
+            <h1>🌱 Seed Cache Metrics</h1>
+            <div class="info">
+                <strong>Purpose:</strong> Generate 7 days of historical cache performance data for the demo dashboard.
+            </div>
+
+            <form method="POST" id="seedForm">
+                <label>Days of History (1-30):</label>
+                <input type="number" name="days" value="7" min="1" max="30" required>
+
+                <label>Interval (minutes, 1-60):</label>
+                <input type="number" name="interval" value="10" min="1" max="60" required>
+
+                <button type="submit">🚀 Run Seeder</button>
+            </form>
+
+            <div id="result" style="display: none;">
+                <h2>Result:</h2>
+                <pre id="output"></pre>
+            </div>
+
+            <script>
+                document.getElementById('seedForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const days = formData.get('days');
+                    const interval = formData.get('interval');
+
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('output').textContent = 'Running seeder...';
+
+                    try {
+                        const response = await fetch(`?days=${days}&interval=${interval}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include'
+                        });
+                        const data = await response.json();
+                        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+                    } catch (error) {
+                        document.getElementById('output').textContent = 'Error: ' + error.message;
+                    }
+                });
+            </script>
+        </body>
+        </html>
+        """
+        return HttpResponse(html)
+
+    # Handle POST request - execute seeding
     try:
         # Get parameters
         days = int(request.query_params.get("days", 7))
