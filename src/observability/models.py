@@ -72,6 +72,7 @@ class SystemMetric(models.Model):
         metric_type: str,
         value: float,
         metadata: dict | None = None,
+        timestamp: timezone.datetime | None = None,
     ) -> SystemMetric:
         """
         Convenience method to record a metric.
@@ -80,15 +81,20 @@ class SystemMetric(models.Model):
             metric_type: Type of metric (must be in METRIC_TYPES)
             value: Numeric value
             metadata: Optional additional context
+            timestamp: Optional timestamp (defaults to now)
 
         Returns:
             Created SystemMetric instance
         """
-        return cls.objects.create(
+        metric = cls(
             metric_type=metric_type,
             value=value,
             metadata=metadata or {},
         )
+        if timestamp:
+            metric.timestamp = timestamp
+        metric.save()
+        return metric
 
     @classmethod
     def cleanup_old_metrics(cls, days: int = 7) -> int:
