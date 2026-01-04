@@ -1,4 +1,15 @@
+---
+lane: "doing"
+assignee: "Claude Agent"
+agent: "claude"
+shell_pid: "45452"
+review_status: ""
+---
+
 # WP05: Integration & Polish
+
+## Activity Log
+- 2026-01-04T11:45:00Z – claude – shell_pid=45452 – lane=doing – Started implementation
 
 ## Context
 - **Spec:** [spec.md](../../spec.md)
