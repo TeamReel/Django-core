@@ -7,13 +7,14 @@ import { Button, Card, Badge, Input, Alert, Spinner } from '@django-core/design-
 
 export function TasksPage() {
   const [tasks, setTasks] = useState<any[]>([]);
+  const [beatSchedule, setBeatSchedule] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTasks = async (isInitialLoad = false) => {
-      try {
+      try:
         // Only show full loading spinner on initial load
         if (isInitialLoad) {
           setLoading(true);
@@ -50,6 +51,9 @@ export function TasksPage() {
 
         console.log('[TasksPage] Combined tasks:', allTasks);
         setTasks(allTasks);
+
+        // Store beat schedule separately
+        setBeatSchedule(taskData.beat_schedule || []);
       } catch (err) {
         console.error('Failed to fetch tasks:', err);
         setError('Failed to load tasks. Using demo data.');
@@ -169,6 +173,43 @@ export function TasksPage() {
                   </table>
                 </div>
               </Card>
+
+              {/* Periodic Tasks (Beat Schedule) */}
+              {beatSchedule.length > 0 && (
+                <div style={{ marginTop: '24px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>
+                    ⏰ Periodic Tasks (Celery Beat Schedule)
+                  </h2>
+                  <Card style={{ padding: 0, overflow: 'hidden' }}>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e5e5' }}>
+                            <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Task Name</th>
+                            <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Schedule</th>
+                            <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {beatSchedule.map((task, index) => (
+                            <tr key={index} style={{ borderBottom: '1px solid #e5e5e5' }}>
+                              <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: '14px' }}>
+                                {task.name}
+                              </td>
+                              <td style={{ padding: '12px', fontSize: '14px', color: '#6b7280' }}>
+                                {task.schedule || 'N/A'}
+                              </td>
+                              <td style={{ padding: '12px' }}>
+                                <Badge variant="success">Enabled</Badge>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </Card>
+                </div>
+              )}
             </>
           )}
         </div>
