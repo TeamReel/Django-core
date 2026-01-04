@@ -1,11 +1,12 @@
 ---
 work_package_id: WP07
 title: Member Removal & Audit (US6)
-lane: planned
+lane: "doing"
 subtasks: [T038, T039, T040, T041, T042]
 priority: P2
 estimated_effort: 1-2 days
 dependencies: [WP03]
+agent: "GitHub Copilot"
 ---
 
 # WP07: Member Removal & Audit (US6)
@@ -59,3 +60,7 @@ python manage.py cleanup_deleted_memberships --days=90
 - Soft delete preserves audit history
 - Activity log visible in UI
 - Cleanup command works correctly
+
+## Activity Log
+
+- 2026-01-04T20:39:00Z – GitHub Copilot – shell_pid= – lane=doing – Started implementation
