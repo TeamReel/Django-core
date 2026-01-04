@@ -48,7 +48,8 @@ const navGroups: NavGroup[] = [
       { path: '/security', label: 'Security', icon: '🔒' },
       { path: '/observability', label: 'Observability', icon: '📊' },
       { path: '/api-docs', label: 'API Docs', icon: '🔌' },
-      { path: '/demo/websockets', label: 'WebSocket Test', icon: '⚡' },
+      { path: '/demo/performance', label: 'Cache Performance', icon: '⚡' },
+      { path: '/demo/websockets', label: 'WebSocket Test', icon: '🔥' },
     ],
   },
   {
@@ -95,7 +96,7 @@ export default function Sidebar() {
   const filteredNavGroups = navGroups.map(group => {
     const items = group.items.filter(item => {
       // Admin-only pages
-      if (['/integration-status', '/health', '/constitution', '/observability', '/api-docs', '/demo/websockets'].includes(item.path)) {
+      if (['/integration-status', '/health', '/constitution', '/observability', '/api-docs', '/demo/performance', '/demo/websockets'].includes(item.path)) {
         return isSystemAdmin;
       }
 
