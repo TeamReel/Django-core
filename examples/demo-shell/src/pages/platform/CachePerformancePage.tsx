@@ -78,9 +78,12 @@ export const CachePerformancePage: React.FC = () => {
       }
 
       const responseData = await response.json();
+      console.log('[CachePerformancePage] Full response:', responseData);
 
       // Unwrap the standard API response wrapper
       const data = responseData.data || responseData;
+      console.log('[CachePerformancePage] Unwrapped data:', data);
+      console.log('[CachePerformancePage] data.realtime:', data.realtime);
 
       // Validate response structure
       if (!data.realtime) {
