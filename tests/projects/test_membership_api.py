@@ -18,9 +18,6 @@ class TestProjectMembershipAPI:
 
     def test_list_members(self, authenticated_client, project, project_membership):
         """Test listing members of a project."""
-        # project_membership fixture ensures the authenticated user is a member (owner/admin usually)
-        # We need to make sure we are querying the right project
-
         url = reverse(
             "api_v1:project-members-list",
             kwargs={"project_pk": project.id},
@@ -30,21 +27,19 @@ class TestProjectMembershipAPI:
         assert response.status_code == status.HTTP_200_OK
 
         # Handle pagination or list
-        if isinstance(response.data, dict) and "results" in response.data:
-            results = response.data["results"]
-        else:
-            results = response.data
+        results = response.data
+        if isinstance(response.data, dict):
+            if "results" in response.data:
+                results = response.data["results"]
+            elif "data" in response.data:
+                results = response.data["data"]
 
         assert len(results) >= 1
 
         # Check if the user is in the list
-        # User is nested, so we check m["user"]["id"]
-        user_ids = []
-        for m in results:
-            if isinstance(m.get("user"), dict):
-                user_ids.append(str(m["user"]["id"]))
-            else:
-                print(f"Unexpected user format: {m.get('user')}")
+        user_ids = [
+            str(m["user"]["id"]) if isinstance(m["user"], dict) else str(m["user"]) for m in results
+        ]
 
         assert str(project_membership.user.id) in user_ids
 
