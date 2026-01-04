@@ -1,12 +1,13 @@
 ---
 work_package_id: WP07
 title: Member Removal & Audit (US6)
-lane: "doing"
+lane: "for_review"
 subtasks: [T038, T039, T040, T041, T042]
 priority: P2
 estimated_effort: 1-2 days
 dependencies: [WP03]
 agent: "GitHub Copilot"
+shell_pid: "22952"
 ---
 
 # WP07: Member Removal & Audit (US6)
@@ -65,3 +66,4 @@ python manage.py cleanup_deleted_memberships --days=90
 
 - 2026-01-04T20:39:00Z – GitHub Copilot – shell_pid= – lane=doing – Started implementation
 - 2026-01-04T21:55:00Z – GitHub Copilot – shell_pid=22952 – lane=doing – Completed implementation
+- 2026-01-04T21:11:16Z – GitHub Copilot – shell_pid=22952 – lane=for_review – Ready for review
