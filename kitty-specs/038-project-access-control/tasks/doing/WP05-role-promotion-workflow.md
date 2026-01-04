@@ -1,11 +1,13 @@
 ---
 work_package_id: WP05
 title: Role Promotion Workflow (US4)
-lane: planned
+lane: "doing"
 subtasks: [T027, T028, T029, T030, T031, T032]
 priority: P2
 estimated_effort: 2-3 days
 dependencies: [WP03, WP04]
+agent: "GitHub Copilot"
+shell_pid: "22952"
 ---
 
 # WP05: Role Promotion Workflow (US4)
@@ -47,3 +49,7 @@ else:
 - Suspicious promotions flagged and alerted
 - Decline flow works with optional reason
 - Feature flag disables approval when needed
+
+## Activity Log
+
+- 2026-01-04T19:54:43Z – GitHub Copilot – shell_pid=22952 – lane=doing – Started implementation
