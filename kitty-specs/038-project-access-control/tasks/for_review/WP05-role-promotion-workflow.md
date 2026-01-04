@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: Role Promotion Workflow (US4)
-lane: "doing"
+lane: "for_review"
 subtasks: [T027, T028, T029, T030, T031, T032]
 priority: P2
 estimated_effort: 2-3 days
@@ -54,3 +54,4 @@ else:
 
 - 2026-01-04T19:54:43Z – GitHub Copilot – shell_pid=22952 – lane=doing – Started implementation
 - 2026-01-04T20:30:00Z – GitHub Copilot – shell_pid=22952 – lane=doing – Completed implementation
+- 2026-01-04T20:09:10Z – GitHub Copilot – shell_pid=22952 – lane=for_review – Ready for review

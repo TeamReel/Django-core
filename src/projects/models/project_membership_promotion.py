@@ -99,6 +99,10 @@ class ProjectMembershipPromotion(models.Model):
             self.expires_at = timezone.now() + timezone.timedelta(days=3)
         super().save(*args, **kwargs)
 
+    def is_expired(self) -> bool:
+        """Check if the promotion request has expired."""
+        return timezone.now() > self.expires_at
+
     def check_suspicious(self) -> bool:
         """
         Check if promotion is suspicious (e.g. <24h after joining).

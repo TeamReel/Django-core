@@ -61,3 +61,29 @@ class ProjectsConfig(AppConfig):
             "Project invitation resent",
             required_metadata_keys=["invitation_id", "email", "new_expires_at"],
         )
+
+        # Register audit events for promotions
+        register_event_type(
+            "project.promotion.requested",
+            "project",
+            "Project promotion requested",
+            required_metadata_keys=["promotion_id", "target_user_id", "from_role", "to_role"],
+        )
+        register_event_type(
+            "project.promotion.accepted",
+            "project",
+            "Project promotion accepted",
+            required_metadata_keys=["promotion_id", "from_role", "to_role"],
+        )
+        register_event_type(
+            "project.promotion.declined",
+            "project",
+            "Project promotion declined",
+            required_metadata_keys=["promotion_id"],
+        )
+        register_event_type(
+            "project.promotion.cancelled",
+            "project",
+            "Project promotion cancelled",
+            required_metadata_keys=["promotion_id"],
+        )

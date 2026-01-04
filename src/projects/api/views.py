@@ -7,10 +7,12 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from django.db.models import Q
 
-from projects.models import Project, ProjectMembership, ProjectInvite
+from projects.models import Project, ProjectMembership, ProjectInvite, ProjectMembershipPromotion
 from projects.services.membership_service import MembershipService
 from projects.services.invitation_service import InvitationService
+from projects.services.promotion_service import PromotionService
 
 from .permissions import IsOrganisationMemberOrAdmin
 from .serializers import (
@@ -20,6 +22,7 @@ from .serializers import (
     ProjectUpdateSerializer,
     ProjectInviteSerializer,
     AcceptInvitationSerializer,
+    ProjectMembershipPromotionSerializer,
 )
 
 
@@ -437,24 +440,63 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         except ValueError as e:
             raise ValidationError({"detail": str(e)})
 
-    def perform_update(self, serializer):
-        """Use service to update role."""
-        membership = self.get_object()
+    def update(self, request, *args, **kwargs):
+        """Update membership role with promotion logic."""
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
 
         # Check permission: only project admins can update roles
-        self.check_project_admin_permission(membership.project)
+        self.check_project_admin_permission(instance.project)
 
         new_role = serializer.validated_data.get("role")
 
-        if new_role:
-            service = MembershipService()
-            updated_membership = service.update_role(
-                membership=membership,
-                new_role=new_role,
-                actor=self.request.user,
-            )
-            # Ensure serializer knows about the update (though instance is shared)
-            serializer.instance = updated_membership
+        if new_role and new_role != instance.role:
+            role_hierarchy = {
+                ProjectMembership.Role.VIEWER: 10,
+                ProjectMembership.Role.EDITOR: 20,
+                ProjectMembership.Role.ADMIN: 30,
+            }
+
+            current_level = role_hierarchy.get(instance.role, 0)
+            new_level = role_hierarchy.get(new_role, 0)
+
+            if new_level > current_level:
+                # Promotion - use PromotionService
+                service = PromotionService()
+                promotion = service.request_promotion(
+                    membership=instance,
+                    to_role=new_role,
+                    requested_by=request.user,
+                )
+
+                if promotion:
+                    # Pending approval
+                    return Response(
+                        {
+                            "detail": "Promotion requested. Waiting for user acceptance.",
+                            "promotion_id": str(promotion.id),
+                        },
+                        status=status.HTTP_202_ACCEPTED,
+                    )
+                else:
+                    # Immediate promotion applied
+                    instance.refresh_from_db()
+            else:
+                # Demotion or same role - use MembershipService
+                service = MembershipService()
+                service.update_role(
+                    membership=instance,
+                    new_role=new_role,
+                    actor=request.user,
+                )
+                instance.refresh_from_db()
+
+        if getattr(instance, "_prefetched_objects_cache", None):
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
 
     def perform_destroy(self, instance):
         """Use service to remove member."""
@@ -699,3 +741,112 @@ class ProjectInviteViewSet(viewsets.ModelViewSet):
         # Return membership details
         membership_serializer = ProjectMembershipSerializer(membership)
         return Response(membership_serializer.data, status=status.HTTP_200_OK)
+
+
+class ProjectMembershipPromotionViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for managing project membership promotions.
+
+    Provides list and retrieve for promotions.
+    Actions for accept, decline, cancel.
+    """
+
+    serializer_class = ProjectMembershipPromotionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Return promotions based on user context.
+        - Project Admins: See all promotions for the project.
+        - Users: See promotions where they are the target.
+        """
+        user = self.request.user
+        project_pk = self.kwargs.get("project_pk")
+
+        if project_pk:
+            # Nested under project
+            queryset = ProjectMembershipPromotion.objects.filter(project_id=project_pk)
+
+            # Check if user is project admin
+            # We can check membership role
+            is_admin = ProjectMembership.objects.filter(
+                project_id=project_pk,
+                user=user,
+                role=ProjectMembership.Role.ADMIN,
+                deleted_at__isnull=True,
+            ).exists()
+
+            if is_admin:
+                return queryset
+            else:
+                # Only show promotions for this user (target or requester)
+                return queryset.filter(Q(target_user=user) | Q(requested_by=user))
+        else:
+            # Not nested (e.g. /promotions/)
+            # Show promotions where user is target or requester
+            return ProjectMembershipPromotion.objects.filter(
+                Q(target_user=user) | Q(requested_by=user)
+            )
+
+    @action(detail=True, methods=["post"])
+    def accept(self, request, pk=None, project_pk=None):
+        """Accept a promotion."""
+        promotion = self.get_object()
+
+        if promotion.target_user != request.user:
+            return Response(
+                {"detail": "You can only accept your own promotions."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        service = PromotionService()
+        try:
+            service.accept_promotion(promotion, request.user)
+            return Response({"detail": "Promotion accepted."}, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=["post"])
+    def decline(self, request, pk=None, project_pk=None):
+        """Decline a promotion."""
+        promotion = self.get_object()
+
+        if promotion.target_user != request.user:
+            return Response(
+                {"detail": "You can only decline your own promotions."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        service = PromotionService()
+        try:
+            service.decline_promotion(promotion, request.user)
+            return Response({"detail": "Promotion declined."}, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=["delete"])
+    def cancel(self, request, pk=None, project_pk=None):
+        """Cancel a promotion (requester or admin)."""
+        promotion = self.get_object()
+
+        # Check permission: requester or project admin
+        is_requester = promotion.requested_by == request.user
+        is_admin = ProjectMembership.objects.filter(
+            project=promotion.project,
+            user=request.user,
+            role=ProjectMembership.Role.ADMIN,
+            deleted_at__isnull=True,
+        ).exists()
+
+        if not (is_requester or is_admin):
+            return Response(
+                {"detail": "You do not have permission to cancel this promotion."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        service = PromotionService()
+        try:
+            service.cancel_promotion(promotion, request.user)
+            return Response({"detail": "Promotion cancelled."}, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

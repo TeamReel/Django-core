@@ -3,7 +3,12 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from .views import ProjectMembershipViewSet, ProjectViewSet, ProjectInviteViewSet
+from .views import (
+    ProjectMembershipViewSet,
+    ProjectViewSet,
+    ProjectInviteViewSet,
+    ProjectMembershipPromotionViewSet,
+)
 
 # Top-level router for /api/projects/ routes
 router = DefaultRouter()
@@ -14,6 +19,11 @@ router.register(
     r"(?P<project_pk>[^/.]+)/invitations",
     ProjectInviteViewSet,
     basename="project-invitations",
+)
+router.register(
+    r"(?P<project_pk>[^/.]+)/promotions",
+    ProjectMembershipPromotionViewSet,
+    basename="project-promotions",
 )
 router.register(r"", ProjectViewSet, basename="project")
 
@@ -31,6 +41,30 @@ invitation_urls = [
     ),
 ]
 
+# Promotion action routes (top-level)
+promotion_urls = [
+    path(
+        "promotions/<uuid:pk>/",
+        ProjectMembershipPromotionViewSet.as_view({"get": "retrieve"}),
+        name="promotion-detail",
+    ),
+    path(
+        "promotions/<uuid:pk>/accept/",
+        ProjectMembershipPromotionViewSet.as_view({"post": "accept"}),
+        name="promotion-accept",
+    ),
+    path(
+        "promotions/<uuid:pk>/decline/",
+        ProjectMembershipPromotionViewSet.as_view({"post": "decline"}),
+        name="promotion-decline",
+    ),
+    path(
+        "promotions/<uuid:pk>/cancel/",
+        ProjectMembershipPromotionViewSet.as_view({"delete": "cancel"}),
+        name="promotion-cancel",
+    ),
+]
+
 # For nested routes under organisations, we define explicit patterns
 # These will be included in organisations app's URL configuration
-urlpatterns = router.urls + invitation_urls
+urlpatterns = router.urls + invitation_urls + promotion_urls

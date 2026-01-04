@@ -3,7 +3,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from projects.models import Project, ProjectMembership, ProjectInvite
+from projects.models import Project, ProjectMembership, ProjectInvite, ProjectMembershipPromotion
 
 User = get_user_model()
 
@@ -284,4 +284,49 @@ class AcceptInvitationSerializer(serializers.Serializer):
         """Validate token exists."""
         if not ProjectInvite.objects.filter(token=value).exists():
             raise serializers.ValidationError("Invalid invitation token.")
+        return value
+
+
+class ProjectMembershipPromotionSerializer(serializers.ModelSerializer):
+    """Serializer for project membership promotions."""
+
+    target_user = UserNestedSerializer(read_only=True)
+    requested_by = UserNestedSerializer(read_only=True)
+    project_name = serializers.CharField(source="project.name", read_only=True)
+
+    class Meta:
+        model = ProjectMembershipPromotion
+        fields = [
+            "id",
+            "project",
+            "project_name",
+            "target_user",
+            "requested_by",
+            "from_role",
+            "to_role",
+            "status",
+            "is_suspicious",
+            "suspicious_reason",
+            "created_at",
+            "expires_at",
+            "resolved_at",
+        ]
+        read_only_fields = [
+            "id",
+            "project",
+            "target_user",
+            "requested_by",
+            "from_role",
+            "status",
+            "is_suspicious",
+            "suspicious_reason",
+            "created_at",
+            "expires_at",
+            "resolved_at",
+        ]
+
+    def validate_to_role(self, value):
+        """Validate target role."""
+        if value not in dict(ProjectMembership.Role.choices):
+            raise serializers.ValidationError(f"Invalid role: {value}")
         return value
