@@ -83,6 +83,7 @@ const navGroups: NavGroup[] = [
       { path: '/security', label: 'Security', description: 'Baseline checks and recent events', icon: '🔒' },
       { path: '/observability', label: 'Observability', description: 'Metrics and monitoring', icon: '📊' },
       { path: '/api-docs', label: 'API Docs', description: 'OpenAPI documentation', icon: '🔌' },
+      { path: '/demo/performance', label: 'Cache Performance', description: 'Redis cache metrics and controls', icon: '⚡' },
     ],
   },
   {
@@ -352,7 +353,7 @@ export default function TopNavbar() {
   const filteredNavGroups = navGroups.map(group => {
     const items = group.items.filter(item => {
       // Admin-only pages
-      if (['/integration-status', '/health', '/constitution', '/observability', '/api-docs', '/routing-logs'].includes(item.path)) {
+      if (['/integration-status', '/health', '/constitution', '/observability', '/api-docs', '/routing-logs', '/demo/performance'].includes(item.path)) {
         return isSystemAdmin;
       }
 

@@ -338,7 +338,7 @@ export const CachePerformancePage: React.FC = () => {
                       Remove all cached keys from Redis. Use with caution in production.
                     </p>
                     <Button
-                      variant="danger"
+                      variant="destructive"
                       onClick={handleClearCache}
                       disabled={actionLoading === 'clear'}
                     >
