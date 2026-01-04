@@ -1,11 +1,13 @@
 ---
 work_package_id: WP02
 title: Permission Resolution Service
-lane: planned
+lane: "doing"
 subtasks: [T007, T008, T009, T010, T011]
 priority: P1
 estimated_effort: 2 days
 dependencies: [WP01]
+agent: "copilot"
+shell_pid: "12345"
 history:
   - date: 2026-01-04
     action: created
@@ -274,3 +276,7 @@ Expected results:
 - First call (cold): <50ms
 - Cached call (warm): <5ms
 - Cache hit rate: >80% after 100 checks
+
+## Activity Log
+
+- 2026-01-04T16:30:43Z – copilot – shell_pid=12345 – lane=doing – Started implementation
