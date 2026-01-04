@@ -71,13 +71,15 @@ urlpatterns = [
     path("api/v1/contextual-notifications/", include("contextual_notifications.urls")),
     # B22: File & Media Management
     path("api/v1/", include("files.urls")),
+    # B25: Cache Performance Dashboard
+    path("api/v1/", include("observability.urls")),
     # Security Baseline API
     path("api/security/", include("security_baseline.urls")),
     # Constitution API (B18)
     path("api/constitution/rules/", ConstitutionRulesView.as_view(), name="constitution-rules"),
     # Audit Log API
     path("api/audit/", include("audit.urls")),
-    # B18: Observability API
+    # B18: Observability API (legacy, deprecated)
     path("api/observability/", include("observability.urls")),
     path("", include("django_prometheus.urls")),  # Exposes /metrics endpoint
     # B14: Web UI Baseline - User-facing HTML pages

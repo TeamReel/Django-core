@@ -3,7 +3,7 @@
 import logging
 import time
 
-from celery import Task
+from celery import Task, shared_task
 
 from .logging import set_correlation_id
 from .metrics import emit_metric
@@ -89,3 +89,103 @@ class ObservableTask(Task):
             except Exception as e:
                 # FR-011a: Never propagate exceptions from observability hooks
                 logger.error(f"Task metrics emission failed: {e}")
+
+
+# T011: Collect system cache metrics periodically
+@shared_task(base=ObservableTask, bind=True)
+def collect_system_metrics(self) -> dict[str, int]:
+    """
+    Collect current cache performance metrics and store them in the database.
+
+    This task is designed to run periodically via Celery Beat (every 10 minutes)
+    to build historical data for the performance dashboard.
+
+    Returns:
+        Dictionary with counts of metrics recorded
+
+    Raises:
+        Exception: If critical errors occur (logged but not suppressed)
+    """
+    from django.core.cache import caches
+    from django.core.cache.backends.redis import RedisCache
+
+    from .models import SystemMetric
+
+    metrics_recorded = {
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "memory_used": 0,
+        "total_keys": 0,
+    }
+
+    try:
+        # Get the default cache
+        cache = caches["default"]
+
+        if isinstance(cache, RedisCache):
+            # Get raw Redis client
+            redis_client = cache.client.get_client()
+
+            # Get Redis INFO stats
+            info = redis_client.info("stats")
+            hits = info.get("keyspace_hits", 0)
+            misses = info.get("keyspace_misses", 0)
+
+            # Get memory usage
+            memory_info = redis_client.info("memory")
+            memory_used = memory_info.get("used_memory", 0)
+
+            # Get total keys across all databases
+            total_keys = 0
+            keyspace_info = redis_client.info("keyspace")
+            for db_key, db_stats in keyspace_info.items():
+                if db_key.startswith("db"):
+                    # Parse "keys=123,expires=45,avg_ttl=..." format
+                    keys_count = int(db_stats.split(",")[0].split("=")[1])
+                    total_keys += keys_count
+
+            # Record metrics
+            SystemMetric.record_metric("cache_hits", float(hits))
+            metrics_recorded["cache_hits"] = 1
+
+            SystemMetric.record_metric("cache_misses", float(misses))
+            metrics_recorded["cache_misses"] = 1
+
+            SystemMetric.record_metric("memory_used", float(memory_used))
+            metrics_recorded["memory_used"] = 1
+
+            SystemMetric.record_metric("total_keys", float(total_keys))
+            metrics_recorded["total_keys"] = 1
+
+            logger.info(
+                "Collected cache metrics",
+                extra={
+                    "hits": hits,
+                    "misses": misses,
+                    "memory_bytes": memory_used,
+                    "total_keys": total_keys,
+                },
+            )
+
+            # Cleanup old metrics (7-day retention)
+            deleted_count = SystemMetric.cleanup_old_metrics(days=7)
+            if deleted_count > 0:
+                logger.info(
+                    "Cleaned up old metrics",
+                    extra={"deleted_count": deleted_count},
+                )
+
+        else:
+            logger.warning(
+                "Cache backend is not Redis, skipping metrics collection",
+                extra={"cache_backend": type(cache).__name__},
+            )
+
+    except Exception as e:
+        logger.exception(
+            "Failed to collect cache metrics",
+            extra={"error": str(e)},
+        )
+        raise
+
+    return metrics_recorded

@@ -1,10 +1,25 @@
 """Observability API views for UI consumption."""
 
 import logging
+from datetime import timedelta
 
+from django.core.cache import caches
+from django.core.cache.backends.redis import RedisCache
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from prometheus_client import REGISTRY
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
+
+from .models import SystemMetric
+from .serializers import (
+    CacheBenchmarkResponseSerializer,
+    CacheClearResponseSerializer,
+    CacheMetricsResponseSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -256,3 +271,221 @@ def demo_health_check(request):
     }
 
     return JsonResponse(response_data)
+
+
+# B25: Cache Performance Dashboard Views
+# ========================================
+
+
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def cache_metrics(request):
+    """
+    GET /api/v1/system/cache/metrics
+
+    Returns real-time cache statistics and historical data.
+
+    Security: Admin only (IsAdminUser)
+    Contract: kitty-specs/037-cache-layer-patterns/contracts/api.yaml
+    """
+    try:
+        # 1. Collect real-time metrics from Redis
+        cache = caches["default"]
+        realtime_data = {
+            "hits": 0,
+            "misses": 0,
+            "hit_ratio": 0.0,
+            "memory_used_bytes": 0,
+            "total_keys": 0,
+        }
+
+        if isinstance(cache, RedisCache):
+            redis_client = cache._cache.get_client()
+
+            # Get stats (keyspace_hits, keyspace_misses)
+            stats = redis_client.info("stats")
+            hits = stats.get("keyspace_hits", 0)
+            misses = stats.get("keyspace_misses", 0)
+
+            # Calculate hit ratio
+            total_requests = hits + misses
+            hit_ratio = hits / total_requests if total_requests > 0 else 0.0
+
+            # Get memory usage
+            memory_info = redis_client.info("memory")
+            memory_used = memory_info.get("used_memory", 0)
+
+            # Count total keys across all databases
+            keyspace_info = redis_client.info("keyspace")
+            total_keys = 0
+            for db_name, db_info in keyspace_info.items():
+                if db_name.startswith("db"):
+                    # Parse "keys=123,expires=45,..."
+                    for part in db_info.split(","):
+                        if part.startswith("keys="):
+                            total_keys += int(part.split("=")[1])
+                            break
+
+            realtime_data = {
+                "hits": hits,
+                "misses": misses,
+                "hit_ratio": round(hit_ratio, 3),
+                "memory_used_bytes": memory_used,
+                "total_keys": total_keys,
+            }
+        else:
+            logger.warning("Cache backend is not Redis, returning empty metrics")
+
+        # 2. Query historical metrics (last 7 days)
+        seven_days_ago = timezone.now() - timedelta(days=7)
+        historical_metrics = SystemMetric.objects.filter(timestamp__gte=seven_days_ago).order_by(
+            "timestamp"
+        )
+
+        # Group metrics by timestamp to calculate hit_ratio
+        history_data = []
+        timestamps = (
+            historical_metrics.values_list("timestamp", flat=True).distinct().order_by("timestamp")
+        )
+
+        for ts in timestamps:
+            metrics_at_ts = historical_metrics.filter(timestamp=ts)
+
+            # Get hits and misses
+            hits_metric = metrics_at_ts.filter(metric_type="cache_hits").first()
+            misses_metric = metrics_at_ts.filter(metric_type="cache_misses").first()
+            memory_metric = metrics_at_ts.filter(metric_type="memory_used").first()
+
+            if hits_metric and misses_metric:
+                total = hits_metric.value + misses_metric.value
+                hit_ratio = hits_metric.value / total if total > 0 else 0.0
+
+                history_data.append(
+                    {
+                        "timestamp": ts,
+                        "hit_ratio": round(hit_ratio, 3),
+                        "memory_used_bytes": int(memory_metric.value) if memory_metric else 0,
+                    }
+                )
+
+        # 3. Build response
+        response_data = {"realtime": realtime_data, "history": history_data}
+
+        serializer = CacheMetricsResponseSerializer(data=response_data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.validated_data)
+
+    except Exception as e:
+        logger.error(f"Failed to collect cache metrics: {e}", exc_info=True)
+        return Response(
+            {"error": "Failed to collect cache metrics"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([IsAdminUser])
+def cache_clear(request):
+    """
+    POST /api/v1/system/cache/clear
+
+    Clears the entire cache (flush all keys).
+
+    Security: Admin only (IsAdminUser)
+    Contract: kitty-specs/037-cache-layer-patterns/contracts/api.yaml
+    """
+    try:
+        cache = caches["default"]
+        cleared_keys = 0
+
+        if isinstance(cache, RedisCache):
+            redis_client = cache._cache.get_client()
+
+            # Count keys before clearing
+            keyspace_info = redis_client.info("keyspace")
+            for db_name, db_info in keyspace_info.items():
+                if db_name.startswith("db"):
+                    for part in db_info.split(","):
+                        if part.startswith("keys="):
+                            cleared_keys += int(part.split("=")[1])
+                            break
+
+            # Flush all keys
+            redis_client.flushall()
+            logger.info(f"Cache cleared: {cleared_keys} keys flushed")
+        else:
+            cache.clear()
+            logger.info("Cache cleared (non-Redis backend)")
+
+        response_data = {"status": "success", "cleared_keys": cleared_keys}
+        serializer = CacheClearResponseSerializer(data=response_data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.validated_data)
+
+    except Exception as e:
+        logger.error(f"Failed to clear cache: {e}", exc_info=True)
+        return Response(
+            {"error": "Failed to clear cache"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([IsAdminUser])
+def cache_benchmark(request):
+    """
+    POST /api/v1/system/cache/benchmark
+
+    Runs a benchmark query with and without cache to measure speedup.
+
+    Security: Admin only (IsAdminUser)
+    Contract: kitty-specs/037-cache-layer-patterns/contracts/api.yaml
+    """
+    import time
+
+    from organisations.models import Organisation
+
+    try:
+        # 1. Run query without cache (cold)
+        benchmark_key = "benchmark_org_count"
+        cache = caches["default"]
+        cache.delete(benchmark_key)  # Ensure cold cache
+
+        start = time.perf_counter()
+        cold_result = Organisation.objects.count()
+        cold_duration = (time.perf_counter() - start) * 1000  # ms
+
+        # 2. Run query with cache (warm)
+        cache.set(benchmark_key, cold_result, timeout=60)
+
+        start = time.perf_counter()
+        _ = cache.get(benchmark_key)  # Warm cache read
+        warm_duration = (time.perf_counter() - start) * 1000  # ms
+
+        # 3. Calculate speedup
+        speedup_factor = cold_duration / warm_duration if warm_duration > 0 else 0.0
+
+        logger.info(
+            f"Cache benchmark: cold={cold_duration:.2f}ms, warm={warm_duration:.2f}ms, "
+            f"speedup={speedup_factor:.1f}x"
+        )
+
+        response_data = {
+            "uncached_duration_ms": round(cold_duration, 2),
+            "cached_duration_ms": round(warm_duration, 2),
+            "speedup_factor": round(speedup_factor, 1),
+        }
+
+        serializer = CacheBenchmarkResponseSerializer(data=response_data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.validated_data)
+
+    except Exception as e:
+        logger.error(f"Failed to run cache benchmark: {e}", exc_info=True)
+        return Response(
+            {"error": "Failed to run cache benchmark"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
