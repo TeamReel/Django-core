@@ -107,7 +107,6 @@ def collect_system_metrics(self) -> dict[str, int]:
         Exception: If critical errors occur (logged but not suppressed)
     """
     from django.core.cache import caches
-    from django.core.cache.backends.redis import RedisCache
 
     from .models import SystemMetric
 
@@ -122,7 +121,8 @@ def collect_system_metrics(self) -> dict[str, int]:
         # Get the default cache
         cache = caches["default"]
 
-        if isinstance(cache, RedisCache):
+        # Check if cache has a Redis client (works with both django_redis and django.core.cache.backends.redis)
+        if hasattr(cache, "client") and hasattr(cache.client, "get_client"):
             # Get raw Redis client
             redis_client = cache.client.get_client()
 
