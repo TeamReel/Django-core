@@ -98,6 +98,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "slug",
             "description",
             "is_active",
+            "is_private",
             "created_at",
             "updated_at",
             "archived_at",
@@ -114,6 +115,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
     organisation = OrganisationNestedSerializer(read_only=True)
     creator = UserNestedSerializer(read_only=True)
+    current_user_access = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -125,11 +127,31 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "slug",
             "description",
             "is_active",
+            "is_private",
             "created_at",
             "updated_at",
             "archived_at",
+            "current_user_access",
         ]
-        read_only_fields = ["id", "slug", "created_at", "updated_at", "archived_at"]
+        read_only_fields = [
+            "id",
+            "slug",
+            "created_at",
+            "updated_at",
+            "archived_at",
+            "current_user_access",
+        ]
+
+    def get_current_user_access(self, obj):
+        """Return current user's access level and source."""
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return None
+
+        from projects.services.permission_resolution import PermissionResolutionService
+
+        service = PermissionResolutionService()
+        return service.get_project_role(str(request.user.id), str(obj.id))
 
     def validate_name(self, value):
         """Validate name length and format."""
@@ -187,7 +209,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "description"]
+        fields = ["name", "description", "is_private"]
 
     def validate_name(self, value):
         """Validate name length and format."""

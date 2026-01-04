@@ -1,6 +1,8 @@
 from typing import TypedDict, Literal, List
 import time
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
+from django.utils import timezone
 from projects.models import ProjectMembership, Project
 from organisations.models import Membership as OrganisationMembership
 from settings.models import FeatureFlag
@@ -144,7 +146,17 @@ class PermissionResolutionService:
 
             return result
 
-        if project.is_private:
+        # Check if private projects feature is enabled
+        private_projects_enabled = FeatureFlag.objects.filter(
+            key="project_access_control.private_projects",
+            enabled=True,
+            scope_type="GLOBAL",
+        ).exists()
+
+        # If feature is disabled, ignore is_private (treat as public)
+        is_private_enforced = project.is_private and private_projects_enabled
+
+        if is_private_enforced:
             # Step 4: Emergency override for org admins
             if self._is_org_admin(user_id, str(project.organisation_id)):
                 # Check feature flag
@@ -154,7 +166,7 @@ class PermissionResolutionService:
                     scope_type="GLOBAL",
                 ).exists()
 
-                if override_enabled:
+                if override_enabled and self._check_override_rate_limit(user_id):
                     self._log_emergency_override(user_id, project_id)
 
                     # Record emergency override metric
@@ -245,26 +257,27 @@ class PermissionResolutionService:
     def _log_emergency_override(self, user_id: str, project_id: str) -> None:
         """Log emergency override access via B08 audit."""
         try:
-            from permissions.audit import evaluate_permission
+            from audit.api import audit_log
 
             user = User.objects.get(id=user_id)
             project = Project.objects.get(id=project_id)
 
             # Emit special audit event for emergency override
-            evaluate_permission(
+            audit_log.record(
+                "project.access.emergency_override",
                 user=user,
-                permission="projects.emergency_override",
-                resource=project,
-                context={
-                    "scope": "PROJECT",
+                project=project,
+                organization=project.organisation,
+                metadata={
                     "project_id": project_id,
                     "organization_id": str(project.organisation_id),
+                    "user_id": user_id,
                     "override_type": "org_admin_private_project_access",
                     "feature_flag": "project_access_control.org_admin_override",
                 },
             )
         except Exception as e:
-            # Fallback to standard logging if B08 integration fails
+            # Fallback to standard logging if audit fails
             import logging
 
             logger = logging.getLogger(__name__)
@@ -272,3 +285,29 @@ class PermissionResolutionService:
                 f"Emergency override used by user {user_id} for project {project_id}",
                 extra={"exception": str(e)},
             )
+
+    def _check_override_rate_limit(self, user_id: str) -> bool:
+        """
+        Check if user has exceeded daily override limit.
+
+        Limit: 5 overrides per day.
+        Key: rate_limit:override:{user_id}:{date}
+        """
+        today = timezone.now().date().isoformat()
+        key = f"rate_limit:override:{user_id}:{today}"
+        limit = 5
+
+        # Use add() to set initial value if key doesn't exist (atomic)
+        # Returns True if key was set, False if it already existed
+        if cache.add(key, 1, timeout=86400):
+            return True
+
+        # Key exists, increment and check
+        try:
+            count = cache.incr(key)
+            return count <= limit
+        except ValueError:
+            # Should not happen if add returned False, but handle race condition
+            # If key expired/deleted between add and incr
+            cache.set(key, 1, timeout=86400)
+            return True

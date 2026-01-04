@@ -49,6 +49,14 @@ class ProjectsConfig(AppConfig):
             "Project invitation accepted",
             required_metadata_keys=["invitation_id", "role"],
         )
+
+        # Register audit events for security
+        register_event_type(
+            "project.access.emergency_override",
+            "security",
+            "Org Admin used emergency override to access private project",
+            required_metadata_keys=["project_id", "organization_id", "user_id"],
+        )
         register_event_type(
             "project.invitation.cancelled",
             "project",
