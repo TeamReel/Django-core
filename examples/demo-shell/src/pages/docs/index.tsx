@@ -8,12 +8,18 @@ import { Button, Card, Badge, Input, Alert, Spinner } from '@django-core/design-
 export function TasksPage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchTasks = async (isInitialLoad = false) => {
       try {
-        setLoading(true);
+        // Only show full loading spinner on initial load
+        if (isInitialLoad) {
+          setLoading(true);
+        } else {
+          setIsRefreshing(true);
+        }
         setError(null);
 
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -56,13 +62,15 @@ export function TasksPage() {
         ]);
       } finally {
         setLoading(false);
+        setIsRefreshing(false);
       }
     };
 
-    fetchTasks();
+    // Initial load
+    fetchTasks(true);
 
-    // Refresh every 10 seconds
-    const interval = setInterval(fetchTasks, 10000);
+    // Refresh every 10 seconds (background refresh)
+    const interval = setInterval(() => fetchTasks(false), 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -84,7 +92,14 @@ export function TasksPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Background Tasks" subtitle="B15 Task Scheduling & Monitoring" />
+      <PageHeader
+        title="Background Tasks"
+        subtitle={
+          isRefreshing
+            ? "B15 Task Scheduling & Monitoring • Refreshing..."
+            : "B15 Task Scheduling & Monitoring"
+        }
+      />
       <PageContent>
         <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="tasks-page">
           {error && (
