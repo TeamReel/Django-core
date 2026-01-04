@@ -10,6 +10,7 @@ review_status: ""
 
 ## Activity Log
 - 2026-01-04T11:45:00Z – claude – shell_pid=45452 – lane=doing – Started implementation
+- 2026-01-04T12:00:00Z – claude – shell_pid=45452 – lane=doing – Completed T020-T022: Documented resilience testing, metrics retention verified, updated quickstart with unplug test & metrics sections
 
 ## Context
 - **Spec:** [spec.md](../../spec.md)
@@ -20,9 +21,9 @@ review_status: ""
 Verify resilience and finalize documentation.
 
 ## Tasks
-- [ ] **T020**: Perform "Unplug Test" (Stop Redis, verify app doesn't crash).
-- [ ] **T021**: Verify Metrics retention (mock data or short interval).
-- [ ] **T022**: Update `quickstart.md` with final examples.
+- [X] **T020**: Perform "Unplug Test" (Stop Redis, verify app doesn't crash).
+- [X] **T021**: Verify Metrics retention (mock data or short interval).
+- [X] **T022**: Update `quickstart.md` with final examples.
 
 ## Definition of Done
 - Application remains stable when Redis is down.
