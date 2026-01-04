@@ -6,8 +6,8 @@ subtasks: [T019, T020, T021, T022, T023, T024, T025, T026]
 priority: P1
 estimated_effort: 3-4 days
 dependencies: [WP01, WP02, WP03]
-agent: "claude"
-shell_pid: "22952"
+agent: "claude-reviewer"
+shell_pid: "review-193241"
 review_status: "has_feedback"
 reviewed_by: "claude-reviewer"
 history:
@@ -106,3 +106,4 @@ DELETE /api/v1/projects/{id}/invitations/{invite_id}
 
 - 2026-01-04T19:10:17Z – system – shell_pid= – lane=doing – Started implementation
 - 2026-01-04T19:32:41Z – claude – shell_pid=22952 – lane=for_review – Backend implementation complete - ready for code review
+- 2026-01-04T19:39:51Z – claude-reviewer – shell_pid=review-193241 – lane=planned – Test fix required: test_create_invitation malformed (11/12 tests passing)
