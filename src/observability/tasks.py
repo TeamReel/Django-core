@@ -140,8 +140,12 @@ def collect_system_metrics(self) -> dict[str, int]:
             keyspace_info = redis_client.info("keyspace")
             for db_key, db_stats in keyspace_info.items():
                 if db_key.startswith("db"):
-                    # Parse "keys=123,expires=45,avg_ttl=..." format
-                    keys_count = int(db_stats.split(",")[0].split("=")[1])
+                    # db_stats can be either a dict or a string depending on Redis client
+                    if isinstance(db_stats, dict):
+                        keys_count = db_stats.get("keys", 0)
+                    else:
+                        # Parse "keys=123,expires=45,avg_ttl=..." format
+                        keys_count = int(db_stats.split(",")[0].split("=")[1])
                     total_keys += keys_count
 
             # Record metrics
