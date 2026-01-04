@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 assignee: "Claude Agent"
 agent: "claude"
 shell_pid: "45452"
@@ -11,6 +11,7 @@ review_status: ""
 ## Activity Log
 - 2026-01-04T11:45:00Z – claude – shell_pid=45452 – lane=doing – Started implementation
 - 2026-01-04T12:00:00Z – claude – shell_pid=45452 – lane=doing – Completed T020-T022: Documented resilience testing, metrics retention verified, updated quickstart with unplug test & metrics sections
+- 2026-01-04T12:15:00Z – claude – shell_pid=45452 – lane=for_review – Ready for review (commit 94b20e26)
 
 ## Context
 - **Spec:** [spec.md](../../spec.md)
