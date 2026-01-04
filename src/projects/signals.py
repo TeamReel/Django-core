@@ -13,7 +13,8 @@ import logging
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
-from .models import Project
+from .models import Project, ProjectMembership
+from .services.cache_service import CacheService
 
 logger = logging.getLogger(__name__)
 
@@ -103,3 +104,29 @@ def log_project_deleted(sender, instance, **kwargs):
 # 2. Replace logger.info/warning calls with audit service calls
 # 3. Include additional context: user, IP, timestamp, action details
 # 4. Log to structured audit trail instead of application logs
+
+
+@receiver(post_save, sender=ProjectMembership)
+def invalidate_on_membership_change(sender, instance, **kwargs):
+    """Invalidate cache when membership changes."""
+    cache_service = CacheService()
+    cache_service.invalidate_user_project_permissions(
+        str(instance.user_id), str(instance.project_id)
+    )
+
+
+@receiver(post_delete, sender=ProjectMembership)
+def invalidate_on_membership_delete(sender, instance, **kwargs):
+    """Invalidate cache when membership deleted."""
+    cache_service = CacheService()
+    cache_service.invalidate_user_project_permissions(
+        str(instance.user_id), str(instance.project_id)
+    )
+
+
+@receiver(post_save, sender=Project)
+def invalidate_on_privacy_change(sender, instance, **kwargs):
+    """Invalidate all project permissions if privacy changed."""
+    if kwargs.get("update_fields") and "is_private" in kwargs["update_fields"]:
+        cache_service = CacheService()
+        cache_service.invalidate_project_permissions(str(instance.id))
