@@ -299,9 +299,31 @@ def cache_metrics(request):
             "total_keys": 0,
         }
 
-        if isinstance(cache, RedisCache):
-            redis_client = cache._cache.get_client()
+        # Check if cache backend supports Redis client (both django.core.cache.backends.redis.RedisCache
+        # and django_redis.cache.RedisCache have this)
+        if hasattr(cache, "_cache") and hasattr(cache._cache, "get_client"):
+            try:
+                redis_client = cache._cache.get_client()
+                logger.info("Successfully got Redis client for cache metrics")
+            except Exception as e:
+                logger.error("Failed to get Redis client: %s", e)
+                redis_client = None
+        elif hasattr(cache, "client") and hasattr(cache.client, "get_client"):
+            # Alternative path for django_redis
+            try:
+                redis_client = cache.client.get_client()
+                logger.info("Successfully got Redis client via cache.client")
+            except Exception as e:
+                logger.error("Failed to get Redis client via cache.client: %s", e)
+                redis_client = None
+        else:
+            logger.warning(
+                "Cache backend %s does not support Redis client access",
+                type(cache).__name__,
+            )
+            redis_client = None
 
+        if redis_client:
             # Get stats (keyspace_hits, keyspace_misses)
             stats = redis_client.info("stats")
             hits = stats.get("keyspace_hits", 0)
@@ -337,8 +359,15 @@ def cache_metrics(request):
                 "memory_used_bytes": memory_used,
                 "total_keys": total_keys,
             }
+            logger.info(
+                "Collected realtime cache metrics: hits=%s, misses=%s, memory=%s, keys=%s",
+                hits,
+                misses,
+                memory_used,
+                total_keys,
+            )
         else:
-            logger.warning("Cache backend is not Redis, returning empty metrics")
+            logger.warning("Redis client not available, returning empty realtime metrics")
 
         # 2. Query historical metrics (last 7 days)
         seven_days_ago = timezone.now() - timedelta(days=7)
