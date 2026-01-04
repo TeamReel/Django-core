@@ -1,0 +1,7 @@
+﻿{
+    "feature_number":  "038",
+    "slug":  "038-project-access-control",
+    "friendly_name":  "project-access-control",
+    "source_description":  "{\"feature_number\": \"038\", \"feature_id\": \"B26\", \"title\": \"Project-Level Access Control\", \"description\": \"Direct project membership and access control, allowing users to be added to specific projects without organization-wide access\", \"phase\": \"fase-09\", \"category\": \"backend-infrastructure\"}",
+    "created_at":  "2026-01-04T15:08:54Z"
+}
