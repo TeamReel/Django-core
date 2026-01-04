@@ -675,7 +675,7 @@ Use this checklist to track work package completion:
 - [ ] **WP01**: Database & Model Foundation (6 subtasks)
 - [ ] **WP02**: Permission Resolution Service (5 subtasks)
 - [ ] **WP03**: Internal Member Management (7 subtasks)
-- [ ] **WP04**: External Invitation System (8 subtasks)
+- [X] **WP04**: External Invitation System (8 subtasks)
 - [ ] **WP05**: Role Promotion Workflow (6 subtasks)
 - [ ] **WP06**: Private Projects & Override (5 subtasks)
 - [ ] **WP07**: Member Removal & Audit (5 subtasks)
