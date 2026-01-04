@@ -234,12 +234,45 @@ def get_task_summary(timeout: int = 2) -> Dict[str, Any]:
         - counts: Summary counts by status
         - timestamp: ISO timestamp of the query
     """
+    import concurrent.futures
+
     logger.info("Getting task summary with timeout=%s", timeout)
 
-    registered = get_registered_tasks(timeout)
-    active = get_active_tasks(timeout)
-    scheduled = get_scheduled_tasks(timeout)
-    reserved = get_reserved_tasks(timeout)
+    # Execute Inspector calls in parallel with ThreadPoolExecutor
+    registered = []
+    active = []
+    scheduled = []
+    reserved = []
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        # Submit all Inspector calls in parallel
+        future_registered = executor.submit(get_registered_tasks, timeout)
+        future_active = executor.submit(get_active_tasks, timeout)
+        future_scheduled = executor.submit(get_scheduled_tasks, timeout)
+        future_reserved = executor.submit(get_reserved_tasks, timeout)
+
+        # Collect results with timeout
+        try:
+            registered = future_registered.result(timeout=timeout + 1)
+        except Exception as e:
+            logger.warning("Failed to get registered tasks: %s", e)
+
+        try:
+            active = future_active.result(timeout=timeout + 1)
+        except Exception as e:
+            logger.warning("Failed to get active tasks: %s", e)
+
+        try:
+            scheduled = future_scheduled.result(timeout=timeout + 1)
+        except Exception as e:
+            logger.warning("Failed to get scheduled tasks: %s", e)
+
+        try:
+            reserved = future_reserved.result(timeout=timeout + 1)
+        except Exception as e:
+            logger.warning("Failed to get reserved tasks: %s", e)
+
+    # Get beat schedule (local, no network call)
     beat_schedule = get_beat_schedule()
 
     # Combine all tasks for unified view
