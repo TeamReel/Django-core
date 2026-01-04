@@ -2,10 +2,11 @@
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 
 from projects.models import Project, ProjectMembership
 from projects.services.membership_service import MembershipService
@@ -329,6 +330,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class ProjectMembershipReadThrottle(UserRateThrottle):
+    """Rate limiting for read operations on project memberships: 100/min"""
+
+    rate = "100/min"
+
+
+class ProjectMembershipWriteThrottle(UserRateThrottle):
+    """Rate limiting for write operations on project memberships: 30/min"""
+
+    rate = "30/min"
+
+
 class ProjectMembershipViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing project memberships.
@@ -338,10 +351,48 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
     - POST /api/projects/{project_pk}/members/
     - PATCH /api/projects/{project_pk}/members/{pk}/
     - DELETE /api/projects/{project_pk}/members/{pk}/
+    - GET /api/projects/{project_pk}/members/searchable-users/
+
+    Rate Limiting:
+    - Read operations: 100 requests/min
+    - Write operations: 30 requests/min
+
+    Permissions:
+    - Read operations: Project member or org admin
+    - Write operations: Project admin only
     """
 
     serializer_class = ProjectMembershipSerializer
-    permission_classes = [IsAuthenticated]  # Add specific permissions later
+    permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        """Apply different rate limits for read vs write operations."""
+        if self.action in ["list", "retrieve"]:
+            return [ProjectMembershipReadThrottle()]
+        elif self.action in ["create", "update", "partial_update", "destroy"]:
+            return [ProjectMembershipWriteThrottle()]
+        return []
+
+    def check_project_admin_permission(self, project):
+        """Check if user is a project admin (required for write operations)."""
+        user = self.request.user
+
+        # Superusers always have access
+        if user.is_superuser or user.is_staff:
+            return True
+
+        # Check if user is a project admin
+        is_admin = ProjectMembership.objects.filter(
+            project=project, user=user, role=ProjectMembership.Role.ADMIN, deleted_at__isnull=True
+        ).exists()
+
+        if not is_admin:
+            raise PermissionDenied(
+                "Only project admins can manage memberships. "
+                "Your current role does not have sufficient permissions."
+            )
+
+        return True
 
     def get_queryset(self):
         """Return memberships for the specific project."""
@@ -356,6 +407,9 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         """Use service to add member."""
         project_pk = self.kwargs.get("project_pk")
         project = Project.objects.get(pk=project_pk)
+
+        # Check permission: only project admins can add members
+        self.check_project_admin_permission(project)
 
         # Extract validated data
         user_id = serializer.validated_data["user_id"]
@@ -383,6 +437,10 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         """Use service to update role."""
         membership = self.get_object()
+
+        # Check permission: only project admins can update roles
+        self.check_project_admin_permission(membership.project)
+
         new_role = serializer.validated_data.get("role")
 
         if new_role:
@@ -397,9 +455,74 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         """Use service to remove member."""
+        # Check permission: only project admins can remove members
+        self.check_project_admin_permission(instance.project)
+
         service = MembershipService()
         service.remove_member(
             membership=instance,
             actor=self.request.user,
         )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["get"], url_path="searchable-users")
+    def searchable_users(self, request, project_pk=None):
+        """Return organization members not already in the project.
+
+        This endpoint helps populate "Add Member" dropdowns by listing
+        users who can be added to the project.
+
+        Query Parameters:
+        - search: Filter by name or email (optional)
+
+        Returns:
+        - List of users with id, email, first_name, last_name, full_name
+        """
+        try:
+            project = Project.objects.select_related("organisation").get(pk=project_pk)
+        except Project.DoesNotExist:
+            return Response({"detail": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get org members not already in project
+        existing_member_ids = ProjectMembership.objects.filter(
+            project=project, deleted_at__isnull=True
+        ).values_list("user_id", flat=True)
+
+        # Get org members excluding project members
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+
+        available_users = (
+            User.objects.filter(
+                organisation_memberships__organisation=project.organisation,
+                organisation_memberships__is_active=True,
+            )
+            .exclude(id__in=existing_member_ids)
+            .distinct()
+        )
+
+        # Apply search filter if provided
+        search_query = request.query_params.get("search", "")
+        if search_query:
+            from django.db.models import Q
+
+            available_users = available_users.filter(
+                Q(email__icontains=search_query)
+                | Q(first_name__icontains=search_query)
+                | Q(last_name__icontains=search_query)
+            )
+
+        # Serialize results
+        users_data = [
+            {
+                "id": user.id,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "full_name": f"{user.first_name} {user.last_name}".strip() or user.email,
+            }
+            for user in available_users[:50]  # Limit to 50 results
+        ]
+
+        return Response({"data": users_data})

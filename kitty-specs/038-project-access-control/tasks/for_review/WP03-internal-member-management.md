@@ -1,14 +1,14 @@
 ---
 work_package_id: WP03
 title: Internal Member Management (US1)
-lane: "planned"
+lane: "for_review"
 subtasks: [T012, T013, T014, T015, T016, T017, T018]
 priority: P1
 estimated_effort: 3 days
 dependencies: [WP01, WP02]
 agent: "claude"
 shell_pid: "22952"
-review_status: "has_feedback"
+review_status: "addressed"
 reviewed_by: "claude-reviewer"
 history:
   - date: 2026-01-04
@@ -24,6 +24,16 @@ history:
     author: claude-reviewer
     shell_pid: "22952"
     notes: "Core implementation excellent, but missing production-ready features (rate limiting, permission checks, searchable-users endpoint)"
+  - date: 2026-01-05
+    action: addressing_feedback
+    author: claude
+    shell_pid: "22952"
+    notes: "Moved back to doing lane to address review feedback: rate limiting, permission checks, searchable-users endpoint"
+  - date: 2026-01-05
+    action: addressed_feedback
+    author: claude
+    shell_pid: "22952"
+    notes: "All review feedback addressed: rate limiting (100/min read, 30/min write), permission checks (admin-only), searchable-users endpoint implemented. 10/10 tests passing."
 ---
 
 ## Review Feedback
@@ -45,11 +55,11 @@ history:
 - ✅ Clean serializer with nested user data and validation
 
 **Action Items** (must complete before re-review):
-- [ ] Add rate limiting to ProjectMembershipViewSet (use DRF throttle classes: 100/min read, 30/min write)
-- [ ] Replace `IsAuthenticated` with proper permission check (use B08 `@permission_required('projects.manage_members')` for POST/PATCH/DELETE)
-- [ ] Implement `searchable_users()` action on ProjectMembershipViewSet returning org members not in project (or create separate viewset)
-- [ ] Add tests for rate limiting behavior
-- [ ] Add tests for permission denial (non-admin trying to add members)
+- [x] Add rate limiting to ProjectMembershipViewSet (use DRF throttle classes: 100/min read, 30/min write)
+- [x] Replace `IsAuthenticated` with proper permission check (use B08 `@permission_required('projects.manage_members')` for POST/PATCH/DELETE)
+- [x] Implement `searchable_users()` action on ProjectMembershipViewSet returning org members not in project (or create separate viewset)
+- [x] Add tests for rate limiting behavior
+- [x] Add tests for permission denial (non-admin trying to add members)
 
 # WP03: Internal Member Management (US1)
 
