@@ -1,11 +1,17 @@
 ---
 work_package_id: WP03
 title: Internal Member Management (US1)
-lane: planned
+lane: "doing"
 subtasks: [T012, T013, T014, T015, T016, T017, T018]
 priority: P1
 estimated_effort: 3 days
 dependencies: [WP01, WP02]
+agent: "copilot"
+shell_pid: "12345"
+history:
+  - date: 2026-01-04
+    action: started
+    author: copilot
 ---
 
 # WP03: Internal Member Management (US1)
