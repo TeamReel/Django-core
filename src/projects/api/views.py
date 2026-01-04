@@ -500,15 +500,19 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         """Use service to remove member."""
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
         # Check permission: only project admins can remove members
         self.check_project_admin_permission(instance.project)
 
         service = MembershipService()
-        service.remove_member(
-            membership=instance,
-            actor=self.request.user,
-        )
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            service.remove_member(
+                membership=instance,
+                actor=self.request.user,
+            )
+        except DjangoValidationError as e:
+            raise ValidationError({"detail": e.messages[0] if hasattr(e, "messages") else str(e)})
 
     @action(detail=False, methods=["get"], url_path="searchable-users")
     def searchable_users(self, request, project_pk=None):

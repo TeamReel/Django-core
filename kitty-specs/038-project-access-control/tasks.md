@@ -488,31 +488,31 @@
 
 **Included Subtasks**:
 
-- [ ] **T038**: Update `MembershipService.remove_member()` with last admin check
+- [x] **T038**: Update `MembershipService.remove_member()` with last admin check
   - Count active admins: `ProjectMembership.objects.filter(project=project, role='admin', deleted_at__isnull=True).count()`
   - If count <= 1 and removing last admin: Auto-assign org admin OR raise ValidationError (per clarification)
   - Set `deleted_at = now()` (soft delete)
   - Invalidate permission cache for user
   - Location: `apps/projects/services/membership_service.py` (extend T014 method)
 
-- [ ] **T039**: Add B09 audit event for removal
+- [x] **T039**: Add B09 audit event for removal
   - Event: `project.membership.deleted` (actor, user_id, project_id, former_role)
   - Include reason field (optional, for UI to capture)
   - Location: `apps/projects/services/membership_service.py`
 
-- [ ] **T040**: Frontend: Add "Remove Member" action with confirmation
+- [x] **T040**: Frontend: Add "Remove Member" action with confirmation
   - Member list row: "..." menu → "Remove Member" option
   - Confirmation modal: "Remove {user_name} from {project_name}? They will lose all access."
   - If last admin: Show warning "This is the last admin. An org admin will be auto-assigned."
   - Location: `packages/frontend/src/components/ProjectAccessControl/MemberList.tsx`
 
-- [ ] **T041**: Frontend: Add audit log viewer tab
+- [x] **T041**: Frontend: Add audit log viewer tab
   - Tab: "Activity" in project settings
   - Display recent membership changes: added, removed, role changed
   - Filters: Event type, date range, user
   - Location: `packages/frontend/src/pages/ProjectSettings/ActivityTab.tsx`
 
-- [ ] **T042**: Add management command to cleanup old soft deletes
+- [x] **T042**: Add management command to cleanup old soft deletes
   - Command: `python manage.py cleanup_deleted_memberships --days=90`
   - Hard delete memberships where `deleted_at < 90 days ago`
   - Add cron job to run monthly
@@ -678,7 +678,7 @@ Use this checklist to track work package completion:
 - [X] **WP04**: External Invitation System (8 subtasks)
 - [ ] **WP05**: Role Promotion Workflow (6 subtasks)
 - [ ] **WP06**: Private Projects & Override (5 subtasks)
-- [ ] **WP07**: Member Removal & Audit (5 subtasks)
+- [x] **WP07**: Member Removal & Audit (5 subtasks)
 - [ ] **WP08**: Admin UI & Activity Feed (5 subtasks)
 
 **Current Status**: Ready for Implementation

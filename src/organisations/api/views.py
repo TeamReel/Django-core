@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from organisations.metrics import rate_limit_hits
 from organisations.models import Membership, Organisation
 from organisations.ratelimit import check_rate_limit
+from audit.api import audit_log
 
 from .serializers import (
     OrganisationCreateSerializer,
@@ -425,3 +426,19 @@ class MembershipViewSet(viewsets.ModelViewSet):
                 )
 
         return super().destroy(request, *args, **kwargs)
+
+    def perform_destroy(self, instance):
+        """Soft delete membership."""
+        instance.is_active = False
+        instance.save()
+
+        # Audit log
+        audit_log.record(
+            "organisation.membership.deleted",
+            user=self.request.user,
+            organization=instance.organisation,
+            metadata={
+                "user_id": str(instance.user.id),
+                "role": instance.role,
+            },
+        )

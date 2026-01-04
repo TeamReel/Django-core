@@ -1,7 +1,9 @@
 from typing import Optional
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.utils import timezone
 
 from audit.api import audit_log
 from notifications.services.notification_service import create_notification
@@ -133,8 +135,77 @@ class MembershipService:
         project = membership.project
         user = membership.user
 
+        # Last Admin Protection
+        if membership.role == ProjectMembership.Role.ADMIN:
+            active_admins_count = project.memberships.filter(
+                role=ProjectMembership.Role.ADMIN, deleted_at__isnull=True
+            ).count()
+
+            if active_admins_count <= 1:
+                # This is the last admin. Try to find an Org Admin to take over.
+                # We look for an active Org Admin who is NOT the user being removed.
+                org_admin_membership = (
+                    project.organisation.memberships.filter(role="admin", is_active=True)
+                    .exclude(user=user)
+                    .first()
+                )
+
+                if org_admin_membership:
+                    # Assign this Org Admin to the project as Admin
+                    new_admin = org_admin_membership.user
+                    # Check if they are already a member (e.g. viewer/editor)
+                    existing_membership = project.memberships.filter(
+                        user=new_admin, deleted_at__isnull=True
+                    ).first()
+
+                    if existing_membership:
+                        # Upgrade them to Admin
+                        old_role = existing_membership.role
+                        existing_membership.role = ProjectMembership.Role.ADMIN
+                        existing_membership.save()
+
+                        audit_log.record(
+                            "project.membership.updated",
+                            user=actor,
+                            project=project,
+                            metadata={
+                                "reason": "last_admin_protection",
+                                "project_id": str(project.id),
+                                "user_id": str(new_admin.id),
+                                "old_role": old_role,
+                                "new_role": ProjectMembership.Role.ADMIN,
+                            },
+                        )
+                    else:
+                        # Add them as new Admin
+                        ProjectMembership.objects.create(
+                            project=project,
+                            user=new_admin,
+                            role=ProjectMembership.Role.ADMIN,
+                            assignment_reason=ProjectMembership.AssignmentReason.ORG_DEFAULT,
+                        )
+
+                        audit_log.record(
+                            "project.membership.created",
+                            user=actor,
+                            project=project,
+                            metadata={
+                                "reason": "last_admin_protection",
+                                "project_id": str(project.id),
+                                "user_id": str(new_admin.id),
+                                "role": ProjectMembership.Role.ADMIN,
+                            },
+                        )
+                else:
+                    # No Org Admin available to take over
+                    raise ValidationError(
+                        "Cannot remove the last admin from the project. "
+                        "Please assign another admin first or ensure an Organisation Admin is available."
+                    )
+
         # Soft delete
-        membership.delete()
+        membership.deleted_at = timezone.now()
+        membership.save()
 
         # Audit log
         audit_log.record(
@@ -146,7 +217,4 @@ class MembershipService:
                 "user_id": str(user.id),
             },
         )
-
-        # Notification (optional, maybe they shouldn't be notified if removed?
-        # Checklist REM-007 says removed user sees 403, doesn't explicitly mention notification,
         # but IMM-004 mentions notification on add. I'll skip notification on remove for now unless required.)
