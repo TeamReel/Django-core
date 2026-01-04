@@ -5,6 +5,9 @@ Settings loaded via CELERY_ namespace from Django settings.
 Supports environment-specific broker URLs via environment variables.
 """
 
+import os
+import tempfile
+
 import environ
 from celery.schedules import crontab
 
@@ -47,6 +50,10 @@ CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000  # Restart worker after N tasks (preven
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False  # Use Django logging
 
 # Periodic Task Scheduling (celery-beat)
+CELERY_BEAT_SCHEDULE_FILENAME = env(
+    "CELERY_BEAT_SCHEDULE_FILENAME",
+    default=os.path.join(tempfile.gettempdir(), "celerybeat-schedule"),
+)
 CELERY_BEAT_SCHEDULE = {
     # T088: Cleanup old notifications daily at 2 AM UTC
     "cleanup-old-notifications": {
@@ -89,12 +96,12 @@ CELERY_BEAT_SCHEDULE = {
         },
     },
     # Example: Every 5 minutes (for testing)
-    "health-check-every-5-min": {
-        "task": "tasks.examples.hello_world",
-        "schedule": 300.0,  # 5 minutes
-        "kwargs": {"name": "Scheduler"},
-        "enabled": False,  # Disabled by default (for testing only)
-    },
+    # "health-check-every-5-min": {
+    #     "task": "tasks.examples.hello_world",
+    #     "schedule": 300.0,  # 5 minutes
+    #     "kwargs": {"name": "Scheduler"},
+    #     # "enabled": False,  # Disabled by default (for testing only)
+    # },
     # B25: Collect cache performance metrics every 10 minutes
     "collect-cache-metrics": {
         "task": "observability.tasks.collect_system_metrics",

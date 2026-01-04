@@ -460,3 +460,5 @@ LOGGING = {
         },
     },
 }
+
+from .celery import *  # noqa: E402, F403
