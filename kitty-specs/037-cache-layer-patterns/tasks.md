@@ -1,8 +1,8 @@
 # Tasks: Cache Layer & Patterns
 
 **Feature**: Cache Layer & Patterns
-**Status**: In Progress
-**Progress**: 9 / 22
+**Status**: Complete
+**Progress**: 22 / 22
 
 ## Work Packages
 
@@ -33,29 +33,32 @@
 **Goal**: Implement historical data collection and API endpoints for the dashboard.
 **Priority**: P1 (Observability)
 **Independent Test**: Verify `SystemMetric` records are created by the Celery task.
+**Status**: ✅ Complete
 
-- [ ] **T010**: Create `SystemMetric` model (timestamp, hits, misses, memory, keys).
-- [ ] **T011**: Implement `collect_system_metrics` Celery task.
-- [ ] **T012**: Configure Celery Beat schedule (10 min interval).
-- [ ] **T013**: Implement `GET /api/v1/system/cache/metrics` (Realtime + History).
-- [ ] **T014**: Implement `POST /api/v1/system/cache/clear` and `benchmark` (including Circuit Breaker overhead measurement).
+- [x] **T010**: Create `SystemMetric` model (timestamp, hits, misses, memory, keys).
+- [x] **T011**: Implement `collect_system_metrics` Celery task.
+- [x] **T012**: Configure Celery Beat schedule (10 min interval).
+- [x] **T013**: Implement `GET /api/v1/system/cache/metrics` (Realtime + History).
+- [x] **T014**: Implement `POST /api/v1/system/cache/clear` and `benchmark` (including Circuit Breaker overhead measurement).
 
 ### WP04: Performance Dashboard (Frontend)
 **Goal**: Visualize cache performance and provide admin controls.
 **Priority**: P2 (UI)
-**Independent Test**: Verify dashboard renders charts and actions work.
+**Status**: ✅ Complete
 
-- [ ] **T015**: Scaffold `/demo/performance` page.
-- [ ] **T016**: Implement `CacheStats` component (Gauges).
-- [ ] **T017**: Implement `CacheHistory` component (Recharts Line Chart).
-- [ ] **T018**: Implement `CacheActions` component (Clear, Benchmark).
+- [x] **T015**: Scaffold `/demo/performance` page.
+- [x] **T016**: Implement `CacheStats` component (Gauges).
+- [x] **T017**: Implement `CacheHistory` component (Recharts Line Chart).
+- [x] **T018**: Implement `CacheActions` component (Clear, Benchmark).
+- [x] **T018**: Implement `CacheActions` component (Clear, Benchmark).
 - [ ] **T019**: Connect UI to APIs.
 
 ### WP05: Integration & Polish
 **Goal**: Verify resilience and finalize documentation.
 **Priority**: P3 (Polish)
-**Independent Test**: "Unplug Test" passes.
+**Status**: ✅ Complete
 
-- [ ] **T020**: Perform "Unplug Test" (Stop Redis, verify app doesn't crash).
-- [ ] **T021**: Verify Metrics retention (mock data or short interval).
+- [x] **T020**: Perform "Unplug Test" (Stop Redis, verify app doesn't crash).
+- [x] **T021**: Verify Metrics retention (mock data or short interval).
+- [x] **T021**: Verify Metrics retention (mock data or short interval).
 - [ ] **T022**: Update `quickstart.md` with final examples.
