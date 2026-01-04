@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 title: Internal Member Management (US1)
-lane: "doing"
+lane: "for_review"
 subtasks: [T012, T013, T014, T015, T016, T017, T018]
 priority: P1
 estimated_effort: 3 days
