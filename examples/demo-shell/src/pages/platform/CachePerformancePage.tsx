@@ -77,7 +77,10 @@ export const CachePerformancePage: React.FC = () => {
         throw new Error(`Failed to fetch metrics: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const responseData = await response.json();
+
+      // Unwrap the standard API response wrapper
+      const data = responseData.data || responseData;
 
       // Validate response structure
       if (!data.realtime) {
@@ -111,7 +114,8 @@ export const CachePerformancePage: React.FC = () => {
         throw new Error(`Failed to clear cache: ${response.status}`);
       }
 
-      const result = await response.json();
+      const responseData = await response.json();
+      const result = responseData.data || responseData;
       alert(`Cache cleared successfully! ${result.cleared_keys} keys removed.`);
 
       // Refresh metrics
@@ -141,7 +145,8 @@ export const CachePerformancePage: React.FC = () => {
         throw new Error(`Failed to run benchmark: ${response.status}`);
       }
 
-      const result = await response.json();
+      const responseData = await response.json();
+      const result = responseData.data || responseData;
       setBenchmarkResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to run benchmark');
