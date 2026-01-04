@@ -1,8 +1,8 @@
 # Tasks: Cache Layer & Patterns
 
 **Feature**: Cache Layer & Patterns
-**Status**: Planned
-**Progress**: 0 / 22
+**Status**: In Progress
+**Progress**: 4 / 22
 
 ## Work Packages
 
@@ -10,11 +10,12 @@
 **Goal**: Establish the base `CacheService` with resilience against Redis outages.
 **Priority**: P0 (Foundational)
 **Independent Test**: Unit tests for `CircuitBreaker` state transitions and `CacheService` fallback.
+**Status**: ✅ Complete
 
-- [ ] **T001**: Verify `django-redis` configuration in `settings.py` (ensure aliases).
-- [ ] **T002**: Create `core/cache/` module structure (`services.py`, `decorators.py`, `circuit_breaker.py`).
-- [ ] **T003**: Implement `CircuitBreaker` class with Open/Closed/Half-Open states (TDD).
-- [ ] **T004**: Implement `CacheService` wrapper with Circuit Breaker integration for `get`/`set`.
+- [x] **T001**: Verify `django-redis` configuration in `settings.py` (ensure aliases).
+- [x] **T002**: Create `core/cache/` module structure (`services.py`, `decorators.py`, `circuit_breaker.py`).
+- [x] **T003**: Implement `CircuitBreaker` class with Open/Closed/Half-Open states (TDD).
+- [x] **T004**: Implement `CacheService` wrapper with Circuit Breaker integration for `get`/`set`.
 
 ### WP02: Decorators & Tagging Strategy
 **Goal**: Implement the developer-facing API (`@cache_result`) and tag-based invalidation.
