@@ -109,6 +109,7 @@ export const CachePerformancePage: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
         },
         credentials: 'include',
       });
@@ -140,6 +141,7 @@ export const CachePerformancePage: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
         },
         credentials: 'include',
       });
@@ -176,6 +178,23 @@ export const CachePerformancePage: React.FC = () => {
 
   const formatPercentage = (value: number): string => {
     return `${(value * 100).toFixed(1)}%`;
+  };
+
+  // Helper function to get CSRF token from cookies
+  const getCsrfToken = (): string => {
+    const name = 'csrftoken';
+    let cookieValue = '';
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
   };
 
   return (
