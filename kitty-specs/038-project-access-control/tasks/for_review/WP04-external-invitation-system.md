@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: External Invitation System (US2)
-lane: "doing"
+lane: "for_review"
 subtasks: [T019, T020, T021, T022, T023, T024, T025, T026]
 priority: P1
 estimated_effort: 3-4 days
@@ -66,3 +66,4 @@ DELETE /api/v1/projects/{id}/invitations/{invite_id}
 ## Activity Log
 
 - 2026-01-04T19:10:17Z – system – shell_pid= – lane=doing – Started implementation
+- 2026-01-04T19:32:41Z – claude – shell_pid=22952 – lane=for_review – Backend implementation complete - ready for code review
