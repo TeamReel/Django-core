@@ -29,14 +29,20 @@ export function TasksPage() {
         }
 
         const data = await response.json();
+        console.log('[TasksPage] API response:', data);
+
+        // Handle DRF envelope response format: {status: 'success', data: {...}}
+        const taskData = data.data || data;
+        console.log('[TasksPage] Task data:', taskData);
 
         // Combine active, scheduled, and reserved tasks from API response
         const allTasks = [
-          ...data.active.map((t: any) => ({ ...t, status: 'running' })),
-          ...data.scheduled.map((t: any) => ({ ...t, status: 'scheduled' })),
-          ...data.reserved.map((t: any) => ({ ...t, status: 'pending' })),
+          ...(taskData.active || []).map((t: any) => ({ ...t, status: 'running' })),
+          ...(taskData.scheduled || []).map((t: any) => ({ ...t, status: 'scheduled' })),
+          ...(taskData.reserved || []).map((t: any) => ({ ...t, status: 'pending' })),
         ];
 
+        console.log('[TasksPage] Combined tasks:', allTasks);
         setTasks(allTasks);
       } catch (err) {
         console.error('Failed to fetch tasks:', err);
