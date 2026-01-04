@@ -1,18 +1,84 @@
 ---
 work_package_id: WP02
 title: Permission Resolution Service
-lane: "for_review"
+lane: "planned"
 subtasks: [T007, T008, T009, T010, T011]
 priority: P1
 estimated_effort: 2 days
 dependencies: [WP01]
 agent: "copilot"
 shell_pid: "12345"
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 history:
   - date: 2026-01-04
     action: created
     author: spec-kitty.tasks
+  - date: 2026-01-04T18:30:00Z
+    action: code_review_completed
+    reviewer: claude-reviewer
+    shell_pid: 12345
+    note: "Core implementation excellent but missing B08 integration and observability"
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Key Issues**:
+
+1. **Missing B08 Integration** - Task T010 incomplete
+   - The Definition of Done states "Integration with B08 AccessControlManager works" but no integration code exists
+   - No calls to `evaluate_permission()` from `permissions.audit` module
+   - According to B08 docs, all permission checks MUST go through `evaluate_permission()` for audit logging
+   - Current implementation bypasses the centralized permission system
+
+2. **Missing Prometheus Metrics** - DoD requirement not met
+   - No metrics.py file in projects/
+   - No counters for permission resolution calls, cache hits/misses
+   - Definition of Done explicitly requires "Prometheus metrics exposed at `/metrics`"
+   - Other modules (transactions, organisations, notifications) all have metrics.py
+
+3. **Missing Performance Benchmarks** - Cannot verify performance targets
+   - DoD requires "Resolution time <50ms at p95 (measured with pytest-benchmark)"
+   - DoD requires "Cache hit rate >80% after 100 permission checks"
+   - No `test_permission_caching.py` file with benchmark tests
+   - Current DoD shows these marked as "(Verified via logic, benchmark pending)" but they should be actually measured
+
+**What Was Done Well**:
+
+- ✅ **5-Step Resolution Logic**: Correctly implemented, handles all scenarios (explicit, private, org implicit, emergency override, no access)
+- ✅ **Caching Strategy**: Redis caching with proper TTL (5 min) and cache service abstraction
+- ✅ **Signal Handlers**: All three invalidation signals working correctly
+- ✅ **Core Tests**: All 6 functional tests passing with good coverage of edge cases
+- ✅ **Code Quality**: Clean, well-structured code with proper TypedDict usage and error handling
+
+**Action Items** (must complete before re-review):
+
+- [ ] **Add B08 Integration** (T010):
+  - Wrap permission resolution in `evaluate_permission()` from `permissions.audit`
+  - Add context dict with `{scope, organization_id?, project_id?}`
+  - Ensure audit events are emitted for all permission checks
+  - Update tests to verify audit integration
+
+- [ ] **Add Prometheus Metrics**:
+  - Create `src/projects/metrics.py` with counters for:
+    - `permission_resolution_total` (labels: source, role)
+    - `permission_cache_hits_total`
+    - `permission_cache_misses_total`
+    - `permission_resolution_duration_seconds` (histogram)
+  - Import metrics in `__init__.py` to register them
+  - Instrument `PermissionResolutionService.get_project_role()`
+
+- [ ] **Add Performance Benchmarks**:
+  - Create `tests/integration/test_permission_caching.py`
+  - Use `pytest-benchmark` to measure resolution time
+  - Add test to verify cache hit rate >80% after 100 checks
+  - Verify p95 latency <50ms
+
+- [ ] **Update DoD Checklist**:
+  - Remove "(Verified via logic, benchmark pending)" notes
+  - Mark all items complete with actual test evidence
 
 # WP02: Permission Resolution Service
 
@@ -282,3 +348,4 @@ Expected results:
 - 2026-01-04T16:30:43Z – copilot – shell_pid=12345 – lane=doing – Started implementation
 - 2026-01-04T17:00:00Z – copilot – shell_pid=12345 – lane=doing – Implemented PermissionResolutionService, CacheService, Signals, and Tests. Fixed cache leakage in tests.
 - 2026-01-04T17:15:00Z – copilot – shell_pid=12345 – lane=for_review – Completed implementation and verification
+- 2026-01-04T17:19:06Z – copilot – shell_pid=12345 – lane=planned – Code review complete: Core logic excellent but missing B08 integration, Prometheus metrics, and performance benchmarks

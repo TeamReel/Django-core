@@ -1,8 +1,47 @@
 """DRF serializers for Projects & Workspaces."""
 
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
-from projects.models import Project
+from projects.models import Project, ProjectMembership
+
+User = get_user_model()
+
+
+class UserNestedSerializer(serializers.ModelSerializer):
+    """Serializer for nested user data."""
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "first_name", "last_name"]
+
+
+class ProjectMembershipSerializer(serializers.ModelSerializer):
+    """Serializer for project membership management."""
+
+    user = UserNestedSerializer(read_only=True)
+    user_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = ProjectMembership
+        fields = [
+            "id",
+            "user",
+            "user_id",
+            "role",
+            "assignment_reason",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "assignment_reason"]
+
+    def validate_user_id(self, value):
+        """Ensure user exists."""
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        if not User.objects.filter(id=value).exists():
+            raise serializers.ValidationError("User does not exist.")
+        return value
 
 
 class OrganisationNestedSerializer(serializers.Serializer):

@@ -2,16 +2,19 @@
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from projects.models import Project
+from projects.models import Project, ProjectMembership
+from projects.services.membership_service import MembershipService
 
 from .permissions import IsOrganisationMemberOrAdmin
 from .serializers import (
     ProjectDetailSerializer,
     ProjectListSerializer,
+    ProjectMembershipSerializer,
     ProjectUpdateSerializer,
 )
 
@@ -323,4 +326,80 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         project.restore()
 
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProjectMembershipViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing project memberships.
+
+    Routes:
+    - GET /api/projects/{project_pk}/members/
+    - POST /api/projects/{project_pk}/members/
+    - PATCH /api/projects/{project_pk}/members/{pk}/
+    - DELETE /api/projects/{project_pk}/members/{pk}/
+    """
+
+    serializer_class = ProjectMembershipSerializer
+    permission_classes = [IsAuthenticated]  # Add specific permissions later
+
+    def get_queryset(self):
+        """Return memberships for the specific project."""
+        # We expect project_pk to be passed from the nested router or URL kwarg
+        project_pk = self.kwargs.get("project_pk")
+        if not project_pk:
+            return ProjectMembership.objects.none()
+
+        return ProjectMembership.objects.filter(project_id=project_pk).select_related("user")
+
+    def perform_create(self, serializer):
+        """Use service to add member."""
+        project_pk = self.kwargs.get("project_pk")
+        project = Project.objects.get(pk=project_pk)
+
+        # Extract validated data
+        user_id = serializer.validated_data["user_id"]
+        role = serializer.validated_data["role"]
+
+        # Get the user instance
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        user = User.objects.get(pk=user_id)
+
+        service = MembershipService()
+        try:
+            membership = service.add_member(
+                project=project,
+                user=user,
+                role=role,
+                actor=self.request.user,
+            )
+            # Set the instance on the serializer so response data is correct
+            serializer.instance = membership
+        except ValueError as e:
+            raise ValidationError({"detail": str(e)})
+
+    def perform_update(self, serializer):
+        """Use service to update role."""
+        membership = self.get_object()
+        new_role = serializer.validated_data.get("role")
+
+        if new_role:
+            service = MembershipService()
+            updated_membership = service.update_role(
+                membership=membership,
+                new_role=new_role,
+                actor=self.request.user,
+            )
+            # Ensure serializer knows about the update (though instance is shared)
+            serializer.instance = updated_membership
+
+    def perform_destroy(self, instance):
+        """Use service to remove member."""
+        service = MembershipService()
+        service.remove_member(
+            membership=instance,
+            actor=self.request.user,
+        )
         return Response(status=status.HTTP_204_NO_CONTENT)
