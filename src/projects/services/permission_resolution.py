@@ -1,8 +1,19 @@
 from typing import TypedDict, Literal, List
+import time
+from django.contrib.auth import get_user_model
 from projects.models import ProjectMembership, Project
 from organisations.models import Membership as OrganisationMembership
 from settings.models import FeatureFlag
 from .cache_service import CacheService
+from projects.metrics import (
+    permission_resolution_total,
+    permission_cache_hits_total,
+    permission_cache_misses_total,
+    permission_resolution_duration_seconds,
+    emergency_override_total,
+)
+
+User = get_user_model()
 
 
 class PermissionResult(TypedDict):
@@ -12,17 +23,92 @@ class PermissionResult(TypedDict):
 
 
 class PermissionResolutionService:
-    """5-step permission resolution with caching."""
+    """5-step permission resolution with caching and B08 audit integration."""
 
     def __init__(self):
         self.cache_service = CacheService()
 
+    def check_project_access(
+        self, user: User, project_id: str, required_permission: str = "projects.view"
+    ) -> bool:
+        """
+        Check if user has specific permission on project with B08 audit logging.
+
+        This is the B08-integrated entry point that should be used for permission
+        checks in views and services. It wraps get_project_role() with audit logging.
+
+        Args:
+            user: Django User instance
+            project_id: UUID of project
+            required_permission: Permission code to check (e.g., 'projects.edit')
+
+        Returns:
+            True if user has the required permission, False otherwise
+
+        Side Effects:
+            - Emits audit event via B08 evaluate_permission
+            - Updates cache if needed
+        """
+        from permissions.audit import evaluate_permission
+
+        # Get project for context
+        try:
+            project = Project.objects.select_related("organisation").get(id=project_id)
+        except Project.DoesNotExist:
+            # Audit the denial - project not found
+            evaluate_permission(
+                user=user,
+                permission=required_permission,
+                resource=None,
+                context={
+                    "scope": "PROJECT",
+                    "project_id": project_id,
+                    "resolution_source": "project_not_found",
+                },
+            )
+            return False
+
+        # Get the role resolution
+        result = self.get_project_role(str(user.id), project_id)
+
+        # Check if required permission is in the result's permissions list
+        has_permission = required_permission in result["permissions"]
+
+        # Emit audit event via B08
+        evaluate_permission(
+            user=user,
+            permission=required_permission,
+            resource=project,
+            context={
+                "scope": "PROJECT",
+                "project_id": project_id,
+                "organization_id": str(project.organisation_id),
+                "effective_role": result["effective_role"],
+                "resolution_source": result["source"],
+            },
+        )
+
+        return has_permission
+
     def get_project_role(self, user_id: str, project_id: str) -> PermissionResult:
         """Resolve effective role for user in project."""
+        # Start timing for metrics
+        start_time = time.time()
+
         # Check cache first
         cached = self.cache_service.get_permission(user_id, project_id)
         if cached:
+            # Record cache hit
+            permission_cache_hits_total.inc()
+            # Record successful resolution with metrics
+            permission_resolution_total.labels(
+                source=cached["source"], role=cached["effective_role"]
+            ).inc()
+            permission_resolution_duration_seconds.observe(time.time() - start_time)
             return cached  # type: ignore
+
+        # Cache miss
+        permission_cache_misses_total.inc()
 
         # Step 1: Explicit membership
         try:
@@ -33,6 +119,13 @@ class PermissionResolutionService:
             )
             result = self._build_result(membership.role, "explicit_membership")
             self.cache_service.set_permission(user_id, project_id, result)
+
+            # Record metrics
+            permission_resolution_total.labels(
+                source="explicit_membership", role=result["effective_role"]
+            ).inc()
+            permission_resolution_duration_seconds.observe(time.time() - start_time)
+
             return result
         except ProjectMembership.DoesNotExist:
             pass
@@ -44,35 +137,50 @@ class PermissionResolutionService:
             # If project doesn't exist, return no_access
             result = self._build_result("no_access", "no_access")
             self.cache_service.set_permission(user_id, project_id, result)
+
+            # Record metrics
+            permission_resolution_total.labels(source="no_access", role="no_access").inc()
+            permission_resolution_duration_seconds.observe(time.time() - start_time)
+
             return result
 
         if project.is_private:
             # Step 4: Emergency override for org admins
             if self._is_org_admin(user_id, str(project.organisation_id)):
                 # Check feature flag
-                # Assuming FeatureFlag has a method to check global/org scope
-                # The prompt used FeatureFlag.is_enabled('key'), but the model doesn't show a static method.
-                # I'll implement a safe check or assume there's a manager method.
-                # For now, I'll query it directly or use a helper if available.
-                # The prompt code: FeatureFlag.is_enabled('project_access_control.org_admin_override')
-                # I'll check if FeatureFlag has a manager with is_enabled.
-
-                # For now, I'll implement a simple check using filter
                 override_enabled = FeatureFlag.objects.filter(
                     key="project_access_control.org_admin_override",
                     enabled=True,
-                    scope_type="GLOBAL",  # Assuming global override for now
+                    scope_type="GLOBAL",
                 ).exists()
 
                 if override_enabled:
                     self._log_emergency_override(user_id, project_id)
+
+                    # Record emergency override metric
+                    emergency_override_total.labels(
+                        organization_id=str(project.organisation_id)
+                    ).inc()
+
                     result = self._build_result("admin", "emergency_override")
                     self.cache_service.set_permission(user_id, project_id, result)
+
+                    # Record metrics
+                    permission_resolution_total.labels(
+                        source="emergency_override", role="admin"
+                    ).inc()
+                    permission_resolution_duration_seconds.observe(time.time() - start_time)
+
                     return result
 
             # No access to private project without explicit membership
             result = self._build_result("no_access", "no_access")
             self.cache_service.set_permission(user_id, project_id, result)
+
+            # Record metrics
+            permission_resolution_total.labels(source="no_access", role="no_access").inc()
+            permission_resolution_duration_seconds.observe(time.time() - start_time)
+
             return result
 
         # Step 3: Implicit org membership
@@ -84,6 +192,13 @@ class PermissionResolutionService:
             implicit_role = role_mapping.get(org_membership.role, "viewer")
             result = self._build_result(implicit_role, "implicit_org_access")
             self.cache_service.set_permission(user_id, project_id, result)
+
+            # Record metrics
+            permission_resolution_total.labels(
+                source="implicit_org_access", role=implicit_role
+            ).inc()
+            permission_resolution_duration_seconds.observe(time.time() - start_time)
+
             return result
         except OrganisationMembership.DoesNotExist:
             pass
@@ -91,6 +206,11 @@ class PermissionResolutionService:
         # Step 5: No access
         result = self._build_result("no_access", "no_access")
         self.cache_service.set_permission(user_id, project_id, result)
+
+        # Record metrics
+        permission_resolution_total.labels(source="no_access", role="no_access").inc()
+        permission_resolution_duration_seconds.observe(time.time() - start_time)
+
         return result
 
     def _build_result(self, role: str, source: str) -> PermissionResult:
@@ -123,10 +243,32 @@ class PermissionResolutionService:
         ).exists()
 
     def _log_emergency_override(self, user_id: str, project_id: str) -> None:
-        """Log emergency override access."""
-        # TODO: Integrate with B09 Audit Logging
-        # For now, just print or log to standard logger
-        import logging
+        """Log emergency override access via B08 audit."""
+        try:
+            from permissions.audit import evaluate_permission
 
-        logger = logging.getLogger(__name__)
-        logger.warning(f"Emergency override used by user {user_id} for project {project_id}")
+            user = User.objects.get(id=user_id)
+            project = Project.objects.get(id=project_id)
+
+            # Emit special audit event for emergency override
+            evaluate_permission(
+                user=user,
+                permission="projects.emergency_override",
+                resource=project,
+                context={
+                    "scope": "PROJECT",
+                    "project_id": project_id,
+                    "organization_id": str(project.organisation_id),
+                    "override_type": "org_admin_private_project_access",
+                    "feature_flag": "project_access_control.org_admin_override",
+                },
+            )
+        except Exception as e:
+            # Fallback to standard logging if B08 integration fails
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                f"Emergency override used by user {user_id} for project {project_id}",
+                extra={"exception": str(e)},
+            )

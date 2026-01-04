@@ -1,5 +1,6 @@
 from django.core.cache import cache
 from typing import Any, Optional
+from projects.metrics import cache_invalidation_total
 
 
 class CacheService:
@@ -21,6 +22,8 @@ class CacheService:
         """Invalidate specific user-project permission."""
         key = self._cache_key(user_id, project_id)
         cache.delete(key)
+        # Record cache invalidation metric
+        cache_invalidation_total.labels(trigger="user_project_specific").inc()
 
     def invalidate_project_permissions(self, project_id: str) -> None:
         """Invalidate all permissions for a project."""
@@ -28,6 +31,8 @@ class CacheService:
         # Note: delete_pattern is not supported by all backends (e.g. memcached)
         # but is supported by Redis.
         cache.delete_pattern(f"permissions:*:project:{project_id}")
+        # Record cache invalidation metric
+        cache_invalidation_total.labels(trigger="project_wide").inc()
 
     def _cache_key(self, user_id: str, project_id: str) -> str:
         return f"permissions:user:{user_id}:project:{project_id}"
