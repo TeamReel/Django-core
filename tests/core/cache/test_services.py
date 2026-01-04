@@ -135,3 +135,120 @@ class TestCacheService:
 
             assert result is True
             mock_cache.delete.assert_called_once_with("test_key")
+
+
+class TestCacheServiceTagging:
+    """Test suite for CacheService tagging methods."""
+
+    def test_add_tags_success(self) -> None:
+        """add_tags should add keys to Redis sets."""
+        with patch("core.cache.services.caches") as mock_caches:
+            mock_cache = Mock()
+            mock_redis_client = Mock()
+            mock_cache.client.get_client.return_value = mock_redis_client
+            mock_caches.__getitem__.return_value = mock_cache
+
+            service = CacheService()
+            result = service.add_tags("test_key", ["user:123", "profiles"])
+
+            assert result is True
+            # Verify Redis SADD was called for each tag
+            assert mock_redis_client.sadd.call_count == 2
+            mock_redis_client.sadd.assert_any_call("cache:tag:user:123", "test_key")
+            mock_redis_client.sadd.assert_any_call("cache:tag:profiles", "test_key")
+
+    def test_add_tags_handles_redis_error(self) -> None:
+        """add_tags should return False on Redis error."""
+        with patch("core.cache.services.caches") as mock_caches:
+            mock_cache = Mock()
+            mock_redis_client = Mock()
+            mock_redis_client.sadd.side_effect = Exception("Redis error")
+            mock_cache.client.get_client.return_value = mock_redis_client
+            mock_caches.__getitem__.return_value = mock_cache
+
+            service = CacheService(failure_threshold=2)
+            result = service.add_tags("test_key", ["tag1"])
+
+            assert result is False
+
+    def test_invalidate_tags_success(self) -> None:
+        """invalidate_tags should delete all keys associated with tags."""
+        with patch("core.cache.services.caches") as mock_caches:
+            mock_cache = Mock()
+            mock_redis_client = Mock()
+            # Simulate Redis set containing 2 keys
+            mock_redis_client.smembers.side_effect = [
+                {b"key1", b"key2"},  # First tag has 2 keys
+                {b"key2", b"key3"},  # Second tag has 2 keys (key2 overlaps)
+            ]
+            mock_cache.client.get_client.return_value = mock_redis_client
+            mock_caches.__getitem__.return_value = mock_cache
+
+            service = CacheService()
+            count = service.invalidate_tags(["user:123", "profiles"])
+
+            # Should return total unique keys invalidated
+            assert count == 3  # key1, key2, key3
+            # Verify cache deletes were called
+            assert mock_cache.delete.call_count == 3
+            # Verify tag sets were deleted
+            assert mock_redis_client.delete.call_count == 2
+
+    def test_invalidate_tags_empty_sets(self) -> None:
+        """invalidate_tags should handle empty tag sets gracefully."""
+        with patch("core.cache.services.caches") as mock_caches:
+            mock_cache = Mock()
+            mock_redis_client = Mock()
+            mock_redis_client.smembers.return_value = set()  # Empty set
+            mock_cache.client.get_client.return_value = mock_redis_client
+            mock_caches.__getitem__.return_value = mock_cache
+
+            service = CacheService()
+            count = service.invalidate_tags(["nonexistent"])
+
+            assert count == 0
+            mock_cache.delete.assert_not_called()
+
+    def test_invalidate_tags_with_string_keys(self) -> None:
+        """invalidate_tags should handle both bytes and string keys."""
+        with patch("core.cache.services.caches") as mock_caches:
+            mock_cache = Mock()
+            mock_redis_client = Mock()
+            # Mix of bytes and strings
+            mock_redis_client.smembers.return_value = {b"key1", "key2"}
+            mock_cache.client.get_client.return_value = mock_redis_client
+            mock_caches.__getitem__.return_value = mock_cache
+
+            service = CacheService()
+            count = service.invalidate_tags(["mixed"])
+
+            assert count == 2
+            assert mock_cache.delete.call_count == 2
+
+    def test_invalidate_tags_circuit_breaker_open(self) -> None:
+        """invalidate_tags should return 0 when circuit is open."""
+        with patch("core.cache.services.caches") as mock_caches:
+            mock_cache = Mock()
+            mock_caches.__getitem__.return_value = mock_cache
+
+            service = CacheService()
+            # Force circuit to open
+            service.circuit_breaker._state = CircuitState.OPEN
+
+            count = service.invalidate_tags(["test"])
+
+            assert count == 0
+
+    def test_add_tags_circuit_breaker_open(self) -> None:
+        """add_tags should return False when circuit is open."""
+        with patch("core.cache.services.caches") as mock_caches:
+            mock_cache = Mock()
+            mock_caches.__getitem__.return_value = mock_cache
+
+            service = CacheService()
+            # Force circuit to open
+            service.circuit_breaker._state = CircuitState.OPEN
+
+            result = service.add_tags("key", ["tag"])
+
+            assert result is False

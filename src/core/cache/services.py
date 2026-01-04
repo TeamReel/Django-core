@@ -186,3 +186,135 @@ class CacheService:
                 extra={"key": key, "cache_alias": self.cache_alias},
             )
             raise
+
+    def add_tags(self, key: str, tags: list[str]) -> bool:
+        """
+        Associate tags with a cache key using Redis Sets.
+
+        Creates Redis sets with pattern cache:tag:{tag_name} containing
+        all keys associated with that tag. This enables O(1) tag addition
+        and O(N) tag-based invalidation.
+
+        Args:
+            key: Cache key to tag
+            tags: List of tag names to associate with the key
+
+        Returns:
+            True if successful, False otherwise
+        """
+
+        def _add_tags() -> bool:
+            # Use raw Redis client for set operations
+            # django-redis exposes the client via cache.client.get_client()
+            try:
+                redis_client = self.cache.client.get_client()
+                for tag in tags:
+                    tag_key = f"cache:tag:{tag}"
+                    redis_client.sadd(tag_key, key)
+                return True
+            except Exception as e:
+                logger.error(
+                    "Failed to add tags",
+                    extra={
+                        "key": key,
+                        "tags": tags,
+                        "cache_alias": self.cache_alias,
+                        "error": str(e),
+                    },
+                )
+                return False
+
+        def _fallback() -> bool:
+            logger.warning(
+                "Cache unavailable (circuit open), skipping tag addition",
+                extra={"key": key, "tags": tags, "cache_alias": self.cache_alias},
+            )
+            return False
+
+        try:
+            return self.circuit_breaker.call(_add_tags, _fallback)
+        except Exception:  # noqa: BLE001
+            logger.exception(
+                "Unexpected error in add_tags",
+                extra={"key": key, "tags": tags, "cache_alias": self.cache_alias},
+            )
+            return False
+
+    def invalidate_tags(self, tags: list[str]) -> int:
+        """
+        Invalidate all cache keys associated with the given tags.
+
+        Retrieves all keys from the Redis Sets for each tag, deletes those keys,
+        and cleans up the tag sets themselves. This is an O(N) operation where
+        N is the total number of keys across all tags.
+
+        Args:
+            tags: List of tag names to invalidate
+
+        Returns:
+            Number of keys invalidated (0 if cache unavailable)
+        """
+
+        def _invalidate_tags() -> int:
+            # Use raw Redis client for set operations
+            try:
+                redis_client = self.cache.client.get_client()
+                keys_to_delete = set()
+
+                # Collect all keys from all tags
+                for tag in tags:
+                    tag_key = f"cache:tag:{tag}"
+                    # Get all members of the set
+                    tag_members = redis_client.smembers(tag_key)
+                    # Decode bytes to strings if needed
+                    keys_to_delete.update(
+                        member.decode() if isinstance(member, bytes) else member
+                        for member in tag_members
+                    )
+
+                # Delete all collected keys
+                if keys_to_delete:
+                    # Delete cache keys
+                    for key in keys_to_delete:
+                        self.cache.delete(key)
+
+                    # Clean up tag sets
+                    for tag in tags:
+                        tag_key = f"cache:tag:{tag}"
+                        redis_client.delete(tag_key)
+
+                logger.info(
+                    "Invalidated tags",
+                    extra={
+                        "tags": tags,
+                        "keys_invalidated": len(keys_to_delete),
+                        "cache_alias": self.cache_alias,
+                    },
+                )
+                return len(keys_to_delete)
+            except Exception as e:
+                logger.error(
+                    "Failed to invalidate tags",
+                    extra={
+                        "tags": tags,
+                        "cache_alias": self.cache_alias,
+                        "error": str(e),
+                    },
+                )
+                return 0
+
+        def _fallback() -> int:
+            logger.warning(
+                "Cache unavailable (circuit open), skipping tag invalidation",
+                extra={"tags": tags, "cache_alias": self.cache_alias},
+            )
+            return 0
+
+        try:
+            return self.circuit_breaker.call(_invalidate_tags, _fallback)
+        except Exception:  # noqa: BLE001
+            logger.exception(
+                "Unexpected error in invalidate_tags",
+                extra={"tags": tags, "cache_alias": self.cache_alias},
+            )
+            return 0
