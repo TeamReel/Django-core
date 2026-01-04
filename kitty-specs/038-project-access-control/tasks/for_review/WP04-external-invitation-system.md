@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: External Invitation System (US2)
-lane: "doing"
+lane: "for_review"
 subtasks: [T019, T020, T021, T022, T023, T024, T025, T026]
 priority: P1
 estimated_effort: 3-4 days
@@ -113,3 +113,4 @@ DELETE /api/v1/projects/{id}/invitations/{invite_id}
 - 2026-01-04T19:32:41Z – claude – shell_pid=22952 – lane=for_review – Backend implementation complete - ready for code review
 - 2026-01-04T19:39:51Z – claude-reviewer – shell_pid=review-193241 – lane=planned – Test fix required: test_create_invitation malformed (11/12 tests passing)
 - 2026-01-04T19:41:32Z – claude – shell_pid=fix-22952 – lane=doing – Addressing review feedback: fixing test_create_invitation
+- 2026-01-04T19:43:49Z – claude – shell_pid=fix-22952 – lane=for_review – Test fix complete - all 12 tests passing (100%)
