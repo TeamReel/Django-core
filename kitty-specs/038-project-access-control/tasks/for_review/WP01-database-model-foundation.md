@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Database & Model Foundation
-lane: "planned"
+lane: "for_review"
 subtasks: [T001, T002, T003, T004, T005, T006]
 priority: P1
 estimated_effort: 2-3 days
@@ -833,3 +833,5 @@ python manage.py seed_memberships --count=50
 - 2026-01-04T16:07:44Z – copilot – shell_pid= – lane=doing – Started implementation
 - 2026-01-04T16:14:46Z – copilot – shell_pid=43940 – lane=for_review – Ready for review
 - 2026-01-04T16:16:09Z – copilot – shell_pid=43940 – lane=planned – Code review complete: Missing required tests for new models.
+- 2026-01-04T16:18:07Z – copilot – shell_pid=43940 – lane=doing – Moved to doing
+- 2026-01-04T16:23:16Z – copilot – shell_pid=43940 – lane=for_review – Moved to for_review

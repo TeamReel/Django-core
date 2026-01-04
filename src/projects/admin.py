@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import Project
+from .models import Project, ProjectMembership, ProjectInvite, ProjectMembershipPromotion
 
 
 @admin.register(Project)
@@ -20,11 +20,13 @@ class ProjectAdmin(admin.ModelAdmin):
         "slug",
         "creator",
         "is_active_display",
+        "is_private",
         "created_at",
     ]
 
     list_filter = [
         "is_active",
+        "is_private",
         "created_at",
         "organisation",
     ]
@@ -51,7 +53,7 @@ class ProjectAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Basic Information", {"fields": ("name", "slug", "description", "organisation")}),
         ("Ownership", {"fields": ("creator",)}),
-        ("Status", {"fields": ("is_active", "archived_at")}),
+        ("Status", {"fields": ("is_active", "is_private", "archived_at")}),
         (
             "Timestamps",
             {
@@ -103,6 +105,68 @@ class ProjectAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """Include all projects (active and archived) in admin."""
         return Project.all_objects.select_related("organisation", "creator")
+
+
+@admin.register(ProjectMembership)
+class ProjectMembershipAdmin(admin.ModelAdmin):
+    """Admin for ProjectMembership."""
+
+    list_display = [
+        "project",
+        "user",
+        "role",
+        "assignment_reason",
+        "created_at",
+        "deleted_at",
+    ]
+    list_filter = ["role", "assignment_reason", "deleted_at"]
+    search_fields = [
+        "project__name",
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+    ]
+    readonly_fields = ["created_at", "updated_at"]
+
+
+@admin.register(ProjectInvite)
+class ProjectInviteAdmin(admin.ModelAdmin):
+    """Admin for ProjectInvite."""
+
+    list_display = [
+        "email",
+        "project",
+        "role",
+        "status",
+        "invited_by",
+        "expires_at",
+    ]
+    list_filter = ["status", "role", "created_at"]
+    search_fields = ["email", "project__name", "token"]
+    readonly_fields = ["token", "created_at", "accepted_at"]
+    actions = ["cancel_invites"]
+
+    @admin.action(description="Cancel selected invites")
+    def cancel_invites(self, request, queryset):
+        """Cancel selected invitations."""
+        queryset.update(status=ProjectInvite.Status.CANCELLED)
+
+
+@admin.register(ProjectMembershipPromotion)
+class ProjectMembershipPromotionAdmin(admin.ModelAdmin):
+    """Admin for ProjectMembershipPromotion."""
+
+    list_display = [
+        "target_user",
+        "project",
+        "from_role",
+        "to_role",
+        "status",
+        "is_suspicious",
+    ]
+    list_filter = ["status", "is_suspicious", "created_at"]
+    search_fields = ["target_user__email", "project__name"]
+    readonly_fields = ["created_at", "resolved_at"]
 
 
 class ProjectInline(admin.TabularInline):

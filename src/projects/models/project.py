@@ -5,7 +5,7 @@ from django.db.models.functions import Lower
 from django.utils import timezone
 from django.utils.text import slugify
 
-from .managers import ActiveProjectManager, AllProjectManager
+from ..managers import ActiveProjectManager, AllProjectManager
 
 
 class Project(models.Model):
@@ -49,6 +49,11 @@ class Project(models.Model):
         help_text="False when project is archived (soft deletion)",
     )
 
+    is_private = models.BooleanField(
+        default=False,
+        help_text="If True, project is only accessible to explicit members (no org-wide access)",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     archived_at = models.DateTimeField(
@@ -78,11 +83,13 @@ class Project(models.Model):
         indexes = [
             models.Index(fields=["organisation", "is_active"]),
             models.Index(fields=["slug"]),
+            models.Index(fields=["organisation", "is_private"]),
         ]
 
     def __str__(self) -> str:
         """Return string representation of project."""
-        return f"{self.organisation.name}/{self.name}"
+        privacy_marker = " (Private)" if self.is_private else ""
+        return f"{self.organisation.name}/{self.name}{privacy_marker}"
 
     def get_absolute_url(self) -> str:
         """Return absolute URL for project detail."""

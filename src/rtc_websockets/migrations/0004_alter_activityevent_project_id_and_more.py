@@ -12,6 +12,14 @@ class Migration(migrations.Migration):
 
     operations = [
         # ActivityEvent
+        migrations.RemoveIndex(
+            model_name="activityevent",
+            name="realtime_ac_organiz_253eb6_idx",
+        ),
+        migrations.RemoveIndex(
+            model_name="activityevent",
+            name="realtime_ac_project_d29cba_idx",
+        ),
         migrations.RemoveField(
             model_name="activityevent",
             name="organization_id",
@@ -42,6 +50,18 @@ class Migration(migrations.Migration):
             preserve_default=False,
         ),
         # PresenceStatus
+        migrations.AlterUniqueTogether(
+            name="presencestatus",
+            unique_together=set(),
+        ),
+        migrations.RemoveIndex(
+            model_name="presencestatus",
+            name="realtime_pr_organiz_c486f5_idx",
+        ),
+        migrations.RemoveIndex(
+            model_name="presencestatus",
+            name="realtime_pr_project_6dd7e7_idx",
+        ),
         migrations.RemoveField(
             model_name="presencestatus",
             name="project_id",
@@ -64,6 +84,10 @@ class Migration(migrations.Migration):
             preserve_default=False,
         ),
         # RealtimeMessage
+        migrations.RemoveIndex(
+            model_name="realtimemessage",
+            name="realtime_me_scope_t_104c2d_idx",
+        ),
         migrations.RemoveField(
             model_name="realtimemessage",
             name="scope_id",
