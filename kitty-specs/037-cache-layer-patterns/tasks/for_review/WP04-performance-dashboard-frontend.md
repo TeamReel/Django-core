@@ -1,9 +1,9 @@
 ---
-lane: "doing"
+lane: "for_review"
 assignee: "Claude Agent"
 agent: "claude"
 shell_pid: "45452"
-review_status: "acknowledged"
+review_status: ""
 reviewed_by: "claude-reviewer"
 ---
 
@@ -72,6 +72,7 @@ reviewed_by: "claude-reviewer"
 - 2026-01-04T10:30:00Z – claude-reviewer – shell_pid=45452 – lane=planned – Code review: T017 incomplete (chart placeholder only), missing Recharts dependency, needs runtime testing
 - 2026-01-04T10:45:00Z – claude – shell_pid=45452 – lane=doing – Acknowledged feedback, addressing T017 Recharts integration
 - 2026-01-04T11:00:00Z – claude – shell_pid=45452 – lane=doing – Addressed feedback: installed recharts, implemented dual Y-axis LineChart with hit_ratio and memory_mb series
+- 2026-01-04T11:15:00Z – claude – shell_pid=45452 – lane=for_review – Completed T017 implementation, all review feedback addressed (commit ff7f3ff8)
 
 ## Context
 - **Spec:** [spec.md](../../spec.md)
