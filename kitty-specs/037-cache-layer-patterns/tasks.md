@@ -44,21 +44,21 @@
 ### WP04: Performance Dashboard (Frontend)
 **Goal**: Visualize cache performance and provide admin controls.
 **Priority**: P2 (UI)
+**Independent Test**: Verify dashboard renders charts and actions work.
 **Status**: ✅ Complete
 
 - [x] **T015**: Scaffold `/demo/performance` page.
 - [x] **T016**: Implement `CacheStats` component (Gauges).
 - [x] **T017**: Implement `CacheHistory` component (Recharts Line Chart).
 - [x] **T018**: Implement `CacheActions` component (Clear, Benchmark).
-- [x] **T018**: Implement `CacheActions` component (Clear, Benchmark).
-- [ ] **T019**: Connect UI to APIs.
+- [x] **T019**: Connect UI to APIs.
 
 ### WP05: Integration & Polish
 **Goal**: Verify resilience and finalize documentation.
 **Priority**: P3 (Polish)
+**Independent Test**: "Unplug Test" passes.
 **Status**: ✅ Complete
 
 - [x] **T020**: Perform "Unplug Test" (Stop Redis, verify app doesn't crash).
 - [x] **T021**: Verify Metrics retention (mock data or short interval).
-- [x] **T021**: Verify Metrics retention (mock data or short interval).
-- [ ] **T022**: Update `quickstart.md` with final examples.
+- [x] **T022**: Update `quickstart.md` with final examples.
