@@ -429,29 +429,29 @@
 
 **Included Subtasks**:
 
-- [ ] **T033**: Update PermissionResolutionService for private projects
+- [x] **T033**: Update PermissionResolutionService for private projects
   - Step 2 in resolution: If `project.is_private` and no explicit membership, return "no_access"
   - Exception: If user is org admin AND override flag enabled, allow access with `source="emergency_override"`
   - Location: `apps/projects/services/permission_resolution.py` (extend existing)
 
-- [ ] **T034**: Add emergency override audit logging
+- [x] **T034**: Add emergency override audit logging
   - Event: `project.private_access_override` (actor, project_id, reason)
   - Log whenever org admin accesses private project without explicit membership
   - Add rate limiting: Max 5 overrides per day per admin (prevent abuse)
   - Location: `apps/projects/services/permission_resolution.py`
 
-- [ ] **T035**: Add B10 feature flag for override
+- [x] **T035**: Add B10 feature flag for override
   - Flag: `project_access_control.org_admin_override` (default: True)
   - Flag: `project_access_control.private_projects` (default: True)
   - Location: Check in `PermissionResolutionService.get_project_role()`
 
-- [ ] **T036**: Frontend: Add "Make Private" toggle in project settings
+- [x] **T036**: Frontend: Add "Make Private" toggle in project settings
   - Settings page: `/projects/{id}/settings/general`
   - Toggle switch with warning modal: "Org members will lose automatic access. {X} users affected."
   - Show affected user count before confirmation
   - Location: `packages/frontend/src/pages/ProjectSettings/GeneralTab.tsx`
 
-- [ ] **T037**: Frontend: Show override badge when accessing via emergency override
+- [x] **T037**: Frontend: Show override badge when accessing via emergency override
   - Banner at top of project: "You are accessing this private project via admin override. This action is audited."
   - Link to audit log entry
   - Location: `packages/frontend/src/components/ProjectLayout.tsx` (conditional render)
