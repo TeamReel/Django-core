@@ -74,12 +74,20 @@ export const CachePerformancePage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch metrics: ${response.status}`);
+        throw new Error(`Failed to fetch metrics: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
+
+      // Validate response structure
+      if (!data.realtime) {
+        console.error('[CachePerformancePage] Invalid API response:', data);
+        throw new Error('Invalid API response: missing realtime metrics');
+      }
+
       setMetrics(data);
     } catch (err) {
+      console.error('[CachePerformancePage] Fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch metrics');
     } finally {
       setLoading(false);
@@ -187,7 +195,7 @@ export const CachePerformancePage: React.FC = () => {
           </Card>
         )}
 
-        {metrics && (
+        {metrics && metrics.realtime && (
           <>
             {/* T016: Cache Stats (Gauges) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -251,7 +259,7 @@ export const CachePerformancePage: React.FC = () => {
             <Card className="mb-6">
               <div className="p-6">
                 <h2 className="text-lg font-semibold mb-4">Performance History (Last 7 Days)</h2>
-                {metrics.history.length > 0 ? (
+                {metrics.history && metrics.history.length > 0 ? (
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart
                       data={metrics.history.map((point) => ({
