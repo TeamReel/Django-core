@@ -24,9 +24,9 @@ reviewed_by: "claude-reviewer"
 Verify resilience and finalize documentation.
 
 ## Tasks
-- [X] **T020**: Perform "Unplug Test" (Stop Redis, verify app doesn't crash).
-- [X] **T021**: Verify Metrics retention (mock data or short interval).
-- [X] **T022**: Update `quickstart.md` with final examples.
+- [x] **T020**: Perform "Unplug Test" (Stop Redis, verify app doesn't crash).
+- [x] **T021**: Verify Metrics retention (mock data or short interval).
+- [x] **T022**: Update `quickstart.md` with final examples.
 
 ## Definition of Done
 - Application remains stable when Redis is down.

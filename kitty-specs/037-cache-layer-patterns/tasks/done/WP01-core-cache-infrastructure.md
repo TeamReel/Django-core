@@ -1,5 +1,6 @@
 ---
 lane: "done"
+assignee: "Claude Agent"
 agent: "claude"
 shell_pid: "45452"
 review_status: "approved without changes"
@@ -42,10 +43,10 @@ reviewed_by: "claude-reviewer"
 Establish the base `CacheService` with resilience against Redis outages.
 
 ## Tasks
-- [ ] **T001**: Verify `django-redis` configuration in `settings.py` (ensure aliases).
-- [ ] **T002**: Create `core/cache/` module structure (`services.py`, `decorators.py`, `circuit_breaker.py`).
-- [ ] **T003**: Implement `CircuitBreaker` class with Open/Closed/Half-Open states (TDD).
-- [ ] **T004**: Implement `CacheService` wrapper with Circuit Breaker integration for `get`/`set`.
+- [x] **T001**: Verify `django-redis` configuration in `settings.py` (ensure aliases).
+- [x] **T002**: Create `core/cache/` module structure (`services.py`, `decorators.py`, `circuit_breaker.py`).
+- [x] **T003**: Implement `CircuitBreaker` class with Open/Closed/Half-Open states (TDD).
+- [x] **T004**: Implement `CacheService` wrapper with Circuit Breaker integration for `get`/`set`.
 
 ## Definition of Done
 - `CircuitBreaker` unit tests pass (state transitions).

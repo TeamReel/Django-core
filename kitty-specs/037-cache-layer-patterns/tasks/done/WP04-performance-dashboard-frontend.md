@@ -84,11 +84,11 @@ reviewed_by: "claude-reviewer"
 Visualize cache performance and provide admin controls.
 
 ## Tasks
-- [X] **T015**: Scaffold `/demo/performance` page.
-- [X] **T016**: Implement `CacheStats` component (Gauges).
-- [X] **T017**: Implement `CacheHistory` component (Recharts Line Chart).
-- [X] **T018**: Implement `CacheActions` component (Clear, Benchmark).
-- [X] **T019**: Connect UI to APIs.
+- [x] **T015**: Scaffold `/demo/performance` page.
+- [x] **T016**: Implement `CacheStats` component (Gauges).
+- [x] **T017**: Implement `CacheHistory` component (Recharts Line Chart).
+- [x] **T018**: Implement `CacheActions` component (Clear, Benchmark).
+- [x] **T019**: Connect UI to APIs.
 
 ## Definition of Done
 - Dashboard displays real-time stats from the API.
