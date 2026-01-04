@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 assignee: "Claude Agent"
 agent: "claude"
 shell_pid: "45452"
@@ -10,6 +10,7 @@ review_status: ""
 
 ## Activity Log
 - 2026-01-04T00:00:00Z – claude – shell_pid=45452 – lane=doing – Started implementation
+- 2026-01-04T00:15:00Z – claude – shell_pid=45452 – lane=for_review – Completed implementation
 
 ## Context
 - **Spec:** [spec.md](../../spec.md)

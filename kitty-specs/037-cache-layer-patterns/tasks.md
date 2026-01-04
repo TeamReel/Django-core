@@ -2,7 +2,7 @@
 
 **Feature**: Cache Layer & Patterns
 **Status**: In Progress
-**Progress**: 4 / 22
+**Progress**: 9 / 22
 
 ## Work Packages
 
@@ -21,12 +21,13 @@
 **Goal**: Implement the developer-facing API (`@cache_result`) and tag-based invalidation.
 **Priority**: P1 (Core Feature)
 **Independent Test**: Verify `@cache_result` caches data and `invalidate_tags` clears it.
+**Status**: ✅ Complete
 
-- [ ] **T005**: Implement `CacheService.add_tags(key, tags)` using Redis Sets.
-- [ ] **T006**: Implement `CacheService.invalidate_tags(tags)` using Redis Sets.
-- [ ] **T007**: Implement `@cache_result` decorator with hybrid key generation.
-- [ ] **T008**: Implement `@cache_invalidate` decorator.
-- [ ] **T009**: Unit tests for decorators and tagging scenarios.
+- [x] **T005**: Implement `CacheService.add_tags(key, tags)` using Redis Sets.
+- [x] **T006**: Implement `CacheService.invalidate_tags(tags)` using Redis Sets.
+- [x] **T007**: Implement `@cache_result` decorator with hybrid key generation.
+- [x] **T008**: Implement `@cache_invalidate` decorator.
+- [x] **T009**: Unit tests for decorators and tagging scenarios.
 
 ### WP03: Metrics Collection (Backend)
 **Goal**: Implement historical data collection and API endpoints for the dashboard.
