@@ -2,6 +2,7 @@
 
 from django.urls import path
 
+from .seed_api import seed_metrics
 from .views import (
     cache_benchmark,
     cache_clear,
@@ -28,5 +29,11 @@ urlpatterns = [
         "system/cache/benchmark/",
         cache_benchmark,
         name="observability-cache-benchmark",
+    ),
+    # Admin: Seed cache metrics (superadmin only)
+    path(
+        "system/seed-cache-metrics/",
+        seed_metrics,
+        name="observability-seed-cache-metrics",
     ),
 ]
