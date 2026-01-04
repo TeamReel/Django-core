@@ -1,13 +1,15 @@
 ---
 work_package_id: WP01
 title: Database & Model Foundation
-lane: "for_review"
+lane: "planned"
 subtasks: [T001, T002, T003, T004, T005, T006]
 priority: P1
 estimated_effort: 2-3 days
 dependencies: []
 agent: "copilot"
 shell_pid: "43940"
+review_status: "has_feedback"
+reviewed_by: "copilot"
 history:
   - date: 2026-01-04
     action: created
@@ -20,7 +22,31 @@ history:
     action: implementation_completed
     author: copilot
     note: Completed implementation of models, migrations, and admin configuration. Refactored models.py into package.
+  - date: 2026-01-04
+    action: review_feedback
+    author: copilot
+    note: "Code review complete: Missing required tests for new models."
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Key Issues**:
+1. **Missing Tests (T005)**: The task required adding validation tests, but no new tests were created for `ProjectMembership`, `ProjectInvite`, or `ProjectMembershipPromotion`. Critical logic like "Last Admin Protection" and "Suspicious Promotion" is currently untested.
+2. **Test Location**: The prompt requested tests in `tests/unit/apps/projects/`, but the project structure uses `tests/projects/`. Please add the tests in the correct location.
+
+**What Was Done Well**:
+- Refactoring `src/projects/models.py` into a package was done correctly and cleanly.
+- Admin configuration (`src/projects/admin.py`) is comprehensive and includes useful actions.
+- Migrations were created and applied successfully.
+
+**Action Items** (must complete before re-review):
+- [ ] Create `tests/projects/test_model_validation.py` (or add to `tests/projects/test_models.py`).
+- [ ] Add tests for `ProjectMembership` (unique constraints, last admin protection).
+- [ ] Add tests for `ProjectInvite` (token generation, expiry).
+- [ ] Add tests for `ProjectMembershipPromotion` (suspicious check).
+- [ ] Verify `Project.is_private` field behavior in tests.
 
 # WP01: Database & Model Foundation
 
