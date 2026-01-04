@@ -14,7 +14,7 @@ export function TasksPage() {
 
   useEffect(() => {
     const fetchTasks = async (isInitialLoad = false) => {
-      try:
+      try {
         // Only show full loading spinner on initial load
         if (isInitialLoad) {
           setLoading(true);
