@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 /**
  * T015-T019: Cache Performance Dashboard
@@ -237,17 +247,74 @@ export const CachePerformancePage: React.FC = () => {
               </Card>
             </div>
 
-            {/* T017: Cache History Chart (Placeholder - will add Recharts) */}
+            {/* T017: Cache History Chart (Recharts Implementation) */}
             <Card className="mb-6">
               <div className="p-6">
                 <h2 className="text-lg font-semibold mb-4">Performance History (Last 7 Days)</h2>
                 {metrics.history.length > 0 ? (
-                  <div className="text-center text-gray-500 py-8">
-                    Chart will be implemented with Recharts
-                    <div className="text-sm mt-2">
-                      {metrics.history.length} data points available
-                    </div>
-                  </div>
+                  <ResponsiveContainer width="100%" height={400}>
+                    <LineChart
+                      data={metrics.history.map((point) => ({
+                        timestamp: new Date(point.timestamp).toLocaleTimeString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }),
+                        hit_ratio: point.hit_ratio,
+                        memory_mb: point.memory_used_bytes / (1024 * 1024),
+                      }))}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="timestamp"
+                        tick={{ fontSize: 12 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                      />
+                      <YAxis
+                        yAxisId="left"
+                        domain={[0, 1]}
+                        tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
+                        label={{ value: 'Hit Ratio', angle: -90, position: 'insideLeft' }}
+                      />
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        tickFormatter={(value) => `${value.toFixed(0)} MB`}
+                        label={{ value: 'Memory (MB)', angle: 90, position: 'insideRight' }}
+                      />
+                      <Tooltip
+                        formatter={(value: number, name: string) => {
+                          if (name === 'hit_ratio') {
+                            return [`${(value * 100).toFixed(1)}%`, 'Hit Ratio'];
+                          }
+                          return [`${value.toFixed(2)} MB`, 'Memory'];
+                        }}
+                      />
+                      <Legend />
+                      <Line
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="hit_ratio"
+                        stroke="#10b981"
+                        name="Hit Ratio"
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                      />
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="memory_mb"
+                        stroke="#3b82f6"
+                        name="Memory (MB)"
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
                 ) : (
                   <div className="text-center text-gray-500 py-8">
                     No historical data available yet.

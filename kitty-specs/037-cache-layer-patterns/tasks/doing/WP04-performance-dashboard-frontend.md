@@ -58,12 +58,12 @@ reviewed_by: "claude-reviewer"
 - ✅ **Developer Experience**: Clear inline comments documenting purpose and API endpoints
 
 **Action Items** (must complete before re-review):
-- [ ] Install `recharts` dependency in `examples/demo-shell/package.json`
-- [ ] Replace chart placeholder div with functional Recharts LineChart component
-- [ ] Implement dual Y-axis chart: hit_ratio (left, 0-1 scale) + memory_used_bytes (right, formatted)
-- [ ] Add XAxis (timestamp), Tooltip, Legend, ResponsiveContainer
+- [X] Install `recharts` dependency in `examples/demo-shell/package.json`
+- [X] Replace chart placeholder div with functional Recharts LineChart component
+- [X] Implement dual Y-axis chart: hit_ratio (left, 0-1 scale) + memory_used_bytes (right, formatted)
+- [X] Add XAxis (timestamp), Tooltip, Legend, ResponsiveContainer
 - [ ] Test dashboard in browser: start dev server, navigate to `/demo/performance`, verify all features work
-- [ ] Update task checkboxes: mark T015, T016, T018, T019 as `[X]` complete
+- [X] Update task checkboxes: mark T015, T016, T018, T019 as `[X]` complete
 - [ ] Take screenshot or verify in browser that historical chart displays actual line graph
 
 ## Activity Log
@@ -71,6 +71,7 @@ reviewed_by: "claude-reviewer"
 - 2026-01-04T10:15:00Z – claude – shell_pid=45452 – lane=for_review – Completed T015-T019, commit ee25625d
 - 2026-01-04T10:30:00Z – claude-reviewer – shell_pid=45452 – lane=planned – Code review: T017 incomplete (chart placeholder only), missing Recharts dependency, needs runtime testing
 - 2026-01-04T10:45:00Z – claude – shell_pid=45452 – lane=doing – Acknowledged feedback, addressing T017 Recharts integration
+- 2026-01-04T11:00:00Z – claude – shell_pid=45452 – lane=doing – Addressed feedback: installed recharts, implemented dual Y-axis LineChart with hit_ratio and memory_mb series
 
 ## Context
 - **Spec:** [spec.md](../../spec.md)
@@ -81,11 +82,11 @@ reviewed_by: "claude-reviewer"
 Visualize cache performance and provide admin controls.
 
 ## Tasks
-- [ ] **T015**: Scaffold `/demo/performance` page.
-- [ ] **T016**: Implement `CacheStats` component (Gauges).
-- [ ] **T017**: Implement `CacheHistory` component (Recharts Line Chart).
-- [ ] **T018**: Implement `CacheActions` component (Clear, Benchmark).
-- [ ] **T019**: Connect UI to APIs.
+- [X] **T015**: Scaffold `/demo/performance` page.
+- [X] **T016**: Implement `CacheStats` component (Gauges).
+- [X] **T017**: Implement `CacheHistory` component (Recharts Line Chart).
+- [X] **T018**: Implement `CacheActions` component (Clear, Benchmark).
+- [X] **T019**: Connect UI to APIs.
 
 ## Definition of Done
 - Dashboard displays real-time stats from the API.
