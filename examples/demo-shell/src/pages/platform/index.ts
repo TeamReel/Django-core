@@ -10,3 +10,4 @@ export { ConstitutionPage } from './ConstitutionPage';
 export { SecurityPage } from './SecurityPage';
 export { ObservabilityPage } from './ObservabilityPage';
 export { ApiDocsPage } from './ApiDocsPage';
+export { CachePerformancePage } from './CachePerformancePage';

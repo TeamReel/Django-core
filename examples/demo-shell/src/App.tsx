@@ -48,6 +48,7 @@ import {
   SecurityPage,
   ObservabilityPage,
   ApiDocsPage,
+  CachePerformancePage,
 } from './pages/platform';
 
 import WebSocketTestPage from './pages/platform/WebSocketTestPage';
@@ -361,6 +362,15 @@ export default function App() {
         element={
           <AdminOnlyRoute>
             <WebSocketTestPage />
+          </AdminOnlyRoute>
+        }
+      />
+
+      <Route
+        path="/demo/performance"
+        element={
+          <AdminOnlyRoute>
+            <CachePerformancePage />
           </AdminOnlyRoute>
         }
       />
