@@ -14,6 +14,11 @@ history:
     author: claude
     shell_pid: "22952"
     notes: "Starting WP04 implementation - External Invitation System"
+  - date: 2026-01-04
+    action: completed_backend
+    author: claude
+    shell_pid: "22952"
+    notes: "Backend implementation complete (T019-T023): InvitationService with 4 methods (create/accept/cancel/resend), ProjectInviteViewSet with 6 actions (list/create/destroy/resend/get_by_token/accept), email templates (HTML+text), rate limiting (20/hour create, 60/hour accept), permission checks (admin/public), audit integration (4 event types), URL routing (nested+public). Test suite: 12/12 passing. Ready for code review. Frontend (T024-T026) deferred to separate work packages."
 ---
 
 # WP04: External Invitation System (US2)
