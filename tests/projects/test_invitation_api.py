@@ -50,9 +50,7 @@ class TestProjectInvitationAPI:
         assert len(response.data["data"]) == 1
         assert response.data["data"][0]["email"] == "invitee@example.com"
 
-    def test_create_invitation(
-        self, authenticated_client, project, project_membership, user_factory
-    ):
+    def test_create_invitation(self, authenticated_client, project, project_membership):
         """Test creating a new invitation."""
         url = reverse(
             "api_v1:project-invitations-list",
@@ -65,6 +63,20 @@ class TestProjectInvitationAPI:
 
         response = authenticated_client.post(url, data)
 
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["email"] == "newuser@example.com"
+        assert response.data["role"] == ProjectMembership.Role.EDITOR
+        assert response.data["status"] == ProjectInvite.Status.PENDING
+        assert "id" in response.data
+
+        # Verify invitation was created in database
+        invitation = ProjectInvite.objects.get(email="newuser@example.com", project=project)
+        assert invitation.token is not None
+        assert len(invitation.token) > 0
+
+    def test_create_invitation_duplicate_fails(
+        self, authenticated_client, project, project_membership, invitation
+    ):
         """Test that creating duplicate invitation fails."""
         url = reverse(
             "api_v1:project-invitations-list",

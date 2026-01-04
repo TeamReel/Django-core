@@ -8,7 +8,7 @@ estimated_effort: 3-4 days
 dependencies: [WP01, WP02, WP03]
 agent: "claude"
 shell_pid: "fix-22952"
-review_status: "has_feedback"
+review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
 history:
   - date: 2026-01-04
