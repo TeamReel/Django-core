@@ -85,7 +85,39 @@ To run management commands (like `rebuild_search_index` or `migrate`) from your 
 
 > **Warning:** Be careful when running commands against production data. Ensure you do not commit real credentials to version control.
 
-## 6. Troubleshooting
+## 6. Setting Up Celery Beat Worker (Optional - For Cache Metrics)
+
+**Purpose:** Celery Beat collects cache performance metrics every 10 minutes for the `/demo/performance` dashboard.
+
+**Without this:** Cache dashboard works, but historical chart remains empty (real-time benchmark still works).
+
+**Setup Steps:**
+
+1. **In Railway Dashboard**, go to your project
+2. Click **"+ New"** → **"Empty Service"**
+3. Name it: `celery-beat`
+4. **Settings** → **Source** → Link to the same GitHub repo
+5. **Settings** → **Deploy** → **Custom Start Command**:
+   ```bash
+   celery -A config beat --loglevel=info
+   ```
+6. **Variables** → Share all variables from the `backend` service:
+   - `DATABASE_URL` (link to PostgreSQL)
+   - `REDIS_URL` (link to Redis)
+   - `SECRET_KEY` (same as backend)
+   - `DJANGO_SETTINGS_MODULE=config.settings.production`
+
+7. **Deploy** the service
+
+**Verification:**
+- Check logs: Should see "Scheduler: Sending due task..."
+- After 10 minutes, refresh `/demo/performance` → Historical chart shows data
+
+**Cost:** Celery Beat is lightweight (~50MB RAM), adds minimal cost to Railway plan.
+
+---
+
+## 7. Troubleshooting
 
 ### Database Error: "FATAL: sorry, too many clients already"
 This error occurs when the PostgreSQL database has reached its maximum number of concurrent connections. This often happens if `CONN_MAX_AGE` is set too high or if many local commands are run without closing connections.

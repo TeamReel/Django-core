@@ -1,0 +1,19 @@
+# Railway Procfile for Django Core-App
+# This defines multiple process types for the application
+#
+# NOTE: Railway does NOT automatically run all processes from a Procfile.
+# You must create separate services in Railway Dashboard for each process type.
+# See docs/railway/RAILWAY_SETUP.md section 6 for instructions.
+
+# Web server (Gunicorn with production settings)
+# This is the default process type that Railway runs automatically
+web: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120
+
+# Celery Beat scheduler (metrics collection every 10 minutes)
+# SETUP REQUIRED: Create a separate Railway service with custom start command
+# Command: celery -A config beat --loglevel=info
+beat: celery -A config beat --loglevel=info
+
+# Celery Worker (for async tasks - optional, not required for cache metrics)
+# SETUP REQUIRED: Create a separate Railway service if you need async task processing
+# worker: celery -A config worker --loglevel=info --concurrency=2
