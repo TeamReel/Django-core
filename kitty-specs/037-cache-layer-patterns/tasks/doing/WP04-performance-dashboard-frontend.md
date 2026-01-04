@@ -1,4 +1,15 @@
+---
+lane: "doing"
+assignee: "Claude Agent"
+agent: "claude"
+shell_pid: "45452"
+review_status: ""
+---
+
 # WP04: Performance Dashboard (Frontend)
+
+## Activity Log
+- 2026-01-04T09:00:00Z – claude – shell_pid=45452 – lane=doing – Started implementation
 
 ## Context
 - **Spec:** [spec.md](../../spec.md)
