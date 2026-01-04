@@ -8,11 +8,14 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from django.core.management import call_command
 from django.http import HttpResponse
+from django.middleware.csrf import get_token
+from django.views.decorators.csrf import ensure_csrf_cookie
 from io import StringIO
 
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAdminUser])
+@ensure_csrf_cookie
 def seed_metrics(request):
     """
     Trigger cache metrics seeding.
@@ -34,21 +37,22 @@ def seed_metrics(request):
     """
     # Handle GET request - show HTML form
     if request.method == "GET":
-        html = """
+        csrf_token = get_token(request)
+        html = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <title>Seed Cache Metrics</title>
             <style>
-                body { font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
-                h1 { color: #2563eb; }
-                form { background: #f9fafb; padding: 20px; border-radius: 8px; }
-                label { display: block; margin: 15px 0 5px; font-weight: 600; }
-                input { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; }
-                button { background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; }
-                button:hover { background: #1d4ed8; }
-                .info { background: #dbeafe; padding: 15px; border-radius: 4px; margin: 20px 0; }
-                pre { background: #1f2937; color: #10b981; padding: 15px; border-radius: 4px; overflow-x: auto; }
+                body {{ font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }}
+                h1 {{ color: #2563eb; }}
+                form {{ background: #f9fafb; padding: 20px; border-radius: 8px; }}
+                label {{ display: block; margin: 15px 0 5px; font-weight: 600; }}
+                input {{ width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; }}
+                button {{ background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; }}
+                button:hover {{ background: #1d4ed8; }}
+                .info {{ background: #dbeafe; padding: 15px; border-radius: 4px; margin: 20px 0; }}
+                pre {{ background: #1f2937; color: #10b981; padding: 15px; border-radius: 4px; overflow-x: auto; }}
             </style>
         </head>
         <body>
@@ -58,6 +62,7 @@ def seed_metrics(request):
             </div>
 
             <form method="POST" id="seedForm">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">
                 <label>Days of History (1-30):</label>
                 <input type="number" name="days" value="7" min="1" max="30" required>
 
@@ -73,7 +78,22 @@ def seed_metrics(request):
             </div>
 
             <script>
-                document.getElementById('seedForm').addEventListener('submit', async (e) => {
+                function getCookie(name) {{
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {{
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {{
+                            const cookie = cookies[i].trim();
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {{
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }}
+                        }}
+                    }}
+                    return cookieValue;
+                }}
+
+                document.getElementById('seedForm').addEventListener('submit', async (e) => {{
                     e.preventDefault();
                     const formData = new FormData(e.target);
                     const days = formData.get('days');
@@ -82,18 +102,22 @@ def seed_metrics(request):
                     document.getElementById('result').style.display = 'block';
                     document.getElementById('output').textContent = 'Running seeder...';
 
-                    try {
-                        const response = await fetch(`?days=${days}&interval=${interval}`, {
+                    try {{
+                        const csrftoken = getCookie('csrftoken');
+                        const response = await fetch(`?days=${{days}}&interval=${{interval}}`, {{
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: {{
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrftoken
+                            }},
                             credentials: 'include'
-                        });
+                        }});
                         const data = await response.json();
                         document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-                    } catch (error) {
+                    }} catch (error) {{
                         document.getElementById('output').textContent = 'Error: ' + error.message;
-                    }
-                });
+                    }}
+                }});
             </script>
         </body>
         </html>
