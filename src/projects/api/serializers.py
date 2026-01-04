@@ -3,7 +3,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from projects.models import Project, ProjectMembership
+from projects.models import Project, ProjectMembership, ProjectInvite
 
 User = get_user_model()
 
@@ -226,3 +226,62 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class ProjectInviteSerializer(serializers.ModelSerializer):
+    """Serializer for project invitations."""
+
+    invited_by = UserNestedSerializer(read_only=True)
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    is_expired = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectInvite
+        fields = [
+            "id",
+            "email",
+            "role",
+            "status",
+            "invited_by",
+            "project_name",
+            "created_at",
+            "expires_at",
+            "accepted_at",
+            "is_expired",
+        ]
+        read_only_fields = [
+            "id",
+            "status",
+            "invited_by",
+            "created_at",
+            "expires_at",
+            "accepted_at",
+        ]
+
+    def get_is_expired(self, obj):
+        """Check if invitation is expired."""
+        return obj.is_expired()
+
+    def validate_email(self, value):
+        """Validate email format."""
+        if not value:
+            raise serializers.ValidationError("Email is required.")
+        return value.lower().strip()
+
+    def validate_role(self, value):
+        """Validate role is valid."""
+        if value not in dict(ProjectMembership.Role.choices):
+            raise serializers.ValidationError(f"Invalid role: {value}")
+        return value
+
+
+class AcceptInvitationSerializer(serializers.Serializer):
+    """Serializer for accepting an invitation."""
+
+    token = serializers.CharField(required=True, max_length=64)
+
+    def validate_token(self, value):
+        """Validate token exists."""
+        if not ProjectInvite.objects.filter(token=value).exists():
+            raise serializers.ValidationError("Invalid invitation token.")
+        return value

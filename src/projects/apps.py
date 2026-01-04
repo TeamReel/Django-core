@@ -16,7 +16,7 @@ class ProjectsConfig(AppConfig):
 
         from audit.registry import register_event_type
 
-        # Register audit events
+        # Register audit events for membership
         register_event_type(
             "project.membership.created",
             "project",
@@ -34,4 +34,30 @@ class ProjectsConfig(AppConfig):
             "project",
             "User removed from project",
             required_metadata_keys=["project_id", "user_id"],
+        )
+
+        # Register audit events for invitations
+        register_event_type(
+            "project.invitation.created",
+            "project",
+            "Project invitation created",
+            required_metadata_keys=["invitation_id", "email", "role"],
+        )
+        register_event_type(
+            "project.invitation.accepted",
+            "project",
+            "Project invitation accepted",
+            required_metadata_keys=["invitation_id", "role"],
+        )
+        register_event_type(
+            "project.invitation.cancelled",
+            "project",
+            "Project invitation cancelled",
+            required_metadata_keys=["invitation_id", "email"],
+        )
+        register_event_type(
+            "project.invitation.resent",
+            "project",
+            "Project invitation resent",
+            required_metadata_keys=["invitation_id", "email", "new_expires_at"],
         )

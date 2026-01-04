@@ -114,7 +114,39 @@ class ProjectInvite(models.Model):
 
     def send_invitation_email(self):
         """Trigger Celery task to send invitation email."""
-        # This will be implemented in WP04, but the method stub is required now.
-        # from apps.notifications.tasks import send_project_invitation_email
-        # send_project_invitation_email.delay(self.id)
-        pass
+        from django.conf import settings
+        from django.core.mail import send_mail
+        from django.template.loader import render_to_string
+
+        # Build accept URL
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+        accept_url = f"{frontend_url}/accept-invitation/{self.token}"
+
+        # Calculate expiry days
+        time_until_expiry = self.expires_at - timezone.now()
+        expiry_days = time_until_expiry.days
+
+        # Prepare context
+        context = {
+            "project_name": self.project.name,
+            "role": self.get_role_display(),
+            "invited_by_name": self.invited_by.get_full_name() or self.invited_by.email,
+            "accept_url": accept_url,
+            "expires_at": self.expires_at,
+            "expiry_days": expiry_days,
+            "site_name": getattr(settings, "SITE_NAME", "Django Core-App"),
+        }
+
+        # Render templates
+        html_message = render_to_string("projects/email/project_invitation.html", context)
+        plain_message = render_to_string("projects/email/project_invitation.txt", context)
+
+        # Send email
+        send_mail(
+            subject=f"You've been invited to {self.project.name}",
+            message=plain_message,
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@example.com"),
+            recipient_list=[self.email],
+            html_message=html_message,
+            fail_silently=False,
+        )

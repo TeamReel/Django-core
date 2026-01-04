@@ -4,12 +4,13 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.pagination import CursorPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.throttling import UserRateThrottle
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
-from projects.models import Project, ProjectMembership
+from projects.models import Project, ProjectMembership, ProjectInvite
 from projects.services.membership_service import MembershipService
+from projects.services.invitation_service import InvitationService
 
 from .permissions import IsOrganisationMemberOrAdmin
 from .serializers import (
@@ -17,6 +18,8 @@ from .serializers import (
     ProjectListSerializer,
     ProjectMembershipSerializer,
     ProjectUpdateSerializer,
+    ProjectInviteSerializer,
+    AcceptInvitationSerializer,
 )
 
 
@@ -526,3 +529,173 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         ]
 
         return Response({"data": users_data})
+
+
+class ProjectInviteThrottle(UserRateThrottle):
+    """Rate limiting for project invitations: 20/hour"""
+
+    rate = "20/hour"
+
+
+class InvitationAcceptThrottle(AnonRateThrottle):
+    """Rate limiting for invitation acceptance: 60/hour"""
+
+    rate = "60/hour"
+
+
+class ProjectInviteViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing project invitations.
+
+    Routes:
+    - GET /api/projects/{project_pk}/invitations/ - List invitations
+    - POST /api/projects/{project_pk}/invitations/ - Create invitation
+    - DELETE /api/projects/{project_pk}/invitations/{pk}/ - Cancel invitation
+    - POST /api/projects/{project_pk}/invitations/{pk}/resend/ - Resend invitation
+    - GET /api/invitations/{token}/ - Get invitation details (public)
+    - POST /api/invitations/{token}/accept/ - Accept invitation (public)
+
+    Rate Limiting:
+    - Create invitation: 20 requests/hour per user
+    - Accept invitation: 60 requests/hour (anonymous)
+
+    Permissions:
+    - List/Create/Cancel/Resend: Project admin only
+    - Get by token/Accept: Public (no authentication required)
+    """
+
+    serializer_class = ProjectInviteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        """Apply rate limiting for invitation creation."""
+        if self.action == "create":
+            return [ProjectInviteThrottle()]
+        elif self.action in ["get_by_token", "accept"]:
+            return [InvitationAcceptThrottle()]
+        return []
+
+    def get_queryset(self):
+        """Return invitations for the specific project."""
+        project_pk = self.kwargs.get("project_pk")
+        if not project_pk:
+            return ProjectInvite.objects.none()
+
+        return ProjectInvite.objects.filter(project_id=project_pk).select_related(
+            "project", "invited_by"
+        )
+
+    def get_permissions(self):
+        """Public access for token-based operations."""
+        if self.action in ["get_by_token", "accept"]:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def check_project_admin_permission(self, project):
+        """Check if user is a project admin."""
+        user = self.request.user
+
+        if user.is_superuser or user.is_staff:
+            return True
+
+        is_admin = ProjectMembership.objects.filter(
+            project=project, user=user, role=ProjectMembership.Role.ADMIN, deleted_at__isnull=True
+        ).exists()
+
+        if not is_admin:
+            raise PermissionDenied(
+                "Only project admins can manage invitations. "
+                "Your current role does not have sufficient permissions."
+            )
+
+        return True
+
+    def list(self, request, project_pk=None):
+        """List pending invitations for a project."""
+        project = Project.objects.get(pk=project_pk)
+        self.check_project_admin_permission(project)
+
+        queryset = self.get_queryset().filter(status=ProjectInvite.Status.PENDING)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"data": serializer.data})
+
+    def create(self, request, project_pk=None):
+        """Create and send a project invitation."""
+        project = Project.objects.get(pk=project_pk)
+        self.check_project_admin_permission(project)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        service = InvitationService()
+        try:
+            invitation = service.create_invitation(
+                project=project,
+                email=serializer.validated_data["email"],
+                role=serializer.validated_data["role"],
+                invited_by=request.user,
+            )
+        except ValueError as e:
+            raise ValidationError({"detail": str(e)})
+
+        response_serializer = self.get_serializer(invitation)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, pk=None, project_pk=None):
+        """Cancel a pending invitation."""
+        invitation = self.get_object()
+        self.check_project_admin_permission(invitation.project)
+
+        service = InvitationService()
+        try:
+            service.cancel_invitation(invitation, request.user)
+        except ValueError as e:
+            raise ValidationError({"detail": str(e)})
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"])
+    def resend(self, request, pk=None, project_pk=None):
+        """Resend an invitation email."""
+        invitation = self.get_object()
+        self.check_project_admin_permission(invitation.project)
+
+        service = InvitationService()
+        try:
+            invitation = service.resend_invitation(invitation, request.user)
+        except ValueError as e:
+            raise ValidationError({"detail": str(e)})
+
+        serializer = self.get_serializer(invitation)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path=r"token/(?P<token>[^/.]+)")
+    def get_by_token(self, request, token=None, project_pk=None):
+        """Get invitation details by token (public endpoint)."""
+        try:
+            invitation = ProjectInvite.objects.select_related("project").get(token=token)
+        except ProjectInvite.DoesNotExist:
+            return Response(
+                {"detail": "Invalid invitation token."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = self.get_serializer(invitation)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"], url_path=r"token/(?P<token>[^/.]+)/accept")
+    def accept(self, request, token=None, project_pk=None):
+        """Accept an invitation (public endpoint)."""
+        serializer = AcceptInvitationSerializer(data={"token": token})
+        serializer.is_valid(raise_exception=True)
+
+        service = InvitationService()
+        accepting_user = request.user if request.user.is_authenticated else None
+
+        try:
+            membership = service.accept_invitation(token, accepting_user)
+        except ValueError as e:
+            raise ValidationError({"detail": str(e)})
+
+        # Return membership details
+        membership_serializer = ProjectMembershipSerializer(membership)
+        return Response(membership_serializer.data, status=status.HTTP_200_OK)
