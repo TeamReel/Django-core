@@ -201,7 +201,7 @@ export const CachePerformancePage: React.FC = () => {
     <AppShell>
       <PageHeader
         title="Cache Performance"
-        subtitle="Monitor Redis cache performance and manage cache operations"
+        subtitle="Monitor Redis cache performance and manage cache operations. Note: Real-time stats show Redis native operations only. Use benchmark to verify caching works."
         actions={
           <Button variant="secondary" onClick={fetchMetrics} disabled={loading}>
             {loading ? 'Refreshing...' : 'Refresh'}
@@ -213,6 +213,13 @@ export const CachePerformancePage: React.FC = () => {
         {error && (
           <Alert variant="error" title="Error">
             {error}
+          </Alert>
+        )}
+
+        {metrics && metrics.realtime && metrics.realtime.hits === 0 && metrics.realtime.misses === 0 && (
+          <Alert variant="info" title="Cache Statistics">
+            Real-time stats are currently 0. This happens after Redis restart or when using Django cache (not native Redis commands).
+            <strong> Use the "Run Benchmark" button below to verify caching works.</strong> Historical data will appear after 10 minutes when Celery collects metrics.
           </Alert>
         )}
 
