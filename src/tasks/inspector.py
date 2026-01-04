@@ -14,7 +14,7 @@ from celery.exceptions import TimeoutError as CeleryTimeout
 logger = logging.getLogger(__name__)
 
 
-def get_registered_tasks(timeout: int = 5) -> List[str]:
+def get_registered_tasks(timeout: int = 2) -> List[str]:
     """
     Get list of all registered Celery tasks.
 
@@ -29,6 +29,7 @@ def get_registered_tasks(timeout: int = 5) -> List[str]:
         registered = inspect.registered()
 
         if registered is None:
+            logger.warning("No workers responded to registered() call")
             return []
 
         # Flatten tasks from all workers (remove duplicates)
@@ -49,7 +50,7 @@ def get_registered_tasks(timeout: int = 5) -> List[str]:
         return []
 
 
-def get_active_tasks(timeout: int = 5) -> List[Dict[str, Any]]:
+def get_active_tasks(timeout: int = 2) -> List[Dict[str, Any]]:
     """
     Get currently executing tasks across all workers.
 
@@ -98,7 +99,7 @@ def get_active_tasks(timeout: int = 5) -> List[Dict[str, Any]]:
         return []
 
 
-def get_scheduled_tasks(timeout: int = 5) -> List[Dict[str, Any]]:
+def get_scheduled_tasks(timeout: int = 2) -> List[Dict[str, Any]]:
     """
     Get tasks scheduled by Celery Beat (ETA/countdown tasks).
 
@@ -142,7 +143,7 @@ def get_scheduled_tasks(timeout: int = 5) -> List[Dict[str, Any]]:
         return []
 
 
-def get_reserved_tasks(timeout: int = 5) -> List[Dict[str, Any]]:
+def get_reserved_tasks(timeout: int = 2) -> List[Dict[str, Any]]:
     """
     Get tasks reserved (queued) by workers (prefetched but not executing).
 
@@ -216,7 +217,7 @@ def get_beat_schedule() -> List[Dict[str, Any]]:
     return tasks
 
 
-def get_task_summary(timeout: int = 5) -> Dict[str, Any]:
+def get_task_summary(timeout: int = 2) -> Dict[str, Any]:
     """
     Get comprehensive task summary for monitoring dashboard.
 
@@ -233,6 +234,8 @@ def get_task_summary(timeout: int = 5) -> Dict[str, Any]:
         - counts: Summary counts by status
         - timestamp: ISO timestamp of the query
     """
+    logger.info("Getting task summary with timeout=%s", timeout)
+
     registered = get_registered_tasks(timeout)
     active = get_active_tasks(timeout)
     scheduled = get_scheduled_tasks(timeout)

@@ -1,5 +1,7 @@
 """Task infrastructure health check and monitoring views."""
 
+from datetime import datetime
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -81,12 +83,12 @@ class TasksListView(APIView):
         Returns comprehensive task monitoring data.
 
         Query Parameters:
-            timeout (int): Timeout in seconds for Celery inspection (default: 5)
+            timeout (int): Timeout in seconds for Celery inspection (default: 2)
 
         Response:
             200 OK with task data
         """
-        timeout = int(request.query_params.get("timeout", 5))
+        timeout = int(request.query_params.get("timeout", 2))  # Lower default timeout
 
         try:
             task_data = get_task_summary(timeout=timeout)
@@ -99,6 +101,7 @@ class TasksListView(APIView):
             logger = logging.getLogger(__name__)
             logger.exception("Task listing failed with exception")
 
+            # Return empty but valid response on error
             return Response(
                 {
                     "error": "Failed to retrieve task data",
@@ -113,6 +116,7 @@ class TasksListView(APIView):
                         "pending": 0,
                         "total": 0,
                     },
+                    "timestamp": datetime.utcnow().isoformat() + "Z",
                 },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_200_OK,  # Return 200 even on error, with empty data
             )
