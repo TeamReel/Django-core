@@ -374,7 +374,7 @@ def cache_metrics(request):
         serializer = CacheMetricsResponseSerializer(data=response_data)
         serializer.is_valid(raise_exception=True)
 
-        return Response(serializer.validated_data)
+        return Response({"status": "success", "data": serializer.validated_data, "meta": {}})
 
     except Exception as e:
         logger.error(f"Failed to collect cache metrics: {e}", exc_info=True)
@@ -422,7 +422,7 @@ def cache_clear(request):
         serializer = CacheClearResponseSerializer(data=response_data)
         serializer.is_valid(raise_exception=True)
 
-        return Response(serializer.validated_data)
+        return Response({"status": "success", "data": serializer.validated_data, "meta": {}})
 
     except Exception as e:
         logger.error(f"Failed to clear cache: {e}", exc_info=True)
@@ -481,7 +481,7 @@ def cache_benchmark(request):
         serializer = CacheBenchmarkResponseSerializer(data=response_data)
         serializer.is_valid(raise_exception=True)
 
-        return Response(serializer.validated_data)
+        return Response({"status": "success", "data": serializer.validated_data, "meta": {}})
 
     except Exception as e:
         logger.error(f"Failed to run cache benchmark: {e}", exc_info=True)
