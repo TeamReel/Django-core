@@ -95,6 +95,14 @@ CELERY_BEAT_SCHEDULE = {
         "kwargs": {"name": "Scheduler"},
         "enabled": False,  # Disabled by default (for testing only)
     },
+    # B25: Collect cache performance metrics every 10 minutes
+    "collect-cache-metrics": {
+        "task": "observability.tasks.collect_system_metrics",
+        "schedule": crontab(minute="*/10"),  # Every 10 minutes
+        "options": {
+            "expires": 300,  # Task expires if not run within 5 minutes
+        },
+    },
 }
 
 # Beat Scheduler Settings

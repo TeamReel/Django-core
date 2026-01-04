@@ -1,0 +1,85 @@
+openapi: 3.0.0
+info:
+  title: Cache Management API
+  version: 1.0.0
+paths:
+  /api/v1/system/cache/metrics:
+    get:
+      summary: Get cache performance metrics
+      description: Returns real-time stats and historical data for the dashboard.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  realtime:
+                    type: object
+                    properties:
+                      hits:
+                        type: integer
+                      misses:
+                        type: integer
+                      hit_ratio:
+                        type: number
+                      memory_used_bytes:
+                        type: integer
+                      total_keys:
+                        type: integer
+                  history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                        hit_ratio:
+                          type: number
+                        memory_used_bytes:
+                          type: integer
+
+  /api/v1/system/cache/clear:
+    post:
+      summary: Clear all cache keys
+      description: Purges the entire cache. Admin only.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cache cleared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  cleared_keys:
+                    type: integer
+
+  /api/v1/system/cache/benchmark:
+    post:
+      summary: Run cache benchmark
+      description: Runs a dummy query with and without cache to measure speedup.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Benchmark results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uncached_duration_ms:
+                    type: number
+                  cached_duration_ms:
+                    type: number
+                  speedup_factor:
+                    type: number

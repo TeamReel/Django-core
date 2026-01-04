@@ -1,0 +1,21 @@
+{
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2026-01-04T10:14:10Z",
+      "accepted_by": "copilot",
+      "accepted_from_commit": "1123b5fee694f3b9eee7204e336dbd17a3aaadad",
+      "branch": "037-cache-layer-patterns",
+      "mode": "pr"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-01-04T10:14:10Z",
+  "accepted_by": "copilot",
+  "accepted_from_commit": "1123b5fee694f3b9eee7204e336dbd17a3aaadad",
+  "created_at": "2026-01-03T22:42:04Z",
+  "feature_number": "037",
+  "friendly_name": "Cache Layer & Patterns",
+  "slug": "037-cache-layer-patterns",
+  "source_description": "feature=B25-cache-layer-patterns\n\n[feature summary]\nFormalize Redis-based caching with reusable patterns, decorators, and invalidation strategies.\n\n[goals]\n- Centralized cache configuration\n- Reusable cache decorators\n- Tag-based invalidation\n- Performance metrics\n- Circuit breaker (graceful degradation)\n\n[demo requirements]\nDemo page: /demo/performance\n- Cache metrics dashboard\n- Hit/miss ratio chart\n- Memory usage\n- Clear cache actions\n- Performance comparison tests"
+}
