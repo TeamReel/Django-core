@@ -320,11 +320,15 @@ def cache_metrics(request):
             total_keys = 0
             for db_name, db_info in keyspace_info.items():
                 if db_name.startswith("db"):
-                    # Parse "keys=123,expires=45,..."
-                    for part in db_info.split(","):
-                        if part.startswith("keys="):
-                            total_keys += int(part.split("=")[1])
-                            break
+                    # db_info can be either a dict or a string depending on Redis client
+                    if isinstance(db_info, dict):
+                        total_keys += db_info.get("keys", 0)
+                    else:
+                        # Parse "keys=123,expires=45,..."
+                        for part in db_info.split(","):
+                            if part.startswith("keys="):
+                                total_keys += int(part.split("=")[1])
+                                break
 
             realtime_data = {
                 "hits": hits,
