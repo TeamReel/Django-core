@@ -57,11 +57,11 @@ history:
 - ✅ Code follows established patterns and Django/DRF best practices
 
 **Action Items** (must complete before re-review):
-- [ ] Split `test_create_invitation` into two separate tests:
+- [X] Split `test_create_invitation` into two separate tests:
   - `test_create_invitation` - Test successful invitation creation with proper assertions (status 201, invitation created, token generated)
   - `test_create_invitation_duplicate_fails` - Add `invitation` fixture to parameters, test duplicate prevention
-- [ ] Verify all 12 tests pass with `pytest tests/projects/test_invitation_api.py -v`
-- [ ] Ensure test code follows single-responsibility principle (one test = one scenario)
+- [X] Verify all 12 tests pass with `pytest tests/projects/test_invitation_api.py -v`
+- [X] Ensure test code follows single-responsibility principle (one test = one scenario)
 
 ---
 
