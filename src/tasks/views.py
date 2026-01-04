@@ -1,10 +1,11 @@
-"""Task infrastructure health check views."""
+"""Task infrastructure health check and monitoring views."""
 
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .health import get_celery_health_status
+from .inspector import get_task_summary
 
 
 class TasksHealthView(APIView):
@@ -21,7 +22,7 @@ class TasksHealthView(APIView):
     authentication_classes = []  # No auth required
     throttle_classes = []  # No throttling on health checks
 
-    def get(self, request):
+    def get(self, request):  # noqa: ARG002
         """
         GET /health/tasks/
 
@@ -54,3 +55,64 @@ class TasksHealthView(APIView):
             logger.exception("Health check failed with exception")
             # Re-raise to let Django's exception handling deal with it
             raise
+
+
+class TasksListView(APIView):
+    """
+    API endpoint for listing and monitoring Celery tasks.
+
+    GET /tasks/
+    Returns:
+        - registered: All registered task names
+        - active: Currently executing tasks
+        - scheduled: Tasks scheduled for future execution (ETA)
+        - reserved: Tasks queued/pending execution
+        - beat_schedule: Periodic tasks from Celery Beat
+        - counts: Summary counts by status
+    """
+
+    permission_classes = []  # Public for now (add auth if needed)
+    authentication_classes = []
+
+    def get(self, request):  # noqa: ARG002
+        """
+        GET /tasks/
+
+        Returns comprehensive task monitoring data.
+
+        Query Parameters:
+            timeout (int): Timeout in seconds for Celery inspection (default: 5)
+
+        Response:
+            200 OK with task data
+        """
+        timeout = int(request.query_params.get("timeout", 5))
+
+        try:
+            task_data = get_task_summary(timeout=timeout)
+            return Response(task_data, status=status.HTTP_200_OK)
+
+        except Exception:  # noqa: BLE001
+            # Log the exception for debugging
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.exception("Task listing failed with exception")
+
+            return Response(
+                {
+                    "error": "Failed to retrieve task data",
+                    "registered": [],
+                    "active": [],
+                    "scheduled": [],
+                    "reserved": [],
+                    "beat_schedule": [],
+                    "counts": {
+                        "running": 0,
+                        "scheduled": 0,
+                        "pending": 0,
+                        "total": 0,
+                    },
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

@@ -43,7 +43,6 @@ urlpatterns = [
     path("health/ready", readiness_view, name="health_ready"),
     # Legacy health check endpoint (pre-B18)
     path("health/", health_check, name="health_check"),
-    path("health/tasks/", include("tasks.urls")),  # B15: Task health check
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("api/ws/", include("rtc_websockets.urls")),
@@ -73,6 +72,8 @@ urlpatterns = [
     path("api/v1/", include("files.urls")),
     # B25: Cache Performance Dashboard
     path("api/v1/", include("observability.urls")),
+    # B15: Tasks Monitoring API
+    path("api/v1/tasks/", include("tasks.urls")),
     # Security Baseline API
     path("api/security/", include("security_baseline.urls")),
     # Constitution API (B18)

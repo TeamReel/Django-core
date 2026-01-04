@@ -8,30 +8,57 @@ import { Button, Card, Badge, Input, Alert, Spinner } from '@django-core/design-
 export function TasksPage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [retrying, setRetrying] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate API call - in production would fetch from /api/tasks/
-    setTimeout(() => {
-      setTasks([
-        { id: '1', name: 'Send welcome emails', status: 'running', started: '2025-12-17T10:00:00Z' },
-        { id: '2', name: 'Generate monthly reports', status: 'failed', started: '2025-12-17T09:30:00Z', error: 'Connection timeout' },
-        { id: '3', name: 'Cleanup old sessions', status: 'success', started: '2025-12-17T08:00:00Z' },
-        { id: '4', name: 'Sync user data', status: 'pending', started: null },
-        { id: '5', name: 'Backup database', status: 'failed', started: '2025-12-17T07:00:00Z', error: 'Disk space low' },
-      ]);
-      setLoading(false);
-    }, 500);
-  }, []);
+    const fetchTasks = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const handleRetry = (taskId: string) => {
-    setRetrying(taskId);
-    // Simulate retry action - POST /api/tasks/{id}/retry
-    setTimeout(() => {
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'pending' } : t));
-      setRetrying(null);
-    }, 1000);
-  };
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiBaseUrl}/api/v1/tasks/`, {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Combine active, scheduled, and reserved tasks from API response
+        const allTasks = [
+          ...data.active.map((t: any) => ({ ...t, status: 'running' })),
+          ...data.scheduled.map((t: any) => ({ ...t, status: 'scheduled' })),
+          ...data.reserved.map((t: any) => ({ ...t, status: 'pending' })),
+        ];
+
+        setTasks(allTasks);
+      } catch (err) {
+        console.error('Failed to fetch tasks:', err);
+        setError('Failed to load tasks. Using demo data.');
+
+        // Fallback to mock data on error
+        setTasks([
+          { id: '1', name: 'Send welcome emails', status: 'running', time_start: Date.now() / 1000 },
+          { id: '2', name: 'Generate monthly reports', status: 'failed', time_start: Date.now() / 1000 - 3600 },
+          { id: '3', name: 'Cleanup old sessions', status: 'success', time_start: Date.now() / 1000 - 7200 },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+
+    // Refresh every 10 seconds
+    const interval = setInterval(fetchTasks, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -39,6 +66,7 @@ export function TasksPage() {
       case 'running': return <Badge variant="warning">Running</Badge>;
       case 'failed': return <Badge variant="error">Failed</Badge>;
       case 'pending': return <Badge variant="info">Pending</Badge>;
+      case 'scheduled': return <Badge variant="default">Scheduled</Badge>;
       default: return <Badge>{status}</Badge>;
     }
   };
@@ -53,6 +81,12 @@ export function TasksPage() {
       <PageHeader title="Background Tasks" subtitle="B15 Task Scheduling & Monitoring" />
       <PageContent>
         <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="tasks-page">
+          {error && (
+            <Alert variant="warning" style={{ marginBottom: '16px' }}>
+              {error}
+            </Alert>
+          )}
+
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}>
               <Spinner />
@@ -61,8 +95,8 @@ export function TasksPage() {
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
                 <Card style={{ padding: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Success</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700 }}>{statusCounts.success || 0}</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Total</div>
+                  <div style={{ fontSize: '24px', fontWeight: 700 }}>{tasks.length}</div>
                 </Card>
                 <Card style={{ padding: '16px' }}>
                   <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Running</div>
@@ -73,8 +107,8 @@ export function TasksPage() {
                   <div style={{ fontSize: '24px', fontWeight: 700 }}>{statusCounts.pending || 0}</div>
                 </Card>
                 <Card style={{ padding: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Failed</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700, color: '#ef4444' }}>{statusCounts.failed || 0}</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Scheduled</div>
+                  <div style={{ fontSize: '24px', fontWeight: 700 }}>{statusCounts.scheduled || 0}</div>
                 </Card>
               </div>
 
@@ -85,33 +119,31 @@ export function TasksPage() {
                       <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e5e5' }}>
                         <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Task Name</th>
                         <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Status</th>
+                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Worker</th>
                         <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Started</th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Error</th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {tasks.map(task => (
-                        <tr key={task.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
-                          <td style={{ padding: '12px' }}>{task.name}</td>
-                          <td style={{ padding: '12px' }}>{getStatusBadge(task.status)}</td>
-                          <td style={{ padding: '12px', fontSize: '14px', color: '#6b7280' }}>
-                            {task.started ? new Date(task.started).toLocaleString() : '-'}
-                          </td>
-                          <td style={{ padding: '12px', fontSize: '14px', color: '#ef4444' }}>{task.error || '-'}</td>
-                          <td style={{ padding: '12px' }}>
-                            {task.status === 'failed' && (
-                              <Button
-                                variant="secondary"
-                                onClick={() => handleRetry(task.id)}
-                                disabled={retrying === task.id}
-                              >
-                                {retrying === task.id ? 'Retrying...' : 'Retry'}
-                              </Button>
-                            )}
+                      {tasks.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>
+                            No tasks currently running or queued
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        tasks.map(task => (
+                          <tr key={task.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
+                            <td style={{ padding: '12px' }}>{task.name}</td>
+                            <td style={{ padding: '12px' }}>{getStatusBadge(task.status)}</td>
+                            <td style={{ padding: '12px', fontSize: '14px', color: '#6b7280' }}>
+                              {task.worker || '-'}
+                            </td>
+                            <td style={{ padding: '12px', fontSize: '14px', color: '#6b7280' }}>
+                              {task.time_start ? new Date(task.time_start * 1000).toLocaleString() : '-'}
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
