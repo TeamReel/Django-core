@@ -1,11 +1,13 @@
 ---
 work_package_id: WP08
 title: Admin UI & Activity Feed (US7, US8, US9)
-lane: planned
+lane: "doing"
 subtasks: [T043, T044, T045, T046, T047]
 priority: P3
 estimated_effort: 2-3 days
 dependencies: [WP01, WP02, WP03, WP04, WP05, WP06, WP07]
+agent: "GitHub Copilot"
+shell_pid: "16668"
 ---
 
 # WP08: Admin UI & Activity Feed (US7, US8, US9)
@@ -76,3 +78,7 @@ Response:
 - Resend invite works with rate limiting
 - Analytics shows accurate stats
 - All tests pass with target coverage
+
+## Activity Log
+
+- 2026-01-05T07:41:19Z – GitHub Copilot – shell_pid=16668 – lane=doing – Started implementation
