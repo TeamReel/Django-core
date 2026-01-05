@@ -7,6 +7,7 @@ priority: P2
 estimated_effort: 2 days
 dependencies: [WP02]
 agent: "GitHub Copilot"
+assignee: "GitHub Copilot"
 shell_pid: "22953"
 ---
 

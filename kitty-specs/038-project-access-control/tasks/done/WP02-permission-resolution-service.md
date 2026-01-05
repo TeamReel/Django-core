@@ -7,6 +7,7 @@ priority: P1
 estimated_effort: 2 days
 dependencies: [WP01]
 agent: "claude-reviewer"
+assignee: "GitHub Copilot"
 shell_pid: "22952"
 review_status: "approved without changes"
 reviewed_by: "claude-reviewer"
@@ -205,12 +206,12 @@ class PermissionResolutionService:
             'admin': ['projects.view', 'projects.edit', 'projects.delete', 'projects.manage_members', 'projects.view_members'],
             'editor': ['projects.view', 'projects.edit', 'projects.view_members'],
             'viewer': ['projects.view', 'projects.view_members'],
-            'no_access': []
+            'no_access': [x]
         }
         return {
             'effective_role': role,
             'source': source,
-            'permissions': permission_map.get(role, [])
+            'permissions': permission_map.get(role, [x])
         }
 ```
 

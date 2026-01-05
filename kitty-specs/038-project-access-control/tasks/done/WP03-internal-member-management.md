@@ -7,6 +7,7 @@ priority: P1
 estimated_effort: 3 days
 dependencies: [WP01, WP02]
 agent: "claude"
+assignee: "GitHub Copilot"
 shell_pid: "22952"
 review_status: "approved - all feedback addressed"
 reviewed_by: "claude-reviewer-2"
