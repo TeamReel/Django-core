@@ -20,6 +20,7 @@ export default defineConfig({
         '@django-core/api-client',
         '@django-core/auth-ui',
         '@django-core/context-switcher',
+        '@django-core/design-system',
       ],
       output: {
         globals: {
@@ -28,6 +29,7 @@ export default defineConfig({
           '@django-core/api-client': 'DjangoCoreApiClient',
           '@django-core/auth-ui': 'DjangoCoreAuth',
           '@django-core/context-switcher': 'DjangoCoreContextSwitcher',
+          '@django-core/design-system': 'DesignSystem',
         },
       },
     },
