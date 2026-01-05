@@ -78,8 +78,8 @@ urlpatterns = [
     path("api/security/", include("security_baseline.urls")),
     # Constitution API (B18)
     path("api/constitution/rules/", ConstitutionRulesView.as_view(), name="constitution-rules"),
-    # Audit Log API
-    path("api/audit/", include("audit.urls")),
+    # Audit Log API (Legacy removed)
+    # path("api/audit/", include("audit.urls")),
     # B18: Observability API (legacy, deprecated)
     path("api/observability/", include("observability.urls")),
     path("", include("django_prometheus.urls")),  # Exposes /metrics endpoint
