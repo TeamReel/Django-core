@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+// @ts-ignore - Workspace dependencies
+import { fetchWithCSRF } from '@django-core/api-client';
 import { User } from '../../types';
 
 interface ProjectMembership {
@@ -15,35 +17,39 @@ interface MemberListProps {
 export const MemberList: React.FC<MemberListProps> = ({ projectId }) => {
   const [members, setMembers] = useState<ProjectMembership[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [memberToRemove, setMemberToRemove] = useState<ProjectMembership | null>(null);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
 
-  // Mock fetch members
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setMembers([
-        {
-          id: '1',
-          user: { id: 'u1', name: 'Alice Admin', email: 'alice@example.com', role: 'admin', is_active: true },
-          role: 'admin',
-          joined_at: '2023-01-01',
-        },
-        {
-          id: '2',
-          user: { id: 'u2', name: 'Bob Builder', email: 'bob@example.com', role: 'member', is_active: true },
-          role: 'editor',
-          joined_at: '2023-01-02',
-        },
-        {
-          id: '3',
-          user: { id: 'u3', name: 'Charlie Checker', email: 'charlie@example.com', role: 'viewer', is_active: true },
-          role: 'viewer',
-          joined_at: '2023-01-03',
-        },
-      ]);
-      setLoading(false);
-    }, 500);
+    const fetchMembers = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        // Use the nested endpoint if possible, or the direct one
+        // The backend ProjectViewSet has a 'members' action on the detail route
+        const response = await fetchWithCSRF(`${apiBaseUrl}/api/v1/projects/${projectId}/members/`);
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch members');
+        }
+
+        const data = await response.json();
+        // API returns list of members directly or paginated?
+        // ProjectViewSet.members returns a list (Response(members_data))
+        setMembers(data);
+      } catch (err) {
+        console.error('Error fetching members:', err);
+        setError('Failed to load project members');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (projectId) {
+      fetchMembers();
+    }
   }, [projectId]);
 
   const handleRemoveClick = (member: ProjectMembership) => {

@@ -88,7 +88,7 @@ export const AuditLogPage: React.FC = () => {
         // Use relative URL to leverage Vite proxy (handles cookies correctly)
         const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
         const response = await fetch(
-          `${baseUrl}/api/audit/?${params.toString()}`,
+          `${baseUrl}/api/v1/activity/?${params.toString()}`,
           {
             headers: {
               'Content-Type': 'application/json',

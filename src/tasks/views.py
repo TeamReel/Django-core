@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -73,8 +74,8 @@ class TasksListView(APIView):
         - counts: Summary counts by status
     """
 
-    permission_classes = []  # Public for now (add auth if needed)
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]  # Protected endpoint
+    authentication_classes = []  # Use default authentication classes
 
     def get(self, request):  # noqa: ARG002
         """

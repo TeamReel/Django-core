@@ -83,7 +83,7 @@ const FilesPage: React.FC = () => {
     try {
       setLoading(true);
       const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-      const response = await fetch(`${baseUrl}/api/files/`, {
+      const response = await fetch(`${baseUrl}/api/v1/files/`, {
         headers: {
           'Content-Type': 'application/json',
         },

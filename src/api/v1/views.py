@@ -74,7 +74,7 @@ def api_root(request):
                     "verify": request.build_absolute_uri(
                         reverse("api_v1:token_verify", request=request)
                     ),
-                    "logout": request.build_absolute_uri(reverse("api_v1:logout", request=request)),
+                    # "logout": request.build_absolute_uri(reverse("api_v1:logout", request=request)),
                 },
                 # Domain APIs (B05, B06, B07, B08)
                 "users": request.build_absolute_uri("/api/v1/users/"),
