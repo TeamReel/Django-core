@@ -797,6 +797,9 @@ importers:
       '@django-core/context-switcher':
         specifier: workspace:*
         version: link:../context-switcher
+      '@django-core/design-system':
+        specifier: workspace:*
+        version: link:../design-system
       date-fns:
         specifier: ^3.0.0
         version: 3.6.0
@@ -8091,7 +8094,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.28.5)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.2
-      vite: 5.4.8(@types/node@20.19.26)
+      vite: 5.4.8(@types/node@25.0.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -8114,7 +8117,7 @@ packages:
       std-env: 3.10.0
       strip-literal: 2.1.1
       test-exclude: 6.0.0
-      vitest: 1.6.1(@types/node@20.19.26)(jsdom@23.2.0)
+      vitest: 1.6.1(jsdom@23.2.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
