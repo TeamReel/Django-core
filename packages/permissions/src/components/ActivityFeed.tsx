@@ -106,14 +106,14 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ organizationId, proj
     }
   };
 
-  const getEventColor = (type: ActivityEventType) => {
+  const getEventColor = (type: ActivityEventType): 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info' => {
     switch (type) {
       case 'MEMBER_ADDED': return 'success';
-      case 'MEMBER_REMOVED': return 'danger';
+      case 'MEMBER_REMOVED': return 'error';
       case 'ROLE_CHANGED': return 'warning';
       case 'INVITE_SENT': return 'info';
       case 'PROMOTION_REQUESTED': return 'primary';
-      default: return 'neutral';
+      default: return 'default';
     }
   };
 
@@ -140,7 +140,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ organizationId, proj
   return (
     <Box className="activity-feed">
       <Stack direction="row" justify="space-between" align="center" className="mb-4">
-        <Text variant="h3">Activity Feed</Text>
+        <Text size="xl" weight="semibold">Activity Feed</Text>
         <Select
           value={filterType}
           onChange={(e: any) => setFilterType(e.target.value)}
@@ -161,14 +161,14 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ organizationId, proj
         </Box>
       )}
 
-      <Stack spacing="md">
+      <Stack gap="4">
         {events.map(event => (
           <Card key={event.id} padding="sm">
-            <Stack direction="row" spacing="sm" align="start">
+            <Stack direction="row" gap="2" align="start">
               <Badge variant={getEventColor(event.type)}>{getEventIcon(event.type)}</Badge>
               <Box flex={1}>
                 {renderEventMessage(event)}
-                <Text variant="caption" color="text.secondary">
+                <Text size="sm" color="secondary">
                   {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}
                 </Text>
               </Box>
@@ -191,7 +191,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ organizationId, proj
 
       {!loading && events.length === 0 && (
         <Box textAlign="center" padding="xl">
-          <Text color="text.secondary">No activity found.</Text>
+          <Text color="secondary">No activity found.</Text>
         </Box>
       )}
     </Box>
