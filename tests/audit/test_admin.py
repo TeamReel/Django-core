@@ -28,12 +28,13 @@ def staff_user(db):
 @pytest.fixture
 def audit_events(db, admin_user):
     """Create sample audit events."""
-    from audit.registry import register_event_type
+    from audit.registry import register_event_type, is_event_type_registered
 
-    register_event_type("test.event", "test", "Test event for admin tests")
+    if not is_event_type_registered("admin.test.event"):
+        register_event_type("admin.test.event", "test", "Test event for admin tests")
     events = []
     for i in range(10):
-        event = audit_log.record("test.event", user=admin_user, metadata={"index": i})
+        event = audit_log.record("admin.test.event", user=admin_user, metadata={"index": i})
         events.append(event)
     return events
 
@@ -149,7 +150,9 @@ class TestAuditEventAdminSearch:
         client = Client()
         client.force_login(admin_user)
 
-        response = client.get(reverse("admin:audit_auditevent_changelist"), {"q": "test.event"})
+        response = client.get(
+            reverse("admin:audit_auditevent_changelist"), {"q": "admin.test.event"}
+        )
         assert response.status_code == 200
         assert len(audit_events) >= 1  # Verify search returned results
 
