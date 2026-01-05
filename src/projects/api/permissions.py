@@ -133,3 +133,40 @@ class IsOrganisationMemberOrAdmin(permissions.BasePermission):
             return False
 
         return False
+
+
+class IsProjectMemberOrOrgAdmin(IsOrganisationMemberOrAdmin):
+    """
+    Permission to check if user is a member of the project OR admin of the organisation.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        """Check if user has permission to access the specific project object."""
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Superusers (admin role) have full access
+        if request.user.is_superuser or request.user.is_staff:
+            return True
+
+        # 1. Check Project Membership (New B26)
+        from projects.models import ProjectMembership
+
+        membership = ProjectMembership.objects.filter(
+            project=obj, user=request.user, deleted_at__isnull=True
+        ).first()
+
+        if membership:
+            # For read operations, any membership is sufficient
+            if request.method in permissions.SAFE_METHODS:
+                return True
+
+            # For write operations, check role
+            if membership.role in [
+                ProjectMembership.Role.EDITOR,
+                ProjectMembership.Role.ADMIN,
+            ]:
+                return True
+
+        # 2. Fallback to Org Admin/Member check
+        return super().has_object_permission(request, view, obj)

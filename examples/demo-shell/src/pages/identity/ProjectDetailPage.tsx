@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Button,
   Card,
@@ -400,6 +400,21 @@ export const ProjectDetailPage: React.FC = () => {
       />
 
       <PageContent>
+        {project.current_user_access?.source === 'emergency_override' && (
+          <Alert variant="warning" className="mb-6">
+            <div className="flex flex-col gap-2">
+              <span className="font-bold">Admin Override Active</span>
+              <span>
+                You are viewing this private project via emergency admin override.
+                All actions are being logged to the{' '}
+                <Link to={`/audit?project_id=${project.id}`} className="underline hover:text-blue-800">
+                  audit log
+                </Link>.
+              </span>
+            </div>
+          </Alert>
+        )}
+
         {/* Project summary cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card data-testid="project-summary-status">

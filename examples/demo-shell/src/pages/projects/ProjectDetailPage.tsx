@@ -5,6 +5,8 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { usePermissions } from '@django-core/permissions';
 import AppShell from '../../components/AppShell';
 import { canEditProject, canDeleteProject } from '../../utils/permissions';
+import { MemberList } from '../../components/ProjectAccessControl/MemberList';
+import { AuditLogViewer } from '../../components/ProjectAccessControl/AuditLogViewer';
 
 interface Project {
   id: string;
@@ -24,6 +26,7 @@ export default function ProjectDetailPage() {
   const { hasPermission } = usePermissions();
   const { user } = useAuth();
   const [orgName, setOrgName] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'details' | 'members' | 'activity'>('details');
 
   // Permission checks using centralized helper
   const isSuperAdmin = (user as any)?.role === 'superadmin';
@@ -217,42 +220,98 @@ export default function ProjectDetailPage() {
           )}
         </div>
 
-        <div style={{
-          border: '1px solid var(--app-border)',
-          borderRadius: '8px',
-          padding: '24px',
-          backgroundColor: 'var(--app-surface)'
-        }}>
-          <h2 style={{ color: 'var(--app-text)' }}>Project Details</h2>
-          <div style={{ display: 'grid', gap: '12px' }}>
-            <div>
-              <strong style={{ color: 'var(--app-muted-text)' }}>Name:</strong> <span style={{ color: 'var(--app-text)' }}>{project.name}</span>
-            </div>
-            <div>
-              <strong style={{ color: 'var(--app-muted-text)' }}>Slug:</strong> <code style={{
-                backgroundColor: 'var(--app-surface-2)',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                fontFamily: 'monospace',
-                color: 'var(--app-text)'
-              }}>{project.slug}</code>
-            </div>
-            <div>
-              <strong style={{ color: 'var(--app-muted-text)' }}>ID:</strong> <code style={{
-                backgroundColor: 'var(--app-surface-2)',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                fontFamily: 'monospace',
-                color: 'var(--app-text)'
-              }}>{project.id}</code>
-            </div>
-            {project.created_at && (
-              <div>
-                <strong style={{ color: 'var(--app-muted-text)' }}>Created:</strong> <span style={{ color: 'var(--app-text)' }}>{new Date(project.created_at).toLocaleDateString()}</span>
-              </div>
-            )}
-          </div>
+        {/* Tabs */}
+        <div style={{ borderBottom: '1px solid var(--app-border)', marginBottom: '24px', display: 'flex', gap: '24px' }}>
+          <button
+            onClick={() => setActiveTab('details')}
+            style={{
+              padding: '12px 0',
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === 'details' ? '2px solid #0056b3' : '2px solid transparent',
+              color: activeTab === 'details' ? '#0056b3' : 'var(--app-muted-text)',
+              fontWeight: 500,
+              cursor: 'pointer'
+            }}
+          >
+            Details
+          </button>
+          <button
+            onClick={() => setActiveTab('members')}
+            style={{
+              padding: '12px 0',
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === 'members' ? '2px solid #0056b3' : '2px solid transparent',
+              color: activeTab === 'members' ? '#0056b3' : 'var(--app-muted-text)',
+              fontWeight: 500,
+              cursor: 'pointer'
+            }}
+          >
+            Members
+          </button>
+          <button
+            onClick={() => setActiveTab('activity')}
+            style={{
+              padding: '12px 0',
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === 'activity' ? '2px solid #0056b3' : '2px solid transparent',
+              color: activeTab === 'activity' ? '#0056b3' : 'var(--app-muted-text)',
+              fontWeight: 500,
+              cursor: 'pointer'
+            }}
+          >
+            Activity
+          </button>
         </div>
+
+        {activeTab === 'details' && (
+          <div style={{
+            border: '1px solid var(--app-border)',
+            borderRadius: '8px',
+            padding: '24px',
+            backgroundColor: 'var(--app-surface)'
+          }}>
+            <h2 style={{ color: 'var(--app-text)' }}>Project Details</h2>
+            <div style={{ display: 'grid', gap: '12px' }}>
+              <div>
+                <strong style={{ color: 'var(--app-muted-text)' }}>Name:</strong> <span style={{ color: 'var(--app-text)' }}>{project.name}</span>
+              </div>
+              <div>
+                <strong style={{ color: 'var(--app-muted-text)' }}>Slug:</strong> <code style={{
+                  backgroundColor: 'var(--app-surface-2)',
+                  padding: '2px 6px',
+                  borderRadius: '3px',
+                  fontFamily: 'monospace',
+                  color: 'var(--app-text)'
+                }}>{project.slug}</code>
+              </div>
+              <div>
+                <strong style={{ color: 'var(--app-muted-text)' }}>ID:</strong> <code style={{
+                  backgroundColor: 'var(--app-surface-2)',
+                  padding: '2px 6px',
+                  borderRadius: '3px',
+                  fontFamily: 'monospace',
+                  color: 'var(--app-text)'
+                }}>{project.id}</code>
+              </div>
+              {project.created_at && (
+                <div>
+                  <strong style={{ color: 'var(--app-muted-text)' }}>Created:</strong> <span style={{ color: 'var(--app-text)' }}>{new Date(project.created_at).toLocaleDateString()}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'members' && (
+          <MemberList projectId={project.id} />
+        )}
+
+        {activeTab === 'activity' && (
+          <AuditLogViewer projectId={project.id} />
+        )}
       </div>
     </AppShell>
   );

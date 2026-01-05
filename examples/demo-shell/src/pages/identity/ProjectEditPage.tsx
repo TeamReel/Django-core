@@ -26,6 +26,7 @@ export const ProjectEditPage: React.FC = () => {
   const [slug, setSlug] = useState('');
   const [description, setDescription] = useState('');
   const [isActive, setIsActive] = useState(true);
+  const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +94,7 @@ export const ProjectEditPage: React.FC = () => {
         setSlug(data.slug || ''); // Assuming backend returns slug now, or we use what we have
         setDescription(data.description || '');
         setIsActive(data.is_active);
+        setIsPrivate(data.is_private || false);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load project');
       } finally {
@@ -139,6 +141,7 @@ export const ProjectEditPage: React.FC = () => {
           slug: slug || undefined,
           description,
           is_active: isActive,
+          is_private: isPrivate,
         }),
       });
 
@@ -266,6 +269,24 @@ export const ProjectEditPage: React.FC = () => {
                 Active
               </label>
             </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="is_private"
+                checked={isPrivate}
+                onChange={(e) => setIsPrivate(e.target.checked)}
+                className="h-4 w-4 text-blue-600 rounded border-gray-300"
+              />
+              <label htmlFor="is_private" className="text-sm font-medium text-gray-700">
+                Private Project
+              </label>
+            </div>
+            {isPrivate && (
+              <Alert variant="warning">
+                Private projects are only visible to project members and organisation admins.
+              </Alert>
+            )}
 
             <div className="flex justify-end gap-4 pt-4 border-t">
               <Button

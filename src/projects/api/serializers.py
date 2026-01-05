@@ -1,8 +1,47 @@
 """DRF serializers for Projects & Workspaces."""
 
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
-from projects.models import Project
+from projects.models import Project, ProjectMembership, ProjectInvite, ProjectMembershipPromotion
+
+User = get_user_model()
+
+
+class UserNestedSerializer(serializers.ModelSerializer):
+    """Serializer for nested user data."""
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "first_name", "last_name"]
+
+
+class ProjectMembershipSerializer(serializers.ModelSerializer):
+    """Serializer for project membership management."""
+
+    user = UserNestedSerializer(read_only=True)
+    user_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = ProjectMembership
+        fields = [
+            "id",
+            "user",
+            "user_id",
+            "role",
+            "assignment_reason",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "assignment_reason"]
+
+    def validate_user_id(self, value):
+        """Ensure user exists."""
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        if not User.objects.filter(id=value).exists():
+            raise serializers.ValidationError("User does not exist.")
+        return value
 
 
 class OrganisationNestedSerializer(serializers.Serializer):
@@ -59,6 +98,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "slug",
             "description",
             "is_active",
+            "is_private",
             "created_at",
             "updated_at",
             "archived_at",
@@ -75,6 +115,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
     organisation = OrganisationNestedSerializer(read_only=True)
     creator = UserNestedSerializer(read_only=True)
+    current_user_access = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -86,11 +127,31 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "slug",
             "description",
             "is_active",
+            "is_private",
             "created_at",
             "updated_at",
             "archived_at",
+            "current_user_access",
         ]
-        read_only_fields = ["id", "slug", "created_at", "updated_at", "archived_at"]
+        read_only_fields = [
+            "id",
+            "slug",
+            "created_at",
+            "updated_at",
+            "archived_at",
+            "current_user_access",
+        ]
+
+    def get_current_user_access(self, obj):
+        """Return current user's access level and source."""
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return None
+
+        from projects.services.permission_resolution import PermissionResolutionService
+
+        service = PermissionResolutionService()
+        return service.get_project_role(str(request.user.id), str(obj.id))
 
     def validate_name(self, value):
         """Validate name length and format."""
@@ -148,7 +209,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "description"]
+        fields = ["name", "description", "is_private"]
 
     def validate_name(self, value):
         """Validate name length and format."""
@@ -187,3 +248,107 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class ProjectInviteSerializer(serializers.ModelSerializer):
+    """Serializer for project invitations."""
+
+    invited_by = UserNestedSerializer(read_only=True)
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    is_expired = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectInvite
+        fields = [
+            "id",
+            "email",
+            "role",
+            "status",
+            "invited_by",
+            "project_name",
+            "created_at",
+            "expires_at",
+            "accepted_at",
+            "is_expired",
+        ]
+        read_only_fields = [
+            "id",
+            "status",
+            "invited_by",
+            "created_at",
+            "expires_at",
+            "accepted_at",
+        ]
+
+    def get_is_expired(self, obj):
+        """Check if invitation is expired."""
+        return obj.is_expired()
+
+    def validate_email(self, value):
+        """Validate email format."""
+        if not value:
+            raise serializers.ValidationError("Email is required.")
+        return value.lower().strip()
+
+    def validate_role(self, value):
+        """Validate role is valid."""
+        if value not in dict(ProjectMembership.Role.choices):
+            raise serializers.ValidationError(f"Invalid role: {value}")
+        return value
+
+
+class AcceptInvitationSerializer(serializers.Serializer):
+    """Serializer for accepting an invitation."""
+
+    token = serializers.CharField(required=True, max_length=64)
+
+    def validate_token(self, value):
+        """Validate token exists."""
+        if not ProjectInvite.objects.filter(token=value).exists():
+            raise serializers.ValidationError("Invalid invitation token.")
+        return value
+
+
+class ProjectMembershipPromotionSerializer(serializers.ModelSerializer):
+    """Serializer for project membership promotions."""
+
+    target_user = UserNestedSerializer(read_only=True)
+    requested_by = UserNestedSerializer(read_only=True)
+    project_name = serializers.CharField(source="project.name", read_only=True)
+
+    class Meta:
+        model = ProjectMembershipPromotion
+        fields = [
+            "id",
+            "project",
+            "project_name",
+            "target_user",
+            "requested_by",
+            "from_role",
+            "to_role",
+            "status",
+            "is_suspicious",
+            "suspicious_reason",
+            "created_at",
+            "expires_at",
+            "resolved_at",
+        ]
+        read_only_fields = [
+            "id",
+            "project",
+            "target_user",
+            "requested_by",
+            "from_role",
+            "status",
+            "is_suspicious",
+            "suspicious_reason",
+            "created_at",
+            "expires_at",
+            "resolved_at",
+        ]
+
+    def validate_to_role(self, value):
+        """Validate target role."""
+        if value not in dict(ProjectMembership.Role.choices):
+            raise serializers.ValidationError(f"Invalid role: {value}")
+        return value

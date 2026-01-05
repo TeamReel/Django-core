@@ -73,3 +73,12 @@ export interface PermissionCheckResult {
   /** Reason for denial (if not granted) */
   reason?: string;
 }
+
+/**
+ * Role definition with associated permissions
+ */
+export interface Role {
+  id: string;
+  name: string;
+  permissions: PermissionCode[];
+}

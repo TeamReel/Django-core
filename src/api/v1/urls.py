@@ -32,4 +32,5 @@ urlpatterns = [
     path("permissions/", include("permissions.api.urls")),  # /api/v1/permissions/
     path("credits/", include("credits.urls")),  # /api/v1/credits/
     path("search/", include("search.urls")),  # /api/v1/search/
+    path("activity/", include("audit.urls")),  # /api/v1/activity/
 ]

@@ -33,6 +33,7 @@ export default defineConfig({
       '@django-core/api-client': path.resolve(__dirname, './src/test/__mocks__/@django-core/api-client.ts'),
       '@django-core/auth-ui': path.resolve(__dirname, './src/test/__mocks__/@django-core/auth-ui.ts'),
       '@django-core/context-switcher': path.resolve(__dirname, './src/test/__mocks__/@django-core/context-switcher.ts'),
+      '@django-core/design-system': path.resolve(__dirname, './src/test/__mocks__/@django-core/design-system.tsx'),
     },
   },
 });

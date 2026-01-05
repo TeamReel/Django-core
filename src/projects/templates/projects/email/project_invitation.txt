@@ -1,0 +1,18 @@
+You've been invited to {{ project_name }}
+
+{{ invited_by_name }} has invited you to join the project {{ project_name }} as a {{ role }}.
+
+Project Details:
+- Project: {{ project_name }}
+- Role: {{ role }}
+- Invited by: {{ invited_by_name }}
+
+To accept this invitation, visit:
+{{ accept_url }}
+
+⏰ IMPORTANT: This invitation expires in {{ expiry_days }} days ({{ expires_at|date:"F d, Y" }} at {{ expires_at|time:"g:i A" }}).
+
+If you don't want to accept this invitation, you can safely ignore this email.
+
+---
+This is an automated message from {{ site_name }}.

@@ -51,9 +51,15 @@ export interface Project {
   organisation_id: string;
   member_count?: number;
   is_active: boolean;
+  is_private?: boolean;
   created_at?: string;
   updated_at?: string;
   status?: 'active' | 'archived' | 'completed';
+  current_user_access?: {
+    effective_role: string;
+    source: string;
+    permissions: string[];
+  };
 }
 
 /**

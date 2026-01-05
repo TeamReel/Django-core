@@ -15,10 +15,12 @@ class AuditEventPagination(LimitOffsetPagination):
 class AuditEventFilter(filters.FilterSet):
     user__name__icontains = filters.CharFilter(method="filter_user_name")
     event_type = filters.CharFilter(lookup_expr="exact")
+    project = filters.CharFilter(field_name="project__id")
+    organization = filters.CharFilter(field_name="organization__id")
 
     class Meta:
         model = AuditEvent
-        fields = ["event_type"]
+        fields = ["event_type", "project", "organization"]
 
     def filter_user_name(self, queryset, name, value):
         return queryset.filter(
@@ -29,13 +31,36 @@ class AuditEventFilter(filters.FilterSet):
 
 
 class AuditEventViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = (
-        AuditEvent.objects.all()
-        .select_related("user", "organization", "project")
-        .order_by("-created_at")
-    )
     serializer_class = AuditEventSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = AuditEventPagination
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = AuditEventFilter
+
+    def get_queryset(self):
+        queryset = (
+            AuditEvent.objects.all()
+            .select_related("user", "organization", "project")
+            .order_by("-created_at")
+        )
+
+        user = self.request.user
+        if user.is_superuser:
+            return queryset
+
+        # Filter by user's access
+        # 1. Events in organisations where user is an active member
+        org_ids = user.organisation_memberships.filter(is_active=True).values_list(
+            "organisation_id", flat=True
+        )
+
+        # 2. Events in projects where user is an active member (not soft deleted)
+        project_ids = user.project_memberships.filter(deleted_at__isnull=True).values_list(
+            "project_id", flat=True
+        )
+
+        return queryset.filter(
+            models.Q(organization_id__in=org_ids)
+            | models.Q(project_id__in=project_ids)
+            | models.Q(user=user)
+        ).distinct()
