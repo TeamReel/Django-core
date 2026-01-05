@@ -14,7 +14,7 @@ from projects.services.membership_service import MembershipService
 from projects.services.invitation_service import InvitationService
 from projects.services.promotion_service import PromotionService
 
-from .permissions import IsOrganisationMemberOrAdmin
+from .permissions import IsProjectMemberOrOrgAdmin
 from .serializers import (
     ProjectDetailSerializer,
     ProjectListSerializer,
@@ -60,7 +60,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     lookup_field = "slug"
 
-    permission_classes = [IsAuthenticated, IsOrganisationMemberOrAdmin]
+    permission_classes = [IsAuthenticated, IsProjectMemberOrOrgAdmin]
     pagination_class = ProjectCursorPagination
 
     @action(detail=True, methods=["get"])
@@ -171,10 +171,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 user=user, scope=ScopeChoices.ORGANIZATION
             ).values_list("target_organization_id", flat=True)
 
+            # 4. Project Memberships (New B26)
+            membership_project_ids = ProjectMembership.objects.filter(
+                user=user, deleted_at__isnull=True
+            ).values_list("project_id", flat=True)
+
             queryset = queryset.filter(
                 Q(organisation_id__in=user_org_ids)
                 | Q(id__in=assigned_project_ids)
                 | Q(organisation_id__in=assigned_org_ids)
+                | Q(id__in=membership_project_ids)
             ).distinct()
         else:
             # Ensure distinct results for superusers as well, just in case
@@ -334,6 +340,64 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project.restore()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["get"], url_path="membership-stats")
+    def membership_stats(self, request, pk=None, organisation_slug=None, slug=None):
+        """
+        Get membership statistics for the project.
+        """
+        project = self.get_object()
+
+        # Check permissions (only admins should see stats)
+        user = request.user
+        if not user.is_superuser:
+            # Check if org admin
+            is_org_admin = user.organisation_memberships.filter(
+                organisation=project.organisation,
+                role="admin",
+                is_active=True,
+            ).exists()
+
+            # Check if project admin
+            is_project_admin = ProjectMembership.objects.filter(
+                project=project,
+                user=user,
+                role=ProjectMembership.Role.ADMIN,
+                deleted_at__isnull=True,
+            ).exists()
+
+            if not (is_org_admin or is_project_admin):
+                raise PermissionDenied("Only admins can view membership statistics.")
+
+        # Calculate stats
+        memberships = ProjectMembership.objects.filter(project=project, deleted_at__isnull=True)
+
+        total_members = memberships.count()
+
+        breakdown = {
+            "admin": memberships.filter(role=ProjectMembership.Role.ADMIN).count(),
+            "editor": memberships.filter(role=ProjectMembership.Role.EDITOR).count(),
+            "viewer": memberships.filter(role=ProjectMembership.Role.VIEWER).count(),
+        }
+
+        pending_invites = ProjectInvite.objects.filter(
+            project=project,
+            status=ProjectInvite.Status.PENDING,
+        ).count()
+
+        pending_promotions = ProjectMembershipPromotion.objects.filter(
+            project=project,
+            status=ProjectMembershipPromotion.Status.PENDING,
+        ).count()
+
+        data = {
+            "total_members": total_members,
+            "breakdown": breakdown,
+            "pending_invites": pending_invites,
+            "pending_promotions": pending_promotions,
+        }
+
+        return Response(data)
 
 
 class ProjectMembershipReadThrottle(UserRateThrottle):
