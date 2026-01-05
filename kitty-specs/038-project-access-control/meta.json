@@ -1,7 +1,21 @@
 {
-    "feature_number": "038",
-    "slug": "038-project-access-control",
-    "friendly_name": "project-access-control",
-    "source_description": "{\"feature_number\": \"038\", \"feature_id\": \"B26\", \"title\": \"Project-Level Access Control\", \"description\": \"Direct project membership and access control, allowing users to be added to specific projects without organization-wide access\", \"phase\": \"fase-09\", \"category\": \"backend-infrastructure\"}",
-    "created_at": "2026-01-04T15:08:54Z"
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2026-01-05T09:06:59Z",
+      "accepted_by": "brian",
+      "accepted_from_commit": "c881c4173f08c768b8aee7eafe3db8ade62287c9",
+      "branch": "038-project-access-control",
+      "mode": "pr"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-01-05T09:06:59Z",
+  "accepted_by": "brian",
+  "accepted_from_commit": "c881c4173f08c768b8aee7eafe3db8ade62287c9",
+  "created_at": "2026-01-04T15:08:54Z",
+  "feature_number": "038",
+  "friendly_name": "project-access-control",
+  "slug": "038-project-access-control",
+  "source_description": "{\"feature_number\": \"038\", \"feature_id\": \"B26\", \"title\": \"Project-Level Access Control\", \"description\": \"Direct project membership and access control, allowing users to be added to specific projects without organization-wide access\", \"phase\": \"fase-09\", \"category\": \"backend-infrastructure\"}"
 }
