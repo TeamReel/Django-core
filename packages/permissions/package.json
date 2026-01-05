@@ -58,5 +58,8 @@
     "typescript": "^5.0.0",
     "vite": "^5.0.0",
     "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "date-fns": "^3.0.0"
   }
 }

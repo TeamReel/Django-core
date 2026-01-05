@@ -42,3 +42,8 @@ export { usePermissions } from './hooks/usePermissions';
 // Components
 export type { PermissionGateProps } from './components/PermissionGate';
 export { PermissionGate } from './components/PermissionGate';
+export { PermissionMatrix } from './components/PermissionMatrix';
+export type { PermissionMatrixProps } from './components/PermissionMatrix';
+export { ActivityFeed } from './components/ActivityFeed';
+export type { ActivityEvent, ActivityEventType } from './components/ActivityFeed';
+export { ResendInviteButton } from './components/ResendInviteButton';
