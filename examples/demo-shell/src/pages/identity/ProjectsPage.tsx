@@ -134,11 +134,10 @@ export const ProjectsPage: React.FC = () => {
       }
 
       // Determine endpoint: Global vs Org-scoped
-      // Note: DRF DefaultRouter creates API root at /projects/ with list at /projects/projects/
       const isGlobalRoute = !apiOrgSlug;
       const endpoint = apiOrgSlug
           ? `${apiBaseUrl}/api/v1/organisations/${apiOrgSlug}/projects/?${params.toString()}`
-          : `${apiBaseUrl}/api/v1/projects/projects/?${params.toString()}`;
+          : `${apiBaseUrl}/api/v1/projects/?${params.toString()}`;
 
       console.log('[ProjectsPage] Fetch:', {
         route: isGlobalRoute ? 'GLOBAL' : 'ORG-SCOPED',
