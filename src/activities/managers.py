@@ -47,7 +47,7 @@ class PeriodQuerySet(models.QuerySet):
 
         # Execute raw query and return queryset
         with connection.cursor() as cursor:
-            cursor.execute(query, [period_id])
+            cursor.execute(query, [str(period_id)])  # Convert UUID to string for SQLite
             descendant_ids = [row[0] for row in cursor.fetchall()]
 
         return self.filter(id__in=descendant_ids)

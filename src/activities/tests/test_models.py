@@ -120,21 +120,22 @@ class TestActivityModel:
             )
 
     def test_outcome_data_jsonfield(self, project, period):
-        """outcome_data JSONField stores structured data."""
+        """data JSONField stores structured outcome data."""
         activity = Activity.objects.create(
-            title="Match",
+            title="Test Match",
+            activity_type="match",
             start_time=datetime(2023, 12, 15, 14, 30, tzinfo=timezone.utc),
             end_time=datetime(2023, 12, 15, 16, 30, tzinfo=timezone.utc),
             project=project,
             period=period,
-            outcome_data={
+            data={
                 "score_home": 3,
                 "score_away": 1,
                 "goals": [{"player": "John", "minute": 23}],
             },
         )
-        assert activity.outcome_data["score_home"] == 3
-        assert len(activity.outcome_data["goals"]) == 1
+        assert activity.data["score_home"] == 3
+        assert activity.data["goals"][0]["player"] == "John"
 
     def test_str_representation(self, project, period):
         """String representation shows title and datetime."""

@@ -5,7 +5,15 @@ Target coverage: ≥85% for managers.py
 
 import pytest
 from datetime import date
+from django.db import connection
 from activities.models import Period
+
+
+# Skip CTE tests if not using PostgreSQL
+pytestmark = pytest.mark.skipif(
+    connection.vendor != "postgresql",
+    reason="CTE tests require PostgreSQL (test database uses SQLite)",
+)
 
 
 @pytest.mark.django_db
