@@ -71,6 +71,8 @@ INSTALLED_APPS = [
     "files.apps.FilesConfig",
     # B20: CLI & Scaffolding
     "scaffolding",
+    # B30: Activities & Period Hierarchy
+    "activities.apps.ActivitiesConfig",
 ]
 
 MIDDLEWARE = [
