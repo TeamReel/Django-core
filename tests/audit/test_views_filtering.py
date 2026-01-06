@@ -21,7 +21,7 @@ class TestAuditEventFiltering:
         # Create audit event for this project
         audit_log.record("test.event", user=user, project=project)
 
-        url = reverse("audit-event-list")
+        url = reverse("api_v1:audit-event-list")
         response = authenticated_client.get(url, {"project": str(project.id)})
 
         if response.status_code != 200:
@@ -44,7 +44,7 @@ class TestAuditEventFiltering:
         # Create audit event for other project
         audit_log.record("test.event", user=other_user, project=other_project)
 
-        url = reverse("audit-event-list")
+        url = reverse("api_v1:audit-event-list")
         response = authenticated_client.get(url, {"project": str(other_project.id)})
 
         assert response.status_code == status.HTTP_200_OK
@@ -76,7 +76,7 @@ class TestAuditEventFiltering:
         # Also ensure not org admin (creator is usually org admin)
         Membership.objects.filter(user=user, organisation=org).update(is_active=False)
 
-        url = reverse("audit-event-list")
+        url = reverse("api_v1:audit-event-list")
         response = authenticated_client.get(url, {"project": str(project.id)})
 
         assert response.status_code == status.HTTP_200_OK
