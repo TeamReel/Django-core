@@ -25,7 +25,7 @@ This document breaks down the implementation of B30 Activities & Period Hierarch
 - [X] [WP02 - Period Hierarchy API](#wp02---period-hierarchy-api) (P1, 5 subtasks) ✅ **DONE**
 - [X] [WP03 - Activity Scheduling API](#wp03---activity-scheduling-api) (P1, 4 subtasks) ✅ **DONE**
 - [X] [WP04 - Participation Tracking API](#wp04---participation-tracking-api) (P1-P2, 4 subtasks) ✅ **DONE**
-- [WP05 - Admin & Search Integration](#wp05---admin--search-integration) (P2, 2 subtasks)
+- [X] [WP05 - Admin & Search Integration](#wp05---admin--search-integration) (P2, 2 subtasks) ✅ **DONE**
 - [WP06 - Documentation & Finalization](#wp06---documentation--finalization) (P3, 3 subtasks)
 
 ---
@@ -291,7 +291,8 @@ None (depends on WP02 and WP03 models)
 **Estimated Effort**: 2 hours
 **Dependencies**: WP01 (models exist)
 **Blocks**: None
-**Prompt File**: [tasks/planned/WP05-admin-search-integration.md](tasks/planned/WP05-admin-search-integration.md)
+**Status**: ✅ **DONE** (Reviewed and approved 2026-01-06)
+**Prompt File**: [tasks/done/WP05-admin-search-integration.md](tasks/done/WP05-admin-search-integration.md)
 
 ### Summary
 
