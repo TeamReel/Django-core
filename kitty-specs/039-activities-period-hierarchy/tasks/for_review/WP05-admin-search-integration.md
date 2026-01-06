@@ -1,12 +1,12 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "system"
 ---
 # Work Package 05: Admin & Search Integration
 
 ---
 **work_package_id**: WP05
-**lane**: doing
+**lane**: for_review
 **agent**: claude
 **shell_pid**: 36572
 **priority**: P2
@@ -230,3 +230,4 @@ def test_search_periods_by_name(organisation):
 ## Activity Log
 
 - 2026-01-06T08:37:04Z – system – shell_pid= – lane=doing – Moved to doing
+- 2026-01-06T08:39:05Z – system – shell_pid= – lane=for_review – Moved to for_review
