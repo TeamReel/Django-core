@@ -181,6 +181,11 @@ class ActivityViewSet(viewsets.ModelViewSet):
         if project_id:
             queryset = queryset.filter(project_id=project_id)
 
+        # Filter by organisation_id (indirectly via project)
+        organisation_id = self.request.query_params.get("organisation_id")
+        if organisation_id:
+            queryset = queryset.filter(project__organisation_id=organisation_id)
+
         # Filter by activity_type
         activity_type = self.request.query_params.get("activity_type")
         if activity_type:
