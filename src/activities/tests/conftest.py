@@ -29,10 +29,10 @@ def member(db, user, organisation):
 
 
 @pytest.fixture
-def project(db, organisation):
+def project(db, user, organisation):
     """Create a test project."""
     return Project.objects.create(
-        name="Test Project", slug="test-project", organisation=organisation
+        name="Test Project", slug="test-project", organisation=organisation, creator=user
     )
 
 
