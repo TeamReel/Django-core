@@ -231,3 +231,4 @@ def test_create_participation_with_both_ids_fails(api_client, activity, period, 
 ## Activity Log
 
 - 2026-01-06T08:09:52Z – system – shell_pid= – lane=doing – Started implementation of Participation Tracking API
+[2026-01-06T09:13:25Z] Completed WP04: Participation Tracking API implementation - All subtasks complete
