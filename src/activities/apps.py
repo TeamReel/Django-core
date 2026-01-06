@@ -7,5 +7,20 @@ class ActivitiesConfig(AppConfig):
     verbose_name = "Activities & Period Hierarchy"
 
     def ready(self):
-        """Import signal handlers when app is ready"""
+        """Import signal handlers and register search indexes when app is ready"""
         import activities.signals  # noqa: F401
+
+        # Register B14 search indexes if available
+        try:
+            from search.registry import search_registry
+
+            from activities.search import ActivityIndex, PeriodIndex
+
+            search_registry.register(PeriodIndex.model, PeriodIndex)
+            search_registry.register(ActivityIndex.model, ActivityIndex)
+        except ImportError:
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "B14 search module not available, skipping search registration"
+            )
