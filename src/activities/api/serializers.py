@@ -80,7 +80,7 @@ class PeriodSerializer(serializers.ModelSerializer):
         if obj.created_by:
             return {
                 "id": str(obj.created_by.id),
-                "name": obj.created_by.get_full_name() or obj.created_by.username,
+                "name": obj.created_by.get_full_name() or obj.created_by.email,
             }
         return None
 
@@ -213,7 +213,7 @@ class ActivitySerializer(serializers.ModelSerializer):
         if obj.created_by:
             return {
                 "id": str(obj.created_by.id),
-                "name": obj.created_by.get_full_name() or obj.created_by.username,
+                "name": obj.created_by.get_full_name() or obj.created_by.email,
             }
         return None
 
@@ -361,7 +361,7 @@ class ParticipationSerializer(serializers.ModelSerializer):
         if obj.created_by:
             return {
                 "id": str(obj.created_by.id),
-                "name": obj.created_by.get_full_name() or obj.created_by.username,
+                "name": obj.created_by.get_full_name() or obj.created_by.email,
             }
         return None
 
