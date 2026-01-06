@@ -6,9 +6,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count
-from activities.models import Period
-from .serializers import PeriodSerializer
-from .permissions import PeriodPermission
+from activities.models import Period, Activity
+from .serializers import PeriodSerializer, ActivitySerializer
+from .permissions import PeriodPermission, ActivityPermission
 
 
 class PeriodViewSet(viewsets.ModelViewSet):
@@ -120,3 +120,76 @@ class PeriodViewSet(viewsets.ModelViewSet):
         )
         serializer = self.get_serializer(descendants, many=True)
         return Response(serializer.data)
+
+
+class ActivityViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Activity CRUD + calendar filtering.
+
+    Endpoints:
+    - GET /api/v1/activities/ - List activities with filtering
+    - POST /api/v1/activities/ - Create activity
+    - GET /api/v1/activities/{id}/ - Retrieve activity
+    - PUT /api/v1/activities/{id}/ - Update activity
+    - DELETE /api/v1/activities/{id}/ - Delete activity
+
+    Query parameters:
+    - period_id: Filter by period
+    - include_descendants: Include activities from descendant periods (true/false)
+    - project_id: Filter by project
+    - activity_type: Filter by activity type
+    - start_time__gte: Filter activities starting after datetime
+    - start_time__lte: Filter activities starting before datetime
+    """
+
+    queryset = Activity.objects.select_related("project", "period", "created_by").order_by(
+        "-start_time"
+    )
+    serializer_class = ActivitySerializer
+    permission_classes = [ActivityPermission]
+
+    def get_queryset(self):
+        """Apply query param filters"""
+        queryset = super().get_queryset()
+
+        # Filter by period (with optional descendants)
+        period_id = self.request.query_params.get("period_id")
+        include_descendants = (
+            self.request.query_params.get("include_descendants", "false").lower() == "true"
+        )
+
+        if period_id:
+            if include_descendants:
+                try:
+                    # Use CTE to get all descendant periods
+                    descendant_ids = Period.objects.get_descendants(period_id).values_list(
+                        "id", flat=True
+                    )
+                    all_period_ids = [period_id] + list(descendant_ids)
+                    queryset = queryset.filter(period_id__in=all_period_ids)
+                except Period.DoesNotExist:
+                    # Period doesn't exist, return empty queryset
+                    queryset = queryset.none()
+            else:
+                queryset = queryset.filter(period_id=period_id)
+
+        # Filter by project_id
+        project_id = self.request.query_params.get("project_id")
+        if project_id:
+            queryset = queryset.filter(project_id=project_id)
+
+        # Filter by activity_type
+        activity_type = self.request.query_params.get("activity_type")
+        if activity_type:
+            queryset = queryset.filter(activity_type=activity_type)
+
+        # Filter by date range
+        start_time__gte = self.request.query_params.get("start_time__gte")
+        start_time__lte = self.request.query_params.get("start_time__lte")
+
+        if start_time__gte:
+            queryset = queryset.filter(start_time__gte=start_time__gte)
+        if start_time__lte:
+            queryset = queryset.filter(start_time__lte=start_time__lte)
+
+        return queryset

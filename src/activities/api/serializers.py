@@ -3,7 +3,7 @@ DRF serializers for Activities & Period Hierarchy API.
 """
 
 from rest_framework import serializers
-from activities.models import Period
+from activities.models import Period, Activity
 
 
 class PeriodSerializer(serializers.ModelSerializer):
@@ -145,6 +145,136 @@ class PeriodSerializer(serializers.ModelSerializer):
         validated_data.pop("organisation_id", None)
         validated_data.pop("project_id", None)
         validated_data.pop("parent_period_id", None)
+
+        # Update mutable fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
+
+
+class ActivitySerializer(serializers.ModelSerializer):
+    """
+    Serializer for Activity model with timezone-aware datetime handling.
+
+    Provides nested representations and soft warnings for date range validation.
+    """
+
+    # Nested read-only representations
+    project = serializers.SerializerMethodField()
+    period = serializers.SerializerMethodField()
+    created_by = serializers.SerializerMethodField()
+
+    # Write fields (use _id suffix for FK assignment)
+    project_id = serializers.UUIDField(write_only=True)
+    period_id = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = Activity
+        fields = [
+            "id",
+            "project",
+            "project_id",
+            "period",
+            "period_id",
+            "title",
+            "activity_type",
+            "start_time",
+            "end_time",
+            "location",
+            "description",
+            "data",
+            "created_at",
+            "updated_at",
+            "created_by",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def get_project(self, obj):
+        """Return nested project representation"""
+        if obj.project:
+            return {"id": str(obj.project.id), "name": obj.project.name}
+        return None
+
+    def get_period(self, obj):
+        """Return nested period representation"""
+        if obj.period:
+            return {
+                "id": str(obj.period.id),
+                "name": obj.period.name,
+                "start_date": obj.period.start_date,
+                "end_date": obj.period.end_date,
+            }
+        return None
+
+    def get_created_by(self, obj):
+        """Return nested user representation"""
+        if obj.created_by:
+            return {
+                "id": str(obj.created_by.id),
+                "name": obj.created_by.get_full_name() or obj.created_by.username,
+            }
+        return None
+
+    def validate(self, data):
+        """
+        Validate:
+        1. end_time > start_time
+        2. Soft warning if activity scheduled outside period date range
+        """
+        start_time = data.get("start_time")
+        end_time = data.get("end_time")
+
+        # Validate time range
+        if end_time and start_time and end_time <= start_time:
+            raise serializers.ValidationError({"end_time": "End time must be after start time"})
+
+        # Soft warning if activity outside period date range
+        period_id = data.get("period_id")
+        if period_id and start_time:
+            try:
+                period = Period.objects.get(id=period_id)
+                activity_date = start_time.date()
+
+                if not (period.start_date <= activity_date <= period.end_date):
+                    # Store as non-field warning (doesn't block save)
+                    if not hasattr(self, "warnings"):
+                        self.warnings = []
+                    self.warnings.append(
+                        f"Activity scheduled outside period date range "
+                        f"({period.start_date} to {period.end_date})"
+                    )
+            except Period.DoesNotExist:
+                raise serializers.ValidationError({"period_id": "Period does not exist"})
+
+        return data
+
+    def create(self, validated_data):
+        """Create new activity with FK assignment"""
+        # Extract write-only FK fields
+        project_id = validated_data.pop("project_id")
+        period_id = validated_data.pop("period_id")
+
+        # Set request user as created_by
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            validated_data["created_by"] = request.user
+
+        # Create activity
+        activity = Activity.objects.create(
+            project_id=project_id,
+            period_id=period_id,
+            **validated_data,
+        )
+
+        return activity
+
+    def update(self, instance, validated_data):
+        """Update activity (FK fields are immutable after creation)"""
+        # Remove write-only FK fields (don't allow changing FKs after creation)
+        validated_data.pop("project_id", None)
+        validated_data.pop("period_id", None)
 
         # Update mutable fields
         for attr, value in validated_data.items():
