@@ -1,6 +1,8 @@
 ---
 lane: "done"
 agent: "system"
+assignee: "claude"
+shell_pid: "36572"
 ---
 # Work Package 06: Documentation & Finalization
 
