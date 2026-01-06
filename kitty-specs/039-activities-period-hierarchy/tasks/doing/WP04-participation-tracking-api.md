@@ -1,8 +1,13 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "36572"
+---
 # Work Package 04: Participation Tracking API
 
 ---
 **work_package_id**: WP04
-**lane**: planned
+**lane**: doing
 **priority**: P1-P2 (User Stories 2, 4)
 **estimated_effort**: 4 hours
 **dependencies**: WP01, WP02, WP03
@@ -222,3 +227,7 @@ def test_create_participation_with_both_ids_fails(api_client, activity, period, 
 - [ ] Serializer validates XOR before database save
 - [ ] Organisation matching validated for member
 - [ ] Status choices match spec (confirmed/tentative/declined/no_response)
+
+## Activity Log
+
+- 2026-01-06T08:09:52Z – system – shell_pid= – lane=doing – Started implementation of Participation Tracking API
