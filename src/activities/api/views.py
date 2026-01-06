@@ -72,7 +72,7 @@ class PeriodViewSet(viewsets.ModelViewSet):
         if children_count > 0:
             return Response(
                 {
-                    "error": f"Cannot delete period with {children_count} child period(s). Delete children first."
+                    "detail": f"Cannot delete period with {children_count} child period(s). Delete children first."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -82,7 +82,7 @@ class PeriodViewSet(viewsets.ModelViewSet):
         if activities_count > 0:
             return Response(
                 {
-                    "error": f"Cannot delete period with {activities_count} activit(ies). Delete activities first."
+                    "detail": f"Cannot delete period with {activities_count} activit(ies). Delete activities first."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )

@@ -397,8 +397,8 @@ class TestParticipationViewSet:
     def test_create_period_participation(self, authenticated_client, member, period):
         """POST /api/v1/participations/ with period_id creates participation."""
         data = {
-            "member": member.id,
-            "period": period.id,
+            "member_id": str(member.id),
+            "period_id": str(period.id),
             "role": "squad_member",
             "status": "confirmed",
             "data": {"jersey_number": 10},
@@ -417,12 +417,12 @@ class TestParticipationViewSet:
             period=period,
         )
         data = {
-            "member": member.id,
-            "activity": activity.id,
+            "member_id": str(member.id),
+            "activity_id": str(activity.id),
             "role": "starter",
             "status": "confirmed",
         }
-        response = authenticated_client.post("/api/v1/participations/", data)
+        response = authenticated_client.post("/api/v1/participations/", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert Participation.objects.filter(member=member, activity=activity).exists()
 
