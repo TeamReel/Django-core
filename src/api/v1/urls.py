@@ -34,4 +34,5 @@ urlpatterns = [
     path("search/", include("search.urls")),  # /api/v1/search/
     path("activity/", include("audit.urls")),  # /api/v1/activity/
     path("activities/", include("activities.api.urls")),  # /api/v1/activities/ (B30)
+    path("transactions/", include("transactions.api.urls")),  # /api/v1/transactions/
 ]

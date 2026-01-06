@@ -46,7 +46,7 @@ export function useCreditBalance(organisationSlug?: string, organisationId?: str
         setBalance(currentBalance);
 
         // 2. Fetch Policies
-        const policiesRes = await fetch(`${apiBaseUrl}/api/v1/transactions/policies/?organisation=${organisationId}`, {
+        const policiesRes = await fetch(`${apiBaseUrl}/api/v1/transactions/balance-policies/?organisation=${organisationId}`, {
            credentials: 'include',
            headers: { 'Content-Type': 'application/json' }
         });
