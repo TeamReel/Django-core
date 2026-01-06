@@ -1,5 +1,5 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "36572"
 ---
@@ -7,7 +7,7 @@ shell_pid: "36572"
 
 ---
 **work_package_id**: WP03
-**lane**: doing
+**lane**: for_review
 **priority**: P1 (User Story 3)
 **estimated_effort**: 4 hours
 **dependencies**: WP01, WP02
@@ -228,3 +228,4 @@ def test_filter_activities_by_period_with_descendants(api_client, organisation, 
 
 - 2026-01-06T08:02:59Z – system – shell_pid= – lane=doing – Started implementation of Activity Scheduling API
 [2026-01-06T09:05:51Z] Completed WP03: Activity Scheduling API implementation - All subtasks complete
+- 2026-01-06T08:06:14Z – claude – shell_pid=36572 – lane=for_review – Ready for review: Activity API with calendar filtering, B08 permissions, B09 audit signals
