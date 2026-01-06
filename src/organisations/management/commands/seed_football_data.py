@@ -734,11 +734,8 @@ class Command(BaseCommand):
                         f"    + Created bondscoach: {bondscoach.get_full_name()} ({bondscoach.email})"
                     )
                 else:
-                    # Always update password for demo users to ensure consistency
-                    bondscoach.set_password(demo_password)
-                    bondscoach.save()
                     self.stdout.write(
-                        f"    • Updated bondscoach password: {bondscoach.get_full_name()} ({bondscoach.email})"
+                        f"    • Bondscoach exists: {bondscoach.get_full_name()} ({bondscoach.email})"
                     )
 
                 # Assign Organization Admin role
@@ -803,11 +800,8 @@ class Command(BaseCommand):
                         coach.save()
                         stats["users_created"] += 1
                     else:
-                        # Always update password for demo users
-                        coach.set_password(demo_password)
-                        coach.save()
                         self.stdout.write(
-                            f"      • Updated coach password: {coach.get_full_name()} ({coach.email})"
+                            f"      • Coach exists: {coach.get_full_name()} ({coach.email})"
                         )
 
                     # Assign Project Admin role
@@ -865,12 +859,9 @@ class Command(BaseCommand):
                             player.save()
                             stats["users_created"] += 1
                         else:
-                            # Always update password for demo users
-                            player.set_password(demo_password)
-                            player.save()
                             if idx == 0:
                                 self.stdout.write(
-                                    f"      • Updated player passwords for {club_data['name']}..."
+                                    f"      • Players exist for {club_data['name']}..."
                                 )
 
                         # Assign Project Member role

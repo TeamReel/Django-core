@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "permissions.apps.PermissionsConfig",
     # Feature apps
     "settings.apps.SettingsConfig",
+    "activities.apps.ActivitiesConfig",
 ]
 
 MIDDLEWARE = [

@@ -93,10 +93,14 @@ def period_post_save(sender, instance, created, **kwargs):
         # Emit audit event
         AuditEvent.objects.create(
             event_type=event_type,
-            actor=instance.created_by,
-            target_model="Period",
-            target_id=str(instance.id),
-            changes=changes,
+            user=instance.created_by,
+            organization=instance.organisation,
+            project=instance.project,
+            metadata={
+                "target_model": "Period",
+                "target_id": str(instance.id),
+                "changes": changes,
+            },
         )
 
     except ImportError:
@@ -125,10 +129,17 @@ def period_post_delete(sender, instance, **kwargs):
 
         AuditEvent.objects.create(
             event_type="period.deleted",
-            actor=actor,
-            target_model="Period",
-            target_id=str(instance.id),
-            changes={"name": instance.name, "organisation_id": str(instance.organisation_id)},
+            user=actor,
+            organization=instance.organisation,
+            project=instance.project,
+            metadata={
+                "target_model": "Period",
+                "target_id": str(instance.id),
+                "changes": {
+                    "name": instance.name,
+                    "organisation_id": str(instance.organisation_id),
+                },
+            },
         )
 
     except ImportError:
@@ -236,10 +247,14 @@ def activity_post_save(sender, instance, created, **kwargs):
         # Emit audit event
         AuditEvent.objects.create(
             event_type=event_type,
-            actor=instance.created_by,
-            target_model="Activity",
-            target_id=str(instance.id),
-            changes=changes,
+            user=instance.created_by,
+            organization=instance.project.organisation,
+            project=instance.project,
+            metadata={
+                "target_model": "Activity",
+                "target_id": str(instance.id),
+                "changes": changes,
+            },
         )
 
     except ImportError:
@@ -268,10 +283,14 @@ def activity_post_delete(sender, instance, **kwargs):
 
         AuditEvent.objects.create(
             event_type="activity.deleted",
-            actor=actor,
-            target_model="Activity",
-            target_id=str(instance.id),
-            changes={"title": instance.title, "project_id": str(instance.project_id)},
+            user=actor,
+            organization=instance.project.organisation,
+            project=instance.project,
+            metadata={
+                "target_model": "Activity",
+                "target_id": str(instance.id),
+                "changes": {"title": instance.title, "project_id": str(instance.project_id)},
+            },
         )
 
     except ImportError:
@@ -357,12 +376,26 @@ def participation_post_save(sender, instance, created, **kwargs):
             _participation_previous_state.pop(instance.pk, None)
 
         # Emit audit event
+        # Resolve organization/project context
+        org = None
+        proj = None
+        if instance.activity:
+            proj = instance.activity.project
+            org = proj.organisation if proj else None
+        elif instance.period:
+            proj = instance.period.project
+            org = instance.period.organisation
+
         AuditEvent.objects.create(
             event_type=event_type,
-            actor=instance.created_by,
-            target_model="Participation",
-            target_id=str(instance.id),
-            changes=changes,
+            user=instance.created_by,
+            organization=org,
+            project=proj,
+            metadata={
+                "target_model": "Participation",
+                "target_id": str(instance.id),
+                "changes": changes,
+            },
         )
 
     except ImportError:
@@ -390,16 +423,29 @@ def participation_post_delete(sender, instance, **kwargs):
         # Try to get user from instance attribute set by view
         actor = getattr(instance, "_deleted_by", None)
 
+        # Resolve organization/project context
+        org = None
+        proj = None
+        if instance.activity:
+            proj = instance.activity.project
+            org = proj.organisation if proj else None
+        elif instance.period:
+            proj = instance.period.project
+            org = instance.period.organisation
+
         AuditEvent.objects.create(
             event_type="participation.deleted",
-            actor=actor,
-            target_model="Participation",
-            target_id=str(instance.id),
-            changes={
-                "role": instance.role,
-                "member_id": str(instance.member_id),
-                "activity_id": str(instance.activity_id) if instance.activity_id else None,
-                "period_id": str(instance.period_id) if instance.period_id else None,
+            user=actor,
+            organization=org,
+            project=proj,
+            metadata={
+                "target_model": "Participation",
+                "target_id": str(instance.id),
+                "changes": {
+                    "role": instance.role,
+                    "activity_id": str(instance.activity_id) if instance.activity_id else None,
+                    "period_id": str(instance.period_id) if instance.period_id else None,
+                },
             },
         )
 
