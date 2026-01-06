@@ -6,9 +6,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count
-from activities.models import Period, Activity
-from .serializers import PeriodSerializer, ActivitySerializer
-from .permissions import PeriodPermission, ActivityPermission
+from activities.models import Period, Activity, Participation
+from .serializers import PeriodSerializer, ActivitySerializer, ParticipationSerializer
+from .permissions import PeriodPermission, ActivityPermission, ParticipationPermission
 
 
 class PeriodViewSet(viewsets.ModelViewSet):
@@ -191,5 +191,62 @@ class ActivityViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(start_time__gte=start_time__gte)
         if start_time__lte:
             queryset = queryset.filter(start_time__lte=start_time__lte)
+
+        return queryset
+
+
+class ParticipationViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Participation CRUD + filtering.
+
+    Endpoints:
+    - GET /api/v1/participations/ - List participations with filtering
+    - POST /api/v1/participations/ - Create participation
+    - GET /api/v1/participations/{id}/ - Retrieve participation
+    - PUT /api/v1/participations/{id}/ - Update participation
+    - DELETE /api/v1/participations/{id}/ - Delete participation
+
+    Query parameters:
+    - member_id: Filter by member
+    - activity_id: Filter by activity
+    - period_id: Filter by period
+    - role: Filter by role (squad_member, captain, starter, substitute, etc.)
+    - status: Filter by status (confirmed, tentative, declined, no_response)
+    """
+
+    queryset = Participation.objects.select_related(
+        "member", "activity", "period", "created_by"
+    ).order_by("-created_at")
+    serializer_class = ParticipationSerializer
+    permission_classes = [ParticipationPermission]
+
+    def get_queryset(self):
+        """Apply query param filters"""
+        queryset = super().get_queryset()
+
+        # Filter by member_id
+        member_id = self.request.query_params.get("member_id")
+        if member_id:
+            queryset = queryset.filter(member_id=member_id)
+
+        # Filter by activity_id
+        activity_id = self.request.query_params.get("activity_id")
+        if activity_id:
+            queryset = queryset.filter(activity_id=activity_id)
+
+        # Filter by period_id
+        period_id = self.request.query_params.get("period_id")
+        if period_id:
+            queryset = queryset.filter(period_id=period_id)
+
+        # Filter by role
+        role = self.request.query_params.get("role")
+        if role:
+            queryset = queryset.filter(role=role)
+
+        # Filter by status
+        status_param = self.request.query_params.get("status")
+        if status_param:
+            queryset = queryset.filter(status=status_param)
 
         return queryset

@@ -111,3 +111,61 @@ class ActivityPermission(permissions.BasePermission):
                 "B08 permissions module not found. Falling back to is_staff check for activity write access."
             )
             return user.is_staff
+
+
+class ParticipationPermission(permissions.BasePermission):
+    """
+    Permission check for Participation operations.
+
+    - Read (GET, HEAD, OPTIONS): Any authenticated organisation member
+    - Write (POST, PUT, PATCH, DELETE): Requires manage_participations permission
+      - For activity participations: project.manage_participations
+      - For period participations: project.manage_participations or organisation.manage_participations
+
+    Falls back to is_staff check if B08 permissions module is unavailable.
+    """
+
+    def has_permission(self, request, view):
+        """Check if user can access participation endpoints"""
+        # Read permissions for any authenticated user
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+
+        # Write permissions require authentication
+        return request.user and request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        """Check if user can perform action on specific participation"""
+        # Read access for any authenticated user
+        # TODO: Could add organisation membership check (B06 integration)
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Write access requires manage_participations permission
+        user = request.user
+
+        try:
+            # Attempt B08 integration
+            from permissions.utils import has_permission
+
+            # For activity participations: check project permission
+            if obj.activity:
+                return has_permission(user, "project.manage_participations", obj.activity.project)
+
+            # For period participations: check project or organisation permission
+            if obj.period:
+                if obj.period.project:
+                    return has_permission(user, "project.manage_participations", obj.period.project)
+                else:
+                    return has_permission(
+                        user, "organisation.manage_participations", obj.period.organisation
+                    )
+
+            return False
+
+        except ImportError:
+            # Fallback: If B08 not available, use is_staff
+            logger.warning(
+                "B08 permissions module not found. Falling back to is_staff check for participation write access."
+            )
+            return user.is_staff

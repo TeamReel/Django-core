@@ -5,7 +5,7 @@ Integrates with B09 Audit Logging System.
 
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
-from .models import Period, Activity
+from .models import Period, Activity, Participation
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 # Track previous state for change detection
 _period_previous_state = {}
 _activity_previous_state = {}
+_participation_previous_state = {}
 
 
 @receiver(pre_save, sender=Period)
@@ -284,3 +285,132 @@ def activity_post_delete(sender, instance, **kwargs):
         )
     except Exception as e:
         logger.error(f"Failed to emit deletion audit event for Activity {instance.id}: {e}")
+
+
+# ============================================================================
+# Participation Signals
+# ============================================================================
+
+
+@receiver(pre_save, sender=Participation)
+def participation_pre_save(sender, instance, **kwargs):
+    """Capture previous state before save for change tracking"""
+    if instance.pk:
+        try:
+            old_instance = Participation.objects.get(pk=instance.pk)
+            _participation_previous_state[instance.pk] = {
+                "role": old_instance.role,
+                "status": old_instance.status,
+                "activity_id": old_instance.activity_id,
+                "period_id": old_instance.period_id,
+                "member_id": old_instance.member_id,
+            }
+        except Participation.DoesNotExist:
+            pass
+
+
+@receiver(post_save, sender=Participation)
+def participation_post_save(sender, instance, created, **kwargs):
+    """Emit B09 audit event for participation creation/update"""
+    try:
+        # Attempt B09 integration
+        from audit.models import AuditEvent
+
+        if created:
+            event_type = "participation.created"
+            changes = {
+                "role": instance.role,
+                "status": instance.status,
+                "member_id": str(instance.member_id),
+                "activity_id": str(instance.activity_id) if instance.activity_id else None,
+                "period_id": str(instance.period_id) if instance.period_id else None,
+            }
+        else:
+            event_type = "participation.updated"
+            old_state = _participation_previous_state.get(instance.pk, {})
+            changes = {}
+
+            # Track field changes
+            if old_state.get("role") != instance.role:
+                changes["role"] = {"old": old_state.get("role"), "new": instance.role}
+            if old_state.get("status") != instance.status:
+                changes["status"] = {"old": old_state.get("status"), "new": instance.status}
+            if old_state.get("activity_id") != instance.activity_id:
+                changes["activity_id"] = {
+                    "old": (
+                        str(old_state.get("activity_id")) if old_state.get("activity_id") else None
+                    ),
+                    "new": str(instance.activity_id) if instance.activity_id else None,
+                }
+            if old_state.get("period_id") != instance.period_id:
+                changes["period_id"] = {
+                    "old": str(old_state.get("period_id")) if old_state.get("period_id") else None,
+                    "new": str(instance.period_id) if instance.period_id else None,
+                }
+            if old_state.get("member_id") != instance.member_id:
+                changes["member_id"] = {
+                    "old": str(old_state.get("member_id")) if old_state.get("member_id") else None,
+                    "new": str(instance.member_id),
+                }
+
+            # Clean up previous state
+            _participation_previous_state.pop(instance.pk, None)
+
+        # Emit audit event
+        AuditEvent.objects.create(
+            event_type=event_type,
+            actor=instance.created_by,
+            target_model="Participation",
+            target_id=str(instance.id),
+            changes=changes,
+        )
+
+    except ImportError:
+        # Fallback if B09 not available - log to standard logger
+        logger.info(
+            f"Participation {event_type}: {instance.id} by {instance.created_by}",
+            extra={
+                "event_type": event_type,
+                "participation_id": str(instance.id),
+                "role": instance.role,
+                "status": instance.status,
+                "user_id": str(instance.created_by.id) if instance.created_by else None,
+            },
+        )
+    except Exception as e:
+        logger.error(f"Failed to emit audit event for Participation {instance.id}: {e}")
+
+
+@receiver(post_delete, sender=Participation)
+def participation_post_delete(sender, instance, **kwargs):
+    """Emit B09 audit event for participation deletion"""
+    try:
+        from audit.models import AuditEvent
+
+        # Try to get user from instance attribute set by view
+        actor = getattr(instance, "_deleted_by", None)
+
+        AuditEvent.objects.create(
+            event_type="participation.deleted",
+            actor=actor,
+            target_model="Participation",
+            target_id=str(instance.id),
+            changes={
+                "role": instance.role,
+                "member_id": str(instance.member_id),
+                "activity_id": str(instance.activity_id) if instance.activity_id else None,
+                "period_id": str(instance.period_id) if instance.period_id else None,
+            },
+        )
+
+    except ImportError:
+        logger.info(
+            f"Participation deleted: {instance.id}",
+            extra={
+                "event_type": "participation.deleted",
+                "participation_id": str(instance.id),
+                "role": instance.role,
+            },
+        )
+    except Exception as e:
+        logger.error(f"Failed to emit deletion audit event for Participation {instance.id}: {e}")
