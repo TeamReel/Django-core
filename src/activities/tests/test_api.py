@@ -7,6 +7,7 @@ Target coverage: ≥85% for api/views.py
 
 import pytest
 from datetime import date, datetime, timezone
+from django.db import connection
 from rest_framework import status
 from rest_framework.test import APIClient
 from activities.models import Period, Activity, Participation
@@ -198,6 +199,10 @@ class TestPeriodViewSet:
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 2
 
+    @pytest.mark.skipif(
+        connection.vendor != "postgresql",
+        reason="CTE tests require PostgreSQL (test database uses SQLite)",
+    )
     def test_get_descendants_action(self, authenticated_client, organisation, member):
         """GET /api/v1/periods/{id}/descendants/ returns all descendants."""
         root = Period.objects.create(

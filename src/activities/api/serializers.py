@@ -371,8 +371,17 @@ class ParticipationSerializer(serializers.ModelSerializer):
         1. XOR constraint: Exactly one of (activity_id, period_id) must be set
         2. Member organisation matches activity/period organisation
         """
-        activity_id = data.get("activity_id")
-        period_id = data.get("period_id")
+        # For updates, check instance if fields not in data
+        if self.instance:
+            activity_id = data.get(
+                "activity_id", self.instance.activity_id if self.instance.activity else None
+            )
+            period_id = data.get(
+                "period_id", self.instance.period_id if self.instance.period else None
+            )
+        else:
+            activity_id = data.get("activity_id")
+            period_id = data.get("period_id")
 
         # XOR logic: exactly one must be set
         if (activity_id and period_id) or (not activity_id and not period_id):
