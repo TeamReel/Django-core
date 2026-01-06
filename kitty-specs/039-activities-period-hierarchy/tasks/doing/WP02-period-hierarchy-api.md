@@ -1,3 +1,8 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "36572"
+---
 # Work Package 02: Period Hierarchy API
 
 ---
@@ -590,3 +595,7 @@ def test_delete_period_with_children_prevented(api_client, organisation, user):
 - [ ] /descendants/ endpoint uses Period.objects.get_descendants() CTE method
 - [ ] Signals connect in apps.py ready() method
 - [ ] API returns B13 envelope pattern (if B13 integration required)
+
+## Activity Log
+
+- 2026-01-06T07:51:09Z – system – shell_pid= – lane=doing – Started implementation of Period Hierarchy API
