@@ -1,8 +1,14 @@
+---
+lane: "doing"
+agent: "system"
+---
 # Work Package 06: Documentation & Finalization
 
 ---
 **work_package_id**: WP06
-**lane**: planned
+**lane**: doing
+**agent**: claude
+**shell_pid**: 36572
 **priority**: P3
 **estimated_effort**: 3 hours
 **dependencies**: WP01, WP02, WP03, WP04, WP05
@@ -780,3 +786,7 @@ def export_match_report(activity_id):
 - [ ] Extension guide examples follow Constitution (product-agnostic Core)
 - [ ] All file paths absolute or relative to project root
 - [ ] JSON examples valid (no trailing commas, proper escaping)
+
+## Activity Log
+
+- 2026-01-06T08:44:00Z – system – shell_pid= – lane=doing – Moved to doing
