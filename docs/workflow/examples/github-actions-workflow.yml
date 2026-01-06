@@ -1,0 +1,77 @@
+# Constitutional Enforcement Engine - GitHub Actions Workflow
+#
+# This workflow runs the Constitutional Enforcement Engine on every push and pull request
+# to validate that the repository complies with defined constitutional rules.
+#
+# Features:
+# - Automatic GitHub Actions annotations for violations (::error::, ::warning::)
+# - Job summaries showing detailed results
+# - Artifact uploads for later review
+# - Optional PR comments
+#
+# Copy this file to `.github/workflows/constitution-engine.yml` in your repository.
+
+name: Constitutional Enforcement
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: read
+  pull-requests: write # For PR comments (optional)
+
+jobs:
+  constitutional-check:
+    name: Run Constitutional Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for Git metadata
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip" # Cache pip dependencies
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run Constitutional Engine
+        id: constitution
+        run: |
+          constitution-engine \
+            --config .constitution.yaml \
+            --output both \
+            --fail-on high \
+            --verbose
+        # Note: Annotations and summaries are automatically emitted in GitHub Actions
+        # The CLI detects GITHUB_ACTIONS=true and outputs:
+        # - ::error:: / ::warning:: annotations for violations
+        # - Step summaries in $GITHUB_STEP_SUMMARY
+        continue-on-error: true # Capture results even on failure
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: constitution-results
+          path: |
+            constitution-results.json
+            constitution-report.txt
+          retention-days: 30
+
+      - name: Check results
+        if: steps.constitution.outcome == 'failure'
+        run: |
+          echo "::error::Constitutional violations detected"
+          exit 1
