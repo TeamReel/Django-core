@@ -227,3 +227,4 @@ def test_filter_activities_by_period_with_descendants(api_client, organisation, 
 ## Activity Log
 
 - 2026-01-06T08:02:59Z – system – shell_pid= – lane=doing – Started implementation of Activity Scheduling API
+[2026-01-06T09:05:51Z] Completed WP03: Activity Scheduling API implementation - All subtasks complete
