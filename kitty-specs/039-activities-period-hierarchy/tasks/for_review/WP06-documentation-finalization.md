@@ -1,12 +1,12 @@
 ---
-lane: "doing"
+lane: "for_review"
 agent: "system"
 ---
 # Work Package 06: Documentation & Finalization
 
 ---
 **work_package_id**: WP06
-**lane**: doing
+**lane**: for_review
 **agent**: claude
 **shell_pid**: 36572
 **priority**: P3
@@ -790,3 +790,4 @@ def export_match_report(activity_id):
 ## Activity Log
 
 - 2026-01-06T08:44:00Z – system – shell_pid= – lane=doing – Moved to doing
+- 2026-01-06T08:47:34Z – system – shell_pid= – lane=for_review – Moved to for_review
