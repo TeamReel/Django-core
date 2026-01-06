@@ -1,8 +1,14 @@
+---
+lane: "doing"
+agent: "system"
+---
 # Work Package 05: Admin & Search Integration
 
 ---
 **work_package_id**: WP05
-**lane**: planned
+**lane**: doing
+**agent**: claude
+**shell_pid**: 36572
 **priority**: P2
 **estimated_effort**: 2 hours
 **dependencies**: WP01
@@ -220,3 +226,7 @@ def test_search_periods_by_name(organisation):
 - [ ] Search fields include all user-visible text fields
 - [ ] Inlines use TabularInline for compact display
 - [ ] Autocomplete fields set for FKs to prevent dropdown overload
+
+## Activity Log
+
+- 2026-01-06T08:37:04Z – system – shell_pid= – lane=doing – Moved to doing
