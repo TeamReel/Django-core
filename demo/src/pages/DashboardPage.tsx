@@ -9,7 +9,10 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
 
-  const { balance, lowBalanceAlert, threshold } = useCreditBalance(context.organisation?.id?.toString());
+  const { balance, lowBalanceAlert, threshold } = useCreditBalance(
+    context.organisation?.slug,
+    context.organisation?.id?.toString()
+  );
 
   return (
     <AppShell>

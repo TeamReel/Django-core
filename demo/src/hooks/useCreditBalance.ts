@@ -16,7 +16,7 @@ interface UseCreditBalanceResult {
   error: string | null;
 }
 
-export function useCreditBalance(organisationId?: string): UseCreditBalanceResult {
+export function useCreditBalance(organisationSlug?: string, organisationId?: string): UseCreditBalanceResult {
   const [balance, setBalance] = useState<number | null>(null);
   const [lowBalanceAlert, setLowBalanceAlert] = useState(false);
   const [threshold, setThreshold] = useState<number | null>(null);
@@ -24,7 +24,7 @@ export function useCreditBalance(organisationId?: string): UseCreditBalanceResul
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!organisationId) {
+    if (!organisationSlug || !organisationId) {
       setLoading(false);
       return;
     }
@@ -35,7 +35,7 @@ export function useCreditBalance(organisationId?: string): UseCreditBalanceResul
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
 
         // 1. Fetch Organisation for Balance
-        const orgRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${organisationId}/`, {
+        const orgRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${organisationSlug}/`, {
            credentials: 'include',
            headers: { 'Content-Type': 'application/json' }
         });
