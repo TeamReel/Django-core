@@ -21,7 +21,7 @@ This document breaks down the implementation of B30 Activities & Period Hierarch
 
 ## Work Package Index
 
-- [WP01 - Setup & Foundation](#wp01---setup--foundation) (Blocking, 7 subtasks)
+- [X] [WP01 - Setup & Foundation](#wp01---setup--foundation) (Blocking, 7 subtasks) ✅ **DONE**
 - [WP02 - Period Hierarchy API](#wp02---period-hierarchy-api) (P1, 5 subtasks)
 - [WP03 - Activity Scheduling API](#wp03---activity-scheduling-api) (P1, 4 subtasks)
 - [WP04 - Participation Tracking API](#wp04---participation-tracking-api) (P1-P2, 4 subtasks)
@@ -36,7 +36,8 @@ This document breaks down the implementation of B30 Activities & Period Hierarch
 **Estimated Effort**: 4 hours
 **Dependencies**: None
 **Blocks**: WP02, WP03, WP04
-**Prompt File**: [tasks/planned/WP01-setup-foundation.md](tasks/planned/WP01-setup-foundation.md)
+**Status**: ✅ **DONE** (Reviewed and approved 2026-01-06)
+**Prompt File**: [tasks/done/WP01-setup-foundation.md](tasks/done/WP01-setup-foundation.md)
 
 ### Summary
 
