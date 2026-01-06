@@ -328,7 +328,7 @@ class ParticipationSerializer(serializers.ModelSerializer):
             return {
                 "id": str(obj.member.id),
                 "user_name": (
-                    obj.member.user.get_full_name() or obj.member.user.username
+                    obj.member.user.get_full_name() or obj.member.user.email
                     if obj.member.user
                     else None
                 ),
