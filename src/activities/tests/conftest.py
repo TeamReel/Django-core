@@ -3,11 +3,11 @@ Pytest fixtures for activities tests.
 """
 
 import pytest
-from datetime import date
+from datetime import date, datetime, timezone
 from accounts.models import User
 from organisations.models import Organisation, Membership
 from projects.models import Project
-from activities.models import Period
+from activities.models import Period, Activity
 
 
 @pytest.fixture
@@ -38,10 +38,23 @@ def project(db, user, organisation):
 
 @pytest.fixture
 def period(db, organisation):
-    """Create a test period."""
+    """Create a test period spanning 2024."""
     return Period.objects.create(
         name="Test Period",
-        start_date=date(2023, 1, 1),
-        end_date=date(2023, 12, 31),
+        start_date=date(2024, 1, 1),
+        end_date=date(2024, 12, 31),
         organisation=organisation,
+    )
+
+
+@pytest.fixture
+def activity(db, project, period):
+    """Create a test activity."""
+    return Activity.objects.create(
+        project=project,
+        period=period,
+        title="Test Activity",
+        activity_type="training",
+        start_time=datetime(2024, 1, 15, 10, 0, tzinfo=timezone.utc),
+        end_time=datetime(2024, 1, 15, 12, 0, tzinfo=timezone.utc),
     )
