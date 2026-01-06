@@ -21,7 +21,7 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
     if (t.includes('league')) return 'primary';  // Blue for League
     if (t.includes('cup')) return 'warning';     // Gold/Orange for Cup
     if (t.includes('training')) return 'success'; // Green for Training
-    if (t.includes('meeting')) return 'neutral';  // Grey for Admin
+    if (t.includes('meeting')) return 'default';  // Grey for Admin
     if (t.includes('match')) return 'error';      // Fallback Red for generic Match
     return 'info';
   };
