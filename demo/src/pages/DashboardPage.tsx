@@ -142,6 +142,7 @@ export default function DashboardPage() {
              <ActivityFeed
                 title="Upcoming Activities"
                 limit={5}
+                organisationId={context.organisation?.id?.toString()}
              />
           </div>
         </div>

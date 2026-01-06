@@ -4,6 +4,7 @@ import { useActivities, Activity } from '../../hooks/useActivities';
 
 interface ActivityFeedProps {
   projectId?: string;
+  organisationId?: string;
   limit?: number;
   title?: string;
 }
@@ -98,10 +99,15 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
 
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   projectId,
+  organisationId,
   limit = 5,
   title = "Recent Activity"
 }) => {
-  const { activities, loading, error } = useActivities({ limit, project_id: projectId });
+  const { activities, loading, error } = useActivities({
+    limit,
+    project_id: projectId,
+    organisation_id: organisationId
+  });
 
   if (loading) {
     return (

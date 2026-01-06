@@ -22,9 +22,10 @@ export interface Activity {
 interface UseActivitiesOptions {
   limit?: number;
   project_id?: string;
+  organisation_id?: string;
 }
 
-export function useActivities({ limit = 10, project_id }: UseActivitiesOptions = {}) {
+export function useActivities({ limit = 10, project_id, organisation_id }: UseActivitiesOptions = {}) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +38,8 @@ export function useActivities({ limit = 10, project_id }: UseActivitiesOptions =
 
         const params = new URLSearchParams();
         if (limit) params.append('limit', String(limit));
-        if (project_id) params.append('project', project_id);
+        if (project_id) params.append('project_id', project_id);
+        if (organisation_id) params.append('organisation_id', organisation_id);
 
         // Note: Sort by start_time descending (newest first)
         params.append('ordering', '-start_time');
