@@ -6,6 +6,7 @@ Provides generic time-based resource planning with:
 - Activity: Scheduled events within projects and periods
 - Participation: Links members to periods (squads) or activities (lineups)
 """
+
 import uuid
 from django.db import models
 from django.core.exceptions import ValidationError
