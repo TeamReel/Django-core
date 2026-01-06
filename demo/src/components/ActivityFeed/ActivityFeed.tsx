@@ -62,7 +62,7 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
       {/* Content */}
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
-          <Badge variant={getTypeColor(activity.activity_type)} size="sm">
+          <Badge variant={getTypeColor(activity.activity_type) || 'default'} size="sm">
             {activity.activity_type}
           </Badge>
           {cleanPeriodName && (

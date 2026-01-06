@@ -86,7 +86,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <span style={{ fontWeight: 600, color: 'var(--app-text)' }}>Low Balance Alert</span>
-                    <Badge variant={policy.is_active ? 'success' : 'neutral'} size="sm">
+                    <Badge variant={policy.is_active ? 'success' : 'default'} size="sm">
                       {policy.is_active ? 'Active' : 'Disabled'}
                     </Badge>
                   </div>

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import AppShell from '../../components/AppShell';
 // Temporary: Import directly from dist until shim exports are fixed
-import { PageHeader } from '../../../../../packages/page-templates/src/components/PageHeader';
-import { PageContent } from '../../../../../packages/page-templates/src/components/PageContent';
+import { PageHeader } from '@django-core/page-templates';
+import { PageContent } from '@django-core/page-templates';
 import { Button, Card, Badge, Input, Alert, Spinner } from '@django-core/design-system';
 
 export function TasksPage() {

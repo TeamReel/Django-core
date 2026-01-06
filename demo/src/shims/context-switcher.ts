@@ -1,1 +1,1 @@
-export * from '../../../../packages/context-switcher/src/index';
+export * from '@django-core/context-switcher';
