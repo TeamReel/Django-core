@@ -599,3 +599,4 @@ def test_delete_period_with_children_prevented(api_client, organisation, user):
 ## Activity Log
 
 - 2026-01-06T07:51:09Z – system – shell_pid= – lane=doing – Started implementation of Period Hierarchy API
+- 2026-01-06T07:57:00Z – claude – shell_pid=36572 – lane=doing – Completed implementation. All tasks: T008 (PeriodSerializer), T011 (PeriodPermission), T012 (PeriodViewSet), T015 (URL routing), T016 (B09 signals). Django check passed with 0 issues.
