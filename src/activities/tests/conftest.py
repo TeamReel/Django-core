@@ -12,8 +12,8 @@ from activities.models import Period, Activity
 
 @pytest.fixture
 def user(db):
-    """Create a test user."""
-    return User.objects.create_user(email="test@example.com", password="testpass123")
+    """Create a test user with staff privileges for API testing."""
+    return User.objects.create_user(email="test@example.com", password="testpass123", is_staff=True)
 
 
 @pytest.fixture

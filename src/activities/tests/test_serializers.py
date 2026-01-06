@@ -57,12 +57,12 @@ class TestPeriodSerializer:
         assert not serializer.is_valid()
         assert "end_date" in serializer.errors
 
-    def test_parent_period_must_match_organisation(self, organisation, period):
+    def test_parent_period_must_match_organisation(self, organisation, period, user):
         """Test child period must belong to same organisation as parent"""
         # Create another organisation
         from organisations.models import Organisation
 
-        other_org = Organisation.objects.create(name="Other Org", slug="other-org")
+        other_org = Organisation.objects.create(name="Other Org", slug="other-org", creator=user)
 
         data = {
             "organisation_id": str(other_org.id),  # Different org
@@ -142,12 +142,12 @@ class TestPeriodSerializer:
         period = serializer.save()
         assert period.created_by == user
 
-    def test_update_ignores_fk_changes(self, organisation, project, period):
+    def test_update_ignores_fk_changes(self, organisation, project, period, user):
         """Test update() ignores attempts to change FK fields"""
         # Create another organisation
         from organisations.models import Organisation
 
-        other_org = Organisation.objects.create(name="New Org", slug="new-org")
+        other_org = Organisation.objects.create(name="New Org", slug="new-org", creator=user)
 
         data = {
             "organisation_id": str(other_org.id),  # Attempt to change organisation
@@ -254,6 +254,7 @@ class TestActivitySerializer:
             title="Test Activity",
             activity_type="training",
             start_time=datetime(2024, 1, 15, 10, 0, tzinfo=timezone.utc),
+            end_time=datetime(2024, 1, 15, 12, 0, tzinfo=timezone.utc),
         )
         serializer = ActivitySerializer(activity)
         assert "project" in serializer.data
@@ -268,6 +269,7 @@ class TestActivitySerializer:
             title="Test Activity",
             activity_type="training",
             start_time=datetime(2024, 1, 15, 10, 0, tzinfo=timezone.utc),
+            end_time=datetime(2024, 1, 15, 12, 0, tzinfo=timezone.utc),
         )
         serializer = ActivitySerializer(activity)
         assert "period" in serializer.data
@@ -287,6 +289,7 @@ class TestActivitySerializer:
             "title": "User Activity",
             "activity_type": "training",
             "start_time": datetime(2024, 1, 15, 10, 0, tzinfo=timezone.utc),
+            "end_time": datetime(2024, 1, 15, 12, 0, tzinfo=timezone.utc),
         }
         mock_request = Mock()
         mock_request.user = user
@@ -295,7 +298,7 @@ class TestActivitySerializer:
         activity = serializer.save()
         assert activity.created_by == user
 
-    def test_update_ignores_fk_changes(self, project, period):
+    def test_update_ignores_fk_changes(self, project, period, user):
         """Test update() ignores attempts to change FK fields"""
         activity = Activity.objects.create(
             project=project,
@@ -303,12 +306,13 @@ class TestActivitySerializer:
             title="Original Activity",
             activity_type="training",
             start_time=datetime(2024, 1, 15, 10, 0, tzinfo=timezone.utc),
+            end_time=datetime(2024, 1, 15, 12, 0, tzinfo=timezone.utc),
         )
 
         # Create another period
         from organisations.models import Organisation
 
-        other_org = Organisation.objects.create(name="Other Org", slug="other-org")
+        other_org = Organisation.objects.create(name="Other Org", slug="other-org", creator=user)
         other_period = Period.objects.create(
             organisation=other_org,
             name="Other Period",
@@ -387,7 +391,7 @@ class TestParticipationSerializer:
         assert "exactly one" in str(serializer.errors["non_field_errors"]).lower()
 
     def test_member_organisation_must_match_activity_organisation(
-        self, organisation, member, project
+        self, organisation, member, project, user
     ):
         """Test member must belong to same organisation as activity's period"""
         # Create activity with period from same organisation
@@ -403,13 +407,14 @@ class TestParticipationSerializer:
             title="Test Activity",
             activity_type="training",
             start_time=datetime(2024, 1, 15, 10, 0, tzinfo=timezone.utc),
+            end_time=datetime(2024, 1, 15, 12, 0, tzinfo=timezone.utc),
         )
 
         # Create member from different organisation
         from organisations.models import Organisation, Membership
         from accounts.models import User
 
-        other_org = Organisation.objects.create(name="Other Org", slug="other-org")
+        other_org = Organisation.objects.create(name="Other Org", slug="other-org", creator=user)
         other_user = User.objects.create_user(email="other@example.com", password="pass123")
         other_member = Membership.objects.create(user=other_user, organisation=other_org)
 
@@ -424,12 +429,12 @@ class TestParticipationSerializer:
         assert "member_id" in serializer.errors
         assert "same organisation" in str(serializer.errors["member_id"]).lower()
 
-    def test_member_organisation_must_match_period_organisation(self, organisation, member):
+    def test_member_organisation_must_match_period_organisation(self, organisation, member, user):
         """Test member must belong to same organisation as period"""
         # Create period from different organisation
         from organisations.models import Organisation
 
-        other_org = Organisation.objects.create(name="Other Org", slug="other-org")
+        other_org = Organisation.objects.create(name="Other Org", slug="other-org", creator=user)
         other_period = Period.objects.create(
             organisation=other_org,
             name="Other Period",

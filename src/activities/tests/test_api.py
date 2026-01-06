@@ -96,7 +96,7 @@ class TestPeriodViewSet:
             "name": "New Season",
             "start_date": "2024-01-01",
             "end_date": "2024-12-31",
-            "organisation": organisation.id,
+            "organisation_id": str(organisation.id),
         }
         response = authenticated_client.post("/api/v1/periods/", data)
         assert response.status_code == status.HTTP_201_CREATED
@@ -108,7 +108,7 @@ class TestPeriodViewSet:
             "name": "Invalid",
             "start_date": "2024-12-31",
             "end_date": "2024-01-01",  # Before start
-            "organisation": organisation.id,
+            "organisation_id": str(organisation.id),
         }
         response = authenticated_client.post("/api/v1/periods/", data)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
