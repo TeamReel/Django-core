@@ -196,7 +196,7 @@ class TestPeriodViewSet:
 
         response = authenticated_client.get(f"/api/v1/periods/{parent.id}/children/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["data"]) == 2
+        assert len(response.data) == 2
 
     def test_get_descendants_action(self, authenticated_client, organisation, member):
         """GET /api/v1/periods/{id}/descendants/ returns all descendants."""
@@ -223,7 +223,7 @@ class TestPeriodViewSet:
 
         response = authenticated_client.get(f"/api/v1/periods/{root.id}/descendants/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["data"]) == 2
+        assert len(response.data) == 2
 
 
 @pytest.mark.django_db
@@ -253,11 +253,11 @@ class TestActivityViewSet:
             "title": "Training Session",
             "start_time": "2023-12-16T10:00:00Z",
             "end_time": "2023-12-16T12:00:00Z",
-            "project": project.id,
-            "period": period.id,
+            "project_id": project.id,
+            "period_id": str(period.id),
             "activity_type": "training",
         }
-        response = authenticated_client.post("/api/v1/activities/", data)
+        response = authenticated_client.post("/api/v1/activities/", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert Activity.objects.filter(title="Training Session").exists()
 
@@ -292,7 +292,7 @@ class TestActivityViewSet:
 
         response = authenticated_client.get(f"/api/v1/activities/?period_id={period1.id}")
         assert response.status_code == status.HTTP_200_OK
-        results = response.data.get("results", response.data)
+        results = response.data["data"]
         assert len(results) == 1
         assert results[0]["title"] == "Activity 1"
 
@@ -317,7 +317,7 @@ class TestActivityViewSet:
 
         response = authenticated_client.get("/api/v1/activities/?activity_type=match")
         assert response.status_code == status.HTTP_200_OK
-        results = response.data.get("results", response.data)
+        results = response.data["data"]
         assert len(results) == 1
         assert results[0]["title"] == "Match"
 
@@ -342,7 +342,7 @@ class TestActivityViewSet:
             "/api/v1/activities/?start_time__gte=2023-12-15T00:00:00Z"
         )
         assert response.status_code == status.HTTP_200_OK
-        results = response.data.get("results", response.data)
+        results = response.data["data"]
         assert len(results) == 1
         assert results[0]["title"] == "Late Activity"
 
@@ -361,7 +361,7 @@ class TestActivityViewSet:
 
         response = authenticated_client.get(f"/api/v1/activities/{activity.id}/participants/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["data"]) == 1
+        assert len(response.data) == 1
 
     def test_update_activity_with_outcome_data(self, authenticated_client, project, period, member):
         """PATCH /api/v1/activities/{id}/ updates activity with outcome data."""
@@ -486,7 +486,7 @@ class TestParticipationViewSet:
             member=member, period=period, role="squad_member", status="tentative"
         )
         response = authenticated_client.patch(
-            f"/api/v1/participations/{participation.id}/", {"status": "confirmed"}
+            f"/api/v1/participations/{participation.id}/", {"status": "confirmed"}, format="json"
         )
         assert response.status_code == status.HTTP_200_OK
         participation.refresh_from_db()

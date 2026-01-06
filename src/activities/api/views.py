@@ -197,6 +197,24 @@ class ActivityViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @action(detail=True, methods=["get"])
+    def participants(self, request, pk=None):
+        """
+        Get all participants for an activity.
+
+        Returns list of participations for this activity.
+        """
+        activity = self.get_object()
+        participations = (
+            Participation.objects.filter(activity=activity)
+            .select_related("member__user", "member__organisation")
+            .order_by("-created_at")
+        )
+        from .serializers import ParticipationSerializer
+
+        serializer = ParticipationSerializer(participations, many=True)
+        return Response(serializer.data)
+
 
 class ParticipationViewSet(viewsets.ModelViewSet):
     """
