@@ -1,5 +1,5 @@
 {
-  "name": "@django-core/demo-shell",
+  "name": "@django-core/demo",
   "version": "1.0.0",
   "private": true,
   "type": "module",

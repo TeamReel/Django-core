@@ -11,7 +11,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Copy packages and application source
 COPY packages/ ./packages/
-COPY examples/demo-shell/ ./examples/demo-shell/
+COPY demo/ ./demo/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
@@ -24,7 +24,7 @@ ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 RUN pnpm --filter "./packages/**" build
 
 # Build the demo-shell application
-RUN pnpm --filter "./examples/demo-shell" build
+RUN pnpm --filter "./demo" build
 
 # Production stage
 FROM node:20-alpine
@@ -34,7 +34,7 @@ WORKDIR /app
 RUN npm install -g serve
 
 # Copy built assets from builder stage
-COPY --from=builder /app/examples/demo-shell/dist ./dist
+COPY --from=builder /app/demo/dist ./dist
 
 # Railway injects the PORT environment variable
 EXPOSE 8080
