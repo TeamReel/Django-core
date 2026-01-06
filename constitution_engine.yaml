@@ -45,6 +45,13 @@ rules:
         - "requirements/base.txt"
         - "pyproject.toml"
 
+  # Constitutional test structure - ensures modules have required tests (Article IV v1.2.0)
+  - identifier: "required-test-structure"
+    enabled: true
+    severity: "high"
+    description: "All Django modules must have required test files and meet coverage thresholds"
+    parameters: {}
+
   # Meta-rule: Security rules cannot be disabled
   - identifier: "no-disabled-security-rules"
     enabled: true
@@ -63,6 +70,7 @@ validators:
         - "no-disabled-security-rules"
         - "mypy-must-pass"
         - "ruff-must-pass"
+        - "required-test-structure"
       critical_rules:
         - "no-disabled-security-rules"
 

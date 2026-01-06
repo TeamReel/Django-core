@@ -1,6 +1,51 @@
 <!--
-SYNC IMPACT REPORT - Django Core-App Constitution v1.0.0
+SYNC IMPACT REPORT - Django Core-App Constitution v1.2.0
 ==========================================================
+Version Change: 1.1.0 → 1.2.0 (MINOR: Mandatory pytest requirements added)
+Amendment Date: 2026-01-06
+
+CHANGES TO ARTICLE IV (Testing Strategy):
+
+STRENGTHENED SECTIONS:
+~ Testing Requirements - MANDATORY pytest structure for all modules
+  - Every Django app in src/ MUST have tests/ directory with pytest files
+  - Minimum coverage requirements enforced:
+    * Models: ≥90% line coverage
+    * API endpoints: ≥85% line coverage
+    * Serializers/Forms: ≥80% line coverage
+    * Permissions: ≥90% line coverage
+  - Test file naming convention: test_models.py, test_api.py, test_serializers.py, test_permissions.py
+  - CI MUST fail if module coverage drops below thresholds
+
+PREVIOUS VERSION v1.1.0:
+Version Change: 1.0.0 → 1.1.0 (MINOR: New mandatory requirements added)
+Amendment Date: 2026-01-05
+
+CHANGES TO ARTICLE XI (Documentation and Knowledge Sharing):
+
+ADDED SECTIONS:
++ Section 1: Module Documentation Requirements (MANDATORY)
+  - Every Django app in src/ MUST have README.md
+  - Template provided at .github/templates/MODULE_README.md
+  - CI validation enforces compliance
+  - Required content: Purpose, Scope, Components, Public Interface, Integration Example, Related Modules, Extension Points
+
++ Section 2: Extension Guide (MANDATORY)
+  - MUST exist at documents/06-workflow/extending-core.md
+  - Content: Scaffolding new products, importing core modules, extension patterns, migration guide
+  - Linked from documents/06-workflow/index.md
+
+STRENGTHENED SECTIONS:
+~ Section 3: ADR Process (Clarified existing SHOULD)
+  - ADRs MUST be indexed at documents/03-system/architecture-decisions.md
+  - ADR template MUST be provided
+  - Process MUST be documented: when to write, numbering, storage (docs/system/adr/)
+
++ Section 4: Constitution-Spec Kitty Integration (NEW cross-reference)
+  - Constitution evolution MUST follow Spec-Kitty flow (reinforces Art. XII)
+  - Template updates MUST propagate to spec/plan/tasks templates
+
+INITIAL VERSION v1.0.0:
 Version Change: NEW → 1.0.0 (Initial ratification)
 Ratification Date: 2025-11-20
 
@@ -93,16 +138,30 @@ cognitive load, improve maintainability, and make onboarding faster.
 
 **Mandatory Framework**: pytest + pytest-django
 
-**Testing Rules**:
-- Every feature MUST include appropriate tests
+**Module Test Structure** (MANDATORY):
+- Every Django app in `src/` MUST have a `tests/` directory containing pytest test files
+- Required test files per module (where applicable):
+  * `test_models.py` - Model tests (≥90% line coverage required)
+  * `test_api.py` - ViewSet/View endpoint tests (≥85% line coverage required)
+  * `test_serializers.py` - Serializer/Form validation tests (≥80% line coverage required)
+  * `test_permissions.py` - Permission logic tests (≥90% line coverage required)
+  * `test_managers.py` - Custom manager/queryset tests (≥85% line coverage required)
+- Test file naming MUST follow `test_*.py` pattern for pytest discovery
+- Each test file MUST use pytest fixtures and pytest-django decorators
+- CI MUST fail if any module drops below coverage thresholds
+
+**Testing Requirements**:
+- Every feature MUST include tests before acceptance (blocking requirement)
 - Every bug fix MUST include a regression test
-- Tests MUST be deterministic and fast
-- Coverage thresholds MUST be enforced and increased over time
-- Integration tests MUST cover key flows
+- Tests MUST be deterministic and fast (<5s per module, <60s total suite)
+- Coverage thresholds MUST be enforced in CI
+- Integration tests MUST cover key user flows from spec scenarios
 - Existing tests affected by a change MUST be updated to reflect the new expected behaviour before the feature can be accepted
 
 **Rationale**: Comprehensive testing prevents regressions, enables confident
-refactoring, and serves as living documentation of expected behavior.
+refactoring, and serves as living documentation of expected behavior. Explicit
+coverage thresholds ensure quality standards are maintained. Mandatory test
+structure prevents "test debt" accumulation and makes test suites discoverable.
 
 
 ---
@@ -239,4 +298,4 @@ Complexity that violates these principles MUST be justified explicitly in
 planning documents, with simpler alternatives documented and their rejection
 rationale recorded.
 
-**Version**: 1.0.0 | **Ratified**: 2025-11-20 | **Last Amended**: 2025-11-20
+**Version**: 1.2.0 | **Ratified**: 2025-11-20 | **Last Amended**: 2026-01-06

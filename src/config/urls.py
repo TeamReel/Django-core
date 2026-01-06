@@ -74,6 +74,8 @@ urlpatterns = [
     path("api/v1/", include("observability.urls")),
     # B15: Tasks Monitoring API
     path("api/v1/tasks/", include("tasks.urls")),
+    # B30: Activities & Period Hierarchy API
+    path("api/v1/", include("activities.api.urls")),
     # Security Baseline API
     path("api/security/", include("security_baseline.urls")),
     # Constitution API (B18)
