@@ -87,4 +87,3 @@ export const Table = ({ children, columns, rows, loading, style, ...rest }: Tabl
     </table>
   );
 };
-
