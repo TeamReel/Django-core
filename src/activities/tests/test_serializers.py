@@ -21,7 +21,7 @@ class TestPeriodSerializer:
         """Test serializer accepts valid period data"""
         data = {
             "organisation_id": str(organisation.id),
-            "project_id": str(project.id),
+            "project_id": project.id,
             "name": "Q1 2024",
             "description": "First quarter activities",
             "start_date": "2024-01-01",
@@ -170,7 +170,7 @@ class TestActivitySerializer:
     def test_valid_activity_data(self, project, period):
         """Test serializer accepts valid activity data"""
         data = {
-            "project_id": str(project.id),
+            "project_id": project.id,
             "period_id": str(period.id),
             "title": "Training Session",
             "activity_type": "training",
@@ -186,7 +186,7 @@ class TestActivitySerializer:
     def test_end_time_must_be_after_start_time(self, project, period):
         """Test validation fails when end_time <= start_time"""
         data = {
-            "project_id": str(project.id),
+            "project_id": project.id,
             "period_id": str(period.id),
             "title": "Invalid Activity",
             "activity_type": "training",
@@ -201,7 +201,7 @@ class TestActivitySerializer:
     def test_end_time_equal_to_start_time_fails(self, project, period):
         """Test validation fails when end_time == start_time"""
         data = {
-            "project_id": str(project.id),
+            "project_id": project.id,
             "period_id": str(period.id),
             "title": "Zero Duration",
             "activity_type": "training",
@@ -216,11 +216,12 @@ class TestActivitySerializer:
         """Test warning (not error) when activity scheduled outside period dates"""
         # period fixture: 2024-01-01 to 2024-12-31
         data = {
-            "project_id": str(project.id),
+            "project_id": project.id,
             "period_id": str(period.id),
             "title": "Out of Range Activity",
             "activity_type": "training",
             "start_time": "2025-06-15T10:00:00Z",  # Outside period (2024)
+            "end_time": "2025-06-15T12:00:00Z",
         }
         serializer = ActivitySerializer(data=data)
         # Should still be valid (soft warning, not blocking error)
@@ -235,11 +236,12 @@ class TestActivitySerializer:
         import uuid
 
         data = {
-            "project_id": str(project.id),
+            "project_id": project.id,
             "period_id": str(uuid.uuid4()),  # Non-existent UUID
             "title": "Orphan Activity",
             "activity_type": "training",
             "start_time": "2024-01-15T10:00:00Z",
+            "end_time": "2024-01-15T12:00:00Z",
         }
         serializer = ActivitySerializer(data=data)
         assert not serializer.is_valid()
@@ -284,7 +286,7 @@ class TestActivitySerializer:
         from unittest.mock import Mock
 
         data = {
-            "project_id": str(project.id),
+            "project_id": project.id,
             "period_id": str(period.id),
             "title": "User Activity",
             "activity_type": "training",

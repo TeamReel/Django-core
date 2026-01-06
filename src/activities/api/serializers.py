@@ -26,7 +26,7 @@ class PeriodSerializer(serializers.ModelSerializer):
 
     # Write fields (use _id suffix for FK assignment)
     organisation_id = serializers.UUIDField(write_only=True)
-    project_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     parent_period_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
 
     class Meta:
@@ -167,7 +167,7 @@ class ActivitySerializer(serializers.ModelSerializer):
     created_by = serializers.SerializerMethodField()
 
     # Write fields (use _id suffix for FK assignment)
-    project_id = serializers.UUIDField(write_only=True)
+    project_id = serializers.IntegerField(write_only=True)
     period_id = serializers.UUIDField(write_only=True)
 
     class Meta:
