@@ -6,7 +6,7 @@ import { usePermissions } from '@django-core/permissions';
 import AppShell from '../../components/AppShell';
 import { canEditProject, canDeleteProject } from '../../utils/permissions';
 import { MemberList } from '../../components/ProjectAccessControl/MemberList';
-import { AuditLogViewer } from '../../components/ProjectAccessControl/AuditLogViewer';
+import { AuditLogTable } from '../../components/AuditLog/AuditLogTable';
 import { ActivityFeed } from '../../components/ActivityFeed/ActivityFeed';
 
 interface Project {
@@ -317,7 +317,7 @@ export default function ProjectDetailPage() {
         )}
 
         {activeTab === 'activity' && (
-          <AuditLogViewer projectId={project.id} />
+          <AuditLogTable projectId={project.id} />
         )}
       </div>
     </AppShell>
