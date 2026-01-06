@@ -1,8 +1,13 @@
+---
+lane: "doing"
+agent: "claude"
+shell_pid: "36572"
+---
 # Work Package 03: Activity Scheduling API
 
 ---
 **work_package_id**: WP03
-**lane**: planned
+**lane**: doing
 **priority**: P1 (User Story 3)
 **estimated_effort**: 4 hours
 **dependencies**: WP01, WP02
@@ -218,3 +223,7 @@ def test_filter_activities_by_period_with_descendants(api_client, organisation, 
 - [ ] Serializer validates end_time > start_time
 - [ ] include_descendants filter uses CTE efficiently (no N+1)
 - [ ] Soft warning doesn't block activity creation (info only)
+
+## Activity Log
+
+- 2026-01-06T08:02:59Z – system – shell_pid= – lane=doing – Started implementation of Activity Scheduling API
