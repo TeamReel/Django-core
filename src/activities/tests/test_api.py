@@ -39,7 +39,7 @@ class TestPeriodViewSet:
         )
         response = authenticated_client.get("/api/v1/periods/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["results"]) == 1
+        assert len(response.data["data"]) == 1
 
     def test_filter_by_organisation(self, authenticated_client, organisation, user):
         """GET /api/v1/periods/?organisation_id=X filters by organisation."""
@@ -66,8 +66,8 @@ class TestPeriodViewSet:
 
         response = authenticated_client.get(f"/api/v1/periods/?organisation_id={org1.id}")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["results"]) == 1
-        assert response.data["results"][0]["name"] == "Org 1 Period"
+        assert len(response.data["data"]) == 1
+        assert response.data["data"][0]["name"] == "Org 1 Period"
 
     def test_filter_by_parent_null(self, authenticated_client, organisation, member):
         """GET /api/v1/periods/?parent_id=null returns root periods."""
@@ -87,8 +87,8 @@ class TestPeriodViewSet:
 
         response = authenticated_client.get("/api/v1/periods/?parent_id=null")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["results"]) == 1
-        assert response.data["results"][0]["name"] == "Root"
+        assert len(response.data["data"]) == 1
+        assert response.data["data"][0]["name"] == "Root"
 
     def test_create_period(self, authenticated_client, organisation, member):
         """POST /api/v1/periods/ creates new period."""
@@ -196,7 +196,7 @@ class TestPeriodViewSet:
 
         response = authenticated_client.get(f"/api/v1/periods/{parent.id}/children/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["results"]) == 2
+        assert len(response.data["data"]) == 2
 
     def test_get_descendants_action(self, authenticated_client, organisation, member):
         """GET /api/v1/periods/{id}/descendants/ returns all descendants."""
@@ -223,7 +223,7 @@ class TestPeriodViewSet:
 
         response = authenticated_client.get(f"/api/v1/periods/{root.id}/descendants/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["results"]) == 2
+        assert len(response.data["data"]) == 2
 
 
 @pytest.mark.django_db
@@ -243,7 +243,7 @@ class TestActivityViewSet:
         assert response.status_code == status.HTTP_200_OK
         # Handle both paginated and unpaginated responses
         if isinstance(response.data, dict) and "results" in response.data:
-            assert len(response.data["results"]) >= 1
+            assert len(response.data["data"]) >= 1
         elif isinstance(response.data, list):
             assert len(response.data) >= 1
 
@@ -361,7 +361,7 @@ class TestActivityViewSet:
 
         response = authenticated_client.get(f"/api/v1/activities/{activity.id}/participants/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["results"]) == 1
+        assert len(response.data["data"]) == 1
 
     def test_update_activity_with_outcome_data(self, authenticated_client, project, period, member):
         """PATCH /api/v1/activities/{id}/ updates activity with outcome data."""
@@ -392,7 +392,7 @@ class TestParticipationViewSet:
         )
         response = authenticated_client.get("/api/v1/participations/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["results"]) == 1
+        assert len(response.data["data"]) == 1
 
     def test_create_period_participation(self, authenticated_client, member, period):
         """POST /api/v1/participations/ with period_id creates participation."""
@@ -457,7 +457,7 @@ class TestParticipationViewSet:
         Participation.objects.create(member=member, period=period, role="squad_member")
         response = authenticated_client.get(f"/api/v1/participations/?member_id={member.id}")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["results"]) == 1
+        assert len(response.data["data"]) == 1
 
     def test_filter_by_period(self, authenticated_client, member, organisation):
         """GET /api/v1/participations/?period_id=X filters by period."""
@@ -478,7 +478,7 @@ class TestParticipationViewSet:
 
         response = authenticated_client.get(f"/api/v1/participations/?period_id={period1.id}")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["results"]) == 1
+        assert len(response.data["data"]) == 1
 
     def test_update_participation_status(self, authenticated_client, member, period):
         """PATCH /api/v1/participations/{id}/ updates status."""

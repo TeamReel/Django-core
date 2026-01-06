@@ -6,6 +6,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count
+from api.pagination import BaseAPIPagination
 from activities.models import Period, Activity, Participation
 from .serializers import PeriodSerializer, ActivitySerializer, ParticipationSerializer
 from .permissions import PeriodPermission, ActivityPermission, ParticipationPermission
@@ -37,6 +38,7 @@ class PeriodViewSet(viewsets.ModelViewSet):
     )
     serializer_class = PeriodSerializer
     permission_classes = [PeriodPermission]
+    pagination_class = BaseAPIPagination
 
     def get_queryset(self):
         """Apply query param filters"""
@@ -147,6 +149,7 @@ class ActivityViewSet(viewsets.ModelViewSet):
     )
     serializer_class = ActivitySerializer
     permission_classes = [ActivityPermission]
+    pagination_class = BaseAPIPagination
 
     def get_queryset(self):
         """Apply query param filters"""
@@ -219,6 +222,7 @@ class ParticipationViewSet(viewsets.ModelViewSet):
     ).order_by("-created_at")
     serializer_class = ParticipationSerializer
     permission_classes = [ParticipationPermission]
+    pagination_class = BaseAPIPagination
 
     def get_queryset(self):
         """Apply query param filters"""
