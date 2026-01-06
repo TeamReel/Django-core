@@ -43,6 +43,7 @@ export function useActivities({ limit = 10, project_id }: UseActivitiesOptions =
         params.append('ordering', '-start_time');
 
         const response = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, {
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             // Auth headers are handled by browser cookies in this demo setup or could be added here

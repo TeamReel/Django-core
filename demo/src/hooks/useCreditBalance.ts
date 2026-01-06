@@ -36,6 +36,7 @@ export function useCreditBalance(organisationId?: string): UseCreditBalanceResul
 
         // 1. Fetch Organisation for Balance
         const orgRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${organisationId}/`, {
+           credentials: 'include',
            headers: { 'Content-Type': 'application/json' }
         });
 
@@ -46,6 +47,7 @@ export function useCreditBalance(organisationId?: string): UseCreditBalanceResul
 
         // 2. Fetch Policies
         const policiesRes = await fetch(`${apiBaseUrl}/api/v1/transactions/policies/?organisation=${organisationId}`, {
+           credentials: 'include',
            headers: { 'Content-Type': 'application/json' }
         });
 
