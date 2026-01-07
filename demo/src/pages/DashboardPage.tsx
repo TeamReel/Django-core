@@ -14,6 +14,20 @@ export default function DashboardPage() {
     context.organisation?.id?.toString()
   );
 
+  // Determine activity filter scope based on user role
+  const isSuperadmin = (user as any)?.is_superuser || (user as any)?.role === 'superadmin';
+  const isOrgAdmin = context.currentMembership?.role === 'admin';
+
+  // Filter logic:
+  // - Superadmin: No filter (see all activities across all orgs)
+  // - Org Admin: Filter by organisation_id (see all activities in org)
+  // - Regular Member: Filter by project_id (see only activities in their project/team)
+  const activityFilterProps = isSuperadmin
+    ? {} // No filters for superadmin
+    : isOrgAdmin
+    ? { organisationId: context.organisation?.id?.toString() }
+    : { projectId: context.project?.id?.toString() };
+
   return (
     <AppShell>
       <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
@@ -142,7 +156,7 @@ export default function DashboardPage() {
              <ActivityFeed
                 title="Upcoming Activities"
                 limit={5}
-                organisationId={context.organisation?.id?.toString()}
+                {...activityFilterProps}
              />
           </div>
         </div>
