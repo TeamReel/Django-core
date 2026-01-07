@@ -56,10 +56,13 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
           throw new Error(`Failed to fetch activities: ${response.status}`);
         }
 
-        const data = await response.json();
+        const jsonData = await response.json();
+
+        // Unwrap "Envelope" response format ({ status: 'success', data: ... })
+        const payload = (jsonData.status === 'success' && jsonData.data) ? jsonData.data : jsonData;
 
         // Handle DRF pagination vs list results
-        const results = Array.isArray(data) ? data : (data.results || []);
+        const results = Array.isArray(payload) ? payload : (payload.results || []);
         setActivities(results);
         setError(null);
       } catch (err: any) {
@@ -71,7 +74,7 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
     }
 
     fetchActivities();
-  }, [limit, project_id]);
+  }, [limit, project_id, organisation_id]);
 
   return { activities, loading, error };
 }
