@@ -44,7 +44,11 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
         // Note: Sort by start_time descending (newest first)
         params.append('ordering', '-start_time');
 
-        const response = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, {
+        const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
+        console.log('[useActivities] Fetching from:', url);
+        console.log('[useActivities] Params:', { limit, project_id, organisation_id });
+
+        const response = await fetch(url, {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
@@ -57,16 +61,19 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
         }
 
         const jsonData = await response.json();
+        console.log('[useActivities] Raw API response:', jsonData);
 
         // Unwrap "Envelope" response format ({ status: 'success', data: ... })
         const payload = (jsonData.status === 'success' && jsonData.data) ? jsonData.data : jsonData;
+        console.log('[useActivities] Unwrapped payload:', payload);
 
         // Handle DRF pagination vs list results
         const results = Array.isArray(payload) ? payload : (payload.results || []);
+        console.log('[useActivities] Final results:', results.length, 'activities');
         setActivities(results);
         setError(null);
       } catch (err: any) {
-        console.error('Error fetching activities:', err);
+        console.error('[useActivities] Error fetching activities:', err);
         setError(err.message || 'Unknown error');
       } finally {
         setLoading(false);
