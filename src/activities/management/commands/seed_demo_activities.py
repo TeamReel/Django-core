@@ -81,6 +81,17 @@ class Command(BaseCommand):
             "Ligue 1",
             "Bundesliga",
         ]
+
+        # Master data mapping for leagues
+        league_metadata = {
+            "Eredivisie": {"federation": "KNVB", "country": "Netherlands", "level": 1},
+            "Premier League": {"federation": "FA", "country": "England", "level": 1},
+            "La Liga": {"federation": "RFEF", "country": "Spain", "level": 1},
+            "Serie A": {"federation": "FIGC", "country": "Italy", "level": 1},
+            "Ligue 1": {"federation": "FFF", "country": "France", "level": 1},
+            "Bundesliga": {"federation": "DFB", "country": "Germany", "level": 1},
+        }
+
         organisations = Organisation.objects.filter(name__in=football_leagues)
 
         if not organisations.exists():
@@ -92,6 +103,11 @@ class Command(BaseCommand):
         for org in organisations:
             self.stdout.write(f"Processing Org: {org.name}")
 
+            # Enrich Organisation metadata
+            if org.name in league_metadata:
+                org.metadata = league_metadata[org.name]
+                org.save(update_fields=["metadata"])
+
             # 2. Get Real Opponents (Other Projects in same Org)
             # Use 'list' to fetch from DB so we can exclude self later in Python
             all_projects = list(Project.objects.filter(organisation=org))
@@ -99,6 +115,15 @@ class Command(BaseCommand):
             # Process EACH Project Individually (Per User Request)
             for project in all_projects:
                 self.stdout.write(f" - Seeding Project: {project.name}")
+
+                # Enrich Project metadata with team-specific master data
+                project.metadata = {
+                    "stadium": f"{project.name} Stadium",
+                    "city": self._get_city_for_team(project.name),
+                    "founded": random.randint(1880, 1950),
+                    "colors": self._get_team_colors(project.name),
+                }
+                project.save(update_fields=["metadata"])
 
                 # Create Root Period (Season) for THIS project
                 season, created = Period.objects.get_or_create(
@@ -277,6 +302,20 @@ class Command(BaseCommand):
                 "end_time": end,
                 "location": location,
                 "description": description,
+                "metadata": {
+                    "opponent": opponent_name,
+                    "is_home": is_home,
+                    "context": context_label,
+                    # Add score for past matches (40% chance)
+                    **(
+                        {
+                            "score": f"{random.randint(0,4)}-{random.randint(0,3)}",
+                            "attendance": random.randint(15000, 55000) if is_home else None,
+                        }
+                        if start < timezone.now() and random.random() < 0.4
+                        else {}
+                    ),
+                },
             },
         )
 
@@ -318,3 +357,61 @@ class Command(BaseCommand):
             except Exception:
                 # Ignore duplicate errors or structural mismatches for robustness
                 continue
+
+    def _get_city_for_team(self, team_name):
+        """Extract or infer city from team name."""
+        city_map = {
+            "Ajax": "Amsterdam",
+            "Feyenoord": "Rotterdam",
+            "PSV": "Eindhoven",
+            "FC Utrecht": "Utrecht",
+            "AZ": "Alkmaar",
+            "Liverpool": "Liverpool",
+            "Manchester": "Manchester",
+            "Arsenal": "London",
+            "Chelsea": "London",
+            "Barcelona": "Barcelona",
+            "Real Madrid": "Madrid",
+            "Juventus": "Turin",
+            "Milan": "Milan",
+            "Inter": "Milan",
+            "Paris Saint-Germain": "Paris",
+            "Lyon": "Lyon",
+            "Bayern": "Munich",
+            "Dortmund": "Dortmund",
+        }
+
+        for key, city in city_map.items():
+            if key in team_name:
+                return city
+
+        return team_name.split()[0]
+
+    def _get_team_colors(self, team_name):
+        """Return team colors based on name."""
+        color_map = {
+            "Ajax": ["red", "white"],
+            "Feyenoord": ["red", "white"],
+            "PSV": ["red", "white"],
+            "FC Utrecht": ["red", "white"],
+            "AZ": ["red", "white"],
+            "Liverpool": ["red"],
+            "Manchester United": ["red"],
+            "Manchester City": ["sky blue"],
+            "Arsenal": ["red", "white"],
+            "Chelsea": ["blue"],
+            "Barcelona": ["blue", "red"],
+            "Real Madrid": ["white"],
+            "Juventus": ["black", "white"],
+            "Milan": ["red", "black"],
+            "Inter": ["blue", "black"],
+            "Paris Saint-Germain": ["blue", "red"],
+            "Bayern": ["red", "blue"],
+            "Dortmund": ["yellow", "black"],
+        }
+
+        for key, colors in color_map.items():
+            if key in team_name:
+                return colors
+
+        return ["blue", "white"]
