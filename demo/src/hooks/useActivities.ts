@@ -67,8 +67,8 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
         const payload = (jsonData.status === 'success' && jsonData.data) ? jsonData.data : jsonData;
         console.log('[useActivities] Unwrapped payload:', payload);
 
-        // Handle DRF pagination vs list results
-        const results = Array.isArray(payload) ? payload : (payload.results || []);
+        // Handle nested data structure: payload.data or payload.results or direct array
+        const results = Array.isArray(payload) ? payload : (payload.data || payload.results || []);
         console.log('[useActivities] Final results:', results.length, 'activities');
         setActivities(results);
         setError(null);
