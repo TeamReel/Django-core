@@ -16,17 +16,20 @@ export default function DashboardPage() {
 
   // Determine activity filter scope based on user role
   const isSuperadmin = (user as any)?.is_superuser || (user as any)?.role === 'superadmin';
-  const isOrgAdmin = context.currentMembership?.role === 'admin';
+
+  // For now, assume org-level context means user has org-level visibility
+  // TODO: Once membership role is available in context, use: context.membership?.role === 'admin'
+  const hasProjectContext = !!context.project;
 
   // Filter logic:
   // - Superadmin: No filter (see all activities across all orgs)
-  // - Org Admin: Filter by organisation_id (see all activities in org)
-  // - Regular Member: Filter by project_id (see only activities in their project/team)
+  // - Org-level context (no project selected): Filter by organisation_id
+  // - Project-level context: Filter by project_id (member sees only their team's activities)
   const activityFilterProps = isSuperadmin
     ? {} // No filters for superadmin
-    : isOrgAdmin
-    ? { organisationId: context.organisation?.id?.toString() }
-    : { projectId: context.project?.id?.toString() };
+    : hasProjectContext
+    ? { projectId: context.project?.id?.toString() }
+    : { organisationId: context.organisation?.id?.toString() };
 
   return (
     <AppShell>
