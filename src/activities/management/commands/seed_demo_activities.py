@@ -34,6 +34,11 @@ class Command(BaseCommand):
             action="store_true",
             help="Delete existing activity data before seeding",
         )
+        parser.add_argument(
+            "--league",
+            type=str,
+            help="Seed only specific league (e.g., 'Eredivisie')",
+        )
 
     def handle(self, *args, **options):
         # Disconnect search signals to prevent Redis errors
@@ -93,6 +98,10 @@ class Command(BaseCommand):
         }
 
         organisations = Organisation.objects.filter(name__in=football_leagues)
+
+        # Filter by league if specified
+        if options.get("league"):
+            organisations = organisations.filter(name=options["league"])
 
         if not organisations.exists():
             self.stdout.write(
