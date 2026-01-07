@@ -32,19 +32,25 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
     ? activity.period.name.replace(/ - .*/, '') // Remove " - Team Name"
     : '';
 
-  // Determine opponent visualization
+  // Build full match title with team context
+  const teamName = activity.project.name; // e.g., "Ajax Amsterdam"
   let displayTitle = activity.title;
   let isAway = false;
 
-  // Parse "vs Opponent" or "@ Opponent"
+  // Parse and format title with team name
   if (displayTitle.startsWith('vs ')) {
-    displayTitle = `vs ${displayTitle.substring(3)}`;
+    // Home game: "vs FC Utrecht" -> "Ajax Amsterdam vs FC Utrecht"
+    const opponent = displayTitle.substring(3);
+    displayTitle = `${teamName} vs ${opponent}`;
+    isAway = false;
   } else if (displayTitle.startsWith('@ ')) {
+    // Away game: "@ FC Utrecht" -> "Ajax Amsterdam @ FC Utrecht"
+    const opponent = displayTitle.substring(2);
+    displayTitle = `${teamName} @ ${opponent}`;
     isAway = true;
-    displayTitle = `@ ${displayTitle.substring(2)}`;
-  } else if (activity.location && activity.location !== 'Home') {
-    // Infer away from location if formatted like a match
-    isAway = true;
+  } else {
+    // Fallback: keep original title
+    displayTitle = activity.title;
   }
 
   return (
