@@ -51,7 +51,7 @@ class Period(models.Model):
     description = models.TextField(blank=True, default="")
     start_date = models.DateField(help_text="Period start (date only, no timezone)")
     end_date = models.DateField(help_text="Period end (date only, no timezone)")
-    data = models.JSONField(
+    metadata = models.JSONField(
         default=dict, blank=True, help_text="Flexible storage for domain-specific attributes"
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -129,8 +129,8 @@ class Activity(models.Model):
     end_time = models.DateTimeField(help_text="Activity end (timezone-aware)")
     location = models.CharField(max_length=200, blank=True, default="")
     description = models.TextField(blank=True, default="")
-    data = models.JSONField(
-        default=dict, blank=True, help_text="Outcome data (score, goals, meeting notes, etc.)"
+    metadata = models.JSONField(
+        default=dict, blank=True, help_text="Flexible storage (opponent, score, is_home, etc.)"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

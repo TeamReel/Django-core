@@ -62,6 +62,13 @@ class Project(models.Model):
         help_text="Timestamp when project was archived (NULL if active)",
     )
 
+    # Master data storage
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Flexible master data storage (e.g., stadium, city, team colors)",
+    )
+
     # Default manager returns only active projects
     objects = ActiveProjectManager()
     all_objects = AllProjectManager()

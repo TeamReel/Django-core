@@ -68,6 +68,13 @@ class Organisation(models.Model):
         help_text="Allow users in this organisation to toggle between light and dark themes",
     )
 
+    # Master data storage
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Flexible master data storage (e.g., federation, country, league rules)",
+    )
+
     objects = OrganisationManager()
 
     class Meta:
