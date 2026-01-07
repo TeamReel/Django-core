@@ -19,8 +19,8 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
 
   const getTypeColor = (type: string) => {
     const t = type.toLowerCase();
-    if (t.includes('league')) return 'primary';  // Blue for League
-    if (t.includes('cup')) return 'warning';     // Gold/Orange for Cup
+    if (t.includes('league')) return 'primary';  // Blue for League Match
+    if (t.includes('cup')) return 'warning';     // Gold/Orange for Cup Match
     if (t.includes('training')) return 'success'; // Green for Training
     if (t.includes('meeting')) return 'default';  // Grey for Admin
     if (t.includes('match')) return 'error';      // Fallback Red for generic Match
@@ -29,8 +29,23 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
 
   // Clean period name: "League Competition - FC Utrecht" -> "League Competition"
   const cleanPeriodName = activity.period?.name
-    ? activity.period.name.split(' - ')[0]
+    ? activity.period.name.replace(/ - .*/, '') // Remove " - Team Name"
     : '';
+
+  // Determine opponent visualization
+  let displayTitle = activity.title;
+  let isAway = false;
+
+  // Parse "vs Opponent" or "@ Opponent"
+  if (displayTitle.startsWith('vs ')) {
+    displayTitle = `vs ${displayTitle.substring(3)}`;
+  } else if (displayTitle.startsWith('@ ')) {
+    isAway = true;
+    displayTitle = `@ ${displayTitle.substring(2)}`;
+  } else if (activity.location && activity.location !== 'Home') {
+    // Infer away from location if formatted like a match
+    isAway = true;
+  }
 
   return (
     <div style={{
@@ -38,8 +53,8 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
       gap: '12px',
       padding: '12px 0',
       borderBottom: '1px solid var(--app-border)',
-      opacity: isPast ? 0.7 : 1,
-      alignItems: 'flex-start'
+      opacity: isPast ? 0.6 : 1,
+      alignItems: 'center'
     }}>
       {/* Date Box */}
       <div style={{
@@ -47,32 +62,36 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: '60px',
-        padding: '8px',
+        minWidth: '50px',
+        height: '50px',
+        padding: '4px',
         backgroundColor: 'var(--app-surface-2)',
         borderRadius: '8px',
         border: '1px solid var(--app-border)',
         fontSize: '12px'
       }}>
-        <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--app-text)' }}>{startDate.getDate()}</span>
-        <span style={{ textTransform: 'uppercase', opacity: 0.8, color: 'var(--app-text)' }}>
+        <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--app-text)', lineHeight: 1 }}>{startDate.getDate()}</span>
+        <span style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: 600, opacity: 0.8, color: 'var(--app-text)' }}>
           {startDate.toLocaleDateString('en-US', { month: 'short' })}
         </span>
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
           <Badge variant={getTypeColor(activity.activity_type) || 'default'} size="sm">
             {activity.activity_type}
           </Badge>
           {cleanPeriodName && (
             <span style={{
-              fontSize: '11px',
+              fontSize: '10px',
               color: 'var(--app-text-muted)',
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
-              fontWeight: 600
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
             }}>
               {cleanPeriodName}
             </span>
@@ -81,16 +100,25 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
 
         <div style={{
           fontWeight: 600,
-          fontSize: '15px',
+          fontSize: '14px',
           color: 'var(--app-text)',
-          marginBottom: '2px'
+          marginBottom: '2px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
         }}>
-          {activity.title}
+          {displayTitle}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', color: 'var(--app-text-muted)' }}>
-          <span>🕒 {timeStr}</span>
-          <span>📍 {activity.location}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: 'var(--app-text-muted)' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span>🕒</span> {timeStr}
+          </span>
+          {activity.location && (
+             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+               <span>📍</span> {activity.location}
+             </span>
+          )}
         </div>
       </div>
     </div>

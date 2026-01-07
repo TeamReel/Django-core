@@ -7,7 +7,6 @@ import random
 from datetime import timedelta, datetime, time
 from django.utils import timezone
 from django.core.management.base import BaseCommand
-from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save, post_delete
 
@@ -15,6 +14,12 @@ from organisations.models import Organisation, Membership
 from projects.models import Project, ProjectMembership
 from activities.models import Period, Activity, Participation
 from search.signals import handle_save, handle_delete
+from activities.signals import (
+    activity_post_save,
+    activity_post_delete,
+    participation_post_save,
+    participation_post_delete,
+)
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -30,16 +35,19 @@ class Command(BaseCommand):
             help="Delete existing activity data before seeding",
         )
 
-    @transaction.atomic
     def handle(self, *args, **options):
         # Disconnect search signals to prevent Redis errors
         # Note: They are connected in search/apps.py without dispatch_uid
-        disconnected_save = post_save.disconnect(handle_save)
-        disconnected_delete = post_delete.disconnect(handle_delete)
+        post_save.disconnect(handle_save)
+        post_delete.disconnect(handle_delete)
 
-        self.stdout.write(
-            f"Signals disconnected: Save={disconnected_save}, Delete={disconnected_delete}"
-        )
+        # Disconnect activity audit signals to prevent DB overload/timeouts during bulk delete
+        post_save.disconnect(activity_post_save, sender=Activity)
+        post_delete.disconnect(activity_post_delete, sender=Activity)
+        post_save.disconnect(participation_post_save, sender=Participation)
+        post_delete.disconnect(participation_post_delete, sender=Participation)
+
+        self.stdout.write("Signals disconnected (Search & Audit)")
 
         clean_mode = options["clean"]
 
