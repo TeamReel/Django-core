@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, Badge, Button } from '@django-core/design-system';
 import { useActivities, Activity } from '../../hooks/useActivities';
 
@@ -8,6 +8,8 @@ interface ActivityFeedProps {
   limit?: number;
   title?: string;
 }
+
+type ActivityFilter = 'all' | 'league' | 'cup';
 
 const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
   const startDate = new Date(activity.start_time);
@@ -134,14 +136,31 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   projectId,
   organisationId,
-  limit = 5,
+  limit = 10,
   title = "Recent Activity"
 }) => {
-  const { activities, loading, error } = useActivities({
-    limit,
+  const [filter, setFilter] = useState<ActivityFilter>('all');
+
+  // Fetch more items than limit to account for filtering
+  const { activities: allActivities, loading, error } = useActivities({
+    limit: 50, // Fetch more to have enough after filtering
     project_id: projectId,
     organisation_id: organisationId
   });
+
+  // Filter activities by type
+  const activities = useMemo(() => {
+    let filtered = allActivities;
+
+    if (filter === 'league') {
+      filtered = allActivities.filter(a => a.activity_type.toLowerCase().includes('league'));
+    } else if (filter === 'cup') {
+      filtered = allActivities.filter(a => a.activity_type.toLowerCase().includes('cup'));
+    }
+
+    // Apply limit after filtering
+    return filtered.slice(0, limit);
+  }, [allActivities, filter, limit]);
 
   if (loading) {
     return (
@@ -173,9 +192,60 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   return (
     <Card>
       <div style={{ padding: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
           <h3 style={{ margin: 0, fontSize: '18px' }}>{title}</h3>
-          <Button variant="ghost" size="sm">View All</Button>
+
+          {/* Filter Buttons */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              onClick={() => setFilter('all')}
+              style={{
+                padding: '6px 12px',
+                fontSize: '12px',
+                fontWeight: 600,
+                border: '1px solid var(--app-border)',
+                borderRadius: '4px',
+                backgroundColor: filter === 'all' ? 'var(--app-primary)' : 'var(--app-surface-2)',
+                color: filter === 'all' ? 'white' : 'var(--app-text)',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter('league')}
+              style={{
+                padding: '6px 12px',
+                fontSize: '12px',
+                fontWeight: 600,
+                border: '1px solid var(--app-border)',
+                borderRadius: '4px',
+                backgroundColor: filter === 'league' ? '#3b82f6' : 'var(--app-surface-2)',
+                color: filter === 'league' ? 'white' : 'var(--app-text)',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              ⚽ League
+            </button>
+            <button
+              onClick={() => setFilter('cup')}
+              style={{
+                padding: '6px 12px',
+                fontSize: '12px',
+                fontWeight: 600,
+                border: '1px solid var(--app-border)',
+                borderRadius: '4px',
+                backgroundColor: filter === 'cup' ? '#f59e0b' : 'var(--app-surface-2)',
+                color: filter === 'cup' ? 'white' : 'var(--app-text)',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              🏆 Cup
+            </button>
+          </div>
         </div>
 
         <div>

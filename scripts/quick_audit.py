@@ -1,4 +1,15 @@
+import os
+import sys
+import django
 import json
+
+# Add src to path so config can be found
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
+
+# Initialize Django (REQUIRED before importing models)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
+django.setup()
+
 from django.apps import apps
 from django.core.serializers.json import DjangoJSONEncoder
 

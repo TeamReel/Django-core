@@ -3,6 +3,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { Link } from 'react-router-dom';
 import AppShell from '../components/AppShell';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
+import { TransactionWidget } from '../components/TransactionWidget/TransactionWidget';
 import { useCreditBalance } from '../hooks/useCreditBalance';
 
 export default function DashboardPage() {
@@ -155,12 +156,20 @@ export default function DashboardPage() {
           </div>
 
           {/* Activity Sidebar - 4 cols */}
-          <div style={{ gridColumn: 'span 4' }}>
+          <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '24px' }}>
              <ActivityFeed
                 title="Upcoming Activities"
-                limit={5}
+                limit={10}
                 {...activityFilterProps}
              />
+
+             {/* Transaction Widget - Only show if organisation context exists */}
+             {context.organisation?.id && (
+               <TransactionWidget
+                 organisationId={context.organisation.id.toString()}
+                 limit={5}
+               />
+             )}
           </div>
         </div>
       </div>
