@@ -13,10 +13,12 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.decorators.csrf import ensure_csrf_cookie
 from permissions.evaluator import check_permission
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from accounts.models import User
 from accounts.permissions import IsAdmin
@@ -195,13 +197,6 @@ def login_api(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-
-from rest_framework.views import APIView
-
-from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class LogoutView(APIView):
@@ -763,15 +758,29 @@ def admin_user_list(request):
 
         proj = None
         try:
-            import uuid
-
             uuid.UUID(project_id)
             proj = Project.objects.filter(id=project_id).first()
         except ValueError:
             proj = Project.objects.filter(slug__iexact=project_id).first()
 
         if proj:
-            queryset = queryset.filter(role_assignments__target_project=proj).distinct()
+            # Find all projects to check:
+            # 1. The project itself
+            # 2. All child projects (if it's a parent/club)
+            project_ids = [proj.id]
+            child_projects = Project.objects.filter(parent_project=proj).values_list(
+                "id", flat=True
+            )
+            project_ids.extend(child_projects)
+
+            # Filter by ProjectMembership (new B26 system) OR RoleAssignment (legacy)
+            queryset = queryset.filter(
+                Q(
+                    project_memberships__project_id__in=project_ids,
+                    project_memberships__deleted_at__isnull=True,
+                )
+                | Q(role_assignments__target_project_id__in=project_ids)
+            ).distinct()
         else:
             return Response({"count": 0, "next": None, "previous": None, "results": []})
 
