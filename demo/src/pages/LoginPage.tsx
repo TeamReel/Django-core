@@ -90,13 +90,11 @@ export default function LoginPage() {
         </p>
         <div style={{ display: 'grid', gap: '10px' }}>
           {[
-            { label: '👑 Superadmin', email: 'admin@example.com', desc: 'Full System Access', pass: 'Basis123.' },
+            { label: '👑 Super Admin', email: 'admin@example.com', desc: 'Full System Access', pass: 'Basis123.' },
             { label: '🏆 Org Admin', email: 'koeman@eredivisie.demo', desc: 'Ronald Koeman - Eredivisie', pass: 'Basis123.' },
             { label: '⚽ Project Admin', email: 'slot@liverpool.demo', desc: 'Arne Slot - Liverpool FC', pass: 'Basis123.' },
-            { label: '👤 Project Member', email: 'salah@liverpool.demo', desc: 'Mo Salah - Liverpool FC', pass: 'Basis123.' },
-            { label: '🇩🇪 Bundesliga Admin', email: 'nagelsmann@bundesliga.demo', desc: 'Julian Nagelsmann', pass: 'Basis123.' },
-            { label: '🇮🇹 Serie A Admin', email: 'spalletti@seriea.demo', desc: 'Luciano Spalletti', pass: 'Basis123.' },
-            { label: '⚔️ Bayern Coach', email: 'kompany@bayern.demo', desc: 'Vincent Kompany', pass: 'Basis123.' },
+            { label: '🏃 Project Member', email: 'salah@liverpool.demo', desc: 'Mo Salah - Liverpool FC', pass: 'Basis123.' },
+            { label: '👀 Supporter', email: 'viewer@demo.djangocore.app', desc: 'Read-only Access (Demo)', pass: 'demo123' },
           ].map((account) => (
             <button
               key={account.email}
