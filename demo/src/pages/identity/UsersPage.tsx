@@ -275,14 +275,13 @@ export default function UsersPage() {
             params.append('organisation_id', filterOrg);
         }
 
-        // Club filter (server-side)
-        if (selectedClubId) {
-            params.append('project_id', selectedClubId);
-        }
-
-        // Team filter (server-side)
+        // Club/Team filter (server-side) - team takes priority
         if (selectedTeamId) {
             params.append('project_id', selectedTeamId);
+            console.log('[UsersPage] 🔍 API Filter - Team:', selectedTeamId);
+        } else if (selectedClubId) {
+            params.append('project_id', selectedClubId);
+            console.log('[UsersPage] 🔍 API Filter - Club:', selectedClubId);
         }
 
         // Status filter
@@ -293,6 +292,7 @@ export default function UsersPage() {
         }
 
         url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
+        console.log('[UsersPage] 📡 API Call:', url);
       } else if (effectiveOrgSlug) {
         // Org admin view - scoped to their org
         params.append('organisation_id', effectiveOrgSlug);
