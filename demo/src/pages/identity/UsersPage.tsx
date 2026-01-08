@@ -207,6 +207,10 @@ export default function UsersPage() {
 
               if (!response.ok) {
                   console.error('[UsersPage] Failed to fetch roles:', response.status);
+                  // Fallback to hardcoded roles if API fails (403 Forbidden, etc.)
+                  const fallbackRoles = ['Superadmin', 'Land Admin', 'Club Admin', 'Team Admin', 'Team Member', 'Supporter'];
+                  console.log('[UsersPage] Using fallback roles:', fallbackRoles);
+                  setAvailableRoles(fallbackRoles);
                   return;
               }
 
@@ -221,6 +225,10 @@ export default function UsersPage() {
               setAvailableRoles(allRoles);
           } catch (e) {
               console.error('[UsersPage] Failed to fetch roles for filter:', e);
+              // Fallback to hardcoded roles on error
+              const fallbackRoles = ['Superadmin', 'Land Admin', 'Club Admin', 'Team Admin', 'Team Member', 'Supporter'];
+              console.log('[UsersPage] Using fallback roles after error:', fallbackRoles);
+              setAvailableRoles(fallbackRoles);
           }
       };
       fetchRoles();
@@ -413,6 +421,17 @@ export default function UsersPage() {
       const systemRole = user.role || '';
       const userOrgs = user.organisations || [];
       const userProjects = user.projects || [];
+
+      // Debug: Log first user's project structure
+      if (users.indexOf(item) === 0 && (selectedClubId || selectedTeamId)) {
+          console.log('[Filter Debug] First user:', user.email);
+          console.log('[Filter Debug] User projects:', userProjects);
+          console.log('[Filter Debug] Selected club:', selectedClubId);
+          console.log('[Filter Debug] Selected team:', selectedTeamId);
+          if (userProjects.length > 0) {
+              console.log('[Filter Debug] Sample project structure:', userProjects[0]);
+          }
+      }
 
       // 1. Role Filter (TeamReel Hierarchy)
       if (roleFilter) {
