@@ -55,6 +55,7 @@ export default function UsersPage() {
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('active'); // Default to 'active'
+  const [roleFilter, setRoleFilter] = useState<string>(''); // Client-side role filter
   const [hasInitializedFilters, setHasInitializedFilters] = useState(false);
 
   // URL Params
@@ -295,6 +296,26 @@ export default function UsersPage() {
     breadcrumbs.push({ label: 'Users', current: true });
   }
 
+  // Client-side filtering
+  const filteredUsers = users.filter((item: any) => {
+      // 1. Role Filter
+      if (roleFilter) {
+          const isMembership = !!item.user;
+          const user = isMembership ? item.user : item;
+          const userOrgs = user.organisations || [];
+
+          const systemRole = user.role || '';
+          const hasSystemRole = systemRole.toLowerCase().includes(roleFilter.toLowerCase());
+
+          const hasOrgRole = userOrgs.some((o: any) =>
+            o.role?.toLowerCase().includes(roleFilter.toLowerCase())
+          );
+
+          if (!hasSystemRole && !hasOrgRole) return false;
+      }
+      return true;
+  });
+
   return (
     <AppShell>
       <PageHeader
@@ -333,6 +354,20 @@ export default function UsersPage() {
                         <option value="all">All</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
+                    </select>
+
+                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Role:</label>
+                    <select
+                        value={roleFilter}
+                        onChange={(e) => setRoleFilter(e.target.value)}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                    >
+                        <option value="">All Roles</option>
+                        <option value="Admin">Admin (All)</option>
+                        <option value="Organization Admin">Org Admin</option>
+                        <option value="Project Admin">Project Admin</option>
+                        <option value="Project Member">Project Member</option>
+                        <option value="Supporter">Supporter</option>
                     </select>
 
                     <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Org:</label>
@@ -393,14 +428,14 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {users.length === 0 ? (
+              {filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: 'var(--app-muted-text)' }}>
                     No users found.
                   </td>
                 </tr>
               ) : (
-                users.map((item: any) => {
+                filteredUsers.map((item: any) => {
                   const isMembership = !!item.user;
                   const user = isMembership ? item.user : item;
                   const userOrgs = user.organisations || [];
