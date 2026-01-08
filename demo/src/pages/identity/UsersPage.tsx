@@ -156,17 +156,21 @@ export default function UsersPage() {
                   // Handle B13 envelope: {status, data: {results}, meta}
                   const allProjects = data.data?.results || data.results || [];
                   console.log('[UsersPage] All projects before filter:', allProjects.length);
-                  console.log('[UsersPage] Sample project:', allProjects[0]);
+                  if (allProjects.length > 0) {
+                      console.log('[UsersPage] Sample project:', allProjects[0]);
+                      console.log('[UsersPage] Projects with parent_project:', allProjects.filter((p: any) => p.parent_project).length);
+                      console.log('[UsersPage] Projects without parent_project:', allProjects.filter((p: any) => !p.parent_project).length);
+                  }
                   // Filter client-side for parent projects (clubs) - projects without parent_project
                   const parentProjects = allProjects.filter((p: any) => {
                       const hasNoParent = !p.parent_project || p.parent_project === null || p.parent_project === undefined;
-                      if (allProjects.length > 0 && !hasNoParent) {
-                          console.log('[UsersPage] Project has parent:', p.name, 'parent:', p.parent_project);
-                      }
                       return hasNoParent;
                   });
                   console.log('[UsersPage] Parent projects (clubs):', parentProjects.length);
-                  console.log('[UsersPage] Sample parent project:', parentProjects[0]);
+                  if (parentProjects.length > 0) {
+                      console.log('[UsersPage] Sample parent project:', parentProjects[0]);
+                      console.log('[UsersPage] First 5 clubs:', parentProjects.slice(0, 5).map((p: any) => p.name));
+                  }
                   setClubs(parentProjects);
               }
           } catch (e) {
@@ -198,11 +202,18 @@ export default function UsersPage() {
               if (res.ok) {
                   const data = await res.json();
                   const allProjects = data.data?.results || data.results || [];
+                  console.log('[UsersPage] Teams API - All projects:', allProjects.length);
                   // Filter for teams (projects with parent === selectedClubId)
                   const childProjects = allProjects.filter((p: any) => {
                       return p.parent_project === selectedClubId || String(p.parent_project) === selectedClubId;
                   });
-                  console.log('[UsersPage] Teams (child projects):', childProjects.length);
+                  console.log('[UsersPage] Teams (child projects) for club', selectedClubId, ':', childProjects.length);
+                  if (childProjects.length > 0) {
+                      console.log('[UsersPage] Sample team:', childProjects[0]);
+                      console.log('[UsersPage] First 5 teams:', childProjects.slice(0, 5).map((p: any) => p.name));
+                  } else {
+                      console.log('[UsersPage] No teams found. Checking parent_project values:', allProjects.slice(0, 3).map((p: any) => ({ name: p.name, parent: p.parent_project })));
+                  }
                   setTeams(childProjects);
               }
           } catch (e) {
@@ -604,7 +615,7 @@ export default function UsersPage() {
                   const isActive = isMembership ? item.is_active : user.is_active;
 
                   // Get parent projects (clubs) - Projects without parent (parent is null or undefined)
-                  const parentProjects = userProjects.filter((p: any) => {
+                  const directParentProjects = userProjects.filter((p: any) => {
                       const hasNoParent = p.parent === null || p.parent === undefined || !p.parent;
                       return hasNoParent;
                   });
@@ -615,10 +626,35 @@ export default function UsersPage() {
                       return hasParent;
                   });
 
-                  if (userProjects.length > 0) {
-                      console.log('[UsersPage] User:', user.email, 'Role:', displayRole, 'Projects:', userProjects.length, 'Clubs:', parentProjects.length, 'Teams:', childProjects.length);
-                      if (userProjects.length > 0 && parentProjects.length === 0) {
-                          console.log('[UsersPage]   All projects have parents. Sample project:', userProjects[0]);
+                  // Get unique parent clubs from child projects (via parent_name)
+                  const parentClubsFromTeams = new Map<string, any>();
+                  childProjects.forEach((p: any) => {
+                      if (p.parent_name && !parentClubsFromTeams.has(p.parent_name)) {
+                          parentClubsFromTeams.set(p.parent_name, {
+                              id: p.parent,
+                              name: p.parent_name
+                          });
+                      }
+                  });
+
+                  // Combine direct parent projects and parent clubs from teams
+                  const allParentClubs = [
+                      ...directParentProjects,
+                      ...Array.from(parentClubsFromTeams.values())
+                  ];
+
+                  // Detailed logging for first 3 users
+                  const userIndex = filteredUsers.indexOf(item);
+                  if (userIndex < 3 || userProjects.length > 0) {
+                      console.log(`[UsersPage] User #${userIndex + 1}: ${user.email}`);
+                      console.log(`  Role: ${displayRole}`);
+                      console.log(`  Total Projects: ${userProjects.length}`);
+                      console.log(`  Direct Parent Projects (clubs): ${directParentProjects.length}`, directParentProjects.map((p: any) => p.name));
+                      console.log(`  Child Projects (teams): ${childProjects.length}`, childProjects.map((p: any) => `${p.name} (parent: ${p.parent_name})`));
+                      console.log(`  Parent Clubs from Teams: ${parentClubsFromTeams.size}`, Array.from(parentClubsFromTeams.values()).map((c: any) => c.name));
+                      console.log(`  All Parent Clubs (combined): ${allParentClubs.length}`, allParentClubs.map(c => c.name));
+                      if (userProjects.length > 0) {
+                          console.log(`  Sample project:`, userProjects[0]);
                       }
                   }
 
@@ -668,8 +704,8 @@ export default function UsersPage() {
                       </td>
                       <td>
                           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                              {parentProjects.length > 0 ? parentProjects.map((project: any) => (
-                                  <span key={project.id} style={{
+                              {allParentClubs.length > 0 ? allParentClubs.map((club: any, idx: number) => (
+                                  <span key={club.id || idx} style={{
                                       padding: '2px 6px',
                                       border: '1px solid var(--app-border)',
                                       borderRadius: '4px',
@@ -677,7 +713,7 @@ export default function UsersPage() {
                                       backgroundColor: 'var(--app-surface-2)',
                                       color: 'var(--app-text)'
                                   }}>
-                                      {project.name}
+                                      {club.name}
                                   </span>
                               )) : <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>-</span>}
                           </div>
