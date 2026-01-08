@@ -72,12 +72,75 @@ class UserListSerializer(serializers.ModelSerializer):
         ]
 
     def get_role(self, obj):
-        """Get user's role."""
+        """
+        Get user's highest role across all memberships.
+
+        Role hierarchy (highest to lowest):
+        1. Land Admin (superadmin)
+        2. Club Admin (org admin or club-level project admin)
+        3. Team Admin (team-level project admin)
+        4. Team Staff (project staff role)
+        5. Team Member (project player role)
+        6. User (default)
+        """
         if obj.is_superuser:
-            return "superadmin"
-        elif getattr(obj, "is_admin", False) or obj.is_staff:
-            return "admin"
-        return "user"
+            return "Land Admin"
+
+        # Check Organisation-level memberships (Club Admin)
+        try:
+            from organisations.models import Membership
+
+            org_admin = Membership.objects.filter(user=obj, role="admin", is_active=True).exists()
+            if org_admin:
+                return "Club Admin"
+        except ImportError:
+            pass
+
+        # Check Project-level memberships (Team Admin/Staff/Member)
+        try:
+            from projects.models import ProjectMembership
+
+            project_memberships = (
+                ProjectMembership.objects.filter(user=obj)
+                .select_related("project")
+                .order_by("role")
+            )
+
+            highest_role = None
+            for pm in project_memberships:
+                if not pm.project:
+                    continue
+
+                # Check if it's a club-level project (no parent) with admin role
+                if pm.role == "admin" and not pm.project.parent_project:
+                    return "Club Admin"
+
+                # Check if it's a team-level project (has parent) with admin role
+                if pm.role == "admin" and pm.project.parent_project:
+                    if highest_role != "Club Admin":
+                        highest_role = "Team Admin"
+
+                # Staff/Editor role
+                elif pm.role in ["staff", "editor"] and highest_role not in [
+                    "Club Admin",
+                    "Team Admin",
+                ]:
+                    highest_role = "Team Staff"
+
+                # Player role
+                elif pm.role == "player" and not highest_role:
+                    highest_role = "Team Member"
+
+                # Viewer role (lowest, only assign if no other role)
+                elif pm.role == "viewer" and not highest_role:
+                    highest_role = "Viewer"
+
+            if highest_role:
+                return highest_role
+        except ImportError:
+            pass
+
+        return "User"
 
     def get_organisations(self, obj):
         """Get user's organisations."""
