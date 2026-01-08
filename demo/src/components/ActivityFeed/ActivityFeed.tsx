@@ -143,7 +143,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
   // Fetch more items than limit to account for filtering
   const { activities: allActivities, loading, error } = useActivities({
-    limit: 50, // Fetch more to have enough after filtering
+    limit: 200, // Fetch more to have enough after filtering (increased for demo data range)
     project_id: projectId,
     organisation_id: organisationId
   });

@@ -19,10 +19,27 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     """Nested serializer for user details."""
 
+    organisations = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "email", "first_name", "last_name"]
+        fields = ["id", "email", "first_name", "last_name", "organisations", "is_active"]
         read_only_fields = fields
+
+    def get_organisations(self, obj):
+        """Return list of organisations this user belongs to."""
+        memberships = Membership.objects.filter(user=obj, is_active=True).select_related(
+            "organisation"
+        )
+        return [
+            {
+                "id": str(m.organisation.id),
+                "name": m.organisation.name,
+                "slug": m.organisation.slug,
+                "role": m.role,
+            }
+            for m in memberships
+        ]
 
 
 class OrganisationListSerializer(serializers.ModelSerializer):
