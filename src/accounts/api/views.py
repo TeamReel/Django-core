@@ -758,7 +758,9 @@ def admin_user_list(request):
 
         proj = None
         try:
-            uuid.UUID(project_id)
+            import uuid as uuid_module
+
+            uuid_module.UUID(project_id)
             proj = Project.objects.filter(id=project_id).first()
         except ValueError:
             proj = Project.objects.filter(slug__iexact=project_id).first()
