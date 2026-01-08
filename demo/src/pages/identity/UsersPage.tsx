@@ -53,7 +53,9 @@ export default function UsersPage() {
 
   // Filters
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
+  const [clubs, setClubs] = useState<any[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
+  const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('active'); // Default to 'active'
   const [roleFilter, setRoleFilter] = useState<string>(''); // Client-side role filter
   const [hasInitializedFilters, setHasInitializedFilters] = useState(false);
@@ -124,6 +126,30 @@ export default function UsersPage() {
           fetchOrgs();
       }
   }, [isSuperAdmin]);
+
+  // Fetch clubs (Projects with parent=null) for filter
+  useEffect(() => {
+      const fetchClubs = async () => {
+          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+          try {
+              // Filter for clubs (parent__isnull=true)
+              let url = `${apiBaseUrl}/api/v1/projects/?parent__isnull=true&page_size=100`;
+              if (selectedOrgId && !isSuperAdmin) {
+                  url += `&organisation=${selectedOrgId}`;
+              }
+              const res = await fetch(url, {
+                  credentials: 'include'
+              });
+              if (res.ok) {
+                  const data = await res.json();
+                  setClubs(data.results || []);
+              }
+          } catch (e) {
+              console.error("Failed to fetch clubs for filter", e);
+          }
+      };
+      fetchClubs();
+  }, [selectedOrgId, isSuperAdmin]);
 
   // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
   if (orgIdParam && context.isLoading) {
@@ -298,55 +324,34 @@ export default function UsersPage() {
 
   // Client-side filtering
   const filteredUsers = users.filter((item: any) => {
-      // 1. Role Filter
+      // 1. Role Filter (TeamReel Hierarchy)
       if (roleFilter) {
+          const isMembership = !!item.user;
+          const user = isMembership ? item.user : item;
+          const systemRole = user.role || '';
+
+          // Simple string match on the backend-provided role
+          if (systemRole === roleFilter) {
+              // Exact match - backend returns normalized roles
+          } else {
+              return false;
+          }
+      }
+
+      // 2. Club Filter
+      if (selectedClubId) {
           const isMembership = !!item.user;
           const user = isMembership ? item.user : item;
           const userOrgs = user.organisations || [];
 
-          let roleMatches = false;
+          // Check if user has membership in this specific club
+          const hasClubMembership = userOrgs.some((o: any) =>
+              o.id === selectedClubId || String(o.id) === selectedClubId
+          );
 
-          if (roleFilter === 'League Admin') {
-              // Check if user is Org Admin of a KNVB/Federation type org
-              // For simplicity in demo, checking known League/Fed slugs or names
-              const leagueOrgs = ['knvb', 'dfb', 'the-fa', 'figc', 'rfef', 'fff'];
-              roleMatches = userOrgs.some((o: any) =>
-                  (leagueOrgs.includes(o.slug.toLowerCase()) || o.name.includes('Federation') || o.name.includes('Football Association'))
-                  && o.role.toLowerCase().includes('admin')
-              );
-          }
-          else if (roleFilter === 'Club Director') {
-              // Org Admin of a club (not In League List)
-              const leagueOrgs = ['knvb', 'dfb', 'the-fa', 'figc', 'rfef', 'fff'];
-              roleMatches = userOrgs.some((o: any) =>
-                !leagueOrgs.includes(o.slug.toLowerCase()) &&
-                !o.name.includes('Federation') &&
-                (o.role.toLowerCase().includes('admin') || o.role.toLowerCase().includes('director'))
-              );
-          }
-          else if (roleFilter === 'Team Manager') {
-             // Project Admin
-             roleMatches = userOrgs.some((o: any) => o.role.toLowerCase().includes('team admin') || o.role.toLowerCase().includes('coach'));
-          }
-          else if (roleFilter === 'Team Member') {
-             // Project Member
-             roleMatches = userOrgs.some((o: any) => o.role.toLowerCase().includes('team member') || o.role.toLowerCase().includes('player'));
-          }
-          else if (roleFilter === 'Supporter') {
-             roleMatches = userOrgs.some((o: any) => o.role.toLowerCase().includes('supporter'));
-          }
-          else {
-              // Genric fallback
-               const systemRole = user.role || '';
-               const hasSystemRole = systemRole.toLowerCase().includes(roleFilter.toLowerCase());
-               const hasOrgRole = userOrgs.some((o: any) =>
-                  o.role?.toLowerCase().includes(roleFilter.toLowerCase())
-               );
-               roleMatches = hasSystemRole || hasOrgRole;
-          }
-
-          if (!roleMatches) return false;
+          if (!hasClubMembership) return false;
       }
+
       return true;
   });
 
@@ -397,17 +402,23 @@ export default function UsersPage() {
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
                         <option value="">All Roles</option>
-                        <option value="League Admin">League Admin</option>
-                        <option value="Club Director">Club Director</option>
-                        <option value="Team Manager">Team Manager</option>
+                        <option value="Superadmin">Superadmin</option>
+                        <option value="Land Admin">Land Admin</option>
+                        <option value="Club Admin">Club Admin</option>
+                        <option value="Team Admin">Team Admin</option>
+                        <option value="Team Staff">Team Staff</option>
                         <option value="Team Member">Team Member</option>
-                        <option value="Supporter">Supporter</option>
+                        <option value="Viewer">Viewer</option>
+                        <option value="User">User</option>
                     </select>
 
                     <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Org:</label>
                     <select
                         value={selectedOrgId}
-                        onChange={(e) => setSelectedOrgId(e.target.value)}
+                        onChange={(e) => {
+                            setSelectedOrgId(e.target.value);
+                            setSelectedClubId(''); // Reset club filter when org changes
+                        }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
                         <option value="">All Organisations</option>
@@ -415,7 +426,21 @@ export default function UsersPage() {
                             <option key={org.id} value={org.id}>{org.name}</option>
                         ))}
                     </select>
+
+                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Club:</label>
+                    <select
+                        value={selectedClubId}
+                        onChange={(e) => setSelectedClubId(e.target.value)}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        disabled={!selectedOrgId && !isSuperAdmin}
+                    >
+                        <option value="">All Clubs</option>
+                        {clubs.map(club => (
+                            <option key={club.id} value={club.id}>{club.name}</option>
+                        ))}
+                    </select>
                     </>
+
                 )}
 
                 {isSuperAdmin && (

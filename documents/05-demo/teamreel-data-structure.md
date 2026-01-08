@@ -123,11 +123,90 @@ The actual event.
 
 ## 5. Technical Implementation Notes
 
+### A. Database Table Names
+
+The actual PostgreSQL table names differ from model names:
+
+| Django Model | Database Table | App |
+| :--- | :--- | :--- |
+| `Organisation` | `organisations_organisation` | organisations |
+| `Project` | `projects_project` | projects |
+| `ProjectMembership` | `projects_membership` | projects |
+| `Period` | `activities_period` | activities |
+| `Activity` | `activities_activity` | activities |
+| `AuditEvent` | `audit_events` | audit |
+
+**Important:** When writing raw SQL queries or debugging FK constraints, use the database table names, not the model names.
+
+### B. Seeding & Query Patterns
+
 When seeding or querying:
-1.  **Find the Team**: Dont dump members on the Club project (`parent_project=None`). Always look for the child project (`Ajax 1`).
+1.  **Find the Team**: Don't dump members on the Club project (`parent_project=None`). Always look for the child project (`Ajax 1`).
 2.  **Create Scope**: Create a `Period` tied to `project=team` (the Season).
 3.  **Assign Members**: `ProjectMembership.objects.create(project=team, period=season, ...)`
 4.  **Create Activities**: `Activity.objects.create(project=team, period=competition, ...)` where `competition.parent = season`.
+
+### C. Temporal Membership Model
+
+Users can be members of different teams over time, but **always one active membership** at any moment:
+
+```python
+# Example: Player transfers from Ajax to Feyenoord
+# Season 2024/2025 at Ajax
+ProjectMembership.objects.create(
+    user=player,
+    project=ajax_team,
+    period=season_2024_2025,
+    role="player",
+    joined_at="2024-07-01"
+)
+
+# Season 2025/2026 at Feyenoord (new membership)
+ProjectMembership.objects.create(
+    user=player,
+    project=feyenoord_team,
+    period=season_2025_2026,
+    role="player",
+    joined_at="2025-07-01"
+)
+```
+
+Each membership is scoped to:
+- **Project (Team)**: The squad they belong to
+- **Period (Season)**: The timeframe they're active
+- **Organisation**: Derived from `project.organisation`
+
+### D. Foreign Key Constraints & Deletion Order
+
+When deleting entities with dependencies, respect this cascading order to avoid FK violations:
+
+1. **Activities** (references `period_id` and `project_id`)
+2. **Periods** (references `project_id` and `parent_period_id`)
+3. **ProjectMemberships** (references `project_id` and `period_id`)
+4. **Audit Events** (references `project_id`)
+5. **Child Projects** (references `parent_project_id`)
+6. **Parent Projects** (root level)
+
+Example deletion command:
+```sql
+-- 1. Delete activities
+DELETE FROM activities_activity WHERE period_id IN (SELECT id FROM activities_period WHERE project_id = <team_id>);
+DELETE FROM activities_activity WHERE project_id = <team_id>;
+
+-- 2. Delete periods
+DELETE FROM activities_period WHERE project_id = <team_id>;
+
+-- 3. Delete memberships
+DELETE FROM projects_membership WHERE project_id = <team_id>;
+
+-- 4. Delete audit events
+DELETE FROM audit_events WHERE project_id = <team_id>;
+
+-- 5. Delete the project
+DELETE FROM projects_project WHERE id = <team_id>;
+```
+
+**Note:** Django signals (e.g., for search indexing via Celery) are bypassed when using raw SQL deletion.
 
 ---
 
@@ -176,3 +255,80 @@ To show these stats on `OrganisationListPage` without N+1 queries:
     *   `total_members_count` (aggregated sub-projects)
     *   `matches_count`
 2.  **Frontend:** Display "Members" as the `total_members_count` (reach), not just the admin count.
+
+---
+
+## 7. Audit Events & Observability
+
+Every significant action (project creation, membership changes, activity updates) generates an **Audit Event**:
+
+*   **Model:** `AuditEvent`
+*   **Table:** `audit_events`
+*   **Links To:** `project_id` (optional), `user_id`, `organisation_id`
+*   **Purpose:** Compliance, debugging, activity feeds
+
+### Audit Event Structure
+
+```python
+{
+    "id": "uuid",
+    "event_type": "project.created",
+    "actor": "user@example.com",
+    "project_id": "project-uuid",
+    "organisation_id": "org-uuid",
+    "timestamp": "2026-01-08T10:00:00Z",
+    "metadata": {
+        "project_name": "Ajax 1",
+        "parent_project": "Ajax"
+    }
+}
+```
+
+**FK Constraint:** Audit events must be deleted before deleting the referenced project.
+
+---
+
+## 8. Common Pitfalls & Solutions
+
+### Problem 1: "Why do Organisations show 0 members?"
+
+**Cause:** Querying `OrganisationMembership` instead of `ProjectMembership`.
+
+**Solution:**
+```python
+# ❌ Wrong (only shows admins)
+member_count = OrganisationMembership.objects.filter(organisation=org).count()
+
+# ✅ Correct (shows all players/staff)
+member_count = ProjectMembership.objects.filter(project__organisation=org).values('user').distinct().count()
+```
+
+### Problem 2: "Users not appearing in Users list"
+
+**Cause:** No `ProjectMembership` records exist linking users to teams.
+
+**Solution:** Run membership seeding:
+```bash
+python manage.py seed_org_memberships
+```
+
+### Problem 3: "FK Constraint violation on deletion"
+
+**Cause:** Django ORM cascades trigger signals (Celery tasks) that fail without Redis.
+
+**Solution:** Use raw SQL deletion in correct order (see Section 5D).
+
+### Problem 4: "Clubs have members but Teams don't"
+
+**Cause:** Members assigned to Club (parent) instead of Team (child).
+
+**Solution:** Always assign to **Team** (the Project with `parent_project_id != None`):
+```python
+# ❌ Wrong
+club = Project.objects.get(name="Ajax", parent_project=None)
+ProjectMembership.objects.create(project=club, ...)
+
+# ✅ Correct
+team = Project.objects.get(name="Ajax 1", parent_project__name="Ajax")
+ProjectMembership.objects.create(project=team, period=season, ...)
+```
