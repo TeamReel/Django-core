@@ -40,7 +40,7 @@ export const ProjectDetailPage: React.FC = () => {
   const { context, organisations, projects: contextProjects } = useContextSwitcher();
 
   const [project, setProject] = useState<Project | null>(null);
-  const [members, setMembers] = useState<User[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [recentEvents, setRecentEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

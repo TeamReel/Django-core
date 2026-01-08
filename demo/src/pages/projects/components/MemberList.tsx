@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Badge, Button, Select } from '@django-core/design-system';
-import { Table } from '../../../../shims/design-system';
+import { Table } from '@/shims/design-system';
 
 interface Member {
   id: string;

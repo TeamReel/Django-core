@@ -10,6 +10,7 @@ import { UpcomingMatchesWidget } from '../components/UpcomingMatchesWidget';
 export default function DashboardPage() {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
+  const organisation = context.organisation as any;
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
     context.organisation?.slug,

@@ -92,7 +92,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
         border: '1px dashed #ccc'
       }}>
         <p>No matches scheduled for this team yet.</p>
-        <Button size="small">Schedule Match</Button>
+        <Button size="sm">Schedule Match</Button>
       </div>
     );
   }
@@ -101,7 +101,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h3 style={{ margin: 0 }}>Match Schedule</h3>
-        <Badge variant="info">{matches.length} Matches</Badge>
+        <Badge variant="default" size="sm">{matches.length} Matches</Badge>
       </div>
 
       <Table>
@@ -133,7 +133,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                   </div>
                 </td>
                 <td>
-                   <Badge variant="neutral" size="small">{competitionName}</Badge>
+                   <Badge variant="default" size="sm">{competitionName}</Badge>
                 </td>
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -160,7 +160,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                    </Badge>
                 </td>
                 <td style={{ textAlign: 'right' }}>
-                   <Button size="small" variant="secondary" onClick={() => navigate(`/matches/${match.id}`)}>View</Button>
+                   <Button size="sm" variant="default" onClick={() => navigate(`/matches/${match.id}`)}>View</Button>
                 </td>
               </tr>
             );

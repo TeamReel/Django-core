@@ -87,7 +87,7 @@ export const MatchDetailPage: React.FC = () => {
       <AppShell>
          <PageContent>
             <Alert variant="error">{error || 'Match not found'}</Alert>
-            <Button variant="secondary" onClick={() => navigate(-1)} className="mt-4">
+            <Button variant="default" onClick={() => navigate(-1)} className="mt-4">
               Go Back
             </Button>
          </PageContent>
@@ -141,7 +141,7 @@ export const MatchDetailPage: React.FC = () => {
                <div style={{ textAlign: 'center', minWidth: '150px' }}>
                   <div style={{ fontSize: '2.5rem', fontWeight: 'bold', lineHeight: 1 }}>{scoreDisplay}</div>
                   <div style={{ marginTop: '12px', color: '#666' }}>
-                     <Badge variant={status === 'finished' ? 'success' : status === 'live' ? 'error' : 'neutral'}>
+                     <Badge variant={status === 'finished' ? 'success' : status === 'live' ? 'error' : 'default'}>
                        {status.toUpperCase()}
                      </Badge>
                   </div>
@@ -153,7 +153,7 @@ export const MatchDetailPage: React.FC = () => {
                {/* Away Team */}
                <div style={{ flex: 1, textAlign: 'center' }}>
                   <h3 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>{awayTeamName}</h3>
-                  <Badge variant="secondary">Away</Badge>
+                  <Badge variant="default">Away</Badge>
                </div>
             </div>
 
