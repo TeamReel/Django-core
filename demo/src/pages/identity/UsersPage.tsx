@@ -112,12 +112,16 @@ export default function UsersPage() {
           const fetchOrgs = async () => {
               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
               try {
+                  console.log('[UsersPage] Fetching organisations from:', `${apiBaseUrl}/api/v1/organisations/?page_size=100`);
                   const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=100`, {
                       credentials: 'include'
                   });
                   if (res.ok) {
                       const data = await res.json();
-                      setOrganisations(data.results || []);
+                      console.log('[UsersPage] Organisations API response:', data);
+                      const orgs = data.results || [];
+                      console.log('[UsersPage] Parsed organisations:', orgs.length);
+                      setOrganisations(orgs);
                   }
               } catch (e) {
                   console.error("Failed to fetch organisations for filter", e);
@@ -145,9 +149,10 @@ export default function UsersPage() {
                   const data = await res.json();
                   console.log('[UsersPage] Clubs API response:', data);
                   const allProjects = data.results || [];
-                  // Filter client-side for parent projects (clubs)
-                  const parentProjects = allProjects.filter((p: any) => !p.parent_project && p.parent_project !== null);
-                  console.log('[UsersPage] Filtered parent projects (clubs):', parentProjects);
+                  // Filter client-side for parent projects (clubs) - projects without parent_project
+                  const parentProjects = allProjects.filter((p: any) => !p.parent_project || p.parent_project === null);
+                  console.log('[UsersPage] All projects:', allProjects.length, 'Parent projects (clubs):', parentProjects.length);
+                  console.log('[UsersPage] Sample parent project:', parentProjects[0]);
                   setClubs(parentProjects);
               }
           } catch (e) {
@@ -513,22 +518,15 @@ export default function UsersPage() {
                   const userOrgs = user.organisations || [];
                   const userProjects = user.projects || [];
 
-                  // Determine display role based on context
-                  const currentOrgSlug = (orgIdParam || context.organisation?.slug)?.toLowerCase();
-                  const contextOrg = currentOrgSlug ? userOrgs.find((o: any) => o.slug.toLowerCase() === currentOrgSlug) : null;
-
-                  let displayRole = isMembership ? item.role : item.role; // Default to system role
-                  let isOrgRole = false;
-
-                  if (contextOrg) {
-                      displayRole = contextOrg.role;
-                      isOrgRole = true;
-                  }
+                  // Use the backend-provided role (TeamReel hierarchy)
+                  const displayRole = user.role || 'User';
 
                   const isActive = isMembership ? item.is_active : user.is_active;
 
-                  // Get parent projects (clubs) - Projects with parent=null
-                  const parentProjects = userProjects.filter((p: any) => !p.parent || p.parent === null);
+                  // Get parent projects (clubs) - Projects without parent (parent is null or undefined)
+                  const parentProjects = userProjects.filter((p: any) => p.parent === null || p.parent === undefined || !p.parent);
+
+                  console.log('[UsersPage] User:', user.email, 'Role:', displayRole, 'Projects:', userProjects.length, 'Parent projects:', parentProjects.length);
 
                   return (
                     <tr key={item.id || user.id}>
