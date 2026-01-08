@@ -53,8 +53,10 @@ export default function UsersPage() {
 
   // Filters
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
-  const [clubs, setClubs] = useState<any[]>([]);
-  const [teams, setTeams] = useState<any[]>([]);
+  const [clubs, setClubs] = useState<any[]>([]); // All clubs
+  const [teams, setTeams] = useState<any[]>([]); // All teams
+  const [clubSearch, setClubSearch] = useState<string>(''); // Search within clubs
+  const [teamSearch, setTeamSearch] = useState<string>(''); // Search within teams
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
@@ -134,43 +136,27 @@ export default function UsersPage() {
       }
   }, [isSuperAdmin]);
 
-  // Fetch clubs (Projects with parent=null) for filter - organisation specific
+  // Fetch ALL clubs (Projects with parent=null) - load once, filter client-side
   useEffect(() => {
       const fetchClubs = async () => {
-          if (!selectedOrgId) {
-              setClubs([]);
-              return;
-          }
-
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
           try {
-              // Filter for clubs within selected organisation
-              let url = `${apiBaseUrl}/api/v1/projects/?page_size=100&organisation=${selectedOrgId}`;
-              console.log('[UsersPage] Fetching clubs from:', url);
+              // Fetch all projects (no org filter)
+              let url = `${apiBaseUrl}/api/v1/projects/?page_size=100`;
+              console.log('[UsersPage] Fetching ALL clubs from:', url);
               const res = await fetch(url, {
                   credentials: 'include'
               });
               if (res.ok) {
                   const data = await res.json();
-                  console.log('[UsersPage] Clubs API response:', data);
                   // Handle B13 envelope: {status, data: {results}, meta}
                   const allProjects = data.data?.results || data.results || [];
-                  console.log('[UsersPage] All projects before filter:', allProjects.length);
-                  if (allProjects.length > 0) {
-                      console.log('[UsersPage] Sample project:', allProjects[0]);
-                      console.log('[UsersPage] Projects with parent_project:', allProjects.filter((p: any) => p.parent_project).length);
-                      console.log('[UsersPage] Projects without parent_project:', allProjects.filter((p: any) => !p.parent_project).length);
-                  }
-                  // Filter client-side for parent projects (clubs) - projects without parent_project
+                  // Filter for parent projects only (clubs) - projects without parent_project
                   const parentProjects = allProjects.filter((p: any) => {
                       const hasNoParent = !p.parent_project || p.parent_project === null || p.parent_project === undefined;
                       return hasNoParent;
                   });
-                  console.log('[UsersPage] Parent projects (clubs):', parentProjects.length);
-                  if (parentProjects.length > 0) {
-                      console.log('[UsersPage] Sample parent project:', parentProjects[0]);
-                      console.log('[UsersPage] First 5 clubs:', parentProjects.slice(0, 5).map((p: any) => p.name));
-                  }
+                  console.log('[UsersPage] Total clubs loaded:', parentProjects.length);
                   setClubs(parentProjects);
               }
           } catch (e) {
@@ -178,42 +164,27 @@ export default function UsersPage() {
           }
       };
       fetchClubs();
-  }, [selectedOrgId]);
+  }, []); // Run once on mount
 
-  // Fetch teams (Projects with parent!=null) for filter - club specific
+  // Fetch ALL teams (Projects with parent!=null) - load once, filter client-side
   useEffect(() => {
       const fetchTeams = async () => {
-          if (!selectedClubId) {
-              setTeams([]);
-              return;
-          }
-
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
           try {
-              // Get all projects, then filter for teams (children of selected club)
+              // Fetch all projects (no filters)
               let url = `${apiBaseUrl}/api/v1/projects/?page_size=100`;
-              if (selectedOrgId) {
-                  url += `&organisation=${selectedOrgId}`;
-              }
-              console.log('[UsersPage] Fetching teams from:', url);
+              console.log('[UsersPage] Fetching ALL teams from:', url);
               const res = await fetch(url, {
                   credentials: 'include'
               });
               if (res.ok) {
                   const data = await res.json();
                   const allProjects = data.data?.results || data.results || [];
-                  console.log('[UsersPage] Teams API - All projects:', allProjects.length);
-                  // Filter for teams (projects with parent === selectedClubId)
+                  // Filter for teams (projects with parent_project)
                   const childProjects = allProjects.filter((p: any) => {
-                      return p.parent_project === selectedClubId || String(p.parent_project) === selectedClubId;
+                      return p.parent_project && p.parent_project !== null && p.parent_project !== undefined;
                   });
-                  console.log('[UsersPage] Teams (child projects) for club', selectedClubId, ':', childProjects.length);
-                  if (childProjects.length > 0) {
-                      console.log('[UsersPage] Sample team:', childProjects[0]);
-                      console.log('[UsersPage] First 5 teams:', childProjects.slice(0, 5).map((p: any) => p.name));
-                  } else {
-                      console.log('[UsersPage] No teams found. Checking parent_project values:', allProjects.slice(0, 3).map((p: any) => ({ name: p.name, parent: p.parent_project })));
-                  }
+                  console.log('[UsersPage] Total teams loaded:', childProjects.length);
                   setTeams(childProjects);
               }
           } catch (e) {
@@ -221,7 +192,7 @@ export default function UsersPage() {
           }
       };
       fetchTeams();
-  }, [selectedClubId, selectedOrgId]);
+  }, []); // Run once on mount
 
   // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
   if (orgIdParam && context.isLoading) {
@@ -509,6 +480,8 @@ export default function UsersPage() {
                             setSelectedOrgId(e.target.value);
                             setSelectedClubId(''); // Reset club filter when org changes
                             setSelectedTeamId(''); // Reset team filter when org changes
+                            setClubSearch(''); // Reset club search
+                            setTeamSearch(''); // Reset team search
                         }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
@@ -518,34 +491,82 @@ export default function UsersPage() {
                         ))}
                     </select>
 
-                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Club:</label>
-                    <select
-                        value={selectedClubId}
-                        onChange={(e) => {
-                            setSelectedClubId(e.target.value);
-                            setSelectedTeamId(''); // Reset team filter when club changes
-                        }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                        disabled={!selectedOrgId}
-                    >
-                        <option value="">All Clubs</option>
-                        {clubs.map(club => (
-                            <option key={club.id} value={club.id}>{club.name}</option>
-                        ))}
-                    </select>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Club:</label>
+                        <input
+                            type="text"
+                            placeholder="Search clubs..."
+                            value={clubSearch}
+                            onChange={(e) => setClubSearch(e.target.value)}
+                            style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                        />
+                        <select
+                            value={selectedClubId}
+                            onChange={(e) => {
+                                setSelectedClubId(e.target.value);
+                                setSelectedTeamId(''); // Reset team filter when club changes
+                                setTeamSearch(''); // Reset team search
+                            }}
+                            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        >
+                            <option value="">All Clubs</option>
+                            {clubs
+                                .filter(club => {
+                                    // Filter by selected organisation if set
+                                    if (selectedOrgId && club.organisation !== selectedOrgId) {
+                                        return false;
+                                    }
+                                    // Filter by search term
+                                    if (clubSearch && !club.name.toLowerCase().includes(clubSearch.toLowerCase())) {
+                                        return false;
+                                    }
+                                    return true;
+                                })
+                                .map(club => (
+                                    <option key={club.id} value={club.id}>{club.name}</option>
+                                ))}
+                        </select>
+                    </div>
 
-                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Team:</label>
-                    <select
-                        value={selectedTeamId}
-                        onChange={(e) => setSelectedTeamId(e.target.value)}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                        disabled={!selectedClubId}
-                    >
-                        <option value="">All Teams</option>
-                        {teams.map(team => (
-                            <option key={team.id} value={team.id}>{team.name}</option>
-                        ))}
-                    </select>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Team:</label>
+                        <input
+                            type="text"
+                            placeholder="Search teams..."
+                            value={teamSearch}
+                            onChange={(e) => setTeamSearch(e.target.value)}
+                            style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                        />
+                        <select
+                            value={selectedTeamId}
+                            onChange={(e) => setSelectedTeamId(e.target.value)}
+                            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        >
+                            <option value="">All Teams</option>
+                            {teams
+                                .filter(team => {
+                                    // Filter by selected club if set
+                                    if (selectedClubId && team.parent_project !== selectedClubId && String(team.parent_project) !== selectedClubId) {
+                                        return false;
+                                    }
+                                    // Filter by selected organisation if set (via parent club)
+                                    if (selectedOrgId) {
+                                        const parentClub = clubs.find(c => c.id === team.parent_project || String(c.id) === team.parent_project);
+                                        if (!parentClub || parentClub.organisation !== selectedOrgId) {
+                                            return false;
+                                        }
+                                    }
+                                    // Filter by search term
+                                    if (teamSearch && !team.name.toLowerCase().includes(teamSearch.toLowerCase())) {
+                                        return false;
+                                    }
+                                    return true;
+                                })
+                                .map(team => (
+                                    <option key={team.id} value={team.id}>{team.name}</option>
+                                ))}
+                        </select>
+                    </div>
                     </>
 
                 )}
