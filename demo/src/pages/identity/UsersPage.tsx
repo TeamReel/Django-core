@@ -4,7 +4,6 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Button, Card, Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
-import Select from 'react-select';
 import { PageHeader, BreadcrumbContextSwitcher, useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import UserEditModal from './UserEditModal';
@@ -494,73 +493,67 @@ export default function UsersPage() {
                         ))}
                     </select>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Club:</label>
-                        <Select
-                            isClearable
-                            placeholder="Search clubs..."
-                            value={clubs.find(c => c.id === selectedClubId) ? { value: selectedClubId, label: clubs.find(c => c.id === selectedClubId)?.name } : null}
-                            onChange={(option) => {
-                                setSelectedClubId(option?.value || '');
-                                setSelectedTeamId(''); // Reset team filter when club changes
-                            }}
-                            options={clubs
-                                .filter(club => {
-                                    // Filter by selected organisation if set - compare UUID strings
-                                    if (selectedOrgId) {
-                                        const clubOrg = typeof club.organisation === 'string' ? club.organisation : club.organisation?.id;
+                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Club:</label>
+                    <select
+                        value={selectedClubId}
+                        onChange={(e) => {
+                            setSelectedClubId(e.target.value);
+                            setSelectedTeamId(''); // Reset team filter when club changes
+                        }}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                    >
+                        <option value="">All Clubs</option>
+                        {clubs
+                            .filter(club => {
+                                // Filter by selected organisation if set - compare UUID strings
+                                if (selectedOrgId) {
+                                    const clubOrg = typeof club.organisation === 'string' ? club.organisation : club.organisation?.id;
+                                    if (clubOrg !== selectedOrgId && String(clubOrg) !== selectedOrgId) {
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            })
+                            .map(club => (
+                                <option key={club.id} value={club.id}>{club.name}</option>
+                            ))}
+                    </select>
+
+                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Team:</label>
+                    <select
+                        value={selectedTeamId}
+                        onChange={(e) => setSelectedTeamId(e.target.value)}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                    >
+                        <option value="">All Teams</option>
+                        {teams
+                            .filter(team => {
+                                // Filter by selected club if set
+                                if (selectedClubId) {
+                                    const teamParent = typeof team.parent_project === 'string' ? team.parent_project : team.parent_project?.id;
+                                    if (teamParent !== selectedClubId && String(teamParent) !== selectedClubId) {
+                                        return false;
+                                    }
+                                }
+                                // Filter by selected organisation if set (via parent club)
+                                if (selectedOrgId) {
+                                    const teamParent = typeof team.parent_project === 'string' ? team.parent_project : team.parent_project?.id;
+                                    const parentClub = clubs.find(c => c.id === teamParent || String(c.id) === teamParent);
+                                    if (parentClub) {
+                                        const clubOrg = typeof parentClub.organisation === 'string' ? parentClub.organisation : parentClub.organisation?.id;
                                         if (clubOrg !== selectedOrgId && String(clubOrg) !== selectedOrgId) {
                                             return false;
                                         }
+                                    } else {
+                                        return false;
                                     }
-                                    return true;
-                                })
-                                .map(club => ({ value: club.id, label: club.name }))}
-                            styles={{
-                                control: (base) => ({ ...base, fontSize: '13px' }),
-                                menu: (base) => ({ ...base, zIndex: 9999 })
-                            }}
-                        />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Team:</label>
-                        <Select
-                            isClearable
-                            placeholder="Search teams..."
-                            value={teams.find(t => t.id === selectedTeamId) ? { value: selectedTeamId, label: teams.find(t => t.id === selectedTeamId)?.name } : null}
-                            onChange={(option) => setSelectedTeamId(option?.value || '')}
-                            options={teams
-                                .filter(team => {
-                                    // Filter by selected club if set
-                                    if (selectedClubId) {
-                                        const teamParent = typeof team.parent_project === 'string' ? team.parent_project : team.parent_project?.id;
-                                        if (teamParent !== selectedClubId && String(teamParent) !== selectedClubId) {
-                                            return false;
-                                        }
-                                    }
-                                    // Filter by selected organisation if set (via parent club)
-                                    if (selectedOrgId) {
-                                        const teamParent = typeof team.parent_project === 'string' ? team.parent_project : team.parent_project?.id;
-                                        const parentClub = clubs.find(c => c.id === teamParent || String(c.id) === teamParent);
-                                        if (parentClub) {
-                                            const clubOrg = typeof parentClub.organisation === 'string' ? parentClub.organisation : parentClub.organisation?.id;
-                                            if (clubOrg !== selectedOrgId && String(clubOrg) !== selectedOrgId) {
-                                                return false;
-                                            }
-                                        } else {
-                                            return false;
-                                        }
-                                    }
-                                    return true;
-                                })
-                                .map(team => ({ value: team.id, label: team.name }))}
-                            styles={{
-                                control: (base) => ({ ...base, fontSize: '13px' }),
-                                menu: (base) => ({ ...base, zIndex: 9999 })
-                            }}
-                        />
-                    </div>
+                                }
+                                return true;
+                            })
+                            .map(team => (
+                                <option key={team.id} value={team.id}>{team.name}</option>
+                            ))}
+                    </select>
                     </>
 
                 )}
