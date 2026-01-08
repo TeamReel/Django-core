@@ -60,7 +60,7 @@ export const OrganisationDetailPage: React.FC = () => {
   const currentOrgId = resolvedOrg?.id; // Keep ID for headers if needed
 
   // Permission checks using centralized helper
-  const isSuperAdmin = (user as any)?.role === 'superadmin';
+  const isSuperAdmin = (user as any)?.role === 'Superadmin';
   const permissionContext = {
     currentOrganisation: (org || resolvedOrg) as any,
     isSuperAdmin,

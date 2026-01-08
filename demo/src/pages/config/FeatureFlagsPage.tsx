@@ -65,7 +65,7 @@ export const FeatureFlagsPage: React.FC = () => {
   const currentOrgName = context.organisation?.name || '';
 
   // Use useAuth for superadmin check (most reliable source)
-  const isSuperadmin = (user as any)?.role === 'superadmin';
+  const isSuperadmin = (user as any)?.role === 'Superadmin';
 
   // Breadcrumb context switcher setup
   const {

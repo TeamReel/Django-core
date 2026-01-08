@@ -30,7 +30,7 @@ export default function ProjectDetailPage() {
   const [activeTab, setActiveTab] = useState<'details' | 'members' | 'activity'>('details');
 
   // Permission checks using centralized helper
-  const isSuperAdmin = (user as any)?.role === 'superadmin';
+  const isSuperAdmin = (user as any)?.role === 'Superadmin';
   const currentOrgSlug = (orgId || context.organisation?.slug)?.toLowerCase();
   const currentOrg = organisations.find(o => o.slug?.toLowerCase() === currentOrgSlug);
   const permissionContext = {

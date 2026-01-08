@@ -64,7 +64,7 @@ export const UsageEventsPage: React.FC = () => {
   const currentProject = context.project;
 
   // Check if user is superadmin
-  const isSuperadmin = (user as any)?.is_superuser || (user as any)?.role === 'admin' || (user as any)?.role === 'superadmin';
+  const isSuperadmin = (user as any)?.is_superuser || (user as any)?.role === 'Superadmin';
 
   console.log('[UsageEventsPage] User:', user, 'isSuperadmin:', isSuperadmin);
 

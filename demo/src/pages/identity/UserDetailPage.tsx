@@ -374,7 +374,7 @@ export const UserDetailPage: React.FC = () => {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>System Role</label>
-                <Badge variant={user.role === 'superadmin' ? 'primary' : 'default'}>
+                <Badge variant={user.role === 'Superadmin' ? 'primary' : 'default'}>
                   {user.role}
                 </Badge>
               </div>
@@ -394,7 +394,7 @@ export const UserDetailPage: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {user.organisations.map((org: any) => {
                         const myOrg = organisations.find(o => o.id === org.id);
-                        const isSuperAdmin = (currentUser as any)?.role === 'superadmin';
+                        const isSuperAdmin = (currentUser as any)?.role === 'Superadmin';
 
                         // Check if I can manage this org (admin/owner) OR I am superadmin
                         // AND we have a membership ID to delete

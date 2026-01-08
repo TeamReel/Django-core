@@ -18,7 +18,7 @@ export default function DashboardPage() {
   );
 
   // Determine activity filter scope based on user role
-  const isSuperadmin = (user as any)?.is_superuser || (user as any)?.role === 'superadmin';
+  const isSuperadmin = (user as any)?.is_superuser || (user as any)?.role === 'Superadmin';
 
   // For now, assume org-level context means user has org-level visibility
   // TODO: Once membership role is available in context, use: context.membership?.role === 'admin'
