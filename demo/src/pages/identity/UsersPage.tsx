@@ -346,6 +346,14 @@ export default function UsersPage() {
           }
 
           if (!roleMatches) return false;
+      }
+      return true;
+  });
+
+  return (
+    <AppShell>
+      <PageHeader
+        title={
             isSuperAdmin
                 ? 'All Users (System Admin)'
                 : orgIdParam
