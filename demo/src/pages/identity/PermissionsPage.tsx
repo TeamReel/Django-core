@@ -26,6 +26,7 @@ export const PermissionsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'hierarchy' | 'permissions'>('hierarchy');
 
   useEffect(() => {
     const fetchPermissionsData = async () => {
@@ -109,104 +110,269 @@ export const PermissionsPage: React.FC = () => {
     manage_settings: 'Can modify organisation configuration',
   };
 
-  // Role hierarchy descriptions
-  const roleDescriptions: Record<string, { title: string; description: string }> = {
+  // TeamReel Role hierarchy descriptions
+  const roleDescriptions: Record<string, { title: string; description: string; scope: string; level: number }> = {
+    superadmin: {
+      title: 'Superadmin',
+      description: 'Platform administrator with access to all organisations',
+      scope: 'Cross-organisation',
+      level: 1,
+    },
+    'land_admin': {
+      title: 'Land Admin',
+      description: 'Federation administrator (e.g., KNVB, DFB admin)',
+      scope: 'Organisation-wide',
+      level: 2,
+    },
+    'club_admin': {
+      title: 'Club Admin',
+      description: 'Club administrator (e.g., Ajax club manager)',
+      scope: 'Club-wide',
+      level: 3,
+    },
+    'team_admin': {
+      title: 'Team Admin',
+      description: 'Team administrator (e.g., Ajax 1 coach)',
+      scope: 'Team-specific',
+      level: 4,
+    },
+    'team_staff': {
+      title: 'Team Staff',
+      description: 'Team staff/editor (e.g., assistant coach)',
+      scope: 'Team-specific',
+      level: 5,
+    },
+    'team_member': {
+      title: 'Team Member',
+      description: 'Team player or member',
+      scope: 'User-specific',
+      level: 6,
+    },
     viewer: {
       title: 'Viewer',
-      description:
-        'Read-only access. Can view organisation, projects, and members but cannot make changes.',
+      description: 'Read-only access to team content',
+      scope: 'Limited',
+      level: 7,
     },
-    member: {
-      title: 'Member',
-      description:
-        'Standard access. Can view projects and members, but cannot manage organisation, projects, or members.',
-    },
-    admin: {
-      title: 'Administrator',
-      description:
-        'Full access. Can manage everything including organisation settings, permissions, members, and billing.',
+    user: {
+      title: 'User',
+      description: 'Default user with no memberships',
+      scope: 'None',
+      level: 8,
     },
   };
 
-  // Build permission matrix
+  // TeamReel Permission matrix
   const permissionMatrix = [
     {
-      permission: 'view_organisation',
-      viewer: true,
-      member: true,
-      admin: true,
+      category: 'Organisation Management',
+      permissions: [
+        {
+          permission: 'view_all_organisations',
+          superadmin: true,
+          land_admin: false,
+          club_admin: false,
+          team_admin: false,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'manage_organisation',
+          superadmin: true,
+          land_admin: true,
+          club_admin: false,
+          team_admin: false,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'view_organisation',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: true,
+          team_member: true,
+          viewer: true,
+        },
+      ],
     },
     {
-      permission: 'create_project',
-      viewer: false,
-      member: false,
-      admin: true,
+      category: 'Club Management',
+      permissions: [
+        {
+          permission: 'create_club',
+          superadmin: true,
+          land_admin: true,
+          club_admin: false,
+          team_admin: false,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'manage_club',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: false,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'view_all_clubs',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+      ],
     },
     {
-      permission: 'edit_project',
-      viewer: false,
-      member: false,
-      admin: true,
+      category: 'Team Management',
+      permissions: [
+        {
+          permission: 'create_team',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: false,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'manage_team_settings',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'manage_team_matches',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'view_team',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: true,
+          team_member: true,
+          viewer: true,
+        },
+      ],
     },
     {
-      permission: 'delete_project',
-      viewer: false,
-      member: false,
-      admin: true,
+      category: 'User & Profile',
+      permissions: [
+        {
+          permission: 'manage_all_users',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: false,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'view_users',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: true,
+          team_member: true,
+          viewer: false,
+        },
+        {
+          permission: 'edit_own_profile',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: true,
+          team_member: true,
+          viewer: false,
+        },
+      ],
     },
     {
-      permission: 'view_members',
-      viewer: true,
-      member: true,
-      admin: true,
+      category: 'Content & Media',
+      permissions: [
+        {
+          permission: 'create_content',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: true,
+          team_member: true,
+          viewer: false,
+        },
+        {
+          permission: 'approve_content',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'view_content',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: true,
+          team_member: true,
+          viewer: true,
+        },
+      ],
     },
     {
-      permission: 'invite_member',
-      viewer: false,
-      member: false,
-      admin: true,
-    },
-    {
-      permission: 'remove_member',
-      viewer: false,
-      member: false,
-      admin: true,
-    },
-    {
-      permission: 'manage_roles',
-      viewer: false,
-      member: false,
-      admin: true,
-    },
-    {
-      permission: 'view_audit',
-      viewer: true,
-      member: true,
-      admin: true,
-    },
-    {
-      permission: 'view_billing',
-      viewer: true,
-      member: true,
-      admin: true,
-    },
-    {
-      permission: 'manage_billing',
-      viewer: false,
-      member: false,
-      admin: true,
-    },
-    {
-      permission: 'view_settings',
-      viewer: true,
-      member: true,
-      admin: true,
-    },
-    {
-      permission: 'manage_settings',
-      viewer: false,
-      member: false,
-      admin: true,
+      category: 'Credits & Billing',
+      permissions: [
+        {
+          permission: 'manage_credits',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'view_credits',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: true,
+          team_member: false,
+          viewer: false,
+        },
+      ],
     },
   ];
 
@@ -247,116 +413,201 @@ export const PermissionsPage: React.FC = () => {
       <PageContent>
         {error && (
           <Alert variant="warning" className="mb-4" data-testid="permissions-warning">
-            Some permission data could not be loaded, but role matrix is available.
+            Some permission data could not be loaded, but role hierarchy is available.
           </Alert>
         )}
 
-        {/* Role descriptions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {Object.entries(roleDescriptions).map(([roleKey, roleInfo]) => (
-            <Card
-              key={roleKey}
-              data-testid={`role-card-${roleKey}`}
-              className={
-                currentUserRole === roleKey ? 'border-blue-500 border-2' : ''
-              }
+        {/* Tabs */}
+        <div className="mb-6 border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('hierarchy')}
+              className={`${
+                activeTab === 'hierarchy'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
             >
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="text-lg font-semibold">{roleInfo.title}</h3>
-                {currentUserRole === roleKey && (
-                  <Badge variant="success">Your Role</Badge>
-                )}
-              </div>
-              <p className="text-sm text-gray-600">{roleInfo.description}</p>
-            </Card>
-          ))}
+              Role Hierarchy
+            </button>
+            <button
+              onClick={() => setActiveTab('permissions')}
+              className={`${
+                activeTab === 'permissions'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              Permission Matrix
+            </button>
+          </nav>
         </div>
 
-        {/* Permission matrix */}
-        <Card>
-          <h3 className="text-lg font-semibold mb-4">Permission Matrix</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-4 font-semibold">Permission</th>
-                  <th className="text-center py-2 px-4 font-semibold">Viewer</th>
-                  <th className="text-center py-2 px-4 font-semibold">Member</th>
-                  <th className="text-center py-2 px-4 font-semibold">Admin</th>
-                </tr>
-              </thead>
-              <tbody>
-                {permissionMatrix.map((row) => (
-                  <tr
-                    key={row.permission}
-                    className="border-b hover:bg-gray-50"
-                    data-testid={`permission-row-${row.permission}`}
-                  >
-                    <td className="py-3 px-4">
-                      <div>
-                        <div className="font-medium capitalize">
-                          {row.permission.replace(/_/g, ' ')}
+        {/* Tab Content: Role Hierarchy */}
+        {activeTab === 'hierarchy' && (
+          <>
+            <Card className="mb-6">
+              <h3 className="text-lg font-semibold mb-4">TeamReel Role Hierarchy</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                The system uses a hierarchical role structure where higher roles inherit permissions from lower roles.
+              </p>
+              <div className="space-y-4">
+                {Object.entries(roleDescriptions)
+                  .sort(([, a], [, b]) => a.level - b.level)
+                  .map(([roleKey, roleInfo]) => (
+                    <div
+                      key={roleKey}
+                      className={`p-4 rounded-lg border-2 ${
+                        currentUserRole === roleKey
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 bg-white'
+                      }`}
+                      data-testid={`role-hierarchy-${roleKey}`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-sm">
+                            {roleInfo.level}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-lg">{roleInfo.title}</h4>
+                            <p className="text-xs text-gray-500">{roleInfo.scope}</p>
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {permissionDescriptions[row.permission]}
-                        </div>
+                        {currentUserRole === roleKey && (
+                          <Badge variant="success">Your Role</Badge>
+                        )}
                       </div>
-                    </td>
-                    <td className="text-center py-3 px-4">
-                      {row.viewer ? (
-                        <Badge
-                          variant="success"
-                          data-testid={`perm-viewer-${row.permission}`}
-                        >
-                          ✓
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-400" data-testid={`perm-viewer-${row.permission}`}>
-                          —
-                        </span>
-                      )}
-                    </td>
-                    <td className="text-center py-3 px-4">
-                      {row.member ? (
-                        <Badge
-                          variant="success"
-                          data-testid={`perm-member-${row.permission}`}
-                        >
-                          ✓
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-400" data-testid={`perm-member-${row.permission}`}>
-                          —
-                        </span>
-                      )}
-                    </td>
-                    <td className="text-center py-3 px-4">
-                      {row.admin ? (
-                        <Badge
-                          variant="success"
-                          data-testid={`perm-admin-${row.permission}`}
-                        >
-                          ✓
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-400" data-testid={`perm-admin-${row.permission}`}>
-                          —
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <p className="text-sm text-gray-700 ml-11">{roleInfo.description}</p>
+                    </div>
+                  ))}
+              </div>
+            </Card>
 
-          {/* Legend */}
-          <div className="mt-4 pt-4 border-t text-sm text-gray-600">
-            <p>
-              <strong>✓</strong> = Permission granted | <strong>—</strong> = Permission denied
-            </p>
-          </div>
-        </Card>
+            <Card>
+              <h3 className="text-lg font-semibold mb-4">Hierarchy Structure</h3>
+              <div className="bg-gray-50 p-4 rounded-lg font-mono text-sm">
+                <div className="space-y-1">
+                  <div>1. <strong>Superadmin</strong> (Django superuser)</div>
+                  <div className="ml-4">└─ Can manage ALL organisations</div>
+                  <div className="ml-2">2. <strong>Land Admin</strong> (Organisation admin)</div>
+                  <div className="ml-6">└─ KNVB/DFB administrator</div>
+                  <div className="ml-4">3. <strong>Club Admin</strong> (Project parent admin)</div>
+                  <div className="ml-8">└─ Ajax club manager</div>
+                  <div className="ml-6">4. <strong>Team Admin</strong> (Project child admin)</div>
+                  <div className="ml-10">└─ Ajax 1 coach</div>
+                  <div className="ml-8">5. <strong>Team Staff</strong> (Staff/Editor role)</div>
+                  <div className="ml-10">6. <strong>Team Member</strong> (Player role)</div>
+                  <div className="ml-10">7. <strong>Viewer</strong> (Read-only)</div>
+                  <div className="ml-10">8. <strong>User</strong> (No memberships)</div>
+                </div>
+              </div>
+            </Card>
+          </>
+        )}
+
+        {/* Tab Content: Permission Matrix */}
+        {activeTab === 'permissions' && (
+          <>
+            {permissionMatrix.map((category) => (
+              <Card key={category.category} className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">{category.category}</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 px-4 font-semibold">Permission</th>
+                        <th className="text-center py-2 px-2 font-semibold text-xs">Super</th>
+                        <th className="text-center py-2 px-2 font-semibold text-xs">Land</th>
+                        <th className="text-center py-2 px-2 font-semibold text-xs">Club</th>
+                        <th className="text-center py-2 px-2 font-semibold text-xs">Team Admin</th>
+                        <th className="text-center py-2 px-2 font-semibold text-xs">Staff</th>
+                        <th className="text-center py-2 px-2 font-semibold text-xs">Member</th>
+                        <th className="text-center py-2 px-2 font-semibold text-xs">Viewer</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {category.permissions.map((row) => (
+                        <tr
+                          key={row.permission}
+                          className="border-b hover:bg-gray-50"
+                          data-testid={`permission-row-${row.permission}`}
+                        >
+                          <td className="py-3 px-4">
+                            <div className="font-medium capitalize">
+                              {row.permission.replace(/_/g, ' ')}
+                            </div>
+                          </td>
+                          <td className="text-center py-3 px-2">
+                            {row.superadmin ? (
+                              <Badge variant="success">✓</Badge>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="text-center py-3 px-2">
+                            {row.land_admin ? (
+                              <Badge variant="success">✓</Badge>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="text-center py-3 px-2">
+                            {row.club_admin ? (
+                              <Badge variant="success">✓</Badge>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="text-center py-3 px-2">
+                            {row.team_admin ? (
+                              <Badge variant="success">✓</Badge>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="text-center py-3 px-2">
+                            {row.team_staff ? (
+                              <Badge variant="success">✓</Badge>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="text-center py-3 px-2">
+                            {row.team_member ? (
+                              <Badge variant="success">✓</Badge>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="text-center py-3 px-2">
+                            {row.viewer ? (
+                              <Badge variant="success">✓</Badge>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            ))}
+
+            {/* Legend */}
+            <Card>
+              <div className="text-sm text-gray-600">
+                <p>
+                  <strong>✓</strong> = Permission granted | <strong>—</strong> = Permission denied
+                </p>
+                <p className="mt-2 text-xs">
+                  Note: Higher roles typically inherit permissions from lower roles. For example, Land Admin has all Club Admin permissions.
+                </p>
+              </div>
+            </Card>
+          </>
+        )}
       </PageContent>
       </div>
     </AppShell>
