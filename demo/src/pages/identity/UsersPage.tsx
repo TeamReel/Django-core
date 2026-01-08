@@ -159,6 +159,16 @@ export default function UsersPage() {
                   });
                   console.log('[UsersPage] Total clubs loaded:', parentProjects.length);
 
+                  // Log first 3 clubs to see structure
+                  if (parentProjects.length > 0) {
+                      console.log('[UsersPage] Sample clubs:', parentProjects.slice(0, 3).map((c: any) => ({
+                          name: c.name,
+                          id: c.id,
+                          organisation: c.organisation,
+                          org_id: c.organisation?.id
+                      })));
+                  }
+
                   if (totalCount > allProjects.length) {
                       console.warn('[UsersPage] ⚠️ Not all projects fetched! API has', totalCount, 'but only got', allProjects.length);
                   }
@@ -491,7 +501,7 @@ export default function UsersPage() {
                         <option value="User">User</option>
                     </select>
 
-                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Org:</label>
+                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Organisation:</label>
                     <select
                         value={selectedOrgId}
                         onChange={(e) => {
@@ -507,7 +517,7 @@ export default function UsersPage() {
                         ))}
                     </select>
 
-                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Club:</label>
+                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Club:</label>
                     <select
                         value={selectedClubId}
                         onChange={(e) => {
@@ -522,18 +532,22 @@ export default function UsersPage() {
                                 // Filter by selected organisation if set - compare UUID strings
                                 if (selectedOrgId) {
                                     const clubOrg = typeof club.organisation === 'string' ? club.organisation : club.organisation?.id;
-                                    if (clubOrg !== selectedOrgId && String(clubOrg) !== selectedOrgId) {
+                                    const matches = clubOrg === selectedOrgId || String(clubOrg) === selectedOrgId;
+                                    if (!matches) {
+                                        console.log('[Filter Debug] Club', club.name, 'rejected - org:', clubOrg, 'vs selected:', selectedOrgId);
                                         return false;
                                     }
+                                    console.log('[Filter Debug] Club', club.name, 'accepted - org:', clubOrg, 'matches selected:', selectedOrgId);
                                 }
                                 return true;
                             })
-                            .map(club => (
-                                <option key={club.id} value={club.id}>{club.name}</option>
-                            ))}
+                            .map(club => {
+                                console.log('[Filter Debug] Rendering club option:', club.name, '(org:', typeof club.organisation === 'string' ? club.organisation : club.organisation?.id, ')');
+                                return <option key={club.id} value={club.id}>{club.name}</option>;
+                            })}
                     </select>
 
-                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Team:</label>
+                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Team:</label>
                     <select
                         value={selectedTeamId}
                         onChange={(e) => setSelectedTeamId(e.target.value)}
