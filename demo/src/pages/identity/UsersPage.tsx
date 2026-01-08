@@ -132,24 +132,30 @@ export default function UsersPage() {
       const fetchClubs = async () => {
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
           try {
-              // Filter for clubs (parent__isnull=true)
-              let url = `${apiBaseUrl}/api/v1/projects/?parent__isnull=true&page_size=100`;
-              if (selectedOrgId && !isSuperAdmin) {
+              // Filter for clubs (parent projects without parent)
+              let url = `${apiBaseUrl}/api/v1/projects/?page_size=100`;
+              if (selectedOrgId) {
                   url += `&organisation=${selectedOrgId}`;
               }
+              console.log('[UsersPage] Fetching clubs from:', url);
               const res = await fetch(url, {
                   credentials: 'include'
               });
               if (res.ok) {
                   const data = await res.json();
-                  setClubs(data.results || []);
+                  console.log('[UsersPage] Clubs API response:', data);
+                  const allProjects = data.results || [];
+                  // Filter client-side for parent projects (clubs)
+                  const parentProjects = allProjects.filter((p: any) => !p.parent_project && p.parent_project !== null);
+                  console.log('[UsersPage] Filtered parent projects (clubs):', parentProjects);
+                  setClubs(parentProjects);
               }
           } catch (e) {
               console.error("Failed to fetch clubs for filter", e);
           }
       };
       fetchClubs();
-  }, [selectedOrgId, isSuperAdmin]);
+  }, [selectedOrgId]);
 
   // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
   if (orgIdParam && context.isLoading) {
@@ -324,29 +330,35 @@ export default function UsersPage() {
 
   // Client-side filtering
   const filteredUsers = users.filter((item: any) => {
+      const isMembership = !!item.user;
+      const user = isMembership ? item.user : item;
+      const systemRole = user.role || '';
+      const userOrgs = user.organisations || [];
+      const userProjects = user.projects || [];
+
       // 1. Role Filter (TeamReel Hierarchy)
       if (roleFilter) {
-          const isMembership = !!item.user;
-          const user = isMembership ? item.user : item;
-          const systemRole = user.role || '';
-
-          // Simple string match on the backend-provided role
-          if (systemRole === roleFilter) {
-              // Exact match - backend returns normalized roles
-          } else {
+          // Exact match - backend returns normalized roles
+          if (systemRole !== roleFilter) {
               return false;
           }
       }
 
-      // 2. Club Filter
-      if (selectedClubId) {
-          const isMembership = !!item.user;
-          const user = isMembership ? item.user : item;
-          const userOrgs = user.organisations || [];
+      // 2. Organisation Filter
+      if (selectedOrgId) {
+          // Check if user has membership in this organisation
+          const hasOrgMembership = userOrgs.some((o: any) =>
+              o.id === selectedOrgId || String(o.id) === selectedOrgId
+          );
 
-          // Check if user has membership in this specific club
-          const hasClubMembership = userOrgs.some((o: any) =>
-              o.id === selectedClubId || String(o.id) === selectedClubId
+          if (!hasOrgMembership) return false;
+      }
+
+      // 3. Club Filter (Projects with parent=null)
+      if (selectedClubId) {
+          // Check if user has membership in this specific club project
+          const hasClubMembership = userProjects.some((p: any) =>
+              (p.id === selectedClubId || String(p.id) === selectedClubId)
           );
 
           if (!hasClubMembership) return false;
@@ -483,13 +495,14 @@ export default function UsersPage() {
                 <th style={{ minWidth: '100px' }}>Role</th>
                 <th style={{ minWidth: '100px' }}>Status</th>
                 <th style={{ minWidth: '150px' }}>Organisations</th>
+                <th style={{ minWidth: '150px' }}>Parent Project</th>
                 <th style={{ textAlign: 'right', minWidth: '150px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: 'var(--app-muted-text)' }}>
+                  <td colSpan={7} style={{ padding: '24px', textAlign: 'center', color: 'var(--app-muted-text)' }}>
                     No users found.
                   </td>
                 </tr>
@@ -498,6 +511,7 @@ export default function UsersPage() {
                   const isMembership = !!item.user;
                   const user = isMembership ? item.user : item;
                   const userOrgs = user.organisations || [];
+                  const userProjects = user.projects || [];
 
                   // Determine display role based on context
                   const currentOrgSlug = (orgIdParam || context.organisation?.slug)?.toLowerCase();
@@ -512,6 +526,9 @@ export default function UsersPage() {
                   }
 
                   const isActive = isMembership ? item.is_active : user.is_active;
+
+                  // Get parent projects (clubs) - Projects with parent=null
+                  const parentProjects = userProjects.filter((p: any) => !p.parent || p.parent === null);
 
                   return (
                     <tr key={item.id || user.id}>
@@ -553,6 +570,22 @@ export default function UsersPage() {
                                       color: 'var(--app-text)'
                                   }}>
                                       {org.name} ({org.role})
+                                  </span>
+                              )) : <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>-</span>}
+                          </div>
+                      </td>
+                      <td>
+                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                              {parentProjects.length > 0 ? parentProjects.map((project: any) => (
+                                  <span key={project.id} style={{
+                                      padding: '2px 6px',
+                                      border: '1px solid var(--app-border)',
+                                      borderRadius: '4px',
+                                      fontSize: '11px',
+                                      backgroundColor: 'var(--app-surface-2)',
+                                      color: 'var(--app-text)'
+                                  }}>
+                                      {project.name}
                                   </span>
                               )) : <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>-</span>}
                           </div>

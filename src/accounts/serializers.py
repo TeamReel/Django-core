@@ -55,6 +55,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
     role = serializers.SerializerMethodField()
     organisations = serializers.SerializerMethodField()
+    projects = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -69,6 +70,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "date_joined",
             "last_login",
             "organisations",
+            "projects",
         ]
 
     def get_role(self, obj):
@@ -229,6 +231,37 @@ class UserListSerializer(serializers.ModelSerializer):
             pass
 
         return list(orgs_data.values())
+
+    def get_projects(self, obj):
+        """Get user's project memberships with parent project info."""
+        projects_data = {}
+
+        try:
+            from projects.models import ProjectMembership
+
+            project_memberships = ProjectMembership.objects.filter(user=obj).select_related(
+                "project", "project__parent_project"
+            )
+
+            for pm in project_memberships:
+                if pm.project:
+                    projects_data[pm.project.id] = {
+                        "id": str(pm.project.id),
+                        "name": pm.project.name,
+                        "slug": pm.project.slug,
+                        "role": pm.role,
+                        "parent": (
+                            str(pm.project.parent_project.id) if pm.project.parent_project else None
+                        ),
+                        "parent_name": (
+                            pm.project.parent_project.name if pm.project.parent_project else None
+                        ),
+                        "membership_id": str(pm.id),
+                    }
+        except ImportError:
+            pass
+
+        return list(projects_data.values())
 
 
 class UserDetailSerializer(UserListSerializer):
