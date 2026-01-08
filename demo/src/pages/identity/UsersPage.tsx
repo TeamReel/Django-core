@@ -275,6 +275,16 @@ export default function UsersPage() {
             params.append('organisation_id', filterOrg);
         }
 
+        // Club filter (server-side)
+        if (selectedClubId) {
+            params.append('project_id', selectedClubId);
+        }
+
+        // Team filter (server-side)
+        if (selectedTeamId) {
+            params.append('project_id', selectedTeamId);
+        }
+
         // Status filter
         if (statusFilter === 'active') {
             params.append('is_active', 'true');
@@ -341,7 +351,7 @@ export default function UsersPage() {
     if (user) {
         fetchUsers();
     }
-  }, [user, context.organisation, isSuperAdmin, selectedOrgId, projectIdParam, orgIdParam, statusFilter, page]);
+  }, [user, context.organisation, isSuperAdmin, selectedOrgId, selectedClubId, selectedTeamId, projectIdParam, orgIdParam, statusFilter, page]);
 
   const handlePageChange = (newPage: number) => {
     searchParams.set('page', newPage.toString());
@@ -414,51 +424,20 @@ export default function UsersPage() {
     breadcrumbs.push({ label: 'Users', current: true });
   }
 
-  // Client-side filtering
-  const hasActiveFilters = roleFilter || selectedOrgId || selectedClubId || selectedTeamId;
+  // Client-side filtering (alleen voor role, omdat die niet server-side wordt gefilterd)
+  const hasActiveFilters = roleFilter;
   if (hasActiveFilters) {
-      console.log('[UsersPage] 🔍 Filters:', { roleFilter, selectedOrgId, selectedClubId, selectedTeamId });
+      console.log('[UsersPage] 🔍 Client-side Role Filter:', { roleFilter });
   }
 
   const filteredUsers = users.filter((item: any) => {
       const isMembership = !!item.user;
       const user = isMembership ? item.user : item;
       const systemRole = user.role || '';
-      const userOrgs = user.organisations || [];
-      const userProjects = user.projects || [];
-      // 1. Role Filter (TeamReel Hierarchy)
+
+      // Role Filter (client-side only)
       if (roleFilter && systemRole !== roleFilter) {
           return false;
-      }
-
-      // 2. Organisation Filter
-      if (selectedOrgId) {
-          // Check if user has membership in this organisation
-          const hasOrgMembership = userOrgs.some((o: any) =>
-              o.id === selectedOrgId || String(o.id) === selectedOrgId
-          );
-
-          if (!hasOrgMembership) return false;
-      }
-
-      // 3. Club Filter (Projects with parent=null)
-      if (selectedClubId) {
-          const hasClubMembership = userProjects.some((p: any) => {
-              const isDirectClubMember = String(p.id) === String(selectedClubId);
-              const teamParent = p.parent || p.parent_id;
-              const isTeamMemberOfClub = teamParent && (String(teamParent) === String(selectedClubId));
-              return isDirectClubMember || isTeamMemberOfClub;
-          });
-
-          if (!hasClubMembership) return false;
-      }
-
-      // 4. Team Filter (Projects with parent!=null)
-      if (selectedTeamId) {
-          const hasTeamMembership = userProjects.some((p: any) =>
-              p.id === selectedTeamId || String(p.id) === selectedTeamId
-          );
-          if (!hasTeamMembership) return false;
       }
 
       return true;
