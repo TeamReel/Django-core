@@ -9,31 +9,31 @@ It helps humans and AI agents understand what to focus on next.
 
 ## Roadmap Overview
 
-The roadmap is structured in **19 development phases** (Fase 1-19) spanning **76 modules** (001-076).
+The roadmap is structured in **19 development phases** (Fase 1-19) spanning **78 modules** (001-078).
 
 **Phase Structure:**
 - **Fase 1-5**: Backend Core (modules 001-021) — 21 modules ✅ **COMPLETE**
 - **Fase 6-7**: Frontend Core (modules 022-030) — 9 modules ✅ **COMPLETE**
 - **Fase 8**: Demo Foundation (modules 031-033) — 3 modules 🚧 **IN PROGRESS** (F10 ✅, F10b-Database 🚧)
 - **Fase 9**: Backend Infrastructure (modules 034-038) — 5 modules 🚧 **PARTIALLY STARTED** (B22 ✅, B23 ✅, B24 ✅, B25/B26 📋)
-- **Fase 10**: Content Engine Core (modules 039-042) — 4 modules 📋 **PLANNED**
-- **Fase 11**: Frontend & Visual Dev (modules 043-045) — 3 modules 📋 **PLANNED**
-- **Fase 12**: Workflows & Payments (modules 046-048) — 3 modules 📋 **PLANNED**
-- **Fase 13**: Advanced UI (modules 049-052) — 4 modules 📋 **PLANNED**
-- **Fase 14**: Data Foundations Part 1 (modules 053-057) — 5 modules 📋 **PLANNED**
-- **Fase 15**: Data Foundations Part 2 (modules 058-062) — 5 modules 📋 **PLANNED**
-- **Fase 16**: ML/AI Platform (modules 063-068) — 6 modules 📋 **PLANNED**
-- **Fase 17**: Platform Quality Gates (modules 069-073) — 5 modules 📋 **PLANNED**
-- **Fase 18**: Integration Ecosystem (modules 074-075) — 2 modules 📋 **PLANNED**
-- **Fase 19**: Operations & Resilience (module 076) — 1 module 📋 **PLANNED**
+- **Fase 10**: Content Engine Core (modules 039-044) — 6 modules 📋 **PLANNED**
+- **Fase 11**: Frontend & Visual Dev (modules 045-047) — 3 modules 📋 **PLANNED**
+- **Fase 12**: Workflows & Payments (modules 048-050) — 3 modules 📋 **PLANNED**
+- **Fase 13**: Advanced UI (modules 051-054) — 4 modules 📋 **PLANNED**
+- **Fase 14**: Data Foundations Part 1 (modules 055-059) — 5 modules 📋 **PLANNED**
+- **Fase 15**: Data Foundations Part 2 (modules 060-064) — 5 modules 📋 **PLANNED**
+- **Fase 16**: ML/AI Platform (modules 065-070) — 6 modules 📋 **PLANNED**
+- **Fase 17**: Platform Quality Gates (modules 071-076) — 6 modules 📋 **PLANNED**
+- **Fase 18**: Integration Ecosystem (modules 077-078) — 2 modules 📋 **PLANNED**
 
 **Key Architecture Decisions:**
 - **Fase 7 Module 029**: F08 reserved for future (placeholder, not F09 Visily.ai)
 - **Fase 8 Split**: F10 Demo Shell complete, F10b-Database + F10b-Pages added for production-ready demo
+- **Fase 10 Expansion**: Added B31 (Content Templates) and B32 (Sport Configuration) for TeamReel support
 - **Constitution Gates**: Distributed after Fases 8, 15, and 18 (not concentrated)
 - **Quality Gates Lightweight**: P01-P05 show scorecards in F10 dashboard, no separate demo pages
-- **Module Numbering**: 72 total modules (B01-B29, F01-F15, P01-P05, D01-D16, I01-I02, O01)
-- **Current Status**: 32/72 modules complete (44%), Fase 8-9 in progress
+- **Module Numbering**: 40 planned modules (B30-B35, F08-F15, B36-B38, D01-D16, P01-P05, I01-I02)
+- **Current Status**: 38/78 modules complete (49%), Fase 8-9 in progress
 
 ---
 
@@ -163,18 +163,20 @@ The roadmap is structured in **19 development phases** (Fase 1-19) spanning **76
 
 ---
 
-## Fase 10 — Content Engine Core (4 modules)
+## Fase 10 — Content Engine Core (6 modules)
 
-**Modules:** B30-B33 (039-042)
+**Modules:** B30-B35 (039-044)
 
 - **#039 B30** — Generic Activities & Periods 📋
-- **#040 B31** — Brand Identity Manager 📋
-- **#041 B32** — Generative Pipelines 📋
-- **#042 B33** — Smart Asset Library 📋
+- **#040 B31** — Content Templates & Generation 📋 **🆕 TeamReel Critical**
+- **#041 B32** — Sport Configuration & Templates 📋 **🆕 TeamReel Critical**
+- **#042 B33** — Brand Identity Manager 📋
+- **#043 B34** — Generative Pipelines 📋
+- **#044 B35** — Smart Asset Library 📋
 
-**Demo Pages:** `/demo/activities`, `/demo/brand`, `/demo/pipelines`, `/demo/library`
+**Demo Pages:** `/demo/activities`, `/demo/content/*`, `/demo/sport-config/*`, `/demo/brand`, `/demo/pipelines`, `/demo/library`
 
-**Outcome:** Generic event planning, brand identity, AI content generation, and smart media library operational.
+**Outcome:** Generic event planning, **content generation with approval workflow**, **sport-specific configuration**, brand identity, AI pipelines, and smart media library operational.
 
 **Details:** See [phases/planned/fase-10-content-engine.md](phases/planned/fase-10-content-engine.md)
 
@@ -182,11 +184,11 @@ The roadmap is structured in **19 development phases** (Fase 1-19) spanning **76
 
 ## Fase 11 — Frontend & Visual Development (3 modules)
 
-**Modules:** F08, F09, F13 (043-045)
+**Modules:** F08, F09, F13 (045-047)
 
-- **#043 F08** — Data Visualization Components 📋
-- **#044 F09** — Design-to-Code Pipeline (Visily.ai Integration) 📋
-- **#045 F13** — Rich Text Editor Component 📋
+- **#045 F08** — Data Visualization Components 📋
+- **#046 F09** — Design-to-Code Pipeline (Visily.ai Integration) 📋
+- **#047 F13** — Rich Text Editor Component 📋
 
 **Demo Pages:** `/demo/charts`, `/demo/visily`, `/demo/editor`
 
@@ -198,11 +200,11 @@ The roadmap is structured in **19 development phases** (Fase 1-19) spanning **76
 
 ## Fase 12 — Workflows & Payments (3 modules)
 
-**Modules:** B27-B29 (046-048)
+**Modules:** B36-B38 (048-050)
 
-- **#046 B27** — Payment Gateway Adapters 📋
-- **#047 B28** — Workflow Engine & State Machine 📋
-- **#048 B29** — Advanced Reporting & Exports 📋
+- **#048 B36** — Payment Gateway Adapters 📋
+- **#049 B37** — Workflow Engine & State Machine 📋
+- **#050 B38** — Advanced Reporting & Exports 📋
 
 **Demo Pages:** `/demo/payments`, `/demo/workflows/approval`, PDF export buttons
 
@@ -349,7 +351,7 @@ The roadmap is structured in **19 development phases** (Fase 1-19) spanning **76
 
 **Backend Core (B01-B21)**: Foundation, security, identity, configuration, APIs, tasks, notifications, observability, deployment.
 
-**Backend Extensions (B22-B28)**: Files/media (B22), real-time/WebSocket (B23), search (B24), cache (B25), payments (B26), workflows (B27), reporting (B28).
+**Backend Extensions (B22-B38)**: Files/media (B22), real-time/WebSocket (B23), search (B24), cache (B25), payments (B26), workflows (B37), reporting (B38), content templates (B31), sport config (B32), brand identity (B33), generative pipelines (B34), asset library (B35), payment gateways (B36).
 
 **Frontend Core (F01-F07, F09)**: Design system (F01), auth UI (F02), context switching (F03), notifications UI (F04), resource displays (F05), page templates (F06), theming (F07), integration guides (F09).
 

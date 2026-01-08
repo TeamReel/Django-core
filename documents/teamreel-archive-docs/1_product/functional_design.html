@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>functional_design.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%E2%9A%99%EF%B8%8F-functioneel-ontwerp-%E2%80%93-teamreel">⚙️ Functioneel Ontwerp – TeamReel</h1>
+<blockquote>
+<p><strong>TeamReel</strong> combineert sportieve energie met digitale eenvoud.<br>
+Dit functioneel ontwerp beschrijft de gebruikersflows, logica en interacties van de TeamReel-applicatie.<br>
+Het document vertaalt de principes uit de <em>TeamReel Style Foundation</em> en <em>Brand Identity</em> naar concrete functies, schermen en AI-workflows.<br>
+Versie: Oktober 2025 — Status: Definitieve richtlijn.
+er 2025 — Status: Definitieve richtlijn.</p>
+</blockquote>
+<h2 id="metadata">Metadata</h2>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Inhoud</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Project</strong></td>
+<td>TeamReel</td>
+</tr>
+<tr>
+<td><strong>Document</strong></td>
+<td>Functioneel Ontwerp</td>
+</tr>
+<tr>
+<td><strong>Datum</strong></td>
+<td>Oktober 2025</td>
+</tr>
+<tr>
+<td><strong>Auteur</strong></td>
+<td>Brian Stokvis</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Definitieve richtlijn</td>
+</tr>
+<tr>
+<td><strong>Bronnen</strong></td>
+<td>Gebaseerd op Businessplan, Brand Identity, Technical Design</td>
+</tr>
+<tr>
+<td><strong>Doel</strong></td>
+<td>Richtlijn voor implementatie van functies en gebruikerservaring</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="inhoudsopgave">Inhoudsopgave</h2>
+<ol>
+<li><a href="#1-inleiding--scope">Inleiding &amp; Scope</a></li>
+<li><a href="#2-gebruikersrollen--toegang">Gebruikersrollen &amp; Toegang</a></li>
+<li><a href="#3-gebruikersflows-ux-journeys">Gebruikersflows (UX Journeys)</a></li>
+<li><a href="#4-datamodel--datastructuur">Datamodel &amp; Datastructuur</a></li>
+<li><a href="#5-ai-integratie--automatisering">AI-integratie &amp; Automatisering</a></li>
+<li><a href="#6-gebruikersinterface--interactie">Gebruikersinterface &amp; Interactie</a></li>
+<li><a href="#7-feedback--notificaties">Feedback &amp; Notificaties</a></li>
+<li><a href="#8-credits--transactielogica">Credits &amp; Transactielogica</a></li>
+<li><a href="#9-beveiliging--privacy">Beveiliging &amp; Privacy</a></li>
+<li><a href="#10-samenvatting--implementatievereisten">Samenvatting &amp; Implementatievereisten</a></li>
+</ol>
+<hr>
+<h2 id="1-inleiding--scope">1. Inleiding &amp; Scope</h2>
+<h3 id="11-doel-van-dit-document">1.1 Doel van dit document</h3>
+<p>Het <em>Functional Design</em> beschrijft hoe gebruikers met TeamReel interageren, welke functies beschikbaar zijn en hoe de applicatie deze functies aanbiedt. Het vormt de brug tussen strategie en techniek: waar het <em>Businessplan</em> de richting bepaalt en het <em>Technical Design</em> de architectuur beschrijft, legt dit document vast <strong>wat</strong> het systeem doet en <strong>hoe</strong> gebruikers het ervaren.</p>
+<p>Het document dient als leidraad voor ontwerp, ontwikkeling en toekomstige uitbreiding. Alle onderdelen zijn ontworpen vanuit de merkwaarden en stijlprincipes van de <em>Brand Identity</em> — sportief, eenvoudig, herkenbaar en schaalbaar. De visuele en taalkundige richtlijnen volgen de <em>Style Foundation</em>, zodat tekst, interface en AI-output dezelfde toon en helderheid hebben.</p>
+<hr>
+<h3 id="12-doel-van-de-applicatie">1.2 Doel van de applicatie</h3>
+<p><strong>TeamReel</strong> is een webapplicatie waarmee sportclubs moeiteloos professionele media kunnen maken in hun eigen stijl. De tool helpt teams om automatisch video’s en visuals te genereren op basis van hun clubdata: logo’s, kleuren, spelers en wedstrijden. Gebruikers kunnen teams beheren, spelers toevoegen en in enkele minuten content creëren die past bij hun clubidentiteit.</p>
+<p>De technologie automatiseert repeterende taken, zodat vrijwilligers en coaches zich kunnen richten op het verhaal van hun team. Elke gebruiker houdt creatieve controle, terwijl de applicatie de technische uitvoering overneemt — consistent in stijl en toon dankzij de <em>Brand Identity</em>.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Professionele clubcontent. In vijf minuten. In jouw stijl.</em></p>
+</blockquote>
+<hr>
+<h3 id="13-kern-van-de-eerste-versie">1.3 Kern van de eerste versie</h3>
+<p>De eerste productversie richt zich op drie momenten binnen de sportweek: vóór, tijdens en na de wedstrijd.</p>
+<ul>
+<li><strong>Pre-match:</strong> het creëren van line-upvideo’s, flyers en aankondigingen.</li>
+<li><strong>During-match:</strong> het genereren van doelpunt- of wisselupdates.</li>
+<li><strong>Post-match:</strong> het maken van uitslagen, hoogtepunten en terugblikken.</li>
+</ul>
+<p>De gebruiker kiest een type moment, vult de gegevens in, en TeamReel genereert automatisch de juiste output in de clubstijl. Zo ontstaat een herkenbare, continue stroom van content die het clubgevoel versterkt.</p>
+<hr>
+<h3 id="14-scope-en-afbakening">1.4 Scope en afbakening</h3>
+<p>De huidige versie omvat alle functies die nodig zijn voor contentcreatie op teamniveau. Het doel is niet om een volledig clubmanagementsysteem te bouwen, maar om media-productie te vereenvoudigen en automatiseren.</p>
+<p>Binnen scope:</p>
+<ul>
+<li>Teams aanmaken en beheren.</li>
+<li>Spelers- en stafgegevens toevoegen.</li>
+<li>Wedstrijd- en seizoensdata gebruiken voor AI-content.</li>
+<li>Automatische generatie van visuals en video’s in clubstijl.</li>
+<li>Creditsysteem en toegangsbeheer.</li>
+</ul>
+<p>De visuele en interactieve componenten worden aangestuurd via tokens uit de <em>Style Foundation</em> (kleuren, typografie, spacing).</p>
+<p>Buiten scope (voor latere fases):</p>
+<ul>
+<li>Integraties met externe databronnen (Sportlink, KNVB API).</li>
+<li>Statistische dashboards en datarapportages.</li>
+<li>Modules <em>Nieuwsbriefgenerator</em> en <em>Coach van het Jaar</em>.</li>
+<li>Multi-tenant beheer voor organisaties met meerdere clubs.</li>
+</ul>
+<hr>
+<h3 id="15-ontwerpprincipes">1.5 Ontwerpprincipes</h3>
+<p>Het ontwerp van TeamReel is gebaseerd op vijf vaste uitgangspunten:</p>
+<table>
+<thead>
+<tr>
+<th>Principe</th>
+<th>Betekenis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Eenvoud</strong></td>
+<td>Elke handeling is intuïtief en snel uit te voeren.</td>
+</tr>
+<tr>
+<td><strong>Herkenbaarheid</strong></td>
+<td>Alle visuals volgen automatisch de clubstijl.</td>
+</tr>
+<tr>
+<td><strong>Flexibiliteit</strong></td>
+<td>Ondersteuning voor meerdere sporten en teamsamenstellingen.</td>
+</tr>
+<tr>
+<td><strong>Gebruiksgemak</strong></td>
+<td>Ontworpen voor vrijwilligers en spelers zonder technische kennis.</td>
+</tr>
+<tr>
+<td><strong>Automatisering</strong></td>
+<td>AI-workflows draaien op de achtergrond, met menselijke goedkeuring op het juiste moment.</td>
+</tr>
+</tbody>
+</table>
+<p>Deze principes zorgen voor een consistente ervaring: herkenbaar voor clubs, eenvoudig voor gebruikers en schaalbaar voor groei. Deze principes sluiten aan op de merkwaarden uit de <em>Brand Identity</em>: eenvoud, betrouwbaarheid, samenwerking en trots.</p>
+<hr>
+<h3 id="16-gebruikersgroepen">1.6 Gebruikersgroepen</h3>
+<p>TeamReel wordt gebruikt door verschillende rollen binnen de sportvereniging:</p>
+<ul>
+<li><strong>Clubbeheerders</strong> beheren identiteit, huisstijl en rechten.</li>
+<li><strong>Teambeheerders</strong> organiseren spelers, wedstrijden en content.</li>
+<li><strong>Makers (spelers, trainers, stafleden)</strong> genereren visuals en video’s.</li>
+<li><strong>Supporters</strong> volgen of delen de gegenereerde content via openbare links.</li>
+</ul>
+<p>De interface en rechtenstructuur passen zich automatisch aan per rol. Zo ziet elke gebruiker alleen wat relevant is voor zijn of haar taak.</p>
+<hr>
+<h3 id="17-relatie-met-andere-documenten">1.7 Relatie met andere documenten</h3>
+<p>Het <em>Functional Design</em> is onderdeel van de documentatieketen van TeamReel. Samen met de andere kernbestanden vormt het één samenhangend geheel:</p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Functie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Businessplan</strong></td>
+<td>Strategische richting en productvisie</td>
+</tr>
+<tr>
+<td><strong>Brand Identity</strong></td>
+<td>Visuele en verbale identiteit, designregels en tone of voice</td>
+</tr>
+<tr>
+<td><strong>Style Foundation</strong></td>
+<td>Design tokens, consistentieprincipes en UI-basis</td>
+</tr>
+<tr>
+<td><strong>Technical Design</strong></td>
+<td>Architectuur, API’s en datamodellen</td>
+</tr>
+<tr>
+<td><strong>Projectplan</strong></td>
+<td>Planning, kwaliteitsborging en releases</td>
+</tr>
+</tbody>
+</table>
+<p>Het <em>Functional Design</em> vertaalt deze strategieën naar de dagelijkse praktijk van de gebruiker: het bepaalt de ervaring, structuur en logica van de applicatie.</p>
+<hr>
+<h2 id="2-gebruikersrollen--toegang">2. Gebruikersrollen &amp; Toegang</h2>
+<h3 id="21-doel-en-uitgangspunten">2.1 Doel en uitgangspunten</h3>
+<p>De gebruikersstructuur van TeamReel is ontworpen voor clubs van elke omvang — van een enkel team tot verenigingen met tientallen elftallen. Het systeem verdeelt rechten op drie niveaus: <strong>club</strong>, <strong>team</strong> en <strong>gebruiker</strong>. Deze hiërarchie zorgt voor duidelijkheid, veiligheid en flexibiliteit. Rechten worden automatisch toegepast op basis van rol, en de interface toont alleen functies die relevant zijn voor de gebruiker.</p>
+<hr>
+<h3 id="22-authenticatie-en-registratie">2.2 Authenticatie en registratie</h3>
+<p>Gebruikers loggen in via een veilige, drempelloze authenticatie:</p>
+<ul>
+<li><strong>Magic link</strong> per e-mail (standaardoptie).</li>
+<li><strong>Social login</strong> via Google of Apple.</li>
+</ul>
+<p>Na verificatie kiest de gebruiker een rol en koppelt zich aan een club of team. Clubs kunnen openstaan voor directe deelname of een goedkeuringsproces vereisen.<br>
+Toegang wordt geregeld via token-gebaseerde authenticatie, zoals beschreven in het <em>Technical Design</em>. De rechten vervallen automatisch na inactiviteit.</p>
+<hr>
+<h3 id="23-rollenhi%C3%ABrarchie">2.3 Rollenhiërarchie</h3>
+<table>
+<thead>
+<tr>
+<th>Roltype</th>
+<th>Beschrijving</th>
+<th>Toegang</th>
+<th>Voorbeelden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clubbeheerder</strong></td>
+<td>Vertegenwoordigt de club en beheert identiteit, teams, leden en huisstijl.</td>
+<td>Volledig clubniveau</td>
+<td>Communicatiecoördinator, mediabeheerder</td>
+</tr>
+<tr>
+<td><strong>Teambeheerder</strong></td>
+<td>Beheert teams, spelers, wedstrijden en content binnen één club.</td>
+<td>Beperkt tot toegewezen teams</td>
+<td>Coach, elftalleider</td>
+</tr>
+<tr>
+<td><strong>Maker (speler of staflid)</strong></td>
+<td>Creëert visuals en video’s in clubstijl.</td>
+<td>Alleen eigen team</td>
+<td>Speler, trainer, assistent</td>
+</tr>
+<tr>
+<td><strong>Supporter</strong></td>
+<td>Kan content bekijken en delen, maar niet wijzigen.</td>
+<td>Alleen publieke content</td>
+<td>Fans, ouders, sponsoren</td>
+</tr>
+</tbody>
+</table>
+<p>De hiërarchie <em>club → team → gebruiker</em> voorkomt conflicten in rechten en maakt beheer schaalbaar.</p>
+<hr>
+<h3 id="24-teamrollen">2.4 Teamrollen</h3>
+<p>Binnen een team heeft elk lid één of meerdere <strong>functionele rollen</strong>. Deze beïnvloeden zowel de toegangsrechten als de visuele weergave in AI-content.</p>
+<table>
+<thead>
+<tr>
+<th>Teamrol</th>
+<th>Functie</th>
+<th>Mag content genereren</th>
+<th>Wordt gebruikt in visuals</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Coach</strong></td>
+<td>Tactiek, opstelling, begeleiding</td>
+<td>✔️</td>
+<td>Ja</td>
+</tr>
+<tr>
+<td><strong>Keeper</strong></td>
+<td>Gespecialiseerde speler</td>
+<td>✔️</td>
+<td>Ja</td>
+</tr>
+<tr>
+<td><strong>Speler</strong></td>
+<td>Actief teamlid</td>
+<td>✔️</td>
+<td>Ja</td>
+</tr>
+<tr>
+<td><strong>Staf</strong></td>
+<td>Fysio, manager, analist</td>
+<td>❌</td>
+<td>Optioneel</td>
+</tr>
+<tr>
+<td><strong>Assistent / vlagger</strong></td>
+<td>Ondersteuning tijdens wedstrijden</td>
+<td>✔️</td>
+<td>Ja</td>
+</tr>
+<tr>
+<td><strong>Supporter (team)</strong></td>
+<td>Volger van het team</td>
+<td>❌</td>
+<td>Nee</td>
+</tr>
+</tbody>
+</table>
+<p>De rol bepaalt niet alleen de rechten in de app, maar ook de visuele elementen in gegenereerde content (tenue, positie, naamvermelding).</p>
+<hr>
+<h3 id="25-clubbeleid-en-goedkeuring">2.5 Clubbeleid en goedkeuring</h3>
+<p>Clubs kunnen bepalen of nieuwe teams zichzelf mogen koppelen of dat goedkeuring vereist is. Bij goedkeuring ontvangt de clubbeheerder automatisch een melding. De instelling geldt clubbreed en voorkomt ongewenste duplicatie of merkafwijkingen. Na goedkeuring worden clubdata — zoals logo, kleuren en sponsor — automatisch toegepast op het team.</p>
+<hr>
+<h3 id="26-data-inheritance-en-consistentie">2.6 Data-inheritance en consistentie</h3>
+<p>Teams erven visuele instellingen (logo, kleur, sponsor) direct van de club. AI-workflows gebruiken deze data bij elke generatie, zodat de content altijd consistent is met de identiteit van de vereniging. Teams kunnen hun eigen sponsor of accentkleur toevoegen, maar de basisstijl blijft onveranderd.</p>
+<blockquote>
+<p><strong>Samenvatting:</strong><br>
+De gebruikersstructuur van TeamReel combineert eenvoud met controle.<br>
+Clubs behouden zeggenschap, teams krijgen vrijheid om content te maken, en spelers werken intuïtief binnen hun eigen rol.</p>
+</blockquote>
+<p>Alle visuele instellingen, kleuren en logo’s volgen automatisch de tokens en richtlijnen uit de <em>Style Foundation</em>.</p>
+<hr>
+<h2 id="3-gebruikersflows-ux-journeys">3. Gebruikersflows (UX Journeys)</h2>
+<h3 id="31-overzicht">3.1 Overzicht</h3>
+<p>De gebruikersflows beschrijven hoe iemand door de applicatie beweegt — van eerste login tot het publiceren van content. Elke flow volgt dezelfde opzet: duidelijke stappen, minimale invoer, en waar mogelijk automatische invulling door AI. De UX is modulair opgebouwd, zodat nieuwe sporttypes en contentformats kunnen worden toegevoegd zonder de basis te wijzigen. De UI gebruikt kleuren, iconen en typografie volgens de <em>Brand Identity</em>, zodat elke flow visueel herkenbaar blijft.</p>
+<hr>
+<h3 id="32-flow-1-%E2%80%93-aanmelden-en-clubselectie">3.2 Flow 1 – Aanmelden en clubselectie</h3>
+<p>De gebruiker logt in, kiest zijn rol en selecteert een club. Wanneer een club goedkeuring vereist, ontvangt de beheerder automatisch een melding. Na goedkeuring wordt het persoonlijke dashboard geladen met teams, wedstrijden en beschikbare templates.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Login via magic link / social login] --> B[Kies rol en club]
+B --> C{Club vereist goedkeuring?}
+C -->|Nee| D[Dashboard geladen]
+C -->|Ja| E[Verzoek verzonden naar clubbeheerder]
+E --> F[Goedkeuring ontvangen]
+F --> D
+
+</div></code></pre>
+<hr>
+<h3 id="33-flow-2-%E2%80%93-team-aanmaken-of-dupliceren">3.3 Flow 2 – Team aanmaken of dupliceren</h3>
+<p>Een teambeheerder kan een nieuw team aanmaken of een bestaand team dupliceren. Bij duplicatie worden spelers, rollen en seizoensinstellingen overgenomen, maar clubdata (logo, tenue, sponsor) vernieuwd.</p>
+<p>De AI helpt bij het aanmaken van teams door herkende namen en posities uit een upload (zoals een Excel of afbeelding van een opstelling) automatisch in te vullen.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Start: Teampagina] --> B[Kies 'Nieuw team aanmaken']
+B --> C[Selecteer club]
+C --> D[Clubdata geladen: logo, kleuren, sporttype]
+D --> E[Voer teamnaam en seizoen in]
+E --> F{Spelers toevoegen}
+F -->|Upload selectie| G[AI leest namen en posities]
+F -->|Handmatig| H[Voer spelers in]
+G --> I[Controle op verplichte rollen]
+H --> I
+I --> J[Team opgeslagen en clubstijl toegepast]
+J --> K[Team zichtbaar in dashboard]
+</div></code></pre>
+<hr>
+<h3 id="34-flow-3-%E2%80%93-contentcreatie">3.4 Flow 3 – Contentcreatie</h3>
+<p>Gebruikers maken content vóór, tijdens of na een wedstrijd. Ze kiezen het type moment, vullen enkele velden in, en de applicatie genereert automatisch visuals of video’s in de clubstijl. Alle wedstrijddata (datum, tijd, locatie, tegenstander) worden automatisch ingevuld vanuit het programma.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Dashboard] --> B[Kies wedstrijd]
+B --> C{Type moment}
+C -->|Pre-match| D[Selecteer template: Line-up, Flyer, Intro]
+C -->|During-match| E[Selecteer template: Doelpunt, Wissel, Kaart]
+C -->|Post-match| F[Selecteer template: Uitslag of Hoogtepunten]
+D --> G[AI combineert data met clubstijl]
+E --> G
+F --> G
+G --> H[Output gegenereerd en opgeslagen]
+H --> I[Teampagina toont status en voortgang]
+</div></code></pre>
+<hr>
+<h3 id="35-flow-4-%E2%80%93-seizoenen-en-continu%C3%AFteit">3.5 Flow 4 – Seizoenen en continuïteit</h3>
+<p>Bij de start van een nieuw seizoen kan een beheerder de selectie en instellingen van het vorige jaar overnemen. AI controleert of alle verplichte rollen aanwezig zijn en vult ontbrekende spelers automatisch aan met suggesties. Zo blijven teams herkenbaar, maar wordt de jaarlijkse herstart eenvoudig.</p>
+<hr>
+<h3 id="36-flow-5-%E2%80%93-goedkeuring-en-publicatie">3.6 Flow 5 – Goedkeuring en publicatie</h3>
+<p>Elke AI-output wordt ter beoordeling aangeboden voordat deze wordt gepubliceerd. De gebruiker ontvangt een melding, bekijkt de preview en keurt goed of vraagt een hergeneratie aan. Na goedkeuring verschijnt de content in het teamarchief en kan deze gedeeld worden op sociale kanalen.</p>
+<hr>
+<h3 id="37-samenvatting">3.7 Samenvatting</h3>
+<p>De gebruikersflows zijn ontworpen om de balans te bewaren tussen automatisering en controle. AI neemt repeterend werk over, terwijl de gebruiker de creatieve regie houdt. De app leert van gedrag en verbetert suggesties over tijd — zonder complexiteit voor de eindgebruiker, en met behoud van visuele consistentie uit de <em>Style Foundation</em>.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel begeleidt de gebruiker van login tot publicatie in een natuurlijke, logische flow. Elke stap is ontworpen voor snelheid, herkenbaarheid en plezier in gebruik.</em></p>
+</blockquote>
+<hr>
+<h2 id="4-datamodel--logica">4. Datamodel &amp; Logica</h2>
+<h3 id="41-doel-van-dit-hoofdstuk">4.1 Doel van dit hoofdstuk</h3>
+<p>Het datamodel beschrijft hoe TeamReel informatie structureert en hoe entiteiten zoals clubs, teams, spelers en AI-output met elkaar verbonden zijn. Het model sluit aan op de architectuur uit het <em>Technical Design</em>, maar richt zich hier op de <strong>functionele samenhang</strong>: welke gegevens de gebruiker invoert, welke relaties automatisch worden gelegd en hoe deze data de basis vormen voor AI-content.</p>
+<p>Het model is modulair opgezet, zodat toekomstige uitbreidingen — zoals nieuwe sporten of modules — kunnen worden toegevoegd zonder bestaande data aan te passen. Alle entiteiten en datavelden sluiten aan op de terminologie in het <em>Technical Design</em>, zodat er één bron van waarheid is voor data, UI en AI-output.</p>
+<hr>
+<h3 id="42-kernstructuur-club-%E2%86%92-team-%E2%86%92-lid-%E2%86%92-content">4.2 Kernstructuur: Club → Team → Lid → Content</h3>
+<p>De basis van TeamReel is hiërarchisch opgebouwd:</p>
+<ol>
+<li><strong>Clubniveau</strong> – bepaalt identiteit, stijl en huisstijlregels.</li>
+<li><strong>Teamniveau</strong> – gebruikt clubinstellingen en voegt spelers, staf en sponsors toe.</li>
+<li><strong>Lidniveau</strong> – definieert rollen zoals speler, keeper of coach.</li>
+<li><strong>Contentniveau</strong> – genereert output op basis van data uit de vorige lagen.</li>
+</ol>
+<pre><code class="language-mermaid"><div class="mermaid">erDiagram
+    CLUB ||--o{ TEAM : bevat
+    TEAM ||--o{ MEMBER : heeft
+    MEMBER ||--o{ CONTENTITEM : genereert
+    CLUB {
+        string naam
+        string sportType
+        string logo
+        string kleurPrimair
+        string kleurSecundair
+        string sponsor
+    }
+    TEAM {
+        string naam
+        string seizoen
+        string teamsponsor
+        string accentkleur
+    }
+    MEMBER {
+        string naam
+        string rol
+        string positie
+        string foto
+    }
+    CONTENTITEM {
+        string type
+        string status
+        string url
+        date created
+    }
+</div></code></pre>
+<p>Elke entiteit heeft een duidelijke eigenaar: clubs beheren de identiteit, teams beheren de spelers, en gebruikers beheren hun persoonlijke data. De AI-workflows combineren deze gegevens om automatisch herkenbare visuals en video’s te genereren.</p>
+<hr>
+<h3 id="43-teamrollen-en-visuele-weergave">4.3 Teamrollen en visuele weergave</h3>
+<p>Elke speler of staflid heeft één of meer <strong>teamrollen</strong>. Deze bepalen zowel de rechten in de app als de visuele representatie in AI-output. De club bepaalt per sport welke rollen verplicht zijn (bijv. keeper bij voetbal, libero bij volleybal).</p>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Functie</th>
+<th>Visuele representatie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Coach</strong></td>
+<td>Tactiek en begeleiding</td>
+<td>Coachoutfit, naamvermelding in line-up</td>
+</tr>
+<tr>
+<td><strong>Keeper</strong></td>
+<td>Gespecialiseerde speler</td>
+<td>Keeperstenue met aangepaste kleuren</td>
+</tr>
+<tr>
+<td><strong>Speler</strong></td>
+<td>Actief teamlid</td>
+<td>Standaard wedstrijdtenue</td>
+</tr>
+<tr>
+<td><strong>Assistent / staf</strong></td>
+<td>Ondersteuning</td>
+<td>Optioneel in visuals</td>
+</tr>
+<tr>
+<td><strong>Supporter</strong></td>
+<td>Volger van team</td>
+<td>Alleen toegang tot publieke content</td>
+</tr>
+</tbody>
+</table>
+<p>De AI-workflows gebruiken deze rollen om automatisch outfits en posities toe te passen in gegenereerde visuals.</p>
+<hr>
+<h3 id="44-seizoenen-wedstrijden-en-contentarchief">4.4 Seizoenen, wedstrijden en contentarchief</h3>
+<p>Elk team werkt binnen één of meerdere seizoenen. Een seizoen bevat zijn eigen spelerslijst, wedstrijden en contenthistorie.</p>
+<p>Belangrijkste entiteiten:</p>
+<ul>
+<li><strong>Season</strong> – groepeert wedstrijden en spelers per sportjaar.</li>
+<li><strong>Match</strong> – bevat datum, tijd, locatie en tegenstander.</li>
+<li><strong>ContentItem</strong> – verwijst naar gegenereerde visuals of video’s.</li>
+<li><strong>AIWorkflow</strong> – beschrijft de gebruikte generatieroute (pre-match, during-match, post-match).</li>
+</ul>
+<pre><code class="language-mermaid"><div class="mermaid">erDiagram
+    TEAM ||--o{ SEASON : speelt
+    SEASON ||--o{ MATCH : bevat
+    MATCH ||--o{ CONTENTITEM : genereert
+    CONTENTITEM ||--o{ AIWORKFLOW : gebruikt
+    SEASON {
+        string seizoen
+        date start
+        date eind
+    }
+    MATCH {
+        string tegenstander
+        date datum
+        string locatie
+        string tijd
+    }
+    CONTENTITEM {
+        string type
+        string status
+        string url
+    }
+    AIWORKFLOW {
+        string categorie
+        string template
+        string status
+    }
+</div></code></pre>
+<p>Wanneer een nieuw seizoen wordt gestart, kan de teambeheerder bestaande instellingen dupliceren. AI controleert automatisch of alle vereiste teamrollen aanwezig zijn en of het programma volledig is ingevuld. Hierdoor ontstaat een <strong>continu datamodel</strong>, waarin elk seizoen voortbouwt op de vorige — zonder handmatige invoer.</p>
+<hr>
+<h3 id="45-dataflow-en-consistentie">4.5 Dataflow en consistentie</h3>
+<p>De gegevensstromen binnen TeamReel volgen een vast patroon: invoer door gebruiker → validatie → AI-verrijking → output. Clubdata is altijd leidend; teams en leden erven die informatie. Wanneer teamgegevens ontbreken (bijvoorbeeld een sponsor), vult de AI deze automatisch aan met clubinstellingen.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Gebruiker voert data in] --> B[Validatie door app]
+B --> C[Clubinstellingen toegepast]
+C --> D[AI verrijkt data met visuals]
+D --> E[Output opgeslagen en gekoppeld aan team]
+</div></code></pre>
+<blockquote>
+<p><strong>Samenvatting:</strong><br>
+Het datamodel van TeamReel is eenvoudig, herbruikbaar en schaalbaar.<br>
+Alle content is gebaseerd op één bron van waarheid: de club.<br>
+Hierdoor ontstaat een uniforme gegevensstroom waarin elk team dezelfde visuele stijl en datalogica volgt — direct gekoppeld aan de tokens uit de <em>Style Foundation</em>.</p>
+</blockquote>
+<hr>
+<h2 id="5-ai-integratie--automatisering">5. AI-integratie &amp; Automatisering</h2>
+<h3 id="51-doel-van-ai-integratie">5.1 Doel van AI-integratie</h3>
+<p>De AI-integratie is de motor van TeamReel. Zij zorgt ervoor dat elke gebruiker binnen enkele minuten professionele content kan genereren. AI combineert gegevens uit clubs, teams en spelers om visuals en video’s te maken die automatisch voldoen aan de huisstijl.</p>
+<p>De gebruiker blijft altijd eindverantwoordelijk voor goedkeuring, terwijl de AI werkt binnen de visuele en toonrichtlijnen van de <em>Brand Identity</em>.</p>
+<hr>
+<h3 id="52-soorten-ai-workflows">5.2 Soorten AI-workflows</h3>
+<p>TeamReel gebruikt vier hoofdtypen AI-workflows, die elk een specifieke rol hebben in de contentcreatie.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Doel</th>
+<th>Voorbeeldoutput</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clubflows</strong></td>
+<td>Genereren van tenues en logo-integratie op clubniveau.</td>
+<td>Basisclubtenue met sponsor</td>
+</tr>
+<tr>
+<td><strong>Teamflows</strong></td>
+<td>Aanpassing aan teamkleur en sponsor.</td>
+<td>Keepervariant of team-sponsorvisual</td>
+</tr>
+<tr>
+<td><strong>Persoonsflows</strong></td>
+<td>Combineren van spelerfoto en tenue.</td>
+<td>Spelervisual of close-up</td>
+</tr>
+<tr>
+<td><strong>Videoflows</strong></td>
+<td>Compositie van meerdere visuals tot één video.</td>
+<td>Line-upvideo of seizoenscompilatie</td>
+</tr>
+</tbody>
+</table>
+<p>De AI-workflows werken modulair: de output van de ene flow is de input van de volgende.</p>
+<hr>
+<h3 id="53-workflowcyclus">5.3 Workflowcyclus</h3>
+<p>Elke AI-flow doorloopt dezelfde cyclus: invoer, validatie, generatie en goedkeuring. De gebruiker levert data of kiest een template, waarna AI het proces start.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Input van gebruiker] --> B[Validatie van data]
+B -->|OK| C[AI genereert output]
+C --> D[Kwaliteitscontrole en vergelijking met clubstijl]
+D --> E{Gebruiker keurt goed?}
+E -->|Ja| F[Opslaan in dashboard]
+E -->|Nee| G[Herstart met aangepaste input]
+</div></code></pre>
+<p>Deze cyclus voorkomt fouten en garandeert dat alle resultaten consistent blijven met de clubidentiteit.</p>
+<hr>
+<h3 id="54-inputverwerking-en-parsing">5.4 Inputverwerking en parsing</h3>
+<p>Gebruikers kunnen handmatig gegevens invoeren of bestanden uploaden, zoals foto’s van opstellingen of wedstrijdschema’s. AI herkent automatisch namen, nummers en posities en vult deze velden in. Dit versnelt het proces en voorkomt handmatige invoerfouten.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Upload teamselectie of schema] --> B[AI herkent spelers, nummers en posities]
+B --> C[Controle op volledigheid]
+C -->|Valide| D[Data toegevoegd aan team]
+C -->|Onvolledig| E[Feedback naar gebruiker]
+</div></code></pre>
+<hr>
+<h3 id="55-automatisering-en-triggers">5.5 Automatisering en triggers</h3>
+<p>AI-workflows kunnen automatisch starten op basis van tijd, data of gebruikersactie.</p>
+<table>
+<thead>
+<tr>
+<th>Type trigger</th>
+<th>Voorbeeld</th>
+<th>Actie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Handmatig</strong></td>
+<td>Gebruiker kiest “Genereer line-up”</td>
+<td>Start directe flow</td>
+</tr>
+<tr>
+<td><strong>Tijdgestuurd</strong></td>
+<td>24 uur voor wedstrijd</td>
+<td>AI stuurt melding “Maak pre-match content”</td>
+</tr>
+<tr>
+<td><strong>Data-gestuurd</strong></td>
+<td>Nieuw team aangemaakt</td>
+<td>AI genereert basisvisuals automatisch</td>
+</tr>
+</tbody>
+</table>
+<p>De gebruiker kan de automatisering altijd pauzeren of goedkeuring vereisen.<br>
+Zo blijft de balans behouden tussen autonomie en controle.</p>
+<hr>
+<h3 id="56-kwaliteitscontrole">5.6 Kwaliteitscontrole</h3>
+<p>Na elke generatie controleert AI of het resultaat voldoet aan clubstandaarden (logo, kleur, sponsorpositie, resolutie). Bij afwijkingen volgt automatische correctie of een suggestie aan de gebruiker. Correcties worden niet alleen technisch, maar ook visueel gevalideerd tegen de merkregels uit de <em>Style Foundation</em> (kleur, contrast, typografie).</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[AI-output gereed] --> B[Controle op stijlafwijkingen]
+B -->|Afwijking| C[AI corrigeert of vraagt bevestiging]
+B -->|OK| D[Output goedgekeurd]
+D --> E[Opslag en koppeling aan teamarchief]
+</div></code></pre>
+<hr>
+<h3 id="57-samenvatting">5.7 Samenvatting</h3>
+<p>De AI-integratie van TeamReel is ontworpen rond drie principes: <strong>automatisering, controle en consistentie.</strong><br>
+Gebruikers leveren minimale input; AI genereert herhaalbare output in de juiste stijl.<br>
+Elke flow wordt bewaakt, gecontroleerd en gevalideerd.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>AI neemt het werk over, de gebruiker behoudt de regie. Elke video of visual voelt persoonlijk, maar wordt automatisch geproduceerd.</em></p>
+</blockquote>
+<h2 id="6-gebruikersinterface--interactie">6. Gebruikersinterface &amp; Interactie</h2>
+<h3 id="61-doel-en-uitgangspunten">6.1 Doel en uitgangspunten</h3>
+<p>De gebruikersinterface (UI) van TeamReel is ontworpen om de kracht van AI toegankelijk te maken voor vrijwilligers, spelers en trainers zonder technische kennis. Elke interactie is gericht op snelheid, eenvoud en herkenbaarheid. De interface is modulair opgebouwd, consistent met de visuele richtlijnen uit de <em>Brand Identity</em> en afgestemd op de logica van het datamodel uit het <em>Technical Design</em>.</p>
+<p><strong>Ontwerpprincipes:</strong></p>
+<ol>
+<li><strong>Eenvoud</strong> – elke handeling is binnen drie stappen te voltooien.</li>
+<li><strong>Transparantie</strong> – gebruikers zien altijd in welke fase een AI-flow zich bevindt.</li>
+<li><strong>Controle</strong> – AI genereert automatisch, maar de gebruiker beslist over publicatie.</li>
+<li><strong>Consistentie</strong> – kleuren, typografie en iconen zijn uniform en clubafhankelijk.</li>
+<li><strong>Motivatie</strong> – visuele feedback en voortgangsindicatoren stimuleren gebruik.</li>
+</ol>
+<p>De UI is volledig responsief en ontworpen voor gebruik op desktop, tablet en mobiel. De interface volgt de stijlrichtlijnen en tone-of-voice uit de <em>Brand Identity</em>, zodat elke melding, knop en melding dezelfde energie en helderheid heeft.</p>
+<hr>
+<h3 id="62-hoofdstructuur-van-de-applicatie">6.2 Hoofdstructuur van de applicatie</h3>
+<p>De webapplicatie bestaat uit vier hoofdsecties. Deze zijn zichtbaar in het hoofdmenu en worden dynamisch aangepast aan de rol van de gebruiker.</p>
+<table>
+<thead>
+<tr>
+<th>Sectie</th>
+<th>Functie</th>
+<th>Gebruikersniveau</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Dashboard</strong></td>
+<td>Overzicht van teams, lopende AI-flows en status van content</td>
+<td>Alle gebruikers</td>
+</tr>
+<tr>
+<td><strong>Teams</strong></td>
+<td>Beheer van spelers, staf, seizoenen en wedstrijden</td>
+<td>Teambeheerders, coaches</td>
+</tr>
+<tr>
+<td><strong>Clubs</strong></td>
+<td>Beheer van identiteit, outfits en huisstijl</td>
+<td>Clubbeheerders</td>
+</tr>
+<tr>
+<td><strong>AI Studio</strong></td>
+<td>Startpunt voor AI-workflows en goedkeuringen</td>
+<td>Makers en beheerders</td>
+</tr>
+</tbody>
+</table>
+<p>De navigatie bestaat uit een zijbalk (hoofdonderdelen) en een bovenbalk (contextuele acties). Op mobiel wordt dit vertaald naar tabbladen met dezelfde structuur.</p>
+<hr>
+<h3 id="63-dashboard-en-voortgangsvisualisatie">6.3 Dashboard en voortgangsvisualisatie</h3>
+<p>Het dashboard is de centrale toegangspoort. Het toont:</p>
+<ul>
+<li>actieve teams en wedstrijden,</li>
+<li>status van AI-flows (in behandeling, voltooid, wacht op goedkeuring),</li>
+<li>en meldingen over goedkeuringen of ontbrekende data.</li>
+</ul>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Dashboard] --> B[Teams-overzicht]
+A --> C[AI-flows in uitvoering]
+A --> D[Goedkeuringsmeldingen]
+B --> E[Open teamdashboard]
+C --> F[Bekijk flowdetails]
+D --> G[Open AI Studio voor bevestiging]
+</div></code></pre>
+<p>Elk team heeft een voortgangscirkel die aangeeft welk percentage van de beschikbare templates al is gebruikt. Volledige teams worden beloond met badges (“100% compleet”) om gebruik te stimuleren. De dashboards gebruiken tokens (<code>--color-primary</code>, <code>--color-accent</code>, <code>--font-heading</code>) rechtstreeks uit de <em>Style Foundation</em>.</p>
+<hr>
+<h3 id="64-teambeheer-en-clubbeheer">6.4 Teambeheer en Clubbeheer</h3>
+<p>De schermen voor team- en clubbeheer volgen dezelfde structuur:</p>
+<ul>
+<li><strong>Linkerkolom:</strong> instellingen en basisinformatie.</li>
+<li><strong>Middenkolom:</strong> live-preview of spelerslijst.</li>
+<li><strong>Rechterkolom:</strong> acties (opslaan, dupliceren, genereren).</li>
+</ul>
+<p><strong>Teambeheer</strong></p>
+<ul>
+<li>Spelers toevoegen of importeren.</li>
+<li>Rollen en seizoenen beheren.</li>
+<li>Wedstrijdprogramma invoeren of uploaden (AI herkent tegenstanders en datums).</li>
+<li>AI-workflows starten voor visuals en video’s.</li>
+</ul>
+<p><strong>Clubbeheer</strong></p>
+<ul>
+<li>Logo, kleurenschema en sponsor instellen.</li>
+<li>AI-flows voor outfits en branding beheren.</li>
+<li>Rechten toewijzen aan teambeheerders.</li>
+<li>Clubinstellingen goedkeuren of verwerpen.</li>
+</ul>
+<p>De interface houdt alle data synchroon: aanpassingen in clubbeheer worden direct zichtbaar in gekoppelde teams.</p>
+<hr>
+<h3 id="65-ai-studio">6.5 AI Studio</h3>
+<p>De <strong>AI Studio</strong> is de creatieve kern van de applicatie. Hier starten, volgen en beoordelen gebruikers hun AI-flows. Elke flow is opgebouwd uit drie panelen:</p>
+<table>
+<thead>
+<tr>
+<th>Paneel</th>
+<th>Functie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Input</strong></td>
+<td>Gebruiker uploadt of selecteert gegevens.</td>
+</tr>
+<tr>
+<td><strong>Verwerking</strong></td>
+<td>AI toont voortgang met statusindicatoren.</td>
+</tr>
+<tr>
+<td><strong>Output</strong></td>
+<td>Preview van gegenereerde content met optie tot goedkeuring.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Start nieuwe flow] --> B[Inputpaneel ingevuld]
+B --> C[AI-verwerking gestart]
+C --> D[Preview beschikbaar]
+D --> E{Gebruiker keurt goed?}
+E -->|Ja| F[Opslaan en publiceren]
+E -->|Nee| G[Flow herstart]
+</div></code></pre>
+<p>De AI Studio geeft feedback via kleuren en iconen:</p>
+<ul>
+<li>🟦 <strong>Blauw:</strong> actief</li>
+<li>🟧 <strong>Oranje:</strong> wacht op goedkeuring</li>
+<li>🟩 <strong>Groen:</strong> afgerond</li>
+</ul>
+<p>Zo weten gebruikers altijd in welke fase hun content zich bevindt.</p>
+<hr>
+<h3 id="66-interactie-en-feedback">6.6 Interactie en feedback</h3>
+<p>Gebruikers ontvangen feedback bij elke stap in de vorm van meldingen of pop-ups. De toon is vriendelijk en activerend, zoals vastgelegd in de <em>Brand Identity</em>.</p>
+<table>
+<thead>
+<tr>
+<th>Type feedback</th>
+<th>Voorbeeldmelding</th>
+<th>Actie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Informatie</strong></td>
+<td>“Je line-upvideo wordt nu gegenereerd.”</td>
+<td>Wachten of bekijken</td>
+</tr>
+<tr>
+<td><strong>Waarschuwing</strong></td>
+<td>“Er ontbreken 2 spelers in de opstelling.”</td>
+<td>Aanvullen</td>
+</tr>
+<tr>
+<td><strong>Fout</strong></td>
+<td>“Logo heeft onvoldoende resolutie.”</td>
+<td>Nieuwe upload</td>
+</tr>
+<tr>
+<td><strong>Succes</strong></td>
+<td>“Video succesvol gegenereerd!”</td>
+<td>Downloaden of delen</td>
+</tr>
+</tbody>
+</table>
+<p>Feedback verschijnt contextueel: bij flows in de AI Studio, bij teambeheer of bij het goedkeuren van resultaten.</p>
+<hr>
+<h3 id="67-samenvatting">6.7 Samenvatting</h3>
+<p>De gebruikersinterface van TeamReel combineert eenvoud met intelligentie. Gebruikers navigeren intuïtief tussen clubs, teams en AI-flows, terwijl ze steeds feedback krijgen over de status van hun content. De AI werkt op de achtergrond, maar de gebruiker behoudt altijd de controle.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel maakt complexe technologie eenvoudig en herkenbaar. Elke vrijwilliger kan professionele clubcontent creëren — snel, visueel en met plezier.</em></p>
+</blockquote>
+<hr>
+<h2 id="7-feedback-notificaties--credits">7. Feedback, Notificaties &amp; Credits</h2>
+<h3 id="71-doel-en-samenhang">7.1 Doel en samenhang</h3>
+<p>Feedback, notificaties en credits vormen samen de communicatielaag van TeamReel. Ze zorgen voor transparantie in het gebruik van AI, stimuleren samenwerking binnen teams en maken verbruik meetbaar. Deze drie onderdelen versterken elkaar: feedback vertelt <em>wat er gebeurt</em>, notificaties <em>wanneer</em>, en credits <em>hoe vaak</em>. De toon van alle feedback en meldingen is afgestemd op de <em>Brand Identity</em>: vriendelijk, duidelijk en actiegericht.</p>
+<hr>
+<h3 id="72-feedbackcyclus">7.2 Feedbackcyclus</h3>
+<p>Elke AI-flow doorloopt een vaste feedbacklus waarin de gebruiker volledig inzicht krijgt in de voortgang.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Start AI-flow] --> B[Input-validatie]
+B --> C[AI genereert output]
+C --> D[Kwaliteitscontrole]
+D --> E[Feedback naar gebruiker: OK of verbeterpunt]
+E --> F{Gebruiker keurt goed?}
+F -->|Ja| G[Flow voltooid]
+F -->|Nee| H[Flow opnieuw uitvoeren]
+</div></code></pre>
+<p><strong>Belangrijke principes:</strong></p>
+<ul>
+<li>Feedback is altijd concreet en actiegericht.</li>
+<li>Elke melding bevat context, status en suggestie.</li>
+<li>AI leert van herhaalde correcties (feedback wordt gebruikt om toekomstige generaties te verbeteren).</li>
+</ul>
+<hr>
+<h3 id="73-notificatiesysteem">7.3 Notificatiesysteem</h3>
+<p>Notificaties houden gebruikers op de hoogte van relevante gebeurtenissen binnen hun club of team. Meldingen verschijnen in-app en, optioneel, via e-mail of pushbericht.</p>
+<table>
+<thead>
+<tr>
+<th>Gebeurtenis</th>
+<th>Ontvangers</th>
+<th>Type melding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nieuwe AI-flow gestart</td>
+<td>Initiator</td>
+<td>In-app</td>
+</tr>
+<tr>
+<td>Flow gereed voor goedkeuring</td>
+<td>Teambeheerder</td>
+<td>In-app + e-mail</td>
+</tr>
+<tr>
+<td>Clubdata gewijzigd</td>
+<td>Alle teambeheerders</td>
+<td>In-app</td>
+</tr>
+<tr>
+<td>Fout bij generatie</td>
+<td>Gebruiker + systeembeheerder</td>
+<td>E-mail</td>
+</tr>
+<tr>
+<td>Nieuwe credits toegevoegd</td>
+<td>Clubbeheerder</td>
+<td>In-app + e-mail</td>
+</tr>
+</tbody>
+</table>
+<p>Gebruikers kunnen meldingen filteren op type en status, zodat het overzicht bewaard blijft.</p>
+<hr>
+<h3 id="74-creditsysteem">7.4 Creditsysteem</h3>
+<p>Credits vertegenwoordigen de waarde van AI-acties en volgen hetzelfde transparante model als beschreven in het <em>Businessplan</em> en <em>Technical Design</em>. Elke generatie verbruikt een vast aantal credits, afhankelijk van de complexiteit. Het systeem is transparant en werkt op drie niveaus: club, team en gebruiker.</p>
+<table>
+<thead>
+<tr>
+<th>Niveau</th>
+<th>Beheerder</th>
+<th>Toepassing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clubcredits</strong></td>
+<td>Clubbeheerder</td>
+<td>Grote generaties of seizoenscontent</td>
+</tr>
+<tr>
+<td><strong>Teamcredits</strong></td>
+<td>Teambeheerder</td>
+<td>Wedstrijd- en spelerscontent</td>
+</tr>
+<tr>
+<td><strong>Gebruikerscredits</strong></td>
+<td>Maker</td>
+<td>Persoonlijke visuals of profielcontent</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Voorbeeld:</strong></p>
+<ul>
+<li>Een line-upvideo kost 5 credits.</li>
+<li>Een spelersvisual kost 2 credits.</li>
+<li>Parsing van een wedstrijdschema kost 1 credit.</li>
+</ul>
+<p>Bij onvoldoende saldo ontvangt de gebruiker een melding met de optie om credits aan te vullen of te verdelen vanuit de clubbundel.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Start AI-flow] --> B[Controle creditsaldo]
+B -->|Voldoende| C[Credits reserveren]
+B -->|Onvoldoende| D[Melding: saldo aanvullen]
+C --> E[Flow uitvoeren]
+E --> F[Resultaat loggen in CreditLog]
+F --> G[Saldo bijwerken en tonen in dashboard]
+</div></code></pre>
+<hr>
+<h3 id="75-samenhang-en-transparantie">7.5 Samenhang en transparantie</h3>
+<p>Alle meldingen, feedback en credittransacties worden centraal gelogd. Clubbeheerders kunnen rapportages genereren om gebruik en verbruik te monitoren. Zo ontstaat inzicht in activiteit, kosten en prestaties van teams.</p>
+<p><strong>Voordelen van deze structuur:</strong></p>
+<ul>
+<li>Gebruikers weten altijd wat er gebeurt.</li>
+<li>Clubs behouden overzicht over AI-verbruik.</li>
+<li>AI leert van feedback en verbetert zichzelf continu.</li>
+</ul>
+<hr>
+<h3 id="76-samenvatting">7.6 Samenvatting</h3>
+<p>Feedback, notificaties en credits vormen de verbindende laag tussen mens en machine. Ze maken het platform transparant, betrouwbaar en motiverend in gebruik. De stijl en toon van meldingen volgen de <em>Style Foundation</em> voor consistentie tussen app, e-mail en AI-feedback.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel communiceert met de gebruiker als een teamgenoot — duidelijk, positief en resultaatgericht. AI en mens werken samen aan herkenbare clubcontent.</em></p>
+</blockquote>
+<hr>
+<h2 id="8-beveiliging--privacy">8. Beveiliging &amp; Privacy</h2>
+<h3 id="81-doel-en-uitgangspunten">8.1 Doel en uitgangspunten</h3>
+<p>Beveiliging en privacy zijn structureel onderdeel van TeamReel — niet als aanvulling, maar als uitgangspunt. Het platform verwerkt gegevens van spelers, teams en clubs en beschermt deze informatie volgens de principes van <strong>veiligheid, transparantie en eigenaarschap</strong>. De technische invulling van deze maatregelen is beschreven in het <em>Technical Design</em>; dit hoofdstuk richt zich op de functionele kant: hoe gebruikersrechten, data en zichtbaarheid binnen de app worden beheerd. De gebruikersinterface communiceert privacyinstellingen met duidelijke iconen en kleurcontrasten volgens de <em>Style Foundation</em>.</p>
+<hr>
+<h3 id="82-functionele-beveiligingsprincipes">8.2 Functionele beveiligingsprincipes</h3>
+<table>
+<thead>
+<tr>
+<th>Principe</th>
+<th>Toepassing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Minimale dataopslag</strong></td>
+<td>Alleen noodzakelijke informatie wordt opgeslagen. Geen overbodige metadata.</td>
+</tr>
+<tr>
+<td><strong>Scheiding van verantwoordelijkheden</strong></td>
+<td>Club-, team- en gebruikersdata zijn strikt gescheiden.</td>
+</tr>
+<tr>
+<td><strong>Rolgebaseerde toegang</strong></td>
+<td>Rechten worden automatisch bepaald op basis van rol (zie hoofdstuk 2).</td>
+</tr>
+<tr>
+<td><strong>Encryptie en transportbeveiliging</strong></td>
+<td>Alle uploads en downloads verlopen via versleutelde verbindingen.</td>
+</tr>
+<tr>
+<td><strong>Transparantie voor gebruikers</strong></td>
+<td>Gebruikers kunnen altijd zien welke data van hen wordt bewaard.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="83-toegangscontrole">8.3 Toegangscontrole</h3>
+<p>Het toegangsmodel volgt dezelfde hiërarchie als het datamodel: <strong>club → team → gebruiker</strong>. Elke gebruiker krijgt toegang tot zijn eigen data en relevante teams, afhankelijk van rol en rechten. Authenticatie verloopt via tokens die automatisch verlopen bij inactiviteit.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Login gebruiker] --> B[Verificatie via token]
+B --> C{Rolniveau?}
+C -->|Clubbeheerder| D[Toegang tot club en teams]
+C -->|Teambeheerder| E[Toegang tot eigen team]
+C -->|Maker| F[Alleen eigen content]
+C -->|Supporter| G[Publieke content bekijken]
+</div></code></pre>
+<p>Clubs kunnen zelf instellen of nieuwe teams direct toegang krijgen of eerst goedkeuring vereisen. Hiermee wordt het clubbeleid functioneel afdwingbaar binnen de app.</p>
+<hr>
+<h3 id="84-privacyinstellingen-voor-gebruikers">8.4 Privacyinstellingen voor gebruikers</h3>
+<p>Gebruikers en clubs bepalen zelf de zichtbaarheid van hun data.<br>
+Elke visual of video heeft drie privacy-niveaus:</p>
+<table>
+<thead>
+<tr>
+<th>Niveau</th>
+<th>Beschrijving</th>
+<th>Toegankelijk voor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Publiek</strong></td>
+<td>Content zichtbaar op openbare profielen of gedeelde links.</td>
+<td>Iedereen</td>
+</tr>
+<tr>
+<td><strong>Clubintern</strong></td>
+<td>Content alleen zichtbaar binnen de eigen clubomgeving.</td>
+<td>Clubleden</td>
+</tr>
+<tr>
+<td><strong>Privé</strong></td>
+<td>Content enkel zichtbaar voor de gebruiker zelf.</td>
+<td>Alleen maker</td>
+</tr>
+</tbody>
+</table>
+<p>Bij upload van persoonlijke foto’s wordt toestemming gevraagd.<br>
+De gebruiker krijgt een duidelijke melding, zoals:</p>
+<blockquote>
+<p>“Door deze afbeelding te uploaden bevestig je dat je toestemming hebt van de persoon op de foto.”</p>
+</blockquote>
+<p>De interface maakt privacykeuzes visueel herkenbaar met symbolen:</p>
+<ul>
+<li>🔓 = Publiek</li>
+<li>🏟️ = Clubintern</li>
+<li>🔒 = Privé</li>
+</ul>
+<p>Deze iconen zijn gestileerd in lijn met de <em>Brand Identity</em> (lineaire stijl, blauw of wit afhankelijk van thema).</p>
+<hr>
+<h3 id="85-incidentbeheer">8.5 Incidentbeheer</h3>
+<p>Bij beveiligings- of privacy-incidenten start automatisch een meld- en herstelproces. Dit proces is conform de AVG/GDPR en vastgelegd in het interne <em>Security Incident Register</em>.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Incident gedetecteerd] --> B[Automatische logging]
+B --> C[Analyse door beveiligingsteam]
+C --> D{Gevoelige data betrokken?}
+D -->|Ja| E[Rapport naar clubbeheerder + melding aan gebruiker]
+D -->|Nee| F[Registratie in intern log]
+E --> G[Oorzaak opgelost en maatregelen genomen]
+F --> G
+G --> H[Evaluatie en afsluiting incident]
+</div></code></pre>
+<p>Clubs en gebruikers worden binnen 24 uur geïnformeerd als hun data betrokken is. Het herstelproces wordt vervolgens geëvalueerd en vastgelegd als leerpunt voor toekomstige verbeteringen.</p>
+<hr>
+<h3 id="86-samenvatting">8.6 Samenvatting</h3>
+<p>TeamReel garandeert veilige verwerking van club- en spelersgegevens door middel van rolgebaseerde toegang, transparante privacyopties en snelle incidentafhandeling. Alle beveiligingslagen zijn ontworpen vanuit het principe <em>security by design</em>.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel beschermt niet alleen content, maar ook vertrouwen.<br>
+Privacy en veiligheid zijn ingebouwd in elke laag van het platform.</em></p>
+</blockquote>
+<hr>
+<h2 id="9-implementatie--roadmap">9. Implementatie &amp; Roadmap</h2>
+<h3 id="91-doel">9.1 Doel</h3>
+<p>De implementatie- en roadmapfase beschrijft hoe TeamReel functioneel wordt uitgerold. De focus ligt op iteratieve ontwikkeling: bouwen, testen, verbeteren. Elke fase bouwt voort op de vorige, met behoud van compatibiliteit en consistentie.</p>
+<hr>
+<h3 id="92-fasen-en-prioriteiten">9.2 Fasen en prioriteiten</h3>
+<p>De roadmap is afgestemd op het <em>Businessplan</em> en volgt dezelfde opbouw.</p>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Doel</th>
+<th>Belangrijkste functies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fase 1 – Basisontwikkeling</strong></td>
+<td>Eerste werkende versie van de Content Generator.</td>
+<td>Teambeheer, spelersbeheer, AI-flows, creditsysteem.</td>
+</tr>
+<tr>
+<td><strong>Fase 2 – Meerdere sporten</strong></td>
+<td>Uitbreiding naar hockey, volleybal, handbal en zaalvoetbal.</td>
+<td>Sportprofielen, specifieke teamstructuren, flexibele templates.</td>
+</tr>
+<tr>
+<td><strong>Fase 3 – Schaalvergroting &amp; internationale uitrol</strong></td>
+<td>Platform uitbreiden naar andere talen en markten.</td>
+<td>Meertalige interface, regiofilters, multi-clubbeheer.</td>
+</tr>
+<tr>
+<td><strong>Fase 4 – Nieuwe modules</strong></td>
+<td>Toevoegen van verdieping en automatisering.</td>
+<td>Nieuwsbriefgenerator, Coach van het Jaar, prestatiecontent.</td>
+</tr>
+</tbody>
+</table>
+<p>De visuele en technische deliverables per fase volgen de structuur van de <em>Style Foundation</em> en worden bewaakt via CI/CD-checks (zie <em>Technical Design</em> hoofdstuk 10).</p>
+<hr>
+<h3 id="93-functionele-mijlpalen">9.3 Functionele mijlpalen</h3>
+<pre><code class="language-mermaid"><div class="mermaid">gantt
+    title TeamReel – Functionele Roadmap
+    dateFormat  YYYY-MM
+    section Ontwikkeling
+    Content Generator (Core)     :a1, 2025-09, 2m
+    Multisport uitbreiding      :a2, 2026-01, 3m
+    Internationalisatie        :a3, 2026-05, 3m
+    Nieuwe modules (Nieuwsbrief & Coach v/h Jaar) :a4, 2026-08, 3m
+</div></code></pre>
+<p>Elke fase bevat visuele consistentiecontroles (tokens, fonts, kleuren), gebruikerstesten en feedbackcycli:</p>
+<ul>
+<li><strong>Gebruikerstesten</strong> bij pilotclubs.</li>
+<li><strong>Feedbackcycli</strong> voor UX en AI-workflows.</li>
+<li><strong>Data-evaluatie</strong> om prestaties en consistentie te verbeteren.</li>
+</ul>
+<hr>
+<h3 id="94-functionele-randvoorwaarden">9.4 Functionele randvoorwaarden</h3>
+<p>Voor een succesvolle implementatie gelden de volgende randvoorwaarden:</p>
+<ul>
+<li>Stabiele verbinding tussen frontend en API’s.</li>
+<li>Eenduidig rechtenbeheer tussen clubs en teams.</li>
+<li>Volledige logging van AI-activiteiten en creditverbruik.</li>
+<li>Gebruiksvriendelijke interface die ook op mobiel optimaal presteert.</li>
+<li>Meertaligheid voorbereid op uitbreiding buiten Nederland.</li>
+</ul>
+<hr>
+<h3 id="95-samenhang-met-andere-documenten">9.5 Samenhang met andere documenten</h3>
+<p>Het implementatieplan bouwt op de kaders uit de andere kernbestanden:</p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Bijdrage aan implementatie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Businessplan</strong></td>
+<td>Strategische richting en prioritering.</td>
+</tr>
+<tr>
+<td><strong>Brand Identity</strong></td>
+<td>Consistente visuele uitstraling.</td>
+</tr>
+<tr>
+<td><strong>Technical Design</strong></td>
+<td>API’s, dataopslag, AI-integratie.</td>
+</tr>
+<tr>
+<td><strong>Projectplan</strong></td>
+<td>Planning, testing en kwaliteitsborging.</td>
+</tr>
+</tbody>
+</table>
+<p>Door deze integrale aanpak blijft TeamReel in elke fase consistent in stijl, werking en technische uitvoering.</p>
+<hr>
+<h3 id="96-samenvatting">9.6 Samenvatting</h3>
+<p>De functionele roadmap van TeamReel groeit van kernfunctionaliteit naar verdieping, zonder complexiteit toe te voegen.<br>
+Elke uitbreiding versterkt de oorspronkelijke belofte: clubs helpen om snel, eenvoudig en professioneel hun verhaal te vertellen.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel groeit stap voor stap — van lokale tool naar internationaal platform — met behoud van eenvoud en herkenbare clubidentiteit.</em></p>
+</blockquote>
+<h2 id="10-samenvatting--toepassing">10. Samenvatting &amp; Toepassing</h2>
+<h3 id="101-overzicht">10.1 Overzicht</h3>
+<p>Het <em>Functional Design</em> beschrijft hoe TeamReel in de praktijk werkt — van gebruikersinteractie tot AI-workflows, van datamodel tot beveiliging. Het document is afgestemd op de <em>Businessplan</em>-visie, de <em>Brand Identity</em>-stijl en de technische opzet uit het <em>Technical Design</em>.</p>
+<p>De belangrijkste principes zijn:</p>
+<ul>
+<li><strong>Eenvoud</strong> – de gebruiker voert minimale input in; AI doet de rest.</li>
+<li><strong>Herkenbaarheid</strong> – elke output volgt automatisch de clubstijl.</li>
+<li><strong>Controle</strong> – de gebruiker keurt altijd goed wat de AI maakt.</li>
+<li><strong>Schaalbaarheid</strong> – het systeem groeit mee met nieuwe sporten en markten.</li>
+<li><strong>Transparantie</strong> – elke stap, melding en credittransactie is inzichtelijk.</li>
+</ul>
+<hr>
+<h3 id="102-functionele-kern">10.2 Functionele kern</h3>
+<table>
+<thead>
+<tr>
+<th>Onderdeel</th>
+<th>Belangrijkste functie</th>
+<th>Samenhang met andere documenten</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gebruikersrollen &amp; toegang</strong></td>
+<td>Zorgt voor veilige, logische rechtenstructuur per club en team.</td>
+<td>Sluit aan op datamodel in <em>Technical Design</em>.</td>
+</tr>
+<tr>
+<td><strong>Gebruikersflows</strong></td>
+<td>Beschrijft hoe gebruikers content genereren.</td>
+<td>Ondersteunt UX-ontwerp en ontwikkelplanning.</td>
+</tr>
+<tr>
+<td><strong>Datamodel &amp; logica</strong></td>
+<td>Houdt clubs, teams, spelers en content in één consistent systeem.</td>
+<td>Basis voor API-structuur.</td>
+</tr>
+<tr>
+<td><strong>AI-integratie &amp; automatisering</strong></td>
+<td>Automatiseert contentcreatie met behoud van controle.</td>
+<td>Koppelt functionele input aan AI-workflows.</td>
+</tr>
+<tr>
+<td><strong>Gebruikersinterface &amp; interactie</strong></td>
+<td>Maakt AI begrijpelijk en gebruiksvriendelijk.</td>
+<td>Visuele uitwerking volgens <em>Brand Identity</em>.</td>
+</tr>
+<tr>
+<td><strong>Feedback, notificaties &amp; credits</strong></td>
+<td>Zorgt voor transparantie en motivatie.</td>
+<td>Onderdeel van gebruikerservaring en data-analyse.</td>
+</tr>
+<tr>
+<td><strong>Beveiliging &amp; privacy</strong></td>
+<td>Beschermt gebruikers en clubs tegen datarisico’s.</td>
+<td>Functionele vertaling van <em>Technical Design</em> beveiligingsmodel.</td>
+</tr>
+<tr>
+<td><strong>Implementatie &amp; roadmap</strong></td>
+<td>Geeft richting aan groei en releases.</td>
+<td>Geïntegreerd met <em>Projectplan</em>.</td>
+</tr>
+<tr>
+<td><strong>Stijl en toon</strong></td>
+<td>Waarborgt merkconsistentie tussen UI, AI-output en documentatie.</td>
+<td>Gebaseerd op <em>Style Foundation</em> en <em>Brand Identity</em>.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="103-praktische-toepassing">10.3 Praktische toepassing</h3>
+<p>Het <em>Functional Design</em> dient als referentie voor:</p>
+<ul>
+<li><strong>Ontwikkelaars:</strong> om functionaliteiten te bouwen op basis van logica, flows en datamodellen.</li>
+<li><strong>Designers:</strong> om interfaces te ontwerpen die passen binnen de gebruikersflows.</li>
+<li><strong>Projectleiding:</strong> om releases te plannen en testen te structureren.</li>
+<li><strong>Clubs en testers:</strong> om te begrijpen hoe TeamReel hun dagelijkse werk ondersteunt.</li>
+</ul>
+<p>De documentatie is modulair opgezet. Elk hoofdstuk kan zelfstandig gebruikt worden bij ontwerpbeslissingen, QA-tests of toekomstige uitbreidingen.<br>
+Door deze structuur blijft TeamReel wendbaar en consistent, ongeacht schaal of complexiteit. Bij elke uitbreiding moet worden gecontroleerd of de UI, tekst en AI-flow voldoen aan de <em>Style Foundation</em>.</p>
+<hr>
+<h3 id="104-doorontwikkeling">10.4 Doorontwikkeling</h3>
+<p>Toekomstige iteraties bouwen voort op dit functioneel kader.<br>
+Nieuwe modules zoals de <em>Nieuwsbriefgenerator</em> en <em>Coach van het Jaar</em> volgen dezelfde ontwerpprincipes en sluiten direct aan op bestaande data, UI en AI-workflows.<br>
+De nadruk ligt op herbruikbaarheid: één systeem, meerdere toepassingen.</p>
+<hr>
+<h3 id="105-samenvattende-conclusies">10.5 Samenvattende conclusies</h3>
+<p>TeamReel maakt professionele clubcommunicatie eenvoudig, herkenbaar en schaalbaar.<br>
+De combinatie van AI, duidelijke gebruikersflows en consistente visuele stijl zorgt ervoor dat elke vrijwilliger content kan maken die de trots van de club weerspiegelt.<br>
+Het platform is ontworpen om te groeien — technisch, functioneel en creatief — zonder de eenvoud te verliezen die het zo toegankel</p>
+
+</body>
+</html>

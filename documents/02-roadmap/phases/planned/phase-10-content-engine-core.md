@@ -1,6 +1,6 @@
-# Phase 10: Content Engine Core (039-042)
+# Phase 10: Content Engine Core (039-044)
 
-**Focus**: Generic event planning, brand identity, AI content generation, and smart media library
+**Focus**: Generic event planning, content templates, sport configuration, brand identity, AI content generation, and smart media library
 
 ---
 
@@ -41,7 +41,83 @@
 
 ---
 
-## [B31: Brand Identity Manager](../modules/planned/040-B31-brand-identity-manager.md)
+## [B31: Content Templates & Generation](../modules/planned/040-B31-content-templates-and-generation.md)
+
+**Doel**: Reusable templates for AI-generated content with approval workflow and content library/archive.
+
+**Waarom agnostisch**: Content generation with approval is universeel - match reports, marketing materials, invoices, newsletters all need templates + review.
+
+**Wat moet er gebeuren**:
+- **ContentTemplate model**: Reusable templates
+  - Fields: name, template_type, sport (FK optional), ai_workflow_id, prompt_template
+  - Template types: match_report, lineup_graphic, highlight_video, newsletter
+  - Linked to B32 (Sport Configuration) for sport-specific validation
+- **ContentItem model**: Generated content instances
+  - Fields: template (FK), status, input_data (JSON), generated_output (JSON/text)
+  - Status: draft, pending_approval, approved, rejected, archived
+  - Foreign keys: activity (B30), project, creator
+- **ContentApproval model**: Approval workflow
+  - Fields: content_item (FK), approver (FK user), status, feedback, approved_at
+  - Multi-stage approval support (coach approves → admin publishes)
+- **Content Archive**: Historical content storage
+  - Filter by date range, template type, approval status
+  - Bulk operations (archive old items, export approved content)
+- **Integration**:
+  - B22 (Files) - DONE
+  - B30 (Activities) - Planned in Fase 10
+  - B17 (Notifications) - DONE
+  - B09 (Audit Trail) - DONE
+  - B32 (Sport Configuration) - NEW (same fase)
+
+**Demo Requirements**:
+- 📝 **Content Templates** (`/demo/content/templates`): Create/edit templates
+- 🚀 **Generate Content** (`/demo/content/generate`): Select template → fill inputs → generate
+- 📚 **Content Library** (`/demo/content/library`): View all generated items, filter by status
+- ✅ **Approve Content** (`/demo/content/approve`): Review pending items, provide feedback
+
+**Status**: 🚧 ROADMAP
+
+---
+
+## [B32: Sport Configuration & Templates](../modules/planned/041-B32-sport-configuration-and-templates.md)
+
+**Doel**: Sport-specific configuration for team sizes, positions, lineup requirements, and outfit variants.
+
+**Waarom agnostisch**: Sports configuration is universeel - football, handball, basketball, futsal all have different rules that need to be data-driven.
+
+**Wat moet er gebeuren**:
+- **Sport model**: Core sport definitions
+  - Fields: name, slug, federation, description
+  - Examples: "Football" (11 players), "Handball" (7 players), "Basketball" (5 players)
+- **SportConfiguration model**: Sport-specific rules
+  - Fields: sport (FK), team_size_min, team_size_max, positions (JSON), lineup_rules (JSON)
+  - Positions example (football): ["Goalkeeper", "Defender", "Midfielder", "Forward"]
+  - Lineup rules: {"required_positions": {"Goalkeeper": 1}, "substitutes_max": 7}
+  - Outfit variants: ["home_kit", "away_kit", "goalkeeper_kit"]
+- **OutfitConfiguration model**: Team outfit/kit details per project
+  - Fields: project (FK), sport_config (FK), variant, colors (JSON), sponsor_position, number_font
+  - Colors: {"primary": "#FF0000", "secondary": "#FFFFFF", "accent": "#000000"}
+  - Sponsor position: "chest", "sleeve", "back"
+- **Validation helpers**: Ensure lineup compliance
+  - Validate team size (min 7, max 11 for football)
+  - Validate required positions (must have 1 GK for football)
+  - Validate outfit completeness (home + away kit required)
+- **Integration**:
+  - B07 (Projects) - Projects have sport type
+  - B30 (Activities) - Match activities use sport config for lineups
+  - B31 (Content Templates) - Templates filtered by sport
+
+**Demo Requirements**:
+- 🏅 **Sport Configuration** (`/demo/sport-config/sports`): Manage sports and their configs
+- 👕 **Outfit Manager** (`/demo/sport-config/outfits`): Configure team outfits per project
+- 📋 **Position Templates** (`/demo/sport-config/positions`): Define position requirements
+- ✅ **Validate Lineup** (`/demo/sport-config/validate`): Test lineup validation rules
+
+**Status**: 🚧 ROADMAP
+
+---
+
+## [B33: Brand Identity Manager](../modules/planned/042-B33-brand-identity-manager.md)
 
 **Doel**: Centralized brand identity management - logos, colors, design tokens als data (niet hardcoded), ondersteunt white-labeling en AI-driven content generation.
 
@@ -62,7 +138,7 @@
 - **Token API**: Frontend consumption
   - Endpoint returns complete token set
   - Frontend applies styles dynamically
-- **Integration**: B22 (file storage), B32 (AI uses brand tokens), B06/B07 (org/project)
+- **Integration**: B22 (file storage), B34 (AI uses brand tokens), B06/B07 (org/project)
 
 **Demo Requirements**:
 - 🎨 **Brand Manager** (`/demo/brand`):
@@ -78,7 +154,7 @@
 
 ---
 
-## [B32: Generative Pipelines](../modules/planned/041-B32-generative-pipelines.md)
+## [B34: Generative Pipelines](../modules/planned/043-B34-generative-pipelines.md)
 
 **Doel**: AI content generation factory - manages generation requests (jobs), routes naar appropriate pipelines (LangGraph/n8n/OpenAI), handles async execution.
 
@@ -107,7 +183,7 @@
 - **Credit deduction**: B11 integration
   - Deduct credits on submit or completion
   - Refund on failure (configurable)
-- **Integration**: B15 (tasks), B11 (credits), B31 (brand tokens), B33 (output storage)
+- **Integration**: B15 (tasks), B11 (credits), B33 (brand tokens), B35 (output storage)
 
 **Demo Requirements**:
 - 🤖 **AI Studio** (`/demo/pipelines`):
@@ -124,7 +200,7 @@
 
 ---
 
-## [B33: Smart Asset Library](../modules/planned/042-B33-smart-asset-library.md)
+## [B35: Smart Asset Library](../modules/planned/044-B35-smart-asset-library.md)
 
 **Doel**: Digital Asset Management (DAM) - extends B22 file management met semantic metadata, tagging, en relaties ("video belongs to Match X, features Player Y").
 
@@ -153,7 +229,7 @@
 - **Thumbnail generation**: Auto-generate previews
   - Images: Resize to 200x200, 400x400 variants
   - Videos: Extract frame at 50% timestamp
-- **Integration**: B22 (storage), B30 (activities), B32 (generated content auto-linked), B24 (search)
+- **Integration**: B22 (storage), B30 (activities), B34 (generated content auto-linked), B24 (search)
 
 **Demo Requirements**:
 - 📚 **Media Library** (`/demo/library`):
@@ -173,13 +249,15 @@
 
 ## Phase Completion Criteria
 
-- [ ] All 4 modules (B30-B33) operational
-- [ ] Demo pages accessible at `/demo/activities`, `/demo/brand`, `/demo/pipelines`, `/demo/library`
+- [ ] All 6 modules (B30-B35) operational
+- [ ] Demo pages accessible at `/demo/activities`, `/demo/content/*`, `/demo/sport-config/*`, `/demo/brand`, `/demo/pipelines`, `/demo/library`
 - [ ] Generic event planning (periods, activities, participation) working
+- [ ] Content templates & approval workflow operational
+- [ ] Sport-specific configuration (team sizes, positions, outfits) working
 - [ ] Brand identity system (profiles, tokens, assets) operational
 - [ ] AI content generation pipeline (templates, requests, outputs) functional
 - [ ] Smart media library (items, tags, collections, search) operational
-- [ ] Integration between all modules verified (B32 uses B31 tokens, B33 links B32 outputs, etc.)
+- [ ] Integration between all modules verified (B34 uses B33 tokens, B35 links B34 outputs, B32 validates sport rules, etc.)
 - [ ] Tests passing for all demo workflows
 
 ---
@@ -210,18 +288,21 @@
 
 **Module Order:**
 1. **B30 (Activities)** - Foundation for event planning
-2. **B31 (Brand Identity)** - Needed by B32 for branded content
-3. **B33 (Smart Library)** - Can be developed in parallel with B32
-4. **B32 (Generative Pipelines)** - Last, integrates with B31 and B33
+2. **B32 (Sport Configuration)** - Needed for sport-specific validation
+3. **B31 (Content Templates)** - Uses B30 activities and B32 sport config
+4. **B33 (Brand Identity)** - Needed by B34 for branded content
+5. **B35 (Smart Library)** - Can be developed in parallel with B34
+6. **B34 (Generative Pipelines)** - Last, integrates with B31, B33, and B35
 
 **Key Integrations:**
-- B32 generation jobs deduct from B11 credits
-- B32 uses B31 brand tokens to generate branded content
-- B32 outputs auto-save to B33 media library
-- B33 media items link back to B30 activities (e.g., "Match highlight video")
-- B30 activities can trigger B32 generation (e.g., "Auto-generate match report after match ends")
+- B31 content templates are filtered by sport (via B32)
+- B34 generation jobs deduct from B11 credits
+- B34 uses B33 brand tokens to generate branded content
+- B34 outputs auto-save to B35 media library
+- B35 media items link back to B30 activities (e.g., "Match highlight video")
+- B30 activities can trigger B31/B34 generation (e.g., "Auto-generate match report after match ends")
 
 **Demo Strategy:**
 - Each module has standalone demo page
-- Cross-module workflow: Create period → Schedule activity → Generate content (B32) → Store in library (B33) → Link to activity (B30)
+- Cross-module workflow: Create period → Schedule activity → Select sport config → Generate content (B34) → Store in library (B35) → Link to activity (B30)
 - Show complete "Sports Team Content Pipeline" or "Marketing Campaign Workflow" as integration demo

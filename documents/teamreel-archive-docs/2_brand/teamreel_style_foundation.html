@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>teamreel_style_foundation.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<blockquote>
+<p><strong>TeamReel</strong> combineert sportieve energie met digitale helderheid.<br>
+Dit document vormt de centrale stijlgids voor alle TeamReel-documentatie, UI-componenten en communicatie.<br>
+De <em>Style Foundation</em> beschrijft de visuele tokens, tone-of-voice en consistentieprincipes<br>
+die gelden voor elk onderdeel van het platform — van businessplan tot frontendcode.<br>
+Versie: Oktober 2025 — Status: Definitieve richtlijn.</p>
+</blockquote>
+<hr>
+<p>📄 <strong>Referentie</strong></p>
+<ul>
+<li>Versie: 2.0 (Oktober 2025)</li>
+<li>Onderhoud: TeamReel Studio (Product &amp; Design)</li>
+<li>Bron van waarheid: <code>/docs/2_brand/teamreel_style_foundation.md</code></li>
+<li>Laatste review: [vul datum in bij update]</li>
+</ul>
+<hr>
+<h2 id="inhoudsopgave">Inhoudsopgave</h2>
+<ul>
+<li><a href="#inhoudsopgave">Inhoudsopgave</a></li>
+<li><a href="#-1-design-tokens-merk--ui">🎨 1. Design Tokens (Merk &amp; UI)</a>
+<ul>
+<li><a href="#typografie-tokens">Typografie Tokens</a></li>
+<li><a href="#layout-tokens">Layout Tokens</a></li>
+</ul>
+</li>
+<li><a href="#%EF%B8%8F-2-tone-of-voice--schrijf--en-communicatiestijl">🗣️ 2. Tone of Voice – Schrijf- en Communicatiestijl</a>
+<ul>
+<li><a href="#tone-by-context">Tone by Context</a></li>
+</ul>
+</li>
+<li><a href="#-3-kernboodschap-voor-alle-documenten">💬 3. Kernboodschap (voor alle documenten)</a></li>
+<li><a href="#%EF%B8%8F-4-consistentieprincipes">⚙️ 4. Consistentieprincipes</a></li>
+<li><a href="#-5-toepassing-in-docs-samenvatting">🔁 5. Toepassing in Docs (Samenvatting)</a></li>
+<li><a href="#-integratie-met-frontend--ai">🔗 Integratie met Frontend &amp; AI</a></li>
+<li><a href="#-slot">🏁 Slot</a></li>
+</ul>
+<h2 id="%F0%9F%8E%A8-1-design-tokens-merk--ui">🎨 1. Design Tokens (Merk &amp; UI)</h2>
+<table>
+<thead>
+<tr>
+<th>Token Type</th>
+<th>Naam</th>
+<th>Code / Waarde</th>
+<th>Gebruik</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Kleur Primair</strong></td>
+<td><code>--color-primary</code></td>
+<td><code>#0057FF</code></td>
+<td>Buttons, links, highlights</td>
+</tr>
+<tr>
+<td><strong>Kleur Secundair</strong></td>
+<td><code>--color-navy</code></td>
+<td><code>#0C1A3C</code></td>
+<td>Tekst, headers, donkere UI</td>
+</tr>
+<tr>
+<td><strong>Accentkleur</strong></td>
+<td><code>--color-accent</code></td>
+<td><code>#C7F464</code></td>
+<td>Hover, progress, focus</td>
+</tr>
+<tr>
+<td><strong>Neutraal Grijs</strong></td>
+<td><code>--color-neutral</code></td>
+<td><code>#E3E7EF</code></td>
+<td>Grenzen, iconen</td>
+</tr>
+<tr>
+<td><strong>Achtergrond Licht</strong></td>
+<td><code>--color-bg-light</code></td>
+<td><code>#F8F9FC</code></td>
+<td>Lichte UI en documenten</td>
+</tr>
+<tr>
+<td><strong>Achtergrond Donker</strong></td>
+<td><code>--color-bg-dark</code></td>
+<td><code>#0E1116</code></td>
+<td>Donker thema en video-overlays</td>
+</tr>
+<tr>
+<td><strong>Error / Alert</strong></td>
+<td><code>--color-error</code></td>
+<td><code>#FF4E4E</code></td>
+<td>Validatiefouten, waarschuwingen</td>
+</tr>
+</tbody>
+</table>
+<h3 id="typografie-tokens">Typografie Tokens</h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Font</th>
+<th>Gewicht</th>
+<th>Gebruik</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--font-primary</code></td>
+<td>Inter</td>
+<td>400–600</td>
+<td>Bodytekst, formulieren</td>
+</tr>
+<tr>
+<td><code>--font-heading</code></td>
+<td>Manrope</td>
+<td>600–700</td>
+<td>Titels, CTA’s</td>
+</tr>
+<tr>
+<td><code>--font-display</code></td>
+<td>Bebas Neue</td>
+<td>700</td>
+<td>Sportieve video-headlines</td>
+</tr>
+<tr>
+<td><code>--font-mono</code></td>
+<td>JetBrains Mono</td>
+<td>400</td>
+<td>Code of logweergave</td>
+</tr>
+</tbody>
+</table>
+<h3 id="layout-tokens">Layout Tokens</h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Waarde</th>
+<th>Gebruik</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--radius-card</code></td>
+<td>16px</td>
+<td>Cards, modals</td>
+</tr>
+<tr>
+<td><code>--radius-button</code></td>
+<td>24px</td>
+<td>Knoppen</td>
+</tr>
+<tr>
+<td><code>--spacing-base</code></td>
+<td>8px</td>
+<td>Baseline grid</td>
+</tr>
+<tr>
+<td><code>--shadow-soft</code></td>
+<td><code>0 2px 8px rgba(0,0,0,0.06)</code></td>
+<td>Hover-effecten</td>
+</tr>
+<tr>
+<td><code>--video-ratio-portrait</code></td>
+<td>9:16</td>
+<td>Instagram Reels</td>
+</tr>
+<tr>
+<td><code>--video-ratio-landscape</code></td>
+<td>16:9</td>
+<td>Club TV / YouTube</td>
+</tr>
+</tbody>
+</table>
+<p>📦 <strong>Exportformaten:</strong><br>
+Design tokens worden beheerd in <code>/docs/2_brand/assets/colors/</code> als JSON en ASE-bestanden.<br>
+Frontend synchroniseert automatisch via een <code>tokens.json</code> export (Next.js).</p>
+<hr>
+<h2 id="%F0%9F%97%A3%EF%B8%8F-2-tone-of-voice-%E2%80%93-schrijf--en-communicatiestijl">🗣️ 2. Tone of Voice – Schrijf- en Communicatiestijl</h2>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Richtlijn</th>
+<th>Voorbeeld</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Toon</strong></td>
+<td>Sportief, enthousiast, menselijk</td>
+<td>„Klaar voor de aftrap? Maak in 2 klikken je video.”</td>
+</tr>
+<tr>
+<td><strong>Taalniveau</strong></td>
+<td>B1 – helder en actief</td>
+<td>„Je club. Jouw stijl. Onze AI.”</td>
+</tr>
+<tr>
+<td><strong>Ritme</strong></td>
+<td>Korte zinnen, veel werkwoorden</td>
+<td>„Upload. Genereer. Deel.”</td>
+</tr>
+<tr>
+<td><strong>Perspectief</strong></td>
+<td>Tweede persoon („je”, „jouw club”)</td>
+<td>„We doen het samen.”</td>
+</tr>
+<tr>
+<td><strong>Humor</strong></td>
+<td>Licht en collegiaal, nooit flauw</td>
+<td>„Van upload tot applaus in vijf minuten.”</td>
+</tr>
+<tr>
+<td><strong>Focus</strong></td>
+<td>Actie, trots en eenvoud</td>
+<td>„Laat je club zien – elke week opnieuw.”</td>
+</tr>
+<tr>
+<td><strong>Vermijd</strong></td>
+<td>Technisch jargon, managementtaal</td>
+<td>Niet: „AI-optimisatiepipeline”; wel: „AI die je video afmaakt.”</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tone-by-context">Tone by Context</h3>
+<table>
+<thead>
+<tr>
+<th>Domein</th>
+<th>Stijl</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Businessplan</strong></td>
+<td>Strategisch, inspirerend</td>
+<td>Gebruik storytelling en visie, zonder te technisch te worden.</td>
+</tr>
+<tr>
+<td><strong>Brand Identity</strong></td>
+<td>Creatief, visueel</td>
+<td>Korte zinnen, beeldend taalgebruik.</td>
+</tr>
+<tr>
+<td><strong>Functional Design</strong></td>
+<td>Helder, gebruikersgericht</td>
+<td>Beschrijf flows als stappen met actiegerichte taal.</td>
+</tr>
+<tr>
+<td><strong>Technical Design</strong></td>
+<td>Zakelijk en precies</td>
+<td>Actieve zinnen, maar neutrale toon.</td>
+</tr>
+<tr>
+<td><strong>Project Plan</strong></td>
+<td>Praktisch, motiverend</td>
+<td>Duidelijk en resultaatgericht, alsof je team instrueert.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="%F0%9F%92%AC-3-kernboodschap-voor-alle-documenten">💬 3. Kernboodschap (voor alle documenten)</h2>
+<blockquote>
+<p><strong>„TeamReel maakt professionele clubvideo’s eenvoudig en leuk – in vijf minuten, in jouw stijl.”</strong></p>
+</blockquote>
+<p>Gebruik dit als leidende boodschap in intro’s, samenvattingen of promotionele secties.</p>
+<hr>
+<h2 id="%E2%9A%99%EF%B8%8F-4-consistentieprincipes">⚙️ 4. Consistentieprincipes</h2>
+<ol>
+<li><strong>Eén stem, meerdere lagen:</strong> zelfde toon in documenten, UI en marketing.</li>
+<li><strong>Actie boven uitleg:</strong> beschrijf wat de gebruiker <em>doet</em>, niet wat de software <em>is</em>.</li>
+<li><strong>Toegankelijk design:</strong> contrast, leesbaarheid en B1-taalniveau zijn verplicht.</li>
+<li><strong>Herbruikbare tokens:</strong> kleuren, fonts en spacing komen altijd uit dezelfde bron (<code>/2_brand/assets/</code>).</li>
+<li><strong>Iteratief onderhoud:</strong> elke nieuwe module krijgt tokens + tone-check.</li>
+</ol>
+<hr>
+<h2 id="%F0%9F%94%81-5-toepassing-in-docs-samenvatting">🔁 5. Toepassing in Docs (Samenvatting)</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Focus</th>
+<th>Belangrijkste link met Style Foundation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Brand Identity</strong></td>
+<td>Vorm en toon van merk</td>
+<td>Gebruikt álle tokens en volledige tone set</td>
+</tr>
+<tr>
+<td><strong>Businessplan</strong></td>
+<td>Strategisch verhaal</td>
+<td>Gebruikt tone + kernboodschap</td>
+</tr>
+<tr>
+<td><strong>Functional Design</strong></td>
+<td>UX en flow</td>
+<td>Gebruikt layout- en typografietokens</td>
+</tr>
+<tr>
+<td><strong>Technical Design</strong></td>
+<td>Implementatie</td>
+<td>Gebruikt kleuren/typografie als JSON export</td>
+</tr>
+<tr>
+<td><strong>Project Plan</strong></td>
+<td>Proces en prioriteiten</td>
+<td>Gebruikt tone en visuele consistentie voor communicatiedocs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="%F0%9F%94%97-integratie-met-frontend--ai">🔗 Integratie met Frontend &amp; AI</h2>
+<p>Design tokens worden automatisch gesynchroniseerd via een JSON-export naar:</p>
+<ul>
+<li><code>/frontend/styles/tokens.json</code> voor Next.js</li>
+<li><code>/n8n/flows/config/branding.json</code> voor AI-flows</li>
+</ul>
+<blockquote>
+<p>Hierdoor blijft elke AI-video en UI-component visueel in lijn met de merkstijl.</p>
+</blockquote>
+<hr>
+<h2 id="%F0%9F%8F%81-slot">🏁 Slot</h2>
+<p>Alle documenten — van Businessplan tot Technical Design — verwijzen naar deze Style Foundation als primaire bron voor toon, kleur en consistentie</p>
+<p>De <em>TeamReel Style Foundation</em> vormt het fundament van alle merk-, ontwerp- en ontwikkelactiviteiten.<br>
+Bij elke nieuwe module, campagne of UI-component geldt dit document als bron van waarheid.</p>
+<blockquote>
+<p><strong>Blijf trouw aan eenvoud, energie en trots – dat is de TeamReel-stijl.</strong></p>
+</blockquote>
+
+</body>
+</html>

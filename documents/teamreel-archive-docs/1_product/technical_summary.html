@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>technical_summary.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%F0%9F%92%BC-management-summary-%E2%80%93-teamreel-api">💼 Management Summary – TeamReel API</h1>
+<blockquote>
+<p><strong>De ruggengraat van TeamReel: één standaard, vele toepassingen.</strong></p>
+</blockquote>
+<hr>
+<h2 id="1-doel-van-de-api">1. Doel van de API</h2>
+<p>De <strong>TeamReel API</strong> vormt de technische basis van het platform.<br>
+Ze maakt het mogelijk dat gebruikers, clubs en AI-modules soepel met elkaar samenwerken.<br>
+Alle data – van teamnamen tot AI-video’s – loopt via deze beveiligde API.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De API verbindt mens, data en AI in één consistent systeem.</em></p>
+</blockquote>
+<hr>
+<h2 id="2-wat-de-api-doet">2. Wat de API doet</h2>
+<table>
+<thead>
+<tr>
+<th>Domein</th>
+<th>Functie</th>
+<th>Resultaat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Authenticatie</strong></td>
+<td>Wachtwoordloos inloggen via Magic Link + JWT</td>
+<td>Veilig, eenvoudig en schaalbaar</td>
+</tr>
+<tr>
+<td><strong>Clubs &amp; Teams</strong></td>
+<td>Beheer clubs, teams, spelers en kleuren</td>
+<td>Eén centrale bron van waarheid</td>
+</tr>
+<tr>
+<td><strong>AI Content</strong></td>
+<td>Start, volgt en beheert AI-generaties</td>
+<td>Automatische video’s en visuals</td>
+</tr>
+<tr>
+<td><strong>Feedback &amp; Credits</strong></td>
+<td>Gebruikersfeedback en verbruiksbeheer</td>
+<td>Continue verbetering van AI-output</td>
+</tr>
+<tr>
+<td><strong>Rapportage</strong></td>
+<td>Real-time inzichten in gebruik en prestaties</td>
+<td>Data voor bestuur en sponsors</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De API automatiseert zonder te vervreemden.</em></p>
+</blockquote>
+<hr>
+<h2 id="3-waarom-dit-belangrijk-is">3. Waarom dit belangrijk is</h2>
+<p>De API maakt van TeamReel een <strong>platform</strong>, niet enkel een app.<br>
+Ze zorgt ervoor dat elke module – van dashboard tot nieuwsbriefgenerator – op dezelfde manier met data werkt.<br>
+Dat voorkomt fouten, versnelt ontwikkeling en garandeert visuele en technische consistentie.</p>
+<p><strong>Belangrijkste voordelen:</strong></p>
+<ul>
+<li>💡 <strong>Eenvoud:</strong> één standaard voor alle data.</li>
+<li>🔐 <strong>Veiligheid:</strong> tokens en encryptie op elk niveau.</li>
+<li>⚙️ <strong>Schaalbaarheid:</strong> nieuwe modules kunnen direct aansluiten.</li>
+<li>📈 <strong>Inzicht:</strong> rapportages via gestandaardiseerde endpoints.</li>
+<li>🤖 <strong>Slimheid:</strong> feedback voedt de AI voor betere resultaten.</li>
+</ul>
+<hr>
+<h2 id="4-relatie-met-andere-documenten">4. Relatie met andere documenten</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Rol</th>
+<th>Relatie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Functional Design</strong></td>
+<td>Gebruikersflows en schermlogica</td>
+<td>Beschrijft hoe de API wordt gebruikt.</td>
+</tr>
+<tr>
+<td><strong>Technical Design</strong></td>
+<td>Architectuur en infrastructuur</td>
+<td>Legt uit hoe de API technisch werkt.</td>
+</tr>
+<tr>
+<td><strong>Blauwdruk / Data Flow</strong></td>
+<td>Datastromen tussen modules</td>
+<td>Visualiseert de API in actie.</td>
+</tr>
+<tr>
+<td><strong>Projectplan</strong></td>
+<td>Fasering en releases</td>
+<td>Beschrijft wanneer nieuwe API-versies live gaan.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De API is het verbindende weefsel tussen alle TeamReel-documenten.</em></p>
+</blockquote>
+<hr>
+<h2 id="5-samenvatting">5. Samenvatting</h2>
+<p>De TeamReel API is ontworpen voor eenvoud, betrouwbaarheid en groei.<br>
+Ze biedt een veilige en gestandaardiseerde manier om clubdata, AI-output en gebruikersinteractie te beheren.<br>
+Dankzij deze API kan TeamReel blijven uitbreiden zonder complexer te worden.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De API maakt van TeamReel een schaalbaar, slim en toekomstbestendig platform.</em></p>
+</blockquote>
+
+</body>
+</html>

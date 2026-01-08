@@ -36,7 +36,7 @@
   - Data field: Role-specific metadata (jersey_number, position, responsibilities)
 - **Calendar views**: Monthly/weekly activity display with period filtering
 - **Period tree navigation**: Show parent/child relationships, breadcrumbs
-- **Integration**: Audit trail (B09), notifications (B16), exports (B29)
+- **Integration**: Audit trail (B09), notifications (B16), exports (B38)
 
 **Demo Requirements**:
 - 📅 **Activities Page** (`/demo/activities`):
@@ -98,7 +98,7 @@ Generic event & resource planning with nestable time-bound cycles (periods) and 
   - Activity-level: Match lineups, meeting attendees
 - Calendar views: Monthly/weekly with period hierarchy filtering
 - Period tree navigation: Show parent/child, breadcrumbs
-- Integration: B09 audit, B16 notifications, B29 exports
+- Integration: B09 audit, B16 notifications, B38 exports
 
 [demo requirements]
 Demo page: /demo/activities

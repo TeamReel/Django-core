@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>brand_identity.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%F0%9F%8E%A8-brand-identity-%E2%80%93-teamreel">🎨 Brand Identity – TeamReel</h1>
+<blockquote>
+<p><strong>TeamReel</strong> combineert sportieve energie met digitale eenvoud.<br>
+Dit document definieert de visuele, verbale en emotionele identiteit van het merk.<br>
+De <em>Brand Identity</em> vertaalt de principes uit de <em>TeamReel Style Foundation</em><br>
+naar kleur, typografie, toon en toepassing in elk communicatiekanaal.<br>
+Versie: Oktober 2025 — Status: Definitieve richtlijn.</p>
+</blockquote>
+<h2 id="metadata">Metadata</h2>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Inhoud</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Project</strong></td>
+<td>TeamReel</td>
+</tr>
+<tr>
+<td><strong>Document</strong></td>
+<td>Brand Identity</td>
+</tr>
+<tr>
+<td><strong>Datum</strong></td>
+<td>Oktober 2025</td>
+</tr>
+<tr>
+<td><strong>Auteur</strong></td>
+<td>TeamReel Studio</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Definitieve richtlijn</td>
+</tr>
+<tr>
+<td><strong>Bron</strong></td>
+<td>Gebaseerd op <em>TeamReel Style Foundation</em></td>
+</tr>
+<tr>
+<td><strong>Gebruik</strong></td>
+<td>Intern – ontwerp, ontwikkeling en communicatie</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="inhoudsopgave">Inhoudsopgave</h2>
+<ol>
+<li><a href="#1-overzicht--doel">Overzicht &amp; Doel</a></li>
+<li><a href="#2-merkfundament">Merkfundament</a></li>
+<li><a href="#3-visuele-identiteit">Visuele Identiteit</a></li>
+<li><a href="#4-toepassing-in-product--communicatie">Toepassing in Product &amp; Communicatie</a></li>
+<li><a href="#5-tone-of-voice--gebruikerscommunicatie-in-de-webapp">Tone of Voice – Gebruikerscommunicatie in de Webapp</a></li>
+<li><a href="#6-brand-governance">Brand Governance</a></li>
+<li><a href="#7-samenvatting--checklist">Samenvatting &amp; Checklist</a></li>
+</ol>
+<hr>
+<h2 id="1-overzicht--doel">1. Overzicht &amp; Doel</h2>
+<h3 id="11-doelstelling">1.1 Doelstelling</h3>
+<p>De <em>Brand Identity</em> van TeamReel beschrijft de visuele, verbale en structurele richtlijnen die zorgen voor één consistente merkervaring in alle product- en communicatiemiddelen.<br>
+Het document dient als referentie voor ontwerpers, ontwikkelaars en communicatiemedewerkers binnen TeamReel.</p>
+<h3 id="12-relatie-met-style-foundation">1.2 Relatie met Style Foundation</h3>
+<p>De <em>Style Foundation</em> vormt de onderliggende laag van design tokens, tone-of-voice en consistentieprincipes.<br>
+De <em>Brand Identity</em> vertaalt die abstracte tokens naar concrete toepassing binnen het merk — zoals kleuren, typografie, UI-componenten en tekststijl.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Herkomst</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Design tokens</strong></td>
+<td><code>tokens.json</code> (frontend)</td>
+</tr>
+<tr>
+<td><strong>Tone of voice</strong></td>
+<td><em>Style Foundation</em>, sectie 2</td>
+</tr>
+<tr>
+<td><strong>Layoutprincipes</strong></td>
+<td><em>Style Foundation</em>, sectie 1.3</td>
+</tr>
+<tr>
+<td><strong>Merkwaarden</strong></td>
+<td>Businessplan, sectie 2.1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-kernprincipes">1.3 Kernprincipes</h3>
+<table>
+<thead>
+<tr>
+<th>Principe</th>
+<th>Toelichting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Eenvoud</strong></td>
+<td>Elk visueel element heeft één duidelijke functie.</td>
+</tr>
+<tr>
+<td><strong>Consistentie</strong></td>
+<td>Alle platformonderdelen volgen dezelfde kleuren, fonts en tone.</td>
+</tr>
+<tr>
+<td><strong>Herkenbaarheid</strong></td>
+<td>Gebruikers herkennen TeamReel onmiddellijk, ongeacht context.</td>
+</tr>
+<tr>
+<td><strong>Toegankelijkheid</strong></td>
+<td>Contrast en leesbaarheid voldoen aan WCAG 2.1 AA.</td>
+</tr>
+<tr>
+<td><strong>Efficiëntie</strong></td>
+<td>Richtlijnen zijn direct implementeerbaar in design- en codebasis.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="14-doelgroep-van-dit-document">1.4 Doelgroep van dit document</h3>
+<ul>
+<li>Ontwerpers: UI/UX, branding, video templates</li>
+<li>Ontwikkelaars: implementatie van tokens en theming</li>
+<li>Communicatie: tekstschrijvers, redacteurs en projectleiders</li>
+<li>Management: kwaliteitsbewaking van merkconsistentie</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+“TeamReel combineert sportieve energie met digitale helderheid — in alle interfaces, documenten en media-uitingen.”</p>
+</blockquote>
+<hr>
+<h4 id="%F0%9F%93%8B-belangrijkste-richtlijnen-%E2%80%93-hoofdstuk-1">📋 Belangrijkste richtlijnen – Hoofdstuk 1</h4>
+<table>
+<thead>
+<tr>
+<th>Onderdeel</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Doel</td>
+<td>Eén visuele en verbale standaard voor alle interne toepassingen.</td>
+</tr>
+<tr>
+<td>Toepassing</td>
+<td>Richtlijnen gelden voor UI, communicatie en documentatie.</td>
+</tr>
+<tr>
+<td>Toon</td>
+<td>Zakelijk, consistent, licht menselijk.</td>
+</tr>
+<tr>
+<td>Relatie</td>
+<td>Gebaseerd op <em>Style Foundation</em> en <code>tokens.json</code>.</td>
+</tr>
+<tr>
+<td>Onderhoud</td>
+<td>Jaarlijkse review door TeamReel Studio.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-merkfundament">2. Merkfundament</h2>
+<h3 id="21-merkpositionering">2.1 Merkpositionering</h3>
+<p><strong>TeamReel</strong> is een AI-gedreven SaaS-platform dat sportverenigingen ondersteunt bij het creëren van professionele mediacontent — snel, herkenbaar en in eigen stijl.<br>
+Het merk verbindt de betrouwbaarheid van technologie met de emotie van sport.<br>
+De identiteit richt zich op <strong>helderheid, eenvoud en verbondenheid</strong> binnen de digitale omgeving van een club.</p>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Omschrijving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Categorie</strong></td>
+<td>SaaS / Generatieve media voor sportverenigingen</td>
+</tr>
+<tr>
+<td><strong>Belofte</strong></td>
+<td>Professionele clubvideo’s in minuten, volledig geautomatiseerd</td>
+</tr>
+<tr>
+<td><strong>Waardepropositie</strong></td>
+<td>Tijdwinst, consistentie en merkbehoud voor vrijwilligers en clubs</td>
+</tr>
+<tr>
+<td><strong>Marktfocus</strong></td>
+<td>Amateurvoetbalverenigingen in Nederland (fase 1)</td>
+</tr>
+<tr>
+<td><strong>Merkpositie</strong></td>
+<td>Toegankelijke AI-assistent voor clubcommunicatie</td>
+</tr>
+<tr>
+<td><strong>Merktoon</strong></td>
+<td>Helder, efficiënt, betrouwbaar, menselijk</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="22-kernwaarden">2.2 Kernwaarden</h3>
+<p>De kernwaarden vormen het uitgangspunt voor alle ontwerp-, ontwikkel- en communicatieregels.<br>
+Ze zorgen dat alle TeamReel-uitingen herkenbaar blijven, ongeacht medium of context.</p>
+<table>
+<thead>
+<tr>
+<th>Waarde</th>
+<th>Betekenis</th>
+<th>Toepassing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Eenvoud</strong></td>
+<td>Geen overbodige stappen of visuele ruis.</td>
+<td>Minimalistische UI, duidelijke typografie.</td>
+</tr>
+<tr>
+<td><strong>Betrouwbaarheid</strong></td>
+<td>Consistente kwaliteit in design en AI-output.</td>
+<td>Toegankelijk kleurenpalet, voorspelbare interacties.</td>
+</tr>
+<tr>
+<td><strong>Toegankelijkheid</strong></td>
+<td>Iedereen kan het gebruiken, ongeacht digitale ervaring.</td>
+<td>B1-tekst in app, hoge contrastwaarden.</td>
+</tr>
+<tr>
+<td><strong>Samenwerking</strong></td>
+<td>Gebouwd voor clubs en vrijwilligers, niet voor individuen.</td>
+<td>Meerdere rollen en rechten in productstructuur.</td>
+</tr>
+<tr>
+<td><strong>Trots</strong></td>
+<td>Content versterkt de identiteit van elke club.</td>
+<td>Video’s en visuals dragen altijd clublogo en -kleuren.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Richtlijn:</strong><br>
+Elk visueel en tekstueel element moet minimaal twee kernwaarden weerspiegelen.</p>
+</blockquote>
+<hr>
+<h3 id="23-merkpersoonlijkheid">2.3 Merkpersoonlijkheid</h3>
+<p>De merkpersoonlijkheid beschrijft hoe TeamReel “aanvoelt” in gebruik en communicatie.<br>
+Het merk is professioneel, maar blijft mensgericht en ondersteunend.</p>
+<table>
+<thead>
+<tr>
+<th>Dimensie</th>
+<th>Beschrijving</th>
+<th>Vergelijkbare merken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Toon</strong></td>
+<td>Rustig, deskundig en positief</td>
+<td>Notion, Figma</td>
+</tr>
+<tr>
+<td><strong>Beleving</strong></td>
+<td>Betrouwbaar, efficiënt, transparant</td>
+<td>Linear, Basecamp</td>
+</tr>
+<tr>
+<td><strong>Relatie tot gebruiker</strong></td>
+<td>Partner in het proces, niet slechts leverancier</td>
+<td>Slack, GitHub</td>
+</tr>
+<tr>
+<td><strong>Communicatiestijl</strong></td>
+<td>Direct, duidelijk, licht empathisch</td>
+<td>Interne docs: GitLab; UI: Canva</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="24-merkkader">2.4 Merkkader</h3>
+<p>De merkidentiteit opereert binnen een helder kader dat balans biedt tussen technologie en emotie.<br>
+Het doel is niet om sport te romantiseren, maar om communicatie <strong>functioneel, herkenbaar en schaalbaar</strong> te maken.</p>
+<table>
+<thead>
+<tr>
+<th>As</th>
+<th>Positie</th>
+<th>Betekenis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Zakelijk ↔ Emotioneel</strong></td>
+<td>70 % zakelijk / 30 % menselijk</td>
+<td>Functioneel en betrouwbaar met menselijke toon.</td>
+</tr>
+<tr>
+<td><strong>Innovatief ↔ Bewezen</strong></td>
+<td>60 % innovatief / 40 % vertrouwd</td>
+<td>Gebruik van nieuwe AI-tools binnen herkenbare UX.</td>
+</tr>
+<tr>
+<td><strong>Lokaal ↔ Universeel</strong></td>
+<td>80 % lokaal / 20 % uitbreidbaar</td>
+<td>Gericht op Nederlandse verenigingen, exporteerbaar via vertaling.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h4 id="%F0%9F%93%8B-belangrijkste-richtlijnen-%E2%80%93-hoofdstuk-2">📋 Belangrijkste richtlijnen – Hoofdstuk 2</h4>
+<table>
+<thead>
+<tr>
+<th>Onderdeel</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Positionering</td>
+<td>AI-ondersteunde SaaS-tool die sportcommunicatie vereenvoudigt.</td>
+</tr>
+<tr>
+<td>Waarden</td>
+<td>Eenvoud, Betrouwbaarheid, Toegankelijkheid, Samenwerking, Trots.</td>
+</tr>
+<tr>
+<td>Toon</td>
+<td>Rustig, deskundig en positief.</td>
+</tr>
+<tr>
+<td>Doel</td>
+<td>Functionele helderheid met menselijke herkenbaarheid.</td>
+</tr>
+<tr>
+<td>Consistentie</td>
+<td>Alle merkbeslissingen moeten twee kernwaarden ondersteunen.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-visuele-identiteit">3. Visuele Identiteit</h2>
+<h3 id="31-doel">3.1 Doel</h3>
+<p>De visuele identiteit vertaalt de merkwaarden van TeamReel naar kleuren, typografie, vormen en lay-outprincipes.<br>
+Ze vormt de visuele taal die in elk product, document en communicatiekanaal wordt toegepast.<br>
+De visuele elementen zijn technisch gekoppeld aan de design tokens in <code>tokens.json</code>.</p>
+<hr>
+<h3 id="32-kleurenpalet">3.2 Kleurenpalet</h3>
+<p>Het kleurenpalet is opgebouwd rond <strong>vertrouwen (blauw)</strong>, <strong>duidelijkheid (lichtgrijs/wit)</strong> en <strong>energie (lime-accent)</strong>.<br>
+Alle kleuren komen overeen met de waarden in de <em>Style Foundation</em>.</p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Naam</th>
+<th>Hex</th>
+<th>Gebruik</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--color-primary</code></td>
+<td><strong>Team Blue</strong></td>
+<td><code>#0057FF</code></td>
+<td>Actieve elementen: knoppen, links, iconen</td>
+</tr>
+<tr>
+<td><code>--color-navy</code></td>
+<td><strong>Midnight Navy</strong></td>
+<td><code>#0C1A3C</code></td>
+<td>Tekst, headers, navigatie</td>
+</tr>
+<tr>
+<td><code>--color-accent</code></td>
+<td><strong>Lime Accent</strong></td>
+<td><code>#C7F464</code></td>
+<td>Progress bars, hover, focus</td>
+</tr>
+<tr>
+<td><code>--color-neutral</code></td>
+<td><strong>Cloud Gray</strong></td>
+<td><code>#E3E7EF</code></td>
+<td>Lijnen, randen, achtergrondcontrast</td>
+</tr>
+<tr>
+<td><code>--color-bg-light</code></td>
+<td><strong>Snow White</strong></td>
+<td><code>#F8F9FC</code></td>
+<td>Achtergronden, kaarten, dashboards</td>
+</tr>
+<tr>
+<td><code>--color-bg-dark</code></td>
+<td><strong>Pitch Black</strong></td>
+<td><code>#0E1116</code></td>
+<td>Donkere thema’s, video-overlays</td>
+</tr>
+<tr>
+<td><code>--color-error</code></td>
+<td><strong>Coral Red</strong></td>
+<td><code>#FF4E4E</code></td>
+<td>Validatie, foutmeldingen</td>
+</tr>
+</tbody>
+</table>
+<h4 id="richtlijnen">Richtlijnen</h4>
+<ul>
+<li>Gebruik <code>--color-primary</code> voor CTA’s en interactie.</li>
+<li>Pas <code>--color-accent</code> enkel toe voor actieve status of feedback, niet als hoofdtoon.</li>
+<li>Contrastverhouding ≥ 4.5:1 voor tekst en UI-elementen.</li>
+<li>Gebruik nooit meer dan twee accentkleuren per scherm.</li>
+</ul>
+<hr>
+<h3 id="33-typografie">3.3 Typografie</h3>
+<p>De typografie is vereenvoudigd tot twee primaire families: <strong>Manrope</strong> en <strong>Inter</strong>.<br>
+Deze bieden samen voldoende flexibiliteit voor interface, documenten en video’s.</p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Font</th>
+<th>Gewicht</th>
+<th>Gebruik</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--font-heading</code></td>
+<td>Manrope</td>
+<td>600–700</td>
+<td>Titels, CTA’s, knoppen</td>
+</tr>
+<tr>
+<td><code>--font-primary</code></td>
+<td>Inter</td>
+<td>400–600</td>
+<td>Bodytekst, labels, formulieren</td>
+</tr>
+</tbody>
+</table>
+<h4 id="richtlijnen">Richtlijnen</h4>
+<ul>
+<li>Gebruik <strong>Manrope</strong> voor visuele hiërarchie en headings.</li>
+<li>Gebruik <strong>Inter</strong> voor alle lopende tekst in web, app en docs.</li>
+<li>Maximaal twee fontgroottes per schermniveau.</li>
+<li>Letterafstand: 0.5–1 px bij headings, 0 bij bodytekst.</li>
+<li>Gebruik <code>rem</code>-eenheden in de frontend voor schaalbare typografie.</li>
+</ul>
+<hr>
+<h3 id="34-logo-en-pictogrammen">3.4 Logo en pictogrammen</h3>
+<p>Het logo combineert een <strong>woordmerk</strong> met een <strong>pictogram</strong> dat sport en media samenbrengt.<br>
+Het pictogram wordt gebruikt als herkenningsteken in de app en op documenten.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Specificatie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Woordmerk</strong></td>
+<td>“TeamReel” in Manrope SemiBold, letterspacing 0.5 px</td>
+</tr>
+<tr>
+<td><strong>Pictogram</strong></td>
+<td>Gestileerde filmspoel met voetbalaccent (SVG)</td>
+</tr>
+<tr>
+<td><strong>Kleurvarianten</strong></td>
+<td>Blauw op wit, wit op donker, monochroom zwart/wit</td>
+</tr>
+<tr>
+<td><strong>Formaten</strong></td>
+<td>32 px (minimaal), 512 px (maximaal, voor hero-sectie)</td>
+</tr>
+<tr>
+<td><strong>Vrije ruimte</strong></td>
+<td>Minimaal 2× logohoogte rondom</td>
+</tr>
+</tbody>
+</table>
+<h4 id="richtlijnen">Richtlijnen</h4>
+<ul>
+<li>Geen schaduwen, outlines of gradients in logo’s.</li>
+<li>Het pictogram mag los gebruikt worden voor app-icoon of favicon.</li>
+<li>In video’s en social posts: gebruik wit pictogram als watermerk (40 % transparantie).</li>
+</ul>
+<hr>
+<h3 id="35-iconografie">3.5 Iconografie</h3>
+<p>TeamReel gebruikt <strong>lineaire pictogrammen met afgeronde uiteinden</strong>.<br>
+Ze zijn afgeleid van <em>Lucide Icons</em> en worden uniform toegepast in de frontend.</p>
+<table>
+<thead>
+<tr>
+<th>Eigenschap</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stijl</strong></td>
+<td>Outline, 1.5 px lijnbreedte</td>
+</tr>
+<tr>
+<td><strong>Kleur</strong></td>
+<td><code>--color-navy</code> (licht thema) of wit (donker thema)</td>
+</tr>
+<tr>
+<td><strong>Gebruik</strong></td>
+<td>Maximaal één icoon per component</td>
+</tr>
+<tr>
+<td><strong>Formaat</strong></td>
+<td>20–24 px in UI; 48 px in documenten</td>
+</tr>
+<tr>
+<td><strong>Animatie</strong></td>
+<td>Alleen bij statusveranderingen, max. 250 ms</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="36-vormen-en-layout">3.6 Vormen en layout</h3>
+<p>De layoutprincipes volgen het 8-pixel baselinesysteem uit de <em>Style Foundation</em>.</p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Waarde</th>
+<th>Toepassing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--radius-card</code></td>
+<td>16 px</td>
+<td>Cards, modals</td>
+</tr>
+<tr>
+<td><code>--radius-button</code></td>
+<td>24 px</td>
+<td>Knoppen</td>
+</tr>
+<tr>
+<td><code>--spacing-base</code></td>
+<td>8 px</td>
+<td>Baseline grid voor alle componenten</td>
+</tr>
+<tr>
+<td><code>--shadow-soft</code></td>
+<td><code>0 2px 8px rgba(0,0,0,0.06)</code></td>
+<td>Hovereffecten en kaarten</td>
+</tr>
+</tbody>
+</table>
+<h4 id="richtlijnen">Richtlijnen</h4>
+<ul>
+<li>Gebruik symmetrische spacing (multiples van 8).</li>
+<li>Cards hebben altijd afgeronde hoeken en zachte schaduw.</li>
+<li>Maximaal drie inhoudsniveaus per scherm.</li>
+<li>Gebruik witruimte als actief ontwerpelement.</li>
+</ul>
+<hr>
+<h4 id="%F0%9F%93%8B-belangrijkste-richtlijnen-%E2%80%93-hoofdstuk-3">📋 Belangrijkste richtlijnen – Hoofdstuk 3</h4>
+<table>
+<thead>
+<tr>
+<th>Onderdeel</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kleurgebruik</td>
+<td>Volg <code>tokens.json</code> voor consistentie en contrast.</td>
+</tr>
+<tr>
+<td>Typografie</td>
+<td>Gebruik alleen Inter en Manrope.</td>
+</tr>
+<tr>
+<td>Logo</td>
+<td>Gebruik woordmerk of pictogram, nooit beide overlappend.</td>
+</tr>
+<tr>
+<td>Iconen</td>
+<td>Alleen lineaire pictogrammen met uniforme stijl.</td>
+</tr>
+<tr>
+<td>Layout</td>
+<td>8-px grid en ronde vormen behouden consistentie.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-toepassing-in-product--communicatie">4. Toepassing in Product &amp; Communicatie</h2>
+<h3 id="41-doel">4.1 Doel</h3>
+<p>Dit hoofdstuk beschrijft hoe de visuele identiteit wordt toegepast in het product (webapp) en in ondersteunende communicatie zoals video’s, documenten en presentaties.<br>
+De richtlijnen zijn gericht op interne consistentie en technische uitvoerbaarheid.</p>
+<hr>
+<h3 id="42-producttoepassing-%E2%80%93-web--app">4.2 Producttoepassing – Web &amp; App</h3>
+<p>De frontend gebruikt tokens rechtstreeks uit <code>tokens.json</code>.<br>
+Alle componenten zijn ontworpen om licht, functioneel en consistent te blijven, ongeacht thema (licht/donker).</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Knoppen (Primary)</strong></td>
+<td><code>--color-primary</code> achtergrond, witte tekst, hover → <code>--color-accent</code></td>
+</tr>
+<tr>
+<td><strong>Knoppen (Secondary)</strong></td>
+<td>Witte achtergrond, blauwe rand, tekst in <code>--color-primary</code></td>
+</tr>
+<tr>
+<td><strong>Cards</strong></td>
+<td>Witte achtergrond, afgerond, schaduw op hover</td>
+</tr>
+<tr>
+<td><strong>Modals</strong></td>
+<td>Neutraal grijs, duidelijke CTA, sluitknop zichtbaar</td>
+</tr>
+<tr>
+<td><strong>Tabs</strong></td>
+<td>Actieve tab blauw, inactieve grijs</td>
+</tr>
+<tr>
+<td><strong>Loaders</strong></td>
+<td>Cirkelvormig, accentkleur (<code>--color-accent</code>)</td>
+</tr>
+<tr>
+<td><strong>Statuskleuren</strong></td>
+<td>Groen (succes), Geel (bezig), Rood (fout), Grijs (wacht)</td>
+</tr>
+<tr>
+<td><strong>Thema’s</strong></td>
+<td><code>--color-bg-light</code> voor licht; <code>--color-bg-dark</code> voor donker</td>
+</tr>
+</tbody>
+</table>
+<h4 id="donker-thema">Donker thema</h4>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Kleur</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Achtergrond</td>
+<td><code>--color-bg-dark</code></td>
+<td>Gebruik contrastrijke tekst</td>
+</tr>
+<tr>
+<td>Tekst</td>
+<td><code>rgba(255,255,255,0.85)</code></td>
+<td>Gebruik wit voor primaire content</td>
+</tr>
+<tr>
+<td>Accent</td>
+<td><code>--color-accent</code></td>
+<td>Gebruik spaarzaam voor visuele focus</td>
+</tr>
+</tbody>
+</table>
+<p>Alle AI-workflows in de webapp volgen de visuele tokens en richtlijnen uit tokens.json. Hierdoor blijft de AI-output — van spelerbeelden tot line-upvideo’s — consistent met de merkstijl.</p>
+<blockquote>
+<p><strong>Toegankelijkheid:</strong><br>
+Alle interactie-elementen moeten via kleur én vorm onderscheidbaar zijn.</p>
+</blockquote>
+<hr>
+<h3 id="43-communicatie-%E2%80%93-video-presentaties-en-documentatie">4.3 Communicatie – Video, Presentaties en Documentatie</h3>
+<p>De merkstijl is identiek in video’s, PDF’s en online documenten.<br>
+Het doel is een uniforme visuele herkenning binnen elk kanaal.</p>
+<table>
+<thead>
+<tr>
+<th>Domein</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Video’s</strong></td>
+<td>Gebruik logo rechtsonder (wit, 40 % opacity). Geen extra watermerken.</td>
+</tr>
+<tr>
+<td><strong>Slides / Presentaties</strong></td>
+<td>Eén accentkleur per slide, minimaal 40 % witruimte.</td>
+</tr>
+<tr>
+<td><strong>Documentatie (Markdown / PDF)</strong></td>
+<td>Gebruik kopstijlen H1–H3 uit tokens (<code>Manrope</code>, <code>Inter</code>).</td>
+</tr>
+<tr>
+<td><strong>E-mails / Nieuwsbrieven</strong></td>
+<td>Enkel primaire en neutrale kleuren; CTA-knoppen in blauw.</td>
+</tr>
+<tr>
+<td><strong>Socialmedia</strong></td>
+<td>Gebruik clubfoto’s of templates met diagonale gradient (blauw → navy).</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="44-fotografie-en-illustraties">4.4 Fotografie en Illustraties</h3>
+<p>TeamReel gebruikt authentieke, realistische beelden die samenwerking en trots uitstralen.<br>
+Geen stockfoto’s of generieke visuals.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fotografie</strong></td>
+<td>Altijd echte clubs, vrijwilligers of spelers.</td>
+</tr>
+<tr>
+<td><strong>Stijl</strong></td>
+<td>Natuurlijk licht, neutrale achtergrond, focus op mensen.</td>
+</tr>
+<tr>
+<td><strong>Beeldverhouding</strong></td>
+<td>9:16 (Reels) of 16:9 (presentaties).</td>
+</tr>
+<tr>
+<td><strong>Illustraties</strong></td>
+<td>Flat vectorstijl, geen 3D of overmatige schaduw.</td>
+</tr>
+<tr>
+<td><strong>Decoratie</strong></td>
+<td>Diagonale gradient of subtiele lijnen toegestaan.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="45-toegankelijkheid-en-responsiviteit">4.5 Toegankelijkheid en Responsiviteit</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Contrast</strong></td>
+<td>≥ 4.5:1 voor tekst en knoppen.</td>
+</tr>
+<tr>
+<td><strong>Lettergrootte</strong></td>
+<td>Minimum 14 px (Inter), schaalbaar via <code>rem</code>.</td>
+</tr>
+<tr>
+<td><strong>Responsive gedrag</strong></td>
+<td>Breekpunten: 480 / 768 / 1024 / 1440 px.</td>
+</tr>
+<tr>
+<td><strong>Focus states</strong></td>
+<td>Duidelijk zichtbaar via kleur en outline.</td>
+</tr>
+<tr>
+<td><strong>Toetsenbordnavigatie</strong></td>
+<td>Volledig ondersteund in frontendcomponenten.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h4 id="%F0%9F%93%8B-belangrijkste-richtlijnen-%E2%80%93-hoofdstuk-4">📋 Belangrijkste richtlijnen – Hoofdstuk 4</h4>
+<table>
+<thead>
+<tr>
+<th>Onderdeel</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend</td>
+<td>Alle visuele eigenschappen via tokens.json.</td>
+</tr>
+<tr>
+<td>Thema’s</td>
+<td>Licht en donker thema hebben dezelfde structuur.</td>
+</tr>
+<tr>
+<td>Video’s</td>
+<td>Wit logo rechts onder, consistente gradient.</td>
+</tr>
+<tr>
+<td>Beeldgebruik</td>
+<td>Authentiek, zonder stockmateriaal.</td>
+</tr>
+<tr>
+<td>Toegankelijkheid</td>
+<td>WCAG 2.1 AA verplicht voor alle UI-elementen.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-tone-of-voice-%E2%80%93-gebruikerscommunicatie-in-de-webapp">5. Tone of Voice – Gebruikerscommunicatie in de Webapp</h2>
+<h3 id="51-doel">5.1 Doel</h3>
+<p>De <em>Tone of Voice</em> zorgt ervoor dat alle tekst in de applicatie — van knoppen tot meldingen — helder, vriendelijk en doelgericht is.<br>
+De toon ondersteunt de merkwaarden eenvoud, betrouwbaarheid en toegankelijkheid.</p>
+<hr>
+<h3 id="52-stijlrichtlijnen">5.2 Stijlrichtlijnen</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Richtlijn</th>
+<th>Voorbeeld</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Taalniveau</strong></td>
+<td>B1 – korte, directe zinnen.</td>
+<td>„Upload je teamlogo.”</td>
+</tr>
+<tr>
+<td><strong>Perspectief</strong></td>
+<td>Tweede persoon („je”, „jouw club”).</td>
+<td>„Je video is klaar om te downloaden.”</td>
+</tr>
+<tr>
+<td><strong>Toon</strong></td>
+<td>Helder, positief, ondersteunend.</td>
+<td>„Mooi werk – je line-up ziet er goed uit.”</td>
+</tr>
+<tr>
+<td><strong>Ritme</strong></td>
+<td>Actieve werkwoorden, weinig bijvoeglijke naamwoorden.</td>
+<td>„Genereer”, „Bekijk”, „Download”.</td>
+</tr>
+<tr>
+<td><strong>Humor</strong></td>
+<td>Subtiel, nooit ironisch.</td>
+<td>„Even laden... bijna in beeld.”</td>
+</tr>
+<tr>
+<td><strong>Technische termen</strong></td>
+<td>Uitleg in begrijpelijke taal.</td>
+<td>Niet: „workflow triggered”, wel: „video-opdracht gestart.”</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="53-tekstsoorten-in-de-app">5.3 Tekstsoorten in de app</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Richtlijn</th>
+<th>Voorbeeldtekst</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Knoppen (CTA’s)</strong></td>
+<td>Actieve werkwoorden, max. 2 woorden.</td>
+<td>„Video genereren”, „Opslaan”, „Deel nu”.</td>
+</tr>
+<tr>
+<td><strong>Statusmeldingen</strong></td>
+<td>Kort en informatief.</td>
+<td>„Je video wordt gegenereerd.”</td>
+</tr>
+<tr>
+<td><strong>Foutmeldingen</strong></td>
+<td>Empathisch en oplossingsgericht.</td>
+<td>„Er ging iets mis. Probeer het opnieuw of neem contact op.”</td>
+</tr>
+<tr>
+<td><strong>Notificaties</strong></td>
+<td>Positieve, motiverende toon.</td>
+<td>„Je line-up is succesvol opgeslagen.”</td>
+</tr>
+<tr>
+<td><strong>Tooltips / uitleg</strong></td>
+<td>Eenvoudige taal, geen jargon.</td>
+<td>„Selecteer de juiste template voor je wedstrijd.”</td>
+</tr>
+<tr>
+<td><strong>Lege states</strong></td>
+<td>Activerend, maar niet dwingend.</td>
+<td>„Nog geen video’s? Maak je eerste aan.”</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="54-lokalisatie-en-consistentie">5.4 Lokalisatie en consistentie</h3>
+<p>Alle teksten worden beheerd in een centrale <code>locales.json</code>.<br>
+De vertalingen volgen dezelfde structuur en toon, ongeacht taalversie (NL, EN).</p>
+<table>
+<thead>
+<tr>
+<th>Richtlijn</th>
+<th>Toelichting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Een bron van waarheid</strong></td>
+<td>Alle UI-teksten via <code>locales.json</code> in de frontend.</td>
+</tr>
+<tr>
+<td><strong>Vertaalbaarheid</strong></td>
+<td>Zinnen blijven kort (max. 80 tekens).</td>
+</tr>
+<tr>
+<td><strong>Begrijpelijkheid</strong></td>
+<td>Vermijd metaforen of sportjargon.</td>
+</tr>
+<tr>
+<td><strong>Inclusiviteit</strong></td>
+<td>Geen onderscheid in gender of achtergrond.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h4 id="%F0%9F%93%8B-belangrijkste-richtlijnen-%E2%80%93-hoofdstuk-5">📋 Belangrijkste richtlijnen – Hoofdstuk 5</h4>
+<table>
+<thead>
+<tr>
+<th>Onderdeel</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Taal</td>
+<td>B1-niveau, tweede persoon, actief.</td>
+</tr>
+<tr>
+<td>Doel</td>
+<td>Ondersteunend, niet promotioneel.</td>
+</tr>
+<tr>
+<td>Toon</td>
+<td>Helder, rustig, positief.</td>
+</tr>
+<tr>
+<td>Locatie</td>
+<td>Teksten beheerd via <code>locales.json</code>.</td>
+</tr>
+<tr>
+<td>Focus</td>
+<td>Snel begrip en gebruiksgemak.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-brand-governance">6. Brand Governance</h2>
+<h3 id="61-doel">6.1 Doel</h3>
+<p><em>Brand Governance</em> waarborgt dat het merk TeamReel consistent blijft in alle toepassingen — van code tot communicatie.<br>
+Het beschrijft verantwoordelijkheden, processen en bronnen voor onderhoud.</p>
+<hr>
+<h3 id="62-verantwoordelijkheden">6.2 Verantwoordelijkheden</h3>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Taken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>TeamReel Studio (Product &amp; Design)</strong></td>
+<td>Beheer van merkidentiteit, kleuren, typografie, logo’s.</td>
+</tr>
+<tr>
+<td><strong>Frontend Team</strong></td>
+<td>Implementatie van tokens, UI-componenten en toegankelijkheid.</td>
+</tr>
+<tr>
+<td><strong>Contentbeheer / Communicatie</strong></td>
+<td>Toepassing van tone of voice en visuele richtlijnen in content.</td>
+</tr>
+<tr>
+<td><strong>Product Owner</strong></td>
+<td>Goedkeuring van structurele merkupdates of wijzigingen.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="63-bronnen-van-waarheid">6.3 Bronnen van waarheid</h3>
+<p>Alle merkcomponenten worden centraal beheerd in vaste mappen en tools.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Locatie</th>
+<th>Formaat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Design tokens</strong></td>
+<td><code>/frontend/styles/tokens.json</code></td>
+<td>JSON</td>
+</tr>
+<tr>
+<td><strong>Fonts en kleuren</strong></td>
+<td><code>/assets/brand/</code></td>
+<td>WOFF2 / ASE</td>
+</tr>
+<tr>
+<td><strong>Logo’s en iconen</strong></td>
+<td><code>/assets/logo/</code></td>
+<td>SVG / PNG</td>
+</tr>
+<tr>
+<td><strong>Brand guide</strong></td>
+<td><code>/docs/2_brand/brand_identity.md</code></td>
+<td>Markdown</td>
+</tr>
+<tr>
+<td><strong>Style Foundation</strong></td>
+<td><code>/docs/2_brand/teamreel_style_foundation.md</code></td>
+<td>Markdown</td>
+</tr>
+<tr>
+<td><strong>AI-configuratie</strong></td>
+<td><code>/n8n/flows/config/branding.json</code></td>
+<td>JSON</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Belangrijk:</strong><br>
+De JSON-export is leidend. Figma- en Markdown-documenten dienen als referentie, niet als implementatiebron.</p>
+</blockquote>
+<hr>
+<h3 id="64-wijzigingsproces">6.4 Wijzigingsproces</h3>
+<table>
+<thead>
+<tr>
+<th>Stap</th>
+<th>Beschrijving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Voorstel</strong></td>
+<td>Nieuwe stijl of wijziging ingediend via Notion / GitHub Issue.</td>
+</tr>
+<tr>
+<td><strong>2. Review</strong></td>
+<td>Evaluatie door Product &amp; Design op impact en consistentie.</td>
+</tr>
+<tr>
+<td><strong>3. Goedkeuring</strong></td>
+<td>Product Owner valideert wijziging.</td>
+</tr>
+<tr>
+<td><strong>4. Update</strong></td>
+<td>Aanpassing doorgevoerd in tokens, UI of docs.</td>
+</tr>
+<tr>
+<td><strong>5. Documentatie</strong></td>
+<td>Nieuwe versie gepubliceerd met changelog.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="65-versiebeheer">6.5 Versiebeheer</h3>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Versienummering</strong></td>
+<td>Semantisch: vMAJOR.MINOR (v2.0, v2.1, etc.)</td>
+</tr>
+<tr>
+<td><strong>Documentatie-update</strong></td>
+<td>Elke wijziging in branding vereist update in <code>brand_identity.md</code>.</td>
+</tr>
+<tr>
+<td><strong>Tokens-release</strong></td>
+<td>Kleine stijlwijzigingen worden via <code>tokens.json</code> direct gesynchroniseerd.</td>
+</tr>
+<tr>
+<td><strong>Reviewfrequentie</strong></td>
+<td>Halfjaarlijkse controle door Product &amp; Design.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="66-consistentiecontrole">6.6 Consistentiecontrole</h3>
+<ul>
+<li><strong>Visuele controle:</strong> Figma / Frontend UI review per release.</li>
+<li><strong>Tekstcontrole:</strong> Tone of Voice check op alle UI-componenten.</li>
+<li><strong>Kleurvalidatie:</strong> Automatische test op WCAG 2.1 contrast via CI-pipeline.</li>
+<li><strong>Assetvalidatie:</strong> Geen duplicaten of verouderde bestanden in <code>/assets/brand/</code>.</li>
+</ul>
+<hr>
+<h4 id="%F0%9F%93%8B-belangrijkste-richtlijnen-%E2%80%93-hoofdstuk-6">📋 Belangrijkste richtlijnen – Hoofdstuk 6</h4>
+<table>
+<thead>
+<tr>
+<th>Onderdeel</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Beheer</td>
+<td>Centraal door TeamReel Studio en Product Owner.</td>
+</tr>
+<tr>
+<td>Bronnen</td>
+<td><code>tokens.json</code> en Style Foundation zijn leidend.</td>
+</tr>
+<tr>
+<td>Proces</td>
+<td>Wijzigingen via review en goedkeuring.</td>
+</tr>
+<tr>
+<td>Controle</td>
+<td>Visuele en tekstuele kwaliteitschecks verplicht.</td>
+</tr>
+<tr>
+<td>Frequentie</td>
+<td>Halfjaarlijkse audit op stijlconsistentie.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-samenvatting--checklist">7. Samenvatting &amp; Checklist</h2>
+<h3 id="71-kernprincipes-samengevat">7.1 Kernprincipes samengevat</h3>
+<table>
+<thead>
+<tr>
+<th>Thema</th>
+<th>Kernprincipe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Visuele Identiteit</strong></td>
+<td>Eén kleurensysteem, één typografieset, consistente layout.</td>
+</tr>
+<tr>
+<td><strong>Toepassing</strong></td>
+<td>Elk kanaal gebruikt dezelfde stijl en tokens.</td>
+</tr>
+<tr>
+<td><strong>Tone of Voice</strong></td>
+<td>Helder, vriendelijk en actief zonder overdaad.</td>
+</tr>
+<tr>
+<td><strong>Toegankelijkheid</strong></td>
+<td>Ontwerp en tekst voldoen aan WCAG 2.1 AA.</td>
+</tr>
+<tr>
+<td><strong>Governance</strong></td>
+<td>Alle updates volgen een vast reviewproces.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="72-toepassing-in-de-praktijk">7.2 Toepassing in de praktijk</h3>
+<table>
+<thead>
+<tr>
+<th>Context</th>
+<th>Doel</th>
+<th>Controle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>Tokens correct geladen en zichtbaar.</td>
+<td>Automatische CI-test.</td>
+</tr>
+<tr>
+<td><strong>Documentatie</strong></td>
+<td>Branding consistent met visuele identiteit.</td>
+<td>Handmatige review.</td>
+</tr>
+<tr>
+<td><strong>App-teksten</strong></td>
+<td>Toon en begrijpelijkheid volgens richtlijnen.</td>
+<td>QA-review.</td>
+</tr>
+<tr>
+<td><strong>Video’s</strong></td>
+<td>Logo, kleur en typografie consistent.</td>
+<td>Visuele check.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="73-checklist-voor-merkconsistentie">7.3 Checklist voor merkconsistentie</h3>
+<p>✅ 1. Alle kleuren, fonts en logo’s komen uit <code>tokens.json</code>.<br>
+✅ 2. Typografie beperkt tot <strong>Manrope</strong> (headings) en <strong>Inter</strong> (body).<br>
+✅ 3. Contrastwaarden zijn getest en goedgekeurd.<br>
+✅ 4. Teksten in app volgen B1-stijl en tweede persoon.<br>
+✅ 5. Branding updates worden geregistreerd in Notion of GitHub.<br>
+✅ 6. Versienummering correct toegepast in docs en assets.<br>
+✅ 7. Elke nieuwe UI-component doorloopt visuele en tekstuele review.</p>
+<hr>
+<h3 id="74-slotverklaring">7.4 Slotverklaring</h3>
+<p>Deze Brand Identity is afgestemd op de TeamReel Style Foundation en vormt samen met het Businessplan, Functional Design en Technical Design het integrale merk- en productkader van TeamReel.</p>
+<blockquote>
+<p><strong>Kort samengevat:</strong><br>
+<em>Eenvoud, consistentie en helderheid vormen de kern van het TeamReel-merk. Elke pixel en elke zin draagt dat uit.</em>
+|------------|-----------|
+| Beheer | Centraal door TeamReel Studio en Product Owner. |
+| Bronnen | <code>tokens.json</code> en Style Foundation zijn leidend. |
+| Proces | Wijzigingen via review en goedkeuring. |
+| Controle | Visuele en tekstuele kwaliteitschecks verplicht. |
+| Frequentie | Halfjaarlijkse audit op stijlconsistentie. |</p>
+</blockquote>
+<h2 id="7-samenvatting--checklist">7. Samenvatting &amp; Checklist</h2>
+<h3 id="71-kernprincipes-samengevat">7.1 Kernprincipes samengevat</h3>
+<table>
+<thead>
+<tr>
+<th>Thema</th>
+<th>Kernprincipe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Visuele Identiteit</strong></td>
+<td>Eén kleurensysteem, één typografieset, consistente layout.</td>
+</tr>
+<tr>
+<td><strong>Toepassing</strong></td>
+<td>Elk kanaal gebruikt dezelfde stijl en tokens.</td>
+</tr>
+<tr>
+<td><strong>Tone of Voice</strong></td>
+<td>Helder, vriendelijk en actief zonder overdaad.</td>
+</tr>
+<tr>
+<td><strong>Toegankelijkheid</strong></td>
+<td>Ontwerp en tekst voldoen aan WCAG 2.1 AA.</td>
+</tr>
+<tr>
+<td><strong>Governance</strong></td>
+<td>Alle updates volgen een vast reviewproces.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="72-toepassing-in-de-praktijk">7.2 Toepassing in de praktijk</h3>
+<table>
+<thead>
+<tr>
+<th>Context</th>
+<th>Doel</th>
+<th>Controle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>Tokens correct geladen en zichtbaar.</td>
+<td>Automatische CI-test.</td>
+</tr>
+<tr>
+<td><strong>Documentatie</strong></td>
+<td>Branding consistent met visuele identiteit.</td>
+<td>Handmatige review.</td>
+</tr>
+<tr>
+<td><strong>App-teksten</strong></td>
+<td>Toon en begrijpelijkheid volgens richtlijnen.</td>
+<td>QA-review.</td>
+</tr>
+<tr>
+<td><strong>Video’s</strong></td>
+<td>Logo, kleur en typografie consistent.</td>
+<td>Visuele check.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="73-checklist-voor-merkconsistentie">7.3 Checklist voor merkconsistentie</h3>
+<p>✅ 1. Alle kleuren, fonts en logo’s komen uit <code>tokens.json</code>.<br>
+✅ 2. Typografie beperkt tot <strong>Manrope</strong> (headings) en <strong>Inter</strong> (body).<br>
+✅ 3. Contrastwaarden zijn getest en goedgekeurd.<br>
+✅ 4. Teksten in app volgen B1-stijl en tweede persoon.<br>
+✅ 5. Branding updates worden geregistreerd in Notion of GitHub.<br>
+✅ 6. Versienummering correct toegepast in docs en assets.<br>
+✅ 7. Elke nieuwe UI-component doorloopt visuele en tekstuele review.</p>
+<hr>
+<h3 id="74-slotverklaring">7.4 Slotverklaring</h3>
+<p>Deze Brand Identity is afgestemd op de TeamReel Style Foundation en vormt samen met het Businessplan, Functional Design en Technical Design het integrale merk- en productkader van TeamReel.</p>
+<blockquote>
+<p><strong>Kort samengevat:</strong><br>
+<em>Eenvoud, consistentie en helderheid vormen de kern van het TeamReel-merk. Elke pixel en elke zin draagt dat uit.</em></p>
+</blockquote>
+
+</body>
+</html>

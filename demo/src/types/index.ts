@@ -30,6 +30,10 @@ export interface Organisation {
   description?: string;
   member_count?: number;
   project_count?: number;
+  clubs_count?: number;
+  teams_count?: number;
+  matches_count?: number;
+  seasons_count?: number;
   credit_balance?: number;
   marketing_hub_balance?: number;
   is_active?: boolean;

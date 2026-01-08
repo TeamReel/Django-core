@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>project_plan.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<blockquote>
+<p><strong>TeamReel</strong> werkt iteratief, modulair en met duidelijke mijlpalen.<br>
+Dit projectplan beschrijft de roadmap, epics, kwaliteitscriteria en risico’s<br>
+die de ontwikkeling van de MVP-fase richting geven volgens de <em>TeamReel Style Foundation (v2)</em>.<br>
+Versie: Oktober 2025 — Status: Definitieve richtlijn (v2).</p>
+</blockquote>
+<h1 id="%F0%9F%9A%80-projectplan-%E2%80%93-teamreel">🚀 Projectplan – TeamReel</h1>
+<blockquote>
+<p><strong>TeamReel</strong> brengt sportieve energie en digitale helderheid samen.<br>
+Dit projectplan beschrijft hoe de visie uit het <em>Businessplan</em> en de ontwerpen uit het <em>Functional</em> en <em>Technical Design</em> worden omgezet in concrete acties, teams en mijlpalen.<br>
+Het vormt de operationele blauwdruk voor de realisatie van het TeamReel-platform.<br>
+Versie: Oktober 2025 — Status: Werkdocument.</p>
+</blockquote>
+<hr>
+<h2 id="%F0%9F%93%98-metadata">📘 Metadata</h2>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Inhoud</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Project</strong></td>
+<td>TeamReel</td>
+</tr>
+<tr>
+<td><strong>Document</strong></td>
+<td>Projectplan</td>
+</tr>
+<tr>
+<td><strong>Datum</strong></td>
+<td>Oktober 2025</td>
+</tr>
+<tr>
+<td><strong>Auteur</strong></td>
+<td>Brian Stokvis</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Werkdocument</td>
+</tr>
+<tr>
+<td><strong>Bronnen</strong></td>
+<td>Businessplan, Functional Design, Technical Design, Brand Identity, Style Foundation</td>
+</tr>
+<tr>
+<td><strong>Doel</strong></td>
+<td>Richtlijn voor uitvoering, planning, rollen, risico’s en kwaliteitsborging</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="inhoudsopgave">Inhoudsopgave</h2>
+<ol>
+<li><a href="#1-inleiding--doel">Inleiding &amp; Doel</a></li>
+<li><a href="#2-projectstructuur--rollen">Projectstructuur &amp; Rollen</a></li>
+<li><a href="#3-fases--mijlpalen">Fases &amp; Mijlpalen</a></li>
+<li><a href="#4-tijdlijn--sprintplanning">Tijdlijn &amp; Sprintplanning</a></li>
+<li><a href="#5-kwaliteitsborging--testing">Kwaliteitsborging &amp; Testing</a></li>
+<li><a href="#6-risicobeheersing">Risicobeheersing</a></li>
+<li><a href="#7-governance--evaluatie">Governance &amp; Evaluatie</a></li>
+<li><a href="#8-samenvatting">Samenvatting</a></li>
+</ol>
+<hr>
+<h2 id="1-inleiding--doel">1. Inleiding &amp; Doel</h2>
+<h3 id="11-context">1.1 Context</h3>
+<p><strong>TeamReel</strong> is een AI-gedreven platform waarmee sportverenigingen eenvoudig professionele clubcontent kunnen maken in hun eigen stijl. Na afronding van de ontwerpfase (Businessplan, Functional Design, Technical Design, Brand Identity en Style Foundation) is het platform klaar voor de volgende stap: <strong>implementatie en realisatie</strong>.</p>
+<p>Dit projectplan vertaalt de strategische visie naar concrete uitvoer:</p>
+<ul>
+<li>Wie doet wat?</li>
+<li>Wanneer gebeurt het?</li>
+<li>Welke middelen en risico’s spelen een rol?</li>
+<li>En hoe blijft kwaliteit geborgd tijdens groei?</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Van visie naar uitvoering — dit document beschrijft hoe TeamReel werkelijkheid wordt.</em></p>
+</blockquote>
+<hr>
+<h3 id="12-doel-van-het-projectplan">1.2 Doel van het projectplan</h3>
+<p>Het doel van dit document is het bieden van <strong>duidelijkheid en richting</strong> voor alle betrokkenen. Het beschrijft hoe de verschillende disciplines (ontwikkeling, design, AI, communicatie en business) samenwerken binnen één gestructureerde aanpak.</p>
+<p>Concreet:</p>
+<ul>
+<li><strong>Planning</strong> van alle projectfases: MVP, groei, schaalvergroting, internationalisatie.</li>
+<li><strong>Teamrollen</strong> met verantwoordelijkheden en besluitlijnen.</li>
+<li><strong>Mijlpalen</strong> en oplevercriteria per fase.</li>
+<li><strong>Kwaliteitsbewaking</strong> via test- en reviewmomenten.</li>
+<li><strong>Risicobeheersing</strong> en escalatieprocedures.</li>
+<li><strong>Governance</strong> en continue evaluatie.</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Het projectplan zorgt voor overzicht, voortgang en vertrouwen — één team, één richting.</em></p>
+</blockquote>
+<hr>
+<h3 id="13-scope-en-uitgangspunten">1.3 Scope en uitgangspunten</h3>
+<p>De scope van dit plan omvat de volledige realisatie van de TeamReel MVP en de voorbereidingen voor schaalvergroting. Het document volgt de ontwerpprincipes uit de <em>Style Foundation</em>: helder, actiegericht en visueel consistent.</p>
+<p><strong>Binnen scope:</strong></p>
+<ul>
+<li>Ontwikkeling en livegang van de MVP (Content Generator).</li>
+<li>Integratie van AI-flows, backend en frontend.</li>
+<li>Implementatie van creditsysteem en gebruikersrollen.</li>
+<li>Opzet van CI/CD, logging, beveiliging en testen.</li>
+<li>Voorbereiding op internationale schaalbaarheid.</li>
+</ul>
+<p><strong>Buiten scope (latere fase):</strong></p>
+<ul>
+<li>Integratie met externe sportdatabronnen (KNVB/Sportlink).</li>
+<li>Eigen AI-modeltraining.</li>
+<li>Native mobiele applicaties (iOS/Android).</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Eerst bouwen wat werkt — daarna uitbreiden wat waarde toevoegt.</em></p>
+</blockquote>
+<hr>
+<h3 id="14-relatie-met-andere-documenten">1.4 Relatie met andere documenten</h3>
+<p>Het projectplan vormt de verbindende laag tussen visie, ontwerp en uitvoering. Het vertaalt de strategische richting uit het <em>Businessplan</em>, de gebruikerslogica uit het <em>Functional Design</em> en de technische kaders uit het <em>Technical Design</em> naar praktische uitvoering.</p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Relatie met het Projectplan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Businessplan</strong></td>
+<td>Levert de strategische doelen en marktoriëntatie.</td>
+</tr>
+<tr>
+<td><strong>Functional Design</strong></td>
+<td>Bepaalt de gebruikerservaring en kernfunctionaliteit.</td>
+</tr>
+<tr>
+<td><strong>Technical Design</strong></td>
+<td>Beschrijft de technische architectuur en API-structuur.</td>
+</tr>
+<tr>
+<td><strong>Brand Identity</strong></td>
+<td>Zorgt voor visuele en communicatieve consistentie.</td>
+</tr>
+<tr>
+<td><strong>Style Foundation</strong></td>
+<td>Bepaalt toon, typografie en ontwerpprincipes.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Het projectplan brengt alle lijnen samen — van merk tot techniek, van visie tot uitvoering.</em></p>
+</blockquote>
+<hr>
+<h3 id="15-verwachte-resultaten">1.5 Verwachte resultaten</h3>
+<p>Aan het einde van dit projectplan ligt er een duidelijk, uitvoerbaar pad voor de komende 6–12 maanden.<br>
+De verwachte resultaten zijn:</p>
+<ul>
+<li>Een functionerende MVP met alle kernmodules live.</li>
+<li>Een werkend CI/CD- en testproces.</li>
+<li>Een stabiel, veilig en schaalbaar platform.</li>
+<li>Een duidelijk team met heldere rollen en verantwoordelijkheden.</li>
+<li>Een gevisualiseerde roadmap met meetbare voortgang.</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Succes is meetbaar: een werkend product, een trots team en tevreden clubs.</em></p>
+</blockquote>
+<h2 id="2-projectstructuur--rollen">2. Projectstructuur &amp; Rollen</h2>
+<h3 id="21-doel">2.1 Doel</h3>
+<p>De projectstructuur van <strong>TeamReel</strong> zorgt ervoor dat alle disciplines — business, design, techniek en AI — samenwerken binnen één helder kader. Elke rol heeft een duidelijke verantwoordelijkheid en beslisbevoegdheid, zodat voortgang en kwaliteit gewaarborgd blijven.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Heldere rollen creëren snelheid, vertrouwen en eigenaarschap.</em></p>
+</blockquote>
+<hr>
+<h3 id="22-organisatiemodel">2.2 Organisatiemodel</h3>
+<p>TeamReel werkt volgens een <strong>cross-functioneel projectmodel</strong> met drie lagen:</p>
+<table>
+<thead>
+<tr>
+<th>Laag</th>
+<th>Verantwoordelijkheid</th>
+<th>Doel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Strategisch</strong></td>
+<td>Richting en prioriteiten bepalen</td>
+<td>Zorgen dat de visie uit het <em>Businessplan</em> bewaakt blijft</td>
+</tr>
+<tr>
+<td><strong>Tactisch</strong></td>
+<td>Coördinatie tussen disciplines</td>
+<td>Vertalen van ontwerp naar planning</td>
+</tr>
+<tr>
+<td><strong>Operationeel</strong></td>
+<td>Uitvoering en oplevering</td>
+<td>Bouwen, testen en documenteren</td>
+</tr>
+</tbody>
+</table>
+<p>De lagen communiceren continu via korte feedbackcycli (wekelijkse sprintreviews). Besluitvorming verloopt van onder naar boven: teams signaleren, leads besluiten, strategie valideert.</p>
+<hr>
+<h3 id="23-rollen-en-verantwoordelijkheden">2.3 Rollen en verantwoordelijkheden</h3>
+<p>Elke discipline binnen TeamReel heeft een vaste rol met duidelijke deliverables.</p>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Kernverantwoordelijkheden</th>
+<th>Rapportage aan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Project Owner</strong></td>
+<td>Eindverantwoordelijk voor scope, planning en resultaat; onderhoudt stakeholdercontact.</td>
+<td>Stuurgroep / strategie</td>
+</tr>
+<tr>
+<td><strong>Product Owner</strong></td>
+<td>Bewaakt visie, prioriteert backlog en vertaalt behoeften van clubs naar features.</td>
+<td>Project Owner</td>
+</tr>
+<tr>
+<td><strong>Tech Lead</strong></td>
+<td>Beheert architectuur, codekwaliteit en technische beslissingen.</td>
+<td>Project Owner</td>
+</tr>
+<tr>
+<td><strong>AI Engineer</strong></td>
+<td>Ontwerpt en optimaliseert AI-workflows in LangGraph en borgt prestaties en feedbackloops.</td>
+<td>Tech Lead</td>
+</tr>
+<tr>
+<td><strong>Frontend Developer</strong></td>
+<td>Bouwt de UI in Next.js + Tailwind volgens de <em>Style Foundation</em>.</td>
+<td>Tech Lead</td>
+</tr>
+<tr>
+<td><strong>Backend Developer</strong></td>
+<td>Implementeert API’s, datamodellen en CI/CD-processen.</td>
+<td>Tech Lead</td>
+</tr>
+<tr>
+<td><strong>Designer / Brand Lead</strong></td>
+<td>Bewaakt visuele consistentie en past de <em>Brand Identity</em> toe in UI en marketing.</td>
+<td>Product Owner</td>
+</tr>
+<tr>
+<td><strong>QA Engineer</strong></td>
+<td>Test functioneel en technisch, beheert bugtracking en acceptatiecriteria.</td>
+<td>Tech Lead</td>
+</tr>
+<tr>
+<td><strong>Data Analyst / BI</strong></td>
+<td>Meet gebruik, credits en AI-prestaties voor verbetering.</td>
+<td>Project Owner</td>
+</tr>
+<tr>
+<td><strong>Community Manager</strong></td>
+<td>Onderhoudt contact met clubs en testgroepen en verzamelt feedback.</td>
+<td>Product Owner</td>
+</tr>
+<tr>
+<td><strong>DevOps Engineer</strong></td>
+<td>Beheert hosting, CI/CD en monitoring (Railway, AWS, Grafana).</td>
+<td>Tech Lead</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Eén team, één taal — iedereen weet wat zijn rol is en waarom die belangrijk is.</em></p>
+</blockquote>
+<hr>
+<h3 id="24-communicatie-en-besluitvorming">2.4 Communicatie en besluitvorming</h3>
+<p>TeamReel werkt met korte communicatielijnen en vaste ritmes.</p>
+<table>
+<thead>
+<tr>
+<th>Moment</th>
+<th>Frequentie</th>
+<th>Deelnemers</th>
+<th>Doel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Daily Sync</strong></td>
+<td>Dagelijks (15 min)</td>
+<td>Alle operationele leden</td>
+<td>Status en blokkades bespreken</td>
+</tr>
+<tr>
+<td><strong>Sprint Planning</strong></td>
+<td>Elke 2 weken</td>
+<td>Product Owner + Tech Lead + team</td>
+<td>Backlog prioriteren en taken verdelen</td>
+</tr>
+<tr>
+<td><strong>Review &amp; Demo</strong></td>
+<td>Elke 2 weken</td>
+<td>Volledig team + stakeholders</td>
+<td>Resultaten tonen en feedback ophalen</td>
+</tr>
+<tr>
+<td><strong>Retrospective</strong></td>
+<td>Elke 2 weken</td>
+<td>Projectteam</td>
+<td>Verbeterpunten vastleggen</td>
+</tr>
+<tr>
+<td><strong>Stuurgroep</strong></td>
+<td>Maandelijks</td>
+<td>Project Owner + strategie</td>
+<td>Richting en budget valideren</td>
+</tr>
+</tbody>
+</table>
+<p>Communicatie verloopt primair via <strong>Slack</strong> (team), <strong>Notion</strong> (documentatie) en <strong>GitHub Projects</strong> (ontwikkeling). Belangrijke besluiten worden vastgelegd in <code>/docs/changelog_project.md</code>.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Korte lijnen en vaste ritmes houden het project in beweging.</em></p>
+</blockquote>
+<hr>
+<h3 id="25-raci-matrix">2.5 RACI-matrix</h3>
+<p>De volgende tabel geeft een samenvatting van verantwoordelijkheden (Responsible – Accountable – Consulted – Informed).</p>
+<table>
+<thead>
+<tr>
+<th>Activiteit</th>
+<th>PO</th>
+<th>Tech Lead</th>
+<th>AI Eng.</th>
+<th>Designer</th>
+<th>QA</th>
+<th>DevOps</th>
+<th>Stakeholders</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product-strategie</td>
+<td>A</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Feature-prioritering</td>
+<td>A</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Ontwerp en UX</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>A</td>
+<td>C</td>
+<td>I</td>
+<td>R</td>
+</tr>
+<tr>
+<td>Backend/API-ontwikkeling</td>
+<td>I</td>
+<td>A</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+</tr>
+<tr>
+<td>AI-workflows en validatie</td>
+<td>C</td>
+<td>C</td>
+<td>A</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+</tr>
+<tr>
+<td>Testen en QA</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>A</td>
+<td>I</td>
+<td>I</td>
+</tr>
+<tr>
+<td>Deploy &amp; monitoring</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>C</td>
+<td>A</td>
+<td>I</td>
+</tr>
+<tr>
+<td>Stakeholderrapportage</td>
+<td>A</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>R</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Duidelijke verantwoordelijkheden voorkomen misverstanden en versnellen beslissingen.</em></p>
+</blockquote>
+<hr>
+<h3 id="26-samenwerking-en-tools">2.6 Samenwerking en tools</h3>
+<p>TeamReel werkt volledig digitaal en gebruikt tools die elkaar aanvullen.</p>
+<table>
+<thead>
+<tr>
+<th>Domein</th>
+<th>Tool</th>
+<th>Doel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ontwikkeling</strong></td>
+<td>GitHub + Cursor + Copilot</td>
+<td>Codebeheer en AI-ondersteunde ontwikkeling</td>
+</tr>
+<tr>
+<td><strong>Documentatie</strong></td>
+<td>Notion + Markdown-repo (<code>/docs</code>)</td>
+<td>Single source of truth voor alle ontwerpen</td>
+</tr>
+<tr>
+<td><strong>Design &amp; Branding</strong></td>
+<td>Figma + Tokens (<code>tokens.json</code>)</td>
+<td>UI-consistentie en componentbeheer</td>
+</tr>
+<tr>
+<td><strong>Communicatie</strong></td>
+<td>Slack + Meet / Teams</td>
+<td>Dagelijkse afstemming en feedback</td>
+</tr>
+<tr>
+<td><strong>Projectmanagement</strong></td>
+<td>GitHub Projects + Linear</td>
+<td>Sprintplanning en issue-tracking</td>
+</tr>
+<tr>
+<td><strong>Monitoring &amp; CI/CD</strong></td>
+<td>Grafana + Sentry + Railway CI</td>
+<td>Automatische tests en foutbewaking</td>
+</tr>
+</tbody>
+</table>
+<p>Alle tools volgen dezelfde principes uit de <em>Style Foundation</em>: eenvoud, transparantie en herbruikbaarheid.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De juiste tools versterken samenwerking — niet complexiteit.</em></p>
+</blockquote>
+<hr>
+<h3 id="27-escalatie-en-besluitvorming">2.7 Escalatie en besluitvorming</h3>
+<p>Bij vertragingen, conflicten of risico’s geldt een vaste escalatielijn: 1️⃣ op teamniveau: bespreek direct in de daily sync; 2️⃣ op leadsniveau: Tech Lead en Product Owner bepalen de maatregel; 3️⃣ op strategisch niveau: Project Owner legt het voor aan de stuurgroep. Alle besluiten worden vastgelegd in <code>/docs/decisions_log.md</code> met datum, context en impact.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Escalatie is geen storing, maar een signaal om samen te verbeteren.</em></p>
+</blockquote>
+<hr>
+<h3 id="28-samenvatting">2.8 Samenvatting</h3>
+<p>De projectstructuur van TeamReel combineert duidelijkheid met wendbaarheid. Iedereen kent zijn rol, de communicatielijnen zijn kort en beslissingen worden snel genomen. Zo blijft de uitvoering net zo consistent en betrouwbaar als het ontwerp.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Een sterke structuur maakt ruimte voor creativiteit — TeamReel werkt als één team met één doel.</em></p>
+</blockquote>
+<h2 id="3-fases--mijlpalen">3. Fases &amp; Mijlpalen</h2>
+<h3 id="31-doel">3.1 Doel</h3>
+<p>De ontwikkeling van <strong>TeamReel</strong> verloopt in duidelijke, afgebakende fases. Elke fase levert een concreet, werkend resultaat op dat getest, verbeterd en hergebruikt kan worden. Door iteratief te werken — klein beginnen en voortdurend verfijnen — groeit TeamReel gecontroleerd uit tot een schaalbaar platform dat ook in de toekomst eenvoudig door een breder team kan worden beheerd.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Kleine stappen, groot resultaat — elke fase levert directe waarde.</em></p>
+</blockquote>
+<hr>
+<h3 id="32-overzicht-van-fases">3.2 Overzicht van fases</h3>
+<p>TeamReel hanteert vier hoofdfases die elkaar logisch opvolgen. Ze zijn afgeleid van het <em>Businessplan</em> en het <em>Functional Design</em>, en vormen samen de groeilijn van MVP naar internationaal platform. Omdat het project momenteel door één persoon wordt uitgevoerd, ligt de nadruk op focus, automatisering en documentatie, zodat uitbreiding later eenvoudig mogelijk blijft.</p>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Periode</th>
+<th>Doel</th>
+<th>Belangrijkste Deliverables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fase 1 – MVP Ontwikkeling</strong></td>
+<td>Q4 2025 – Q1 2026</td>
+<td>Werkende basisversie van de <em>Content Generator</em> met één testclub actief.</td>
+<td>Core-modules (clubs, teams, AI-flows, creditsysteem), login, UI en dashboard.</td>
+</tr>
+<tr>
+<td><strong>Fase 2 – Multisport &amp; Verbetering</strong></td>
+<td>Q2 – Q3 2026</td>
+<td>Ondersteuning voor meerdere sporten en verbeterde gebruikerservaring.</td>
+<td>Extra sportprofielen, flexibele templates, geoptimaliseerde AI-flows.</td>
+</tr>
+<tr>
+<td><strong>Fase 3 – Schaalvergroting &amp; Internationalisatie</strong></td>
+<td>Q4 2026 – Q2 2027</td>
+<td>Platform gereed voor meertaligheid en performance op grotere schaal.</td>
+<td>Meertalige interface, caching, regiofilters en multi-clubbeheer.</td>
+</tr>
+<tr>
+<td><strong>Fase 4 – Nieuwe modules &amp; Automatisering</strong></td>
+<td>Vanaf Q3 2027</td>
+<td>Verdere verdieping en personalisatie van content.</td>
+<td>Modules <em>Nieuwsbriefgenerator</em> en <em>Coach van het Jaar</em>, automatische rapportages en AI-triggers.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Elke fase vergroot de waarde, maar bewaart eenvoud en herkenbaarheid.</em></p>
+</blockquote>
+<hr>
+<h3 id="33-levercriteria-per-fase">3.3 Levercriteria per fase</h3>
+<p>Om te bepalen of een fase succesvol is afgerond, hanteert TeamReel meetbare criteria. Deze dienen zowel voor technische validatie als persoonlijke voortgangscontrole.</p>
+<table>
+<thead>
+<tr>
+<th>Categorie</th>
+<th>Beschrijving</th>
+<th>Succesindicator</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Technisch</strong></td>
+<td>API’s stabiel en CI/CD actief.</td>
+<td>&lt;2% downtime per release.</td>
+</tr>
+<tr>
+<td><strong>Functioneel</strong></td>
+<td>Alle hoofdflows werken zelfstandig en foutloos.</td>
+<td>80% succesratio bij eerste tests.</td>
+</tr>
+<tr>
+<td><strong>Visueel</strong></td>
+<td>UI volgt alle tokens en stijlen uit de <em>Style Foundation</em>.</td>
+<td>100% UI-audit zonder afwijkingen.</td>
+</tr>
+<tr>
+<td><strong>AI-prestatie</strong></td>
+<td>Output voldoet aan kwaliteitscriteria (kleur, logo, ratio).</td>
+<td>90% goedkeuring bij eerste generatie.</td>
+</tr>
+<tr>
+<td><strong>Feedback</strong></td>
+<td>Gebruikerstesten bij ten minste één club of testgroep.</td>
+<td>Positieve beoordeling (≥ 8/10).</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Elke oplevering is pas compleet als techniek, stijl en ervaring samen kloppen.</em></p>
+</blockquote>
+<hr>
+<h3 id="34-gantt-overzicht">3.4 Gantt-overzicht</h3>
+<p>Het onderstaande schema toont de globale planning en volgorde van de vier ontwikkelfases.</p>
+<pre><code class="language-mermaid"><div class="mermaid">gantt
+    dateFormat  YYYY-MM
+    title TeamReel – Ontwikkelfases & Mijlpalen
+    section MVP Ontwikkeling
+    Core modules & AI-flows           :a1, 2025-11, 4m
+    section Multisport & Verbetering
+    Nieuwe sporten + UX-optimalisatie :a2, 2026-03, 5m
+    section Schaalvergroting
+    Meertaligheid + Performance       :a3, 2026-09, 6m
+    section Nieuwe modules
+    Nieuwsbrief & Coach v/h Jaar      :a4, 2027-04, 5m
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De roadmap is realistisch en flexibel — groei zonder overbelasting.</em></p>
+</blockquote>
+<hr>
+<h3 id="35-samenhang-tussen-fases">3.5 Samenhang tussen fases</h3>
+<p>Elke fase bouwt voort op de vorige en wordt afgesloten met een korte evaluatie. De inzichten uit elke stap (gebruikersfeedback, performance, AI-resultaten) worden vastgelegd in <code>/docs/evaluation_report.md</code>. Op basis daarvan worden prioriteiten bijgesteld. Dit maakt het ontwikkelproces wendbaar, persoonlijk en datagedreven, zelfs bij een soloproject.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Voortgang is pas waardevol als het leidt tot verbetering.</em></p>
+</blockquote>
+<hr>
+<h3 id="36-evaluatiemomenten-en-releases">3.6 Evaluatiemomenten en releases</h3>
+<p>TeamReel publiceert per fase één <strong>major release</strong>, aangevuld met kleinere <strong>minor updates</strong> voor bugfixes of verbeteringen.</p>
+<table>
+<thead>
+<tr>
+<th>Type release</th>
+<th>Frequentie</th>
+<th>Inhoud</th>
+<th>Verantwoordelijke</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Major release</strong></td>
+<td>Einde van elke fase</td>
+<td>Nieuwe functionaliteiten en AI-flows</td>
+<td>Project Owner (solo)</td>
+</tr>
+<tr>
+<td><strong>Minor release</strong></td>
+<td>Maandelijks</td>
+<td>Verbeteringen, documentatie-updates</td>
+<td>Project Owner (solo)</td>
+</tr>
+<tr>
+<td><strong>Hotfix</strong></td>
+<td>Ad-hoc</td>
+<td>Kritieke issues of beveiligingspatches</td>
+<td>Project Owner (solo)</td>
+</tr>
+</tbody>
+</table>
+<p>Alle releases worden automatisch gedocumenteerd via CI/CD in <code>CHANGELOG.md</code> en voorzien van versienummer (<code>v1.0.0</code>, <code>v1.1.0</code>, etc.).</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Regelmatige releases houden focus, ritme en motivatie hoog.</em></p>
+</blockquote>
+<hr>
+<h3 id="37-samenvatting">3.7 Samenvatting</h3>
+<p>De fasering van TeamReel combineert focus met groei. Elke stap levert een tastbaar resultaat, getest in de praktijk en geoptimaliseerd met data en gebruikersfeedback. Het project blijft beheersbaar in solovorm, maar is tegelijk voorbereid op schaalvergroting met een toekomstig team.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>TeamReel groeit gecontroleerd — iteratief, datagedreven en met oog voor kwaliteit.</em></p>
+</blockquote>
+<h2 id="4-tijdlijn--sprintplanning">4. Tijdlijn &amp; Sprintplanning</h2>
+<h3 id="41-doel">4.1 Doel</h3>
+<p>De sprintplanning vertaalt de fasering uit hoofdstuk 3 naar concrete werkcycli. Elke sprint heeft een duidelijk doel, een tastbaar resultaat en een korte feedbacklus. Omdat het project momenteel door één persoon wordt uitgevoerd, ligt de nadruk op efficiëntie, overzicht en ritme. De planning is modulair opgezet zodat toekomstige teamleden later eenvoudig kunnen instappen.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Structuur zorgt voor rust en focus — ook in een soloproject.</em></p>
+</blockquote>
+<hr>
+<h3 id="42-werkwijze">4.2 Werkwijze</h3>
+<p>TeamReel hanteert een <strong>agile sprintaanpak</strong> met cycli van twee weken. Elke sprint bestaat uit drie vaste fasen:</p>
+<ol>
+<li><strong>Planning:</strong> bepalen van doelen, deliverables en testcriteria.</li>
+<li><strong>Uitvoering:</strong> bouwen, testen, documenteren en visueel afstemmen.</li>
+<li><strong>Review:</strong> evalueren, meten en bijstellen voor de volgende sprint.</li>
+</ol>
+<p>De sprints worden beheerd in <strong>GitHub Projects</strong> met taken in duidelijke categorieën: <code>Build</code>, <code>Test</code>, <code>Docs</code>, <code>Design</code>, <code>Deploy</code>. Notion fungeert als logboek voor beslissingen en retrospecties.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Kleine, regelmatige leveringen zorgen voor continue vooruitgang.</em></p>
+</blockquote>
+<hr>
+<h3 id="43-mvp-fase-%E2%80%93-detailplanning">4.3 MVP-fase – detailplanning</h3>
+<p>De MVP-fase (Q4 2025 – Q1 2026) vormt de basis van het platform. Hieronder staan de eerste zes sprints met hun belangrijkste doelen.</p>
+<table>
+<thead>
+<tr>
+<th>Sprint</th>
+<th>Periode</th>
+<th>Focus</th>
+<th>Deliverables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sprint 1</strong></td>
+<td>Nov 2025 (week 45–46)</td>
+<td>Projectsetup &amp; omgeving</td>
+<td>Repos, CI/CD, tokenstructuur uit <em>Style Foundation</em></td>
+</tr>
+<tr>
+<td><strong>Sprint 2</strong></td>
+<td>Nov 2025 (week 47–48)</td>
+<td>Datamodel &amp; API-ontwerp</td>
+<td>Entiteiten: Club, Team, Player, Content</td>
+</tr>
+<tr>
+<td><strong>Sprint 3</strong></td>
+<td>Dec 2025 (week 49–50)</td>
+<td>Auth &amp; gebruikersstructuur</td>
+<td>Magic link-login, rollenbeheer</td>
+</tr>
+<tr>
+<td><strong>Sprint 4</strong></td>
+<td>Dec 2025 (week 51–52)</td>
+<td>Core AI-flows</td>
+<td>Pre-match contentgeneratie, AI Studio basis</td>
+</tr>
+<tr>
+<td><strong>Sprint 5</strong></td>
+<td>Jan 2026 (week 1–2)</td>
+<td>Dashboard &amp; UX</td>
+<td>UI-componenten in Next.js, tokens geïntegreerd</td>
+</tr>
+<tr>
+<td><strong>Sprint 6</strong></td>
+<td>Jan 2026 (week 3–4)</td>
+<td>Testing &amp; documentatie</td>
+<td>QA-check, changelog, feedbackronde testclub</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De MVP is de fundering waarop alle toekomstige groei rust.</em></p>
+</blockquote>
+<hr>
+<h3 id="44-sprintcyclus-in-beeld">4.4 Sprintcyclus in beeld</h3>
+<p>Het schema hieronder visualiseert de werkvolgorde en overlap van de sprints binnen de MVP-fase.</p>
+<pre><code class="language-mermaid"><div class="mermaid">gantt
+    dateFormat  YYYY-MM-DD
+    title TeamReel – MVP Sprintplanning
+    section Setup
+    Sprint 1: Omgeving & CI/CD     :a1, 2025-11-03, 14d
+    Sprint 2: Datamodel & API      :a2, 2025-11-17, 14d
+    section Core Development
+    Sprint 3: Authenticatie        :a3, 2025-12-01, 14d
+    Sprint 4: AI Flows             :a4, 2025-12-15, 14d
+    section UX & Testing
+    Sprint 5: Dashboard & UX       :a5, 2026-01-05, 14d
+    Sprint 6: QA & Documentatie    :a6, 2026-01-19, 14d
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Een visuele planning houdt voortgang zichtbaar en tastbaar.</em></p>
+</blockquote>
+<hr>
+<h3 id="45-taken-en-prioriteiten-per-rol">4.5 Taken en prioriteiten per rol</h3>
+<p>Hoewel je het project momenteel alleen uitvoert, blijven de verschillende rollen relevant als denkmodel. Ze helpen bij het structureren van je werk en het evalueren van voortgang.</p>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Focus binnen sprint</th>
+<th>Taken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Project Owner</strong></td>
+<td>Planning en voortgang</td>
+<td>Prioriteiten stellen, roadmap bijwerken</td>
+</tr>
+<tr>
+<td><strong>Tech Lead</strong></td>
+<td>Architectuur &amp; kwaliteit</td>
+<td>Beheer codebase, CI/CD-checks uitvoeren</td>
+</tr>
+<tr>
+<td><strong>AI Engineer</strong></td>
+<td>Workflowontwikkeling</td>
+<td>Ontwerp prompts, test output op stijlconsistentie</td>
+</tr>
+<tr>
+<td><strong>Frontend Developer</strong></td>
+<td>UX &amp; componenten</td>
+<td>Ontwikkel responsive UI volgens tokens</td>
+</tr>
+<tr>
+<td><strong>Designer / Brand Lead</strong></td>
+<td>Stijlbewaking</td>
+<td>Controleer kleuren, typografie, tone-of-voice</td>
+</tr>
+<tr>
+<td><strong>QA Engineer</strong></td>
+<td>Test en controle</td>
+<td>Schrijf testcases, valideer AI-output</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Rollen helpen je denken als een team, ook als je solo werkt.</em></p>
+</blockquote>
+<hr>
+<h3 id="46-sprintoutput-en-meting">4.6 Sprintoutput en meting</h3>
+<p>Na elke sprint evalueer je de voortgang aan de hand van drie vaste indicatoren:</p>
+<ol>
+<li><strong>Functioneel resultaat:</strong> is de geplande feature werkend en getest?</li>
+<li><strong>Visuele consistentie:</strong> voldoet alles aan de <em>Style Foundation</em>?</li>
+<li><strong>Documentatie:</strong> is de code en kennis vastgelegd in <code>/docs</code>?</li>
+</ol>
+<p>Meetmomenten worden vastgelegd in <code>progress_log.md</code> met een korte notitie per sprint: doel, resultaat en verbeterpunten.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Meten is weten — documenteer wat werkt en leer van wat niet werkt.</em></p>
+</blockquote>
+<hr>
+<h3 id="47-lange-termijnplanning">4.7 Lange termijnplanning</h3>
+<p>De tijdlijn hieronder plaatst de vier projectfases in een bredere context. Ze toont hoe de sprints zich vertalen naar jaarplanning.</p>
+<pre><code class="language-mermaid"><div class="mermaid">gantt
+    dateFormat  YYYY-MM
+    title TeamReel – Overzicht Lange Termijn
+    section Fase 1 – MVP
+    MVP Ontwikkeling        :a1, 2025-11, 4m
+    section Fase 2 – Multisport
+    Nieuwe sporten + UX      :a2, 2026-03, 5m
+    section Fase 3 – Schaalvergroting
+    Internationalisatie       :a3, 2026-09, 6m
+    section Fase 4 – Nieuwe modules
+    Nieuwsbrief & Coach v/h Jaar :a4, 2027-04, 5m
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Een duidelijke routekaart maakt groei planbaar en beheersbaar.</em></p>
+</blockquote>
+<hr>
+<h3 id="48-samenvatting">4.8 Samenvatting</h3>
+<p>De sprintstructuur van TeamReel combineert focus met flexibiliteit. Door in korte, overzichtelijke stappen te werken blijft het project beheersbaar en ontstaat een ritme waarin elke sprint meetbare vooruitgang oplevert. De aanpak is efficiënt voor solo-uitvoering, maar klaar voor schaalvergroting zodra meer mensen aansluiten.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Consistentie in ritme is de motor van duurzame voortgang.</em></p>
+</blockquote>
+<h2 id="5-kwaliteitsborging--testing">5. Kwaliteitsborging &amp; Testing</h2>
+<h3 id="51-doel">5.1 Doel</h3>
+<p>Kwaliteitsborging zorgt ervoor dat TeamReel niet alleen werkt, maar ook betrouwbaar, schaalbaar en consistent blijft. Omdat het project momenteel door één persoon wordt uitgevoerd, ligt de nadruk op <strong>geautomatiseerde controle</strong>, <strong>heldere documentatie</strong> en <strong>periodieke zelfreview</strong>. De kwaliteitsaanpak volgt dezelfde principes als het ontwerp: eenvoudig, transparant en herhaalbaar.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Kwaliteit is geen eindstap — het is ingebouwd in elke handeling.</em></p>
+</blockquote>
+<hr>
+<h3 id="52-kwaliteitsprincipes">5.2 Kwaliteitsprincipes</h3>
+<p>De kwaliteitsstrategie van TeamReel rust op vijf vaste pijlers:</p>
+<table>
+<thead>
+<tr>
+<th>Principe</th>
+<th>Toelichting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Automatiseren waar mogelijk</strong></td>
+<td>CI/CD voert linting, tests en build-checks automatisch uit.</td>
+</tr>
+<tr>
+<td><strong>Visuele consistentie</strong></td>
+<td>UI en output worden voortdurend vergeleken met tokens uit de <em>Style Foundation</em>.</td>
+</tr>
+<tr>
+<td><strong>Documenteer elke wijziging</strong></td>
+<td>Elke commit bevat een duidelijke beschrijving en wordt vastgelegd in <code>CHANGELOG.md</code>.</td>
+</tr>
+<tr>
+<td><strong>Test vroeg en vaak</strong></td>
+<td>Elke nieuwe functie krijgt directe functionele tests.</td>
+</tr>
+<tr>
+<td><strong>Feedback als routine</strong></td>
+<td>Gebruikers- of AI-output wordt periodiek geëvalueerd op duidelijkheid en stijl.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Kleine, consequente controles bouwen grote betrouwbaarheid.</em></p>
+</blockquote>
+<hr>
+<h3 id="53-testniveaus">5.3 Testniveaus</h3>
+<p>TeamReel gebruikt drie testniveaus die elkaar versterken.</p>
+<table>
+<thead>
+<tr>
+<th>Niveau</th>
+<th>Doel</th>
+<th>Testtype</th>
+<th>Frequentie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Unit-tests</strong></td>
+<td>Controleren of functies correct werken.</td>
+<td>Pytest / Jest</td>
+<td>Bij elke commit</td>
+</tr>
+<tr>
+<td><strong>Integratietests</strong></td>
+<td>Controleren of modules samenwerken.</td>
+<td>API &amp; UI simulaties</td>
+<td>Wekelijks</td>
+</tr>
+<tr>
+<td><strong>Acceptatietests</strong></td>
+<td>Controleren of het geheel logisch werkt voor de eindgebruiker.</td>
+<td>Handmatig + scenario’s</td>
+<td>Aan het eind van elke sprint</td>
+</tr>
+</tbody>
+</table>
+<p>De teststructuur volgt de “Shift Left”-aanpak: fouten worden zo vroeg mogelijk opgespoord, niet aan het einde van de cyclus.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Testen is een continu proces, geen eindcontrole.</em></p>
+</blockquote>
+<hr>
+<h3 id="54-cicd-en-automatische-controles">5.4 CI/CD en automatische controles</h3>
+<p>De <strong>CI/CD-pijplijn</strong> is de ruggengraat van de kwaliteitsbewaking. Elke commit triggert automatisch linting, tests, builds en visuele validatie.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Commit naar main branch] --> B[CI/CD start workflow]
+B --> C[Testen & linting via GitHub Actions]
+C --> D[Visuele regressietest op tokens en UI]
+D --> E{Alle checks geslaagd?}
+E -->|Ja| F[Deploy naar staging omgeving]
+E -->|Nee| G[Feedback in GitHub + rollback]
+F --> H[Automatische changelog update]
+H --> I[Versienummer verhogen en documentatie publiceren]
+</div></code></pre>
+<p>De pipeline draait via <strong>Railway CI</strong> en <strong>GitHub Actions</strong> en stuurt automatische meldingen via Slack. De pipelinecheck valideert tevens of design tokens (<code>tokens.json</code>) ongewijzigd blijven in kleurcodes of fontwaarden.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Een goede pipeline is je tweede paar ogen — altijd waakzaam.</em></p>
+</blockquote>
+<hr>
+<h3 id="55-codekwaliteit-en-reviewproces">5.5 Codekwaliteit en reviewproces</h3>
+<p>Hoewel je het project alleen uitvoert, blijft code-review essentieel voor consistentie. TeamReel gebruikt een <strong>tweeledige kwaliteitscontrole</strong>:</p>
+<ol>
+<li><strong>Automatische review via tools</strong> zoals <em>SonarLint</em>, <em>ESLint</em>, <em>Prettier</em> en <em>Black</em> voor Python.</li>
+<li><strong>Handmatige reviewmomenten</strong> waarbij je periodiek je eigen code doorloopt aan de hand van een checklist.</li>
+</ol>
+<p><strong>Review-checklist:</strong></p>
+<ul>
+<li>Is de code leesbaar en logisch gestructureerd?</li>
+<li>Zijn namen van variabelen en functies consistent met de terminologie uit de documentatie?</li>
+<li>Zijn docstrings aanwezig en begrijpelijk?</li>
+<li>Wordt de <em>Style Foundation</em> correct toegepast in de UI?</li>
+<li>Zijn performance- en beveiligingsaspecten getest?</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Zelfreview is ook teamwork — alleen tussen jou en je toekomstig zelf.</em></p>
+</blockquote>
+<hr>
+<h3 id="56-visuele-en-functionele-validatie">5.6 Visuele en functionele validatie</h3>
+<p>De visuele consistentie wordt bewaakt via automatische regressietests. Hierbij vergelijkt TeamReel UI-componenten en AI-output met referentiebeelden die zijn opgeslagen in <code>/frontend/tests/snapshots/</code>.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Nieuwe UI build] --> B[Snapshot-vergelijking]
+B --> C{Afwijkingen gevonden?}
+C -->|Nee| D[Build goedgekeurd]
+C -->|Ja| E[Visuele review nodig]
+E --> F[Update snapshot of herstel component]
+D --> G[Merge in main branch]
+</div></code></pre>
+<p>Functionele validatie vindt plaats door simulaties van gebruikersflows (login → contentcreatie → publicatie). Zo wordt getest of logica, visuals en creditsysteem correct samenwerken.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Kwaliteit is zichtbaar — letterlijk.</em></p>
+</blockquote>
+<hr>
+<h3 id="57-testdata-en-sandbox">5.7 Testdata en sandbox</h3>
+<p>Om te voorkomen dat echte data beïnvloed wordt, gebruikt TeamReel een <strong>sandbox-omgeving</strong>.</p>
+<ul>
+<li>AI-output, testclubs en spelers worden gegenereerd met fictieve namen en logo’s.</li>
+<li>De sandbox reset elke week automatisch.</li>
+<li>Logs en resultaten worden opgeslagen in <code>/tests/sandbox_log.md</code>.</li>
+</ul>
+<p>Hiermee kun je veilig experimenteren zonder impact op productie.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Test slim, test veilig, test herhaalbaar.</em></p>
+</blockquote>
+<hr>
+<h3 id="58-documentatie-en-kennisborging">5.8 Documentatie en kennisborging</h3>
+<p>Documentatie is onderdeel van kwaliteitsborging. Elke belangrijke wijziging wordt direct vastgelegd in Markdown-formaat, zodat kennis overdraagbaar blijft.</p>
+<table>
+<thead>
+<tr>
+<th>Bestand</th>
+<th>Doel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CHANGELOG.md</code></td>
+<td>Versiegeschiedenis en belangrijke wijzigingen</td>
+</tr>
+<tr>
+<td><code>progress_log.md</code></td>
+<td>Sprint- en voortgangsnotities</td>
+</tr>
+<tr>
+<td><code>evaluation_report.md</code></td>
+<td>Resultaten en leerpunten per fase</td>
+</tr>
+<tr>
+<td><code>decisions_log.md</code></td>
+<td>Belangrijke ontwerpkeuzes en argumentatie</td>
+</tr>
+<tr>
+<td><code>tests/sandbox_log.md</code></td>
+<td>Overzicht van testdata en sandboxresultaten</td>
+</tr>
+</tbody>
+</table>
+<p>Alle documenten volgen de schrijfregels uit de <em>Style Foundation</em>: korte zinnen, actieve toon, één kernboodschap per paragraaf.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Wat je documenteert, kun je verbeteren.</em></p>
+</blockquote>
+<hr>
+<h3 id="59-evaluatie-en-kwaliteitsrapportage">5.9 Evaluatie en kwaliteitsrapportage</h3>
+<p>Aan het einde van elke fase stel je een kort rapport op met drie onderdelen:</p>
+<ol>
+<li><strong>Kwaliteit van de code</strong> (tests, fouten, performance).</li>
+<li><strong>Consistentie met merk en stijl</strong> (UI en tone-of-voice).</li>
+<li><strong>Leereffect</strong> (wat werkte, wat niet, wat beter kan).</li>
+</ol>
+<p>De rapporten worden opgeslagen in <code>/docs/evaluation_report.md</code> en vormen de input voor de volgende fase.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Evalueren is leren — consistentie groeit door reflectie.</em></p>
+</blockquote>
+<hr>
+<h3 id="510-samenvatting">5.10 Samenvatting</h3>
+<p>Kwaliteitsborging bij TeamReel is geen controle achteraf, maar een geïntegreerd proces. Door CI/CD, testautomatisering en visuele validatie ontstaat een stabiel platform met voorspelbare resultaten. Zelfs in een soloproject blijft de lat hoog, omdat elke stap herleidbaar, meetbaar en consistent is.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Kwaliteit is een gewoonte — niet een mijlpaal.</em></p>
+</blockquote>
+<h2 id="6-risicobeheersing">6. Risicobeheersing</h2>
+<h3 id="61-doel">6.1 Doel</h3>
+<p>Risicobeheersing bij <strong>TeamReel</strong> draait om het vroegtijdig herkennen van knelpunten en het treffen van maatregelen voordat ze impact hebben. In een soloproject betekent dat vooral: overzicht behouden, tijd bewaken en automatisch signalen laten genereren via tools. De aanpak is pragmatisch, maar professioneel — risico’s worden geregistreerd, gemonitord en geëvalueerd per fase.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Voorkomen is beter dan herstellen — risico’s vragen om aandacht, niet paniek.</em></p>
+</blockquote>
+<hr>
+<h3 id="62-werkwijze">6.2 Werkwijze</h3>
+<p>Elk risico krijgt een vaste classificatie volgens drie dimensies: <strong>impact</strong>, <strong>kans</strong> en <strong>beheersbaarheid</strong>. Per risico wordt een score toegekend (laag, midden, hoog) en een actie vastgelegd. De lijst wordt elke sprint herzien in <code>risks_log.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Dimensie</th>
+<th>Betekenis</th>
+<th>Voorbeeld</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Impact</strong></td>
+<td>Mate waarin het risico de voortgang of kwaliteit beïnvloedt.</td>
+<td>Serverstoring, AI-fout, dataverlies.</td>
+</tr>
+<tr>
+<td><strong>Kans</strong></td>
+<td>Waarschijnlijkheid dat het risico optreedt.</td>
+<td>Codebreuk door update.</td>
+</tr>
+<tr>
+<td><strong>Beheersbaarheid</strong></td>
+<td>Hoeveel invloed jij hebt op het voorkomen of beperken ervan.</td>
+<td>CI/CD-testdekking, back-upbeleid.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Risico’s worden beheersbaar zodra je ze zichtbaar maakt.</em></p>
+</blockquote>
+<hr>
+<h3 id="63-belangrijkste-risicos">6.3 Belangrijkste risico’s</h3>
+<p>De volgende tabel beschrijft de kernrisico’s voor TeamReel, inclusief preventieve acties en mitigatie.</p>
+<table>
+<thead>
+<tr>
+<th>Nr</th>
+<th>Categorie</th>
+<th>Beschrijving</th>
+<th>Kans</th>
+<th>Impact</th>
+<th>Maatregel / Mitigatie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Technisch</strong></td>
+<td>Fout in CI/CD-pipeline of buildscript.</td>
+<td>Middel</td>
+<td>Hoog</td>
+<td>Gebruik vaste testpijplijn, rollback en changelog per commit.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>AI-outputkwaliteit</strong></td>
+<td>Inconsistente of irrelevante resultaten uit AI-workflows.</td>
+<td>Hoog</td>
+<td>Middel</td>
+<td>Gebruik vaste promptstructuur en visuele validatie.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Beveiliging</strong></td>
+<td>Onbeveiligde data of toegangstokens.</td>
+<td>Laag</td>
+<td>Hoog</td>
+<td>Encryptie, secrets in <code>.env</code>, automatische tokenrotatie.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Tijd / capaciteit</strong></td>
+<td>Te weinig tijd voor oplevering van sprints.</td>
+<td>Hoog</td>
+<td>Middel</td>
+<td>Strakke planning en realistische sprintdoelen; prioriteer essentials.</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Scope-creep</strong></td>
+<td>Toevoegen van nieuwe functies zonder planning.</td>
+<td>Middel</td>
+<td>Middel</td>
+<td>Gebruik backlogfilter “later beoordelen”, herzie roadmap maandelijks.</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Data-integriteit</strong></td>
+<td>Verlies van test- of productiegegevens.</td>
+<td>Laag</td>
+<td>Hoog</td>
+<td>Wekelijkse back-up van database + sandbox reset.</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Afhankelijkheid van externe API’s</strong></td>
+<td>Externe service verandert of stopt.</td>
+<td>Middel</td>
+<td>Hoog</td>
+<td>Voeg fallback-routes toe; gebruik eigen cachinglaag.</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Technische schuld</strong></td>
+<td>Complexe code door snelle iteraties.</td>
+<td>Middel</td>
+<td>Middel</td>
+<td>Plan refactor-sprint na elke release.</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>Gezondheid / overbelasting</strong></td>
+<td>Hoge werkdruk in soloproject.</td>
+<td>Middel</td>
+<td>Hoog</td>
+<td>Stel duidelijke werktijden, plan rustdagen en reviewmomenten.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Risico’s horen erbij — discipline en structuur maken ze beheersbaar.</em></p>
+</blockquote>
+<hr>
+<h3 id="64-risico-overzicht-in-beeld">6.4 Risico-overzicht in beeld</h3>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Start sprint] --> B[Identificeer risico’s]
+B --> C{Nieuw risico?}
+C -->|Ja| D[Risico toevoegen aan risks_log.md]
+C -->|Nee| E[Beoordeel bestaande risico’s]
+D --> F[Mitigatie plannen]
+E --> F
+F --> G[Monitor tijdens uitvoering]
+G --> H{Incident opgetreden?}
+H -->|Ja| I[Log incident + herstelactie]
+H -->|Nee| J[Sprint afsluiten]
+I --> K[Evaluatie + aanpassing maatregelen]
+J --> K
+K --> L[Volgende sprint starten]
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Risicomanagement is een routine, geen reddingsactie.</em></p>
+</blockquote>
+<hr>
+<h3 id="65-automatische-signalering">6.5 Automatische signalering</h3>
+<p>Om tijdig te reageren op problemen, gebruikt TeamReel een aantal automatische signaleringen:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Tool</th>
+<th>Doel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CI/CD statuscheck</strong></td>
+<td>GitHub Actions</td>
+<td>Meldt buildfouten of falende tests direct in Slack.</td>
+</tr>
+<tr>
+<td><strong>Error monitoring</strong></td>
+<td>Sentry</td>
+<td>Detecteert runtime-fouten en rapporteert ze met stacktrace.</td>
+</tr>
+<tr>
+<td><strong>AI-output validatie</strong></td>
+<td>LangGraph feedbackloops</td>
+<td>Stuurt notificatie bij afwijkende resultaten of herhaalde fouten.</td>
+</tr>
+<tr>
+<td><strong>Serverstatus</strong></td>
+<td>Grafana dashboards</td>
+<td>Waarschuwt bij verhoogde responstijden of downtime.</td>
+</tr>
+</tbody>
+</table>
+<p>Elke melding genereert een item in <code>incident_log.md</code> met datum, oorzaak en herstelactie.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Automatische waarschuwingen besparen stress en verhogen reactietijd.</em></p>
+</blockquote>
+<hr>
+<h3 id="66-escalatie-en-herstel">6.6 Escalatie en herstel</h3>
+<p>Bij incidenten of structurele fouten geldt een vaste aanpak: detecteren → analyseren → herstellen → leren.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Detectie] --> B[Analyse oorzaak]
+B --> C[Oplossing implementeren]
+C --> D[Test & validatie]
+D --> E{Herhaling voorkomen?}
+E -->|Nee| F[Herstelprocedure uitbreiden]
+E -->|Ja| G[Rapport in evaluation_report.md]
+</div></code></pre>
+<p>Wanneer een incident zich herhaalt, wordt het risico geherwaardeerd (hogere kans of impact) en krijgt het prioriteit in de eerstvolgende sprint.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Herstel is pas compleet als herhaling is uitgesloten.</em></p>
+</blockquote>
+<hr>
+<h3 id="67-documentatie-van-risicos">6.7 Documentatie van risico’s</h3>
+<p>Alle risico’s en incidenten worden bijgehouden in Markdown-bestanden binnen <code>/docs/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Bestand</th>
+<th>Doel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>risks_log.md</code></td>
+<td>Overzicht van alle geïdentificeerde risico’s en hun status</td>
+</tr>
+<tr>
+<td><code>incident_log.md</code></td>
+<td>Registratie van gebeurtenissen en herstelacties</td>
+</tr>
+<tr>
+<td><code>evaluation_report.md</code></td>
+<td>Analyse van trends en verbeterpunten per fase</td>
+</tr>
+</tbody>
+</table>
+<p>Deze bestanden volgen de principes uit de <em>Style Foundation</em>: kort, actief en overzichtelijk.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Wat je vastlegt, kun je verbeteren — en herhalen wat werkt.</em></p>
+</blockquote>
+<hr>
+<h3 id="68-samenvatting">6.8 Samenvatting</h3>
+<p>Risicobeheersing binnen TeamReel is pragmatisch maar grondig. Door risico’s vroeg te signaleren, automatisch te monitoren en direct te documenteren, blijft het project voorspelbaar en beheersbaar. Deze aanpak past bij een soloproject, maar vormt ook een solide basis voor samenwerking zodra het team groeit.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Rust, overzicht en structuur zijn de beste verzekering tegen risico’s.</em></p>
+</blockquote>
+<h2 id="7-governance--evaluatie">7. Governance &amp; Evaluatie</h2>
+<h3 id="71-doel">7.1 Doel</h3>
+<p>Governance bij <strong>TeamReel</strong> gaat over het behouden van richting, transparantie en continu leren. Ook als soloproject is het belangrijk om beslissingen, resultaten en verbeteringen systematisch te documenteren. Zo blijft het project schaalbaar en overdraagbaar zodra meer mensen aansluiten.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Goede governance is geen controlemechanisme — het is een kompas.</em></p>
+</blockquote>
+<hr>
+<h3 id="72-structuur-van-besluitvorming">7.2 Structuur van besluitvorming</h3>
+<p>Alle beslissingen worden genomen volgens drie niveaus van invloed: <strong>strategisch</strong>, <strong>tactisch</strong> en <strong>operationeel</strong>. In de huidige fase vervul jij al deze rollen, maar de structuur blijft relevant voor groei of samenwerking.</p>
+<table>
+<thead>
+<tr>
+<th>Niveau</th>
+<th>Beslissingstype</th>
+<th>Voorbeelden</th>
+<th>Documentatie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Strategisch</strong></td>
+<td>Richting, visie, roadmapwijzigingen</td>
+<td>Nieuwe module, marktfocus</td>
+<td><code>decisions_log.md</code></td>
+</tr>
+<tr>
+<td><strong>Tactisch</strong></td>
+<td>Ontwerp- of technische keuzes</td>
+<td>API-aanpassing, datamodelwijziging</td>
+<td><code>changelog_project.md</code></td>
+</tr>
+<tr>
+<td><strong>Operationeel</strong></td>
+<td>Dagelijkse keuzes tijdens uitvoering</td>
+<td>Sprinttaken, kleine bugfixes</td>
+<td><code>progress_log.md</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Duidelijke niveaus voorkomen dat kleine keuzes grote gevolgen hebben.</em></p>
+</blockquote>
+<hr>
+<h3 id="73-besluitvormingsproces">7.3 Besluitvormingsproces</h3>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Idee of wijziging] --> B[Impactanalyse uitvoeren]
+B --> C{Strategisch of operationeel?}
+C -->|Strategisch| D[Documenteer in decisions_log.md]
+C -->|Operationeel| E[Voer wijziging uit in sprint]
+D --> F[Valideer tegen Businessplan & Roadmap]
+E --> F
+F --> G[Test & review]
+G --> H[Update changelog + communicatie]
+</div></code></pre>
+<p>Alle beslissingen worden kort gedocumenteerd: <em>wat is veranderd, waarom, en wat is het verwachte effect</em>. Dit zorgt voor transparantie en traceerbaarheid — cruciaal bij toekomstige groei.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Een goed besluit is pas waardevol als het vastgelegd en gedeeld wordt.</em></p>
+</blockquote>
+<hr>
+<h3 id="74-evaluatiestructuur">7.4 Evaluatiestructuur</h3>
+<p>Evaluatie is een vast onderdeel van elke sprint en elke fase. De cyclus volgt het principe: <strong>doen – meten – leren – verbeteren</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Type evaluatie</th>
+<th>Frequentie</th>
+<th>Doel</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sprintreview</strong></td>
+<td>Elke 2 weken</td>
+<td>Controleren of deliverables werken en getest zijn</td>
+<td>Update <code>progress_log.md</code></td>
+</tr>
+<tr>
+<td><strong>Fase-evaluatie</strong></td>
+<td>Na afronding van elke hoofd­fase</td>
+<td>Beoordelen van prestaties, risico’s en voortgang</td>
+<td>Rapport in <code>evaluation_report.md</code></td>
+</tr>
+<tr>
+<td><strong>Kwaliteitsreview</strong></td>
+<td>Per release</td>
+<td>Toetsen van code, UX en AI-output aan <em>Style Foundation</em></td>
+<td>Auditresultaten in <code>qa_log.md</code></td>
+</tr>
+<tr>
+<td><strong>Reflectie / retro</strong></td>
+<td>Maandelijks</td>
+<td>Verbeterpunten formuleren voor volgende periode</td>
+<td>Notities in <code>retrospective_log.md</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Leren is geen losse activiteit — het is een proces.</em></p>
+</blockquote>
+<hr>
+<h3 id="75-evaluatieproces-in-beeld">7.5 Evaluatieproces in beeld</h3>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Uitvoering sprint] --> B[Review en tests]
+B --> C[Resultaten loggen]
+C --> D[Analyse prestaties en kwaliteit]
+D --> E[Verbeterpunten formuleren]
+E --> F[Update roadmap en volgende sprintdoelen]
+</div></code></pre>
+<p>Deze cyclus maakt verbetering continu en meetbaar. Kleine observaties worden direct vertaald naar concrete acties voor de volgende sprint.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Kleine aanpassingen, grote vooruitgang.</em></p>
+</blockquote>
+<hr>
+<h3 id="76-feedback-en-transparantie">7.6 Feedback en transparantie</h3>
+<p>Feedback wordt systematisch verzameld via drie kanalen:</p>
+<ol>
+<li><strong>Automatische signalen</strong> uit CI/CD, AI-validatie en monitoring (objectieve data).</li>
+<li><strong>Zelfevaluaties</strong> na elke sprint (subjectieve reflectie).</li>
+<li><strong>Gebruikersfeedback</strong> van testclubs of reviewers (praktische inzichten).</li>
+</ol>
+<p>Alle feedback wordt samengevat in het maandelijkse <em>TeamReel Feedback Snapshot</em> (<code>feedback_log.md</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Bron</th>
+<th>Type feedback</th>
+<th>Actie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CI/CD</td>
+<td>Build- of teststatus</td>
+<td>Directe correctie in workflow</td>
+</tr>
+<tr>
+<td>Sandbox tests</td>
+<td>Functionele validatie</td>
+<td>Snapshot bijwerken of herstelactie</td>
+</tr>
+<tr>
+<td>Gebruiker</td>
+<td>Gebruiks- of UI-ervaring</td>
+<td>Verbetering in backlog opnemen</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Transparantie is de brandstof van vertrouwen.</em></p>
+</blockquote>
+<hr>
+<h3 id="77-governance-tools">7.7 Governance-tools</h3>
+<p>TeamReel gebruikt lichte, herhaalbare tools om besluitvorming en voortgang te borgen.</p>
+<table>
+<thead>
+<tr>
+<th>Domein</th>
+<th>Tool</th>
+<th>Functie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Documentatie</strong></td>
+<td>Notion + Markdown (<code>/docs</code>)</td>
+<td>Centrale opslag van besluiten en evaluaties</td>
+</tr>
+<tr>
+<td><strong>Versiebeheer</strong></td>
+<td>GitHub</td>
+<td>Transparante commitgeschiedenis en reviews</td>
+</tr>
+<tr>
+<td><strong>Projectmanagement</strong></td>
+<td>GitHub Projects + Linear</td>
+<td>Sprints, issues en releases bijhouden</td>
+</tr>
+<tr>
+<td><strong>Communicatie</strong></td>
+<td>Slack / Mail</td>
+<td>Notificaties en updates (automatisch via CI/CD)</td>
+</tr>
+</tbody>
+</table>
+<p>Deze tools sluiten aan op de <em>Style Foundation</em>: overzichtelijk, eenvoudig en toegankelijk.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De juiste tools ondersteunen ritme en focus.</em></p>
+</blockquote>
+<hr>
+<h3 id="78-verbetercyclus">7.8 Verbetercyclus</h3>
+<p>Verbeteringen worden niet ad-hoc doorgevoerd, maar volgens een vaste PDCA-cyclus (Plan – Do – Check – Act).</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TD
+A[Plan – Doelen en sprintplanning] --> B[Do – Ontwikkeling en uitvoering]
+B --> C[Check – Testen en evalueren]
+C --> D[Act – Verbeteringen implementeren]
+D --> A
+</div></code></pre>
+<p>Deze cyclus sluit aan op de iteratieve structuur van het projectplan en zorgt voor voortdurende kwaliteitsgroei.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Verbetering is cyclisch — niet incidenteel.</em></p>
+</blockquote>
+<hr>
+<h3 id="79-samenvatting">7.9 Samenvatting</h3>
+<p>De governance-structuur van TeamReel maakt elke stap herleidbaar, elke beslissing uitlegbaar en elke verbetering meetbaar. Zelfs als soloproject biedt deze werkwijze houvast, rust en vertrouwen. Wanneer het team later groeit, ligt er al een stevig raamwerk klaar voor gezamenlijke besluitvorming en kwaliteitsbeheer.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Governance is de lijm tussen visie, uitvoering en groei.</em></p>
+</blockquote>
+<h2 id="8-samenvatting--afronding">8. Samenvatting &amp; Afronding</h2>
+<h3 id="81-doel-van-dit-hoofdstuk">8.1 Doel van dit hoofdstuk</h3>
+<p>Dit slothoofdstuk vat het volledige projectplan samen en markeert het startpunt van de uitvoeringsfase. De vorige hoofdstukken hebben het <strong>wat</strong>, <strong>hoe</strong> en <strong>waarom</strong> van TeamReel beschreven. Dit hoofdstuk bevestigt dat alle randvoorwaarden, rollen en processen zijn vastgesteld zodat het project efficiënt, beheersbaar en toekomstgericht kan worden uitgevoerd.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Een goed plan is pas waardevol als het leidt tot actie.</em></p>
+</blockquote>
+<hr>
+<h3 id="82-samenvatting-van-de-kern">8.2 Samenvatting van de kern</h3>
+<p><strong>TeamReel</strong> is ontworpen als een modulair, schaalbaar en visueel consistent AI-platform voor sportverenigingen. De projectaanpak is bewust licht en wendbaar gehouden, passend bij de huidige situatie waarin jij het project zelfstandig uitvoert. Tegelijk is de structuur robuust genoeg om later moeiteloos uit te breiden met meerdere rollen en disciplines.</p>
+<table>
+<thead>
+<tr>
+<th>Domein</th>
+<th>Kernpunt</th>
+<th>Resultaat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Visie &amp; Strategie</strong></td>
+<td>Helpt sportclubs eenvoudig professionele clubcontent maken.</td>
+<td>Strategisch kader vastgelegd in <em>Businessplan</em>.</td>
+</tr>
+<tr>
+<td><strong>Ontwerp &amp; Functionaliteit</strong></td>
+<td>Duidelijke gebruikersflows en AI-workflows.</td>
+<td>Functioneel uitgewerkt in <em>Functional Design</em>.</td>
+</tr>
+<tr>
+<td><strong>Techniek &amp; Architectuur</strong></td>
+<td>Schaalbare backend en modulaire AI-structuur.</td>
+<td>Gedefinieerd in <em>Technical Design</em>.</td>
+</tr>
+<tr>
+<td><strong>Merk &amp; Stijl</strong></td>
+<td>Helder, sportief, toegankelijk.</td>
+<td>Geborgd via <em>Brand Identity</em> en <em>Style Foundation</em>.</td>
+</tr>
+<tr>
+<td><strong>Projectaanpak</strong></td>
+<td>Agile, iteratief en meetbaar.</td>
+<td>Vastgelegd in dit <em>Projectplan</em>.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>TeamReel heeft één visie, één stijl en één structuur — van idee tot uitvoering.</em></p>
+</blockquote>
+<hr>
+<h3 id="83-resultaat-van-de-voorbereidingsfase">8.3 Resultaat van de voorbereidingsfase</h3>
+<p>Alle voorbereidende documenten vormen samen een solide fundament:</p>
+<ol>
+<li>De <strong>Businessstrategie</strong> bepaalt de koers en groeifases.</li>
+<li>De <strong>Functionele structuur</strong> beschrijft wat gebruikers ervaren.</li>
+<li>De <strong>Technische opzet</strong> maakt uitvoering voorspelbaar en schaalbaar.</li>
+<li>De <strong>Merk- en stijlgidsen</strong> zorgen voor herkenbare consistentie.</li>
+<li>Dit <strong>Projectplan</strong> koppelt alles aan tijd, rollen en uitvoering.</li>
+</ol>
+<p>De volgende stap is het daadwerkelijk realiseren van de MVP volgens de eerste sprintplanning uit hoofdstuk 4.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De denkfase is voltooid — de bouwfase kan beginnen.</em></p>
+</blockquote>
+<hr>
+<h3 id="84-overgang-naar-uitvoering">8.4 Overgang naar uitvoering</h3>
+<p>De bouwfase start met de MVP: de <em>TeamReel Content Generator</em> met basisfunctionaliteiten (clubs, teams, AI-flows, creditsysteem en dashboard).<br>
+De eerste weken staan in het teken van:</p>
+<ul>
+<li>het opzetten van de ontwikkelomgeving en CI/CD,</li>
+<li>het implementeren van de datamodellen en API’s,</li>
+<li>het testen van de eerste AI-flows en UI-componenten,</li>
+<li>het verzamelen van feedback uit de testclub.</li>
+</ul>
+<p>Documentatie en kwaliteit blijven integraal onderdeel van de uitvoering. Elke sprint levert werkende software én een geactualiseerde documentatieversie op.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De uitvoeringsfase begint waar voorbereiding en discipline samenkomen.</em></p>
+</blockquote>
+<hr>
+<h3 id="85-reflectie-en-leerpunten">8.5 Reflectie en leerpunten</h3>
+<p>De voorbereidende fase heeft drie belangrijke inzichten opgeleverd:</p>
+<ol>
+<li><strong>Structuur creëert rust:</strong> een helder plan voorkomt versnippering.</li>
+<li><strong>Documentatie is kracht:</strong> elke keuze vastleggen verhoogt herhaalbaarheid.</li>
+<li><strong>Kleine stappen werken:</strong> iteratief bouwen houdt motivatie en focus hoog.</li>
+</ol>
+<p>Deze principes vormen de leidraad voor de komende maanden van ontwikkeling.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Discipline, eenvoud en consistentie vormen de sleutel tot succes.</em></p>
+</blockquote>
+<hr>
+<h3 id="86-koppeling-met-style-foundation">8.6 Koppeling met Style Foundation</h3>
+<p>Net als de andere documenten blijft ook dit projectplan gekoppeld aan de <em>TeamReel Style Foundation</em>. Dat betekent: korte zinnen, actieve toon, visuele helderheid en consequente terminologie. Deze stijl zorgt ervoor dat TeamReel niet alleen technisch, maar ook communicatief één geheel blijft.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De stijl is de lijm tussen techniek en merk.</em></p>
+</blockquote>
+<hr>
+<h3 id="87-slotwoord">8.7 Slotwoord</h3>
+<p>Met dit projectplan is de eerste fase van TeamReel afgerond. De visie is scherp, de structuur helder en de uitvoering startklaar. De komende periode draait alles om doen, testen, verbeteren en groeien — in de geest van sport: met energie, focus en plezier.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>TeamReel is klaar voor de aftrap — van plan naar praktijk.</em></p>
+</blockquote>
+
+</body>
+</html>

@@ -75,6 +75,10 @@ import {
   DeploymentPage,
 } from './pages/docs';
 import NotificationRoutingLogsPage from './pages/docs/NotificationRoutingLogsPage';
+import MatchDetailPage from './pages/activities/MatchDetailPage';
+import AIStudioPage from './pages/aistudio/AIStudioPage';
+import ContentLibraryPage from './pages/content/ContentLibraryPage';
+
 
 export default function App() {
   const { user } = useAuth();
@@ -100,6 +104,36 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* Activity / Match Routes */}
+      <Route
+        path="/matches/:matchId"
+        element={
+          <ProtectedRoute>
+            <MatchDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* AI Studio & Content */}
+      <Route
+        path="/studio/create"
+        element={
+          <ProtectedRoute>
+            <AIStudioPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content"
+        element={
+          <ProtectedRoute>
+            <ContentLibraryPage />
+          </ProtectedRoute>
+        }
+      />
+
+
 
       {/* Search route */}
       <Route

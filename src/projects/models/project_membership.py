@@ -47,6 +47,16 @@ class ProjectMembership(models.Model):
         help_text="User who holds this membership",
     )
 
+    # TeamReel: Link membership to specific period/season
+    period = models.ForeignKey(
+        "activities.Period",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="project_memberships",
+        help_text="Optional period/season scope (e.g., player in 2024/2025 season)",
+    )
+
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
@@ -59,6 +69,12 @@ class ProjectMembership(models.Model):
         choices=AssignmentReason.choices,
         default=AssignmentReason.MANUAL,
         help_text="How this membership was created",
+    )
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Additional membership data (position, shirt_number, etc.)",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -75,17 +91,13 @@ class ProjectMembership(models.Model):
         app_label = "projects"
         db_table = "projects_membership"
         ordering = ["-created_at"]
-        unique_together = [
-            ("project", "user")
-        ]  # Soft delete handled in constraints if needed, but unique_together enforces DB level uniqueness.
-        # Wait, if soft delete is used, unique_together should include deleted_at or use a partial index.
-        # The task says: unique_together = [('project', 'user'), where=Q(deleted_at__isnull=True)]
-        # Django 5 supports UniqueConstraint with condition.
+        # unique_together removed - using UniqueConstraint with condition instead
+        # This allows multiple memberships per (project, user) across different periods/roles
         constraints = [
             models.UniqueConstraint(
-                fields=["project", "user"],
+                fields=["project", "user", "period", "role"],
                 condition=models.Q(deleted_at__isnull=True),
-                name="unique_active_project_membership",
+                name="unique_project_user_period_role",
             )
         ]
         indexes = [

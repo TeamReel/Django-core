@@ -5,7 +5,13 @@ import {
   Card,
   Badge,
   Alert,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanel,
 } from '@django-core/design-system';
+import { ProjectMatches } from '../projects/ProjectMatches';
+import { MemberList } from '../projects/components/MemberList';
 import { Table } from '../../shims/design-system';
 import {
   PageHeader,
@@ -28,6 +34,7 @@ import AppShell from '../../components/AppShell';
  */
 export const ProjectDetailPage: React.FC = () => {
   const { orgId, projectId } = useParams<{ orgId: string; projectId: string }>();
+  const [activeTab, setActiveTab] = useState('details');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { context, organisations, projects: contextProjects } = useContextSwitcher();
@@ -415,7 +422,14 @@ export const ProjectDetailPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Project summary cards */}
+        <Tabs value={activeTab} onChange={setActiveTab}>
+          <TabList className="mb-6">
+            <Tab value="details">Details</Tab>
+            <Tab value="matches">Wedstrijden</Tab>
+          </TabList>
+
+          <TabPanel value="details">
+            {/* Project summary cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card data-testid="project-summary-status">
             <div className="text-sm text-gray-600">Status</div>
@@ -449,52 +463,10 @@ export const ProjectDetailPage: React.FC = () => {
 
         {/* Team members */}
         <Card className="mb-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold">Team Members</h3>
-            <p className="text-sm text-gray-500">
-              Users with explicit roles in this project, plus Organisation Admins.
-            </p>
-          </div>
-          {members.length > 0 ? (
-            <Table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {members.map((item: any) => {
-                  // Handle Membership object structure
-                  const user = item.user || item;
-                  const role = item.role || 'member';
-
-                  return (
-                    <tr key={user.id}>
-                      <td style={{ fontSize: '0.85rem' }}>
-                        {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
-                      </td>
-                      <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
-                      <td>
-                        <Badge variant="default" data-testid={`team-role-${user.id}`}>
-                          {role}
-                        </Badge>
-                      </td>
-                      <td style={{ fontSize: '0.85rem' }} data-testid={`team-joined-${user.id}`}>
-                        {item.joined_at
-                          ? new Date(item.joined_at).toLocaleDateString()
-                          : '-'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </Table>
-          ) : (
-            <Alert variant="info">No team members yet</Alert>
-          )}
+          <MemberList
+             projectId={project.slug || project.id}
+             initialMembers={members}
+          />
         </Card>
 
         {/* Recent activity */}
@@ -531,6 +503,16 @@ export const ProjectDetailPage: React.FC = () => {
             <Alert variant="info">No recent activity</Alert>
           )}
         </Card>
+        </TabPanel>
+
+        <TabPanel value="matches">
+          <Card>
+            <div className="p-4">
+              <ProjectMatches projectId={project.slug || project.id} />
+            </div>
+          </Card>
+        </TabPanel>
+      </Tabs>
       </PageContent>
       </div>
     </AppShell>

@@ -1,0 +1,811 @@
+federation,club,team_type,first_name,last_name,nationality,birth_date,position,shirt_number
+KNVB,Ajax,Jong,Ruben,Mulder,NED,2007-08-04,Keeper,1
+KNVB,Ajax,Jong,Bram,de Groot,NED,2006-04-14,Keeper,2
+KNVB,Ajax,Jong,Finn,Schouten,NED,2003-08-21,Verdediger,3
+KNVB,Ajax,Jong,Lucas,Hoekstra,NED,2005-06-19,Verdediger,4
+KNVB,Ajax,Jong,Mark,de Bruijn,NED,2004-09-12,Verdediger,5
+KNVB,Ajax,Jong,Thomas,Jacobs,NED,2003-08-12,Verdediger,6
+KNVB,Ajax,Jong,Max,Bos,NED,2005-08-20,Verdediger,7
+KNVB,Ajax,Jong,Daan,van Leeuwen,NED,2003-05-16,Middenvelder,8
+KNVB,Ajax,Jong,Dennis,Brouwer,NED,2006-09-22,Middenvelder,9
+KNVB,Ajax,Jong,Levi,van der Wal,NED,2004-06-19,Middenvelder,10
+KNVB,Ajax,Jong,Joey,Meijer,NED,2004-03-01,Middenvelder,11
+KNVB,Ajax,Jong,Jesse,van der Heijden,NED,2005-11-03,Aanvaller,12
+KNVB,Ajax,Jong,Mike,van den Heuvel,NED,2007-12-17,Aanvaller,13
+KNVB,Ajax,Jong,Nick,Jacobs,NED,2005-05-16,Aanvaller,14
+KNVB,Ajax,Jong,Sem,de Graaf,NED,2003-04-11,Aanvaller,15
+KNVB,Ajax,Reserves,Max,de Wit,NED,2004-05-02,Keeper,1
+KNVB,Ajax,Reserves,Kevin,Jacobs,NED,2003-04-01,Keeper,2
+KNVB,Ajax,Reserves,Ruben,Hoekstra,NED,2004-03-24,Verdediger,3
+KNVB,Ajax,Reserves,Tom,Bakker,NED,2000-03-14,Verdediger,4
+KNVB,Ajax,Reserves,Stijn,Peters,NED,2000-12-06,Verdediger,5
+KNVB,Ajax,Reserves,Daan,Jacobs,NED,2000-12-20,Verdediger,6
+KNVB,Ajax,Reserves,Jasper,Smits,NED,1997-08-09,Verdediger,7
+KNVB,Ajax,Reserves,Mike,van der Wal,NED,2001-11-24,Middenvelder,8
+KNVB,Ajax,Reserves,Milan,Bos,NED,2001-04-08,Middenvelder,9
+KNVB,Ajax,Reserves,Levi,de Haan,NED,1997-09-08,Middenvelder,10
+KNVB,Ajax,Reserves,Mark,van den Berg,NED,2000-12-21,Middenvelder,11
+KNVB,Ajax,Reserves,Kevin,van den Berg,NED,1996-10-12,Aanvaller,12
+KNVB,Ajax,Reserves,Joey,Brouwer,NED,2004-09-06,Aanvaller,13
+KNVB,Ajax,Reserves,Jasper,Smit,NED,1998-01-14,Aanvaller,14
+KNVB,Ajax,Reserves,Lars,de Bruin,NED,1999-06-27,Aanvaller,15
+KNVB,Ajax,Vrouwen,Iris,Smits,NED,2004-06-12,Keeper,1
+KNVB,Ajax,Vrouwen,Sophie,Dekker,NED,1999-08-19,Keeper,2
+KNVB,Ajax,Vrouwen,Lisa,Koster,NED,2006-01-13,Verdediger,3
+KNVB,Ajax,Vrouwen,Demi,Dijkstra,NED,2002-09-06,Verdediger,4
+KNVB,Ajax,Vrouwen,Nina,Kok,NED,2000-01-10,Verdediger,5
+KNVB,Ajax,Vrouwen,Iris,Koster,NED,1995-12-12,Verdediger,6
+KNVB,Ajax,Vrouwen,Fenna,Smit,NED,2004-04-20,Verdediger,7
+KNVB,Ajax,Vrouwen,Luna,Mulder,NED,2000-05-17,Middenvelder,8
+KNVB,Ajax,Vrouwen,Julie,van der Veen,NED,2004-12-24,Middenvelder,9
+KNVB,Ajax,Vrouwen,Demi,van de Ven,NED,2006-01-06,Middenvelder,10
+KNVB,Ajax,Vrouwen,Nina,Hendriks,NED,2005-09-09,Middenvelder,11
+KNVB,Ajax,Vrouwen,Lotte,Hendriks,NED,2000-03-18,Aanvaller,12
+KNVB,Ajax,Vrouwen,Kim,Bakker,NED,2004-09-13,Aanvaller,13
+KNVB,Ajax,Vrouwen,Sophie,Hoekstra,NED,1993-08-23,Aanvaller,14
+KNVB,Ajax,Vrouwen,Lotte,de Vries,NED,1992-11-08,Aanvaller,15
+KNVB,PSV,Jong,Levi,van der Wal,NED,2004-04-07,Keeper,1
+KNVB,PSV,Jong,Tom,van den Heuvel,NED,2005-12-14,Keeper,2
+KNVB,PSV,Jong,Jelle,Koster,NED,2004-07-13,Verdediger,3
+KNVB,PSV,Jong,Jesse,van der Linden,NED,2006-12-03,Verdediger,4
+KNVB,PSV,Jong,Lars,Schouten,NED,2005-10-09,Verdediger,5
+KNVB,PSV,Jong,Jasper,Mulder,NED,2004-02-01,Verdediger,6
+KNVB,PSV,Jong,Mike,de Graaf,NED,2003-04-08,Verdediger,7
+KNVB,PSV,Jong,Kevin,Smit,NED,2007-10-12,Middenvelder,8
+KNVB,PSV,Jong,Sven,Smit,NED,2005-10-23,Middenvelder,9
+KNVB,PSV,Jong,Max,van Dijk,NED,2007-07-23,Middenvelder,10
+KNVB,PSV,Jong,Lars,Dijkstra,NED,2007-05-12,Middenvelder,11
+KNVB,PSV,Jong,Bram,van Dijk,NED,2007-03-24,Aanvaller,12
+KNVB,PSV,Jong,Nick,Meijer,NED,2003-03-16,Aanvaller,13
+KNVB,PSV,Jong,Jasper,Vos,NED,2006-02-27,Aanvaller,14
+KNVB,PSV,Jong,Levi,Dekker,NED,2006-06-01,Aanvaller,15
+KNVB,PSV,Reserves,Niels,Kok,NED,2000-06-02,Keeper,1
+KNVB,PSV,Reserves,Jelle,Smit,NED,1998-06-06,Keeper,2
+KNVB,PSV,Reserves,Milan,de Bruijn,NED,2000-12-21,Verdediger,3
+KNVB,PSV,Reserves,Luuk,Smits,NED,2001-11-26,Verdediger,4
+KNVB,PSV,Reserves,Mike,van Leeuwen,NED,1997-12-13,Verdediger,5
+KNVB,PSV,Reserves,Stijn,van der Meer,NED,1996-08-12,Verdediger,6
+KNVB,PSV,Reserves,Dennis,van den Heuvel,NED,2001-11-24,Verdediger,7
+KNVB,PSV,Reserves,Jesse,van den Broek,NED,2004-05-19,Middenvelder,8
+KNVB,PSV,Reserves,Thijs,Verhoeven,NED,1999-05-28,Middenvelder,9
+KNVB,PSV,Reserves,Niels,de Wit,NED,1996-11-19,Middenvelder,10
+KNVB,PSV,Reserves,Niels,van Dijk,NED,2000-10-24,Middenvelder,11
+KNVB,PSV,Reserves,Levi,van de Ven,NED,2004-02-03,Aanvaller,12
+KNVB,PSV,Reserves,Jelle,Vermeulen,NED,1997-11-25,Aanvaller,13
+KNVB,PSV,Reserves,Lucas,Willems,NED,2001-01-16,Aanvaller,14
+KNVB,PSV,Reserves,Julian,van der Heijden,NED,1996-08-19,Aanvaller,15
+KNVB,PSV,Vrouwen,Kim,Maas,NED,1996-02-11,Keeper,1
+KNVB,PSV,Vrouwen,Isa,van Dijk,NED,2001-07-23,Keeper,2
+KNVB,PSV,Vrouwen,Lynn,de Vries,NED,1997-10-21,Verdediger,3
+KNVB,PSV,Vrouwen,Anna,van de Ven,NED,1993-01-09,Verdediger,4
+KNVB,PSV,Vrouwen,Amber,van Vliet,NED,1997-03-02,Verdediger,5
+KNVB,PSV,Vrouwen,Lynn,van Vliet,NED,2003-02-19,Verdediger,6
+KNVB,PSV,Vrouwen,Nina,de Bruijn,NED,1997-09-25,Verdediger,7
+KNVB,PSV,Vrouwen,Sanne,Hendriks,NED,2003-01-12,Middenvelder,8
+KNVB,PSV,Vrouwen,Roos,Brouwer,NED,1993-04-03,Middenvelder,9
+KNVB,PSV,Vrouwen,Evi,van der Linden,NED,1992-04-09,Middenvelder,10
+KNVB,PSV,Vrouwen,Femke,de Wit,NED,2004-10-20,Middenvelder,11
+KNVB,PSV,Vrouwen,Laura,van Leeuwen,NED,2000-02-02,Aanvaller,12
+KNVB,PSV,Vrouwen,Lynn,Verhoeven,NED,1994-02-04,Aanvaller,13
+KNVB,PSV,Vrouwen,Lotte,Hendriks,NED,2006-08-11,Aanvaller,14
+KNVB,PSV,Vrouwen,Eva,de Groot,NED,2002-07-17,Aanvaller,15
+KNVB,Feyenoord,Jong,Luuk,van der Veen,NED,2003-08-10,Keeper,1
+KNVB,Feyenoord,Jong,Sem,de Haan,NED,2005-12-05,Keeper,2
+KNVB,Feyenoord,Jong,Sven,Kok,NED,2006-08-03,Verdediger,3
+KNVB,Feyenoord,Jong,Dennis,Jacobs,NED,2004-12-14,Verdediger,4
+KNVB,Feyenoord,Jong,Mike,Dekker,NED,2007-04-12,Verdediger,5
+KNVB,Feyenoord,Jong,Mark,Kok,NED,2007-02-27,Verdediger,6
+KNVB,Feyenoord,Jong,Jesse,de Vries,NED,2005-10-01,Verdediger,7
+KNVB,Feyenoord,Jong,Levi,van den Heuvel,NED,2004-02-16,Middenvelder,8
+KNVB,Feyenoord,Jong,Daan,Brouwer,NED,2007-03-19,Middenvelder,9
+KNVB,Feyenoord,Jong,Milan,van der Veen,NED,2003-11-03,Middenvelder,10
+KNVB,Feyenoord,Jong,Milan,Brouwer,NED,2006-01-24,Middenvelder,11
+KNVB,Feyenoord,Jong,Thomas,Visser,NED,2003-12-10,Aanvaller,12
+KNVB,Feyenoord,Jong,Nick,de Wit,NED,2005-08-16,Aanvaller,13
+KNVB,Feyenoord,Jong,Milan,Jacobs,NED,2007-11-18,Aanvaller,14
+KNVB,Feyenoord,Jong,Joey,Kok,NED,2006-05-26,Aanvaller,15
+KNVB,Feyenoord,Reserves,Dennis,Vos,NED,1998-01-25,Keeper,1
+KNVB,Feyenoord,Reserves,Mike,van Vliet,NED,2004-12-02,Keeper,2
+KNVB,Feyenoord,Reserves,Mike,van der Wal,NED,2004-08-01,Verdediger,3
+KNVB,Feyenoord,Reserves,Lars,Hendriks,NED,1996-11-22,Verdediger,4
+KNVB,Feyenoord,Reserves,Daan,van den Heuvel,NED,1997-01-04,Verdediger,5
+KNVB,Feyenoord,Reserves,Niels,Meijer,NED,1998-07-05,Verdediger,6
+KNVB,Feyenoord,Reserves,Lars,Kok,NED,2000-10-10,Verdediger,7
+KNVB,Feyenoord,Reserves,Sem,van der Heijden,NED,1998-05-28,Middenvelder,8
+KNVB,Feyenoord,Reserves,Lars,van Beek,NED,2003-09-14,Middenvelder,9
+KNVB,Feyenoord,Reserves,Max,Mulder,NED,2001-10-18,Middenvelder,10
+KNVB,Feyenoord,Reserves,Kevin,van Dijk,NED,1996-10-05,Middenvelder,11
+KNVB,Feyenoord,Reserves,Rick,Smits,NED,2003-08-19,Aanvaller,12
+KNVB,Feyenoord,Reserves,Levi,Bos,NED,2003-04-15,Aanvaller,13
+KNVB,Feyenoord,Reserves,Bram,van Vliet,NED,2000-06-19,Aanvaller,14
+KNVB,Feyenoord,Reserves,Mike,Schouten,NED,2000-08-03,Aanvaller,15
+KNVB,Feyenoord,Vrouwen,Julia,de Bruijn,NED,1998-09-21,Keeper,1
+KNVB,Feyenoord,Vrouwen,Eva,van Dijk,NED,2006-01-06,Keeper,2
+KNVB,Feyenoord,Vrouwen,Demi,de Bruijn,NED,2001-10-07,Verdediger,3
+KNVB,Feyenoord,Vrouwen,Sophie,Koster,NED,1998-03-07,Verdediger,4
+KNVB,Feyenoord,Vrouwen,Julia,Vermeulen,NED,2003-08-03,Verdediger,5
+KNVB,Feyenoord,Vrouwen,Fenna,de Boer,NED,2002-07-02,Verdediger,6
+KNVB,Feyenoord,Vrouwen,Sanne,Bos,NED,2000-06-17,Verdediger,7
+KNVB,Feyenoord,Vrouwen,Lisa,de Jong,NED,1993-07-26,Middenvelder,8
+KNVB,Feyenoord,Vrouwen,Luna,Jansen,NED,1999-05-11,Middenvelder,9
+KNVB,Feyenoord,Vrouwen,Iris,Koster,NED,2000-12-23,Middenvelder,10
+KNVB,Feyenoord,Vrouwen,Julie,Visser,NED,2003-11-16,Middenvelder,11
+KNVB,Feyenoord,Vrouwen,Lisa,Jansen,NED,2004-11-19,Aanvaller,12
+KNVB,Feyenoord,Vrouwen,Isa,Willems,NED,1993-06-07,Aanvaller,13
+KNVB,Feyenoord,Vrouwen,Floor,de Wit,NED,2006-05-26,Aanvaller,14
+KNVB,Feyenoord,Vrouwen,Noa,Hendriks,NED,2006-07-17,Aanvaller,15
+KNVB,AZ,Jong,Dennis,Smit,NED,2003-12-13,Keeper,1
+KNVB,AZ,Jong,Ruben,de Vries,NED,2004-07-19,Keeper,2
+KNVB,AZ,Jong,Nick,Schouten,NED,2004-01-28,Verdediger,3
+KNVB,AZ,Jong,Tim,Peters,NED,2004-07-07,Verdediger,4
+KNVB,AZ,Jong,Thomas,van Vliet,NED,2003-12-08,Verdediger,5
+KNVB,AZ,Jong,Thijs,van Dijk,NED,2006-06-19,Verdediger,6
+KNVB,AZ,Jong,Thijs,Verhoeven,NED,2004-08-06,Verdediger,7
+KNVB,AZ,Jong,Tim,van Dijk,NED,2006-12-27,Middenvelder,8
+KNVB,AZ,Jong,Mike,Smit,NED,2006-09-01,Middenvelder,9
+KNVB,AZ,Jong,Robin,van Leeuwen,NED,2006-08-21,Middenvelder,10
+KNVB,AZ,Jong,Dennis,de Wit,NED,2006-07-22,Middenvelder,11
+KNVB,AZ,Jong,Nick,Brouwer,NED,2007-03-10,Aanvaller,12
+KNVB,AZ,Jong,Lars,de Wit,NED,2004-07-23,Aanvaller,13
+KNVB,AZ,Jong,Joey,Peters,NED,2005-11-22,Aanvaller,14
+KNVB,AZ,Jong,Tom,Meijer,NED,2005-01-28,Aanvaller,15
+KNVB,AZ,Reserves,Bram,van den Berg,NED,1999-08-14,Keeper,1
+KNVB,AZ,Reserves,Mike,Smit,NED,1998-09-27,Keeper,2
+KNVB,AZ,Reserves,Lucas,Schouten,NED,1999-02-22,Verdediger,3
+KNVB,AZ,Reserves,Thomas,van Vliet,NED,1996-11-13,Verdediger,4
+KNVB,AZ,Reserves,Robin,Visser,NED,1996-08-25,Verdediger,5
+KNVB,AZ,Reserves,Robin,van der Wal,NED,2001-01-21,Verdediger,6
+KNVB,AZ,Reserves,Robin,Hoekstra,NED,2000-07-25,Verdediger,7
+KNVB,AZ,Reserves,Luuk,van der Meer,NED,1998-07-21,Middenvelder,8
+KNVB,AZ,Reserves,Daan,Koster,NED,2004-07-11,Middenvelder,9
+KNVB,AZ,Reserves,Milan,de Groot,NED,2002-03-10,Middenvelder,10
+KNVB,AZ,Reserves,Mark,de Bruin,NED,1997-02-14,Middenvelder,11
+KNVB,AZ,Reserves,Tim,van den Broek,NED,2003-11-12,Aanvaller,12
+KNVB,AZ,Reserves,Dennis,Maas,NED,1997-09-11,Aanvaller,13
+KNVB,AZ,Reserves,Nick,de Vries,NED,2004-12-01,Aanvaller,14
+KNVB,AZ,Reserves,Sven,Verhoeven,NED,1997-03-15,Aanvaller,15
+KNVB,AZ,Vrouwen,Demi,Brouwer,NED,2003-03-18,Keeper,1
+KNVB,AZ,Vrouwen,Noa,Dekker,NED,1997-02-02,Keeper,2
+KNVB,AZ,Vrouwen,Demi,Dijkstra,NED,1997-09-13,Verdediger,3
+KNVB,AZ,Vrouwen,Demi,Jacobs,NED,2003-11-24,Verdediger,4
+KNVB,AZ,Vrouwen,Nina,van der Heijden,NED,2006-07-27,Verdediger,5
+KNVB,AZ,Vrouwen,Mila,van der Linden,NED,2002-07-05,Verdediger,6
+KNVB,AZ,Vrouwen,Femke,van der Wal,NED,2001-11-21,Verdediger,7
+KNVB,AZ,Vrouwen,Sanne,de Haan,NED,1999-11-10,Middenvelder,8
+KNVB,AZ,Vrouwen,Laura,Bos,NED,2001-11-01,Middenvelder,9
+KNVB,AZ,Vrouwen,Isa,Jacobs,NED,1998-05-07,Middenvelder,10
+KNVB,AZ,Vrouwen,Roos,van der Veen,NED,1992-12-21,Middenvelder,11
+KNVB,AZ,Vrouwen,Anna,de Wit,NED,2006-02-26,Aanvaller,12
+KNVB,AZ,Vrouwen,Lisa,Willems,NED,1994-02-05,Aanvaller,13
+KNVB,AZ,Vrouwen,Kim,Hoekstra,NED,2006-03-02,Aanvaller,14
+KNVB,AZ,Vrouwen,Lisa,van Leeuwen,NED,1999-10-25,Aanvaller,15
+KNVB,FC Twente,Jong,Luuk,Bos,NED,2005-01-03,Keeper,1
+KNVB,FC Twente,Jong,Milan,de Groot,NED,2005-04-15,Keeper,2
+KNVB,FC Twente,Jong,Sem,Meijer,NED,2004-03-12,Verdediger,3
+KNVB,FC Twente,Jong,Thijs,Willems,NED,2007-06-19,Verdediger,4
+KNVB,FC Twente,Jong,Rick,Jansen,NED,2007-11-06,Verdediger,5
+KNVB,FC Twente,Jong,Jasper,van Beek,NED,2006-10-02,Verdediger,6
+KNVB,FC Twente,Jong,Lucas,van Dam,NED,2003-06-11,Verdediger,7
+KNVB,FC Twente,Jong,Kevin,Brouwer,NED,2005-05-19,Middenvelder,8
+KNVB,FC Twente,Jong,Rick,Dekker,NED,2007-12-11,Middenvelder,9
+KNVB,FC Twente,Jong,Dennis,van der Meer,NED,2006-03-26,Middenvelder,10
+KNVB,FC Twente,Jong,Daan,de Haan,NED,2005-06-23,Middenvelder,11
+KNVB,FC Twente,Jong,Thomas,Hoekstra,NED,2004-11-10,Aanvaller,12
+KNVB,FC Twente,Jong,Thomas,van der Meer,NED,2007-04-12,Aanvaller,13
+KNVB,FC Twente,Jong,Tom,van de Ven,NED,2007-10-13,Aanvaller,14
+KNVB,FC Twente,Jong,Lars,Peters,NED,2004-08-27,Aanvaller,15
+KNVB,FC Twente,Reserves,Max,van de Ven,NED,1996-08-10,Keeper,1
+KNVB,FC Twente,Reserves,Max,Vos,NED,1997-06-24,Keeper,2
+KNVB,FC Twente,Reserves,Tim,Mulder,NED,1997-02-03,Verdediger,3
+KNVB,FC Twente,Reserves,Ruben,van der Linden,NED,1998-08-25,Verdediger,4
+KNVB,FC Twente,Reserves,Tom,de Bruijn,NED,2002-09-19,Verdediger,5
+KNVB,FC Twente,Reserves,Mark,de Bruijn,NED,2003-09-27,Verdediger,6
+KNVB,FC Twente,Reserves,Jesse,Vermeulen,NED,1998-01-14,Verdediger,7
+KNVB,FC Twente,Reserves,Luuk,Vos,NED,1996-11-01,Middenvelder,8
+KNVB,FC Twente,Reserves,Sven,de Bruijn,NED,2002-02-21,Middenvelder,9
+KNVB,FC Twente,Reserves,Dennis,Hoekstra,NED,2003-06-22,Middenvelder,10
+KNVB,FC Twente,Reserves,Daan,Bos,NED,2003-11-04,Middenvelder,11
+KNVB,FC Twente,Reserves,Kevin,Hoekstra,NED,2003-11-14,Aanvaller,12
+KNVB,FC Twente,Reserves,Luuk,de Haan,NED,1997-04-03,Aanvaller,13
+KNVB,FC Twente,Reserves,Jelle,van Dijk,NED,1999-09-15,Aanvaller,14
+KNVB,FC Twente,Reserves,Tim,van der Meer,NED,2001-08-13,Aanvaller,15
+KNVB,FC Twente,Vrouwen,Lynn,Mulder,NED,2000-11-10,Keeper,1
+KNVB,FC Twente,Vrouwen,Luna,Jacobs,NED,2000-12-09,Keeper,2
+KNVB,FC Twente,Vrouwen,Eva,van den Berg,NED,2005-02-09,Verdediger,3
+KNVB,FC Twente,Vrouwen,Julia,van Beek,NED,2002-12-25,Verdediger,4
+KNVB,FC Twente,Vrouwen,Evi,van der Meer,NED,1999-11-27,Verdediger,5
+KNVB,FC Twente,Vrouwen,Anna,Maas,NED,2005-06-07,Verdediger,6
+KNVB,FC Twente,Vrouwen,Fleur,van den Heuvel,NED,1994-04-26,Verdediger,7
+KNVB,FC Twente,Vrouwen,Lotte,de Bruijn,NED,2005-12-04,Middenvelder,8
+KNVB,FC Twente,Vrouwen,Julie,van der Wal,NED,1996-09-20,Middenvelder,9
+KNVB,FC Twente,Vrouwen,Lisa,Mulder,NED,2003-10-16,Middenvelder,10
+KNVB,FC Twente,Vrouwen,Noa,Jacobs,NED,2003-02-28,Middenvelder,11
+KNVB,FC Twente,Vrouwen,Lisa,Meijer,NED,2006-10-28,Aanvaller,12
+KNVB,FC Twente,Vrouwen,Lynn,Peters,NED,2003-01-28,Aanvaller,13
+KNVB,FC Twente,Vrouwen,Julie,Smit,NED,2001-04-26,Aanvaller,14
+KNVB,FC Twente,Vrouwen,Nina,Verhoeven,NED,2006-12-13,Aanvaller,15
+KNVB,FC Utrecht,Jong,Julian,de Groot,NED,2005-07-17,Keeper,1
+KNVB,FC Utrecht,Jong,Bram,de Jong,NED,2006-11-08,Keeper,2
+KNVB,FC Utrecht,Jong,Luuk,de Vries,NED,2003-04-15,Verdediger,3
+KNVB,FC Utrecht,Jong,Bram,Dijkstra,NED,2003-11-20,Verdediger,4
+KNVB,FC Utrecht,Jong,Jelle,Smit,NED,2006-04-11,Verdediger,5
+KNVB,FC Utrecht,Jong,Niels,van Vliet,NED,2004-05-12,Verdediger,6
+KNVB,FC Utrecht,Jong,Milan,Jansen,NED,2005-08-13,Verdediger,7
+KNVB,FC Utrecht,Jong,Luuk,van der Veen,NED,2007-09-16,Middenvelder,8
+KNVB,FC Utrecht,Jong,Finn,Smits,NED,2003-03-16,Middenvelder,9
+KNVB,FC Utrecht,Jong,Sem,de Jong,NED,2004-01-24,Middenvelder,10
+KNVB,FC Utrecht,Jong,Finn,de Wit,NED,2003-07-04,Middenvelder,11
+KNVB,FC Utrecht,Jong,Luuk,Bakker,NED,2003-05-17,Aanvaller,12
+KNVB,FC Utrecht,Jong,Niels,van Beek,NED,2007-10-23,Aanvaller,13
+KNVB,FC Utrecht,Jong,Lucas,Bos,NED,2007-01-28,Aanvaller,14
+KNVB,FC Utrecht,Jong,Sven,Mulder,NED,2003-02-08,Aanvaller,15
+KNVB,FC Utrecht,Reserves,Thomas,Visser,NED,2001-03-06,Keeper,1
+KNVB,FC Utrecht,Reserves,Robin,Hendriks,NED,1996-03-28,Keeper,2
+KNVB,FC Utrecht,Reserves,Mark,de Groot,NED,1999-04-11,Verdediger,3
+KNVB,FC Utrecht,Reserves,Thomas,Bakker,NED,1996-12-06,Verdediger,4
+KNVB,FC Utrecht,Reserves,Niels,Jansen,NED,2001-12-20,Verdediger,5
+KNVB,FC Utrecht,Reserves,Levi,Willems,NED,2001-09-06,Verdediger,6
+KNVB,FC Utrecht,Reserves,Julian,de Jong,NED,1999-02-15,Verdediger,7
+KNVB,FC Utrecht,Reserves,Daan,Koster,NED,2000-01-23,Middenvelder,8
+KNVB,FC Utrecht,Reserves,Max,de Boer,NED,2004-04-05,Middenvelder,9
+KNVB,FC Utrecht,Reserves,Bram,van Dijk,NED,1998-07-13,Middenvelder,10
+KNVB,FC Utrecht,Reserves,Joey,Verhoeven,NED,1997-10-04,Middenvelder,11
+KNVB,FC Utrecht,Reserves,Luuk,Verhoeven,NED,1997-11-09,Aanvaller,12
+KNVB,FC Utrecht,Reserves,Mark,van der Veen,NED,2003-04-01,Aanvaller,13
+KNVB,FC Utrecht,Reserves,Joey,Hendriks,NED,2002-01-25,Aanvaller,14
+KNVB,FC Utrecht,Reserves,Niels,Dijkstra,NED,2002-07-11,Aanvaller,15
+KNVB,FC Utrecht,Vrouwen,Julia,van de Ven,NED,2002-06-09,Keeper,1
+KNVB,FC Utrecht,Vrouwen,Demi,van Dam,NED,2005-07-14,Keeper,2
+KNVB,FC Utrecht,Vrouwen,Sarah,de Haan,NED,2002-01-14,Verdediger,3
+KNVB,FC Utrecht,Vrouwen,Laura,de Vries,NED,1995-12-09,Verdediger,4
+KNVB,FC Utrecht,Vrouwen,Julie,Willems,NED,1998-08-14,Verdediger,5
+KNVB,FC Utrecht,Vrouwen,Amber,van der Heijden,NED,2005-03-26,Verdediger,6
+KNVB,FC Utrecht,Vrouwen,Roos,Jacobs,NED,1993-10-11,Verdediger,7
+KNVB,FC Utrecht,Vrouwen,Lisa,Dekker,NED,1998-09-20,Middenvelder,8
+KNVB,FC Utrecht,Vrouwen,Luna,van den Broek,NED,2003-05-11,Middenvelder,9
+KNVB,FC Utrecht,Vrouwen,Eva,van den Broek,NED,1999-06-04,Middenvelder,10
+KNVB,FC Utrecht,Vrouwen,Lieke,van der Meer,NED,1998-05-24,Middenvelder,11
+KNVB,FC Utrecht,Vrouwen,Evi,van der Linden,NED,2006-09-16,Aanvaller,12
+KNVB,FC Utrecht,Vrouwen,Anna,Jacobs,NED,1993-02-11,Aanvaller,13
+KNVB,FC Utrecht,Vrouwen,Emma,Mulder,NED,2000-03-06,Aanvaller,14
+KNVB,FC Utrecht,Vrouwen,Iris,de Jong,NED,1996-05-17,Aanvaller,15
+KNVB,FC Groningen,Jong,Bram,de Haan,NED,2007-06-27,Keeper,1
+KNVB,FC Groningen,Jong,Jasper,van der Heijden,NED,2004-01-28,Keeper,2
+KNVB,FC Groningen,Jong,Dennis,Peters,NED,2005-07-06,Verdediger,3
+KNVB,FC Groningen,Jong,Max,Brouwer,NED,2004-02-08,Verdediger,4
+KNVB,FC Groningen,Jong,Tom,van Leeuwen,NED,2007-12-10,Verdediger,5
+KNVB,FC Groningen,Jong,Rick,de Vries,NED,2007-01-08,Verdediger,6
+KNVB,FC Groningen,Jong,Milan,de Haan,NED,2006-03-20,Verdediger,7
+KNVB,FC Groningen,Jong,Levi,Vermeulen,NED,2003-03-16,Middenvelder,8
+KNVB,FC Groningen,Jong,Thomas,Jacobs,NED,2005-12-04,Middenvelder,9
+KNVB,FC Groningen,Jong,Jasper,van Dam,NED,2006-03-28,Middenvelder,10
+KNVB,FC Groningen,Jong,Finn,Kok,NED,2005-07-23,Middenvelder,11
+KNVB,FC Groningen,Jong,Kevin,de Wit,NED,2007-03-11,Aanvaller,12
+KNVB,FC Groningen,Jong,Jasper,Smits,NED,2003-12-24,Aanvaller,13
+KNVB,FC Groningen,Jong,Thijs,Vos,NED,2006-05-13,Aanvaller,14
+KNVB,FC Groningen,Jong,Thijs,Dekker,NED,2005-07-24,Aanvaller,15
+KNVB,FC Groningen,Reserves,Mark,Hendriks,NED,2004-06-23,Keeper,1
+KNVB,FC Groningen,Reserves,Kevin,van den Berg,NED,1998-03-22,Keeper,2
+KNVB,FC Groningen,Reserves,Stijn,van den Broek,NED,1997-02-05,Verdediger,3
+KNVB,FC Groningen,Reserves,Joey,van de Ven,NED,1996-11-09,Verdediger,4
+KNVB,FC Groningen,Reserves,Mike,van der Veen,NED,2004-03-04,Verdediger,5
+KNVB,FC Groningen,Reserves,Jelle,de Graaf,NED,2001-07-03,Verdediger,6
+KNVB,FC Groningen,Reserves,Lucas,de Jong,NED,2002-01-11,Verdediger,7
+KNVB,FC Groningen,Reserves,Mark,Jansen,NED,2000-10-18,Middenvelder,8
+KNVB,FC Groningen,Reserves,Kevin,Vermeulen,NED,1998-12-07,Middenvelder,9
+KNVB,FC Groningen,Reserves,Lucas,Hoekstra,NED,1999-11-23,Middenvelder,10
+KNVB,FC Groningen,Reserves,Joey,van der Heijden,NED,2001-08-08,Middenvelder,11
+KNVB,FC Groningen,Reserves,Kevin,Meijer,NED,2000-05-12,Aanvaller,12
+KNVB,FC Groningen,Reserves,Julian,Bos,NED,2001-11-07,Aanvaller,13
+KNVB,FC Groningen,Reserves,Mike,van der Heijden,NED,2004-04-12,Aanvaller,14
+KNVB,FC Groningen,Reserves,Stijn,Brouwer,NED,2002-11-15,Aanvaller,15
+KNVB,FC Groningen,Vrouwen,Lisa,de Graaf,NED,1992-11-22,Keeper,1
+KNVB,FC Groningen,Vrouwen,Femke,Dekker,NED,2001-02-28,Keeper,2
+KNVB,FC Groningen,Vrouwen,Eva,Hendriks,NED,2005-07-12,Verdediger,3
+KNVB,FC Groningen,Vrouwen,Sara,van der Meer,NED,2002-11-03,Verdediger,4
+KNVB,FC Groningen,Vrouwen,Lynn,Vermeulen,NED,1992-08-01,Verdediger,5
+KNVB,FC Groningen,Vrouwen,Demi,Smits,NED,1998-04-16,Verdediger,6
+KNVB,FC Groningen,Vrouwen,Lotte,Maas,NED,1998-06-24,Verdediger,7
+KNVB,FC Groningen,Vrouwen,Julie,Meijer,NED,2001-11-21,Middenvelder,8
+KNVB,FC Groningen,Vrouwen,Femke,van der Wal,NED,2000-07-28,Middenvelder,9
+KNVB,FC Groningen,Vrouwen,Fleur,van den Broek,NED,2002-04-27,Middenvelder,10
+KNVB,FC Groningen,Vrouwen,Eva,de Wit,NED,2003-09-26,Middenvelder,11
+KNVB,FC Groningen,Vrouwen,Femke,van Dijk,NED,1992-02-21,Aanvaller,12
+KNVB,FC Groningen,Vrouwen,Julia,Willems,NED,1994-09-05,Aanvaller,13
+KNVB,FC Groningen,Vrouwen,Julia,de Haan,NED,2000-05-19,Aanvaller,14
+KNVB,FC Groningen,Vrouwen,Noa,de Boer,NED,1996-09-28,Aanvaller,15
+KNVB,Almere City,Jong,Sem,Kok,NED,2007-05-25,Keeper,1
+KNVB,Almere City,Jong,Finn,van der Meer,NED,2003-05-18,Keeper,2
+KNVB,Almere City,Jong,Lars,van den Heuvel,NED,2006-06-03,Verdediger,3
+KNVB,Almere City,Jong,Kevin,Maas,NED,2003-03-15,Verdediger,4
+KNVB,Almere City,Jong,Jelle,Hendriks,NED,2006-08-27,Verdediger,5
+KNVB,Almere City,Jong,Jesse,Jacobs,NED,2004-11-21,Verdediger,6
+KNVB,Almere City,Jong,Sven,Bakker,NED,2005-09-20,Verdediger,7
+KNVB,Almere City,Jong,Joey,Vos,NED,2005-07-09,Middenvelder,8
+KNVB,Almere City,Jong,Max,van der Wal,NED,2006-07-07,Middenvelder,9
+KNVB,Almere City,Jong,Levi,van Dam,NED,2007-12-12,Middenvelder,10
+KNVB,Almere City,Jong,Bram,van der Heijden,NED,2004-09-04,Middenvelder,11
+KNVB,Almere City,Jong,Robin,Kok,NED,2003-04-10,Aanvaller,12
+KNVB,Almere City,Jong,Ruben,Jansen,NED,2007-03-06,Aanvaller,13
+KNVB,Almere City,Jong,Milan,van der Linden,NED,2007-08-09,Aanvaller,14
+KNVB,Almere City,Jong,Julian,Schouten,NED,2005-10-15,Aanvaller,15
+KNVB,Almere City,Reserves,Rick,Dekker,NED,2001-12-23,Keeper,1
+KNVB,Almere City,Reserves,Jesse,Dekker,NED,2002-04-07,Keeper,2
+KNVB,Almere City,Reserves,Rick,Visser,NED,2002-09-26,Verdediger,3
+KNVB,Almere City,Reserves,Thijs,van der Linden,NED,1997-05-22,Verdediger,4
+KNVB,Almere City,Reserves,Finn,Bos,NED,1996-08-16,Verdediger,5
+KNVB,Almere City,Reserves,Mark,de Haan,NED,2001-04-17,Verdediger,6
+KNVB,Almere City,Reserves,Lars,van der Meer,NED,2000-08-08,Verdediger,7
+KNVB,Almere City,Reserves,Lars,de Groot,NED,2001-07-27,Middenvelder,8
+KNVB,Almere City,Reserves,Stijn,de Haan,NED,2002-12-10,Middenvelder,9
+KNVB,Almere City,Reserves,Milan,Bakker,NED,2001-06-07,Middenvelder,10
+KNVB,Almere City,Reserves,Milan,van den Berg,NED,2002-11-17,Middenvelder,11
+KNVB,Almere City,Reserves,Dennis,Jacobs,NED,2000-11-28,Aanvaller,12
+KNVB,Almere City,Reserves,Joey,Verhoeven,NED,1999-07-27,Aanvaller,13
+KNVB,Almere City,Reserves,Daan,Dijkstra,NED,1998-10-03,Aanvaller,14
+KNVB,Almere City,Reserves,Joey,de Boer,NED,2002-08-06,Aanvaller,15
+KNVB,Almere City,Vrouwen,Julie,Hendriks,NED,1996-11-03,Keeper,1
+KNVB,Almere City,Vrouwen,Amber,Dekker,NED,2004-03-14,Keeper,2
+KNVB,Almere City,Vrouwen,Fenna,van der Wal,NED,1995-03-22,Verdediger,3
+KNVB,Almere City,Vrouwen,Lisa,Peters,NED,2000-11-11,Verdediger,4
+KNVB,Almere City,Vrouwen,Kim,de Haan,NED,2004-07-03,Verdediger,5
+KNVB,Almere City,Vrouwen,Fenna,Kok,NED,2005-03-07,Verdediger,6
+KNVB,Almere City,Vrouwen,Emma,van den Broek,NED,2003-09-27,Verdediger,7
+KNVB,Almere City,Vrouwen,Laura,Schouten,NED,1998-02-28,Middenvelder,8
+KNVB,Almere City,Vrouwen,Emma,Mulder,NED,1993-11-19,Middenvelder,9
+KNVB,Almere City,Vrouwen,Demi,van Leeuwen,NED,1995-03-01,Middenvelder,10
+KNVB,Almere City,Vrouwen,Lotte,Maas,NED,2006-08-16,Middenvelder,11
+KNVB,Almere City,Vrouwen,Anna,van Dam,NED,2001-09-27,Aanvaller,12
+KNVB,Almere City,Vrouwen,Roos,Willems,NED,1993-10-23,Aanvaller,13
+KNVB,Almere City,Vrouwen,Isa,Smits,NED,2005-06-02,Aanvaller,14
+KNVB,Almere City,Vrouwen,Lisa,Dekker,NED,1998-07-16,Aanvaller,15
+KNVB,Fortuna Sittard,Jong,Julian,de Haan,NED,2003-05-06,Keeper,1
+KNVB,Fortuna Sittard,Jong,Jasper,van Vliet,NED,2003-02-14,Keeper,2
+KNVB,Fortuna Sittard,Jong,Levi,de Haan,NED,2007-02-12,Verdediger,3
+KNVB,Fortuna Sittard,Jong,Sven,Dekker,NED,2003-09-28,Verdediger,4
+KNVB,Fortuna Sittard,Jong,Julian,Koster,NED,2007-07-08,Verdediger,5
+KNVB,Fortuna Sittard,Jong,Daan,Smit,NED,2004-03-18,Verdediger,6
+KNVB,Fortuna Sittard,Jong,Milan,van Vliet,NED,2003-02-24,Verdediger,7
+KNVB,Fortuna Sittard,Jong,Lars,de Boer,NED,2005-02-28,Middenvelder,8
+KNVB,Fortuna Sittard,Jong,Jesse,Vos,NED,2003-08-27,Middenvelder,9
+KNVB,Fortuna Sittard,Jong,Rick,van Beek,NED,2003-12-04,Middenvelder,10
+KNVB,Fortuna Sittard,Jong,Thomas,Bakker,NED,2007-01-27,Middenvelder,11
+KNVB,Fortuna Sittard,Jong,Mike,Vermeulen,NED,2003-04-27,Aanvaller,12
+KNVB,Fortuna Sittard,Jong,Daan,van den Heuvel,NED,2003-05-15,Aanvaller,13
+KNVB,Fortuna Sittard,Jong,Ruben,Willems,NED,2007-09-21,Aanvaller,14
+KNVB,Fortuna Sittard,Jong,Lucas,Kok,NED,2004-03-02,Aanvaller,15
+KNVB,Fortuna Sittard,Reserves,Bram,van der Wal,NED,1996-09-01,Keeper,1
+KNVB,Fortuna Sittard,Reserves,Thomas,Smits,NED,2000-04-12,Keeper,2
+KNVB,Fortuna Sittard,Reserves,Robin,Meijer,NED,2001-05-13,Verdediger,3
+KNVB,Fortuna Sittard,Reserves,Jelle,van den Heuvel,NED,1997-01-28,Verdediger,4
+KNVB,Fortuna Sittard,Reserves,Robin,van den Berg,NED,2003-01-12,Verdediger,5
+KNVB,Fortuna Sittard,Reserves,Max,de Boer,NED,1999-12-13,Verdediger,6
+KNVB,Fortuna Sittard,Reserves,Dennis,Koster,NED,1997-11-27,Verdediger,7
+KNVB,Fortuna Sittard,Reserves,Lars,de Bruin,NED,2002-07-24,Middenvelder,8
+KNVB,Fortuna Sittard,Reserves,Jasper,Mulder,NED,1999-02-24,Middenvelder,9
+KNVB,Fortuna Sittard,Reserves,Finn,de Jong,NED,2002-07-27,Middenvelder,10
+KNVB,Fortuna Sittard,Reserves,Sem,van der Heijden,NED,2000-02-22,Middenvelder,11
+KNVB,Fortuna Sittard,Reserves,Lars,Jacobs,NED,2002-05-17,Aanvaller,12
+KNVB,Fortuna Sittard,Reserves,Thomas,Hendriks,NED,2001-07-06,Aanvaller,13
+KNVB,Fortuna Sittard,Reserves,Tom,Willems,NED,1997-01-08,Aanvaller,14
+KNVB,Fortuna Sittard,Reserves,Thomas,van den Heuvel,NED,1998-07-13,Aanvaller,15
+KNVB,Fortuna Sittard,Vrouwen,Noa,van den Berg,NED,2001-01-26,Keeper,1
+KNVB,Fortuna Sittard,Vrouwen,Iris,van den Broek,NED,1999-01-06,Keeper,2
+KNVB,Fortuna Sittard,Vrouwen,Sarah,van Vliet,NED,2000-04-13,Verdediger,3
+KNVB,Fortuna Sittard,Vrouwen,Luna,Peters,NED,1992-05-06,Verdediger,4
+KNVB,Fortuna Sittard,Vrouwen,Roos,de Groot,NED,2006-12-16,Verdediger,5
+KNVB,Fortuna Sittard,Vrouwen,Lieke,Hoekstra,NED,1992-03-14,Verdediger,6
+KNVB,Fortuna Sittard,Vrouwen,Kim,Meijer,NED,1999-09-28,Verdediger,7
+KNVB,Fortuna Sittard,Vrouwen,Luna,de Boer,NED,2006-09-09,Middenvelder,8
+KNVB,Fortuna Sittard,Vrouwen,Roos,Brouwer,NED,2003-03-18,Middenvelder,9
+KNVB,Fortuna Sittard,Vrouwen,Noa,Maas,NED,1994-01-08,Middenvelder,10
+KNVB,Fortuna Sittard,Vrouwen,Lisa,Verhoeven,NED,1995-07-07,Middenvelder,11
+KNVB,Fortuna Sittard,Vrouwen,Julie,Willems,NED,2003-11-24,Aanvaller,12
+KNVB,Fortuna Sittard,Vrouwen,Roos,de Bruijn,NED,1999-06-02,Aanvaller,13
+KNVB,Fortuna Sittard,Vrouwen,Eva,van der Heijden,NED,2003-09-20,Aanvaller,14
+KNVB,Fortuna Sittard,Vrouwen,Nina,van den Heuvel,NED,2003-09-09,Aanvaller,15
+KNVB,Go Ahead Eagles,Jong,Jasper,van den Berg,NED,2006-10-16,Keeper,1
+KNVB,Go Ahead Eagles,Jong,Tom,de Bruin,NED,2006-01-07,Keeper,2
+KNVB,Go Ahead Eagles,Jong,Tom,de Haan,NED,2007-01-20,Verdediger,3
+KNVB,Go Ahead Eagles,Jong,Robin,Jacobs,NED,2007-11-08,Verdediger,4
+KNVB,Go Ahead Eagles,Jong,Jelle,de Groot,NED,2004-06-08,Verdediger,5
+KNVB,Go Ahead Eagles,Jong,Jasper,Maas,NED,2006-07-28,Verdediger,6
+KNVB,Go Ahead Eagles,Jong,Jesse,Jansen,NED,2004-05-12,Verdediger,7
+KNVB,Go Ahead Eagles,Jong,Mike,Dekker,NED,2004-12-19,Middenvelder,8
+KNVB,Go Ahead Eagles,Jong,Ruben,Hoekstra,NED,2003-05-02,Middenvelder,9
+KNVB,Go Ahead Eagles,Jong,Daan,Dijkstra,NED,2004-12-10,Middenvelder,10
+KNVB,Go Ahead Eagles,Jong,Tom,Dijkstra,NED,2007-09-27,Middenvelder,11
+KNVB,Go Ahead Eagles,Jong,Tim,Mulder,NED,2005-01-21,Aanvaller,12
+KNVB,Go Ahead Eagles,Jong,Bram,Hendriks,NED,2005-02-03,Aanvaller,13
+KNVB,Go Ahead Eagles,Jong,Rick,Dijkstra,NED,2006-06-23,Aanvaller,14
+KNVB,Go Ahead Eagles,Jong,Nick,Jansen,NED,2004-02-09,Aanvaller,15
+KNVB,Go Ahead Eagles,Reserves,Thijs,van Beek,NED,1997-08-20,Keeper,1
+KNVB,Go Ahead Eagles,Reserves,Jasper,de Groot,NED,2000-12-25,Keeper,2
+KNVB,Go Ahead Eagles,Reserves,Lars,van den Berg,NED,1999-04-05,Verdediger,3
+KNVB,Go Ahead Eagles,Reserves,Robin,Smits,NED,2004-03-27,Verdediger,4
+KNVB,Go Ahead Eagles,Reserves,Tim,de Wit,NED,1999-06-12,Verdediger,5
+KNVB,Go Ahead Eagles,Reserves,Rick,Vos,NED,2004-02-05,Verdediger,6
+KNVB,Go Ahead Eagles,Reserves,Stijn,de Vries,NED,2002-11-19,Verdediger,7
+KNVB,Go Ahead Eagles,Reserves,Dennis,van Dam,NED,2004-05-28,Middenvelder,8
+KNVB,Go Ahead Eagles,Reserves,Daan,van de Ven,NED,2004-03-07,Middenvelder,9
+KNVB,Go Ahead Eagles,Reserves,Robin,van Dam,NED,1997-11-16,Middenvelder,10
+KNVB,Go Ahead Eagles,Reserves,Sem,van den Heuvel,NED,2001-08-17,Middenvelder,11
+KNVB,Go Ahead Eagles,Reserves,Jesse,van der Linden,NED,1997-01-15,Aanvaller,12
+KNVB,Go Ahead Eagles,Reserves,Sem,Smit,NED,2000-04-10,Aanvaller,13
+KNVB,Go Ahead Eagles,Reserves,Sem,Jansen,NED,1997-01-27,Aanvaller,14
+KNVB,Go Ahead Eagles,Reserves,Lars,Hendriks,NED,2001-08-02,Aanvaller,15
+KNVB,Go Ahead Eagles,Vrouwen,Fenna,Koster,NED,2001-04-19,Keeper,1
+KNVB,Go Ahead Eagles,Vrouwen,Lieke,Visser,NED,2003-06-15,Keeper,2
+KNVB,Go Ahead Eagles,Vrouwen,Julie,van den Broek,NED,1998-11-21,Verdediger,3
+KNVB,Go Ahead Eagles,Vrouwen,Roos,Jansen,NED,1997-02-11,Verdediger,4
+KNVB,Go Ahead Eagles,Vrouwen,Roos,Jacobs,NED,1995-09-18,Verdediger,5
+KNVB,Go Ahead Eagles,Vrouwen,Evi,Peters,NED,2006-01-02,Verdediger,6
+KNVB,Go Ahead Eagles,Vrouwen,Laura,Kok,NED,2003-03-27,Verdediger,7
+KNVB,Go Ahead Eagles,Vrouwen,Femke,Vos,NED,1996-02-03,Middenvelder,8
+KNVB,Go Ahead Eagles,Vrouwen,Amber,van der Heijden,NED,2003-03-11,Middenvelder,9
+KNVB,Go Ahead Eagles,Vrouwen,Floor,de Boer,NED,2003-12-26,Middenvelder,10
+KNVB,Go Ahead Eagles,Vrouwen,Femke,van der Wal,NED,2005-07-21,Middenvelder,11
+KNVB,Go Ahead Eagles,Vrouwen,Demi,Bakker,NED,1992-06-18,Aanvaller,12
+KNVB,Go Ahead Eagles,Vrouwen,Lisa,Jansen,NED,2002-08-22,Aanvaller,13
+KNVB,Go Ahead Eagles,Vrouwen,Emma,de Groot,NED,1994-07-07,Aanvaller,14
+KNVB,Go Ahead Eagles,Vrouwen,Fenna,de Wit,NED,2003-11-15,Aanvaller,15
+KNVB,Heracles Almelo,Jong,Kevin,van den Heuvel,NED,2005-06-11,Keeper,1
+KNVB,Heracles Almelo,Jong,Mark,Bos,NED,2003-06-03,Keeper,2
+KNVB,Heracles Almelo,Jong,Rick,de Groot,NED,2004-04-11,Verdediger,3
+KNVB,Heracles Almelo,Jong,Rick,van der Veen,NED,2003-12-10,Verdediger,4
+KNVB,Heracles Almelo,Jong,Jelle,Smit,NED,2006-07-24,Verdediger,5
+KNVB,Heracles Almelo,Jong,Kevin,de Groot,NED,2006-01-24,Verdediger,6
+KNVB,Heracles Almelo,Jong,Ruben,Jansen,NED,2003-10-10,Verdediger,7
+KNVB,Heracles Almelo,Jong,Levi,Hoekstra,NED,2005-12-03,Middenvelder,8
+KNVB,Heracles Almelo,Jong,Rick,Hendriks,NED,2006-04-22,Middenvelder,9
+KNVB,Heracles Almelo,Jong,Lars,van Dam,NED,2003-09-09,Middenvelder,10
+KNVB,Heracles Almelo,Jong,Lars,Bakker,NED,2004-10-05,Middenvelder,11
+KNVB,Heracles Almelo,Jong,Julian,Smit,NED,2006-02-15,Aanvaller,12
+KNVB,Heracles Almelo,Jong,Mark,van den Heuvel,NED,2007-01-18,Aanvaller,13
+KNVB,Heracles Almelo,Jong,Niels,de Bruin,NED,2005-11-26,Aanvaller,14
+KNVB,Heracles Almelo,Jong,Milan,van Leeuwen,NED,2003-02-15,Aanvaller,15
+KNVB,Heracles Almelo,Reserves,Jelle,Jacobs,NED,1997-08-02,Keeper,1
+KNVB,Heracles Almelo,Reserves,Nick,de Jong,NED,2000-08-08,Keeper,2
+KNVB,Heracles Almelo,Reserves,Mark,Visser,NED,2000-09-11,Verdediger,3
+KNVB,Heracles Almelo,Reserves,Max,Verhoeven,NED,2001-08-20,Verdediger,4
+KNVB,Heracles Almelo,Reserves,Niels,Visser,NED,2004-01-13,Verdediger,5
+KNVB,Heracles Almelo,Reserves,Finn,de Vries,NED,2003-11-09,Verdediger,6
+KNVB,Heracles Almelo,Reserves,Luuk,Jansen,NED,1996-08-14,Verdediger,7
+KNVB,Heracles Almelo,Reserves,Lucas,Kok,NED,1999-05-24,Middenvelder,8
+KNVB,Heracles Almelo,Reserves,Ruben,van der Linden,NED,1998-01-16,Middenvelder,9
+KNVB,Heracles Almelo,Reserves,Milan,Verhoeven,NED,2001-10-04,Middenvelder,10
+KNVB,Heracles Almelo,Reserves,Jesse,Vos,NED,2002-08-11,Middenvelder,11
+KNVB,Heracles Almelo,Reserves,Ruben,van den Broek,NED,2001-07-09,Aanvaller,12
+KNVB,Heracles Almelo,Reserves,Max,van der Wal,NED,1996-12-27,Aanvaller,13
+KNVB,Heracles Almelo,Reserves,Rick,Meijer,NED,2002-05-23,Aanvaller,14
+KNVB,Heracles Almelo,Reserves,Tim,Smits,NED,2004-07-21,Aanvaller,15
+KNVB,Heracles Almelo,Vrouwen,Iris,Jacobs,NED,2004-05-27,Keeper,1
+KNVB,Heracles Almelo,Vrouwen,Laura,Koster,NED,2002-05-01,Keeper,2
+KNVB,Heracles Almelo,Vrouwen,Sara,van den Berg,NED,2001-03-17,Verdediger,3
+KNVB,Heracles Almelo,Vrouwen,Sophie,van den Berg,NED,1993-05-21,Verdediger,4
+KNVB,Heracles Almelo,Vrouwen,Amber,de Bruijn,NED,1992-01-10,Verdediger,5
+KNVB,Heracles Almelo,Vrouwen,Mila,Meijer,NED,1992-05-26,Verdediger,6
+KNVB,Heracles Almelo,Vrouwen,Noa,Maas,NED,1996-12-03,Verdediger,7
+KNVB,Heracles Almelo,Vrouwen,Sara,van Beek,NED,2006-01-01,Middenvelder,8
+KNVB,Heracles Almelo,Vrouwen,Fenna,Visser,NED,1995-12-18,Middenvelder,9
+KNVB,Heracles Almelo,Vrouwen,Kim,van der Veen,NED,2003-11-08,Middenvelder,10
+KNVB,Heracles Almelo,Vrouwen,Iris,Willems,NED,2005-03-27,Middenvelder,11
+KNVB,Heracles Almelo,Vrouwen,Lotte,Willems,NED,2005-07-18,Aanvaller,12
+KNVB,Heracles Almelo,Vrouwen,Iris,de Boer,NED,1996-08-18,Aanvaller,13
+KNVB,Heracles Almelo,Vrouwen,Demi,de Wit,NED,2001-02-09,Aanvaller,14
+KNVB,Heracles Almelo,Vrouwen,Isa,Jansen,NED,1995-12-08,Aanvaller,15
+KNVB,NAC Breda,Jong,Stijn,van Vliet,NED,2004-07-05,Keeper,1
+KNVB,NAC Breda,Jong,Jelle,de Wit,NED,2003-10-02,Keeper,2
+KNVB,NAC Breda,Jong,Luuk,de Jong,NED,2003-12-11,Verdediger,3
+KNVB,NAC Breda,Jong,Luuk,van der Veen,NED,2004-10-02,Verdediger,4
+KNVB,NAC Breda,Jong,Joey,Verhoeven,NED,2003-02-03,Verdediger,5
+KNVB,NAC Breda,Jong,Max,de Haan,NED,2004-02-17,Verdediger,6
+KNVB,NAC Breda,Jong,Mike,Bakker,NED,2007-03-04,Verdediger,7
+KNVB,NAC Breda,Jong,Levi,van den Berg,NED,2005-01-19,Middenvelder,8
+KNVB,NAC Breda,Jong,Max,de Wit,NED,2007-05-14,Middenvelder,9
+KNVB,NAC Breda,Jong,Rick,Mulder,NED,2007-11-09,Middenvelder,10
+KNVB,NAC Breda,Jong,Thijs,de Haan,NED,2004-10-01,Middenvelder,11
+KNVB,NAC Breda,Jong,Mike,Vos,NED,2007-09-25,Aanvaller,12
+KNVB,NAC Breda,Jong,Joey,Jacobs,NED,2004-08-10,Aanvaller,13
+KNVB,NAC Breda,Jong,Levi,Jansen,NED,2005-02-26,Aanvaller,14
+KNVB,NAC Breda,Jong,Bram,de Vries,NED,2007-10-01,Aanvaller,15
+KNVB,NAC Breda,Reserves,Levi,Willems,NED,2003-11-12,Keeper,1
+KNVB,NAC Breda,Reserves,Thijs,Maas,NED,2000-06-14,Keeper,2
+KNVB,NAC Breda,Reserves,Stijn,de Graaf,NED,2000-09-03,Verdediger,3
+KNVB,NAC Breda,Reserves,Sven,Bakker,NED,1999-03-21,Verdediger,4
+KNVB,NAC Breda,Reserves,Joey,Bakker,NED,2003-01-07,Verdediger,5
+KNVB,NAC Breda,Reserves,Mike,van der Heijden,NED,2003-02-07,Verdediger,6
+KNVB,NAC Breda,Reserves,Finn,van Vliet,NED,2001-03-08,Verdediger,7
+KNVB,NAC Breda,Reserves,Nick,van der Wal,NED,1998-07-13,Middenvelder,8
+KNVB,NAC Breda,Reserves,Niels,van den Berg,NED,1996-07-04,Middenvelder,9
+KNVB,NAC Breda,Reserves,Lucas,Bos,NED,2004-12-25,Middenvelder,10
+KNVB,NAC Breda,Reserves,Tom,Visser,NED,2003-07-18,Middenvelder,11
+KNVB,NAC Breda,Reserves,Daan,Smits,NED,1999-11-21,Aanvaller,12
+KNVB,NAC Breda,Reserves,Jesse,van der Veen,NED,2002-06-13,Aanvaller,13
+KNVB,NAC Breda,Reserves,Robin,Hendriks,NED,1998-05-26,Aanvaller,14
+KNVB,NAC Breda,Reserves,Finn,de Haan,NED,2003-09-18,Aanvaller,15
+KNVB,NAC Breda,Vrouwen,Floor,Bos,NED,1999-09-26,Keeper,1
+KNVB,NAC Breda,Vrouwen,Sanne,de Bruin,NED,2005-06-05,Keeper,2
+KNVB,NAC Breda,Vrouwen,Roos,van de Ven,NED,2000-09-04,Verdediger,3
+KNVB,NAC Breda,Vrouwen,Evi,Schouten,NED,1993-10-08,Verdediger,4
+KNVB,NAC Breda,Vrouwen,Lisa,van Dam,NED,1998-11-03,Verdediger,5
+KNVB,NAC Breda,Vrouwen,Mila,de Jong,NED,2004-08-08,Verdediger,6
+KNVB,NAC Breda,Vrouwen,Isa,van Beek,NED,1994-11-22,Verdediger,7
+KNVB,NAC Breda,Vrouwen,Iris,Vermeulen,NED,2000-01-04,Middenvelder,8
+KNVB,NAC Breda,Vrouwen,Lotte,de Vries,NED,2006-05-21,Middenvelder,9
+KNVB,NAC Breda,Vrouwen,Julia,Mulder,NED,2006-12-12,Middenvelder,10
+KNVB,NAC Breda,Vrouwen,Lieke,Koster,NED,1999-08-01,Middenvelder,11
+KNVB,NAC Breda,Vrouwen,Lisa,van de Ven,NED,2001-06-06,Aanvaller,12
+KNVB,NAC Breda,Vrouwen,Anna,Vermeulen,NED,2006-08-09,Aanvaller,13
+KNVB,NAC Breda,Vrouwen,Fleur,van Vliet,NED,2004-03-21,Aanvaller,14
+KNVB,NAC Breda,Vrouwen,Julia,Meijer,NED,1992-03-12,Aanvaller,15
+KNVB,NEC,Jong,Levi,de Wit,NED,2006-02-21,Keeper,1
+KNVB,NEC,Jong,Sven,Mulder,NED,2007-03-10,Keeper,2
+KNVB,NEC,Jong,Milan,de Groot,NED,2007-04-24,Verdediger,3
+KNVB,NEC,Jong,Thijs,van Vliet,NED,2004-01-26,Verdediger,4
+KNVB,NEC,Jong,Levi,van Vliet,NED,2004-09-15,Verdediger,5
+KNVB,NEC,Jong,Julian,de Groot,NED,2003-11-17,Verdediger,6
+KNVB,NEC,Jong,Jelle,Maas,NED,2005-11-13,Verdediger,7
+KNVB,NEC,Jong,Max,de Boer,NED,2007-12-10,Middenvelder,8
+KNVB,NEC,Jong,Nick,van der Meer,NED,2007-09-08,Middenvelder,9
+KNVB,NEC,Jong,Luuk,Hendriks,NED,2004-04-26,Middenvelder,10
+KNVB,NEC,Jong,Julian,Bakker,NED,2006-04-09,Middenvelder,11
+KNVB,NEC,Jong,Stijn,Maas,NED,2005-05-18,Aanvaller,12
+KNVB,NEC,Jong,Levi,van Beek,NED,2006-06-16,Aanvaller,13
+KNVB,NEC,Jong,Finn,van der Heijden,NED,2003-03-10,Aanvaller,14
+KNVB,NEC,Jong,Mike,de Bruijn,NED,2005-08-01,Aanvaller,15
+KNVB,NEC,Reserves,Daan,van de Ven,NED,2003-10-07,Keeper,1
+KNVB,NEC,Reserves,Levi,de Bruijn,NED,2001-10-28,Keeper,2
+KNVB,NEC,Reserves,Kevin,van Leeuwen,NED,2000-06-05,Verdediger,3
+KNVB,NEC,Reserves,Bram,de Vries,NED,1996-08-19,Verdediger,4
+KNVB,NEC,Reserves,Finn,van Dijk,NED,2000-12-04,Verdediger,5
+KNVB,NEC,Reserves,Sem,Jacobs,NED,2000-04-09,Verdediger,6
+KNVB,NEC,Reserves,Bram,van der Wal,NED,2004-09-03,Verdediger,7
+KNVB,NEC,Reserves,Sem,Vermeulen,NED,2003-09-11,Middenvelder,8
+KNVB,NEC,Reserves,Jasper,van den Broek,NED,1996-02-03,Middenvelder,9
+KNVB,NEC,Reserves,Levi,Meijer,NED,2002-08-13,Middenvelder,10
+KNVB,NEC,Reserves,Kevin,Meijer,NED,2003-02-13,Middenvelder,11
+KNVB,NEC,Reserves,Sven,Smits,NED,1998-09-26,Aanvaller,12
+KNVB,NEC,Reserves,Lucas,van der Heijden,NED,2003-01-18,Aanvaller,13
+KNVB,NEC,Reserves,Niels,Vos,NED,1996-10-19,Aanvaller,14
+KNVB,NEC,Reserves,Thomas,de Jong,NED,2000-01-24,Aanvaller,15
+KNVB,NEC,Vrouwen,Roos,Dekker,NED,1994-10-06,Keeper,1
+KNVB,NEC,Vrouwen,Julie,Jacobs,NED,2001-02-11,Keeper,2
+KNVB,NEC,Vrouwen,Kim,Bos,NED,2005-10-28,Verdediger,3
+KNVB,NEC,Vrouwen,Roos,Mulder,NED,1996-05-09,Verdediger,4
+KNVB,NEC,Vrouwen,Sanne,Mulder,NED,1997-12-22,Verdediger,5
+KNVB,NEC,Vrouwen,Lieke,van Dijk,NED,1995-01-24,Verdediger,6
+KNVB,NEC,Vrouwen,Lieke,Mulder,NED,2000-01-28,Verdediger,7
+KNVB,NEC,Vrouwen,Julia,Brouwer,NED,1994-01-12,Middenvelder,8
+KNVB,NEC,Vrouwen,Roos,de Bruin,NED,2002-07-07,Middenvelder,9
+KNVB,NEC,Vrouwen,Eva,Kok,NED,2001-06-04,Middenvelder,10
+KNVB,NEC,Vrouwen,Fleur,Brouwer,NED,1992-06-04,Middenvelder,11
+KNVB,NEC,Vrouwen,Evi,de Groot,NED,1997-02-27,Aanvaller,12
+KNVB,NEC,Vrouwen,Iris,de Bruin,NED,1997-11-13,Aanvaller,13
+KNVB,NEC,Vrouwen,Demi,van den Heuvel,NED,2003-05-20,Aanvaller,14
+KNVB,NEC,Vrouwen,Demi,de Vries,NED,2000-12-28,Aanvaller,15
+KNVB,PEC Zwolle,Jong,Jelle,Mulder,NED,2004-01-19,Keeper,1
+KNVB,PEC Zwolle,Jong,Rick,Hoekstra,NED,2006-04-09,Keeper,2
+KNVB,PEC Zwolle,Jong,Bram,de Boer,NED,2007-08-06,Verdediger,3
+KNVB,PEC Zwolle,Jong,Jasper,Dekker,NED,2005-04-02,Verdediger,4
+KNVB,PEC Zwolle,Jong,Mike,Meijer,NED,2007-12-02,Verdediger,5
+KNVB,PEC Zwolle,Jong,Rick,Jansen,NED,2004-06-09,Verdediger,6
+KNVB,PEC Zwolle,Jong,Jesse,Visser,NED,2006-08-21,Verdediger,7
+KNVB,PEC Zwolle,Jong,Jesse,de Graaf,NED,2005-10-11,Middenvelder,8
+KNVB,PEC Zwolle,Jong,Jasper,van der Meer,NED,2007-09-20,Middenvelder,9
+KNVB,PEC Zwolle,Jong,Kevin,Smit,NED,2007-12-18,Middenvelder,10
+KNVB,PEC Zwolle,Jong,Sem,de Jong,NED,2003-11-17,Middenvelder,11
+KNVB,PEC Zwolle,Jong,Kevin,Schouten,NED,2005-01-10,Aanvaller,12
+KNVB,PEC Zwolle,Jong,Mark,Vermeulen,NED,2004-02-17,Aanvaller,13
+KNVB,PEC Zwolle,Jong,Thijs,Koster,NED,2006-07-08,Aanvaller,14
+KNVB,PEC Zwolle,Jong,Daan,van den Heuvel,NED,2005-01-23,Aanvaller,15
+KNVB,PEC Zwolle,Reserves,Mark,Smits,NED,2002-09-22,Keeper,1
+KNVB,PEC Zwolle,Reserves,Kevin,van der Heijden,NED,1999-10-16,Keeper,2
+KNVB,PEC Zwolle,Reserves,Daan,Hoekstra,NED,1997-11-27,Verdediger,3
+KNVB,PEC Zwolle,Reserves,Robin,Schouten,NED,2003-09-16,Verdediger,4
+KNVB,PEC Zwolle,Reserves,Max,Mulder,NED,2004-02-09,Verdediger,5
+KNVB,PEC Zwolle,Reserves,Jasper,van Vliet,NED,2004-05-20,Verdediger,6
+KNVB,PEC Zwolle,Reserves,Jesse,de Graaf,NED,1998-12-17,Verdediger,7
+KNVB,PEC Zwolle,Reserves,Luuk,van der Linden,NED,1996-09-23,Middenvelder,8
+KNVB,PEC Zwolle,Reserves,Daan,van Dam,NED,2002-01-12,Middenvelder,9
+KNVB,PEC Zwolle,Reserves,Stijn,Vos,NED,1997-05-04,Middenvelder,10
+KNVB,PEC Zwolle,Reserves,Mike,Meijer,NED,2003-05-01,Middenvelder,11
+KNVB,PEC Zwolle,Reserves,Niels,Dekker,NED,2002-10-18,Aanvaller,12
+KNVB,PEC Zwolle,Reserves,Tom,van Leeuwen,NED,1998-11-24,Aanvaller,13
+KNVB,PEC Zwolle,Reserves,Julian,Jansen,NED,2002-12-03,Aanvaller,14
+KNVB,PEC Zwolle,Reserves,Rick,de Jong,NED,1996-10-14,Aanvaller,15
+KNVB,PEC Zwolle,Vrouwen,Lieke,Vos,NED,2000-08-23,Keeper,1
+KNVB,PEC Zwolle,Vrouwen,Sophie,Meijer,NED,1993-08-19,Keeper,2
+KNVB,PEC Zwolle,Vrouwen,Emma,Vos,NED,2003-11-02,Verdediger,3
+KNVB,PEC Zwolle,Vrouwen,Anna,Koster,NED,1998-06-25,Verdediger,4
+KNVB,PEC Zwolle,Vrouwen,Luna,Vermeulen,NED,1999-04-08,Verdediger,5
+KNVB,PEC Zwolle,Vrouwen,Lisa,de Graaf,NED,1994-05-23,Verdediger,6
+KNVB,PEC Zwolle,Vrouwen,Lotte,van Beek,NED,1997-01-17,Verdediger,7
+KNVB,PEC Zwolle,Vrouwen,Amber,van der Veen,NED,2003-12-19,Middenvelder,8
+KNVB,PEC Zwolle,Vrouwen,Emma,van der Linden,NED,1997-06-15,Middenvelder,9
+KNVB,PEC Zwolle,Vrouwen,Lieke,de Groot,NED,2006-01-03,Middenvelder,10
+KNVB,PEC Zwolle,Vrouwen,Evi,van den Broek,NED,2001-06-27,Middenvelder,11
+KNVB,PEC Zwolle,Vrouwen,Emma,Bakker,NED,2001-07-28,Aanvaller,12
+KNVB,PEC Zwolle,Vrouwen,Lynn,van der Heijden,NED,1995-02-18,Aanvaller,13
+KNVB,PEC Zwolle,Vrouwen,Amber,van der Meer,NED,2004-06-20,Aanvaller,14
+KNVB,PEC Zwolle,Vrouwen,Demi,Verhoeven,NED,1997-11-22,Aanvaller,15
+KNVB,RKC Waalwijk,Jong,Niels,Smits,NED,2003-05-01,Keeper,1
+KNVB,RKC Waalwijk,Jong,Joey,Vermeulen,NED,2006-11-14,Keeper,2
+KNVB,RKC Waalwijk,Jong,Bram,de Vries,NED,2004-11-08,Verdediger,3
+KNVB,RKC Waalwijk,Jong,Luuk,van Dijk,NED,2006-04-02,Verdediger,4
+KNVB,RKC Waalwijk,Jong,Nick,Brouwer,NED,2006-05-24,Verdediger,5
+KNVB,RKC Waalwijk,Jong,Robin,de Bruijn,NED,2004-06-03,Verdediger,6
+KNVB,RKC Waalwijk,Jong,Lucas,Smits,NED,2004-05-21,Verdediger,7
+KNVB,RKC Waalwijk,Jong,Ruben,van Dam,NED,2003-11-13,Middenvelder,8
+KNVB,RKC Waalwijk,Jong,Lars,Smit,NED,2003-09-07,Middenvelder,9
+KNVB,RKC Waalwijk,Jong,Nick,de Vries,NED,2004-04-10,Middenvelder,10
+KNVB,RKC Waalwijk,Jong,Tim,Peters,NED,2007-08-17,Middenvelder,11
+KNVB,RKC Waalwijk,Jong,Daan,de Boer,NED,2004-04-04,Aanvaller,12
+KNVB,RKC Waalwijk,Jong,Ruben,van der Meer,NED,2006-04-21,Aanvaller,13
+KNVB,RKC Waalwijk,Jong,Julian,van Vliet,NED,2006-06-07,Aanvaller,14
+KNVB,RKC Waalwijk,Jong,Mark,de Graaf,NED,2003-07-16,Aanvaller,15
+KNVB,RKC Waalwijk,Reserves,Dennis,Verhoeven,NED,2000-11-25,Keeper,1
+KNVB,RKC Waalwijk,Reserves,Lars,Smits,NED,1997-03-23,Keeper,2
+KNVB,RKC Waalwijk,Reserves,Milan,Verhoeven,NED,2001-10-22,Verdediger,3
+KNVB,RKC Waalwijk,Reserves,Jelle,de Bruin,NED,2003-12-01,Verdediger,4
+KNVB,RKC Waalwijk,Reserves,Dennis,Vos,NED,2004-06-19,Verdediger,5
+KNVB,RKC Waalwijk,Reserves,Thomas,Verhoeven,NED,1998-06-25,Verdediger,6
+KNVB,RKC Waalwijk,Reserves,Mike,Hoekstra,NED,2003-08-13,Verdediger,7
+KNVB,RKC Waalwijk,Reserves,Lars,Willems,NED,2002-07-07,Middenvelder,8
+KNVB,RKC Waalwijk,Reserves,Jesse,Hendriks,NED,2002-01-08,Middenvelder,9
+KNVB,RKC Waalwijk,Reserves,Lucas,van der Meer,NED,2002-02-08,Middenvelder,10
+KNVB,RKC Waalwijk,Reserves,Nick,Hoekstra,NED,2000-04-20,Middenvelder,11
+KNVB,RKC Waalwijk,Reserves,Nick,Peters,NED,1999-02-12,Aanvaller,12
+KNVB,RKC Waalwijk,Reserves,Sem,Hoekstra,NED,1998-01-02,Aanvaller,13
+KNVB,RKC Waalwijk,Reserves,Jesse,de Boer,NED,1998-11-04,Aanvaller,14
+KNVB,RKC Waalwijk,Reserves,Sven,Hoekstra,NED,2000-12-06,Aanvaller,15
+KNVB,RKC Waalwijk,Vrouwen,Lisa,van der Veen,NED,2000-11-10,Keeper,1
+KNVB,RKC Waalwijk,Vrouwen,Roos,Hendriks,NED,1996-07-05,Keeper,2
+KNVB,RKC Waalwijk,Vrouwen,Evi,de Graaf,NED,2006-07-19,Verdediger,3
+KNVB,RKC Waalwijk,Vrouwen,Julie,Bos,NED,1998-09-27,Verdediger,4
+KNVB,RKC Waalwijk,Vrouwen,Laura,van Dijk,NED,1998-12-08,Verdediger,5
+KNVB,RKC Waalwijk,Vrouwen,Lieke,Peters,NED,1997-12-12,Verdediger,6
+KNVB,RKC Waalwijk,Vrouwen,Mila,van der Veen,NED,1996-05-10,Verdediger,7
+KNVB,RKC Waalwijk,Vrouwen,Roos,Dekker,NED,1993-03-10,Middenvelder,8
+KNVB,RKC Waalwijk,Vrouwen,Kim,de Vries,NED,2002-03-04,Middenvelder,9
+KNVB,RKC Waalwijk,Vrouwen,Lisa,van Dam,NED,1997-09-09,Middenvelder,10
+KNVB,RKC Waalwijk,Vrouwen,Lynn,Willems,NED,1993-05-14,Middenvelder,11
+KNVB,RKC Waalwijk,Vrouwen,Eva,Hendriks,NED,1995-08-22,Aanvaller,12
+KNVB,RKC Waalwijk,Vrouwen,Anna,van Beek,NED,2005-06-04,Aanvaller,13
+KNVB,RKC Waalwijk,Vrouwen,Mila,Vermeulen,NED,1999-01-05,Aanvaller,14
+KNVB,RKC Waalwijk,Vrouwen,Nina,Brouwer,NED,1996-10-24,Aanvaller,15
+KNVB,SC Heerenveen,Jong,Bram,Bos,NED,2003-08-19,Keeper,1
+KNVB,SC Heerenveen,Jong,Julian,Brouwer,NED,2005-10-05,Keeper,2
+KNVB,SC Heerenveen,Jong,Levi,van den Heuvel,NED,2006-04-01,Verdediger,3
+KNVB,SC Heerenveen,Jong,Tim,Bos,NED,2003-06-11,Verdediger,4
+KNVB,SC Heerenveen,Jong,Thijs,Jansen,NED,2005-06-24,Verdediger,5
+KNVB,SC Heerenveen,Jong,Jelle,Bos,NED,2006-11-13,Verdediger,6
+KNVB,SC Heerenveen,Jong,Sven,Verhoeven,NED,2005-11-06,Verdediger,7
+KNVB,SC Heerenveen,Jong,Finn,de Graaf,NED,2004-04-26,Middenvelder,8
+KNVB,SC Heerenveen,Jong,Stijn,de Haan,NED,2004-02-09,Middenvelder,9
+KNVB,SC Heerenveen,Jong,Nick,van der Heijden,NED,2003-02-28,Middenvelder,10
+KNVB,SC Heerenveen,Jong,Joey,Hendriks,NED,2004-10-05,Middenvelder,11
+KNVB,SC Heerenveen,Jong,Joey,van der Linden,NED,2003-09-27,Aanvaller,12
+KNVB,SC Heerenveen,Jong,Finn,Jacobs,NED,2003-08-28,Aanvaller,13
+KNVB,SC Heerenveen,Jong,Stijn,Vermeulen,NED,2005-07-17,Aanvaller,14
+KNVB,SC Heerenveen,Jong,Nick,Meijer,NED,2007-10-25,Aanvaller,15
+KNVB,SC Heerenveen,Reserves,Dennis,van Vliet,NED,2002-11-28,Keeper,1
+KNVB,SC Heerenveen,Reserves,Joey,Verhoeven,NED,2004-12-26,Keeper,2
+KNVB,SC Heerenveen,Reserves,Julian,Koster,NED,2001-05-03,Verdediger,3
+KNVB,SC Heerenveen,Reserves,Tim,Smits,NED,2000-09-07,Verdediger,4
+KNVB,SC Heerenveen,Reserves,Jasper,van der Heijden,NED,1998-07-13,Verdediger,5
+KNVB,SC Heerenveen,Reserves,Kevin,Jansen,NED,2000-07-17,Verdediger,6
+KNVB,SC Heerenveen,Reserves,Kevin,Jacobs,NED,1998-08-07,Verdediger,7
+KNVB,SC Heerenveen,Reserves,Stijn,Vermeulen,NED,2000-02-26,Middenvelder,8
+KNVB,SC Heerenveen,Reserves,Jasper,de Boer,NED,2000-12-17,Middenvelder,9
+KNVB,SC Heerenveen,Reserves,Sem,Schouten,NED,2003-03-09,Middenvelder,10
+KNVB,SC Heerenveen,Reserves,Bram,Dekker,NED,1998-04-20,Middenvelder,11
+KNVB,SC Heerenveen,Reserves,Joey,Visser,NED,1996-12-15,Aanvaller,12
+KNVB,SC Heerenveen,Reserves,Robin,van der Heijden,NED,2002-06-22,Aanvaller,13
+KNVB,SC Heerenveen,Reserves,Mark,van Leeuwen,NED,2001-04-16,Aanvaller,14
+KNVB,SC Heerenveen,Reserves,Stijn,van den Broek,NED,2002-03-13,Aanvaller,15
+KNVB,SC Heerenveen,Vrouwen,Anna,Bakker,NED,1992-04-27,Keeper,1
+KNVB,SC Heerenveen,Vrouwen,Julia,van den Berg,NED,1995-03-01,Keeper,2
+KNVB,SC Heerenveen,Vrouwen,Amber,Hendriks,NED,2004-09-27,Verdediger,3
+KNVB,SC Heerenveen,Vrouwen,Amber,Vermeulen,NED,1994-11-18,Verdediger,4
+KNVB,SC Heerenveen,Vrouwen,Lynn,Vos,NED,1995-04-18,Verdediger,5
+KNVB,SC Heerenveen,Vrouwen,Emma,de Wit,NED,1997-12-08,Verdediger,6
+KNVB,SC Heerenveen,Vrouwen,Julia,van Dam,NED,2004-07-05,Verdediger,7
+KNVB,SC Heerenveen,Vrouwen,Lisa,van Dijk,NED,1995-02-19,Middenvelder,8
+KNVB,SC Heerenveen,Vrouwen,Lieke,Koster,NED,1996-08-07,Middenvelder,9
+KNVB,SC Heerenveen,Vrouwen,Lotte,Kok,NED,1994-08-07,Middenvelder,10
+KNVB,SC Heerenveen,Vrouwen,Femke,Visser,NED,2003-04-14,Middenvelder,11
+KNVB,SC Heerenveen,Vrouwen,Laura,van der Wal,NED,1992-09-02,Aanvaller,12
+KNVB,SC Heerenveen,Vrouwen,Laura,van Beek,NED,2001-07-11,Aanvaller,13
+KNVB,SC Heerenveen,Vrouwen,Sanne,Meijer,NED,1998-05-13,Aanvaller,14
+KNVB,SC Heerenveen,Vrouwen,Julia,Kok,NED,2004-03-15,Aanvaller,15
+KNVB,Sparta Rotterdam,Jong,Julian,Schouten,NED,2004-05-02,Keeper,1
+KNVB,Sparta Rotterdam,Jong,Mark,van den Berg,NED,2006-10-10,Keeper,2
+KNVB,Sparta Rotterdam,Jong,Niels,van den Berg,NED,2005-02-09,Verdediger,3
+KNVB,Sparta Rotterdam,Jong,Bram,Vermeulen,NED,2003-12-17,Verdediger,4
+KNVB,Sparta Rotterdam,Jong,Dennis,Schouten,NED,2006-03-25,Verdediger,5
+KNVB,Sparta Rotterdam,Jong,Jesse,van der Heijden,NED,2003-05-10,Verdediger,6
+KNVB,Sparta Rotterdam,Jong,Jelle,de Haan,NED,2004-03-13,Verdediger,7
+KNVB,Sparta Rotterdam,Jong,Joey,de Wit,NED,2006-01-07,Middenvelder,8
+KNVB,Sparta Rotterdam,Jong,Rick,Smit,NED,2006-04-05,Middenvelder,9
+KNVB,Sparta Rotterdam,Jong,Lars,Smit,NED,2003-07-26,Middenvelder,10
+KNVB,Sparta Rotterdam,Jong,Rick,de Wit,NED,2006-08-26,Middenvelder,11
+KNVB,Sparta Rotterdam,Jong,Tim,van den Berg,NED,2007-11-16,Aanvaller,12
+KNVB,Sparta Rotterdam,Jong,Stijn,Meijer,NED,2006-02-04,Aanvaller,13
+KNVB,Sparta Rotterdam,Jong,Lars,Jansen,NED,2004-10-08,Aanvaller,14
+KNVB,Sparta Rotterdam,Jong,Nick,Peters,NED,2005-09-14,Aanvaller,15
+KNVB,Sparta Rotterdam,Reserves,Finn,Visser,NED,1999-08-18,Keeper,1
+KNVB,Sparta Rotterdam,Reserves,Sven,Willems,NED,2003-06-23,Keeper,2
+KNVB,Sparta Rotterdam,Reserves,Thomas,van Dijk,NED,1996-01-13,Verdediger,3
+KNVB,Sparta Rotterdam,Reserves,Lucas,van Dijk,NED,1999-03-19,Verdediger,4
+KNVB,Sparta Rotterdam,Reserves,Sven,Dekker,NED,2002-08-21,Verdediger,5
+KNVB,Sparta Rotterdam,Reserves,Mike,Smit,NED,1998-05-01,Verdediger,6
+KNVB,Sparta Rotterdam,Reserves,Tim,de Boer,NED,2003-05-12,Verdediger,7
+KNVB,Sparta Rotterdam,Reserves,Max,Smits,NED,2000-11-09,Middenvelder,8
+KNVB,Sparta Rotterdam,Reserves,Jesse,de Boer,NED,2000-05-04,Middenvelder,9
+KNVB,Sparta Rotterdam,Reserves,Stijn,van der Veen,NED,2002-08-12,Middenvelder,10
+KNVB,Sparta Rotterdam,Reserves,Joey,Verhoeven,NED,2004-01-13,Middenvelder,11
+KNVB,Sparta Rotterdam,Reserves,Sven,Mulder,NED,2003-03-17,Aanvaller,12
+KNVB,Sparta Rotterdam,Reserves,Thijs,Dijkstra,NED,1999-03-09,Aanvaller,13
+KNVB,Sparta Rotterdam,Reserves,Jasper,de Wit,NED,2004-04-18,Aanvaller,14
+KNVB,Sparta Rotterdam,Reserves,Joey,van den Berg,NED,1999-04-27,Aanvaller,15
+KNVB,Sparta Rotterdam,Vrouwen,Anna,de Boer,NED,1996-09-23,Keeper,1
+KNVB,Sparta Rotterdam,Vrouwen,Amber,Koster,NED,1997-04-15,Keeper,2
+KNVB,Sparta Rotterdam,Vrouwen,Sarah,de Bruin,NED,2006-09-21,Verdediger,3
+KNVB,Sparta Rotterdam,Vrouwen,Floor,de Haan,NED,2001-04-19,Verdediger,4
+KNVB,Sparta Rotterdam,Vrouwen,Sara,Visser,NED,2006-01-28,Verdediger,5
+KNVB,Sparta Rotterdam,Vrouwen,Evi,de Boer,NED,1992-06-12,Verdediger,6
+KNVB,Sparta Rotterdam,Vrouwen,Laura,de Haan,NED,1994-12-19,Verdediger,7
+KNVB,Sparta Rotterdam,Vrouwen,Lotte,Dekker,NED,1999-05-15,Middenvelder,8
+KNVB,Sparta Rotterdam,Vrouwen,Evi,de Groot,NED,1994-07-04,Middenvelder,9
+KNVB,Sparta Rotterdam,Vrouwen,Fleur,de Wit,NED,1997-11-15,Middenvelder,10
+KNVB,Sparta Rotterdam,Vrouwen,Sarah,de Boer,NED,2003-01-08,Middenvelder,11
+KNVB,Sparta Rotterdam,Vrouwen,Eva,de Bruin,NED,1998-09-20,Aanvaller,12
+KNVB,Sparta Rotterdam,Vrouwen,Kim,de Vries,NED,1997-02-21,Aanvaller,13
+KNVB,Sparta Rotterdam,Vrouwen,Fleur,de Vries,NED,1992-05-02,Aanvaller,14
+KNVB,Sparta Rotterdam,Vrouwen,Roos,van der Heijden,NED,2000-06-24,Aanvaller,15
+KNVB,Willem II,Jong,Thijs,de Groot,NED,2005-01-23,Keeper,1
+KNVB,Willem II,Jong,Robin,Verhoeven,NED,2006-12-22,Keeper,2
+KNVB,Willem II,Jong,Kevin,Mulder,NED,2004-07-08,Verdediger,3
+KNVB,Willem II,Jong,Tom,van der Wal,NED,2005-04-11,Verdediger,4
+KNVB,Willem II,Jong,Kevin,Hendriks,NED,2005-08-14,Verdediger,5
+KNVB,Willem II,Jong,Lucas,Vermeulen,NED,2006-08-03,Verdediger,6
+KNVB,Willem II,Jong,Jesse,de Jong,NED,2003-03-04,Verdediger,7
+KNVB,Willem II,Jong,Sven,de Bruin,NED,2004-05-04,Middenvelder,8
+KNVB,Willem II,Jong,Lars,de Graaf,NED,2007-06-10,Middenvelder,9
+KNVB,Willem II,Jong,Tim,de Wit,NED,2004-05-17,Middenvelder,10
+KNVB,Willem II,Jong,Mike,van de Ven,NED,2007-10-09,Middenvelder,11
+KNVB,Willem II,Jong,Max,Smits,NED,2005-11-10,Aanvaller,12
+KNVB,Willem II,Jong,Sem,Hoekstra,NED,2007-03-11,Aanvaller,13
+KNVB,Willem II,Jong,Joey,Kok,NED,2003-12-11,Aanvaller,14
+KNVB,Willem II,Jong,Nick,Koster,NED,2005-11-09,Aanvaller,15
+KNVB,Willem II,Reserves,Nick,van der Veen,NED,1997-07-22,Keeper,1
+KNVB,Willem II,Reserves,Sem,Bos,NED,2000-05-12,Keeper,2
+KNVB,Willem II,Reserves,Dennis,de Bruijn,NED,1999-02-27,Verdediger,3
+KNVB,Willem II,Reserves,Thijs,de Graaf,NED,2002-11-12,Verdediger,4
+KNVB,Willem II,Reserves,Tim,de Wit,NED,2000-07-24,Verdediger,5
+KNVB,Willem II,Reserves,Tom,Bos,NED,1996-04-03,Verdediger,6
+KNVB,Willem II,Reserves,Max,Vos,NED,1998-10-13,Verdediger,7
+KNVB,Willem II,Reserves,Sem,Maas,NED,2000-08-17,Middenvelder,8
+KNVB,Willem II,Reserves,Lars,Verhoeven,NED,1999-02-03,Middenvelder,9
+KNVB,Willem II,Reserves,Daan,Brouwer,NED,1999-12-15,Middenvelder,10
+KNVB,Willem II,Reserves,Luuk,van der Veen,NED,1996-08-18,Middenvelder,11
+KNVB,Willem II,Reserves,Daan,de Vries,NED,2004-07-08,Aanvaller,12
+KNVB,Willem II,Reserves,Mike,Hoekstra,NED,1997-12-23,Aanvaller,13
+KNVB,Willem II,Reserves,Nick,Bakker,NED,2000-10-07,Aanvaller,14
+KNVB,Willem II,Reserves,Levi,van Beek,NED,1998-02-17,Aanvaller,15
+KNVB,Willem II,Vrouwen,Sophie,Smit,NED,1997-01-15,Keeper,1
+KNVB,Willem II,Vrouwen,Lynn,de Wit,NED,1993-10-21,Keeper,2
+KNVB,Willem II,Vrouwen,Anna,Schouten,NED,2005-07-15,Verdediger,3
+KNVB,Willem II,Vrouwen,Julia,de Bruin,NED,1992-11-04,Verdediger,4
+KNVB,Willem II,Vrouwen,Iris,Vermeulen,NED,2004-12-14,Verdediger,5
+KNVB,Willem II,Vrouwen,Julie,Hoekstra,NED,2004-03-26,Verdediger,6
+KNVB,Willem II,Vrouwen,Sarah,van der Wal,NED,2003-03-20,Verdediger,7
+KNVB,Willem II,Vrouwen,Iris,van den Broek,NED,2003-06-05,Middenvelder,8
+KNVB,Willem II,Vrouwen,Sanne,Meijer,NED,2003-02-14,Middenvelder,9
+KNVB,Willem II,Vrouwen,Sara,de Wit,NED,2004-05-19,Middenvelder,10
+KNVB,Willem II,Vrouwen,Lieke,van Dijk,NED,2000-10-23,Middenvelder,11
+KNVB,Willem II,Vrouwen,Demi,van der Linden,NED,1994-12-22,Aanvaller,12
+KNVB,Willem II,Vrouwen,Luna,de Haan,NED,1999-04-20,Aanvaller,13
+KNVB,Willem II,Vrouwen,Floor,de Groot,NED,1997-04-18,Aanvaller,14
+KNVB,Willem II,Vrouwen,Emma,Jacobs,NED,1995-12-03,Aanvaller,15

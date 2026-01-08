@@ -1,0 +1,259 @@
+﻿federation,club,team_type,first_name,last_name,nationality,birth_date,position,shirt_number
+KNVB,Ajax,Eerste Elftal,Gerónimo,Rulli,ARG,1992-05-20,Keeper,1
+KNVB,Ajax,Eerste Elftal,Remko,Pasveer,NED,1983-11-08,Keeper,22
+KNVB,Ajax,Eerste Elftal,Josip,Šutalo,CRO,2000-02-28,Verdediger,37
+KNVB,Ajax,Eerste Elftal,Jorrel,Hato,NED,2006-03-07,Verdediger,4
+KNVB,Ajax,Eerste Elftal,Owen,Wijndal,NED,1999-11-28,Verdediger,5
+KNVB,Ajax,Eerste Elftal,Anton,Gaaei,DEN,2000-11-05,Verdediger,3
+KNVB,Ajax,Eerste Elftal,Lucas,Rosa,BRA,2000-04-03,Verdediger,2
+KNVB,Ajax,Eerste Elftal,Steven,Berghuis,NED,1991-12-19,Middenvelder,23
+KNVB,Ajax,Eerste Elftal,Kenneth,Taylor,NED,2002-05-16,Middenvelder,8
+KNVB,Ajax,Eerste Elftal,Davy,Klaassen,NED,1993-02-21,Middenvelder,18
+KNVB,Ajax,Eerste Elftal,Branco,van den Boomen,NED,1995-07-21,Middenvelder,21
+KNVB,Ajax,Eerste Elftal,Oliver,Edvardsen,NOR,1999-03-19,Middenvelder,17
+KNVB,Ajax,Eerste Elftal,Wout,Weghorst,NED,1992-08-07,Aanvaller,25
+KNVB,Ajax,Eerste Elftal,Brian,Brobbey,NED,2002-02-01,Aanvaller,9
+KNVB,Ajax,Eerste Elftal,Bertrand,Traoré,BFA,1995-09-06,Aanvaller,20
+KNVB,PSV,Eerste Elftal,Walter,Benítez,ARG,1993-01-19,Keeper,1
+KNVB,PSV,Eerste Elftal,Joël,Drommel,NED,1996-11-16,Keeper,16
+KNVB,PSV,Eerste Elftal,Rick,Karsdorp,NED,1995-02-11,Verdediger,2
+KNVB,PSV,Eerste Elftal,Sergiño,Dest,USA,2000-11-03,Verdediger,8
+KNVB,PSV,Eerste Elftal,Olivier,Boscagli,FRA,1997-11-18,Verdediger,18
+KNVB,PSV,Eerste Elftal,Ryan,Flamingo,NED,2002-12-28,Verdediger,6
+KNVB,PSV,Eerste Elftal,Adamo,Nagalo,BFA,2002-09-22,Verdediger,39
+KNVB,PSV,Eerste Elftal,Joey,Veerman,NED,1998-11-19,Middenvelder,23
+KNVB,PSV,Eerste Elftal,Malik,Tillman,USA,2002-05-28,Middenvelder,7
+KNVB,PSV,Eerste Elftal,Jerdy,Schouten,NED,1997-01-12,Middenvelder,22
+KNVB,PSV,Eerste Elftal,Guus,Til,NED,1997-12-22,Middenvelder,20
+KNVB,PSV,Eerste Elftal,Ismael,Saibari,MAR,2001-05-29,Middenvelder,34
+KNVB,PSV,Eerste Elftal,Luuk,de Jong,NED,1990-08-27,Aanvaller,9
+KNVB,PSV,Eerste Elftal,Noa,Lang,NED,1999-06-17,Aanvaller,10
+KNVB,PSV,Eerste Elftal,Johan,Bakayoko,BEL,2003-04-20,Aanvaller,11
+KNVB,Feyenoord,Eerste Elftal,Justin,Bijlow,NED,1998-01-22,Keeper,1
+KNVB,Feyenoord,Eerste Elftal,Timon,Wellenreuther,GER,1995-12-03,Keeper,22
+KNVB,Feyenoord,Eerste Elftal,Bart,Nieuwkoop,NED,1996-03-07,Verdediger,2
+KNVB,Feyenoord,Eerste Elftal,Thomas,Beelen,NED,2001-01-26,Verdediger,3
+KNVB,Feyenoord,Eerste Elftal,Gernot,Trauner,AUT,1992-03-25,Verdediger,18
+KNVB,Feyenoord,Eerste Elftal,Dávid,Hancko,SVK,1997-12-13,Verdediger,33
+KNVB,Feyenoord,Eerste Elftal,Gijs,Smal,NED,1997-08-31,Verdediger,5
+KNVB,Feyenoord,Eerste Elftal,Hwang,In-beom,KOR,1996-09-20,Middenvelder,4
+KNVB,Feyenoord,Eerste Elftal,Ramiz,Zerrouki,ALG,1998-05-26,Middenvelder,6
+KNVB,Feyenoord,Eerste Elftal,Jakub,Moder,POL,1999-04-07,Middenvelder,7
+KNVB,Feyenoord,Eerste Elftal,Quinten,Timber,NED,2001-06-17,Middenvelder,8
+KNVB,Feyenoord,Eerste Elftal,Calvin,Stengs,NED,1998-12-18,Middenvelder,10
+KNVB,Feyenoord,Eerste Elftal,Igor,Paixão,BRA,2000-06-28,Aanvaller,14
+KNVB,Feyenoord,Eerste Elftal,Ayase,Ueda,JPN,1998-08-28,Aanvaller,9
+KNVB,Feyenoord,Eerste Elftal,Luka,Ivanušec,CRO,1998-11-26,Aanvaller,17
+KNVB,AZ,Eerste Elftal,Jeroen,Zoet,NED,1991-01-06,Keeper,1
+KNVB,AZ,Eerste Elftal,Hobie,Verhulst,NED,1993-04-02,Keeper,12
+KNVB,AZ,Eerste Elftal,Wouter,Goes,NED,2004-06-10,Verdediger,3
+KNVB,AZ,Eerste Elftal,Bruno,Martins Indi,NED,1992-02-08,Verdediger,4
+KNVB,AZ,Eerste Elftal,Alexandre,Penetra,POR,2001-09-09,Verdediger,22
+KNVB,AZ,Eerste Elftal,Seiya,Maikuma,JPN,1997-08-10,Verdediger,68
+KNVB,AZ,Eerste Elftal,David,Møller Wolfe,NOR,2001-10-16,Verdediger,16
+KNVB,AZ,Eerste Elftal,Jordy,Clasie,NED,1991-06-27,Middenvelder,8
+KNVB,AZ,Eerste Elftal,Sven,Mijnans,NED,1999-03-09,Middenvelder,6
+KNVB,AZ,Eerste Elftal,Peer,Koopmeiners,NED,2000-05-04,Middenvelder,14
+KNVB,AZ,Eerste Elftal,Kristijan,Belić,SER,2001-03-25,Middenvelder,19
+KNVB,AZ,Eerste Elftal,Lewis,Schouten,NED,2004-04-12,Middenvelder,20
+KNVB,AZ,Eerste Elftal,Troy,Parrott,IRL,2002-02-04,Aanvaller,7
+KNVB,AZ,Eerste Elftal,Ruben,van Bommel,NED,2004-08-03,Aanvaller,17
+KNVB,AZ,Eerste Elftal,Ibrahim,Sadiq,GHA,2000-05-07,Aanvaller,11
+KNVB,FC Twente,Eerste Elftal,Lars,Unnerstall,GER,1990-07-20,Keeper,1
+KNVB,FC Twente,Eerste Elftal,Przemysław,Tytoń,POL,1987-01-04,Keeper,22
+KNVB,FC Twente,Eerste Elftal,Robin,Pröpper,NED,1993-09-23,Verdediger,4
+KNVB,FC Twente,Eerste Elftal,Mees,Hilgers,NED,2001-05-13,Verdediger,2
+KNVB,FC Twente,Eerste Elftal,Alfons,Sampsted,ISL,1998-04-06,Verdediger,20
+KNVB,FC Twente,Eerste Elftal,Joshua,Brenet,NED,1994-03-20,Verdediger,17
+KNVB,FC Twente,Eerste Elftal,Anass,Salah-Eddine,NED,2002-01-18,Verdediger,5
+KNVB,FC Twente,Eerste Elftal,Michal,Sáďlek,CZE,1996-05-31,Middenvelder,23
+KNVB,FC Twente,Eerste Elftal,Sem,Steijn,NED,2001-11-12,Middenvelder,14
+KNVB,FC Twente,Eerste Elftal,Michel,Vlap,NED,1997-06-02,Middenvelder,10
+KNVB,FC Twente,Eerste Elftal,Mathias,Kjølø,NOR,2001-06-27,Middenvelder,21
+KNVB,FC Twente,Eerste Elftal,Arno,Verschueren,BEL,1997-04-08,Middenvelder,32
+KNVB,FC Twente,Eerste Elftal,Ricky,van Wolfswinkel,NED,1989-01-27,Aanvaller,9
+KNVB,FC Twente,Eerste Elftal,Manfred,Ugalde,CRC,2002-05-25,Aanvaller,27
+KNVB,FC Twente,Eerste Elftal,Naci,Ünüvar,NED,2003-06-13,Aanvaller,37
+KNVB,FC Utrecht,Eerste Elftal,Vasilis,Barkas,GRE,1994-05-30,Keeper,1
+KNVB,FC Utrecht,Eerste Elftal,Michael,Brouwer,NED,1992-08-21,Keeper,25
+KNVB,FC Utrecht,Eerste Elftal,Mike,van der Hoorn,NED,1992-10-15,Verdediger,3
+KNVB,FC Utrecht,Eerste Elftal,Souffian,El Karouani,MAR,2000-10-19,Verdediger,16
+KNVB,FC Utrecht,Eerste Elftal,Nick,Viergever,NED,1989-08-03,Verdediger,24
+KNVB,FC Utrecht,Eerste Elftal,Siebe,Horemans,BEL,1998-06-02,Verdediger,2
+KNVB,FC Utrecht,Eerste Elftal,Niklas,Vesterlund,DEN,1999-06-15,Verdediger,23
+KNVB,FC Utrecht,Eerste Elftal,Jens,Toornstra,NED,1989-04-04,Middenvelder,18
+KNVB,FC Utrecht,Eerste Elftal,Can,Bozdogan,GER,2001-04-05,Middenvelder,8
+KNVB,FC Utrecht,Eerste Elftal,Oscar,Fraulo,DEN,2003-12-06,Middenvelder,6
+KNVB,FC Utrecht,Eerste Elftal,Zidane,Iqbal,IRQ,2003-04-27,Middenvelder,14
+KNVB,FC Utrecht,Eerste Elftal,Paxten,Aaronson,USA,2003-08-26,Middenvelder,21
+KNVB,FC Utrecht,Eerste Elftal,Anthony,Descotte,BEL,2004-10-08,Aanvaller,19
+KNVB,FC Utrecht,Eerste Elftal,Yoann,Cathline,FRA,2002-07-22,Aanvaller,20
+KNVB,FC Utrecht,Eerste Elftal,Miguel,Rodríguez,ESP,2003-04-29,Aanvaller,22
+KNVB,Sparta Rotterdam,Eerste Elftal,Nick,Olij,NED,1995-08-01,Keeper,1
+KNVB,Sparta Rotterdam,Eerste Elftal,Tim,Coremans,NED,1991-04-10,Keeper,22
+KNVB,Sparta Rotterdam,Eerste Elftal,Bart,Vriends,NED,1991-05-09,Verdediger,3
+KNVB,Sparta Rotterdam,Eerste Elftal,Aaron,Meijers,NED,1987-10-28,Verdediger,5
+KNVB,Sparta Rotterdam,Eerste Elftal,Michael,Pinto,LUX,1993-11-19,Verdediger,5
+KNVB,Sparta Rotterdam,Eerste Elftal,Dirk,Abels,NED,1997-01-13,Verdediger,2
+KNVB,Sparta Rotterdam,Eerste Elftal,Mike,Eerdhuijzen,NED,1997-09-13,Verdediger,4
+KNVB,Sparta Rotterdam,Eerste Elftal,Jonathan,de Guzmán,NED,1987-09-13,Middenvelder,6
+KNVB,Sparta Rotterdam,Eerste Elftal,Younes,Namli,DEN,1994-06-20,Middenvelder,10
+KNVB,Sparta Rotterdam,Eerste Elftal,Laros,Duarte,NED,1997-02-28,Middenvelder,8
+KNVB,Sparta Rotterdam,Eerste Elftal,Jeremy,van Mullem,NED,1998-06-03,Middenvelder,14
+KNVB,Sparta Rotterdam,Eerste Elftal,Adil,Auassar,NED,1986-10-06,Middenvelder,8
+KNVB,Sparta Rotterdam,Eerste Elftal,Vito,van Crooij,NED,1996-01-29,Aanvaller,11
+KNVB,Sparta Rotterdam,Eerste Elftal,Tobias,Lauritsen,NOR,1997-08-30,Aanvaller,9
+KNVB,Sparta Rotterdam,Eerste Elftal,Charles-Andreas,Brym,CAN,1998-08-20,Aanvaller,19
+KNVB,NAC Breda,Eerste Elftal,Roy,Kortsmit,NED,1992-08-07,Keeper,1
+KNVB,NAC Breda,Eerste Elftal,Boaz,van Pruijssen,NED,2005-05-27,Keeper,16
+KNVB,NAC Breda,Eerste Elftal,Jan,van den Bergh,BEL,1994-10-05,Verdediger,4
+KNVB,NAC Breda,Eerste Elftal,Terence,Kongolo,NED,1994-02-14,Verdediger,23
+KNVB,NAC Breda,Eerste Elftal,Enes,Mahmutovic,LUX,1997-05-26,Verdediger,15
+KNVB,NAC Breda,Eerste Elftal,Colin,Rösler,NOR,2000-04-22,Verdediger,3
+KNVB,NAC Breda,Eerste Elftal,Benaissa,Benamar,NED,1997-04-08,Verdediger,25
+KNVB,NAC Breda,Eerste Elftal,Sabir,Agougil,NED,2002-03-13,Middenvelder,8
+KNVB,NAC Breda,Eerste Elftal,Kevin,Felida,CUW,1999-09-11,Middenvelder,6
+KNVB,NAC Breda,Eerste Elftal,Elías,Ómarsson,ISL,1995-01-18,Aanvaller,9
+KNVB,NAC Breda,Eerste Elftal,Jort,van der Sande,NED,1996-01-10,Aanvaller,19
+KNVB,NAC Breda,Eerste Elftal,Jarchinio,Antonia,CUW,1990-12-27,Aanvaller,7
+KNVB,NEC,Eerste Elftal,Jasper,Cillessen,NED,1989-04-22,Keeper,1
+KNVB,NEC,Eerste Elftal,Job,Schuurman,NED,2003-09-01,Keeper,22
+KNVB,NEC,Eerste Elftal,Bart,van Rooij,NED,2001-05-26,Verdediger,28
+KNVB,NEC,Eerste Elftal,Calvin,Verdonk,NED,1997-04-26,Verdediger,24
+KNVB,NEC,Eerste Elftal,Philippe,Sandler,NED,1997-02-10,Verdediger,3
+KNVB,NEC,Eerste Elftal,Joris,Kramer,NED,1996-08-02,Verdediger,4
+KNVB,NEC,Eerste Elftal,Ahmetcan,Kaplan,TUR,2003-01-16,Verdediger,15
+KNVB,NEC,Eerste Elftal,Lasse,Schöne,DEN,1986-05-27,Middenvelder,20
+KNVB,NEC,Eerste Elftal,Dirk,Proper,NED,2002-02-24,Middenvelder,71
+KNVB,NEC,Eerste Elftal,Magnus,Mattsson,DEN,1999-02-25,Middenvelder,11
+KNVB,NEC,Eerste Elftal,Andri,Baldursson,ISL,2002-01-10,Middenvelder,8
+KNVB,NEC,Eerste Elftal,Jordy,Bruijn,NED,1996-07-23,Middenvelder,6
+KNVB,NEC,Eerste Elftal,Bas,Dost,NED,1989-05-31,Aanvaller,12
+KNVB,NEC,Eerste Elftal,Sontje,Hansen,NED,2002-05-18,Aanvaller,7
+KNVB,NEC,Eerste Elftal,Ibrahim,Cissoko,NED,2003-03-30,Aanvaller,30
+KNVB,PEC Zwolle,Eerste Elftal,Jasper,Schendelaar,NED,2000-09-02,Keeper,1
+KNVB,PEC Zwolle,Eerste Elftal,Mike,Hauptmeijer,NED,1997-03-18,Keeper,16
+KNVB,PEC Zwolle,Eerste Elftal,Bram,van Polen,NED,1985-10-11,Verdediger,2
+KNVB,PEC Zwolle,Eerste Elftal,Sam,Kersten,NED,1998-01-30,Verdediger,4
+KNVB,PEC Zwolle,Eerste Elftal,Bart,van Hintum,NED,1987-01-16,Verdediger,5
+KNVB,PEC Zwolle,Eerste Elftal,Yuta,Nakayama,JPN,1997-02-16,Verdediger,3
+KNVB,PEC Zwolle,Eerste Elftal,Anselmo,Garcia MacNulty,IRL,2002-02-24,Verdediger,15
+KNVB,PEC Zwolle,Eerste Elftal,Ryan,Thomas,NZL,1994-12-20,Middenvelder,30
+KNVB,PEC Zwolle,Eerste Elftal,Dean,Huiberts,NED,1999-04-23,Middenvelder,20
+KNVB,PEC Zwolle,Eerste Elftal,Rico,Strieder,GER,1992-07-06,Middenvelder,13
+KNVB,PEC Zwolle,Eerste Elftal,Davy,van den Berg,NED,2000-02-05,Middenvelder,8
+KNVB,PEC Zwolle,Eerste Elftal,Mustafa,Saymak,NED,1993-02-11,Middenvelder,6
+KNVB,PEC Zwolle,Eerste Elftal,Lennart,Thy,GER,1992-02-25,Aanvaller,9
+KNVB,PEC Zwolle,Eerste Elftal,Apostolos,Vellios,GRE,1992-01-08,Aanvaller,10
+KNVB,PEC Zwolle,Eerste Elftal,Reda,Kharchouch,NED,1995-08-29,Aanvaller,29
+KNVB,RKC Waalwijk,Eerste Elftal,Etienne,Vaessen,NED,1995-07-26,Keeper,1
+KNVB,RKC Waalwijk,Eerste Elftal,Joël,Pereira,POR,1996-06-28,Keeper,31
+KNVB,RKC Waalwijk,Eerste Elftal,Jurien,Gaari,CUW,1993-12-23,Verdediger,2
+KNVB,RKC Waalwijk,Eerste Elftal,Dario,Van den Buijs,BEL,1995-09-12,Verdediger,3
+KNVB,RKC Waalwijk,Eerste Elftal,Thierry,Lutonda,BEL,2000-10-27,Verdediger,5
+KNVB,RKC Waalwijk,Eerste Elftal,Lars,Nieuwpoort,NED,1994-10-29,Verdediger,4
+KNVB,RKC Waalwijk,Eerste Elftal,Vurnon,Anita,NED,1989-04-04,Verdediger,8
+KNVB,RKC Waalwijk,Eerste Elftal,Pelle,Clement,NED,1996-05-19,Middenvelder,10
+KNVB,RKC Waalwijk,Eerste Elftal,Iliass,Bel Hassani,MAR,1992-09-16,Middenvelder,11
+KNVB,RKC Waalwijk,Eerste Elftal,Yassin,Oukili,NED,2000-01-06,Middenvelder,6
+KNVB,RKC Waalwijk,Eerste Elftal,Florian,Jozefzoon,NED,1991-02-09,Aanvaller,7
+KNVB,RKC Waalwijk,Eerste Elftal,Michiel,Kramer,NED,1988-12-03,Aanvaller,9
+KNVB,RKC Waalwijk,Eerste Elftal,Julen,Lobete,ESP,1999-09-18,Aanvaller,19
+KNVB,Heracles Almelo,Eerste Elftal,Koen,Bucker,NED,1996-06-18,Keeper,1
+KNVB,Heracles Almelo,Eerste Elftal,Agil,Etemadi,IRN,1986-04-26,Keeper,22
+KNVB,Heracles Almelo,Eerste Elftal,Justin,Hoogma,NED,1998-06-11,Verdediger,5
+KNVB,Heracles Almelo,Eerste Elftal,Marco,Rente,GER,1997-02-25,Verdediger,25
+KNVB,Heracles Almelo,Eerste Elftal,Navajo,Bakboord,NED,1999-01-29,Verdediger,2
+KNVB,Heracles Almelo,Eerste Elftal,Robin,Polley,GHA,1998-12-28,Verdediger,12
+KNVB,Heracles Almelo,Eerste Elftal,Ruben,Roosken,NED,2000-03-02,Verdediger,3
+KNVB,Heracles Almelo,Eerste Elftal,Marko,Vejinović,NED,1990-02-19,Middenvelder,6
+KNVB,Heracles Almelo,Eerste Elftal,Lucas,Schoofs,BEL,1997-05-03,Middenvelder,14
+KNVB,Heracles Almelo,Eerste Elftal,Anas,Ouahim,GER,1997-09-23,Middenvelder,8
+KNVB,Heracles Almelo,Eerste Elftal,Emil,Hansson,SWE,1998-01-15,Aanvaller,7
+KNVB,Heracles Almelo,Eerste Elftal,Nikolai,Laursen,DEN,1998-02-19,Aanvaller,11
+KNVB,Heracles Almelo,Eerste Elftal,Samuel,Armenteros,SWE,1990-05-27,Aanvaller,9
+KNVB,Almere City,Eerste Elftal,Nordin,Bakker,NED,1997-10-31,Keeper,1
+KNVB,Almere City,Eerste Elftal,Jonas,Wendlinger,AUT,1999-02-07,Keeper,29
+KNVB,Almere City,Eerste Elftal,Joey,Jacobs,NED,1995-01-13,Verdediger,3
+KNVB,Almere City,Eerste Elftal,Damon,Mirani,NED,1996-05-13,Verdediger,4
+KNVB,Almere City,Eerste Elftal,Faris,Hammouti,NED,1997-03-21,Verdediger,2
+KNVB,Almere City,Eerste Elftal,Bram,van Vlerken,NED,1995-10-07,Verdediger,21
+KNVB,Almere City,Eerste Elftal,Thomas,Poll,NED,2000-09-09,Verdediger,15
+KNVB,Almere City,Eerste Elftal,Xian,Emmers,BEL,1999-07-26,Middenvelder,6
+KNVB,Almere City,Eerste Elftal,Jorrit,Smeets,NED,1995-03-25,Middenvelder,8
+KNVB,Almere City,Eerste Elftal,Thijmen,Bijleveld,NED,1998-07-25,Middenvelder,5
+KNVB,Almere City,Eerste Elftal,Anwar,Bensabouh,NED,1999-08-12,Middenvelder,10
+KNVB,Almere City,Eerste Elftal,Thomas,Robinet,FRA,1996-08-18,Aanvaller,9
+KNVB,Almere City,Eerste Elftal,Bradly,van Hoeven,NED,2000-04-14,Aanvaller,7
+KNVB,Almere City,Eerste Elftal,Faiz,Mattoir,COM,2000-07-31,Aanvaller,11
+KNVB,Go Ahead Eagles,Eerste Elftal,Jeffrey,de Lange,NED,1998-04-15,Keeper,1
+KNVB,Go Ahead Eagles,Eerste Elftal,Erwin,Mulder,NED,1989-03-03,Keeper,23
+KNVB,Go Ahead Eagles,Eerste Elftal,Bas,Kuipers,NED,1994-08-17,Verdediger,5
+KNVB,Go Ahead Eagles,Eerste Elftal,Mats,Deijl,NED,1997-03-21,Verdediger,2
+KNVB,Go Ahead Eagles,Eerste Elftal,Gerrit,Nauber,GER,1992-04-13,Verdediger,6
+KNVB,Go Ahead Eagles,Eerste Elftal,Jamal,Amofa,NED,1998-11-15,Verdediger,4
+KNVB,Go Ahead Eagles,Eerste Elftal,Boyd,Lucassen,NED,1997-07-08,Verdediger,3
+KNVB,Go Ahead Eagles,Eerste Elftal,Philippe,Rommens,BEL,1997-08-20,Middenvelder,10
+KNVB,Go Ahead Eagles,Eerste Elftal,Willum,Willumsson,ISL,1998-10-23,Middenvelder,8
+KNVB,Go Ahead Eagles,Eerste Elftal,Ragnar,Oratmangoen,NED,1998-01-21,Middenvelder,7
+KNVB,Go Ahead Eagles,Eerste Elftal,Evert,Linthorst,NED,2000-03-03,Middenvelder,20
+KNVB,Go Ahead Eagles,Eerste Elftal,Sylla,Sow,NED,1996-08-08,Aanvaller,9
+KNVB,Go Ahead Eagles,Eerste Elftal,Finn,Stokkers,NED,1996-04-18,Aanvaller,11
+KNVB,Go Ahead Eagles,Eerste Elftal,Bobby,Adekanye,NED,1999-02-14,Aanvaller,12
+KNVB,FC Groningen,Eerste Elftal,Michael,Verrips,NED,1996-12-03,Keeper,1
+KNVB,FC Groningen,Eerste Elftal,Peter,Leeuwenburgh,NED,1994-03-23,Keeper,20
+KNVB,FC Groningen,Eerste Elftal,Mike,te Wierik,NED,1992-06-08,Verdediger,5
+KNVB,FC Groningen,Eerste Elftal,Damil,Dankerlui,SUR,1996-08-24,Verdediger,2
+KNVB,FC Groningen,Eerste Elftal,Neraysho,Kasanwirjo,NED,2002-02-18,Verdediger,3
+KNVB,FC Groningen,Eerste Elftal,Marin,Sverko,CRO,1998-02-05,Verdediger,20
+KNVB,FC Groningen,Eerste Elftal,Nordin,Musampa,NED,2001-02-13,Verdediger,21
+KNVB,FC Groningen,Eerste Elftal,Joey,Pelupessy,NED,1993-05-15,Middenvelder,6
+KNVB,FC Groningen,Eerste Elftal,Ramon,Pascál Lundqvist,SWE,1997-05-10,Middenvelder,8
+KNVB,FC Groningen,Eerste Elftal,Luciano,Valente,ITA,2003-03-04,Middenvelder,10
+KNVB,FC Groningen,Eerste Elftal,Daleho,Irandust,SWE,1998-06-04,Middenvelder,18
+KNVB,FC Groningen,Eerste Elftal,Elvis,Manu,GHA,1993-08-13,Aanvaller,11
+KNVB,FC Groningen,Eerste Elftal,Kevin,van Veen,NED,1991-06-01,Aanvaller,9
+KNVB,FC Groningen,Eerste Elftal,Florian,Krüger,GER,1999-02-13,Aanvaller,19
+KNVB,Fortuna Sittard,Eerste Elftal,Ivor,Pandur,CRO,2000-03-25,Keeper,1
+KNVB,Fortuna Sittard,Eerste Elftal,Yanick,van Osch,NED,1997-03-24,Keeper,12
+KNVB,Fortuna Sittard,Eerste Elftal,Ivo,Pinto,POR,1990-01-07,Verdediger,20
+KNVB,Fortuna Sittard,Eerste Elftal,Ximo,Navarro,ESP,1990-01-23,Verdediger,2
+KNVB,Fortuna Sittard,Eerste Elftal,George,Cox,ENG,1998-01-14,Verdediger,5
+KNVB,Fortuna Sittard,Eerste Elftal,Dogan,Erdogan,TUR,1996-08-22,Verdediger,6
+KNVB,Fortuna Sittard,Eerste Elftal,Dimitrios,Siovas,GRE,1988-09-16,Verdediger,4
+KNVB,Fortuna Sittard,Eerste Elftal,Deroy,Duarte,NED,1999-07-04,Middenvelder,8
+KNVB,Fortuna Sittard,Eerste Elftal,Arianit,Ferati,GER,1997-09-07,Middenvelder,10
+KNVB,Fortuna Sittard,Eerste Elftal,Kristijan,Bistrović,CRO,1998-04-09,Middenvelder,7
+KNVB,Fortuna Sittard,Eerste Elftal,Iñigo,Córdoba,ESP,1997-03-13,Aanvaller,11
+KNVB,Fortuna Sittard,Eerste Elftal,Tijjani,Noslin,NED,1999-07-18,Aanvaller,77
+KNVB,Fortuna Sittard,Eerste Elftal,Umaro,Embaló,POR,2001-05-06,Aanvaller,17
+KNVB,SC Heerenveen,Eerste Elftal,Andries,Noppert,NED,1994-04-07,Keeper,44
+KNVB,SC Heerenveen,Eerste Elftal,Mickey,van der Hart,NED,1994-06-13,Keeper,13
+KNVB,SC Heerenveen,Eerste Elftal,Nikolai,Hopland,NOR,2004-07-24,Verdediger,17
+KNVB,SC Heerenveen,Eerste Elftal,Pawel,Bochniewicz,POL,1996-01-30,Verdediger,5
+KNVB,SC Heerenveen,Eerste Elftal,Sam,Kersten,NED,1998-01-30,Verdediger,3
+KNVB,SC Heerenveen,Eerste Elftal,Hristiyan,Petrov,BUL,2002-06-24,Verdediger,28
+KNVB,SC Heerenveen,Eerste Elftal,Oliver,Braude,NOR,2004-02-21,Verdediger,45
+KNVB,SC Heerenveen,Eerste Elftal,Amara,Cond�,GER,1997-01-06,Middenvelder,6
+KNVB,SC Heerenveen,Eerste Elftal,Marcus,Linday,SWE,2003-06-02,Middenvelder,16
+KNVB,SC Heerenveen,Eerste Elftal,Espen,van Ee,NED,2003-07-05,Middenvelder,21
+KNVB,SC Heerenveen,Eerste Elftal,Luuk,Brouwers,NED,1998-05-03,Middenvelder,8
+KNVB,SC Heerenveen,Eerste Elftal,Levi,Smans,NED,2003-03-25,Middenvelder,14
+KNVB,SC Heerenveen,Eerste Elftal,Ilias,Sebaoui,MAR,2001-10-04,Aanvaller,10
+KNVB,SC Heerenveen,Eerste Elftal,Jacob,Trenskow,DEN,2000-11-26,Aanvaller,20
+KNVB,SC Heerenveen,Eerste Elftal,Ion,Nicolaescu,MDA,1998-09-07,Aanvaller,18
+KNVB,SC Heerenveen,Eerste Elftal,Andries,Noppert,NED,1994-04-07,Keeper,44KNVB,Willem II,Eerste Elftal,Thomas,Didillon-H�dl,FRA,1995-01-15,Keeper,1
+KNVB,Willem II,Eerste Elftal,Wouter,van der Steen,NED,1989-02-10,Keeper,21
+KNVB,Willem II,Eerste Elftal,Tommy,St. Jago,NED,2000-10-07,Verdediger,30
+KNVB,Willem II,Eerste Elftal,Raffael,Behounek,AUT,1996-11-18,Verdediger,15
+KNVB,Willem II,Eerste Elftal,Jens,Mathijsen,NED,2006-02-09,Verdediger,48
+KNVB,Willem II,Eerste Elftal,R�nar Th�r,Sigurgeirsson,ISL,1999-05-19,Verdediger,22
+KNVB,Willem II,Eerste Elftal,Valentino,Vermeulen,NED,2001-02-22,Verdediger,23
+KNVB,Willem II,Eerste Elftal,Jesse,Bosch,NED,1998-01-23,Middenvelder,8
+KNVB,Willem II,Eerste Elftal,Boris,Lambert,BEL,1999-03-14,Middenvelder,6
+KNVB,Willem II,Eerste Elftal,Amine,Lachkar,NED,2002-04-10,Middenvelder,77
+KNVB,Willem II,Eerste Elftal,Dennis,Kaygin,GER,2003-09-11,Middenvelder,16
+KNVB,Willem II,Eerste Elftal,Max,de Waal,NED,2000-05-20,Aanvaller,27
+KNVB,Willem II,Eerste Elftal,Cisse,Sandra,NED,2003-04-15,Aanvaller,14
+KNVB,Willem II,Eerste Elftal,Uri�l,van Aalst,NED,2003-07-05,Aanvaller,51
+KNVB,Willem II,Eerste Elftal,Kyan,Vaesen,BEL,2004-06-18,Aanvaller,9

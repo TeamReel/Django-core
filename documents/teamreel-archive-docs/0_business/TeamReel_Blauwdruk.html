@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TeamReel_Blauwdruk.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%F0%9F%A7%AD-teamreel-%E2%80%93-blauwdruk">🧭 TeamReel – Blauwdruk</h1>
+<blockquote>
+<p><strong>Professionele clubcontent. In vijf minuten. In jouw stijl.</strong></p>
+</blockquote>
+<hr>
+<h2 id="1-doel-van-deze-blauwdruk">1. Doel van deze blauwdruk</h2>
+<p>De TeamReel-blauwdruk geeft een overzicht van de technische architectuur, AI-workflows en datastromen binnen het platform. Het document vormt de schakel tussen strategie (Businessplan), ontwerp (Functional Design) en uitvoering (Technical Design + Projectplan).</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Eén ecosysteem – modulair, veilig en consistent.</em></p>
+</blockquote>
+<hr>
+<h2 id="2-architectuuroverzicht">2. Architectuuroverzicht</h2>
+<p>Het TeamReel-platform bestaat uit drie lagen: <strong>Frontend</strong>, <strong>Backend</strong> en <strong>AI &amp; Data Services</strong>.<br>
+Alle lagen communiceren via RESTful API’s en gebruiken gedeelde tokens en designprincipes uit de <em>Style Foundation</em>.</p>
+<pre><code class="language-mermaid"><div class="mermaid">graph LR
+    A[Frontend – Next.js / Tailwind] -->|API-calls| B[Backend – Django REST / PostgreSQL]
+    B --> C[AI Engine – LangGraph / OpenAI]
+    B --> D[Storage – AWS S3 / Railway]
+    C --> E[Validation Layer – Visual & Tone Checks]
+    E --> F[UI Return – Preview & Feedback]
+</div></code></pre>
+<h3 id="kernprincipes">Kernprincipes</h3>
+<ul>
+<li><strong>Modulair:</strong> elke functie is een losse service (AI, Auth, Credits, UI).</li>
+<li><strong>Schaalbaar:</strong> horizontale opschaling via Railway of AWS.</li>
+<li><strong>Veilig:</strong> JWT-authenticatie, SSL, en geautomatiseerde CI/CD-controles.</li>
+<li><strong>Herbruikbaar:</strong> alle UI-elementen volgen tokens (<code>tokens.json</code>).</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Architectuur met de eenvoud van een startup en de robuustheid van een platform.</em></p>
+</blockquote>
+<hr>
+<h2 id="3-systeemlagen">3. Systeemlagen</h2>
+<table>
+<thead>
+<tr>
+<th>Laag</th>
+<th>Technologie</th>
+<th>Functie</th>
+<th>Communicatie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>Next.js + Tailwind</td>
+<td>Dashboard, AI Studio, gebruikersflows</td>
+<td>REST API + tokens</td>
+</tr>
+<tr>
+<td><strong>Backend</strong></td>
+<td>Django REST Framework</td>
+<td>Datamodel, API’s, authenticatie</td>
+<td>JSON-responses</td>
+</tr>
+<tr>
+<td><strong>AI-engine</strong></td>
+<td>LangGraph + OpenAI API</td>
+<td>Genereren van visuals en video’s</td>
+<td>Prompt-workflows</td>
+</tr>
+<tr>
+<td><strong>Database</strong></td>
+<td>PostgreSQL</td>
+<td>Clubs, teams, spelers, content, credits</td>
+<td>ORM + SQL</td>
+</tr>
+<tr>
+<td><strong>Storage</strong></td>
+<td>AWS S3 / Railway</td>
+<td>Opslag voor beelden en video’s</td>
+<td>Signed URLs</td>
+</tr>
+<tr>
+<td><strong>Monitoring</strong></td>
+<td>Grafana + Sentry</td>
+<td>Logging, performance en incidentbeheer</td>
+<td>Webhooks</td>
+</tr>
+<tr>
+<td><strong>CI/CD</strong></td>
+<td>GitHub Actions</td>
+<td>Build, test en deploy</td>
+<td>YAML workflows</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Elke laag is onafhankelijk te testen en te vervangen.</em></p>
+</blockquote>
+<hr>
+<h2 id="4-datamodel--lifecycle">4. Datamodel &amp; Lifecycle</h2>
+<p>De datastroom binnen TeamReel verloopt volgens de hiërarchie <strong>Club → Team → Lid → Content</strong>.<br>
+Alle entiteiten zijn functioneel én visueel met elkaar verbonden.</p>
+<pre><code class="language-mermaid"><div class="mermaid">erDiagram
+    CLUB ||--o{ TEAM : bevat
+    TEAM ||--o{ MEMBER : heeft
+    MEMBER ||--o{ CONTENTITEM : genereert
+    CLUB {
+        string naam
+        string sportType
+        string logo
+        string kleurPrimair
+        string kleurSecundair
+        string sponsor
+    }
+    TEAM {
+        string naam
+        string seizoen
+        string teamsponsor
+        string accentkleur
+    }
+    MEMBER {
+        string naam
+        string rol
+        string positie
+        string foto
+    }
+    CONTENTITEM {
+        string type
+        string status
+        string url
+        date created
+    }
+</div></code></pre>
+<h3 id="data-lifecycle">Data Lifecycle</h3>
+<ol>
+<li><strong>Input:</strong> gebruiker voert data in via UI of upload.</li>
+<li><strong>Validatie:</strong> backend controleert volledigheid en rechten.</li>
+<li><strong>AI-verrijking:</strong> data wordt verwerkt in de AI-engine.</li>
+<li><strong>Output:</strong> content (beeld/video) wordt opgeslagen en teruggekoppeld.</li>
+<li><strong>Feedbackloop:</strong> gebruiker beoordeelt en AI leert van correcties.</li>
+</ol>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Elke datapunt leeft – van invoer tot AI-feedback.</em></p>
+</blockquote>
+<hr>
+<h2 id="5-ai-workflowstructuur">5. AI-workflowstructuur</h2>
+<p>De AI-laag van TeamReel is ontworpen als een reeks microflows die samen één eindresultaat opleveren.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Input Club- & Teamdata] --> B[AI Preprocessor – Template selecteren]
+B --> C[Prompt Engine – LangGraph]
+C --> D[Generatie – Visual of Video]
+D --> E[Validation Layer – Kleur & Logo Check]
+E --> F[Output opslaan in S3]
+F --> G[Preview in AI Studio]
+G --> H[Gebruiker keurt goed of vraagt hergeneratie]
+H --> I[Feedback opgeslagen in LangGraph Memory]
+</div></code></pre>
+<p>Elke flow is <strong>herhaalbaar, meetbaar en uitbreidbaar</strong>. Promptparameters en stijltokens zijn vastgelegd in <code>/ai/prompts/config.json</code>.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>AI is geen black box, maar een gecontroleerde workflow.</em></p>
+</blockquote>
+<hr>
+<h2 id="6-api-overzicht">6. API-overzicht</h2>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Methode</th>
+<th>Doel</th>
+<th>Authenticatie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/clubs/</code></td>
+<td>GET / POST</td>
+<td>Beheer clubs en huisstijl</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td><code>/api/teams/</code></td>
+<td>GET / POST / PUT</td>
+<td>Beheer teams, spelers en sponsors</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td><code>/api/members/</code></td>
+<td>GET / POST</td>
+<td>Spelers en rollen beheren</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td><code>/api/content/</code></td>
+<td>POST</td>
+<td>Start AI-flow en genereer content</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td><code>/api/credits/</code></td>
+<td>GET / PATCH</td>
+<td>Controleer of update credits</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td><code>/api/reports/</code></td>
+<td>GET</td>
+<td>Exporteer statistieken</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td><code>/api/auth/magiclink/</code></td>
+<td>POST</td>
+<td>Inloggen zonder wachtwoord</td>
+<td>Public</td>
+</tr>
+</tbody>
+</table>
+<p>Alle routes volgen REST-conventies en zijn versiebeheerd (<code>/api/v1/</code>). Nieuwe features worden toegevoegd onder <code>/api/v2/</code> zonder bestaande endpoints te breken.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>API’s zijn stabiel, voorspelbaar en uitbreidbaar.</em></p>
+</blockquote>
+<hr>
+<h2 id="7-beveiliging--privacy">7. Beveiliging &amp; Privacy</h2>
+<table>
+<thead>
+<tr>
+<th>Domein</th>
+<th>Maatregel</th>
+<th>Toelichting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Authenticatie</strong></td>
+<td>JWT + Magic Link</td>
+<td>Geen wachtwoorden, veilige tokens</td>
+</tr>
+<tr>
+<td><strong>Data</strong></td>
+<td>Encryptie in rust en transport</td>
+<td>HTTPS, SSL, versleutelde opslag</td>
+</tr>
+<tr>
+<td><strong>Toegang</strong></td>
+<td>Rolgebaseerd (club → team → gebruiker)</td>
+<td>Minimalistische rechtenstructuur</td>
+</tr>
+<tr>
+<td><strong>Incidentbeheer</strong></td>
+<td>Automatische logging in Sentry</td>
+<td>Rapportage binnen 24 uur</td>
+</tr>
+<tr>
+<td><strong>Privacy</strong></td>
+<td>Gebruiker kiest zichtbaarheid per contentitem</td>
+<td>Publiek / clubintern / privé</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Vertrouwen is de basis van elk sportplatform.</em></p>
+</blockquote>
+<hr>
+<h2 id="8-monitoring--metrics">8. Monitoring &amp; Metrics</h2>
+<p>TeamReel gebruikt <strong>Grafana dashboards</strong> voor real-time inzichten in uptime, AI-prestaties en gebruikersactiviteit.</p>
+<pre><code class="language-mermaid"><div class="mermaid">graph LR
+A[User acties] --> B[Backend logging]
+B --> C[Metrics opgeslagen in Prometheus]
+C --> D[Visualisatie in Grafana]
+D --> E[Alerts via Slack]
+E --> F[Incidentregistratie in Notion / MD-log]
+</div></code></pre>
+<p>Kernindicatoren:</p>
+<ul>
+<li>Systeemuptime (&gt; 98%)</li>
+<li>AI-successrate (&gt; 90%)</li>
+<li>Gemiddelde responstijd (&lt; 400 ms)</li>
+<li>Foutpercentage per API-endpoint</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Meten is winnen — inzicht houdt het systeem fit.</em></p>
+</blockquote>
+<hr>
+<h2 id="9-uitbreidbaarheid">9. Uitbreidbaarheid</h2>
+<p>Nieuwe modules (zoals <em>Nieuwsbriefgenerator</em> en <em>Coach van het Jaar</em>) kunnen worden toegevoegd via een plug-in structuur:</p>
+<ul>
+<li>Elk module krijgt eigen route (<code>/api/module/naam</code>).</li>
+<li>Frontend-componenten worden automatisch geladen via <code>feature flags</code>.</li>
+<li>Tokens en stijl blijven centraal beheerd in <code>/frontend/styles/tokens.json</code>.</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Modulair bouwen maakt groei eenvoudig en veilig.</em></p>
+</blockquote>
+<hr>
+<h2 id="10-samenvatting">10. Samenvatting</h2>
+<p>De TeamReel-blauwdruk toont een volledig geïntegreerd, maar eenvoudig te beheren ecosysteem. Alles is ontworpen rond één gedachte: <strong>automatiseren zonder karakter te verliezen</strong>.<br>
+Van data tot AI-output, van club tot cloud: elke laag versterkt de identiteit van de gebruiker.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>TeamReel is niet zomaar software — het is een systeem dat trots vertaalt in pixels.</em></p>
+</blockquote>
+
+</body>
+</html>

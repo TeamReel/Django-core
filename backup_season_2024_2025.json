@@ -1,0 +1,109 @@
+{
+  "timestamp": "2026-01-07T20:08:01.574151",
+  "season": {
+    "id": "83f7c825-0280-4341-83d1-2e3181cb10ba",
+    "name": "Season 2024/2025",
+    "start_date": "2024-08-01",
+    "end_date": "2025-05-31",
+    "metadata": {
+      "year_end": 2025,
+      "year_start": 2024,
+      "season_type": "root"
+    }
+  },
+  "competitions": [
+    {
+      "id": "3c0521f7-cf56-4ce2-bd5d-a73879338f47",
+      "name": "Cup 2024/2025",
+      "start_date": "2024-08-01",
+      "end_date": "2025-05-31",
+      "metadata": {
+        "year_end": 2025,
+        "year_start": 2024,
+        "example_name": "KNVB Beker",
+        "parent_season": "83f7c825-0280-4341-83d1-2e3181cb10ba",
+        "competition_type": "cup"
+      }
+    },
+    {
+      "id": "9cbfc21c-30fe-4c06-b560-65c5996446d7",
+      "name": "European 2024/2025",
+      "start_date": "2024-08-01",
+      "end_date": "2025-05-31",
+      "metadata": {
+        "year_end": 2025,
+        "year_start": 2024,
+        "example_name": "UEFA Competitions",
+        "parent_season": "83f7c825-0280-4341-83d1-2e3181cb10ba",
+        "competition_type": "european"
+      }
+    },
+    {
+      "id": "3b7b11c6-d6d5-48a2-9f84-70af7d994807",
+      "name": "Friendly 2024/2025",
+      "start_date": "2024-08-01",
+      "end_date": "2025-05-31",
+      "metadata": {
+        "year_end": 2025,
+        "year_start": 2024,
+        "example_name": "Oefenwedstrijden",
+        "parent_season": "83f7c825-0280-4341-83d1-2e3181cb10ba",
+        "competition_type": "friendly"
+      }
+    },
+    {
+      "id": "5f64264e-bb79-4217-b85e-216a5cdd58ae",
+      "name": "League 2024/2025",
+      "start_date": "2024-08-01",
+      "end_date": "2025-05-31",
+      "metadata": {
+        "year_end": 2025,
+        "year_start": 2024,
+        "example_name": "Eredivisie",
+        "parent_season": "83f7c825-0280-4341-83d1-2e3181cb10ba",
+        "competition_type": "league"
+      }
+    },
+    {
+      "id": "e3eb5ac3-6e6b-4a8c-b0fc-51424f2e229c",
+      "name": "League Cup 2024/2025",
+      "start_date": "2024-08-01",
+      "end_date": "2025-05-31",
+      "metadata": {
+        "year_end": 2025,
+        "year_start": 2024,
+        "example_name": "Vrouwen Eredivisie / Jong Eredivisie",
+        "parent_season": "83f7c825-0280-4341-83d1-2e3181cb10ba",
+        "competition_type": "league_cup"
+      }
+    },
+    {
+      "id": "b623362c-d404-45a1-a83f-70247536f652",
+      "name": "Play-offs 2024/2025",
+      "start_date": "2024-08-01",
+      "end_date": "2025-05-31",
+      "metadata": {
+        "year_end": 2025,
+        "year_start": 2024,
+        "example_name": "Eredivisie Play-offs",
+        "parent_season": "83f7c825-0280-4341-83d1-2e3181cb10ba",
+        "competition_type": "playoffs"
+      }
+    },
+    {
+      "id": "31e60b36-49b3-44a8-87d1-41b2f49a4603",
+      "name": "Youth 2024/2025",
+      "start_date": "2024-08-01",
+      "end_date": "2025-05-31",
+      "metadata": {
+        "year_end": 2025,
+        "year_start": 2024,
+        "example_name": "U19 / O21 Competitie (Voorjaar/Najaar)",
+        "parent_season": "83f7c825-0280-4341-83d1-2e3181cb10ba",
+        "competition_type": "youth"
+      }
+    }
+  ],
+  "memberships_count": 1358,
+  "teams_with_players": 69
+}

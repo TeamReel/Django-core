@@ -1,0 +1,526 @@
+federation,club,team_type,first_name,last_name,nationality,birth_date,position,shirt_number
+KNVB,Ajax,O21,Jelle,Verhoeven,Netherlands,2008-02-01,Midfielder,1
+KNVB,Ajax,O21,Nick,de Vries,Netherlands,2008-04-06,Goalkeeper,2
+KNVB,Ajax,O21,Niels,Jacobs,Netherlands,2005-05-11,Forward,3
+KNVB,Ajax,O21,Jasper,Jansen,Netherlands,2005-11-13,Forward,4
+KNVB,Ajax,O21,Rick,van der Linden,Netherlands,2006-12-14,Defender,5
+KNVB,Ajax,O21,Levi,van Beek,Netherlands,2009-04-09,Goalkeeper,6
+KNVB,Ajax,O21,Ruben,de Jong,Netherlands,2008-09-23,Midfielder,7
+KNVB,Ajax,O21,Luuk,van der Linden,Netherlands,2009-06-04,Defender,8
+KNVB,Ajax,O21,Ruben,van den Berg,Netherlands,2006-04-02,Midfielder,9
+KNVB,Ajax,O21,Daan,Dijkstra,Netherlands,2005-02-03,Midfielder,10
+KNVB,Ajax,O21,Lucas,Smit,Netherlands,2009-04-10,Defender,11
+KNVB,Ajax,O21,Daan,de Jong,Netherlands,2005-09-25,Defender,12
+KNVB,Ajax,O21,Lucas,de Boer,Netherlands,2006-05-17,Forward,13
+KNVB,Ajax,O21,Martijn,Visser,Netherlands,2006-02-22,Defender,14
+KNVB,Ajax,O21,Stijn,Visser,Netherlands,2009-07-09,Forward,15
+KNVB,PSV,O21,Tim,Dekker,Netherlands,2006-06-09,Goalkeeper,1
+KNVB,PSV,O21,Mark,van Beek,Netherlands,2005-06-16,Defender,2
+KNVB,PSV,O21,Max,van den Heuvel,Netherlands,2007-03-24,Forward,3
+KNVB,PSV,O21,Sven,van Dam,Netherlands,2008-11-14,Defender,4
+KNVB,PSV,O21,Mark,de Graaf,Netherlands,2008-09-01,Defender,5
+KNVB,PSV,O21,Mark,Visser,Netherlands,2006-01-08,Midfielder,6
+KNVB,PSV,O21,Kevin,de Bruin,Netherlands,2007-07-24,Defender,7
+KNVB,PSV,O21,Robin,Smit,Netherlands,2008-05-26,Forward,8
+KNVB,PSV,O21,Thomas,van Vliet,Netherlands,2007-05-15,Goalkeeper,9
+KNVB,PSV,O21,Niels,Smit,Netherlands,2008-07-17,Midfielder,10
+KNVB,PSV,O21,Kevin,Bos,Netherlands,2007-12-21,Forward,11
+KNVB,PSV,O21,Mark,Jacobs,Netherlands,2005-10-15,Midfielder,12
+KNVB,PSV,O21,Jelle,van der Wal,Netherlands,2005-10-21,Midfielder,13
+KNVB,PSV,O21,Sem,van Leeuwen,Netherlands,2006-08-05,Forward,14
+KNVB,PSV,O21,Tim,Kok,Netherlands,2007-05-02,Defender,15
+KNVB,Feyenoord,O21,Luuk,van der Meer,Netherlands,2007-10-22,Forward,1
+KNVB,Feyenoord,O21,Milan,Smits,Netherlands,2007-05-05,Defender,2
+KNVB,Feyenoord,O21,Bram,van den Berg,Netherlands,2006-04-14,Forward,3
+KNVB,Feyenoord,O21,Thomas,Jacobs,Netherlands,2007-09-03,Midfielder,4
+KNVB,Feyenoord,O21,Stijn,van der Linden,Netherlands,2009-01-16,Defender,5
+KNVB,Feyenoord,O21,Martijn,de Bruijn,Netherlands,2006-10-16,Midfielder,6
+KNVB,Feyenoord,O21,Thijs,Vermeulen,Netherlands,2005-11-21,Forward,7
+KNVB,Feyenoord,O21,Robin,Koster,Netherlands,2005-03-19,Defender,8
+KNVB,Feyenoord,O21,Levi,Mulder,Netherlands,2005-06-24,Forward,9
+KNVB,Feyenoord,O21,Sem,Peters,Netherlands,2005-01-10,Defender,10
+KNVB,Feyenoord,O21,Tom,Schouten,Netherlands,2008-04-25,Midfielder,11
+KNVB,Feyenoord,O21,Mark,van Vliet,Netherlands,2006-05-12,Defender,12
+KNVB,Feyenoord,O21,Ruben,Visser,Netherlands,2008-02-09,Midfielder,13
+KNVB,Feyenoord,O21,Thomas,Koster,Netherlands,2007-04-16,Goalkeeper,14
+KNVB,Feyenoord,O21,Dennis,Mulder,Netherlands,2008-01-24,Goalkeeper,15
+KNVB,AZ,O21,Milan,Kok,Netherlands,2008-11-06,Forward,1
+KNVB,AZ,O21,Thomas,de Haan,Netherlands,2006-01-12,Goalkeeper,2
+KNVB,AZ,O21,Tim,Koster,Netherlands,2006-03-22,Defender,3
+KNVB,AZ,O21,Kevin,Bakker,Netherlands,2005-07-24,Defender,4
+KNVB,AZ,O21,Niels,Dijkstra,Netherlands,2008-11-11,Defender,5
+KNVB,AZ,O21,Niels,van den Berg,Netherlands,2009-05-10,Midfielder,6
+KNVB,AZ,O21,Mike,van Beek,Netherlands,2005-02-03,Midfielder,7
+KNVB,AZ,O21,Nick,van Dam,Netherlands,2006-11-26,Midfielder,8
+KNVB,AZ,O21,Daan,Hendriks,Netherlands,2007-05-20,Defender,9
+KNVB,AZ,O21,Niels,Vermeulen,Netherlands,2009-12-05,Defender,10
+KNVB,AZ,O21,Bram,Kok,Netherlands,2008-02-15,Goalkeeper,11
+KNVB,AZ,O21,Sven,Vermeulen,Netherlands,2009-09-08,Forward,12
+KNVB,AZ,O21,Niels,Maas,Netherlands,2009-02-20,Forward,13
+KNVB,AZ,O21,Thijs,de Boer,Netherlands,2009-02-10,Midfielder,14
+KNVB,AZ,O21,Nick,van den Berg,Netherlands,2005-06-15,Forward,15
+KNVB,FC Twente,O21,Tom,de Haan,Netherlands,2008-08-16,Forward,1
+KNVB,FC Twente,O21,Mike,Bos,Netherlands,2007-11-15,Defender,2
+KNVB,FC Twente,O21,Lars,de Haan,Netherlands,2005-09-26,Defender,3
+KNVB,FC Twente,O21,Jasper,Hoekstra,Netherlands,2008-06-02,Defender,4
+KNVB,FC Twente,O21,Tim,Vermeulen,Netherlands,2005-10-24,Forward,5
+KNVB,FC Twente,O21,Rick,Schouten,Netherlands,2005-03-10,Midfielder,6
+KNVB,FC Twente,O21,Koen,van den Heuvel,Netherlands,2008-08-18,Goalkeeper,7
+KNVB,FC Twente,O21,Kevin,Schouten,Netherlands,2009-04-12,Defender,8
+KNVB,FC Twente,O21,Luuk,Vermeulen,Netherlands,2009-01-20,Defender,9
+KNVB,FC Twente,O21,Nick,Dijkstra,Netherlands,2009-02-26,Forward,10
+KNVB,FC Twente,O21,Robin,de Bruijn,Netherlands,2009-09-08,Midfielder,11
+KNVB,FC Twente,O21,Tim,Kok,Netherlands,2005-06-09,Forward,12
+KNVB,FC Twente,O21,Joris,van Leeuwen,Netherlands,2007-04-28,Goalkeeper,13
+KNVB,FC Twente,O21,Nick,van den Broek,Netherlands,2006-10-25,Midfielder,14
+KNVB,FC Twente,O21,Luuk,van Beek,Netherlands,2009-07-21,Midfielder,15
+KNVB,FC Utrecht,O21,Martijn,Schouten,Netherlands,2005-02-17,Midfielder,1
+KNVB,FC Utrecht,O21,Mike,de Wit,Netherlands,2008-08-13,Midfielder,2
+KNVB,FC Utrecht,O21,Koen,Schouten,Netherlands,2005-06-06,Midfielder,3
+KNVB,FC Utrecht,O21,Max,Vos,Netherlands,2008-12-19,Defender,4
+KNVB,FC Utrecht,O21,Tom,de Wit,Netherlands,2006-07-08,Midfielder,5
+KNVB,FC Utrecht,O21,Thomas,Visser,Netherlands,2009-05-19,Defender,6
+KNVB,FC Utrecht,O21,Sem,Vos,Netherlands,2009-05-28,Defender,7
+KNVB,FC Utrecht,O21,Niels,Maas,Netherlands,2005-08-10,Forward,8
+KNVB,FC Utrecht,O21,Dennis,van der Veen,Netherlands,2005-08-05,Defender,9
+KNVB,FC Utrecht,O21,Daan,van Dijk,Netherlands,2007-09-12,Forward,10
+KNVB,FC Utrecht,O21,Finn,Mulder,Netherlands,2005-06-18,Goalkeeper,11
+KNVB,FC Utrecht,O21,Jelle,de Haan,Netherlands,2005-12-09,Forward,12
+KNVB,FC Utrecht,O21,Stijn,Peters,Netherlands,2006-04-23,Defender,13
+KNVB,FC Utrecht,O21,Mike,Brink,Netherlands,2009-03-18,Goalkeeper,14
+KNVB,FC Utrecht,O21,Stijn,Dijkstra,Netherlands,2008-07-11,Forward,15
+KNVB,FC Groningen,O21,Tim,Bos,Netherlands,2007-03-05,Goalkeeper,1
+KNVB,FC Groningen,O21,Finn,Meijer,Netherlands,2006-11-25,Defender,2
+KNVB,FC Groningen,O21,Levi,Hoekstra,Netherlands,2008-01-24,Defender,3
+KNVB,FC Groningen,O21,Jasper,de Graaf,Netherlands,2006-08-17,Forward,4
+KNVB,FC Groningen,O21,Milan,van Beek,Netherlands,2008-10-22,Defender,5
+KNVB,FC Groningen,O21,Jasper,Jacobs,Netherlands,2006-05-01,Goalkeeper,6
+KNVB,FC Groningen,O21,Kevin,Dijkstra,Netherlands,2006-04-01,Midfielder,7
+KNVB,FC Groningen,O21,Max,de Jong,Netherlands,2006-03-13,Midfielder,8
+KNVB,FC Groningen,O21,Martijn,van Leeuwen,Netherlands,2007-07-08,Defender,9
+KNVB,FC Groningen,O21,Koen,Vos,Netherlands,2005-10-03,Midfielder,10
+KNVB,FC Groningen,O21,Levi,de Wit,Netherlands,2007-04-08,Forward,11
+KNVB,FC Groningen,O21,Koen,van Leeuwen,Netherlands,2005-01-07,Midfielder,12
+KNVB,FC Groningen,O21,Nick,van der Linden,Netherlands,2008-06-22,Defender,13
+KNVB,FC Groningen,O21,Martijn,Vermeulen,Netherlands,2005-02-22,Forward,14
+KNVB,FC Groningen,O21,Koen,Willems,Netherlands,2008-12-02,Forward,15
+KNVB,Almere City,O21,Robin,Smits,Netherlands,2007-02-07,Midfielder,1
+KNVB,Almere City,O21,Jasper,Kok,Netherlands,2007-01-21,Goalkeeper,2
+KNVB,Almere City,O21,Lars,Bos,Netherlands,2007-01-01,Defender,3
+KNVB,Almere City,O21,Lars,Jacobs,Netherlands,2006-12-18,Forward,4
+KNVB,Almere City,O21,Tim,Bakker,Netherlands,2006-02-28,Midfielder,5
+KNVB,Almere City,O21,Jelle,Koster,Netherlands,2008-08-27,Defender,6
+KNVB,Almere City,O21,Tim,Smit,Netherlands,2005-10-19,Defender,7
+KNVB,Almere City,O21,Finn,van Leeuwen,Netherlands,2008-03-26,Midfielder,8
+KNVB,Almere City,O21,Rick,van den Berg,Netherlands,2005-12-26,Goalkeeper,9
+KNVB,Almere City,O21,Joris,van der Veen,Netherlands,2009-02-26,Forward,10
+KNVB,Almere City,O21,Robin,de Haan,Netherlands,2009-10-26,Midfielder,11
+KNVB,Almere City,O21,Niels,Hoekstra,Netherlands,2005-01-13,Defender,12
+KNVB,Almere City,O21,Martijn,Kok,Netherlands,2007-02-12,Defender,13
+KNVB,Almere City,O21,Mike,Smits,Netherlands,2006-12-22,Forward,14
+KNVB,Almere City,O21,Joris,van Dijk,Netherlands,2009-09-10,Forward,15
+KNVB,Fortuna Sittard,O21,Tim,Willems,Netherlands,2005-12-10,Midfielder,1
+KNVB,Fortuna Sittard,O21,Rick,Verhoeven,Netherlands,2005-12-17,Forward,2
+KNVB,Fortuna Sittard,O21,Jelle,Hendriks,Netherlands,2006-12-09,Midfielder,3
+KNVB,Fortuna Sittard,O21,Lucas,de Groot,Netherlands,2008-10-26,Midfielder,4
+KNVB,Fortuna Sittard,O21,Thomas,van Vliet,Netherlands,2008-12-15,Goalkeeper,5
+KNVB,Fortuna Sittard,O21,Dennis,de Jong,Netherlands,2006-08-08,Defender,6
+KNVB,Fortuna Sittard,O21,Thomas,Dijkstra,Netherlands,2007-03-18,Midfielder,7
+KNVB,Fortuna Sittard,O21,Jelle,Dekker,Netherlands,2005-04-26,Forward,8
+KNVB,Fortuna Sittard,O21,Levi,Dijkstra,Netherlands,2005-09-05,Defender,9
+KNVB,Fortuna Sittard,O21,Niels,van der Meer,Netherlands,2009-10-28,Defender,10
+KNVB,Fortuna Sittard,O21,Kevin,Verhoeven,Netherlands,2005-04-28,Goalkeeper,11
+KNVB,Fortuna Sittard,O21,Rick,Maas,Netherlands,2006-04-16,Forward,12
+KNVB,Fortuna Sittard,O21,Rick,van der Wal,Netherlands,2007-11-07,Forward,13
+KNVB,Fortuna Sittard,O21,Rick,van Dam,Netherlands,2005-02-09,Defender,14
+KNVB,Fortuna Sittard,O21,Max,Hoekstra,Netherlands,2007-06-16,Defender,15
+KNVB,Go Ahead Eagles,O21,Nick,van den Berg,Netherlands,2005-10-18,Defender,1
+KNVB,Go Ahead Eagles,O21,Rick,de Groot,Netherlands,2005-09-07,Goalkeeper,2
+KNVB,Go Ahead Eagles,O21,Koen,Willems,Netherlands,2009-06-27,Forward,3
+KNVB,Go Ahead Eagles,O21,Koen,Vos,Netherlands,2007-10-10,Goalkeeper,4
+KNVB,Go Ahead Eagles,O21,Martijn,Dijkstra,Netherlands,2008-08-08,Defender,5
+KNVB,Go Ahead Eagles,O21,Lucas,Hendriks,Netherlands,2007-02-20,Midfielder,6
+KNVB,Go Ahead Eagles,O21,Rick,Visser,Netherlands,2005-10-02,Forward,7
+KNVB,Go Ahead Eagles,O21,Thomas,de Wit,Netherlands,2005-07-15,Defender,8
+KNVB,Go Ahead Eagles,O21,Sven,Dijkstra,Netherlands,2007-05-11,Midfielder,9
+KNVB,Go Ahead Eagles,O21,Max,van der Heijden,Netherlands,2008-06-04,Forward,10
+KNVB,Go Ahead Eagles,O21,Rick,van der Meer,Netherlands,2008-04-11,Defender,11
+KNVB,Go Ahead Eagles,O21,Nick,Mulder,Netherlands,2006-02-10,Midfielder,12
+KNVB,Go Ahead Eagles,O21,Mark,Meijer,Netherlands,2006-01-18,Midfielder,13
+KNVB,Go Ahead Eagles,O21,Kevin,Brink,Netherlands,2005-08-10,Forward,14
+KNVB,Go Ahead Eagles,O21,Niels,Koster,Netherlands,2008-02-21,Defender,15
+KNVB,Heracles Almelo,O21,Mark,de Graaf,Netherlands,2006-05-08,Midfielder,1
+KNVB,Heracles Almelo,O21,Rick,Visser,Netherlands,2008-01-16,Forward,2
+KNVB,Heracles Almelo,O21,Lucas,Vos,Netherlands,2007-06-07,Midfielder,3
+KNVB,Heracles Almelo,O21,Kevin,de Wit,Netherlands,2005-09-25,Midfielder,4
+KNVB,Heracles Almelo,O21,Finn,Vos,Netherlands,2006-02-13,Defender,5
+KNVB,Heracles Almelo,O21,Tim,van Beek,Netherlands,2008-07-06,Defender,6
+KNVB,Heracles Almelo,O21,Sven,de Wit,Netherlands,2008-03-24,Goalkeeper,7
+KNVB,Heracles Almelo,O21,Tom,van Vliet,Netherlands,2007-03-22,Forward,8
+KNVB,Heracles Almelo,O21,Mike,Dekker,Netherlands,2005-05-12,Forward,9
+KNVB,Heracles Almelo,O21,Rick,Jacobs,Netherlands,2009-04-15,Forward,10
+KNVB,Heracles Almelo,O21,Stijn,van den Heuvel,Netherlands,2005-12-10,Goalkeeper,11
+KNVB,Heracles Almelo,O21,Bram,van der Meer,Netherlands,2008-09-15,Defender,12
+KNVB,Heracles Almelo,O21,Stijn,van den Berg,Netherlands,2005-01-02,Defender,13
+KNVB,Heracles Almelo,O21,Robin,de Bruijn,Netherlands,2005-06-26,Midfielder,14
+KNVB,Heracles Almelo,O21,Tom,Jansen,Netherlands,2008-05-23,Defender,15
+KNVB,NAC Breda,O21,Max,de Boer,Netherlands,2005-10-17,Midfielder,1
+KNVB,NAC Breda,O21,Niels,Schouten,Netherlands,2006-10-14,Goalkeeper,2
+KNVB,NAC Breda,O21,Koen,van de Ven,Netherlands,2006-11-15,Forward,3
+KNVB,NAC Breda,O21,Luuk,de Bruijn,Netherlands,2005-04-21,Midfielder,4
+KNVB,NAC Breda,O21,Rick,de Graaf,Netherlands,2009-11-28,Goalkeeper,5
+KNVB,NAC Breda,O21,Max,Visser,Netherlands,2008-01-14,Forward,6
+KNVB,NAC Breda,O21,Rick,van den Heuvel,Netherlands,2008-05-09,Midfielder,7
+KNVB,NAC Breda,O21,Mark,Bos,Netherlands,2006-01-21,Forward,8
+KNVB,NAC Breda,O21,Martijn,Smit,Netherlands,2009-11-20,Defender,9
+KNVB,NAC Breda,O21,Tim,Kok,Netherlands,2005-07-21,Defender,10
+KNVB,NAC Breda,O21,Nick,van Vliet,Netherlands,2006-07-25,Defender,11
+KNVB,NAC Breda,O21,Sem,Jansen,Netherlands,2005-05-13,Defender,12
+KNVB,NAC Breda,O21,Kevin,de Bruin,Netherlands,2005-02-12,Defender,13
+KNVB,NAC Breda,O21,Kevin,Smits,Netherlands,2006-08-12,Forward,14
+KNVB,NAC Breda,O21,Thomas,Jacobs,Netherlands,2009-01-24,Midfielder,15
+KNVB,NEC,O21,Lucas,Visser,Netherlands,2005-08-07,Forward,1
+KNVB,NEC,O21,Sven,Vos,Netherlands,2007-01-01,Defender,2
+KNVB,NEC,O21,Niels,van der Meer,Netherlands,2009-06-13,Defender,3
+KNVB,NEC,O21,Thijs,van den Heuvel,Netherlands,2007-11-10,Midfielder,4
+KNVB,NEC,O21,Stijn,Dijkstra,Netherlands,2007-01-21,Forward,5
+KNVB,NEC,O21,Stijn,Bakker,Netherlands,2006-04-05,Goalkeeper,6
+KNVB,NEC,O21,Max,van der Meer,Netherlands,2006-12-20,Forward,7
+KNVB,NEC,O21,Mike,van den Heuvel,Netherlands,2005-10-21,Goalkeeper,8
+KNVB,NEC,O21,Lucas,Willems,Netherlands,2006-12-19,Midfielder,9
+KNVB,NEC,O21,Jelle,de Wit,Netherlands,2009-12-18,Defender,10
+KNVB,NEC,O21,Thijs,van der Meer,Netherlands,2007-11-25,Defender,11
+KNVB,NEC,O21,Daan,de Bruijn,Netherlands,2009-10-08,Defender,12
+KNVB,NEC,O21,Max,van Beek,Netherlands,2005-10-25,Forward,13
+KNVB,NEC,O21,Sven,van den Heuvel,Netherlands,2006-02-04,Midfielder,14
+KNVB,NEC,O21,Jasper,van den Heuvel,Netherlands,2009-07-22,Midfielder,15
+KNVB,PEC Zwolle,O21,Jelle,Jansen,Netherlands,2005-01-12,Midfielder,1
+KNVB,PEC Zwolle,O21,Kevin,van Beek,Netherlands,2007-07-06,Defender,2
+KNVB,PEC Zwolle,O21,Robin,van den Broek,Netherlands,2007-12-11,Defender,3
+KNVB,PEC Zwolle,O21,Luuk,de Wit,Netherlands,2009-08-10,Midfielder,4
+KNVB,PEC Zwolle,O21,Robin,Mulder,Netherlands,2007-09-05,Goalkeeper,5
+KNVB,PEC Zwolle,O21,Martijn,de Boer,Netherlands,2008-03-28,Forward,6
+KNVB,PEC Zwolle,O21,Joris,van Dam,Netherlands,2008-04-15,Defender,7
+KNVB,PEC Zwolle,O21,Max,van Leeuwen,Netherlands,2006-12-12,Goalkeeper,8
+KNVB,PEC Zwolle,O21,Tom,de Bruijn,Netherlands,2005-06-21,Forward,9
+KNVB,PEC Zwolle,O21,Levi,van Dijk,Netherlands,2005-09-18,Forward,10
+KNVB,PEC Zwolle,O21,Tim,Mulder,Netherlands,2008-07-08,Defender,11
+KNVB,PEC Zwolle,O21,Lars,van der Linden,Netherlands,2005-03-02,Forward,12
+KNVB,PEC Zwolle,O21,Niels,Vos,Netherlands,2005-01-15,Defender,13
+KNVB,PEC Zwolle,O21,Luuk,de Bruijn,Netherlands,2007-05-02,Midfielder,14
+KNVB,PEC Zwolle,O21,Stijn,Visser,Netherlands,2005-07-01,Midfielder,15
+KNVB,RKC Waalwijk,O21,Robin,de Graaf,Netherlands,2009-04-02,Midfielder,1
+KNVB,RKC Waalwijk,O21,Kevin,Mulder,Netherlands,2007-11-07,Midfielder,2
+KNVB,RKC Waalwijk,O21,Rick,Jacobs,Netherlands,2006-01-24,Goalkeeper,3
+KNVB,RKC Waalwijk,O21,Levi,van den Heuvel,Netherlands,2009-12-10,Forward,4
+KNVB,RKC Waalwijk,O21,Thijs,Dijkstra,Netherlands,2006-04-26,Forward,5
+KNVB,RKC Waalwijk,O21,Finn,de Groot,Netherlands,2006-07-25,Midfielder,6
+KNVB,RKC Waalwijk,O21,Jasper,Maas,Netherlands,2005-08-01,Goalkeeper,7
+KNVB,RKC Waalwijk,O21,Max,van Dijk,Netherlands,2009-12-13,Forward,8
+KNVB,RKC Waalwijk,O21,Joris,de Boer,Netherlands,2005-02-06,Midfielder,9
+KNVB,RKC Waalwijk,O21,Jasper,de Jong,Netherlands,2007-01-11,Defender,10
+KNVB,RKC Waalwijk,O21,Koen,van der Heijden,Netherlands,2005-11-09,Defender,11
+KNVB,RKC Waalwijk,O21,Stijn,Koster,Netherlands,2005-08-27,Defender,12
+KNVB,RKC Waalwijk,O21,Thijs,Schouten,Netherlands,2009-09-08,Defender,13
+KNVB,RKC Waalwijk,O21,Ruben,Verhoeven,Netherlands,2008-08-24,Forward,14
+KNVB,RKC Waalwijk,O21,Thijs,Vermeulen,Netherlands,2008-07-18,Defender,15
+KNVB,SC Heerenveen,O21,Finn,Schouten,Netherlands,2005-01-06,Midfielder,1
+KNVB,SC Heerenveen,O21,Tom,van Beek,Netherlands,2005-04-19,Defender,2
+KNVB,SC Heerenveen,O21,Stijn,Vermeulen,Netherlands,2007-07-28,Midfielder,3
+KNVB,SC Heerenveen,O21,Joris,Jacobs,Netherlands,2006-01-06,Defender,4
+KNVB,SC Heerenveen,O21,Nick,de Boer,Netherlands,2008-05-16,Forward,5
+KNVB,SC Heerenveen,O21,Jelle,van den Broek,Netherlands,2007-03-05,Goalkeeper,6
+KNVB,SC Heerenveen,O21,Nick,de Haan,Netherlands,2006-05-25,Goalkeeper,7
+KNVB,SC Heerenveen,O21,Jelle,Schouten,Netherlands,2009-03-14,Defender,8
+KNVB,SC Heerenveen,O21,Lucas,Jacobs,Netherlands,2005-08-13,Defender,9
+KNVB,SC Heerenveen,O21,Max,van der Meer,Netherlands,2007-11-02,Midfielder,10
+KNVB,SC Heerenveen,O21,Lars,Smits,Netherlands,2009-12-17,Midfielder,11
+KNVB,SC Heerenveen,O21,Tom,Dijkstra,Netherlands,2007-02-07,Forward,12
+KNVB,SC Heerenveen,O21,Rick,Mulder,Netherlands,2006-03-15,Defender,13
+KNVB,SC Heerenveen,O21,Milan,Schouten,Netherlands,2006-01-27,Forward,14
+KNVB,SC Heerenveen,O21,Finn,Willems,Netherlands,2007-04-13,Forward,15
+KNVB,Sparta Rotterdam,O21,Ruben,de Groot,Netherlands,2008-02-22,Goalkeeper,1
+KNVB,Sparta Rotterdam,O21,Lucas,de Bruin,Netherlands,2006-05-10,Defender,2
+KNVB,Sparta Rotterdam,O21,Lars,Kok,Netherlands,2008-06-25,Defender,3
+KNVB,Sparta Rotterdam,O21,Kevin,Peters,Netherlands,2007-05-08,Goalkeeper,4
+KNVB,Sparta Rotterdam,O21,Stijn,de Jong,Netherlands,2007-04-15,Midfielder,5
+KNVB,Sparta Rotterdam,O21,Lucas,Willems,Netherlands,2006-01-23,Forward,6
+KNVB,Sparta Rotterdam,O21,Rick,van der Wal,Netherlands,2008-09-27,Midfielder,7
+KNVB,Sparta Rotterdam,O21,Robin,van der Heijden,Netherlands,2009-03-21,Midfielder,8
+KNVB,Sparta Rotterdam,O21,Thijs,van der Meer,Netherlands,2005-12-20,Forward,9
+KNVB,Sparta Rotterdam,O21,Finn,van Leeuwen,Netherlands,2008-06-11,Midfielder,10
+KNVB,Sparta Rotterdam,O21,Nick,Willems,Netherlands,2005-10-21,Defender,11
+KNVB,Sparta Rotterdam,O21,Finn,Vos,Netherlands,2009-11-08,Forward,12
+KNVB,Sparta Rotterdam,O21,Rick,van den Berg,Netherlands,2007-03-12,Defender,13
+KNVB,Sparta Rotterdam,O21,Sem,van Leeuwen,Netherlands,2006-03-10,Forward,14
+KNVB,Sparta Rotterdam,O21,Thomas,van den Berg,Netherlands,2009-01-21,Defender,15
+KNVB,Willem II,O21,Dennis,van der Veen,Netherlands,2006-09-04,Midfielder,1
+KNVB,Willem II,O21,Bram,van der Veen,Netherlands,2006-07-07,Midfielder,2
+KNVB,Willem II,O21,Max,van Dam,Netherlands,2007-09-22,Defender,3
+KNVB,Willem II,O21,Martijn,van der Linden,Netherlands,2007-02-22,Goalkeeper,4
+KNVB,Willem II,O21,Rick,de Graaf,Netherlands,2005-01-23,Forward,5
+KNVB,Willem II,O21,Sem,Hendriks,Netherlands,2005-01-23,Forward,6
+KNVB,Willem II,O21,Mark,Bakker,Netherlands,2007-11-11,Defender,7
+KNVB,Willem II,O21,Thijs,de Jong,Netherlands,2006-11-10,Defender,8
+KNVB,Willem II,O21,Milan,van der Meer,Netherlands,2007-09-24,Midfielder,9
+KNVB,Willem II,O21,Dennis,de Groot,Netherlands,2008-03-15,Defender,10
+KNVB,Willem II,O21,Mark,Bos,Netherlands,2005-09-11,Midfielder,11
+KNVB,Willem II,O21,Dennis,Mulder,Netherlands,2005-04-15,Goalkeeper,12
+KNVB,Willem II,O21,Max,Willems,Netherlands,2009-11-20,Forward,13
+KNVB,Willem II,O21,Max,van de Ven,Netherlands,2008-04-10,Defender,14
+KNVB,Willem II,O21,Dennis,Maas,Netherlands,2006-10-26,Forward,15
+KNVB,NEC,Vrouwen,Fenna,van de Ven,Netherlands,2004-03-16,Defender,1
+KNVB,NEC,Vrouwen,Lily,de Boer,Netherlands,2003-05-11,Midfielder,2
+KNVB,NEC,Vrouwen,Roos,de Bruijn,Netherlands,1999-03-09,Forward,3
+KNVB,NEC,Vrouwen,Isa,Willems,Netherlands,1998-10-01,Defender,4
+KNVB,NEC,Vrouwen,Eva,van der Heijden,Netherlands,1994-08-18,Goalkeeper,5
+KNVB,NEC,Vrouwen,Noa,de Bruijn,Netherlands,2002-08-22,Midfielder,6
+KNVB,NEC,Vrouwen,Amy,de Wit,Netherlands,2005-05-27,Midfielder,7
+KNVB,NEC,Vrouwen,Femke,Vos,Netherlands,2004-11-10,Defender,8
+KNVB,NEC,Vrouwen,Lotte,Schouten,Netherlands,2006-03-21,Forward,9
+KNVB,NEC,Vrouwen,Lynn,Brink,Netherlands,1996-11-26,Forward,10
+KNVB,NEC,Vrouwen,Anna,Vermeulen,Netherlands,2008-10-12,Defender,11
+KNVB,NEC,Vrouwen,Iris,van der Veen,Netherlands,2000-08-01,Midfielder,12
+KNVB,NEC,Vrouwen,Julia,Willems,Netherlands,2008-04-15,Defender,13
+KNVB,NEC,Vrouwen,Bo,de Wit,Netherlands,2006-12-22,Goalkeeper,14
+KNVB,NEC,Vrouwen,Laura,van der Meer,Netherlands,1999-02-25,Forward,15
+KNVB,SC Heerenveen,Vrouwen,Amber,Smits,Netherlands,2004-06-16,Midfielder,1
+KNVB,SC Heerenveen,Vrouwen,Amber,van Vliet,Netherlands,1995-06-09,Forward,2
+KNVB,SC Heerenveen,Vrouwen,Amber,van den Berg,Netherlands,2001-01-24,Defender,3
+KNVB,SC Heerenveen,Vrouwen,Sarah,Mulder,Netherlands,2003-06-13,Defender,4
+KNVB,SC Heerenveen,Vrouwen,Tess,de Graaf,Netherlands,2006-11-24,Goalkeeper,5
+KNVB,SC Heerenveen,Vrouwen,Bo,Hoekstra,Netherlands,1999-07-03,Defender,6
+KNVB,SC Heerenveen,Vrouwen,Anna,Verhoeven,Netherlands,2003-02-07,Midfielder,7
+KNVB,SC Heerenveen,Vrouwen,Sarah,van Dijk,Netherlands,2001-02-07,Defender,8
+KNVB,SC Heerenveen,Vrouwen,Iris,de Graaf,Netherlands,2004-05-14,Forward,9
+KNVB,SC Heerenveen,Vrouwen,Liv,Dijkstra,Netherlands,1994-02-21,Defender,10
+KNVB,SC Heerenveen,Vrouwen,Liv,Vermeulen,Netherlands,2001-04-19,Goalkeeper,11
+KNVB,SC Heerenveen,Vrouwen,Lily,Hoekstra,Netherlands,2001-08-13,Midfielder,12
+KNVB,SC Heerenveen,Vrouwen,Isa,de Boer,Netherlands,1998-11-19,Midfielder,13
+KNVB,SC Heerenveen,Vrouwen,Lotte,Dekker,Netherlands,1998-06-19,Forward,14
+KNVB,SC Heerenveen,Vrouwen,Lotte,de Bruin,Netherlands,2001-11-13,Forward,15
+KNVB,Willem II,Vrouwen,Laura,Schouten,Netherlands,1995-06-02,Defender,1
+KNVB,Willem II,Vrouwen,Femke,van de Ven,Netherlands,2006-05-02,Defender,2
+KNVB,Willem II,Vrouwen,Evi,Jansen,Netherlands,2003-09-26,Defender,3
+KNVB,Willem II,Vrouwen,Lynn,Brink,Netherlands,1998-01-20,Defender,4
+KNVB,Willem II,Vrouwen,Lotte,van der Meer,Netherlands,1994-09-06,Midfielder,5
+KNVB,Willem II,Vrouwen,Roos,van Vliet,Netherlands,2008-04-10,Forward,6
+KNVB,Willem II,Vrouwen,Roos,Verhoeven,Netherlands,2008-01-24,Defender,7
+KNVB,Willem II,Vrouwen,Fleur,van Dijk,Netherlands,2004-05-04,Forward,8
+KNVB,Willem II,Vrouwen,Sophie,Kok,Netherlands,2000-09-25,Forward,9
+KNVB,Willem II,Vrouwen,Amber,van den Broek,Netherlands,2004-10-01,Goalkeeper,10
+KNVB,Willem II,Vrouwen,Sanne,Brink,Netherlands,1996-03-28,Midfielder,11
+KNVB,Willem II,Vrouwen,Maud,Meijer,Netherlands,2006-09-15,Forward,12
+KNVB,Willem II,Vrouwen,Amy,van de Ven,Netherlands,2000-03-28,Midfielder,13
+KNVB,Willem II,Vrouwen,Nina,de Groot,Netherlands,1995-10-01,Goalkeeper,14
+KNVB,Willem II,Vrouwen,Evi,Vermeulen,Netherlands,2002-01-13,Midfielder,15
+KNVB,Almere City,Reserves,Nick,Smits,Netherlands,2000-08-20,Midfielder,1
+KNVB,Almere City,Reserves,Jelle,de Vries,Netherlands,2003-06-22,Midfielder,2
+KNVB,Almere City,Reserves,Ruben,Vos,Netherlands,1999-09-16,Forward,3
+KNVB,Almere City,Reserves,Max,van de Ven,Netherlands,2006-03-14,Goalkeeper,4
+KNVB,Almere City,Reserves,Jasper,van den Broek,Netherlands,2001-07-23,Midfielder,5
+KNVB,Almere City,Reserves,Mark,Dekker,Netherlands,1999-06-11,Defender,6
+KNVB,Almere City,Reserves,Tim,van de Ven,Netherlands,2001-01-01,Defender,7
+KNVB,Almere City,Reserves,Lars,van der Wal,Netherlands,2003-02-06,Midfielder,8
+KNVB,Almere City,Reserves,Lucas,de Boer,Netherlands,2001-07-03,Goalkeeper,9
+KNVB,Almere City,Reserves,Levi,Bakker,Netherlands,1999-02-28,Defender,10
+KNVB,Almere City,Reserves,Bram,de Vries,Netherlands,2000-11-21,Forward,11
+KNVB,Almere City,Reserves,Lucas,de Vries,Netherlands,2004-01-11,Forward,12
+KNVB,Almere City,Reserves,Rick,van der Wal,Netherlands,2004-02-17,Defender,13
+KNVB,Almere City,Reserves,Dennis,Meijer,Netherlands,2000-11-24,Defender,14
+KNVB,Almere City,Reserves,Joris,de Vries,Netherlands,2001-11-23,Forward,15
+KNVB,FC Groningen,Reserves,Kevin,van de Ven,Netherlands,2006-12-07,Forward,1
+KNVB,FC Groningen,Reserves,Levi,van der Veen,Netherlands,2002-02-05,Defender,2
+KNVB,FC Groningen,Reserves,Milan,van der Linden,Netherlands,2003-01-11,Defender,3
+KNVB,FC Groningen,Reserves,Ruben,de Graaf,Netherlands,2000-04-24,Defender,4
+KNVB,FC Groningen,Reserves,Martijn,de Bruijn,Netherlands,2001-04-24,Defender,5
+KNVB,FC Groningen,Reserves,Lucas,van Vliet,Netherlands,2006-04-03,Midfielder,6
+KNVB,FC Groningen,Reserves,Thomas,Meijer,Netherlands,2001-02-11,Goalkeeper,7
+KNVB,FC Groningen,Reserves,Joris,Kok,Netherlands,2003-04-22,Midfielder,8
+KNVB,FC Groningen,Reserves,Tom,Schouten,Netherlands,1998-10-16,Goalkeeper,9
+KNVB,FC Groningen,Reserves,Koen,de Haan,Netherlands,2006-03-04,Defender,10
+KNVB,FC Groningen,Reserves,Sven,van den Broek,Netherlands,1998-03-20,Forward,11
+KNVB,FC Groningen,Reserves,Koen,Mulder,Netherlands,1999-08-09,Midfielder,12
+KNVB,FC Groningen,Reserves,Mike,van der Veen,Netherlands,2003-05-11,Forward,13
+KNVB,FC Groningen,Reserves,Bram,van den Broek,Netherlands,2005-03-01,Forward,14
+KNVB,FC Groningen,Reserves,Tom,Vos,Netherlands,2003-02-14,Midfielder,15
+KNVB,FC Twente,Reserves,Tim,van den Heuvel,Netherlands,2004-09-09,Forward,1
+KNVB,FC Twente,Reserves,Luuk,van der Wal,Netherlands,2003-12-27,Defender,2
+KNVB,FC Twente,Reserves,Sem,Bakker,Netherlands,1998-09-07,Midfielder,3
+KNVB,FC Twente,Reserves,Levi,de Jong,Netherlands,1998-07-11,Midfielder,4
+KNVB,FC Twente,Reserves,Milan,van der Linden,Netherlands,1999-03-26,Forward,5
+KNVB,FC Twente,Reserves,Max,Hoekstra,Netherlands,2006-10-26,Midfielder,6
+KNVB,FC Twente,Reserves,Jasper,Mulder,Netherlands,2002-01-20,Forward,7
+KNVB,FC Twente,Reserves,Thijs,Jacobs,Netherlands,2004-12-04,Defender,8
+KNVB,FC Twente,Reserves,Jelle,Vermeulen,Netherlands,2002-07-20,Midfielder,9
+KNVB,FC Twente,Reserves,Koen,Jansen,Netherlands,2002-10-19,Goalkeeper,10
+KNVB,FC Twente,Reserves,Daan,de Haan,Netherlands,2005-11-16,Defender,11
+KNVB,FC Twente,Reserves,Finn,Dijkstra,Netherlands,2002-11-05,Defender,12
+KNVB,FC Twente,Reserves,Levi,Kok,Netherlands,2006-01-11,Forward,13
+KNVB,FC Twente,Reserves,Levi,de Boer,Netherlands,2004-04-16,Goalkeeper,14
+KNVB,FC Twente,Reserves,Sven,de Haan,Netherlands,2005-10-12,Defender,15
+KNVB,Feyenoord,Reserves,Lucas,Smit,Netherlands,2003-04-23,Forward,1
+KNVB,Feyenoord,Reserves,Sem,de Haan,Netherlands,2003-12-24,Midfielder,2
+KNVB,Feyenoord,Reserves,Lucas,de Boer,Netherlands,2004-10-14,Defender,3
+KNVB,Feyenoord,Reserves,Mark,Meijer,Netherlands,1998-02-04,Forward,4
+KNVB,Feyenoord,Reserves,Martijn,Bos,Netherlands,2002-06-22,Forward,5
+KNVB,Feyenoord,Reserves,Mike,Dekker,Netherlands,2000-02-10,Goalkeeper,6
+KNVB,Feyenoord,Reserves,Sven,de Bruin,Netherlands,2002-07-02,Midfielder,7
+KNVB,Feyenoord,Reserves,Jasper,Verhoeven,Netherlands,1999-09-01,Goalkeeper,8
+KNVB,Feyenoord,Reserves,Sem,Maas,Netherlands,1998-11-17,Forward,9
+KNVB,Feyenoord,Reserves,Joris,Koster,Netherlands,2002-05-07,Defender,10
+KNVB,Feyenoord,Reserves,Jasper,van der Meer,Netherlands,2002-06-04,Defender,11
+KNVB,Feyenoord,Reserves,Milan,Brink,Netherlands,2002-01-06,Defender,12
+KNVB,Feyenoord,Reserves,Dennis,Hendriks,Netherlands,2000-04-09,Midfielder,13
+KNVB,Feyenoord,Reserves,Sem,van Dam,Netherlands,2003-10-10,Midfielder,14
+KNVB,Feyenoord,Reserves,Mark,van den Heuvel,Netherlands,2002-09-12,Defender,15
+KNVB,Fortuna Sittard,Reserves,Ruben,van der Meer,Netherlands,1998-01-05,Goalkeeper,1
+KNVB,Fortuna Sittard,Reserves,Rick,van Vliet,Netherlands,2003-04-08,Defender,2
+KNVB,Fortuna Sittard,Reserves,Thomas,Vos,Netherlands,2002-12-23,Defender,3
+KNVB,Fortuna Sittard,Reserves,Daan,Visser,Netherlands,2002-04-27,Forward,4
+KNVB,Fortuna Sittard,Reserves,Sven,de Wit,Netherlands,2004-07-05,Forward,5
+KNVB,Fortuna Sittard,Reserves,Ruben,de Bruijn,Netherlands,2004-04-26,Goalkeeper,6
+KNVB,Fortuna Sittard,Reserves,Thijs,Jansen,Netherlands,2000-04-07,Midfielder,7
+KNVB,Fortuna Sittard,Reserves,Daan,van de Ven,Netherlands,2005-05-04,Defender,8
+KNVB,Fortuna Sittard,Reserves,Tim,Jansen,Netherlands,1998-05-24,Midfielder,9
+KNVB,Fortuna Sittard,Reserves,Ruben,Brink,Netherlands,1998-01-23,Forward,10
+KNVB,Fortuna Sittard,Reserves,Max,van den Berg,Netherlands,2001-01-16,Forward,11
+KNVB,Fortuna Sittard,Reserves,Sem,Brink,Netherlands,2001-08-25,Midfielder,12
+KNVB,Fortuna Sittard,Reserves,Jasper,van Beek,Netherlands,2001-08-20,Midfielder,13
+KNVB,Fortuna Sittard,Reserves,Lars,Hendriks,Netherlands,2002-03-15,Defender,14
+KNVB,Fortuna Sittard,Reserves,Luuk,de Haan,Netherlands,2004-01-28,Defender,15
+KNVB,Go Ahead Eagles,Reserves,Sem,de Wit,Netherlands,1998-04-25,Forward,1
+KNVB,Go Ahead Eagles,Reserves,Rick,Jansen,Netherlands,2004-03-04,Midfielder,2
+KNVB,Go Ahead Eagles,Reserves,Milan,de Boer,Netherlands,2005-05-13,Forward,3
+KNVB,Go Ahead Eagles,Reserves,Martijn,van der Linden,Netherlands,2002-07-19,Midfielder,4
+KNVB,Go Ahead Eagles,Reserves,Mike,de Wit,Netherlands,2000-08-01,Defender,5
+KNVB,Go Ahead Eagles,Reserves,Daan,de Bruin,Netherlands,2006-06-07,Defender,6
+KNVB,Go Ahead Eagles,Reserves,Thomas,Vermeulen,Netherlands,2005-03-15,Defender,7
+KNVB,Go Ahead Eagles,Reserves,Levi,van den Broek,Netherlands,2003-11-09,Midfielder,8
+KNVB,Go Ahead Eagles,Reserves,Tom,Meijer,Netherlands,2000-10-12,Midfielder,9
+KNVB,Go Ahead Eagles,Reserves,Nick,Kok,Netherlands,2003-06-12,Defender,10
+KNVB,Go Ahead Eagles,Reserves,Martijn,de Bruin,Netherlands,2005-11-09,Goalkeeper,11
+KNVB,Go Ahead Eagles,Reserves,Finn,Hendriks,Netherlands,2004-01-16,Goalkeeper,12
+KNVB,Go Ahead Eagles,Reserves,Thijs,de Groot,Netherlands,2003-09-17,Forward,13
+KNVB,Go Ahead Eagles,Reserves,Mark,Peters,Netherlands,2001-11-10,Defender,14
+KNVB,Go Ahead Eagles,Reserves,Finn,van der Heijden,Netherlands,2005-06-07,Forward,15
+KNVB,Heracles Almelo,Reserves,Robin,Bos,Netherlands,1998-06-15,Midfielder,1
+KNVB,Heracles Almelo,Reserves,Finn,de Groot,Netherlands,2006-06-14,Midfielder,2
+KNVB,Heracles Almelo,Reserves,Tim,Smits,Netherlands,2006-08-26,Forward,3
+KNVB,Heracles Almelo,Reserves,Sem,de Graaf,Netherlands,2004-11-14,Defender,4
+KNVB,Heracles Almelo,Reserves,Mike,Hoekstra,Netherlands,2002-10-05,Goalkeeper,5
+KNVB,Heracles Almelo,Reserves,Martijn,van den Broek,Netherlands,1998-09-01,Defender,6
+KNVB,Heracles Almelo,Reserves,Bram,de Jong,Netherlands,1999-06-12,Forward,7
+KNVB,Heracles Almelo,Reserves,Kevin,van de Ven,Netherlands,2005-09-01,Defender,8
+KNVB,Heracles Almelo,Reserves,Mike,van de Ven,Netherlands,2002-04-02,Midfielder,9
+KNVB,Heracles Almelo,Reserves,Niels,Bakker,Netherlands,1998-09-27,Forward,10
+KNVB,Heracles Almelo,Reserves,Tim,Brink,Netherlands,1998-05-17,Goalkeeper,11
+KNVB,Heracles Almelo,Reserves,Stijn,Vermeulen,Netherlands,1999-04-15,Forward,12
+KNVB,Heracles Almelo,Reserves,Bram,van de Ven,Netherlands,2006-01-19,Defender,13
+KNVB,Heracles Almelo,Reserves,Rick,Jansen,Netherlands,2001-12-11,Midfielder,14
+KNVB,Heracles Almelo,Reserves,Dennis,Bos,Netherlands,2002-09-06,Defender,15
+KNVB,NAC Breda,Reserves,Ruben,Meijer,Netherlands,1998-02-19,Defender,1
+KNVB,NAC Breda,Reserves,Robin,Willems,Netherlands,2001-11-03,Defender,2
+KNVB,NAC Breda,Reserves,Lucas,van den Broek,Netherlands,2002-09-06,Forward,3
+KNVB,NAC Breda,Reserves,Milan,de Haan,Netherlands,2001-04-14,Midfielder,4
+KNVB,NAC Breda,Reserves,Sem,de Graaf,Netherlands,2006-11-08,Forward,5
+KNVB,NAC Breda,Reserves,Tom,Bos,Netherlands,2004-06-07,Midfielder,6
+KNVB,NAC Breda,Reserves,Bram,Dijkstra,Netherlands,2006-11-17,Defender,7
+KNVB,NAC Breda,Reserves,Bram,Mulder,Netherlands,2003-09-04,Defender,8
+KNVB,NAC Breda,Reserves,Kevin,van den Berg,Netherlands,2000-05-19,Midfielder,9
+KNVB,NAC Breda,Reserves,Luuk,de Groot,Netherlands,2003-08-03,Forward,10
+KNVB,NAC Breda,Reserves,Luuk,Kok,Netherlands,2005-01-05,Goalkeeper,11
+KNVB,NAC Breda,Reserves,Milan,van Dam,Netherlands,2003-12-13,Forward,12
+KNVB,NAC Breda,Reserves,Nick,de Bruin,Netherlands,2000-10-10,Midfielder,13
+KNVB,NAC Breda,Reserves,Niels,de Jong,Netherlands,2002-07-24,Goalkeeper,14
+KNVB,NAC Breda,Reserves,Joris,Mulder,Netherlands,2001-07-28,Defender,15
+KNVB,NEC,Reserves,Mark,van Dijk,Netherlands,2006-06-21,Defender,1
+KNVB,NEC,Reserves,Stijn,de Jong,Netherlands,1999-04-01,Defender,2
+KNVB,NEC,Reserves,Bram,Willems,Netherlands,2002-02-05,Midfielder,3
+KNVB,NEC,Reserves,Bram,de Boer,Netherlands,2001-11-26,Forward,4
+KNVB,NEC,Reserves,Rick,van Dam,Netherlands,2006-07-21,Goalkeeper,5
+KNVB,NEC,Reserves,Jelle,de Bruin,Netherlands,2006-12-04,Midfielder,6
+KNVB,NEC,Reserves,Tim,Smit,Netherlands,2002-11-08,Forward,7
+KNVB,NEC,Reserves,Rick,van der Veen,Netherlands,1999-11-16,Forward,8
+KNVB,NEC,Reserves,Finn,van Dijk,Netherlands,2001-02-01,Defender,9
+KNVB,NEC,Reserves,Kevin,van der Heijden,Netherlands,2000-09-01,Midfielder,10
+KNVB,NEC,Reserves,Levi,Dekker,Netherlands,1998-11-26,Forward,11
+KNVB,NEC,Reserves,Joris,Schouten,Netherlands,2004-09-12,Midfielder,12
+KNVB,NEC,Reserves,Tim,van Beek,Netherlands,1998-05-02,Goalkeeper,13
+KNVB,NEC,Reserves,Mike,Dekker,Netherlands,2001-08-15,Defender,14
+KNVB,NEC,Reserves,Jelle,van der Wal,Netherlands,2001-11-05,Defender,15
+KNVB,PEC Zwolle,Reserves,Rick,van Dam,Netherlands,1998-03-08,Forward,1
+KNVB,PEC Zwolle,Reserves,Mark,de Haan,Netherlands,1998-01-01,Forward,2
+KNVB,PEC Zwolle,Reserves,Mark,de Wit,Netherlands,1999-03-23,Forward,3
+KNVB,PEC Zwolle,Reserves,Max,van der Heijden,Netherlands,1999-06-08,Goalkeeper,4
+KNVB,PEC Zwolle,Reserves,Max,Hendriks,Netherlands,2006-02-18,Defender,5
+KNVB,PEC Zwolle,Reserves,Bram,Smit,Netherlands,2006-08-28,Midfielder,6
+KNVB,PEC Zwolle,Reserves,Martijn,van Leeuwen,Netherlands,2005-06-13,Defender,7
+KNVB,PEC Zwolle,Reserves,Luuk,de Jong,Netherlands,2000-10-12,Midfielder,8
+KNVB,PEC Zwolle,Reserves,Thijs,Mulder,Netherlands,1998-07-21,Defender,9
+KNVB,PEC Zwolle,Reserves,Rick,van den Heuvel,Netherlands,2006-04-19,Defender,10
+KNVB,PEC Zwolle,Reserves,Kevin,Verhoeven,Netherlands,1998-06-12,Defender,11
+KNVB,PEC Zwolle,Reserves,Max,de Jong,Netherlands,2005-08-13,Forward,12
+KNVB,PEC Zwolle,Reserves,Tim,de Groot,Netherlands,2002-04-09,Midfielder,13
+KNVB,PEC Zwolle,Reserves,Luuk,van den Heuvel,Netherlands,2003-06-14,Midfielder,14
+KNVB,PEC Zwolle,Reserves,Bram,van den Berg,Netherlands,1999-10-24,Goalkeeper,15
+KNVB,RKC Waalwijk,Reserves,Jasper,Jansen,Netherlands,2004-10-27,Defender,1
+KNVB,RKC Waalwijk,Reserves,Kevin,Dekker,Netherlands,2002-07-17,Forward,2
+KNVB,RKC Waalwijk,Reserves,Tim,Dijkstra,Netherlands,2003-03-05,Forward,3
+KNVB,RKC Waalwijk,Reserves,Sem,Maas,Netherlands,2001-02-04,Midfielder,4
+KNVB,RKC Waalwijk,Reserves,Levi,Dijkstra,Netherlands,2002-12-27,Defender,5
+KNVB,RKC Waalwijk,Reserves,Rick,van der Wal,Netherlands,1999-08-25,Midfielder,6
+KNVB,RKC Waalwijk,Reserves,Tim,van Leeuwen,Netherlands,2004-05-21,Goalkeeper,7
+KNVB,RKC Waalwijk,Reserves,Levi,van Leeuwen,Netherlands,1999-09-25,Forward,8
+KNVB,RKC Waalwijk,Reserves,Nick,van der Heijden,Netherlands,2005-04-20,Defender,9
+KNVB,RKC Waalwijk,Reserves,Sem,de Vries,Netherlands,2005-12-20,Goalkeeper,10
+KNVB,RKC Waalwijk,Reserves,Martijn,van der Linden,Netherlands,1998-12-24,Defender,11
+KNVB,RKC Waalwijk,Reserves,Jasper,Dekker,Netherlands,2000-05-18,Midfielder,12
+KNVB,RKC Waalwijk,Reserves,Sem,de Jong,Netherlands,2001-09-02,Midfielder,13
+KNVB,RKC Waalwijk,Reserves,Daan,van Dijk,Netherlands,2001-03-12,Defender,14
+KNVB,RKC Waalwijk,Reserves,Rick,van der Meer,Netherlands,1999-08-15,Forward,15
+KNVB,SC Heerenveen,Reserves,Tim,van der Wal,Netherlands,2004-04-23,Goalkeeper,1
+KNVB,SC Heerenveen,Reserves,Kevin,van der Wal,Netherlands,2006-04-06,Defender,2
+KNVB,SC Heerenveen,Reserves,Finn,van den Heuvel,Netherlands,1999-01-19,Midfielder,3
+KNVB,SC Heerenveen,Reserves,Levi,Jacobs,Netherlands,2004-09-25,Forward,4
+KNVB,SC Heerenveen,Reserves,Finn,van Dijk,Netherlands,2003-06-24,Midfielder,5
+KNVB,SC Heerenveen,Reserves,Levi,van den Heuvel,Netherlands,2000-04-14,Defender,6
+KNVB,SC Heerenveen,Reserves,Mike,Smit,Netherlands,2000-11-10,Defender,7
+KNVB,SC Heerenveen,Reserves,Jelle,de Vries,Netherlands,2000-03-26,Goalkeeper,8
+KNVB,SC Heerenveen,Reserves,Niels,van Beek,Netherlands,2000-03-15,Defender,9
+KNVB,SC Heerenveen,Reserves,Tim,Verhoeven,Netherlands,2002-10-09,Forward,10
+KNVB,SC Heerenveen,Reserves,Ruben,van Dam,Netherlands,2000-09-17,Forward,11
+KNVB,SC Heerenveen,Reserves,Mike,van Dijk,Netherlands,2003-04-05,Defender,12
+KNVB,SC Heerenveen,Reserves,Jelle,de Bruin,Netherlands,1998-06-06,Midfielder,13
+KNVB,SC Heerenveen,Reserves,Mark,de Bruijn,Netherlands,2003-11-01,Midfielder,14
+KNVB,SC Heerenveen,Reserves,Niels,de Bruin,Netherlands,2005-02-02,Forward,15
+KNVB,Sparta Rotterdam,Reserves,Martijn,Peters,Netherlands,2000-01-22,Forward,1
+KNVB,Sparta Rotterdam,Reserves,Stijn,van de Ven,Netherlands,1999-03-27,Midfielder,2
+KNVB,Sparta Rotterdam,Reserves,Tim,Meijer,Netherlands,1998-03-18,Goalkeeper,3
+KNVB,Sparta Rotterdam,Reserves,Sem,Dekker,Netherlands,2001-01-18,Midfielder,4
+KNVB,Sparta Rotterdam,Reserves,Kevin,Peters,Netherlands,2006-10-20,Midfielder,5
+KNVB,Sparta Rotterdam,Reserves,Lars,Jansen,Netherlands,2006-05-24,Forward,6
+KNVB,Sparta Rotterdam,Reserves,Mark,Meijer,Netherlands,2003-10-15,Defender,7
+KNVB,Sparta Rotterdam,Reserves,Dennis,Hendriks,Netherlands,2003-02-19,Midfielder,8
+KNVB,Sparta Rotterdam,Reserves,Kevin,Koster,Netherlands,2006-12-01,Goalkeeper,9
+KNVB,Sparta Rotterdam,Reserves,Dennis,Dekker,Netherlands,2005-06-05,Forward,10
+KNVB,Sparta Rotterdam,Reserves,Milan,Mulder,Netherlands,2001-04-07,Defender,11
+KNVB,Sparta Rotterdam,Reserves,Robin,de Wit,Netherlands,2000-12-12,Defender,12
+KNVB,Sparta Rotterdam,Reserves,Dennis,Bakker,Netherlands,2001-07-06,Forward,13
+KNVB,Sparta Rotterdam,Reserves,Niels,de Jong,Netherlands,2002-04-04,Defender,14
+KNVB,Sparta Rotterdam,Reserves,Dennis,de Vries,Netherlands,2001-07-26,Defender,15
+KNVB,Willem II,Reserves,Thomas,Vermeulen,Netherlands,2006-05-26,Goalkeeper,1
+KNVB,Willem II,Reserves,Nick,de Jong,Netherlands,1999-02-07,Forward,2
+KNVB,Willem II,Reserves,Nick,de Haan,Netherlands,1999-04-22,Midfielder,3
+KNVB,Willem II,Reserves,Lucas,de Bruin,Netherlands,2005-06-27,Forward,4
+KNVB,Willem II,Reserves,Finn,van Dijk,Netherlands,2004-05-04,Defender,5
+KNVB,Willem II,Reserves,Jelle,de Wit,Netherlands,2001-12-07,Midfielder,6
+KNVB,Willem II,Reserves,Sem,de Vries,Netherlands,2000-10-20,Defender,7
+KNVB,Willem II,Reserves,Milan,van der Veen,Netherlands,2006-11-13,Defender,8
+KNVB,Willem II,Reserves,Dennis,Meijer,Netherlands,2006-01-26,Defender,9
+KNVB,Willem II,Reserves,Nick,Visser,Netherlands,2003-03-22,Forward,10
+KNVB,Willem II,Reserves,Joris,van der Wal,Netherlands,1998-11-23,Goalkeeper,11
+KNVB,Willem II,Reserves,Daan,de Groot,Netherlands,1999-06-01,Midfielder,12
+KNVB,Willem II,Reserves,Stijn,de Wit,Netherlands,2000-03-17,Midfielder,13
+KNVB,Willem II,Reserves,Dennis,de Vries,Netherlands,1999-10-19,Defender,14
+KNVB,Willem II,Reserves,Robin,Maas,Netherlands,2002-01-03,Forward,15

@@ -1,0 +1,267 @@
+﻿federation,club,team_type,first_name,last_name,nationality,birth_date,position,shirt_number
+FIGC,Inter Milan,1a Squadra,Yann,Sommmer,SUI,1988-12-17,Keeper,1
+FIGC,Inter Milan,1a Squadra,Emil,Audero,ITA,1997-01-18,Keeper,12
+FIGC,Inter Milan,1a Squadra,Alessandro,Bastoni,ITA,1999-04-13,Verdediger,95
+FIGC,Inter Milan,1a Squadra,Francesco,Acerbi,ITA,1988-02-10,Verdediger,15
+FIGC,Inter Milan,1a Squadra,Benjamin,Pavard,FRA,1996-03-28,Verdediger,28
+FIGC,Inter Milan,1a Squadra,Federico,Dimarco,ITA,1997-11-10,Verdediger,32
+FIGC,Inter Milan,1a Squadra,Denzel,Dumfries,NED,1996-04-18,Verdediger,2
+FIGC,Inter Milan,1a Squadra,Nicol�,Barella,ITA,1997-02-07,Middenvelder,23
+FIGC,Inter Milan,1a Squadra,Hakan,�alhanoglu,TUR,1994-02-08,Middenvelder,20
+FIGC,Inter Milan,1a Squadra,Henrikh,Mkhitaryan,ARM,1989-01-21,Middenvelder,22
+FIGC,Inter Milan,1a Squadra,Davide,Frattesi,ITA,1999-09-22,Middenvelder,16
+FIGC,Inter Milan,1a Squadra,Pierre,Kalulu,FRA,2000-06-05,Middenvelder,31
+FIGC,Inter Milan,1a Squadra,Lautaro,Mart�nez,ARG,1997-08-22,Aanvaller,10
+FIGC,Inter Milan,1a Squadra,Marcus,Thuram,FRA,1997-08-06,Aanvaller,9
+FIGC,Inter Milan,1a Squadra,Marko,Arnautovic,AUT,1989-04-19,Aanvaller,8
+FIGC,AC Milan,1a Squadra,Mike,Maignan,FRA,1995-07-03,Keeper,16
+FIGC,AC Milan,1a Squadra,Marco,Sportiello,ITA,1992-05-10,Keeper,57
+FIGC,AC Milan,1a Squadra,Theo,Hern�ndez,FRA,1997-10-06,Verdediger,19
+FIGC,AC Milan,1a Squadra,Fikayo,Tomori,ENG,1997-12-19,Verdediger,23
+FIGC,AC Milan,1a Squadra,Malick,Thiaw,GER,2001-08-08,Verdediger,28
+FIGC,AC Milan,1a Squadra,Davide,Calabria,ITA,1996-12-06,Verdediger,2
+FIGC,AC Milan,1a Squadra,Strahinja,Pavlovic,SRB,2001-05-24,Verdediger,31
+FIGC,AC Milan,1a Squadra,Tijjani,Reijnders,NED,1998-07-29,Middenvelder,14
+FIGC,AC Milan,1a Squadra,Youssouf,Fofana,FRA,1999-01-10,Middenvelder,19
+FIGC,AC Milan,1a Squadra,Ruben,Loftus-Cheek,ENG,1996-01-23,Middenvelder,8
+FIGC,AC Milan,1a Squadra,Yunus,Musah,USA,2002-11-29,Middenvelder,80
+FIGC,AC Milan,1a Squadra,Christian,Pulisic,USA,1998-09-18,Middenvelder,11
+FIGC,AC Milan,1a Squadra,Rafael,Le�o,POR,1999-06-10,Aanvaller,10
+FIGC,AC Milan,1a Squadra,Santiago,Gim�nez,MEX,2001-04-18,Aanvaller,7
+FIGC,AC Milan,1a Squadra,Noah,Okafor,SUI,2000-05-24,Aanvaller,17
+FIGC,Juventus,1a Squadra,Wojciech,Szczesny,POL,1990-04-18,Keeper,1
+FIGC,Juventus,1a Squadra,Mattia,Perin,ITA,1992-11-10,Keeper,36
+FIGC,Juventus,1a Squadra,Danilo,da Silva,BRA,1991-07-15,Verdediger,6
+FIGC,Juventus,1a Squadra,Federico,Gatti,ITA,1998-06-24,Verdediger,4
+FIGC,Juventus,1a Squadra,Bremer,Nascimento,BRA,1997-03-18,Verdediger,3
+FIGC,Juventus,1a Squadra,Andrea,Cambiaso,ITA,2000-02-20,Verdediger,27
+FIGC,Juventus,1a Squadra,Alex,Sandro,BRA,1991-01-26,Verdediger,12
+FIGC,Juventus,1a Squadra,Manuel,Locatelli,ITA,1998-01-08,Middenvelder,5
+FIGC,Juventus,1a Squadra,Adrien,Rabiot,FRA,1995-04-03,Middenvelder,25
+FIGC,Juventus,1a Squadra,Weston,McKennie,USA,1998-08-28,Middenvelder,16
+FIGC,Juventus,1a Squadra,Nicol�,Fagioli,ITA,2001-02-12,Middenvelder,21
+FIGC,Juventus,1a Squadra,Teun,Koopmeiners,NED,1998-02-28,Middenvelder,8
+FIGC,Juventus,1a Squadra,Dusan,Vlahovic,SRB,2000-01-28,Aanvaller,9
+FIGC,Juventus,1a Squadra,Federico,Chiesa,ITA,1997-10-25,Aanvaller,7
+FIGC,Juventus,1a Squadra,Kenan,Yildiz,TUR,2005-05-04,Aanvaller,10
+FIGC,Napoli,1a Squadra,Alex,Meret,ITA,1997-03-22,Keeper,1
+FIGC,Napoli,1a Squadra,Pierluigi,Gollini,ITA,1995-03-18,Keeper,95
+FIGC,Napoli,1a Squadra,Giovanni,Di Lorenzo,ITA,1993-08-04,Verdediger,22
+FIGC,Napoli,1a Squadra,Amir,Rrahmani,KOS,1994-02-24,Verdediger,13
+FIGC,Napoli,1a Squadra,Alessandro,Buongiorno,ITA,1999-06-06,Verdediger,4
+FIGC,Napoli,1a Squadra,M�rio,Rui,POR,1991-05-27,Verdediger,6
+FIGC,Napoli,1a Squadra,Math�as,Olivera,URU,1997-10-31,Verdediger,17
+FIGC,Napoli,1a Squadra,Stanislav,Lobotka,SVK,1994-11-25,Middenvelder,68
+FIGC,Napoli,1a Squadra,Andr�-Frank,Zambo Anguissa,CMR,1995-11-16,Middenvelder,99
+FIGC,Napoli,1a Squadra,Piotr,Zielinski,POL,1994-05-20,Middenvelder,20
+FIGC,Napoli,1a Squadra,Giacomo,Raspadori,ITA,2000-02-18,Middenvelder,81
+FIGC,Napoli,1a Squadra,Khvicha,Kvaratskhelia,GEO,2001-02-12,Aanvaller,77
+FIGC,Napoli,1a Squadra,Victor,Osimhen,NGA,1998-12-29,Aanvaller,9
+FIGC,Napoli,1a Squadra,Matteo,Politano,ITA,1993-08-03,Aanvaller,21
+FIGC,AS Roma,1a Squadra,Rui,Patr�cio,POR,1988-02-15,Keeper,1
+FIGC,AS Roma,1a Squadra,Mile,Svilar,SRB,1999-08-27,Keeper,99
+FIGC,AS Roma,1a Squadra,Gianluca,Mancini,ITA,1996-04-17,Verdediger,23
+FIGC,AS Roma,1a Squadra,Evan,N'Dicka,CIV,1999-08-20,Verdediger,5
+FIGC,AS Roma,1a Squadra,Chris,Smalling,ENG,1989-11-22,Verdediger,6
+FIGC,AS Roma,1a Squadra,Leonardo,Spinazzola,ITA,1993-03-25,Verdediger,37
+FIGC,AS Roma,1a Squadra,Zeki,�elik,TUR,1997-02-17,Verdediger,19
+FIGC,AS Roma,1a Squadra,Bryan,Cristante,ITA,1995-03-03,Middenvelder,4
+FIGC,AS Roma,1a Squadra,Lorenzo,Pellegrini,ITA,1996-06-19,Middenvelder,7
+FIGC,AS Roma,1a Squadra,Leandro,Paredes,ARG,1994-06-29,Middenvelder,16
+FIGC,AS Roma,1a Squadra,Edoardo,Bove,ITA,2002-05-16,Middenvelder,52
+FIGC,AS Roma,1a Squadra,Paulo,Dybala,ARG,1993-11-15,Aanvaller,21
+FIGC,AS Roma,1a Squadra,Romelu,Lukaku,BEL,1993-05-13,Aanvaller,90
+FIGC,AS Roma,1a Squadra,Tammy,Abraham,ENG,1997-10-02,Aanvaller,9
+FIGC,Atalanta,1a Squadra,Marco,Carnesecchi,ITA,2000-07-01,Keeper,29
+FIGC,Atalanta,1a Squadra,Juan,Musso,ARG,1994-05-06,Keeper,1
+FIGC,Atalanta,1a Squadra,Giorgio,Scalvini,ITA,2003-12-11,Verdediger,42
+FIGC,Atalanta,1a Squadra,Sead,Kola�inac,BIH,1993-06-20,Verdediger,23
+FIGC,Atalanta,1a Squadra,Rafael,Tol�i,BRA,1990-10-10,Verdediger,2
+FIGC,Atalanta,1a Squadra,Davide,Zappacosta,ITA,1992-06-11,Verdediger,77
+FIGC,Atalanta,1a Squadra,Matteo,Ruggeri,ITA,2002-07-11,Verdediger,22
+FIGC,Atalanta,1a Squadra,Marten,de Roon,NED,1991-03-29,Middenvelder,15
+FIGC,Atalanta,1a Squadra,�derson,dos Santos,BRA,1999-07-07,Middenvelder,13
+FIGC,Atalanta,1a Squadra,Teun,Koopmeiners,NED,1998-02-28,Middenvelder,7
+FIGC,Atalanta,1a Squadra,Aleksey,Miranchuk,RUS,1995-10-17,Middenvelder,59
+FIGC,Atalanta,1a Squadra,Charles,De Ketelaere,BEL,2001-03-10,Aanvaller,17
+FIGC,Atalanta,1a Squadra,Gianluca,Scamacca,ITA,1999-01-01,Aanvaller,90
+FIGC,Atalanta,1a Squadra,Ademola,Lookman,NGA,1997-10-20,Aanvaller,11
+DFB,Bayern München,1. Mannschaft,Manuel,Neuer,GER,1986-03-27,Keeper,1
+DFB,Bayern München,1. Mannschaft,Sven,Ulreich,GER,1988-08-03,Keeper,26
+DFB,Bayern München,1. Mannschaft,Joshua,Kimmich,GER,1995-02-08,Verdediger,6
+DFB,Bayern München,1. Mannschaft,Dayot,Upamecano,FRA,1998-10-27,Verdediger,2
+DFB,Bayern München,1. Mannschaft,Matthijs,de Ligt,NED,1999-08-12,Verdediger,4
+DFB,Bayern München,1. Mannschaft,Alphonso,Davies,CAN,2000-11-02,Verdediger,19
+DFB,Bayern München,1. Mannschaft,Kim,Min-jae,KOR,1996-11-15,Verdediger,3
+DFB,Bayern München,1. Mannschaft,Leon,Goretzka,GER,1995-02-06,Middenvelder,8
+DFB,Bayern München,1. Mannschaft,Konrad,Laimer,AUT,1997-05-27,Middenvelder,27
+DFB,Bayern München,1. Mannschaft,Jamal,Musiala,GER,2003-02-26,Middenvelder,42
+DFB,Bayern München,1. Mannschaft,Thomas,M�ller,GER,1989-09-13,Middenvelder,25
+DFB,Bayern München,1. Mannschaft,Serge,Gnabry,GER,1995-07-14,Middenvelder,7
+DFB,Bayern München,1. Mannschaft,Harry,Kane,ENG,1993-07-28,Aanvaller,9
+DFB,Bayern München,1. Mannschaft,Leroy,San�,GER,1996-01-11,Aanvaller,10
+DFB,Bayern München,1. Mannschaft,Michael,Olise,FRA,2001-12-12,Aanvaller,17
+DFB,Borussia Dortmund,1. Mannschaft,Gregor,Kobel,SUI,1997-12-06,Keeper,1
+DFB,Borussia Dortmund,1. Mannschaft,Alexander,Meyer,GER,1991-04-13,Keeper,33
+DFB,Borussia Dortmund,1. Mannschaft,Mats,Hummels,GER,1988-12-16,Verdediger,15
+DFB,Borussia Dortmund,1. Mannschaft,Nico,Schlotterbeck,GER,1999-12-01,Verdediger,4
+DFB,Borussia Dortmund,1. Mannschaft,Niklas,S�le,GER,1995-09-03,Verdediger,25
+DFB,Borussia Dortmund,1. Mannschaft,Julian,Ryerson,NOR,1997-11-17,Verdediger,26
+DFB,Borussia Dortmund,1. Mannschaft,Ian,Maatsen,NED,2002-03-10,Verdediger,22
+DFB,Borussia Dortmund,1. Mannschaft,Emre,Can,GER,1994-01-12,Middenvelder,23
+DFB,Borussia Dortmund,1. Mannschaft,Marcel,Sabitzer,AUT,1994-03-17,Middenvelder,20
+DFB,Borussia Dortmund,1. Mannschaft,Julian,Brandt,GER,1996-05-02,Middenvelder,19
+DFB,Borussia Dortmund,1. Mannschaft,Salih,�zcan,TUR,1998-01-11,Middenvelder,6
+DFB,Borussia Dortmund,1. Mannschaft,Marco,Reus,GER,1989-05-31,Middenvelder,11
+DFB,Borussia Dortmund,1. Mannschaft,Niclas,F�llkrug,GER,1993-02-09,Aanvaller,14
+DFB,Borussia Dortmund,1. Mannschaft,Donyell,Malen,NED,1999-01-19,Aanvaller,21
+DFB,Borussia Dortmund,1. Mannschaft,Karim,Adeyemi,GER,2002-01-18,Aanvaller,27
+DFB,RB Leipzig,1. Mannschaft,P�ter,Gul�csi,HUN,1990-05-06,Keeper,1
+DFB,RB Leipzig,1. Mannschaft,Janis,Blaswich,GER,1991-05-02,Keeper,21
+DFB,RB Leipzig,1. Mannschaft,David,Raum,GER,1998-04-22,Verdediger,22
+DFB,RB Leipzig,1. Mannschaft,Mohamed,Simakan,FRA,2000-05-03,Verdediger,2
+DFB,RB Leipzig,1. Mannschaft,Willi,Orb�n,HUN,1992-11-03,Verdediger,4
+DFB,RB Leipzig,1. Mannschaft,Benjamin,Henrichs,GER,1997-02-23,Verdediger,39
+DFB,RB Leipzig,1. Mannschaft,Lutsharel,Geertruida,NED,2000-07-18,Verdediger,3
+DFB,RB Leipzig,1. Mannschaft,Xaver,Schlager,AUT,1997-09-28,Middenvelder,24
+DFB,RB Leipzig,1. Mannschaft,Nicolas,Seiwald,AUT,2001-05-04,Middenvelder,13
+DFB,RB Leipzig,1. Mannschaft,Kevin,Kampl,SVN,1990-10-09,Middenvelder,44
+DFB,RB Leipzig,1. Mannschaft,Dani,Olmo,ESP,1998-05-07,Middenvelder,7
+DFB,RB Leipzig,1. Mannschaft,Lo�s,Openda,BEL,2000-02-16,Aanvaller,17
+DFB,RB Leipzig,1. Mannschaft,Benjamin,�e�ko,SVN,2003-05-31,Aanvaller,30
+DFB,RB Leipzig,1. Mannschaft,Xavi,Simons,NED,2003-04-21,Aanvaller,20
+DFB,Bayer Leverkusen,1. Mannschaft,Luk�,Hr�deck�,FIN,1989-11-24,Keeper,1
+DFB,Bayer Leverkusen,1. Mannschaft,Matej,Kov�r,CZE,2000-05-17,Keeper,17
+DFB,Bayer Leverkusen,1. Mannschaft,Jonathan,Tah,GER,1996-02-11,Verdediger,4
+DFB,Bayer Leverkusen,1. Mannschaft,Edmond,Tapsoba,BFA,1999-02-02,Verdediger,12
+DFB,Bayer Leverkusen,1. Mannschaft,Piero,Hincapi�,ECU,2002-01-09,Verdediger,3
+DFB,Bayer Leverkusen,1. Mannschaft,Jeremie,Frimpong,NED,2000-12-10,Verdediger,30
+DFB,Bayer Leverkusen,1. Mannschaft,Alejandro,Grimaldo,ESP,1995-09-20,Verdediger,20
+DFB,Bayer Leverkusen,1. Mannschaft,Granit,Xhaka,SUI,1992-09-27,Middenvelder,34
+DFB,Bayer Leverkusen,1. Mannschaft,Exequiel,Palacios,ARG,1998-10-05,Middenvelder,25
+DFB,Bayer Leverkusen,1. Mannschaft,Florian,Wirtz,GER,2003-05-03,Middenvelder,10
+DFB,Bayer Leverkusen,1. Mannschaft,Jonas,Hofmann,GER,1992-07-14,Middenvelder,7
+DFB,Bayer Leverkusen,1. Mannschaft,Robert,Andrich,GER,1994-09-22,Middenvelder,8
+DFB,Bayer Leverkusen,1. Mannschaft,Victor,Boniface,NGA,2000-12-23,Aanvaller,22
+DFB,Bayer Leverkusen,1. Mannschaft,Patrik,Schick,CZE,1996-01-24,Aanvaller,14
+DFB,Bayer Leverkusen,1. Mannschaft,Amine,Adli,MAR,2000-05-10,Aanvaller,21
+DFB,Eintracht Frankfurt,1. Mannschaft,Kevin,Trapp,GER,1990-07-08,Keeper,1
+DFB,Eintracht Frankfurt,1. Mannschaft,Jens,Grahl,GER,1988-09-22,Keeper,33
+DFB,Eintracht Frankfurt,1. Mannschaft,Robin,Koch,GER,1996-07-17,Verdediger,4
+DFB,Eintracht Frankfurt,1. Mannschaft,Tuta,da Silva,BRA,1999-07-04,Verdediger,35
+DFB,Eintracht Frankfurt,1. Mannschaft,Willian,Pacho,ECU,2001-10-16,Verdediger,3
+DFB,Eintracht Frankfurt,1. Mannschaft,Aur�le,Amenda,SUI,2003-07-31,Verdediger,5
+DFB,Eintracht Frankfurt,1. Mannschaft,Niels,Nkounkou,FRA,2000-11-01,Verdediger,29
+DFB,Eintracht Frankfurt,1. Mannschaft,Mario,G�tze,GER,1992-06-03,Middenvelder,27
+DFB,Eintracht Frankfurt,1. Mannschaft,Hugo,Larsson,SWE,2004-06-27,Middenvelder,16
+DFB,Eintracht Frankfurt,1. Mannschaft,Ellyes,Skhiri,TUN,1995-05-10,Middenvelder,15
+DFB,Eintracht Frankfurt,1. Mannschaft,Far�s,Cha�bi,ALG,2002-11-28,Middenvelder,8
+DFB,Eintracht Frankfurt,1. Mannschaft,Philipp,Max,GER,1993-09-30,Middenvelder,31
+DFB,Eintracht Frankfurt,1. Mannschaft,Omar,Marmoush,EGY,1999-02-07,Aanvaller,7
+DFB,Eintracht Frankfurt,1. Mannschaft,Hugo,Ekitik�,FRA,2002-06-20,Aanvaller,11
+DFB,Eintracht Frankfurt,1. Mannschaft,Ansgar,Knauff,GER,2002-01-10,Aanvaller,36
+DFB,VfB Stuttgart,1. Mannschaft,Alexander,N�bel,GER,1996-09-30,Keeper,33
+DFB,VfB Stuttgart,1. Mannschaft,Florian,M�ller,GER,1997-11-13,Keeper,1
+DFB,VfB Stuttgart,1. Mannschaft,Waldemar,Anton,GER,1996-07-20,Verdediger,2
+DFB,VfB Stuttgart,1. Mannschaft,Hiroki,Ito,JPN,1999-05-12,Verdediger,21
+DFB,VfB Stuttgart,1. Mannschaft,Dan-Axel,Zagadou,FRA,1999-06-03,Verdediger,23
+DFB,VfB Stuttgart,1. Mannschaft,Maximilian,Mittelst�dt,GER,1997-03-18,Verdediger,7
+DFB,VfB Stuttgart,1. Mannschaft,Josha,Vagnoman,GER,2000-12-11,Verdediger,4
+DFB,VfB Stuttgart,1. Mannschaft,Angelo,Stiller,GER,2001-04-04,Middenvelder,6
+DFB,VfB Stuttgart,1. Mannschaft,Atakan,Karazor,GER,1996-10-13,Middenvelder,16
+DFB,VfB Stuttgart,1. Mannschaft,Enzo,Millot,FRA,2002-07-17,Middenvelder,8
+DFB,VfB Stuttgart,1. Mannschaft,Chris,F�hrich,GER,1998-01-09,Middenvelder,27
+DFB,VfB Stuttgart,1. Mannschaft,Jamie,Leweling,GER,2001-02-26,Middenvelder,18
+DFB,VfB Stuttgart,1. Mannschaft,Serhou,Guirassy,GUI,1996-03-12,Aanvaller,9
+DFB,VfB Stuttgart,1. Mannschaft,Deniz,Undav,GER,1996-07-19,Aanvaller,26
+DFB,VfB Stuttgart,1. Mannschaft,Silas,Mvumpa,COD,1998-10-06,Aanvaller,14
+the-fa,Manchester City,First Team,Ederson,Moraes,BRA,1993-08-17,Keeper,31
+the-fa,Manchester City,First Team,Stefan,Ortega,GER,1992-11-06,Keeper,18
+the-fa,Manchester City,First Team,Kyle,Walker,ENG,1990-05-28,Verdediger,2
+the-fa,Manchester City,First Team,Rúben,Dias,POR,1997-05-14,Verdediger,3
+the-fa,Manchester City,First Team,John,Stones,ENG,1994-05-28,Verdediger,5
+the-fa,Manchester City,First Team,Nathan,Aké,NED,1995-02-18,Verdediger,6
+the-fa,Manchester City,First Team,Joško,Gvardiol,CRO,2002-01-23,Verdediger,24
+the-fa,Manchester City,First Team,Rodri,Hernández,ESP,1996-06-22,Middenvelder,16
+the-fa,Manchester City,First Team,Kevin,De Bruyne,BEL,1991-06-28,Middenvelder,17
+the-fa,Manchester City,First Team,Bernardo,Silva,POR,1994-08-10,Middenvelder,20
+the-fa,Manchester City,First Team,Phil,Foden,ENG,2000-05-28,Middenvelder,47
+the-fa,Manchester City,First Team,Mateo,Kovačić,CRO,1994-05-06,Middenvelder,8
+the-fa,Manchester City,First Team,Erling,Haaland,NOR,2000-07-21,Aanvaller,9
+the-fa,Manchester City,First Team,Jérémy,Doku,BEL,2002-05-27,Aanvaller,11
+the-fa,Manchester City,First Team,Jack,Grealish,ENG,1995-09-10,Aanvaller,10
+the-fa,Arsenal,First Team,David,Raya,ESP,1995-09-15,Keeper,22
+the-fa,Arsenal,First Team,Neto,Murara BRA,1989-07-19,Keeper,32
+the-fa,Arsenal,First Team,William,Saliba,FRA,2001-03-24,Verdediger,2
+the-fa,Arsenal,First Team,Ben,White,ENG,1997-10-08,Verdediger,4
+the-fa,Arsenal,First Team,Gabriel,Magalhães,BRA,1997-12-19,Verdediger,6
+the-fa,Arsenal,First Team,Jurrien,Timber,NED,2001-06-17,Verdediger,12
+the-fa,Arsenal,First Team,Oleksandr,Zinchenko,UKR,1996-12-15,Verdediger,35
+the-fa,Arsenal,First Team,Declan,Rice,ENG,1999-01-14,Middenvelder,41
+the-fa,Arsenal,First Team,Martin,Ødegaard,NOR,1998-12-17,Middenvelder,8
+the-fa,Arsenal,First Team,Thomas,Partey,GHA,1993-06-13,Middenvelder,5
+the-fa,Arsenal,First Team,Jorginho,Freitas,ITA,1991-12-20,Middenvelder,20
+the-fa,Arsenal,First Team,Kai,Havertz,GER,1999-06-11,Middenvelder,29
+the-fa,Arsenal,First Team,Bukayo,Saka,ENG,2001-09-05,Aanvaller,7
+the-fa,Arsenal,First Team,Gabriel,Martinelli,BRA,2001-06-18,Aanvaller,11
+the-fa,Arsenal,First Team,Gabriel,Jesus,BRA,1997-04-03,Aanvaller,9
+the-fa,Liverpool,First Team,Alisson,Becker,BRA,1992-10-02,Keeper,1
+the-fa,Liverpool,First Team,Caoimhín,Kelleher,IRL,1998-11-23,Keeper,62
+the-fa,Liverpool,First Team,Virgil,van Dijk,NED,1991-07-08,Verdediger,4
+the-fa,Liverpool,First Team,Ibrahima,Konaté,FRA,1999-05-25,Verdediger,5
+the-fa,Liverpool,First Team,Joe,Gomez,ENG,1997-05-23,Verdediger,2
+the-fa,Liverpool,First Team,Andrew,Robertson,SCO,1994-03-11,Verdediger,26
+the-fa,Liverpool,First Team,Trent,Alexander-Arnold,ENG,1998-10-07,Verdediger,66
+the-fa,Liverpool,First Team,Alexis,Mac Allister,ARG,1998-12-24,Middenvelder,10
+the-fa,Liverpool,First Team,Dominik,Szoboszlai,HUN,2000-10-25,Middenvelder,8
+the-fa,Liverpool,First Team,Wataru,Endo,JPN,1993-02-09,Middenvelder,3
+the-fa,Liverpool,First Team,Ryan,Gravenberch,NED,2002-05-16,Middenvelder,38
+the-fa,Liverpool,First Team,Curtis,Jones,ENG,2001-01-30,Middenvelder,17
+the-fa,Liverpool,First Team,Mohamed,Salah,EGY,1992-06-15,Aanvaller,11
+the-fa,Liverpool,First Team,Luis,Díaz,COL,1997-01-13,Aanvaller,7
+the-fa,Liverpool,First Team,Darwin,Núñez,URU,1999-06-24,Aanvaller,9
+the-fa,Manchester United,First Team,André,Onana,CMR,1996-04-02,Keeper,24
+the-fa,Manchester United,First Team,Altay,Bayındır,TUR,1998-04-14,Keeper,1
+the-fa,Manchester United,First Team,Diogo,Dalot,POR,1999-03-18,Verdediger,20
+the-fa,Manchester United,First Team,Luke,Shaw,ENG,1995-07-12,Verdediger,23
+the-fa,Manchester United,First Team,Lisandro,Martínez,ARG,1998-01-18,Verdediger,6
+the-fa,Manchester United,First Team,Harry,Maguire,ENG,1993-03-05,Verdediger,5
+the-fa,Manchester United,First Team,Leny,Yoro,FRA,2005-11-13,Verdediger,15
+the-fa,Manchester United,First Team,Bruno,Fernandes,POR,1994-09-08,Middenvelder,8
+the-fa,Manchester United,First Team,Casemiro,Casemiro,BRA,1992-02-23,Middenvelder,18
+the-fa,Manchester United,First Team,Kobbie,Mainoo,ENG,2005-04-19,Middenvelder,37
+the-fa,Manchester United,First Team,Manuel,Ugarte,URU,2001-04-11,Middenvelder,25
+the-fa,Manchester United,First Team,Mason,Mount,ENG,1999-01-10,Middenvelder,7
+the-fa,Manchester United,First Team,Marcus,Rashford,ENG,1997-10-31,Aanvaller,10
+the-fa,Manchester United,First Team,Rasmus,Højlund,DEN,2003-02-04,Aanvaller,9
+the-fa,Manchester United,First Team,Alejandro,Garnacho,ARG,2004-07-01,Aanvaller,17
+the-fa,Chelsea,First Team,Robert,Sánchez,ESP,1997-11-18,Keeper,1
+the-fa,Chelsea,First Team,Filip,Jørgensen,DEN,2002-04-16,Keeper,12
+the-fa,Chelsea,First Team,Reece,James,ENG,1999-12-08,Verdediger,24
+the-fa,Chelsea,First Team,Malo,Gusto,FRA,2003-05-19,Verdediger,27
+the-fa,Chelsea,First Team,Marc,Cucurella,ESP,1998-07-22,Verdediger,3
+the-fa,Chelsea,First Team,Levi,Colwill,ENG,2003-02-26,Verdediger,6
+the-fa,Chelsea,First Team,Benoît,Badiashile,FRA,2001-03-26,Verdediger,5
+the-fa,Chelsea,First Team,Enzo,Fernández,ARG,2001-01-17,Middenvelder,8
+the-fa,Chelsea,First Team,Moisés,Caicedo,ECU,2001-11-02,Middenvelder,25
+the-fa,Chelsea,First Team,Romeo,Lavia,BEL,2004-01-06,Middenvelder,45
+the-fa,Chelsea,First Team,Cole,Palmer,ENG,2002-05-06,Middenvelder,20
+the-fa,Chelsea,First Team,Mykhailo,Mudryk,UKR,2001-01-05,Middenvelder,10
+the-fa,Chelsea,First Team,Nicolas,Jackson,SEN,2001-06-20,Aanvaller,15
+the-fa,Chelsea,First Team,Christopher,Nkunku,FRA,1997-11-14,Aanvaller,18
+the-fa,Chelsea,First Team,Noni,Madueke,ENG,2002-03-10,Aanvaller,11
+the-fa,Tottenham Hotspur,First Team,Guglielmo,Vicario,ITA,1996-10-07,Keeper,1
+the-fa,Tottenham Hotspur,First Team,Fraser,Forster,ENG,1988-03-17,Keeper,20
+the-fa,Tottenham Hotspur,First Team,Cristian,Romero,ARG,1998-04-27,Verdediger,17
+the-fa,Tottenham Hotspur,First Team,Micky,van de Ven,NED,2001-04-19,Verdediger,37
+the-fa,Tottenham Hotspur,First Team,Pedro,Porro,ESP,1999-09-13,Verdediger,23
+the-fa,Tottenham Hotspur,First Team,Destiny,Udogie,ITA,2002-11-28,Verdediger,38
+the-fa,Tottenham Hotspur,First Team,Ben,Davies,WAL,1993-04-24,Verdediger,33
+the-fa,Tottenham Hotspur,First Team,James,Maddison,ENG,1996-11-23,Middenvelder,10
+the-fa,Tottenham Hotspur,First Team,Rodrigo,Bentancur,URU,1997-06-25,Middenvelder,30
+the-fa,Tottenham Hotspur,First Team,Yves,Bissouma,MLI,1996-08-30,Middenvelder,8
+the-fa,Tottenham Hotspur,First Team,Pape Matar,Sarr,SEN,2002-09-14,Middenvelder,29
+the-fa,Tottenham Hotspur,First Team,Dejan,Kulusevski,SWE,2000-04-25,Middenvelder,21
+the-fa,Tottenham Hotspur,First Team,Son,Heung-min,KOR,1992-07-08,Aanvaller,7
+the-fa,Tottenham Hotspur,First Team,Richarlison,de Andrade,BRA,1997-05-10,Aanvaller,9
+the-fa,Tottenham Hotspur,First Team,Brennan,Johnson,WAL,2001-05-23,Aanvaller,22

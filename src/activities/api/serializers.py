@@ -165,10 +165,12 @@ class ActivitySerializer(serializers.ModelSerializer):
     project = serializers.SerializerMethodField()
     period = serializers.SerializerMethodField()
     created_by = serializers.SerializerMethodField()
+    opponent_project = serializers.SerializerMethodField()
 
     # Write fields (use _id suffix for FK assignment)
     project_id = serializers.IntegerField(write_only=True)
     period_id = serializers.UUIDField(write_only=True)
+    opponent_project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Activity
@@ -178,13 +180,15 @@ class ActivitySerializer(serializers.ModelSerializer):
             "project_id",
             "period",
             "period_id",
+            "opponent_project",
+            "opponent_project_id",
             "title",
             "activity_type",
             "start_time",
             "end_time",
             "location",
             "description",
-            "data",
+            "metadata",
             "created_at",
             "updated_at",
             "created_by",
@@ -195,6 +199,12 @@ class ActivitySerializer(serializers.ModelSerializer):
         """Return nested project representation"""
         if obj.project:
             return {"id": str(obj.project.id), "name": obj.project.name}
+        return None
+
+    def get_opponent_project(self, obj):
+        """Return nested opponent project name/id"""
+        if obj.opponent_project:
+            return {"id": str(obj.opponent_project.id), "name": obj.opponent_project.name}
         return None
 
     def get_period(self, obj):

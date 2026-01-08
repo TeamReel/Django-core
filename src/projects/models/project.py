@@ -62,6 +62,16 @@ class Project(models.Model):
         help_text="Timestamp when project was archived (NULL if active)",
     )
 
+    # Hierarchical structure for TeamReel (Club → Team)
+    parent_project = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="children",
+        help_text="Parent project (e.g., Club for a Team). NULL = root level.",
+    )
+
     # Master data storage
     metadata = models.JSONField(
         default=dict,

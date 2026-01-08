@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>design_system.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%F0%9F%A7%B1-design-system-%E2%80%93-teamreel">🧱 Design System – TeamReel</h1>
+<blockquote>
+<p><strong>Van merk naar interface – één stijl, vele toepassingen.</strong></p>
+</blockquote>
+<hr>
+<h2 id="1-doel-van-dit-document">1. Doel van dit document</h2>
+<p>Het <em>Design System</em> vertaalt de visuele identiteit van TeamReel naar herbruikbare UI-componenten.<br>
+Het zorgt ervoor dat elke knop, kaart of melding er hetzelfde uitziet en hetzelfde aanvoelt — ongeacht wie hem bouwt of waar hij wordt gebruikt.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Consistentie versnelt creatie en versterkt herkenning.</em></p>
+</blockquote>
+<hr>
+<h2 id="2-principes">2. Principes</h2>
+<table>
+<thead>
+<tr>
+<th>Principe</th>
+<th>Betekenis</th>
+<th>Toepassing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Eenvoud</strong></td>
+<td>Minder visuele ruis, meer focus op inhoud.</td>
+<td>Schone layouts, veel witruimte.</td>
+</tr>
+<tr>
+<td><strong>Herkenbaarheid</strong></td>
+<td>Zelfde kleuren, vormen en hiërarchie.</td>
+<td>Hergebruik tokens uit de <em>Style Foundation</em>.</td>
+</tr>
+<tr>
+<td><strong>Toegankelijkheid</strong></td>
+<td>Duidelijke contrasten, leesbare tekst.</td>
+<td>Altijd minimaal AA-contrastniveau.</td>
+</tr>
+<tr>
+<td><strong>Flexibiliteit</strong></td>
+<td>Componenten werken op mobiel, tablet, desktop.</td>
+<td>Responsieve bouw met Tailwind of CSS-grid.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Het systeem is er niet om te beperken, maar om te versnellen.</em></p>
+</blockquote>
+<hr>
+<h2 id="3-componentcategorie%C3%ABn">3. Componentcategorieën</h2>
+<table>
+<thead>
+<tr>
+<th>Categorie</th>
+<th>Beschrijving</th>
+<th>Voorbeeldcomponenten</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Navigatie</strong></td>
+<td>Elementen waarmee de gebruiker door de app beweegt.</td>
+<td>Navbar, zijmenu, breadcrumb, tabbar.</td>
+</tr>
+<tr>
+<td><strong>Actie</strong></td>
+<td>Elementen waarmee de gebruiker een handeling uitvoert.</td>
+<td>Knoppen, toggles, formulieren.</td>
+</tr>
+<tr>
+<td><strong>Informatie</strong></td>
+<td>Onderdelen die gegevens tonen.</td>
+<td>Cards, tabellen, badges.</td>
+</tr>
+<tr>
+<td><strong>Feedback</strong></td>
+<td>Componenten die status of resultaten tonen.</td>
+<td>Alerts, modals, toasts, loading states.</td>
+</tr>
+<tr>
+<td><strong>Interactief media</strong></td>
+<td>Dynamische contentweergave.</td>
+<td>Video-player, gallery, preview-component.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Een goede interface voelt vertrouwd — omdat alles klopt.</em></p>
+</blockquote>
+<hr>
+<h2 id="4-kerncomponenten">4. Kerncomponenten</h2>
+<h3 id="41-knoppen-buttons">4.1 Knoppen (Buttons)</h3>
+<p>Knoppen vormen de primaire interactie in TeamReel.</p>
+<table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Beschrijving</th>
+<th>Stijlregels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Primary Button</strong></td>
+<td>Voor hoofdacties (opslaan, starten, verzenden).</td>
+<td>Achtergrond <code>#007BFF</code>, tekst <code>#FFFFFF</code>, radius 8px.</td>
+</tr>
+<tr>
+<td><strong>Secondary Button</strong></td>
+<td>Voor ondersteunende acties.</td>
+<td>Border <code>#007BFF</code>, tekst <code>#007BFF</code>, transparante achtergrond.</td>
+</tr>
+<tr>
+<td><strong>Danger Button</strong></td>
+<td>Voor destructieve acties (verwijderen, resetten).</td>
+<td>Achtergrond <code>#DC3545</code>, tekst <code>#FFFFFF</code>.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Toon:</strong> kort, actief, positief (bijv. “Start generatie”, “Opslaan”, “Bekijk”).</p>
+</blockquote>
+<hr>
+<h3 id="42-cards">4.2 Cards</h3>
+<p>Cards groeperen content en zorgen voor overzicht.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Achtergrond</td>
+<td><code>#FFFFFF</code> met zachte schaduw (<code>rgba(0,0,0,0.05)</code>).</td>
+</tr>
+<tr>
+<td>Hoekradius</td>
+<td>16px (groot voor toegankelijke uitstraling).</td>
+</tr>
+<tr>
+<td>Afstand binnenin</td>
+<td>Padding 16–24px.</td>
+</tr>
+<tr>
+<td>Schaduwen</td>
+<td>Alleen in hoverstates of voor nadruk.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Gebruik:</strong> spelers, teams, contentvoorbeelden, rapportages.</p>
+</blockquote>
+<hr>
+<h3 id="43-formulieren">4.3 Formulieren</h3>
+<p>Formulieren zijn eenvoudig, duidelijk en mobielvriendelijk.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Labels</td>
+<td>Altijd zichtbaar boven input.</td>
+</tr>
+<tr>
+<td>Foutmeldingen</td>
+<td>Rood, compact en concreet (“Naam is verplicht”).</td>
+</tr>
+<tr>
+<td>Focusstate</td>
+<td>Blauwe rand (<code>#007BFF</code>) met lichte gloed.</td>
+</tr>
+<tr>
+<td>Knoppen</td>
+<td>Altijd onder het formulier, rechts uitgelijnd.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Formulieren moeten aanvoelen als gesprek, niet als drempel.</em></p>
+</blockquote>
+<hr>
+<h3 id="44-feedbackcomponenten">4.4 Feedbackcomponenten</h3>
+<p>Deze tonen status, bevestiging of fouten.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Voorbeeld</th>
+<th>Stijl</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Success Alert</strong></td>
+<td>“Je video is succesvol gegenereerd!”</td>
+<td>Groen <code>#28A745</code>, lichte achtergrond <code>#E6F4EA</code>.</td>
+</tr>
+<tr>
+<td><strong>Error Alert</strong></td>
+<td>“Er ging iets mis, probeer opnieuw.”</td>
+<td>Rood <code>#DC3545</code>, achtergrond <code>#FDECEA</code>.</td>
+</tr>
+<tr>
+<td><strong>Info Alert</strong></td>
+<td>“AI-output wordt verwerkt…”</td>
+<td>Blauw <code>#007BFF</code>, achtergrond <code>#E8F0FE</code>.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Feedback geeft vertrouwen — zelfs als iets misgaat.</em></p>
+</blockquote>
+<hr>
+<h3 id="45-interactieve-componenten">4.5 Interactieve componenten</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Functie</th>
+<th>Opmerkingen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Video Preview Player</strong></td>
+<td>Laat AI-generated video’s zien in de AI Studio.</td>
+<td>Simpele play-knop, overlay met logo.</td>
+</tr>
+<tr>
+<td><strong>Gallery Grid</strong></td>
+<td>Toont visuele content in een raster.</td>
+<td>3–4 kolommen op desktop, 1–2 op mobiel.</td>
+</tr>
+<tr>
+<td><strong>Modal / Overlay</strong></td>
+<td>Voor bevestigingen of previews.</td>
+<td>Transparante donkere achtergrond (<code>rgba(0,0,0,0.5)</code>).</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>De gebruiker blijft altijd in controle.</em></p>
+</blockquote>
+<hr>
+<h2 id="5-stijl--en-interactieregels">5. Stijl- en interactieregels</h2>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Kleurgebruik</strong></td>
+<td>Gebruik primair blauw (<code>#007BFF</code>) als leidraad voor acties.</td>
+</tr>
+<tr>
+<td><strong>Hoverstates</strong></td>
+<td>Altijd subtiel lichter of donkerder, niet schreeuwerig.</td>
+</tr>
+<tr>
+<td><strong>Animaties</strong></td>
+<td>Max. 200–300ms, lineair of ease-in-out.</td>
+</tr>
+<tr>
+<td><strong>Toetsenbordnavigatie</strong></td>
+<td>Alle componenten zijn toegankelijk via tab.</td>
+</tr>
+<tr>
+<td><strong>Responsiviteit</strong></td>
+<td>Componenten schalen vloeiend mee zonder breuken.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Snel, soepel, sportief.</em></p>
+</blockquote>
+<hr>
+<h2 id="6-implementatie--tools">6. Implementatie &amp; tools</h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Functie</th>
+<th>Opmerking</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tailwind CSS</strong></td>
+<td>CSS-utility framework</td>
+<td>Ideaal voor snelle, consistente layout.</td>
+</tr>
+<tr>
+<td><strong>React (Next.js)</strong></td>
+<td>Componentgebaseerde UI</td>
+<td>Herbruikbare bouwblokken voor AI Studio en Dashboard.</td>
+</tr>
+<tr>
+<td><strong>Figma / Tokens Studio</strong></td>
+<td>Ontwerp- en tokensbeheer</td>
+<td>Synchronisatie tussen design en code.</td>
+</tr>
+<tr>
+<td><strong>Lucide Icons</strong></td>
+<td>Open-source iconenset</td>
+<td>Sportieve, ronde stijl past bij TeamReel.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Design en code spreken dezelfde taal.</em></p>
+</blockquote>
+<hr>
+<h2 id="7-samenvatting">7. Samenvatting</h2>
+<p>Het Design System van TeamReel brengt vorm en functie samen in één taal.<br>
+Door herbruikbare componenten, consistente kleuren en duidelijke richtlijnen ontstaat een gebruikservaring die sportief, professioneel en herkenbaar is — op elk scherm, in elke context.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>TeamReel voelt altijd als TeamReel — omdat alles klopt.</em></p>
+</blockquote>
+
+</body>
+</html>

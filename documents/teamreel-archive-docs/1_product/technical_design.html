@@ -1,0 +1,3085 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>technical_design.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%F0%9F%A7%A9-technical-design-%E2%80%93-teamreel">🧩 Technical Design – TeamReel</h1>
+<blockquote>
+<p><strong>TeamReel</strong> combineert sportieve energie met digitale helderheid.<br>
+Dit technisch ontwerp beschrijft de architectuur, API’s, datamodellen en infrastructuur van het TeamReel-platform.<br>
+Het document volgt de visuele en structurele richtlijnen uit de <em>Style Foundation</em> en de <em>Brand Identity</em> en sluit direct aan op het <em>Functional Design</em> en <em>Businessplan</em>.<br>
+Versie: Oktober 2025 — Status: Definitieve richtlijn.</p>
+</blockquote>
+<hr>
+<h2 id="%F0%9F%93%98-metadata">📘 Metadata</h2>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Inhoud</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Project</strong></td>
+<td>TeamReel</td>
+</tr>
+<tr>
+<td><strong>Document</strong></td>
+<td>Technisch Ontwerp</td>
+</tr>
+<tr>
+<td><strong>Datum</strong></td>
+<td>Oktober 2025</td>
+</tr>
+<tr>
+<td><strong>Auteur</strong></td>
+<td>Brian Stokvis</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Definitieve richtlijn</td>
+</tr>
+<tr>
+<td><strong>Bronnen</strong></td>
+<td>Businessplan, Brand Identity, Functioneel Ontwerp, Technical Design</td>
+</tr>
+<tr>
+<td><strong>Doel</strong></td>
+<td>Richtlijn voor technische implementatie, infrastructuur en AI-architectuur</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h1 id="%F0%9F%93%91-inhoudsopgave-%E2%80%93-technisch-ontwerp">📑 Inhoudsopgave – Technisch Ontwerp</h1>
+<ol>
+<li><a href="#1-inleiding--doel">Inleiding &amp; Doel</a></li>
+<li><a href="#2-architectuur-systeemoverzicht">Architectuur (Systeemoverzicht)</a></li>
+<li><a href="#3-backendstructuur--api-design">Backendstructuur &amp; API-design</a></li>
+<li><a href="#4-frontendarchitectuur--ui-componenten">Frontendarchitectuur &amp; UI-componenten</a></li>
+<li><a href="#5-database--datamodellering">Database &amp; Datamodellering</a></li>
+<li><a href="#6-ai-infrastructuur--workflow-engine">AI-infrastructuur &amp; Workflow-engine</a></li>
+<li><a href="#7-integraties--externe-apis">Integraties &amp; Externe API’s</a></li>
+<li><a href="#8-beveiliging--autorisatie">Beveiliging &amp; Autorisatie</a></li>
+<li><a href="#9-logging-monitoring--performance">Logging, Monitoring &amp; Performance</a></li>
+<li><a href="#10-deploy--hostingstrategie">Deploy &amp; Hostingstrategie</a></li>
+<li><a href="#11-samenvatting--technische-richtlijnen">Samenvatting &amp; Technische richtlijnen</a></li>
+</ol>
+<hr>
+<h2 id="1-inleiding--doel">1. Inleiding &amp; Doel</h2>
+<h3 id="11-context">1.1 Context</h3>
+<p><strong>TeamReel</strong> is een AI-gedreven platform waarmee sportclubs eenvoudig professionele clubcontent kunnen maken in hun eigen stijl. Vrijwilligers, teamleiders en spelers kunnen binnen enkele minuten visuals of video's genereren — zonder technische kennis of dure software.</p>
+<p>De eerste technische versie (MVP) richtte zich uitsluitend op de <strong>Content Generator</strong>.<br>
+In deze nieuwe versie staat de <strong>volledige architectuur van het platform</strong> centraal: van backend en AI-infrastructuur tot beveiliging en schaalbaarheid. Het doel is om een robuuste basis te leggen die vandaag betrouwbaar werkt en morgen kan groeien naar duizenden clubs, meerdere sporten en complexe AI-workflows.</p>
+<p>De technische richtlijnen in dit document volgen de <em>Style Foundation</em> voor kleur, typografie en consistentie, zodat ontwikkelaars, AI-workflows en gebruikersinterfaces dezelfde stijl en terminologie hanteren. De <em>Brand Identity</em> bepaalt de visuele laag; dit document richt zich op de logica, API’s en infrastructuur die die stijl mogelijk maken.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> TeamReel brengt sportieve eenvoud en technologische kracht samen in één schaalbare infrastructuur.</p>
+</blockquote>
+<hr>
+<h3 id="12-doel-van-het-document">1.2 Doel van het document</h3>
+<p>Het <em>Technisch Ontwerp (Main)</em> beschrijft hoe het TeamReel-platform technisch wordt gerealiseerd. Het document vertaalt de gebruikersflows, datamodellen en AI-logica uit het <em>Functioneel Ontwerp</em> naar een uitvoerbare, schaalbare structuur.</p>
+<p>Belangrijkste functies van dit document:</p>
+<ul>
+<li>Richtlijn voor ontwikkelaars bij het bouwen van backend, frontend en AI-services.</li>
+<li>Onderbouwing voor technische keuzes, zodat teams consistent ontwikkelen.</li>
+<li>Naslagwerk voor beheer, beveiliging, CI/CD en infrastructuur.</li>
+</ul>
+<p>De uitleg combineert tekst, tabellen en schema’s, zodat de inhoud zowel leesbaar is voor stakeholders als direct toepasbaar door ontwikkelaars.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> Dit document vormt de technische blauwdruk van TeamReel — praktisch, begrijpelijk en direct uitvoerbaar.</p>
+</blockquote>
+<hr>
+<h3 id="13-ontwerpprincipes">1.3 Ontwerpprincipes</h3>
+<p>De architectuur van TeamReel rust op vijf vaste principes:</p>
+<table>
+<thead>
+<tr>
+<th>Principe</th>
+<th>Toelichting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Consistentie</strong></td>
+<td>Code, data en AI volgen dezelfde ontwerptaal en structuur.</td>
+</tr>
+<tr>
+<td><strong>Modulariteit</strong></td>
+<td>Elke module — zoals Club, Team, Content of Workflow — is zelfstandig te ontwikkelen en te testen.</td>
+</tr>
+<tr>
+<td><strong>AI-first</strong></td>
+<td>De AI-laag is geen toevoeging, maar het hart van het platform.</td>
+</tr>
+<tr>
+<td><strong>Veiligheid</strong></td>
+<td>Gegevens worden verwerkt volgens AVG / GDPR-normen.</td>
+</tr>
+<tr>
+<td><strong>Schaalbaarheid</strong></td>
+<td>De architectuur groeit van lokale pilot naar internationaal SaaS-platform.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> Elk ontwerpbesluit ondersteunt hergebruik, transparantie en gecontroleerde groei.</p>
+</blockquote>
+<hr>
+<h3 id="14-relatie-met-andere-documenten">1.4 Relatie met andere documenten</h3>
+<p>Het <em>Technisch Ontwerp</em> is één onderdeel van een samenhangende documentatie-set. De technische keuzes sluiten direct aan op de strategische en functionele richtlijnen uit de andere TeamReel-documenten.</p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Relatie met dit ontwerp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Businessplan</strong></td>
+<td>Beschrijft visie, waardepropositie en roadmap.</td>
+</tr>
+<tr>
+<td><strong>Functional Design</strong></td>
+<td>Legt gebruikersflows, logica en interactie vast.</td>
+</tr>
+<tr>
+<td><strong>Brand Identity</strong></td>
+<td>Bepaalt visuele stijl, toon en toegankelijkheid.</td>
+</tr>
+<tr>
+<td><strong>Style Foundation</strong></td>
+<td>Levert design tokens, typografie en consistentieprincipes.</td>
+</tr>
+<tr>
+<td><strong>Projectplan</strong></td>
+<td>Organiseert implementatie, testing en kwaliteitsborging.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> De kracht van TeamReel zit in de samenhang — strategie, design en techniek vormen één doorlopend systeem.</p>
+</blockquote>
+<hr>
+<h3 id="15-architectuurstrategie">1.5 Architectuurstrategie</h3>
+<p>De ontwikkeling verloopt in twee complementaire fasen:<br>
+<strong>Fase 1</strong> richt zich op stabiliteit en validatie (MVP),<br>
+<strong>Fase 2</strong> op schaalbaarheid en cloud-modulariteit.<br>
+Beide fasen gebruiken dezelfde codebasis, zodat kennis en infrastructuur behouden blijven.</p>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Doel</th>
+<th>Kerntechnologie</th>
+<th>Kenmerk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fase 1 – MVP-stabiliteit</strong></td>
+<td>Werkend prototype voor pilotclubs</td>
+<td>Django REST + Next.js + n8n + S3</td>
+<td>Eenvoudig en snel te deployen</td>
+</tr>
+<tr>
+<td><strong>Fase 2 – Cloud-schaalbaarheid</strong></td>
+<td>Microservices met AI-orkestratie</td>
+<td>Django Core + FastAPI (LangGraph) + Redis + AWS</td>
+<td>Modulair, robuust en uitbreidbaar</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TB
+    subgraph MVP [Fase 1 – MVP]
+        A1[Django REST API]
+        B1[Next.js Frontend]
+        C1[n8n AI Workflows]
+        D1[(PostgreSQL / S3 Storage)]
+        A1 --> D1
+        B1 --> A1
+        A1 --> C1
+    end
+
+    subgraph SP [Fase 2 – Schaalbaar Platform]
+        A2[Django Core API]
+        B2[FastAPI AI Services – LangGraph]
+        C2[Celery + Redis Workers]
+        D2[(AWS RDS / S3 / CloudFront)]
+        A2 --> B2
+        B2 --> C2
+        A2 --> D2
+    end
+
+</div></code></pre>
+<h3 id="16-doelgroep-en-gebruik">1.6 Doelgroep en gebruik</h3>
+<p>Het <em>Technisch Ontwerp (Main)</em> is bedoeld voor drie doelgroepen met verschillende behoeften:</p>
+<table>
+<thead>
+<tr>
+<th>Doelgroep</th>
+<th>Doel</th>
+<th>Gebruik van het document</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ontwikkelaars</strong></td>
+<td>Implementatie van backend, frontend en AI-workflows</td>
+<td>Richtlijn voor architectuur, API’s en CI/CD.</td>
+</tr>
+<tr>
+<td><strong>Product- en designteams</strong></td>
+<td>Consistente vertaalslag van visuele en functionele elementen</td>
+<td>Toepassing van tokens, UI-componenten en AI-logica.</td>
+</tr>
+<tr>
+<td><strong>Stakeholders</strong></td>
+<td>Inzicht in technische haalbaarheid en schaalbaarheid</td>
+<td>Referentie voor investeringen en besluitvorming.</td>
+</tr>
+</tbody>
+</table>
+<p>De documentatie is <strong>praktisch uitvoerbaar</strong>: elke sectie kan rechtstreeks worden toegepast binnen ontwikkeltools zoals <strong>Cursor</strong>, <strong>GitHub Copilot</strong> en <strong>LangGraph Studio</strong>. De codevoorbeelden en datamodellen sluiten aan op moderne frameworks en kunnen direct worden gegenereerd of getest via deze AI-ondersteunde tools.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> Dit document is geschreven om niet alleen te lezen, maar ook direct te gebruiken — het vormt de werkbasis voor elke technische beslissing binnen TeamReel.</p>
+</blockquote>
+<hr>
+<h3 id="17-scope">1.7 Scope</h3>
+<p><strong>In scope:</strong></p>
+<ul>
+<li>Backend- en frontendarchitectuur</li>
+<li>AI-orkestratie en workflowmanagement</li>
+<li>Databasemodellering en relationele structuur</li>
+<li>Authenticatie, autorisatie en AVG-conforme beveiliging</li>
+<li>CI/CD, logging, monitoring en foutafhandeling</li>
+</ul>
+<p><strong>Out of scope:</strong></p>
+<ul>
+<li>Integratie met externe sportdatabronnen (KNVB, Sportlink)</li>
+<li>Native mobiele apps (iOS / Android)</li>
+<li>Training van eigen AI-modellen (alleen inference en workflow-compositie)</li>
+</ul>
+<p>De scope richt zich op een <em>werkende, schaalbare en onderhoudbare basisarchitectuur</em> — een platform dat vandaag eenvoudig inzetbaar is, en morgen eenvoudig uitbreidbaar.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> De focus van dit document ligt op het bouwbare fundament; uitbreidingen volgen pas zodra de basis stabiel is.</p>
+</blockquote>
+<hr>
+<h3 id="18-samenvatting">1.8 Samenvatting</h3>
+<p>Het <em>Technisch Ontwerp (Main)</em> vormt de <strong>ruggengraat</strong> van TeamReel.<br>
+Het document vertaalt de visie van eenvoud en trots in concrete, schaalbare technologie. De architectuur is AI-first, veilig, modulair en gericht op duurzame groei.<br>
+Alle componenten — van backend tot AI-engine — volgen dezelfde taal, structuur en governance.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel is gebouwd op eenvoud, schaalbaarheid en herhaalbaarheid — één technische basis voor een wereld van clubverhalen.</em></p>
+</blockquote>
+<h2 id="2-architectuur-systeemoverzicht">2. Architectuur (Systeemoverzicht)</h2>
+<h3 id="21-overzicht">2.1 Overzicht</h3>
+<p>De architectuur van <strong>TeamReel (Main)</strong> is opgebouwd rond drie hoofdcomponenten:</p>
+<ul>
+<li>de <strong>frontend</strong> (gebruikersinteractie),</li>
+<li>de <strong>backend</strong> (logica en data),</li>
+<li>de <strong>AI-laag</strong> (orkestratie en contentgeneratie).</li>
+</ul>
+<p>Elke laag is modulair, API-first en cloud-native, zodat het platform schaalbaar blijft bij groei naar duizenden clubs. De frontend en backend gebruiken gedeelde design tokens uit de <em>Style Foundation</em> (<code>/frontend/styles/tokens.json</code>), zodat kleur, typografie en spacing in UI en documentatie exact overeenkomen.</p>
+<p>De technische principes:</p>
+<ol>
+<li><strong>API-first:</strong> elke component communiceert via REST of async queues.</li>
+<li><strong>AI-driven:</strong> alle visuele output komt voort uit AI-workflows in LangGraph.</li>
+<li><strong>Secure by design:</strong> data en media zijn standaard versleuteld en traceerbaar.</li>
+<li><strong>Reusable:</strong> dezelfde codebasis ondersteunt meerdere sporten, talen en regio’s.</li>
+</ol>
+<hr>
+<h3 id="22-lagenmodel-van-het-platform">2.2 Lagenmodel van het platform</h3>
+<p>TeamReel werkt volgens een driedelig lagenmodel. De lagen zijn onafhankelijk te ontwikkelen, maar delen dezelfde datastandaarden en design tokens.</p>
+<table>
+<thead>
+<tr>
+<th>Laag</th>
+<th>Belangrijkste technologieën</th>
+<th>Functie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontend (Interactie)</strong></td>
+<td>Next.js, Tailwind, ShadCN, tokens.json, locales.json</td>
+<td>Gebruikerservaring, vertalingen en theming</td>
+</tr>
+<tr>
+<td><strong>Backend (Applicatie)</strong></td>
+<td>Django REST Framework, Celery, PostgreSQL</td>
+<td>Dataopslag, autorisatie, credits, logging</td>
+</tr>
+<tr>
+<td><strong>AI-laag (Orchestratie)</strong></td>
+<td>LangGraph, FastAPI, Redis, S3</td>
+<td>AI-workflows, validatie, generatie, publicatie</td>
+</tr>
+</tbody>
+</table>
+<p>De communicatie verloopt via beveiligde HTTPS-verzoeken of asynchrone taakqueues. AI-output (beelden, video’s) wordt opgeslagen op S3 en ontsloten via CloudFront.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+U[Gebruiker] --> F[Frontend – Next.js / Tailwind]
+F --> B[Backend – Django REST Framework]
+B --> AI[AI Engine – LangGraph / FastAPI]
+AI --> DB[(PostgreSQL + Redis)]
+DB --> C[Cloud Services – AWS S3 / CloudFront]
+B --> M[Monitoring – Sentry / Grafana]
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De architectuur is eenvoudig in gebruik, maar krachtig in structuur — één ecosysteem dat AI, data en design verenigt.</em></p>
+</blockquote>
+<hr>
+<h3 id="23-fase-1-%E2%80%93-monolithische-mvp">2.3 Fase 1 – Monolithische MVP</h3>
+<p>In de startfase draait TeamReel als één applicatie (monoliet). Backend, AI-taken en dataverwerking delen één omgeving.</p>
+<p><strong>Kenmerken:</strong></p>
+<ul>
+<li><strong>Backend:</strong> Django REST Framework met SimpleJWT.</li>
+<li><strong>AI:</strong> uitgevoerd via n8n-workflows met externe API’s (Gemini, Placid).</li>
+<li><strong>Opslag:</strong> PostgreSQL en S3.</li>
+<li><strong>Frontend:</strong> Next.js op Vercel.</li>
+</ul>
+<p>Voordeel: snelle implementatie, lage complexiteit.<br>
+Nadeel: beperkte foutisolatie — één intensieve AI-run kan de hele app vertragen.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De monoliet is een springplank: bedoeld om te leren, niet om op te blijven.</em></p>
+</blockquote>
+<hr>
+<h3 id="24-fase-2-%E2%80%93-microservicearchitectuur">2.4 Fase 2 – Microservicearchitectuur</h3>
+<p>De tweede fase verdeelt het platform in microservices.<br>
+Elke service kan afzonderlijk worden gedeployed en geschaald.</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Technologie</th>
+<th>Functie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Core API-service</strong></td>
+<td>Django REST</td>
+<td>Gebruikers, clubs, teams, credits, autorisatie</td>
+</tr>
+<tr>
+<td><strong>AI-service</strong></td>
+<td>FastAPI + LangGraph</td>
+<td>Verwerking van AI-workflows</td>
+</tr>
+<tr>
+<td><strong>Worker-service</strong></td>
+<td>Celery + Redis</td>
+<td>Achtergrondtaken en logging</td>
+</tr>
+<tr>
+<td><strong>Gateway-service</strong></td>
+<td>Nginx / Traefik</td>
+<td>Routering, beveiligde toegang</td>
+</tr>
+<tr>
+<td><strong>Opslaglaag</strong></td>
+<td>PostgreSQL (RDS), S3</td>
+<td>Data en mediaopslag</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+subgraph UI[Frontend – Next.js]
+U1[Dashboard / Webapp]
+end
+
+subgraph API[Core API – Django REST]
+A1[Auth & Clubs]
+A2[Teams & Credits]
+A3[Content API]
+end
+
+subgraph AI[AI-services – FastAPI + LangGraph]
+L1[Workflow Engine]
+L2[Validator / Parser]
+end
+
+subgraph Workers[Queue / Infra]
+R1[Redis Queue]
+C1[Celery Workers]
+DB[(PostgreSQL)]
+S3[(S3 Storage)]
+end
+
+U1 --> A1
+A1 --> A2
+A2 --> A3
+A3 --> L1
+L1 --> L2
+L2 --> C1
+C1 --> S3
+A3 --> DB
+A3 --> R1
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De microservice-architectuur maakt TeamReel wendbaar, schaalbaar en onderhoudbaar — zonder in te boeten op eenvoud.</em></p>
+</blockquote>
+<hr>
+<h3 id="25-cloudstrategie-en-infrastructuur">2.5 Cloudstrategie en infrastructuur</h3>
+<p>De hostingstrategie combineert <strong>lage instap</strong> met <strong>groeipotentieel</strong>:</p>
+<ul>
+<li><strong>Railway / Vercel:</strong> snelle setup en automatische CI/CD.</li>
+<li><strong>AWS ECS / CloudFront:</strong> schaalbaar voor grotere load.</li>
+<li><strong>RDS:</strong> beheerde PostgreSQL-database.</li>
+<li><strong>Redis cache:</strong> versnelt AI-taken en creditcontroles.</li>
+<li><strong>Sentry + Grafana:</strong> realtime inzicht in fouten en prestaties.</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Start lean, scale clean — TeamReel groeit mee met gebruik en ambitie.</em></p>
+</blockquote>
+<hr>
+<h3 id="26-samenvatting">2.6 Samenvatting</h3>
+<p>De architectuur van TeamReel is ontworpen als een <strong>evoluerend ecosysteem</strong>: één codebasis, meerdere lagen, volledige traceerbaarheid. De cloudstrategie ondersteunt groei zonder complexiteit te verhogen.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Eenvoud in ontwerp, kracht in uitvoering — dat is de basis van TeamReel’s technische identiteit.</em></p>
+</blockquote>
+<h2 id="3-backendstructuur--api-design">3. Backendstructuur &amp; API-design</h2>
+<h3 id="31-overzicht">3.1 Overzicht</h3>
+<p>De backend is het logische hart van TeamReel. Ze beheert alle data, autorisatie, transacties en AI-triggers. De architectuur is <strong>API-first</strong> en gebouwd in <strong>Django REST Framework (DRF)</strong> met uitbreidingen in <strong>FastAPI</strong> voor AI-taken. Elke endpoint retourneert data in een uniform JSON-formaat, inclusief status- en foutmeldingen die worden gelogd volgens de toon en structuur uit de <em>Style Foundation</em>.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De backend vormt de ruggengraat van TeamReel — betrouwbaar, uitbreidbaar en klaar voor automatisering.</em></p>
+</blockquote>
+<hr>
+<h3 id="32-kernmodules">3.2 Kernmodules</h3>
+<p>De backend van TeamReel bestaat uit vier kernmodules die samen de logische motor van het platform vormen. Elke module heeft een duidelijke verantwoordelijkheid en communiceert via interne API-calls. Zo blijft de architectuur overzichtelijk, uitbreidbaar en eenvoudig te onderhouden.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Functie</th>
+<th>Belangrijkste componenten</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Core API</strong></td>
+<td>Beheer van gebruikers, clubs, teams en authenticatie.</td>
+<td>Django REST Framework, SimpleJWT</td>
+</tr>
+<tr>
+<td><strong>Content Engine</strong></td>
+<td>Regelt de aanmaak, opslag en goedkeuring van visuals en video’s.</td>
+<td>Django ORM, Celery Tasks</td>
+</tr>
+<tr>
+<td><strong>Credit Service</strong></td>
+<td>Verwerkt alle credittransacties en abonnementen.</td>
+<td>PostgreSQL, Redis cache</td>
+</tr>
+<tr>
+<td><strong>AI Gateway</strong></td>
+<td>Koppeling tussen backend en AI-laag (LangGraph).</td>
+<td>FastAPI, REST webhooks</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+subgraph Backend [Django REST Backend]
+U[Users & Auth] --> C[Clubs & Teams]
+C --> CT[Content Engine]
+CT --> CR[Credits & Transactions]
+end
+
+subgraph AI [FastAPI – LangGraph]
+CT --> A1[AI Trigger & Validation]
+A1 --> A2[Workflow Output]
+end
+
+subgraph Data [Data & Storage]
+D[(PostgreSQL Database)]
+S[(S3 Media Storage)]
+end
+
+CR --> D
+A2 --> S
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De backend van TeamReel is opgebouwd als een modulair geheel: helder, onderhoudbaar en ontworpen voor groei.</em></p>
+</blockquote>
+<hr>
+<h3 id="33-api-principes">3.3 API-principes</h3>
+<p>De API-architectuur van TeamReel volgt het principe <em>API-first</em>: alle communicatie tussen frontend, backend en AI loopt via goed gedefinieerde, versieerbare endpoints. Dit maakt het platform betrouwbaar, voorspelbaar en eenvoudig te integreren met externe systemen.</p>
+<h4 id="richtlijnen">Richtlijnen</h4>
+<ol>
+<li><strong>RESTful structuur:</strong> consistente URL-patronen per resource (<code>/api/v1/...</code>).</li>
+<li><strong>JSON standaard:</strong> alle requests en responses gebruiken JSON.</li>
+<li><strong>Versiebeheer:</strong> backward compatibility via versienummers (<code>v1</code>, <code>v2</code>).</li>
+<li><strong>Beveiliging:</strong> JWT-token in headers (<code>Authorization: Bearer &lt;token&gt;</code>).</li>
+<li><strong>Filterbaarheid:</strong> dynamische queries via <code>django-filter</code>.</li>
+<li><strong>Documentatie:</strong> automatische Swagger/Redoc-generatie (<code>/api/docs/</code>).</li>
+<li><strong>Validatie:</strong> uniforme error responses volgens HTTP-standaardcodes.</li>
+</ol>
+<h4 id="responseformaat">Responseformaat</h4>
+<p>Succesvolle response:</p>
+<pre class="hljs"><code><div>{ <span class="hljs-attr">"status"</span>: <span class="hljs-string">"success"</span>, <span class="hljs-attr">"data"</span>: {...} }
+</div></code></pre>
+<p>Foutmelding:</p>
+<pre class="hljs"><code><div>{ <span class="hljs-attr">"status"</span>: <span class="hljs-string">"error"</span>, <span class="hljs-attr">"message"</span>: <span class="hljs-string">"Not authorized"</span> }
+</div></code></pre>
+<h4 id="api-versiebeheer">API-versiebeheer</h4>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Nieuwe functionaliteit</strong></td>
+<td>Wordt toegevoegd in <code>/api/v2/</code> zonder bestaande endpoints te breken.</td>
+</tr>
+<tr>
+<td><strong>Deprecated routes</strong></td>
+<td>Blijven actief tot minimaal één kwartaal na update.</td>
+</tr>
+<tr>
+<td><strong>Automatische documentatie</strong></td>
+<td>Wordt bij elke CI/CD-run herbouwd via Swagger.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De API van TeamReel is voorspelbaar, veilig en schaalbaar — één standaard, vele toepassingen.</em></p>
+</blockquote>
+<h3 id="34-belangrijkste-endpoints">3.4 Belangrijkste endpoints</h3>
+<p>De backend biedt een set van duidelijke en goed beveiligde API-endpoints. Alle endpoints volgen dezelfde structuur: voorspelbare routes, consistente responses en toegangscontrole via JWT-tokens.</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Methode</th>
+<th>Doel</th>
+<th>Authenticatie</th>
+<th>Opmerking</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/v1/auth/login/</code></td>
+<td>POST</td>
+<td>Inloggen via Magic Link</td>
+<td>JWT</td>
+<td>Retourneert access + refresh token</td>
+</tr>
+<tr>
+<td><code>/api/v1/auth/logout/</code></td>
+<td>POST</td>
+<td>Gebruiker uitloggen</td>
+<td>JWT</td>
+<td>Vernietigt actieve sessie</td>
+</tr>
+<tr>
+<td><code>/api/v1/clubs/</code></td>
+<td>GET/POST</td>
+<td>Clubs weergeven of aanmaken</td>
+<td>JWT</td>
+<td>Alleen clubbeheerders</td>
+</tr>
+<tr>
+<td><code>/api/v1/teams/</code></td>
+<td>GET/POST</td>
+<td>Teams binnen een club beheren</td>
+<td>JWT</td>
+<td>Filter op <code>club_id</code></td>
+</tr>
+<tr>
+<td><code>/api/v1/members/</code></td>
+<td>GET/POST</td>
+<td>Leden toevoegen of beheren</td>
+<td>JWT</td>
+<td>Alleen clubbeheerder</td>
+</tr>
+<tr>
+<td><code>/api/v1/content/</code></td>
+<td>POST</td>
+<td>Start nieuwe AI-generatie (visual/video)</td>
+<td>JWT</td>
+<td>Activeert workflow</td>
+</tr>
+<tr>
+<td><code>/api/v1/credits/</code></td>
+<td>GET</td>
+<td>Creditverbruik en saldo ophalen</td>
+<td>JWT</td>
+<td>Alleen eigen of teamaccount</td>
+</tr>
+<tr>
+<td><code>/api/v1/ai/trigger/</code></td>
+<td>POST</td>
+<td>Start AI-workflow in LangGraph</td>
+<td>JWT</td>
+<td>JSON-payload met workflow_id</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responseformaten:</strong><br>
+Succes:</p>
+<pre class="hljs"><code><div>{ <span class="hljs-attr">"status"</span>: <span class="hljs-string">"success"</span>, <span class="hljs-attr">"data"</span>: {...} }
+</div></code></pre>
+<p>Fout:</p>
+<pre class="hljs"><code><div>{ <span class="hljs-attr">"status"</span>: <span class="hljs-string">"error"</span>, <span class="hljs-attr">"message"</span>: <span class="hljs-string">"Not authorized"</span> }
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Eén API-standaard, vele functies — TeamReel’s backend blijft eenvoudig te begrijpen en consistent te gebruiken.</em></p>
+</blockquote>
+<hr>
+<h3 id="35-authenticatie-en-autorisatie">3.5 Authenticatie en autorisatie</h3>
+<p>Authenticatie verloopt via <strong>Magic Link</strong>: gebruikers ontvangen een beveiligde link per e-mail en loggen in zonder wachtwoord. Na inloggen krijgt de gebruiker een tijdelijk JWT-token voor sessiebeheer. Autorisatie wordt bepaald door scopes in het token op basis van de gebruikersrol.</p>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Toegang</th>
+<th>Voorbeelden van acties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clubbeheerder</strong></td>
+<td>Volledige rechten binnen de club</td>
+<td>Teams beheren, credits toewijzen</td>
+</tr>
+<tr>
+<td><strong>Teambeheerder</strong></td>
+<td>Toegang tot eigen team</td>
+<td>Line-up invullen, AI-output goedkeuren</td>
+</tr>
+<tr>
+<td><strong>Maker / Speler</strong></td>
+<td>Alleen eigen content</td>
+<td>AI-generatie, feedback geven</td>
+</tr>
+<tr>
+<td><strong>Supporter</strong></td>
+<td>Publieke data</td>
+<td>Content bekijken en delen</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Scopes in JWT:</strong></p>
+<ul>
+<li><code>club:*</code> – volledige toegang tot clubresources</li>
+<li><code>team:*</code> – toegang tot teamresources</li>
+<li><code>content:generate</code> – AI-content genereren</li>
+<li><code>content:public</code> – publieke endpoints</li>
+</ul>
+<p>Tokens verlopen automatisch na 24 uur inactiviteit en kunnen worden vernieuwd via <code>/api/v1/auth/refresh/</code>.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Eenvoudig voor de gebruiker, robuust voor het systeem — beveiliging is ingebouwd in de architectuur.</em></p>
+</blockquote>
+<hr>
+<h3 id="36-versiebeheer-en-stabiliteit">3.6 Versiebeheer en stabiliteit</h3>
+<p>Het API-ecosysteem is ontworpen voor gecontroleerde groei. Nieuwe functionaliteit breekt nooit bestaande integraties en wordt altijd versieerbaar toegevoegd.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Nieuwe functionaliteit</strong></td>
+<td>Wordt toegevoegd in <code>/api/v2/</code> zonder bestaande endpoints te breken.</td>
+</tr>
+<tr>
+<td><strong>Deprecated routes</strong></td>
+<td>Blijven actief tot minimaal één kwartaal na update.</td>
+</tr>
+<tr>
+<td><strong>Automatische documentatie</strong></td>
+<td>Wordt bij elke CI/CD-run herbouwd via Swagger.</td>
+</tr>
+</tbody>
+</table>
+<p>De API-documentatie gebruikt kleuren, iconen en typografie uit de <em>Style Foundation</em> om consistentie te behouden tussen technische en visuele communicatie.</p>
+<p>Alle endpoints worden getest via geautomatiseerde pipelines (Pytest en Postman). Elke wijziging wordt automatisch gelogd in GitHub-changelogs en zichtbaar gemaakt in de Swagger-interface.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Stabiliteit is geen toeval — versiebeheer en automatisering houden de API gezond.</em></p>
+</blockquote>
+<hr>
+<h3 id="37-samenvatting">3.7 Samenvatting</h3>
+<p>De backend van TeamReel combineert stabiliteit met flexibiliteit. Heldere API-principes, moderne authenticatie en versiebeheer zorgen ervoor dat het platform betrouwbaar en toekomstvast blijft. De combinatie van <strong>Django REST</strong> en <strong>FastAPI</strong> biedt het beste van twee werelden: robuustheid voor data, snelheid voor AI-integratie.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De backend is de stabiele motor onder TeamReel — gebouwd om vandaag te presteren en morgen te groeien.</em></p>
+</blockquote>
+<h2 id="4-frontendarchitectuur--ui-componenten">4. Frontendarchitectuur &amp; UI-componenten</h2>
+<h3 id="41-overzicht">4.1 Overzicht</h3>
+<p>De frontend van <strong>TeamReel</strong> is het gezicht van het platform. Ze vertaalt datastromen uit de backend en AI-engine naar een intuïtieve, herkenbare en toegankelijke gebruikerservaring. De interface is gebouwd in <strong>Next.js</strong> met <strong>Tailwind CSS</strong> en <strong>ShadCN</strong>-componenten. Alle stijlelementen worden aangestuurd via centrale design tokens uit <code>tokens.json</code>, conform de <em>TeamReel Style Foundation</em>.</p>
+<p><strong>Belangrijkste ontwerpprincipes:</strong></p>
+<ol>
+<li><strong>Responsiviteit:</strong> één codebase voor desktop, tablet en mobiel.</li>
+<li><strong>Theming:</strong> automatische omschakeling tussen licht en donker thema.</li>
+<li><strong>Meertaligheid:</strong> dynamische interface via <code>locales.json</code>.</li>
+<li><strong>Toegankelijkheid:</strong> voldoet aan WCAG 2.1 AA-standaarden.</li>
+</ol>
+<p>Alle datavelden en entiteiten volgen dezelfde naamgeving als in het <em>Functional Design</em> en worden visueel gerepresenteerd via tokens en layoutregels uit de <em>Style Foundation</em>.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De frontend maakt TeamReel zichtbaar — herkenbaar, snel en toegankelijk voor iedere gebruiker.</em></p>
+</blockquote>
+<hr>
+<h3 id="42-architectuur">4.2 Architectuur</h3>
+<p>De frontend is opgebouwd volgens een <strong>component-based architectuur</strong> met duidelijke scheiding tussen presentatie, data en interactie. Elke laag heeft een eigen verantwoordelijkheid maar deelt dezelfde tokens en vertaalstructuur.</p>
+<table>
+<thead>
+<tr>
+<th>Laag</th>
+<th>Technologie</th>
+<th>Functie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>UI / View Layer</strong></td>
+<td>ShadCN, Tailwind, tokens.json</td>
+<td>Opmaak, layout, visuele consistentie</td>
+</tr>
+<tr>
+<td><strong>Logic Layer</strong></td>
+<td>React Hooks, Zustand</td>
+<td>State management en interactielogica</td>
+</tr>
+<tr>
+<td><strong>Data Layer</strong></td>
+<td>Axios / SWR</td>
+<td>Communicatie met backend en AI-service</td>
+</tr>
+<tr>
+<td><strong>Localization Layer</strong></td>
+<td>locales.json, i18next</td>
+<td>Vertalingen en taalwissel</td>
+</tr>
+</tbody>
+</table>
+<p>De frontend communiceert met twee backends:</p>
+<ul>
+<li><code>/api/v1/...</code> voor data en authenticatie (Django REST)</li>
+<li><code>/ai/v1/...</code> voor AI-workflows (LangGraph via FastAPI)</li>
+</ul>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+subgraph UI[Frontend – Next.js]
+C1[UI Componenten – ShadCN]
+C2[Theming – tokens.json]
+C3[Vertaling – locales.json]
+C4[State Management – Zustand]
+end
+
+subgraph API[Backend API – Django REST]
+B1[/api/v1/ data & auth/]
+end
+
+subgraph AI[AI-service – LangGraph]
+A1[/ai/v1/ workflows/]
+end
+
+C1 --> C4
+C4 --> B1
+C4 --> A1
+C2 --> C1
+C3 --> C1
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De frontend-architectuur is modulair en toekomstvast — één ontwerp, vele toepassingen.</em></p>
+</blockquote>
+<hr>
+<h3 id="43-tokens-en-theming">4.3 Tokens en theming</h3>
+<p>De frontend haalt alle visuele tokens rechtstreeks uit <code>/frontend/styles/tokens.json</code>, de primaire export van de <em>Style Foundation</em>.<br>
+Deze tokens definiëren kleuren, typografie, spacing en radiuswaarden voor alle UI-componenten.</p>
+<ul>
+<li><strong>Kleurgebruik</strong>: <code>--color-primary</code>, <code>--color-accent</code>, <code>--color-neutral</code></li>
+<li><strong>Typografie</strong>: <code>--font-heading</code>, <code>--font-primary</code>, <code>--font-display</code></li>
+<li><strong>Layout</strong>: <code>--radius-card</code>, <code>--spacing-base</code>, <code>--shadow-soft</code></li>
+</ul>
+<p>Het gebruik van tokens zorgt ervoor dat elk onderdeel van de applicatie — van dashboard tot AI-preview — dezelfde visuele identiteit behoudt. De tokens zijn gekoppeld aan de <em>Brand Identity</em> en worden automatisch bijgewerkt bij elke CI/CD-release.</p>
+<p>Het thema (licht of donker) wordt automatisch bepaald via <code>prefers-color-scheme</code> in de browserinstellingen, maar kan handmatig worden overschreven in het gebruikersprofiel.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Eén bron van waarheid voor kleur, typografie en toon — de tokens zijn de bouwstenen van visuele consistentie.</em></p>
+</blockquote>
+<hr>
+<h3 id="44-lokalisatie-en-meertaligheid">4.4 Lokalisatie en meertaligheid</h3>
+<p>De frontend ondersteunt meerdere talen via <code>locales.json</code>. Vertalingen worden asynchroon geladen met <em>i18next</em> en gecachet via SWR. Nieuwe talen kunnen eenvoudig worden toegevoegd door het toevoegen van een nieuw object in <code>locales.json</code>.</p>
+<p><strong>Voorbeeld:</strong></p>
+<pre class="hljs"><code><div>{
+  <span class="hljs-attr">"nl"</span>: {
+    <span class="hljs-attr">"welcome"</span>: <span class="hljs-string">"Welkom bij TeamReel"</span>,
+    <span class="hljs-attr">"generate_video"</span>: <span class="hljs-string">"Genereer video"</span>,
+    <span class="hljs-attr">"logout"</span>: <span class="hljs-string">"Afmelden"</span>
+  },
+  <span class="hljs-attr">"en"</span>: {
+    <span class="hljs-attr">"welcome"</span>: <span class="hljs-string">"Welcome to TeamReel"</span>,
+    <span class="hljs-attr">"generate_video"</span>: <span class="hljs-string">"Generate video"</span>,
+    <span class="hljs-attr">"logout"</span>: <span class="hljs-string">"Logout"</span>
+  }
+}
+</div></code></pre>
+<p>Taalkeuze wordt opgeslagen in <code>User.language_code</code>. De interface past zich direct aan zonder herladen van de pagina. Lokalisatie strekt zich ook uit tot datumformaten, valutaweergave en sporttermen.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel spreekt de taal van elke gebruiker — letterlijk en figuurlijk.</em></p>
+</blockquote>
+<hr>
+<h3 id="45-componentenbibliotheek">4.5 Componentenbibliotheek</h3>
+<p>De componentenbibliotheek bestaat uit herbruikbare elementen die de visuele identiteit van TeamReel bewaken. Ze zijn ontwikkeld met <strong>ShadCN UI</strong> en <strong>Tailwind</strong> en gebruiken tokens voor kleur en spacing.</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Beschrijving</th>
+<th>Voorbeeldgebruik</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Card</strong></td>
+<td>Container voor content of visuals</td>
+<td>Spelersprofielen, previews</td>
+</tr>
+<tr>
+<td><strong>Button</strong></td>
+<td>Gestandaardiseerde CTA met drie varianten (primary, secondary, ghost)</td>
+<td>Interactie-elementen</td>
+</tr>
+<tr>
+<td><strong>Modal</strong></td>
+<td>Dialoogvenster voor acties of bevestiging</td>
+<td>Goedkeuring AI-output</td>
+</tr>
+<tr>
+<td><strong>Badge</strong></td>
+<td>Statusaanduiding (nieuw, actief, concept)</td>
+<td>Feedback, workflows</td>
+</tr>
+<tr>
+<td><strong>Alert</strong></td>
+<td>Foutmeldingen en succesberichten</td>
+<td>Notificaties, validatie</td>
+</tr>
+</tbody>
+</table>
+<p>Alle componenten worden automatisch getest op toegankelijkheid (ARIA-attributen, focusvolgorde, contrast).</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Consistentie in componenten zorgt voor herkenning, snelheid en vertrouwen bij de gebruiker.</em></p>
+</blockquote>
+<hr>
+<h3 id="46-toegankelijkheid-en-performance">4.6 Toegankelijkheid en performance</h3>
+<p>De frontend voldoet aan <strong>WCAG 2.1 AA</strong>. Contrast, focus, toetsenbordnavigatie en animaties zijn getest voor gebruikers met visuele of motorische beperkingen. Animaties zijn beperkt en worden uitgeschakeld bij ‘reduced motion’-instellingen.</p>
+<p><strong>Performanceprincipes:</strong></p>
+<ul>
+<li>Lazy loading van afbeeldingen en niet-essentiële componenten.</li>
+<li>Statische pre-rendering (Next.js ISR) voor snelle laadtijden.</li>
+<li>SWR caching voor realtime API-data.</li>
+<li>Core Web Vitals (LCP, CLS, TBT) worden automatisch gemonitord.</li>
+</ul>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+U[Gebruiker] --> P[Page Load – Next.js]
+P --> C[Component Render – ShadCN + Tailwind]
+C --> D[Data Fetch – SWR / Axios]
+D --> A[API Response – Django / LangGraph]
+A --> U
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Toegankelijkheid en performance zijn geen toevoeging — ze zijn een integraal onderdeel van de gebruikerservaring.</em></p>
+</blockquote>
+<hr>
+<h3 id="47-samenvatting">4.7 Samenvatting</h3>
+<p>De frontend van TeamReel combineert design, performance en schaalbaarheid. Door het gebruik van tokens, modulaire componenten en meertalige ondersteuning is het platform toekomstbestendig en consistent met de merkidentiteit.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De frontend vertaalt technologie naar beleving — snel, betrouwbaar en volledig in de stijl van TeamReel.</em></p>
+</blockquote>
+<h2 id="5-database--datamodellering">5. Database &amp; Datamodellering</h2>
+<h3 id="51-overzicht">5.1 Overzicht</h3>
+<p>De database vormt de ruggengraat van <strong>TeamReel</strong>.<br>
+Ze slaat alle gegevens op over clubs, teams, leden, wedstrijden, content, credits en AI-workflows. De structuur is <strong>relationeel</strong> (PostgreSQL) en ontworpen volgens drie principes:</p>
+<ol>
+<li><strong>Normalisatie:</strong> elk gegeven wordt slechts één keer opgeslagen.</li>
+<li><strong>Traceerbaarheid:</strong> elke wijziging is herleidbaar via logging.</li>
+<li><strong>Uitbreidbaarheid:</strong> het model ondersteunt meerdere sporten, seizoenen en clubs.</li>
+</ol>
+<p>De database is geoptimaliseerd voor schaalbaarheid en AVG-conforme verwerking van persoonsgegevens.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De database is niet alleen opslag — het is het geheugen en de ruggengraat van TeamReel.</em></p>
+</blockquote>
+<hr>
+<h3 id="52-datalaag-en-structuur">5.2 Datalaag en structuur</h3>
+<p>Het datamodel is opgebouwd uit zes clusters die samen de volledige werking van TeamReel ondersteunen.</p>
+<table>
+<thead>
+<tr>
+<th>Cluster</th>
+<th>Beschrijving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Referentie &amp; Dimensies</strong></td>
+<td>Stamdata zoals sport, competitie, seizoenen en locatie.</td>
+</tr>
+<tr>
+<td><strong>Organisatie &amp; Wedstrijden</strong></td>
+<td>Clubs, teams, spelers en wedstrijden.</td>
+</tr>
+<tr>
+<td><strong>Gebruikers &amp; Rollen</strong></td>
+<td>Authenticatie, leden, teamlidmaatschappen.</td>
+</tr>
+<tr>
+<td><strong>Content &amp; AI</strong></td>
+<td>Templates, workflows, varianten, feedback.</td>
+</tr>
+<tr>
+<td><strong>Financieel &amp; Credits</strong></td>
+<td>Creditaccounts, transacties en abonnementen.</td>
+</tr>
+<tr>
+<td><strong>Audit &amp; Logging</strong></td>
+<td>Volledige historie van systeemacties.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Elke dataset ondersteunt een specifieke taak, maar samen vormen ze één coherent platform.</em></p>
+</blockquote>
+<hr>
+<h3 id="53-referentie--en-dimensietabellen">5.3 Referentie- en dimensietabellen</h3>
+<p>Deze tabellen bevatten vaste waarden die zelden wijzigen. Ze dienen voor filtering, rapportage en historische analyses.</p>
+<table>
+<thead>
+<tr>
+<th>Tabel</th>
+<th>Doel</th>
+<th>Belangrijkste velden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sport</strong></td>
+<td>Stamgegevens van sporten</td>
+<td><code>id</code>, <code>name</code>, <code>federation</code>, <code>active</code></td>
+</tr>
+<tr>
+<td><strong>Competition</strong></td>
+<td>Competitieniveau binnen een sport</td>
+<td><code>id</code>, <code>sport_id</code>, <code>name</code>, <code>region</code>, <code>level</code></td>
+</tr>
+<tr>
+<td><strong>Season</strong></td>
+<td>Jaar of periode van competitie</td>
+<td><code>id</code>, <code>competition_id</code>, <code>name</code>, <code>start_date</code>, <code>end_date</code>, <code>active</code></td>
+</tr>
+<tr>
+<td><strong>DimLocation</strong></td>
+<td>Gemeente- en plaatsdimensie</td>
+<td><code>id</code>, <code>plaats</code>, <code>gemeente</code>, <code>provincie</code>, <code>land</code></td>
+</tr>
+<tr>
+<td><strong>DimDate</strong></td>
+<td>Tijdsdimensie voor analyses</td>
+<td><code>date_key</code>, <code>jaar</code>, <code>maand</code>, <code>week</code>, <code>dagnaam</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Referentiedata geven context — ze maken analyses en vergelijkingen mogelijk over tijd en regio.</em></p>
+</blockquote>
+<hr>
+<h3 id="54-organisatiestructuur">5.4 Organisatiestructuur</h3>
+<p>De organisatiestructuur koppelt clubs, teams, spelers en wedstrijden. Elke entiteit bevat unieke identifiers en relaties die seizoensgebonden zijn.</p>
+<table>
+<thead>
+<tr>
+<th>Tabel</th>
+<th>Doel</th>
+<th>Belangrijkste velden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Club</strong></td>
+<td>De hoofdentiteit: sportvereniging of organisatie</td>
+<td><code>id</code>, <code>sport_id</code>, <code>name</code>, <code>logo_asset_id</code>, <code>theme_color</code>, <code>location_id</code></td>
+</tr>
+<tr>
+<td><strong>Team</strong></td>
+<td>Eenheid binnen een club</td>
+<td><code>id</code>, <code>club_id</code>, <code>season_id</code>, <code>competition_id</code>, <code>name</code>, <code>division</code></td>
+</tr>
+<tr>
+<td><strong>Player</strong></td>
+<td>Speler gekoppeld aan team</td>
+<td><code>id</code>, <code>team_id</code>, <code>name</code>, <code>position</code>, <code>number</code>, <code>photo_asset_id</code></td>
+</tr>
+<tr>
+<td><strong>Match</strong></td>
+<td>Wedstrijd tussen teams</td>
+<td><code>id</code>, <code>home_team_id</code>, <code>away_team_id</code>, <code>season_id</code>, <code>date</code>, <code>score_home</code>, <code>score_away</code></td>
+</tr>
+<tr>
+<td><strong>MatchEvent</strong></td>
+<td>Gebeurtenissen binnen een wedstrijd</td>
+<td><code>id</code>, <code>match_id</code>, <code>player_id</code>, <code>event_type</code>, <code>minute</code>, <code>description</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De organisatiestructuur verbindt spelers, teams en clubs — de basis voor sportieve storytelling.</em></p>
+</blockquote>
+<hr>
+<h3 id="55-gebruikers--rollen">5.5 Gebruikers &amp; Rollen</h3>
+<p>Authenticatie en autorisatie worden geregeld via drie tabellen: <code>User</code>, <code>Member</code> en <code>TeamMembership</code>. Hiermee kan één gebruiker meerdere rollen vervullen binnen verschillende teams of clubs.</p>
+<table>
+<thead>
+<tr>
+<th>Tabel</th>
+<th>Doel</th>
+<th>Belangrijkste velden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>User</strong></td>
+<td>Authenticatie via Magic Link</td>
+<td><code>id</code>, <code>email</code>, <code>name</code>, <code>language_code</code>, <code>last_login</code></td>
+</tr>
+<tr>
+<td><strong>Member</strong></td>
+<td>Koppeling van gebruiker aan club</td>
+<td><code>id</code>, <code>user_id</code>, <code>club_id</code>, <code>joined_at</code>, <code>role_default</code></td>
+</tr>
+<tr>
+<td><strong>TeamMembership</strong></td>
+<td>Rollen binnen teams</td>
+<td><code>id</code>, <code>member_id</code>, <code>team_id</code>, <code>role</code>, <code>active</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De gebruikersstructuur maakt flexibiliteit mogelijk — één identiteit, meerdere rollen, volledige traceerbaarheid.</em></p>
+</blockquote>
+<hr>
+<h3 id="56-content--ai-workflows">5.6 Content &amp; AI-workflows</h3>
+<p>Alle gegenereerde content wordt vastgelegd via een hiërarchie van templates, varianten en workflows. Zo is elke AI-output herleidbaar tot de brondata en het gebruikte model.</p>
+<table>
+<thead>
+<tr>
+<th>Tabel</th>
+<th>Doel</th>
+<th>Belangrijkste velden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ContentType</strong></td>
+<td>Type content (line-up, uitslag, seizoensoverzicht)</td>
+<td><code>id</code>, <code>sport_id</code>, <code>name</code>, <code>description</code></td>
+</tr>
+<tr>
+<td><strong>Template</strong></td>
+<td>Ontwerp binnen contenttype</td>
+<td><code>id</code>, <code>content_type_id</code>, <code>name</code>, <code>style_token</code>, <code>aspect_ratio</code></td>
+</tr>
+<tr>
+<td><strong>AIWorkflow</strong></td>
+<td>Uitvoering van LangGraph-workflow</td>
+<td><code>id</code>, <code>template_id</code>, <code>workflow_name</code>, <code>run_id</code>, <code>state</code>, <code>started_at</code>, <code>completed_at</code></td>
+</tr>
+<tr>
+<td><strong>ContentVariant</strong></td>
+<td>Output van AI-workflow</td>
+<td><code>id</code>, <code>template_id</code>, <code>team_id</code>, <code>context_phase</code>, <code>file_asset_id</code>, <code>status</code>, <code>created_at</code></td>
+</tr>
+<tr>
+<td><strong>ApprovalLog</strong></td>
+<td>Goedkeuring door gebruiker</td>
+<td><code>id</code>, <code>content_variant_id</code>, <code>reviewer_id</code>, <code>decision</code>, <code>comment</code>, <code>timestamp</code></td>
+</tr>
+<tr>
+<td><strong>FeedbackLog</strong></td>
+<td>Feedback of beoordeling</td>
+<td><code>id</code>, <code>content_variant_id</code>, <code>rating</code>, <code>comment</code>, <code>timestamp</code></td>
+</tr>
+<tr>
+<td><strong>Asset</strong></td>
+<td>Opslag van media en bestanden</td>
+<td><code>id</code>, <code>owner_type</code>, <code>owner_id</code>, <code>file_url</code>, <code>type</code>, <code>size</code>, <code>created_at</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Elke visual of video is een datagedreven verhaal — volledig traceerbaar van template tot publicatie.</em></p>
+</blockquote>
+<hr>
+<h3 id="57-financieel-model-credits--abonnementen">5.7 Financieel model: Credits &amp; Abonnementen</h3>
+<p>Credits vormen het betaalmiddel binnen TeamReel. Ze worden verbruikt per team, maar kunnen worden gekocht door een gebruiker of club. Abonnementen vullen automatisch saldo aan, terwijl losse aankopen handmatig verlopen.</p>
+<table>
+<thead>
+<tr>
+<th>Tabel</th>
+<th>Doel</th>
+<th>Belangrijkste velden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CreditAccount</strong></td>
+<td>Rekening op club-, team- of lidniveau</td>
+<td><code>id</code>, <code>owner_type</code>, <code>owner_id</code>, <code>balance</code>, <code>currency</code>, <code>created_at</code></td>
+</tr>
+<tr>
+<td><strong>CreditTransaction</strong></td>
+<td>Registratie van mutaties</td>
+<td><code>id</code>, <code>account_id</code>, <code>change</code>, <code>reason</code>, <code>source</code>, <code>timestamp</code></td>
+</tr>
+<tr>
+<td><strong>Subscription</strong></td>
+<td>Automatische creditaanvulling</td>
+<td><code>id</code>, <code>owner_type</code>, <code>owner_id</code>, <code>plan_name</code>, <code>interval</code>, <code>credits_per_period</code>, <code>price_per_period</code>, <code>start_date</code>, <code>status</code></td>
+</tr>
+<tr>
+<td><strong>Sponsor</strong></td>
+<td>Externe financier van credits of exposure</td>
+<td><code>id</code>, <code>name</code>, <code>logo_url</code>, <code>sector</code>, <code>website</code></td>
+</tr>
+<tr>
+<td><strong>SponsorTransaction</strong></td>
+<td>Toewijzing van sponsorkredieten aan clubs of teams</td>
+<td><code>id</code>, <code>sponsor_id</code>, <code>club_id</code>, <code>team_id</code>, <code>credits</code>, <code>timestamp</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Het financieel model is flexibel — credits, abonnementen en sponsors versterken elkaar in één ecosysteem.</em></p>
+</blockquote>
+<hr>
+<h3 id="58-audit--logging">5.8 Audit &amp; Logging</h3>
+<p>Elke wijziging, goedkeuring of foutmelding wordt vastgelegd in auditlogs. Zo blijft elke actie herleidbaar, van gebruiker tot AI-run.</p>
+<table>
+<thead>
+<tr>
+<th>Tabel</th>
+<th>Doel</th>
+<th>Belangrijkste velden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ChangeLog</strong></td>
+<td>Audittrail van alle wijzigingen</td>
+<td><code>id</code>, <code>entity_type</code>, <code>entity_id</code>, <code>user_id</code>, <code>change_type</code>, <code>timestamp</code>, <code>old_value</code>, <code>new_value</code></td>
+</tr>
+<tr>
+<td><strong>Notification</strong></td>
+<td>Meldingen naar gebruikers</td>
+<td><code>id</code>, <code>recipient_id</code>, <code>type</code>, <code>message</code>, <code>status</code>, <code>created_at</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Transparantie is ingebouwd — elke handeling, wijziging of feedback is controleerbaar.</em></p>
+</blockquote>
+<hr>
+<h3 id="59-relatieschema-erd">5.9 Relatieschema (ERD)</h3>
+<pre><code class="language-mermaid"><div class="mermaid">erDiagram
+
+%% --- REFERENTIE ---
+SPORT ||--o{ COMPETITION : omvat
+COMPETITION ||--o{ SEASON : bevat
+SPORT ||--o{ CLUB : heeft
+
+%% --- ORGANISATIE ---
+CLUB ||--o{ TEAM : beheert
+TEAM ||--o{ PLAYER : bevat
+TEAM ||--o{ MATCH : speelt
+MATCH ||--o{ MATCHEVENT : registreert
+
+%% --- DIMENSIES ---
+DIMLOCATION ||--o{ CLUB : gevestigd
+DIMDATE ||--o{ MATCH : gepland_op
+
+%% --- GEBRUIKERS ---
+USER ||--o{ MEMBER : koppeling
+MEMBER ||--o{ TEAMMEMBERSHIP : link
+TEAM ||--o{ TEAMMEMBERSHIP : bevat
+
+%% --- CONTENT & AI ---
+TEAM ||--o{ CONTENTVARIANT : genereert
+CONTENTTYPE ||--o{ TEMPLATE : bevat
+TEMPLATE ||--o{ AIWORKFLOW : gebruikt
+AIWORKFLOW ||--o{ CONTENTVARIANT : produceert
+CONTENTVARIANT ||--o{ APPROVALLOG : goedgekeurd
+CONTENTVARIANT ||--o{ FEEDBACKLOG : beoordeeld
+CLUB ||--o{ ASSET : bezit
+
+%% --- FINANCIEEL ---
+CLUB ||--o{ CREDITACCOUNT : bezit
+TEAM ||--o{ CREDITACCOUNT : gebruikt
+MEMBER ||--o{ CREDITACCOUNT : persoonlijk
+CREDITACCOUNT ||--o{ CREDITTRANSACTION : registreert
+SUBSCRIPTION ||--o{ CREDITTRANSACTION : genereert
+SPONSOR ||--o{ SPONSORTRANSACTION : toewijst
+SPONSORTRANSACTION }o--|| CLUB : ontvangt
+
+%% --- LOGGING ---
+USER ||--o{ CHANGELOG : wijzigt
+CONTENTVARIANT ||--o{ CHANGELOG : update
+USER ||--o{ NOTIFICATION : ontvangt
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Het ERD toont hoe sport, AI, financiën en gebruik samenkomen — één systeem, vele relaties.</em></p>
+</blockquote>
+<hr>
+<h3 id="510-data-integriteit--performance">5.10 Data-integriteit &amp; performance</h3>
+<ul>
+<li><strong>Referentiële integriteit:</strong> alle foreign keys voorzien van <code>ON DELETE CASCADE</code> of <code>RESTRICT</code>.</li>
+<li><strong>Indexering:</strong> primaire indexen op <code>club_id</code>, <code>team_id</code>, <code>content_variant_id</code> en <code>owner_id</code>.</li>
+<li><strong>Caching:</strong> Redis voor saldi, workflows en frequente queries.</li>
+<li><strong>Archivering:</strong> AI-output na 90 dagen gearchiveerd; metadata blijft behouden.</li>
+<li><strong>Encryptie:</strong> persoonlijke gegevens (e-mails, tokens) versleuteld met AES-256.</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Snel, veilig en betrouwbaar — de database is gebouwd voor dagelijkse prestaties en groei op lange termijn.</em></p>
+</blockquote>
+<hr>
+<h3 id="511-samenvatting">5.11 Samenvatting</h3>
+<p>Het datamodel van TeamReel verenigt sportieve, creatieve en commerciële data in één samenhangend systeem. Het ondersteunt meerdere sporten, teams en workflows — en is voorbereid op verdere groei met sponsors, rapportages en AI-optimalisatie.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel’s database verbindt sport, data en AI tot één logisch, schaalbaar geheel.</em></p>
+</blockquote>
+<h2 id="6-ai-infrastructuur--workflow-engine">6. AI-infrastructuur &amp; Workflow-engine</h2>
+<h3 id="61-overzicht">6.1 Overzicht</h3>
+<p>De AI-infrastructuur vormt het kloppende hart van <strong>TeamReel</strong>. Elke video, visual of tekstuele output wordt gegenereerd via gedefinieerde workflows die draaien in <strong>LangGraph</strong>. De AI-engine is modulair: elke stap — input, analyse, generatie, review — is een afzonderlijke node binnen een workflow. Zo blijft het proces controleerbaar, reproduceerbaar en transparant.</p>
+<p><strong>Belangrijkste eigenschappen:</strong></p>
+<ul>
+<li><strong>AI-first ontwerp:</strong> alle contentgeneratie verloopt via een orkestratielaag.</li>
+<li><strong>Traceerbaarheid:</strong> elke AI-run heeft een unieke ID (<code>run_id</code>).</li>
+<li><strong>Herbruikbaarheid:</strong> workflows kunnen per sport of team opnieuw gebruikt worden.</li>
+<li><strong>Beheersbaarheid:</strong> foutdetectie, herstart en logging zijn ingebouwd.</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De AI-laag is geen zwarte doos — het is een transparante, modulaire motor voor creativiteit en efficiëntie.</em></p>
+</blockquote>
+<hr>
+<h3 id="62-workflow-opbouw-in-langgraph">6.2 Workflow-opbouw in LangGraph</h3>
+<p>Elke workflow bestaat uit vijf vaste fasen. Elke fase heeft een eigen verantwoordelijkheid en output die door de volgende fase wordt gebruikt.</p>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Beschrijving</th>
+<th>Uitvoer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Input</strong></td>
+<td>Gebruiker levert data aan (namen, uitslag, logo’s).</td>
+<td>JSON-payload</td>
+</tr>
+<tr>
+<td><strong>2. Analyse</strong></td>
+<td>LangGraph controleert en valideert input.</td>
+<td>Workflow-state</td>
+</tr>
+<tr>
+<td><strong>3. Generatie</strong></td>
+<td>AI-model genereert visual of video.</td>
+<td>Media-bestand</td>
+</tr>
+<tr>
+<td><strong>4. Review</strong></td>
+<td>Gebruiker keurt resultaat goed of wijzigt details.</td>
+<td>Status: <code>approved</code> / <code>retry</code></td>
+</tr>
+<tr>
+<td><strong>5. Publicatie</strong></td>
+<td>Output wordt opgeslagen of gedeeld via integraties.</td>
+<td>URL of API-response</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Input – Data & Instellingen] --> B[Analyse – Validatie & Modelselectie]
+B --> C[Generatie – AI Output (LangGraph)]
+C --> D[Review – Gebruikersgoedkeuring]
+D --> E[Publicatie – Opslag of Social Post]
+D -->|Afgekeurd| B
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Elke AI-output is het resultaat van een reproduceerbare keten van stappen — volledig inzichtelijk voor gebruiker en beheerder.</em></p>
+</blockquote>
+<hr>
+<h3 id="63-workflow-architectuur">6.3 Workflow-architectuur</h3>
+<p>De technische uitvoering van AI-workflows is opgebouwd uit drie lagen:</p>
+<table>
+<thead>
+<tr>
+<th>Laag</th>
+<th>Functie</th>
+<th>Technologie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Trigger Layer</strong></td>
+<td>Start handmatig of in batch na goedkeuring</td>
+<td>API / Celery Task</td>
+</tr>
+<tr>
+<td><strong>Execution Layer</strong></td>
+<td>Verwerkt nodes en voert AI-taken uit</td>
+<td>LangGraph + FastAPI</td>
+</tr>
+<tr>
+<td><strong>Review Layer</strong></td>
+<td>Slaat resultaten op, registreert feedback en status</td>
+<td>PostgreSQL + Redis Cache</td>
+</tr>
+</tbody>
+</table>
+<p>Bij fouten wordt de workflow automatisch opnieuw geprobeerd (maximaal twee keer). De status (<code>pending</code>, <code>running</code>, <code>failed</code>, <code>completed</code>) wordt real-time bijgehouden in <code>AIWorkflow</code>.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+T[Trigger Layer] --> E[Execution Layer]
+E --> R[Review Layer]
+R --> F[FeedbackLog + ApprovalLog]
+E -->|Fout| T
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De workflow-engine is ontworpen voor betrouwbaarheid — fouten worden opgevangen, hersteld en gelogd zonder dat het systeem stopt.</em></p>
+</blockquote>
+<hr>
+<h3 id="64-modelselectie-en-configuratie">6.4 Modelselectie en configuratie</h3>
+<p>TeamReel maakt gebruik van <strong>open AI-modellen</strong> die per taak of sporttype worden gekozen. Het systeem selecteert automatisch het optimale model voor elke node in de workflow.</p>
+<table>
+<thead>
+<tr>
+<th>Doel</th>
+<th>Model / Service</th>
+<th>Toepassing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tekst &amp; Script</strong></td>
+<td>Gemini / GPT-4</td>
+<td>Tekst, samenvattingen en captions</td>
+</tr>
+<tr>
+<td><strong>Beeldgeneratie</strong></td>
+<td>Placid / Canva API</td>
+<td>Line-ups, uitslagen, visuals</td>
+</tr>
+<tr>
+<td><strong>Video &amp; Motion</strong></td>
+<td>RunwayML</td>
+<td>Korte animaties en overgangen</td>
+</tr>
+<tr>
+<td><strong>Audio &amp; Voice</strong></td>
+<td>ElevenLabs</td>
+<td>Voice-overs (optioneel, Fase 2)</td>
+</tr>
+<tr>
+<td><strong>Validatie</strong></td>
+<td>OpenAI Tools / Custom LangChain Parsers</td>
+<td>Beeld- en tekstcontrole</td>
+</tr>
+</tbody>
+</table>
+<p>De keuze per node is configureerbaar via <code>workflow_config.json</code>, waarin parameters als model, stijl en resolutie zijn vastgelegd.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De AI blijft flexibel: elk model is verwisselbaar, elke workflow configureerbaar.</em></p>
+</blockquote>
+<hr>
+<h3 id="65-context-en-sportafhankelijkheid">6.5 Context en sportafhankelijkheid</h3>
+<p>Elke workflow wordt uitgevoerd binnen een <strong>context</strong>. De context bepaalt hoe de data en templates worden geïnterpreteerd — bijvoorbeeld een wedstrijd, seizoen of sport.</p>
+<table>
+<thead>
+<tr>
+<th>Context</th>
+<th>Omschrijving</th>
+<th>Voorbeeld</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pre-match</strong></td>
+<td>Voorbereidende content (line-up, aankondiging)</td>
+<td>“Startopstelling zondag 14:00”</td>
+</tr>
+<tr>
+<td><strong>During-match</strong></td>
+<td>Live updates en scorevisuals</td>
+<td>“Goal TeamReel — 2-1 in minuut 67”</td>
+</tr>
+<tr>
+<td><strong>Post-match</strong></td>
+<td>Nabeschouwingen en resultaten</td>
+<td>“Eindstand 3-2 – TeamReel wint opnieuw”</td>
+</tr>
+<tr>
+<td><strong>Seasonal</strong></td>
+<td>Seizoensgebonden visuals</td>
+<td>“Topscorer van het seizoen”</td>
+</tr>
+</tbody>
+</table>
+<p>De context wordt opgeslagen in <code>ContentVariant.context_phase</code> en bepaalt welke templates en AI-nodes worden geactiveerd.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Context bepaalt betekenis — dezelfde template levert een ander verhaal op afhankelijk van het moment.</em></p>
+</blockquote>
+<hr>
+<h3 id="66-feedback--optimalisatie">6.6 Feedback &amp; optimalisatie</h3>
+<p>Na elke generatie kan de gebruiker feedback geven via de frontend. Deze feedback wordt vastgelegd in <code>FeedbackLog</code> en gelinkt aan de betreffende AI-run (<code>run_id</code>).</p>
+<p><strong>Soorten feedback:</strong></p>
+<ul>
+<li><strong>Positief (rating 4–5):</strong> markeert workflow als succesvol.</li>
+<li><strong>Negatief (rating 1–2):</strong> trigger voor herziening of retry.</li>
+<li><strong>Opmerking:</strong> tekstuele toelichting op afwijking of fout.</li>
+</ul>
+<p>Feedbackdata wordt niet gebruikt voor automatische retraining van modellen, maar helpt het TeamReel-team om instellingen en templates te verbeteren.</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+U[Gebruiker] --> F[Frontend Feedback]
+F --> API[API – POST /feedback]
+API --> DB[(FeedbackLog Database)]
+DB --> DEV[Developer Dashboard]
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Feedback voedt verbetering — niet via zelflering, maar via menselijke optimalisatie en versiebeheer.</em></p>
+</blockquote>
+<hr>
+<h3 id="67-logging--monitoring-van-ai-taken">6.7 Logging &amp; monitoring van AI-taken</h3>
+<p>Elke AI-run wordt gemonitord van start tot voltooiing. De status wordt real-time opgeslagen in Redis en gelogd in de <code>AIWorkflow</code>-tabel. Kritieke fouten worden automatisch doorgestuurd naar <strong>Sentry</strong> en zichtbaar in <strong>Grafana</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Logtype</th>
+<th>Inhoud</th>
+<th>Doel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Execution Log</strong></td>
+<td>Starttijd, duur, model, succes/fout</td>
+<td>Performanceanalyse</td>
+</tr>
+<tr>
+<td><strong>Validation Log</strong></td>
+<td>Inputcontrole en modelselectie</td>
+<td>Kwaliteitsbewaking</td>
+</tr>
+<tr>
+<td><strong>Feedback Log</strong></td>
+<td>Gebruikersreacties per run</td>
+<td>Procesverbetering</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>AI zonder toezicht is blind — monitoring en logging houden de engine transparant en beheersbaar.</em></p>
+</blockquote>
+<hr>
+<h3 id="68-samenvatting">6.8 Samenvatting</h3>
+<p>De AI-infrastructuur van TeamReel is ontworpen als een <strong>slim maar controleerbaar ecosysteem</strong>. Elke stap — van input tot publicatie — is inzichtelijk, getest en geoptimaliseerd. De workflows combineren menselijke goedkeuring met geautomatiseerde precisie.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel’s AI-engine maakt creatie schaalbaar zonder controle te verliezen — de perfecte balans tussen mens en machine.</em></p>
+</blockquote>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Data-invoer is hybride — handmatig waar nodig, automatisch waar mogelijk.</em></p>
+</blockquote>
+<hr>
+<h2 id="7-integraties--externe-apis">7. Integraties &amp; Externe API’s</h2>
+<h3 id="71-overzicht">7.1 Overzicht</h3>
+<p>Integraties verbinden <strong>TeamReel</strong> met de buitenwereld. Ze maken het mogelijk om data te importeren (clubs, teams, wedstrijden) en content te exporteren (visuals, video’s, posts). Het systeem hanteert een <strong>modulaire integratiestrategie</strong>: elke koppeling is optioneel, versieerbaar en kan los worden gedeployed.</p>
+<p>Er zijn drie hoofdcategorieën van integraties:</p>
+<ol>
+<li><strong>Data-invoer:</strong> sport- en teamdata ophalen.</li>
+<li><strong>Content-uitvoer:</strong> publicatie naar sociale media en websites.</li>
+<li><strong>Systeemintegraties:</strong> betalingen, notificaties en monitoring.</li>
+</ol>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Integraties maken TeamReel onderdeel van het sportecosysteem — van data tot distributie.</em></p>
+</blockquote>
+<hr>
+<h3 id="72-data-invoer">7.2 Data-invoer</h3>
+<p>De data-invoer voorziet het systeem van actuele sport- en teaminformatie. In Fase 1 gebeurt dit handmatig; in Fase 2 grotendeels automatisch via API’s of scraping.</p>
+<table>
+<thead>
+<tr>
+<th>Bron</th>
+<th>Methode</th>
+<th>Doel</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Handmatige invoer</strong></td>
+<td>Upload CSV/Excel</td>
+<td>Clubs, teams, spelers</td>
+<td>Actief</td>
+</tr>
+<tr>
+<td><strong>TeamReel Dataset (scraping)</strong></td>
+<td>Eigen dataset</td>
+<td>Automatisch aanvullen van clubs en logo’s</td>
+<td>Actief</td>
+</tr>
+<tr>
+<td><strong>Sportlink / KNVB API</strong></td>
+<td>Externe koppeling</td>
+<td>Wedstrijdschema’s en uitslagen</td>
+<td>Fase 2</td>
+</tr>
+<tr>
+<td><strong>OpenLigaDB / LocalSportAPI</strong></td>
+<td>Optioneel</td>
+<td>Resultaten van niet-KNVB-competities</td>
+<td>Fase 2</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Gebruiker – Upload CSV] --> B[ParserService – LangChain Validatie]
+B --> C[Database – Clubs & Teams]
+D[Sportlink API] --> C
+E[Scraper Engine] --> C
+</div></code></pre>
+<h3 id="73-content-uitvoer">7.3 Content-uitvoer</h3>
+<p>De AI-output van TeamReel wordt automatisch gedeeld met de gewenste kanalen. De eerste koppeling is met <strong>Instagram</strong>, later gevolgd door <strong>YouTube Shorts</strong>, <strong>Facebook Pages</strong> en clubwebsites.</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Type integratie</th>
+<th>Methode</th>
+<th>Fase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Instagram</strong></td>
+<td>Directe publicatie</td>
+<td>Instagram Graph API</td>
+<td>Actief</td>
+</tr>
+<tr>
+<td><strong>Facebook</strong></td>
+<td>Crossposting</td>
+<td>Meta Business API</td>
+<td>Fase 2</td>
+</tr>
+<tr>
+<td><strong>YouTube Shorts</strong></td>
+<td>Video-upload</td>
+<td>YouTube Data API v3</td>
+<td>Fase 2</td>
+</tr>
+<tr>
+<td><strong>Clubwebsites</strong></td>
+<td>Embed of RSS-feed</td>
+<td>XML / JSON endpoint</td>
+<td>Fase 2</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+subgraph TR[TeamReel Platform]
+A1[Content Generator]
+A2[AI Workflow Engine]
+A3[Review & Approval]
+end
+
+subgraph IG[Instagram API]
+B1[Publiceer Post]
+end
+
+subgraph DB[Database & S3]
+C1[ContentVariant + MediaFile]
+end
+
+A1 --> A2
+A2 --> A3
+A3 -->|Approved| B1
+A3 -->|Archive| C1
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Publicatie is onderdeel van de flow — zodra content goedgekeurd is, kan het direct gedeeld worden.</em></p>
+</blockquote>
+<hr>
+<h3 id="74-notificaties-en-betalingen">7.4 Notificaties en betalingen</h3>
+<p>TeamReel gebruikt notificaties om gebruikers te informeren over statusupdates, en integreert betalingen voor credits en abonnementen. De infrastructuur is voorbereid op schaalbare verwerking via betrouwbare providers.</p>
+<table>
+<thead>
+<tr>
+<th>Functie</th>
+<th>Provider</th>
+<th>Technologie</th>
+<th>Fase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>E-mailmeldingen</strong></td>
+<td>SendGrid / AWS SES</td>
+<td>SMTP + Webhooks</td>
+<td>Actief</td>
+</tr>
+<tr>
+<td><strong>In-app notificaties</strong></td>
+<td>TeamReel UI</td>
+<td>WebSockets + Redis Pub/Sub</td>
+<td>Actief</td>
+</tr>
+<tr>
+<td><strong>Pushmeldingen</strong></td>
+<td>WebPush / Firebase</td>
+<td>Service Workers</td>
+<td>Fase 2</td>
+</tr>
+<tr>
+<td><strong>Betalingen</strong></td>
+<td>Stripe / Mollie</td>
+<td>REST + Webhook Events</td>
+<td>Fase 2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Voorbeeld: betalingsflow</strong></p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+U[Gebruiker] --> P[Koopt credits of abonnement]
+P --> S[Stripe API – PaymentIntent]
+S --> C[Webhook → CreditTransaction + Subscription update]
+C --> D[CreditAccount balance bijgewerkt]
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Notificaties houden gebruikers betrokken, betalingen houden het platform draaiende.</em></p>
+</blockquote>
+<hr>
+<h3 id="75-ai--en-contentservices">7.5 AI- en contentservices</h3>
+<p>TeamReel maakt gebruik van meerdere AI- en mediaservices voor het genereren, verwerken en opslaan van content. Deze integraties draaien in de backend (LangGraph) en worden asynchroon aangeroepen.</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Functie</th>
+<th>Technologie</th>
+<th>Fase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td>AI-workflow engine</td>
+<td>FastAPI + Redis</td>
+<td>Actief</td>
+</tr>
+<tr>
+<td><strong>Placid / Canva API</strong></td>
+<td>Beeldgeneratie</td>
+<td>REST / OAuth2</td>
+<td>Actief</td>
+</tr>
+<tr>
+<td><strong>RunwayML</strong></td>
+<td>Videocompositie</td>
+<td>Webhooks</td>
+<td>Fase 2</td>
+</tr>
+<tr>
+<td><strong>ElevenLabs</strong></td>
+<td>Voice-overs</td>
+<td>Audio API</td>
+<td>Fase 2</td>
+</tr>
+<tr>
+<td><strong>AWS S3 / CloudFront</strong></td>
+<td>Media-opslag &amp; CDN</td>
+<td>Object Storage</td>
+<td>Actief</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel combineert open modellen en betrouwbare tools — elke integratie is vervangbaar zonder systeemimpact.</em></p>
+</blockquote>
+<hr>
+<h3 id="76-logging-van-integraties">7.6 Logging van integraties</h3>
+<p>Elke externe verbinding wordt bewaakt via een logging- en retrymechanisme. Verbindingen worden gelogd in de tabel <code>IntegrationLog</code>, zodat fouten of vertragingen traceerbaar zijn.</p>
+<table>
+<thead>
+<tr>
+<th>Veld</th>
+<th>Beschrijving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>Uniek log-ID</td>
+</tr>
+<tr>
+<td><code>integration_name</code></td>
+<td>Naam van API of provider</td>
+</tr>
+<tr>
+<td><code>request_url</code></td>
+<td>Endpoint dat werd aangeroepen</td>
+</tr>
+<tr>
+<td><code>status_code</code></td>
+<td>HTTP-status</td>
+</tr>
+<tr>
+<td><code>response_time_ms</code></td>
+<td>Duur van de call</td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td>Eventuele foutmelding</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>Tijdstip van aanroep</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Elke externe call wordt gelogd — fouten zijn geen verrassing maar een signaal voor verbetering.</em></p>
+</blockquote>
+<hr>
+<h3 id="77-integratiestrategie">7.7 Integratiestrategie</h3>
+<p>TeamReel hanteert een iteratieve integratie-aanpak. Nieuwe koppelingen worden eerst lokaal getest, daarna opgeschaald naar staging en tenslotte uitgerold naar productie. Versiebeheer en beveiliging zijn standaard onderdeel van elke integratie.</p>
+<table>
+<thead>
+<tr>
+<th>Integratie</th>
+<th>Fase 1</th>
+<th>Fase 2</th>
+<th>Beveiliging</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Handmatige invoer (upload)</strong></td>
+<td>✔</td>
+<td>–</td>
+<td>JWT + validatie</td>
+</tr>
+<tr>
+<td><strong>Sportlink / KNVB API</strong></td>
+<td>–</td>
+<td>✔</td>
+<td>API key + IP-restrictie</td>
+</tr>
+<tr>
+<td><strong>Instagram / Facebook API</strong></td>
+<td>✔</td>
+<td>✔</td>
+<td>OAuth2 + refresh token</td>
+</tr>
+<tr>
+<td><strong>Stripe / Mollie</strong></td>
+<td>–</td>
+<td>✔</td>
+<td>Webhook signature validation</td>
+</tr>
+<tr>
+<td><strong>RunwayML / ElevenLabs</strong></td>
+<td>–</td>
+<td>✔</td>
+<td>Auth key + HTTPS</td>
+</tr>
+<tr>
+<td><strong>CloudFront CDN</strong></td>
+<td>✔</td>
+<td>✔</td>
+<td>Private URL tokens</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Elke integratie wordt toegevoegd als bouwsteen — getest, beveiligd en schaalbaar.</em></p>
+</blockquote>
+<hr>
+<h3 id="78-samenvatting">7.8 Samenvatting</h3>
+<p>De integraties van TeamReel verbinden data, AI en publicatie in één naadloze keten. Het platform begint met eenvoudige handmatige invoer en groeit richting volledige automatisering met API’s en real-time distributie.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel’s kracht ligt in verbinding — tussen clubs, tools en technologieën.</em></p>
+</blockquote>
+<h2 id="8-beveiliging--autorisatie">8. Beveiliging &amp; Autorisatie</h2>
+<h3 id="81-overzicht">8.1 Overzicht</h3>
+<p>Beveiliging vormt de ruggengraat van <strong>TeamReel</strong>. Het platform verwerkt persoonsgegevens, mediabestanden en financiële data van clubs en leden — allemaal onder de AVG (GDPR). Daarom is security niet alleen een technische laag, maar een <strong>ontwerpprincipe</strong>: <em>security by design</em>.</p>
+<p>Het beveiligingsmodel van TeamReel rust op drie pijlers:</p>
+<ol>
+<li><strong>Identiteit:</strong> wie heeft toegang?</li>
+<li><strong>Toegang:</strong> wat mag die persoon doen?</li>
+<li><strong>Verantwoording:</strong> wat is er precies gebeurd?</li>
+</ol>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Beveiliging is ingebouwd vanaf het eerste ontwerp — niet toegevoegd achteraf.</em></p>
+</blockquote>
+<hr>
+<h3 id="82-authenticatie">8.2 Authenticatie</h3>
+<p>TeamReel gebruikt een <strong>Magic Link-systeem</strong> voor veilige, wachtwoordloze toegang. Gebruikers ontvangen via e-mail een tijdelijke link die toegang geeft tot hun account. Hiermee wordt het risico op zwakke wachtwoorden en hergebruik geëlimineerd.</p>
+<table>
+<thead>
+<tr>
+<th>Functie</th>
+<th>Beschrijving</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Magic Link-login</strong></td>
+<td>Tijdelijke token via e-mail</td>
+<td>Actief</td>
+</tr>
+<tr>
+<td><strong>JWT-authenticatie</strong></td>
+<td>Beveiligde sessie na login</td>
+<td>Actief</td>
+</tr>
+<tr>
+<td><strong>Twee-factorauthenticatie (2FA)</strong></td>
+<td>Extra beveiliging via code</td>
+<td>Fase 2</td>
+</tr>
+<tr>
+<td><strong>Sessieverval</strong></td>
+<td>Automatische afmelding na 24 uur</td>
+<td>Altijd actief</td>
+</tr>
+</tbody>
+</table>
+<p>Tokens worden versleuteld opgeslagen en alleen uitgelezen door de backend-API.
+Authenticatieverzoeken verlopen uitsluitend via HTTPS met TLS 1.3.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Magic Link maakt toegang eenvoudig voor gebruikers, maar ondoordringbaar voor onbevoegden.</em></p>
+</blockquote>
+<hr>
+<h3 id="83-autorisatie-en-rollen">8.3 Autorisatie en rollen</h3>
+<p>Toegang tot functies en data wordt geregeld via een <strong>rolgebaseerd autorisatiemodel (RBAC)</strong>. Elke rol bepaalt wat een gebruiker mag doen binnen een club of team. De rollen worden technisch vertaald naar <em>scopes</em> binnen de JWT-token.</p>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Scope</th>
+<th>Toegang</th>
+<th>Voorbeelden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clubbeheerder</strong></td>
+<td><code>club:*</code></td>
+<td>Volledige clubrechten</td>
+<td>Leden toevoegen, credits beheren</td>
+</tr>
+<tr>
+<td><strong>Teambeheerder</strong></td>
+<td><code>team:*</code></td>
+<td>Beperkt tot eigen team</td>
+<td>Line-ups beheren, AI-content goedkeuren</td>
+</tr>
+<tr>
+<td><strong>Maker / Speler</strong></td>
+<td><code>content:generate</code></td>
+<td>Alleen eigen content</td>
+<td>AI-output genereren</td>
+</tr>
+<tr>
+<td><strong>Supporter / Publiek</strong></td>
+<td><code>content:public</code></td>
+<td>Alleen publieke endpoints</td>
+<td>Content bekijken, delen</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+A[Gebruiker] --> B[Magic Link Login]
+B --> C[JWT Token met scopes]
+C --> D[API Gateway]
+D --> E[Toegangscontrole per rol]
+E --> F[Data & Functies]
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Autorisatie is helder en schaalbaar — elke actie is expliciet toegestaan of geblokkeerd.</em></p>
+</blockquote>
+<hr>
+<h3 id="84-encryptie-en-databeveiliging">8.4 Encryptie en databeveiliging</h3>
+<p>Alle communicatie en opslag binnen TeamReel is versleuteld. De infrastructuur voldoet aan moderne standaarden voor transport- en rustbeveiliging.</p>
+<table>
+<thead>
+<tr>
+<th>Domein</th>
+<th>Technologie</th>
+<th>Doel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transport</strong></td>
+<td>TLS 1.3</td>
+<td>Beveiligde verbinding tussen client en server</td>
+</tr>
+<tr>
+<td><strong>Data in rust</strong></td>
+<td>AES-256</td>
+<td>Encryptie van gevoelige velden (e-mail, tokens)</td>
+</tr>
+<tr>
+<td><strong>Media-opslag</strong></td>
+<td>AWS S3 Signed URLs</td>
+<td>Tijdelijke toegangslinks voor bestanden</td>
+</tr>
+<tr>
+<td><strong>Geheime sleutels</strong></td>
+<td>ENV-variabelen</td>
+<td>Gescheiden opslag binnen CI/CD</td>
+</tr>
+</tbody>
+</table>
+<p>De backend valideert elke API-aanroep via tokenhandtekening en requestheader.<br>
+Sleutels worden automatisch vernieuwd bij release via GitHub Actions.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Gegevensbeveiliging is geen optie — het is de standaardinstelling van het systeem.</em></p>
+</blockquote>
+<hr>
+<h3 id="85-privacy-en-avg">8.5 Privacy en AVG</h3>
+<p>TeamReel voldoet aan de <strong>Algemene Verordening Gegevensbescherming (AVG)</strong>. De rechten van gebruikers zijn ingebouwd in de applicatiefunctionaliteit.</p>
+<table>
+<thead>
+<tr>
+<th>Recht</th>
+<th>Beschrijving</th>
+<th>Technische uitvoering</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Inzage</strong></td>
+<td>Gebruiker kan zijn eigen data bekijken</td>
+<td>Profielinstellingen</td>
+</tr>
+<tr>
+<td><strong>Correctie</strong></td>
+<td>Aanpassing van onjuiste gegevens</td>
+<td>Beheerpaneel</td>
+</tr>
+<tr>
+<td><strong>Verwijdering</strong></td>
+<td>Gegevens wissen op verzoek</td>
+<td>Soft delete → purge na 30 dagen</td>
+</tr>
+<tr>
+<td><strong>Overdraagbaarheid</strong></td>
+<td>Exporteerbare data in JSON/CSV</td>
+<td>Download in profiel</td>
+</tr>
+<tr>
+<td><strong>Beperking van verwerking</strong></td>
+<td>Tijdelijke blokkering van data</td>
+<td>Flag in database</td>
+</tr>
+</tbody>
+</table>
+<p>Logs worden standaard 90 dagen bewaard, tenzij wettelijk anders vereist. Persoonsdata wordt niet gedeeld met derden zonder expliciete toestemming.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Privacy by default — gebruikers houden regie over hun eigen gegevens.</em></p>
+</blockquote>
+<hr>
+<h3 id="86-incidentbeheer">8.6 Incidentbeheer</h3>
+<p>TeamReel beschikt over een <strong>incident response plan</strong> voor datalekken of ongeautoriseerde toegang. Monitoringtools detecteren afwijkingen automatisch; alerts worden direct verstuurd naar het beheerteam.</p>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Actie</th>
+<th>Tijdslimiet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Detectie</strong></td>
+<td>Sentry / Grafana detecteert incident</td>
+<td>Realtime</td>
+</tr>
+<tr>
+<td><strong>Melding</strong></td>
+<td>Intern securityteam wordt gewaarschuwd</td>
+<td>Binnen 1 uur</td>
+</tr>
+<tr>
+<td><strong>Analyse</strong></td>
+<td>Oorzaakonderzoek en risico-inschatting</td>
+<td>Binnen 24 uur</td>
+</tr>
+<tr>
+<td><strong>Rapportage</strong></td>
+<td>Interne documentatie en AVG-melding indien nodig</td>
+<td>Binnen 72 uur</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+E[Event – Fout of Onregelmatigheid] --> D[Detectie via Sentry]
+D --> A[Alert naar Securityteam]
+A --> R[Analyse & Logging]
+R --> N[Notificatie / AVG-melding]
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Autorisatie is helder en schaalbaar — elke actie is expliciet toegestaan of geblokkeerd.</em></p>
+</blockquote>
+<hr>
+<h2 id="9-logging-monitoring--performance">9. Logging, Monitoring &amp; Performance</h2>
+<h3 id="91-overzicht">9.1 Overzicht</h3>
+<p><strong>TeamReel</strong> monitort continu de gezondheid van het platform. Logging en monitoring zijn ingebouwd in elke laag — van frontend tot AI-engine. Ze zorgen voor inzicht, foutdetectie en optimalisatie.</p>
+<p>Het systeem onderscheidt drie observatieniveaus:</p>
+<ol>
+<li><strong>Functioneel:</strong> gebruikersacties, AI-workflows, creditverbruik.</li>
+<li><strong>Technisch:</strong> fouten, responstijden, serverbelasting.</li>
+<li><strong>Beveiliging:</strong> toegangspogingen, dataveranderingen, incidenten.</li>
+</ol>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Wat gemeten wordt, kan verbeterd worden — observability is onderdeel van de architectuur.</em></p>
+</blockquote>
+<hr>
+<h3 id="92-loggingstructuur">9.2 Loggingstructuur</h3>
+<p>Alle logs worden opgeslagen in een centrale omgeving met gestandaardiseerd formaat. Er is onderscheid tussen <strong>systeemlogs</strong> en <strong>functionele logs</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Type log</th>
+<th>Doel</th>
+<th>Opslaglocatie</th>
+<th>Bewaartermijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gebruikersacties</strong></td>
+<td>Registratie van UI-interacties en events</td>
+<td>PostgreSQL (<code>user_log</code>)</td>
+<td>90 dagen</td>
+</tr>
+<tr>
+<td><strong>API-verkeer</strong></td>
+<td>Monitoring van endpoints en responstijden</td>
+<td>Grafana Loki</td>
+<td>60 dagen</td>
+</tr>
+<tr>
+<td><strong>AI-workflows</strong></td>
+<td>Volgstatus en performance van LangGraph-runs</td>
+<td>Redis + LangSmith</td>
+<td>30 dagen</td>
+</tr>
+<tr>
+<td><strong>Systeemfouten (Errors)</strong></td>
+<td>Analyse van bugs en crashes</td>
+<td>Sentry</td>
+<td>90 dagen</td>
+</tr>
+<tr>
+<td><strong>Beveiligingslogs</strong></td>
+<td>Inlogpogingen, toegangsfouten</td>
+<td>PostgreSQL (<code>access_log</code>)</td>
+<td>180 dagen</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Structuur in logging betekent grip op het systeem — elke gebeurtenis heeft zijn plaats.</em></p>
+</blockquote>
+<hr>
+<h3 id="93-monitoring--observability">9.3 Monitoring &amp; observability</h3>
+<p>TeamReel gebruikt moderne observability-tools om het gedrag van applicatie, AI en infrastructuur te volgen. Er wordt onderscheid gemaakt tussen <strong>real-time monitoring</strong> (alerts) en <strong>analytische monitoring</strong> (dashboards).</p>
+<table>
+<thead>
+<tr>
+<th>Niveau</th>
+<th>Tooling</th>
+<th>Wat wordt gemonitord</th>
+<th>Doel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>Google Lighthouse, Vercel Analytics</td>
+<td>Core Web Vitals (LCP, CLS, TBT)</td>
+<td>Performance en UX</td>
+</tr>
+<tr>
+<td><strong>Backend</strong></td>
+<td>Prometheus + Grafana</td>
+<td>API-latentie, CPU, geheugen</td>
+<td>Systeembelasting</td>
+</tr>
+<tr>
+<td><strong>AI-workflows</strong></td>
+<td>LangSmith + Redis Metrics</td>
+<td>Workflowduur, fouten, modelkeuze</td>
+<td>AI-prestaties</td>
+</tr>
+<tr>
+<td><strong>Beveiliging</strong></td>
+<td>Sentry + PostgreSQL AccessLog</td>
+<td>Inlogpogingen, API-errors</td>
+<td>Detectie incidenten</td>
+</tr>
+</tbody>
+</table>
+<p>Waarschuwingen worden automatisch verstuurd naar Slack en e-mail bij overschrijding van drempelwaarden (bijv. responstijd &gt; 2s of foutpercentage &gt; 5%).</p>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart LR
+S[System Events] --> L[Logging – Loki / PostgreSQL]
+S --> M[Metrics – Prometheus]
+S --> E[Errors – Sentry]
+L --> G[Grafana Dashboards]
+M --> G
+E --> G
+G --> N[Notificaties – Slack / E-mail]
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Monitoring is het zenuwstelsel van TeamReel — waarnemen, analyseren en reageren in één cyclus.</em></p>
+</blockquote>
+<hr>
+<h3 id="94-performance-optimalisatie">9.4 Performance-optimalisatie</h3>
+<p>Performance is een ontwerpeis, geen nazorgtaak. De optimalisatie richt zich op drie niveaus: database, API en frontend.</p>
+<h4 id="backend--database">Backend &amp; database</h4>
+<ul>
+<li><strong>Asynchrone verwerking:</strong> Celery-taken voorkomen API-blokkades.</li>
+<li><strong>Caching:</strong> Redis voor API-responses, AI-staten en saldi.</li>
+<li><strong>Indexering:</strong> primaire sleutels op <code>club_id</code>, <code>team_id</code>, <code>content_variant_id</code>.</li>
+<li><strong>Query-analyse:</strong> automatische detectie van trage queries via Django Debug Toolbar.</li>
+<li><strong>Connection pooling:</strong> beheerde sessies met PostgreSQL RDS.</li>
+</ul>
+<h4 id="frontend">Frontend</h4>
+<ul>
+<li><strong>Lazy loading:</strong> afbeeldingen en componenten laden pas wanneer zichtbaar.</li>
+<li><strong>Code-splitting:</strong> via Next.js dynamic imports.</li>
+<li><strong>Pre-rendering:</strong> statische content via ISR (Incremental Static Regeneration).</li>
+<li><strong>Cache-control:</strong> browser caching voor niet-dynamische assets.</li>
+</ul>
+<h4 id="ai-layer">AI-layer</h4>
+<ul>
+<li><strong>Parallel processing:</strong> meerdere workflows tegelijk via Redis queues.</li>
+<li><strong>Retry logic:</strong> automatische herstart bij timeouts of netwerkfouten.</li>
+<li><strong>Batch execution:</strong> verwerkingscapaciteit schaalt automatisch bij grotere loads.</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Snelheid is de standaard — niet de uitzondering.</em></p>
+</blockquote>
+<hr>
+<h3 id="95-uptime--sla">9.5 Uptime &amp; SLA</h3>
+<p>De beschikbaarheid van TeamReel wordt actief gemeten. Health checks monitoren elke minuut de status van API, database en AI-engine.</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Controlefrequentie</th>
+<th>Drempelwaarde</th>
+<th>Actie bij overschrijding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>API Gateway</strong></td>
+<td>Elke minuut</td>
+<td>Responstijd &gt; 2s</td>
+<td>Slack-alert + auto-scale</td>
+</tr>
+<tr>
+<td><strong>Database (RDS)</strong></td>
+<td>Elke 5 minuten</td>
+<td>CPU &gt; 80%</td>
+<td>Query-optimalisatie</td>
+</tr>
+<tr>
+<td><strong>Frontend (Vercel)</strong></td>
+<td>Continue</td>
+<td>LCP &gt; 2,5s</td>
+<td>Lighthouse audit</td>
+</tr>
+<tr>
+<td><strong>AI-service</strong></td>
+<td>Per workflow</td>
+<td>Foutpercentage &gt; 5%</td>
+<td>Retry + incidentmelding</td>
+</tr>
+</tbody>
+</table>
+<p>Doelstelling:</p>
+<ul>
+<li><strong>Uptime:</strong> ≥ 99,5% per maand</li>
+<li><strong>Gemiddelde responstijd API:</strong> &lt; 300ms</li>
+<li><strong>Gemiddelde AI-runtime:</strong> &lt; 15s</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Beschikbaarheid is meetbaar — en bij TeamReel altijd boven verwachting.</em></p>
+</blockquote>
+<hr>
+<h3 id="96-samenvatting">9.6 Samenvatting</h3>
+<p>TeamReel heeft een volledig observability-ecosysteem waarin logging, monitoring en performance-optimalisatie geïntegreerd zijn. Fouten worden automatisch gesignaleerd, prestaties continu gemeten, en verbeteringen iteratief doorgevoerd.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel logt niet alleen wat er gebeurt — het begrijpt waarom het gebeurt en handelt ernaar.</em></p>
+</blockquote>
+<h2 id="10-deploy--hostingstrategie">10. Deploy &amp; Hostingstrategie</h2>
+<h3 id="101-overzicht">10.1 Overzicht</h3>
+<p>De hostingstrategie van <strong>TeamReel</strong> is gericht op eenvoud in de opstartfase en schaalbaarheid op de lange termijn. Het platform gebruikt moderne cloudtools die continu integratie, automatische builds en veilige deployments mogelijk maken.</p>
+<p>Het uitgangspunt is: <em>één codebase, meerdere omgevingen, volledig geautomatiseerd via CI/CD.</em></p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel is gebouwd om te groeien — wat vandaag lokaal werkt, draait morgen wereldwijd in de cloud.</em></p>
+</blockquote>
+<hr>
+<h3 id="102-omgevingen">10.2 Omgevingen</h3>
+<p>TeamReel maakt gebruik van drie standaardomgevingen. In de eerste fase wordt gewerkt met één gecombineerde omgeving, maar de structuur is al voorbereid op volledige scheiding van development, staging en productie.</p>
+<table>
+<thead>
+<tr>
+<th>Omgeving</th>
+<th>Doel</th>
+<th>Hosting</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Development</strong></td>
+<td>Lokale testomgeving voor nieuwe features</td>
+<td>Docker / Railway</td>
+<td>Actief</td>
+</tr>
+<tr>
+<td><strong>Staging</strong></td>
+<td>Preproductieomgeving voor interne tests</td>
+<td>Railway Cloud</td>
+<td>Fase 2</td>
+</tr>
+<tr>
+<td><strong>Production</strong></td>
+<td>Liveomgeving voor gebruikers</td>
+<td>Railway (backend) + Vercel (frontend)</td>
+<td>Actief</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Database:</strong> PostgreSQL via RDS of Railway-managed DB<br>
+<strong>Bestanden:</strong> AWS S3 + CloudFront CDN<br>
+<strong>Caching &amp; queues:</strong> Redis via Railway of AWS ElasticCache</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Drie lagen, één pipeline — elke commit kent zijn eigen levenscyclus.</em></p>
+</blockquote>
+<hr>
+<h3 id="103-cicd-pipeline">10.3 CI/CD-pipeline</h3>
+<p>De CI/CD-architectuur van TeamReel automatiseert build-, test- en releaseprocessen. Elke wijziging in de <code>main</code>-branch triggert automatisch een workflow in <strong>GitHub Actions</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Actie</th>
+<th>Tooling</th>
+<th>Resultaat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Build</strong></td>
+<td>Installatie en linting van dependencies</td>
+<td>GitHub Actions</td>
+<td>Code consistent en schoon</td>
+</tr>
+<tr>
+<td><strong>Test</strong></td>
+<td>Unit- en integratietests (Pytest / Jest)</td>
+<td>GitHub Actions</td>
+<td>Validatie voor release</td>
+</tr>
+<tr>
+<td><strong>Deploy</strong></td>
+<td>Nieuwe versie naar Railway / Vercel</td>
+<td>GitHub Actions</td>
+<td>Automatische live-update</td>
+</tr>
+<tr>
+<td><strong>Notify</strong></td>
+<td>Slack-bericht bij succes of fout</td>
+<td>Webhook</td>
+<td>Realtime feedback</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TB
+C[Commit naar GitHub main] --> A[CI/CD-pipeline – GitHub Actions]
+A --> B[Build & Test]
+B --> D[Deploy Backend – Railway]
+B --> E[Deploy Frontend – Vercel]
+D --> F[Slack / E-mail Notificatie]
+E --> F
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Van commit tot productie in minuten — CI/CD maakt continu verbeteren vanzelfsprekend.</em></p>
+</blockquote>
+<hr>
+<h3 id="104-containerisatie">10.4 Containerisatie</h3>
+<p>Alle onderdelen van TeamReel draaien in <strong>Docker-containers</strong>. Hiermee zijn ontwikkel-, test- en productieomgevingen identiek en reproduceerbaar. Docker Compose wordt gebruikt voor lokale orkestratie van backend, frontend, Redis en database.</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Container</th>
+<th>Opmerkingen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Backend (API)</strong></td>
+<td><code>teamreel-api</code></td>
+<td>Django + Gunicorn</td>
+</tr>
+<tr>
+<td><strong>Frontend (UI)</strong></td>
+<td><code>teamreel-ui</code></td>
+<td>Next.js + Tailwind</td>
+</tr>
+<tr>
+<td><strong>Database</strong></td>
+<td><code>teamreel-db</code></td>
+<td>PostgreSQL</td>
+</tr>
+<tr>
+<td><strong>Cache / Queue</strong></td>
+<td><code>teamreel-redis</code></td>
+<td>Redis voor Celery-taken</td>
+</tr>
+<tr>
+<td><strong>AI-service</strong></td>
+<td><code>teamreel-ai</code></td>
+<td>FastAPI + LangGraph</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Docker zorgt voor voorspelbaarheid — als het lokaal werkt, werkt het overal.</em></p>
+</blockquote>
+<hr>
+<h3 id="105-schaalbaarheid-en-cloudmigratie">10.5 Schaalbaarheid en cloudmigratie</h3>
+<p>De infrastructuur groeit mee met de vraag. De eerste fase draait op <strong>Railway</strong> (backend) en <strong>Vercel</strong> (frontend), met automatische migratie naar <strong>AWS ECS</strong> of <strong>GCP Cloud Run</strong> zodra het gebruik toeneemt.</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Startfase</th>
+<th>Schaalfase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Backend API</strong></td>
+<td>Railway</td>
+<td>AWS ECS / GCP Cloud Run</td>
+</tr>
+<tr>
+<td><strong>Frontend UI</strong></td>
+<td>Vercel</td>
+<td>AWS Amplify / CloudFront</td>
+</tr>
+<tr>
+<td><strong>Database</strong></td>
+<td>Railway PostgreSQL</td>
+<td>AWS RDS</td>
+</tr>
+<tr>
+<td><strong>Media Storage</strong></td>
+<td>S3 Standard</td>
+<td>S3 Intelligent-Tiering + CDN</td>
+</tr>
+<tr>
+<td><strong>Redis / Queue</strong></td>
+<td>Railway Redis</td>
+<td>AWS ElasticCache</td>
+</tr>
+<tr>
+<td><strong>AI-engine</strong></td>
+<td>FastAPI Container</td>
+<td>Kubernetes (LangGraph microservices)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Auto-scaling</strong> wordt beheerd via container load metrics (CPU, geheugen en request time). CI/CD past automatisch de resources aan op basis van traffic.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel groeit modulair — van één container tot een volledig microservices-ecosysteem.</em></p>
+</blockquote>
+<hr>
+<h3 id="106-backups--herstel">10.6 Backups &amp; herstel</h3>
+<p>Backups zijn geautomatiseerd en getest. Data en mediabestanden worden dagelijks veiliggesteld en zijn binnen minuten herstelbaar.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Frequentie</th>
+<th>Locatie</th>
+<th>Bewaartermijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Database</strong></td>
+<td>Dagelijks om 02:00</td>
+<td>AWS S3</td>
+<td>30 dagen</td>
+</tr>
+<tr>
+<td><strong>Mediafiles</strong></td>
+<td>Continue replicatie</td>
+<td>AWS S3 cross-region</td>
+<td>90 dagen</td>
+</tr>
+<tr>
+<td><strong>Logs &amp; Configs</strong></td>
+<td>Dagelijks</td>
+<td>GitHub / S3</td>
+<td>14 dagen</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Disaster recovery-procedure:</strong></p>
+<ol>
+<li>Database herstellen vanaf laatste snapshot.</li>
+<li>Mediafiles synchroniseren met S3-backup.</li>
+<li>Nieuwe containers deployen vanuit laatste succesvolle build.</li>
+</ol>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Geen data blijft achter — elke bit is beveiligd en herstelbaar.</em></p>
+</blockquote>
+<hr>
+<h3 id="107-kostenbeheer">10.7 Kostenbeheer</h3>
+<p>Kosten worden continu bewaakt via dashboards in <strong>Railway</strong> en <strong>AWS Billing</strong>. Bij overschrijding van drempels (bijv. &gt; €150/maand) wordt een alert gestuurd via Slack.</p>
+<p><strong>Optimalisaties:</strong></p>
+<ul>
+<li>Automatische uitschakeling van inactieve containers.</li>
+<li>CDN caching voor mediabestanden.</li>
+<li>Gedeelde rekenkracht via serverless functies voor AI-taken.</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Schaalbaarheid mag nooit verspilling betekenen — TeamReel groeit slim, niet duur.</em></p>
+</blockquote>
+<hr>
+<h3 id="108-samenvatting">10.8 Samenvatting</h3>
+<p>De hosting- en deploymentstrategie van TeamReel is volledig geautomatiseerd, veilig en schaalbaar. Van commit tot productie is het proces reproduceerbaar, transparant en snel. Containerisatie en CI/CD zorgen voor continuïteit, terwijl cloudintegratie ruimte biedt voor groei.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Deploy once, scale forever — TeamReel’s infrastructuur is gebouwd voor snelheid en zekerheid.</em></p>
+</blockquote>
+<h2 id="11-samenvatting--technische-richtlijnen">11. Samenvatting &amp; Technische richtlijnen</h2>
+<h3 id="111-overzicht">11.1 Overzicht</h3>
+<p>Het <em>Technisch Ontwerp (Main)</em> beschrijft hoe <strong>TeamReel</strong> functioneert als AI-first SaaS-platform voor sportverenigingen. Het document vormt de brug tussen visie (businessplan), gebruikerservaring (functioneel ontwerp) en uitvoering (technische implementatie).</p>
+<p>TeamReel combineert eenvoud, schaalbaarheid en veiligheid in één architectuur — ontworpen om vandaag te werken en morgen te groeien.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>De kracht van TeamReel ligt in zijn eenvoud — een slimme basis die meebeweegt met groei, zonder complex te worden.</em></p>
+</blockquote>
+<hr>
+<h3 id="112-kernprincipes">11.2 Kernprincipes</h3>
+<table>
+<thead>
+<tr>
+<th>Domein</th>
+<th>Richtlijn</th>
+<th>Belangrijkste technologieën</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Architectuur</strong></td>
+<td>Modulair en API-first</td>
+<td>Django REST, FastAPI, LangGraph</td>
+</tr>
+<tr>
+<td><strong>AI-infrastructuur</strong></td>
+<td>Transparant, controleerbaar en configureerbaar</td>
+<td>LangGraph, Redis, Celery</td>
+</tr>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>Toegankelijk, meertalig, thematisch consistent</td>
+<td>Next.js, Tailwind, ShadCN</td>
+</tr>
+<tr>
+<td><strong>Database</strong></td>
+<td>Relationeel, schaalbaar en traceerbaar</td>
+<td>PostgreSQL, RDS</td>
+</tr>
+<tr>
+<td><strong>Beveiliging</strong></td>
+<td>Security by design, AVG-conform</td>
+<td>Magic Link, JWT, AES-256</td>
+</tr>
+<tr>
+<td><strong>Hosting</strong></td>
+<td>Cloud-native, geautomatiseerde CI/CD</td>
+<td>Railway, Vercel, AWS</td>
+</tr>
+<tr>
+<td><strong>Monitoring</strong></td>
+<td>Volledige observability</td>
+<td>Grafana, Prometheus, Sentry</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Elk onderdeel van TeamReel werkt als één geheel — één architectuur, één taal, één standaard.</em></p>
+</blockquote>
+<hr>
+<h3 id="113-checklist-voor-ontwikkelaars">11.3 Checklist voor ontwikkelaars</h3>
+<p>✅ 1. Alle endpoints zijn versieerbaar (<code>/api/v1/</code>, <code>/api/v2/</code>).<br>
+✅ 2. Tokens en vertalingen zijn centraal beheerd (<code>tokens.json</code>, <code>locales.json</code>).<br>
+✅ 3. Magic Link-authenticatie is actief en getest.<br>
+✅ 4. API-responses volgen het vaste JSON-schema (<code>status</code>, <code>data</code>, <code>error</code>).<br>
+✅ 5. AI-workflows zijn configureerbaar via <code>workflow_config.json</code>.<br>
+✅ 6. Logging en metrics draaien via Sentry + Grafana.<br>
+✅ 7. Backups en herstelplan zijn ingesteld.<br>
+✅ 8. CI/CD-pipeline is actief en gecontroleerd.<br>
+✅ 9. Toegankelijkheid voldoet aan WCAG 2.1 AA.<br>
+✅ 10. Documentatie wordt bij elke release automatisch vernieuwd.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Consistentie is de snelste weg naar kwaliteit — deze checklist houdt iedereen op één lijn.</em></p>
+</blockquote>
+<hr>
+<h3 id="114-ethisch-en-verantwoord-ai-gebruik">11.4 Ethisch en verantwoord AI-gebruik</h3>
+<p>TeamReel gebruikt AI om sportcommunicatie eenvoudiger en inclusiever te maken.
+Daarom gelden de volgende ethische richtlijnen:</p>
+<table>
+<thead>
+<tr>
+<th>Richtlijn</th>
+<th>Toepassing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transparantie</strong></td>
+<td>AI-content wordt altijd als zodanig gemarkeerd.</td>
+</tr>
+<tr>
+<td><strong>Controle</strong></td>
+<td>Gebruikers houden altijd de laatste goedkeuring.</td>
+</tr>
+<tr>
+<td><strong>Data-eigendom</strong></td>
+<td>Clubs blijven eigenaar van hun data en media.</td>
+</tr>
+<tr>
+<td><strong>Privacy</strong></td>
+<td>Geen data wordt gebruikt voor modeltraining zonder toestemming.</td>
+</tr>
+<tr>
+<td><strong>Inclusie</strong></td>
+<td>Templates en taal zijn neutraal en respectvol.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>AI versterkt menselijke creativiteit — nooit andersom.</em></p>
+</blockquote>
+<hr>
+<h3 id="115-governance--onderhoud">11.5 Governance &amp; onderhoud</h3>
+<p>Technische governance zorgt dat alle beslissingen transparant en herhaalbaar zijn. Elke wijziging aan de architectuur, datamodel of API wordt geregistreerd in GitHub.</p>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Verantwoordelijkheid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Product Owner</strong></td>
+<td>Prioritering van functies en releases</td>
+</tr>
+<tr>
+<td><strong>Tech Lead</strong></td>
+<td>Beheer van architectuur en codekwaliteit</td>
+</tr>
+<tr>
+<td><strong>AI Engineer</strong></td>
+<td>Workflowbeheer, modelselectie en optimalisatie</td>
+</tr>
+<tr>
+<td><strong>Frontend Lead</strong></td>
+<td>Implementatie van tokens, UI en toegankelijkheid</td>
+</tr>
+<tr>
+<td><strong>DevOps Engineer</strong></td>
+<td>CI/CD, cloudbeheer, logging en beveiliging</td>
+</tr>
+</tbody>
+</table>
+<p>Alle technische beslissingen worden geëvalueerd per kwartaal en vastgelegd in een changelog.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Governance houdt de groei beheersbaar — innovatie zonder chaos.</em></p>
+</blockquote>
+<hr>
+<h3 id="116-visuele-samenvatting-van-het-platform">11.6 Visuele samenvatting van het platform</h3>
+<pre><code class="language-mermaid"><div class="mermaid">flowchart TB
+U[Gebruiker] --> F[Frontend – Next.js + Tailwind]
+F --> B[Backend – Django REST + FastAPI]
+B --> AI[AI Engine – LangGraph + Redis]
+AI --> D[Database – PostgreSQL + RDS]
+D --> C[Cloud Services – S3 + CloudFront]
+B --> M[Monitoring – Sentry + Grafana]
+C --> P[Publicatie – Instagram, YouTube, Clubwebsites]
+</div></code></pre>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Eén platform, vele stromen — TeamReel verbindt mens, data en AI tot een harmonieus geheel.</em></p>
+</blockquote>
+<hr>
+<h3 id="117-slot">11.7 Slot</h3>
+<p>TeamReel combineert betrouwbare technologie met een herkenbare visuele stijl. De <em>Technical Design</em>-structuur borgt niet alleen prestaties en veiligheid, maar ook consistentie met de <em>Style Foundation</em> en <em>Brand Identity</em>. Zo blijft elk onderdeel van het platform — van API tot AI-video — trouw aan dezelfde belofte: <em>Professionele clubcontent. In vijf minuten. In jouw stijl.</em></p>
+<blockquote>
+<p><strong>Eindboodschap:</strong><br>
+<em>TeamReel verbindt sport, data en creativiteit — veilig, schaalbaar en mensgericht.</em></p>
+</blockquote>
+
+</body>
+</html>

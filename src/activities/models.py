@@ -75,7 +75,8 @@ class Period(models.Model):
                 check=models.Q(end_date__gt=models.F("start_date")), name="period_end_after_start"
             ),
             models.UniqueConstraint(
-                fields=["organisation", "name", "start_date"], name="unique_period_per_org"
+                fields=["organisation", "project", "name", "start_date"],
+                name="unique_period_per_org_project",
             ),
         ]
 
@@ -121,6 +122,17 @@ class Activity(models.Model):
         "projects.Project", on_delete=models.CASCADE, related_name="activities"
     )
     period = models.ForeignKey(Period, on_delete=models.CASCADE, related_name="activities")
+
+    # TeamReel: opponent reference for matches
+    opponent_project = models.ForeignKey(
+        "projects.Project",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="opponent_activities",
+        help_text="Opponent team/project (for match activities)",
+    )
+
     title = models.CharField(max_length=200, help_text='Activity title (e.g., "Ajax vs Feyenoord")')
     activity_type = models.CharField(
         max_length=50, help_text="Flexible type field (match, meeting, training, lecture, etc.)"

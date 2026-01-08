@@ -5,6 +5,7 @@ import AppShell from '../components/AppShell';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { TransactionWidget } from '../components/TransactionWidget/TransactionWidget';
 import { useCreditBalance } from '../hooks/useCreditBalance';
+import { UpcomingMatchesWidget } from '../components/UpcomingMatchesWidget';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -91,6 +92,26 @@ export default function DashboardPage() {
                    <p style={{ opacity: 0.8 }}>
                      You are currently viewing the dashboard for <strong>{context.organisation.name}</strong>.
                    </p>
+
+                   {/* Stats Row */}
+                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginTop: '24px' }}>
+                      <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{context.organisation.clubs_count || context.organisation.project_count || 0}</div>
+                          <div style={{ fontSize: '13px', opacity: 0.7 }}>Clubs</div>
+                      </div>
+                      <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{context.organisation.teams_count || 0}</div>
+                          <div style={{ fontSize: '13px', opacity: 0.7 }}>Teams</div>
+                      </div>
+                      <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{context.organisation.matches_count || 0}</div>
+                          <div style={{ fontSize: '13px', opacity: 0.7 }}>Matches</div>
+                      </div>
+                      <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{context.organisation.member_count || 0}</div>
+                          <div style={{ fontSize: '13px', opacity: 0.7 }}>Members</div>
+                      </div>
+                   </div>
                    <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
                      <Link
                        to={`/organisations/${context.organisation.slug}/projects`}
@@ -129,6 +150,7 @@ export default function DashboardPage() {
             </div>
 
             <div style={{ marginTop: '24px' }}>
+              <UpcomingMatchesWidget />
               <h3 style={{ color: 'var(--app-text)', fontSize: '18px' }}>Your Profile</h3>
               <div style={{
                 padding: '16px',

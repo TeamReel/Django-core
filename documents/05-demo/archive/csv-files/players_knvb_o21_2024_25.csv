@@ -1,0 +1,271 @@
+﻿federation,club,team_type,first_name,last_name,age,position
+KNVB,Ajax,O21,Lars,van der Linden,18,Goalkeeper
+KNVB,Ajax,O21,Ryan,Janssen,19,Goalkeeper
+KNVB,Ajax,O21,Lars,Dekker,18,Defender
+KNVB,Ajax,O21,Tim,Jansen,18,Defender
+KNVB,Ajax,O21,Jasper,Jonker,20,Defender
+KNVB,Ajax,O21,Lars,Kuiper,19,Defender
+KNVB,Ajax,O21,Lars,van den Berg,19,Defender
+KNVB,Ajax,O21,Ruben,Scholten,19,Midfielder
+KNVB,Ajax,O21,Nick,Smit,21,Midfielder
+KNVB,Ajax,O21,Owen,de Graaf,18,Midfielder
+KNVB,Ajax,O21,Stijn,Vermeulen,17,Midfielder
+KNVB,Ajax,O21,Noah,Gerritsen,18,Forward
+KNVB,Ajax,O21,Ryan,Jonker,18,Forward
+KNVB,Ajax,O21,Luuk,Jansen,21,Forward
+KNVB,Ajax,O21,Max,van der Linden,18,Forward
+KNVB,AZ,O21,Teun,van Vliet,21,Goalkeeper
+KNVB,AZ,O21,Nick,van den Broek,21,Goalkeeper
+KNVB,AZ,O21,Finn,Bos,17,Defender
+KNVB,AZ,O21,Joep,Willems,18,Defender
+KNVB,AZ,O21,Thijs,Dijkstra,17,Defender
+KNVB,AZ,O21,Owen,Gerritsen,17,Defender
+KNVB,AZ,O21,Levi,de Ruiter,20,Defender
+KNVB,AZ,O21,Cas,Prins,18,Midfielder
+KNVB,AZ,O21,Noah,Brouwer,17,Midfielder
+KNVB,AZ,O21,Milan,Groen,18,Midfielder
+KNVB,AZ,O21,Julian,Dijkstra,20,Midfielder
+KNVB,AZ,O21,Nick,Jansen,21,Forward
+KNVB,AZ,O21,Joep,Jacobs,21,Forward
+KNVB,AZ,O21,Owen,van Vliet,17,Forward
+KNVB,AZ,O21,Ryan,Prins,17,Forward
+KNVB,Feyenoord,O21,Milan,van den Berg,17,Goalkeeper
+KNVB,Feyenoord,O21,Lucas,van den Brink,21,Goalkeeper
+KNVB,Feyenoord,O21,Thijs,de Wit,17,Defender
+KNVB,Feyenoord,O21,Ryan,de Wit,19,Defender
+KNVB,Feyenoord,O21,Sam,de Bruijn,18,Defender
+KNVB,Feyenoord,O21,Sam,de Vries,21,Defender
+KNVB,Feyenoord,O21,Thijs,de Graaf,21,Defender
+KNVB,Feyenoord,O21,Stijn,Bakker,18,Midfielder
+KNVB,Feyenoord,O21,Ruben,van der Meer,17,Midfielder
+KNVB,Feyenoord,O21,Ryan,de Graaf,19,Midfielder
+KNVB,Feyenoord,O21,Tom,van de Ven,20,Midfielder
+KNVB,Feyenoord,O21,Max,Mulder,19,Forward
+KNVB,Feyenoord,O21,Julian,Hendriks,18,Forward
+KNVB,Feyenoord,O21,Teun,Kok,21,Forward
+KNVB,Feyenoord,O21,Sven,Visser,19,Forward
+KNVB,PSV,O21,Lars,Willems,18,Goalkeeper
+KNVB,PSV,O21,Thijs,Janssen,18,Goalkeeper
+KNVB,PSV,O21,Jasper,van Dijk,20,Defender
+KNVB,PSV,O21,Thijs,de Ruiter,18,Defender
+KNVB,PSV,O21,Levi,van den Heuvel,21,Defender
+KNVB,PSV,O21,Ruben,van de Ven,21,Defender
+KNVB,PSV,O21,Cas,de Graaf,21,Defender
+KNVB,PSV,O21,Nick,de Vries,18,Midfielder
+KNVB,PSV,O21,Lars,de Haan,20,Midfielder
+KNVB,PSV,O21,Luuk,van der Veen,20,Midfielder
+KNVB,PSV,O21,Thijs,de Jong,19,Midfielder
+KNVB,PSV,O21,Sven,de Vries,18,Forward
+KNVB,PSV,O21,Teun,Prins,17,Forward
+KNVB,PSV,O21,Daan,Meijer,21,Forward
+KNVB,PSV,O21,Bram,Visser,21,Forward
+KNVB,FC Utrecht,O21,Teun,de Graaf,20,Goalkeeper
+KNVB,FC Utrecht,O21,Joep,Dekker,17,Goalkeeper
+KNVB,FC Utrecht,O21,Jasper,Prins,19,Defender
+KNVB,FC Utrecht,O21,Stijn,de Boer,20,Defender
+KNVB,FC Utrecht,O21,Stijn,de Graaf,19,Defender
+KNVB,FC Utrecht,O21,Owen,Janssen,21,Defender
+KNVB,FC Utrecht,O21,Noah,van der Veen,21,Defender
+KNVB,FC Utrecht,O21,Sam,Kuiper,18,Midfielder
+KNVB,FC Utrecht,O21,Cas,van Dijk,17,Midfielder
+KNVB,FC Utrecht,O21,Finn,van Leeuwen,18,Midfielder
+KNVB,FC Utrecht,O21,Tim,Bos,20,Midfielder
+KNVB,FC Utrecht,O21,Jasper,van der Meer,19,Forward
+KNVB,FC Utrecht,O21,Joep,Smit,18,Forward
+KNVB,FC Utrecht,O21,Noah,Smits,19,Forward
+KNVB,FC Utrecht,O21,Mees,Groen,19,Forward
+KNVB,FC Twente,O21,Max,Dijkstra,21,Goalkeeper
+KNVB,FC Twente,O21,Milan,Kuiper,19,Goalkeeper
+KNVB,FC Twente,O21,Max,Kuiper,17,Defender
+KNVB,FC Twente,O21,Owen,van Leeuwen,21,Defender
+KNVB,FC Twente,O21,Bram,Dijkstra,20,Defender
+KNVB,FC Twente,O21,Lucas,Kok,17,Defender
+KNVB,FC Twente,O21,Tom,de Boer,19,Defender
+KNVB,FC Twente,O21,Finn,Vermeulen,20,Midfielder
+KNVB,FC Twente,O21,Jasper,van den Brink,17,Midfielder
+KNVB,FC Twente,O21,Mees,Kuiper,18,Midfielder
+KNVB,FC Twente,O21,Daan,de Ruiter,17,Midfielder
+KNVB,FC Twente,O21,Luuk,Bos,21,Forward
+KNVB,FC Twente,O21,Tim,de Haan,18,Forward
+KNVB,FC Twente,O21,Levi,Peters,17,Forward
+KNVB,FC Twente,O21,Lucas,de Jong,21,Forward
+KNVB,Heracles Almelo,O21,Cas,Bakker,21,Goalkeeper
+KNVB,Heracles Almelo,O21,Jasper,de Bruijn,17,Goalkeeper
+KNVB,Heracles Almelo,O21,Jayden,van der Meer,21,Defender
+KNVB,Heracles Almelo,O21,Ryan,van Dijk,20,Defender
+KNVB,Heracles Almelo,O21,Jayden,van den Brink,17,Defender
+KNVB,Heracles Almelo,O21,Lars,Jonker,19,Defender
+KNVB,Heracles Almelo,O21,Bram,Hendriks,21,Defender
+KNVB,Heracles Almelo,O21,Luuk,Vos,17,Midfielder
+KNVB,Heracles Almelo,O21,Finn,Bakker,21,Midfielder
+KNVB,Heracles Almelo,O21,Ryan,de Bruijn,18,Midfielder
+KNVB,Heracles Almelo,O21,Thomas,Janssen,21,Midfielder
+KNVB,Heracles Almelo,O21,Sven,de Jong,20,Forward
+KNVB,Heracles Almelo,O21,Sem,van der Veen,18,Forward
+KNVB,Heracles Almelo,O21,Teun,de Bruijn,19,Forward
+KNVB,Heracles Almelo,O21,Ryan,Brouwer,19,Forward
+KNVB,PEC Zwolle,O21,Stijn,Willems,20,Goalkeeper
+KNVB,PEC Zwolle,O21,Jesse,van den Heuvel,21,Goalkeeper
+KNVB,PEC Zwolle,O21,Julian,de Vries,19,Defender
+KNVB,PEC Zwolle,O21,Ruben,Kuiper,20,Defender
+KNVB,PEC Zwolle,O21,Mees,van der Linden,17,Defender
+KNVB,PEC Zwolle,O21,Tim,Brouwer,20,Defender
+KNVB,PEC Zwolle,O21,Ryan,de Boer,20,Defender
+KNVB,PEC Zwolle,O21,Sam,de Ruiter,20,Midfielder
+KNVB,PEC Zwolle,O21,Daan,Dijkstra,21,Midfielder
+KNVB,PEC Zwolle,O21,Tim,van Dijk,17,Midfielder
+KNVB,PEC Zwolle,O21,Sam,Hendriks,19,Midfielder
+KNVB,PEC Zwolle,O21,Thomas,Smits,18,Forward
+KNVB,PEC Zwolle,O21,Thijs,van Vliet,18,Forward
+KNVB,PEC Zwolle,O21,Levi,de Graaf,20,Forward
+KNVB,PEC Zwolle,O21,Daan,van der Linden,20,Forward
+KNVB,FC Groningen,O21,Jayden,de Wit,21,Goalkeeper
+KNVB,FC Groningen,O21,Ryan,Smit,18,Goalkeeper
+KNVB,FC Groningen,O21,Lucas,de Boer,21,Defender
+KNVB,FC Groningen,O21,Thomas,Kuiper,21,Defender
+KNVB,FC Groningen,O21,Noah,van den Heuvel,21,Defender
+KNVB,FC Groningen,O21,Joep,van Leeuwen,20,Defender
+KNVB,FC Groningen,O21,Lars,Meijer,19,Defender
+KNVB,FC Groningen,O21,Sam,van den Broek,21,Midfielder
+KNVB,FC Groningen,O21,Stijn,de Ruiter,21,Midfielder
+KNVB,FC Groningen,O21,Jesse,Jansen,17,Midfielder
+KNVB,FC Groningen,O21,Sem,Bos,18,Midfielder
+KNVB,FC Groningen,O21,Levi,Prins,17,Forward
+KNVB,FC Groningen,O21,Levi,van Vliet,17,Forward
+KNVB,FC Groningen,O21,Milan,de Ruiter,21,Forward
+KNVB,FC Groningen,O21,Sven,Mulder,18,Forward
+KNVB,Sparta Rotterdam,O21,Jayden,van der Linden,18,Goalkeeper
+KNVB,Sparta Rotterdam,O21,Lucas,Dijkstra,20,Goalkeeper
+KNVB,Sparta Rotterdam,O21,Mees,van den Heuvel,17,Defender
+KNVB,Sparta Rotterdam,O21,Finn,Jansen,18,Defender
+KNVB,Sparta Rotterdam,O21,Teun,van den Brink,18,Defender
+KNVB,Sparta Rotterdam,O21,Nick,Groen,17,Defender
+KNVB,Sparta Rotterdam,O21,Sam,Jonker,20,Defender
+KNVB,Sparta Rotterdam,O21,Bram,Mulder,19,Midfielder
+KNVB,Sparta Rotterdam,O21,Stijn,de Groot,17,Midfielder
+KNVB,Sparta Rotterdam,O21,Sam,Timmermans,17,Midfielder
+KNVB,Sparta Rotterdam,O21,Julian,de Ruiter,20,Midfielder
+KNVB,Sparta Rotterdam,O21,Jesse,van Vliet,19,Forward
+KNVB,Sparta Rotterdam,O21,Joep,van den Berg,20,Forward
+KNVB,Sparta Rotterdam,O21,Ryan,Peters,18,Forward
+KNVB,Sparta Rotterdam,O21,Cas,Smits,20,Forward
+KNVB,Willem II,O21,Nick,de Jong,21,Goalkeeper
+KNVB,Willem II,O21,Max,Meijer,17,Goalkeeper
+KNVB,Willem II,O21,Lucas,Brouwer,20,Defender
+KNVB,Willem II,O21,Owen,Jacobs,20,Defender
+KNVB,Willem II,O21,Ruben,de Bruijn,19,Defender
+KNVB,Willem II,O21,Milan,van Leeuwen,20,Defender
+KNVB,Willem II,O21,Tom,van den Broek,17,Defender
+KNVB,Willem II,O21,Finn,van Vliet,20,Midfielder
+KNVB,Willem II,O21,Bram,van der Veen,19,Midfielder
+KNVB,Willem II,O21,Max,de Graaf,21,Midfielder
+KNVB,Willem II,O21,Owen,de Haan,21,Midfielder
+KNVB,Willem II,O21,Cas,Hendriks,18,Forward
+KNVB,Willem II,O21,Jesse,van Dijk,20,Forward
+KNVB,Willem II,O21,Levi,Smit,19,Forward
+KNVB,Willem II,O21,Sem,van Vliet,17,Forward
+KNVB,NAC Breda,O21,Luuk,de Vries,17,Goalkeeper
+KNVB,NAC Breda,O21,Sam,de Wit,20,Goalkeeper
+KNVB,NAC Breda,O21,Daan,van Leeuwen,19,Defender
+KNVB,NAC Breda,O21,Nick,Bos,20,Defender
+KNVB,NAC Breda,O21,Lars,Visser,20,Defender
+KNVB,NAC Breda,O21,Max,Willems,17,Defender
+KNVB,NAC Breda,O21,Tim,de Bruijn,19,Defender
+KNVB,NAC Breda,O21,Owen,Smit,21,Midfielder
+KNVB,NAC Breda,O21,Ruben,Jansen,20,Midfielder
+KNVB,NAC Breda,O21,Tim,Peters,18,Midfielder
+KNVB,NAC Breda,O21,Luuk,van den Brink,20,Midfielder
+KNVB,NAC Breda,O21,Joep,de Jong,17,Forward
+KNVB,NAC Breda,O21,Jayden,Vermeulen,20,Forward
+KNVB,NAC Breda,O21,Thomas,Hendriks,17,Forward
+KNVB,NAC Breda,O21,Tim,Scholten,17,Forward
+KNVB,NEC,O21,Owen,Dijkstra,21,Goalkeeper
+KNVB,NEC,O21,Noah,van Vliet,20,Goalkeeper
+KNVB,NEC,O21,Sem,Kok,17,Defender
+KNVB,NEC,O21,Teun,Bos,20,Defender
+KNVB,NEC,O21,Jasper,van der Veen,20,Defender
+KNVB,NEC,O21,Max,de Haan,19,Defender
+KNVB,NEC,O21,Thomas,van Leeuwen,17,Defender
+KNVB,NEC,O21,Luuk,de Ruiter,18,Midfielder
+KNVB,NEC,O21,Sem,Vos,18,Midfielder
+KNVB,NEC,O21,Cas,van den Brink,17,Midfielder
+KNVB,NEC,O21,Teun,de Groot,20,Midfielder
+KNVB,NEC,O21,Ryan,Groen,17,Forward
+KNVB,NEC,O21,Ryan,van de Ven,19,Forward
+KNVB,NEC,O21,Sven,de Boer,17,Forward
+KNVB,NEC,O21,Luuk,Mulder,19,Forward
+KNVB,Fortuna Sittard,O21,Sven,van den Berg,18,Goalkeeper
+KNVB,Fortuna Sittard,O21,Owen,van de Ven,20,Goalkeeper
+KNVB,Fortuna Sittard,O21,Joep,Groen,18,Defender
+KNVB,Fortuna Sittard,O21,Joep,de Graaf,18,Defender
+KNVB,Fortuna Sittard,O21,Jayden,Groen,18,Defender
+KNVB,Fortuna Sittard,O21,Sam,Smit,19,Defender
+KNVB,Fortuna Sittard,O21,Cas,Peters,19,Defender
+KNVB,Fortuna Sittard,O21,Max,van den Berg,18,Midfielder
+KNVB,Fortuna Sittard,O21,Stijn,Vos,20,Midfielder
+KNVB,Fortuna Sittard,O21,Daan,Groen,20,Midfielder
+KNVB,Fortuna Sittard,O21,Tom,Timmermans,18,Midfielder
+KNVB,Fortuna Sittard,O21,Ryan,de Jong,19,Forward
+KNVB,Fortuna Sittard,O21,Jasper,Peters,20,Forward
+KNVB,Fortuna Sittard,O21,Mees,de Vries,20,Forward
+KNVB,Fortuna Sittard,O21,Jesse,de Haan,21,Forward
+KNVB,RKC Waalwijk,O21,Teun,Mulder,17,Goalkeeper
+KNVB,RKC Waalwijk,O21,Stijn,van Vliet,17,Goalkeeper
+KNVB,RKC Waalwijk,O21,Stijn,van den Broek,18,Defender
+KNVB,RKC Waalwijk,O21,Lars,van den Heuvel,20,Defender
+KNVB,RKC Waalwijk,O21,Finn,de Groot,19,Defender
+KNVB,RKC Waalwijk,O21,Lars,van de Ven,20,Defender
+KNVB,RKC Waalwijk,O21,Bram,Meijer,20,Defender
+KNVB,RKC Waalwijk,O21,Luuk,van de Ven,21,Midfielder
+KNVB,RKC Waalwijk,O21,Julian,Dekker,17,Midfielder
+KNVB,RKC Waalwijk,O21,Joep,Timmermans,21,Midfielder
+KNVB,RKC Waalwijk,O21,Stijn,Janssen,21,Midfielder
+KNVB,RKC Waalwijk,O21,Sam,van den Brink,18,Forward
+KNVB,RKC Waalwijk,O21,Nick,van der Linden,18,Forward
+KNVB,RKC Waalwijk,O21,Tom,Bos,20,Forward
+KNVB,RKC Waalwijk,O21,Sven,van der Veen,18,Forward
+KNVB,Go Ahead Eagles,O21,Julian,van den Berg,21,Goalkeeper
+KNVB,Go Ahead Eagles,O21,Owen,de Boer,17,Goalkeeper
+KNVB,Go Ahead Eagles,O21,Noah,Visser,17,Defender
+KNVB,Go Ahead Eagles,O21,Teun,de Haan,18,Defender
+KNVB,Go Ahead Eagles,O21,Jasper,Bakker,19,Defender
+KNVB,Go Ahead Eagles,O21,Noah,de Jong,20,Defender
+KNVB,Go Ahead Eagles,O21,Julian,Kuiper,20,Defender
+KNVB,Go Ahead Eagles,O21,Daan,de Boer,17,Midfielder
+KNVB,Go Ahead Eagles,O21,Noah,de Graaf,21,Midfielder
+KNVB,Go Ahead Eagles,O21,Daan,Smits,19,Midfielder
+KNVB,Go Ahead Eagles,O21,Luuk,Timmermans,20,Midfielder
+KNVB,Go Ahead Eagles,O21,Tom,Kuiper,19,Forward
+KNVB,Go Ahead Eagles,O21,Ryan,Dijkstra,18,Forward
+KNVB,Go Ahead Eagles,O21,Lars,Gerritsen,18,Forward
+KNVB,Go Ahead Eagles,O21,Levi,Janssen,17,Forward
+KNVB,Almere City,O21,Luuk,Vermeulen,17,Goalkeeper
+KNVB,Almere City,O21,Tom,Jonker,21,Goalkeeper
+KNVB,Almere City,O21,Thijs,de Bruijn,21,Defender
+KNVB,Almere City,O21,Ryan,Dekker,20,Defender
+KNVB,Almere City,O21,Nick,Smits,18,Defender
+KNVB,Almere City,O21,Sven,Groen,21,Defender
+KNVB,Almere City,O21,Levi,Visser,21,Defender
+KNVB,Almere City,O21,Mees,de Graaf,21,Midfielder
+KNVB,Almere City,O21,Joep,van der Linden,17,Midfielder
+KNVB,Almere City,O21,Thijs,Gerritsen,20,Midfielder
+KNVB,Almere City,O21,Lucas,Vermeulen,21,Midfielder
+KNVB,Almere City,O21,Thomas,de Haan,21,Forward
+KNVB,Almere City,O21,Mees,Bakker,19,Forward
+KNVB,Almere City,O21,Tom,van Leeuwen,20,Forward
+KNVB,Almere City,O21,Milan,Jansen,17,Forward
+KNVB,SC Heerenveen,O21,Finn,Prins,17,Goalkeeper
+KNVB,SC Heerenveen,O21,Tom,de Haan,18,Goalkeeper
+KNVB,SC Heerenveen,O21,Daan,van Vliet,19,Defender
+KNVB,SC Heerenveen,O21,Teun,de Jong,21,Defender
+KNVB,SC Heerenveen,O21,Jasper,Bos,20,Defender
+KNVB,SC Heerenveen,O21,Sem,van der Meer,20,Defender
+KNVB,SC Heerenveen,O21,Cas,de Bruijn,21,Defender
+KNVB,SC Heerenveen,O21,Max,Jansen,19,Midfielder
+KNVB,SC Heerenveen,O21,Lucas,Smits,20,Midfielder
+KNVB,SC Heerenveen,O21,Max,Bos,20,Midfielder
+KNVB,SC Heerenveen,O21,Mees,van Leeuwen,18,Midfielder
+KNVB,SC Heerenveen,O21,Milan,de Jong,17,Forward
+KNVB,SC Heerenveen,O21,Milan,Prins,17,Forward
+KNVB,SC Heerenveen,O21,Lucas,Bos,21,Forward
+KNVB,SC Heerenveen,O21,Sven,Jacobs,21,Forward

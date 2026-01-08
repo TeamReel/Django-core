@@ -1,44 +1,142 @@
-# Demo Shell
+# TeamReel Demo Documentation
 
-## Purpose
+**Last Updated:** 2026-01-08
+**Demo Context:** Football League Management (TeamReel)
+**Production Environment:** Railway
+**Status:** Active Development
 
-The **Demo Shell** (Phase 8) is the reference implementation of the Core-App. It serves two critical purposes:
+---
 
-1.  **Validation**: It proves that the underlying modules (Auth, Orgs, API) work together in a real application.
-2.  **Showcase**: It provides a tangible "product" that stakeholders can interact with.
+## 📖 Overview
 
-## The "Football Leagues" Scenario
+TeamReel is the reference implementation of the Django Core-App, demonstrating a complete SaaS platform for **Football League Management**. It showcases all Core-App capabilities in a realistic, production-ready environment.
 
-To avoid generic "Foo/Bar" examples, the Demo Shell implements a realistic SaaS scenario: **Football League Management**.
+### The TeamReel Scenario
 
-*   **Organization**: A Football League (e.g., "Premier League").
-*   **Project**: A Season (e.g., "2023/2024").
-*   **Members**: League Admins, Team Managers, Referees.
-*   **Resources**: Teams, Matches, Players.
+**TeamReel** models football league management with a hierarchical structure:
+- **Organisation**: Football Federation (e.g., KNVB, DFB, FIGC, The FA)
+- **Project (Club)**: Football Club (e.g., Ajax, Bayern München, Inter Milan)
+- **Project (Team)**: Team Squad (e.g., Ajax 1, Bayern München 1. Mannschaft)
+- **Period (Season)**: Season Container (e.g., Season 2024/2025)
+- **Period (Competition)**: Competition/League (e.g., League, Cup, Youth)
+- **Activity**: Match Event (e.g., Ajax 1 vs PSV 1)
+- **Membership**: Player/Staff Role (e.g., Keeper, Speler, Coach, Assistent)
 
-## Integration Rules
+---
 
-1.  **No Mock Data**: The Demo Shell must consume real APIs from the Backend Core.
-2.  **Module Isolation**: The Demo Shell code (`F10`) should be separate from the reusable UI components (`F01-F07`).
-3.  **Production Ready**: It must be deployable and secure, not just a local prototype.
+## 📚 Document Structure
 
-## Accessing the Demo
+### 1. Strategy & Architecture
+**Core design documents defining TeamReel's data model and principles.**
 
-*   **Live URL**: [https://demo.teamreel.app](https://demo.teamreel.app)
-*   **API Root**: [https://api.teamreel.app/api/v1/](https://api.teamreel.app/api/v1/)
-*   **Local Dev**: `pnpm dev` (Frontend) + `python manage.py runserver` (Backend)
+- **[TeamReel Data Strategy](teamreel-data-strategy.md)** ⭐
+  Master architecture document with confirmed design decisions, hierarchy principles, and permission model.
 
-## Key Endpoints
+- **[TeamReel Data Structure](teamreel-data-structure.md)**
+  Reference guide showing the Club → Team → Season → Competition → Match hierarchy with examples.
 
-*   **Files**: `/api/v1/files/` (Replaces legacy `/api/files/`)
-*   **Audit Log**: `/api/v1/activity/` (Replaces legacy `/api/audit/`)
-*   **Tasks**: `/api/v1/tasks/` (Secured monitoring)
+### 2. Implementation & Configuration
+**Practical guides for setting up and configuring TeamReel.**
 
-## Current Status
+- **[TeamReel RBAC Configuration](teamreel-rbac-config.md)**
+  Production-ready Role-Based Access Control with 23 permissions, 5 roles, and hierarchical access patterns.
 
-*   [Demo Data Status](demo-data-status.md): Dashboard of seeded data and module readiness.
-*   [Production DB Audit](production-db-audit.md): Detailed analysis of the production database state (Jan 2026).
+- **[TeamReel Seeding Plan](teamreel-seeding-plan.md)**
+  Step-by-step player and team seeding procedures for Railway production environment.
 
-## Archive
+### 3. Current State & Monitoring
+**Real-time status of data population and system integration.**
 
-*   [Archive](archive/): Past audit reports and integration logs.
+- **[Audit Status Overview](AUDIT_STATUS.md)** 🔍
+  Master dashboard showing all audit documents, freshness status, and regeneration commands.
+
+- **[TeamReel Current Database State](teamreel-current-db-state.md)**
+  Quick reference showing database fill statistics, record counts, and seeding progress.
+
+- **[TeamReel Database Audit](teamreel-db-audit.md)** ⭐
+  Comprehensive database analysis with model-by-model breakdown, changelog, and health metrics.
+
+- **[TeamReel Frontend Integration Audit](teamreel-frontend-integration-audit.md)** ⭐
+  Complete audit of backend-to-frontend connections, identifying integrated vs. missing components.
+
+---
+
+## 🚀 Quick Start
+
+### Accessing TeamReel
+
+- **Live Demo**: [https://demo.teamreel.app](https://demo.teamreel.app) (Railway)
+- **API Root**: [https://api.teamreel.app/api/v1/](https://api.teamreel.app/api/v1/)
+- **Local Dev**: `pnpm dev` (Frontend) + `python manage.py runserver` (Backend)
+
+### Key API Endpoints
+
+- **Organisations**: `/api/v1/organisations/` - Football federations (KNVB, DFB, etc.)
+- **Projects**: `/api/v1/projects/` - Clubs and teams
+- **Periods**: `/api/v1/periods/` - Seasons and competitions
+- **Activities**: `/api/v1/activities/` - Matches and events
+- **Memberships**: `/api/v1/project-memberships/` - Players and staff
+- **Audit**: `/api/v1/audit/` - Activity logs
+- **Metrics**: `/api/observability/metrics/` - System health
+
+---
+
+## 📊 Current Status (2026-01-08)
+
+### Database Fill
+- **Total Records**: 8,029 (68.3% of schema capacity)
+- **Key Models**:
+  - 2,121 Users
+  - 1,307 Activities (matches)
+  - 2,190 ProjectMemberships (players/staff)
+  - 433 RoleAssignments
+  - 215 Projects (clubs/teams)
+
+### Frontend Integration
+- **Fully Connected**: 12 models (60%) - Identity, RBAC, Orgs, Projects
+- **Partially Connected**: 3 models (15%) - Activities (NO UI), Transactions, Preferences
+- **Not Connected**: 5 models (25%) - Participation, BalancePolicy, etc.
+- **Critical Gap**: 1,307 match records exist but no frontend display component
+
+### Implementation Priorities
+1. **MatchesPage.tsx** - Display 1,307 match activities
+2. **Fix Dashboard Credits** - Replace hardcoded checks with real API
+3. **Player Roster View** - Period-scoped membership display
+4. **Org-Level Audit** - Extend audit log to organisation scope
+
+---
+
+## 🎯 Core Principles
+
+### Data Cascade
+Data inheritance flows downward through the hierarchy:
+```
+Federation → Club → Team → Season → Competition → Match
+```
+
+### Step-by-Step Seeding
+Each level must be complete before proceeding to the next:
+1. Federations (Organisations)
+2. Clubs (Root Projects)
+3. Teams (Child Projects)
+4. Seasons (Root Periods)
+5. Competitions (Child Periods)
+6. Memberships (Players/Staff)
+7. Activities (Matches)
+
+### RBAC Hierarchy
+- **Land Admin**: Federation-wide access, all credit management
+- **Club Admin**: Club-wide access, cross-club visibility, club credits
+- **Team Admin**: Team settings + all team matches, team credits
+- **Team Member**: Profile editing only, functional roles (Keeper, Speler, etc.)
+- **Supporter**: Read-only access to granted team content
+
+---
+
+## 🗂️ Archive
+
+Historical audit reports and integration logs are preserved in [archive/](archive/) for reference and troubleshooting.
+
+---
+
+**Navigation**: [← Back to Documentation Home](../index.md)

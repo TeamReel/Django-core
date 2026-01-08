@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>businessplan.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%F0%9F%92%BC-businessplan-%E2%80%93-teamreel">💼 Businessplan – TeamReel</h1>
+<blockquote>
+<p><strong>TeamReel</strong> helpt sportverenigingen hun verhalen zichtbaar te maken met AI-gegenereerde clubvideo’s.<br>
+Dit businessplan beschrijft de visie, strategie en groeifases van het platform, afgestemd op de <em>TeamReel Style Foundation</em> en <em>Brand Identity</em>.<br>
+De focus ligt op schaalbare waardecreatie: van lokale pilotclub tot internationaal SaaS-platform.<br>
+Versie: Oktober 2025 — Status: Definitieve richtlijn.</p>
+</blockquote>
+<h2 id="metadata">Metadata</h2>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Inhoud</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Project</strong></td>
+<td>TeamReel</td>
+</tr>
+<tr>
+<td><strong>Document</strong></td>
+<td>Businessplan</td>
+</tr>
+<tr>
+<td><strong>Datum</strong></td>
+<td>Oktober 2025</td>
+</tr>
+<tr>
+<td><strong>Auteur</strong></td>
+<td>Brian Stokvis</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Definitieve versie</td>
+</tr>
+<tr>
+<td><strong>Doel</strong></td>
+<td>Interne richting, markt- en productstrategie</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="inhoudsopgave">Inhoudsopgave</h2>
+<ol>
+<li><a href="#1-introductie--samenvatting">Introductie &amp; Samenvatting</a></li>
+<li><a href="#2-probleem--kansen">Probleem &amp; Kansen</a></li>
+<li><a href="#3-visie--doelstellingen">Visie &amp; Doelstellingen</a></li>
+<li><a href="#4-doelgroepanalyse">Doelgroepanalyse</a></li>
+<li><a href="#5-de-oplossing-teamreel-content-generator">De oplossing: TeamReel Content Generator</a></li>
+<li><a href="#6-verdienmodel--schaalbaarheid">Verdienmodel &amp; Schaalbaarheid</a></li>
+<li><a href="#7-roadmap--fases">Roadmap &amp; Fases</a></li>
+<li><a href="#8-concurrentie--positionering">Concurrentie &amp; Positionering</a></li>
+<li><a href="#9-slot--strategiecheck">Slot &amp; Strategiecheck</a></li>
+</ol>
+<hr>
+<h2 id="1-introductie--samenvatting">1. Introductie &amp; Samenvatting</h2>
+<p>Lokale sportverenigingen vormen het kloppende hart van het Nederlandse sportleven. Ze draaien op betrokken leden, vrijwilligers en teamleiders die naast hun werk en gezin het clubgevoel levend houden. Toch worstelen juist deze clubs met een zichtbaar probleem: ze willen hun verhalen delen, maar missen tijd, kennis en continuïteit om dat structureel te doen.</p>
+<p><strong>TeamReel</strong> biedt hiervoor een oplossing. Het is een online platform dat sportverenigingen helpt om eenvoudig en professioneel content te creëren rond wedstrijden, teams en clubmomenten. Via AI-gedreven templates genereert TeamReel automatisch video’s en visuals — afgestemd op de huisstijl van elke club. Zo kan elk teamlid in enkele minuten clubcontent maken die past bij de trots en identiteit van de vereniging.</p>
+<p>De kern van het platform is de <strong>TeamReel Content Generator</strong>, die het maken van video’s en visuals automatiseert zonder de persoonlijke stijl te verliezen.<br>
+Wat voorheen uren duurde, kost nu slechts enkele minuten.<br>
+De tool neemt het technische werk over, terwijl de gebruiker de creatieve controle behoudt.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>Professionele clubcontent. In vijf minuten. In jouw stijl.</em></p>
+</blockquote>
+<p>TeamReel sluit qua toon en ontwerp volledig aan op de <em>Style Foundation</em>: sportief, helder en eenvoudig.<br>
+De merkidentiteit — beschreven in de <em>Brand Identity</em> — zorgt dat alle visuals, AI-output en gebruikersinterfaces herkenbaar één geheel vormen.</p>
+<hr>
+<h2 id="2-probleem--kansen">2. Probleem &amp; Kansen</h2>
+<h3 id="21-het-probleem-voor-sportverenigingen">2.1 Het probleem voor sportverenigingen</h3>
+<p>Sportclubs willen professioneel en zichtbaar zijn, maar missen daarvoor de juiste middelen.<br>
+De intentie is er vaak wél — teamleden posten line-ups, uitslagen of sfeerbeelden — maar het ontbreekt aan structuur, stijl en tijd. Clubcommunicatie is daarmee kwetsbaar: ze valt stil zodra het ene actieve lid stopt, of blijft steken in losse posts zonder herkenbaarheid.</p>
+<p>We onderscheiden drie structurele belemmeringen:</p>
+<table>
+<thead>
+<tr>
+<th>Belemmering</th>
+<th>Gevolg</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gebrek aan kennis</strong></td>
+<td>Veel teamleden weten niet hoe ze aantrekkelijke content maken.</td>
+</tr>
+<tr>
+<td><strong>Gebrek aan tijd</strong></td>
+<td>Trainers en clubleden hebben geen ruimte om tools uit te proberen.</td>
+</tr>
+<tr>
+<td><strong>Gebrek aan continuïteit</strong></td>
+<td>Eén actief lid verdwijnt → communicatie valt stil of versnippert.</td>
+</tr>
+</tbody>
+</table>
+<p>De combinatie van deze factoren leidt tot inconsistente communicatie. Clubs missen daardoor zichtbaarheid, binding met leden én een professionele uitstraling naar sponsoren en de buitenwereld. Zonder herkenbare, regelmatige content is het moeilijk om een club als merk te positioneren.</p>
+<hr>
+<h3 id="22-kansen-in-de-markt">2.2 Kansen in de markt</h3>
+<p>Juist in deze pijnpunten liggen grote kansen. De context verandert snel:</p>
+<ul>
+<li>📈 <strong>Clubs worden mediakanalen:</strong> Fans en leden verwachten regelmatige updates op Instagram, WhatsApp of YouTube.</li>
+<li>🤖 <strong>Generatieve AI is toegankelijk geworden:</strong> Wat eerder onhaalbaar was zonder designers, is nu binnen handbereik.</li>
+<li>🧩 <strong>Herbruikbare formats zijn efficiënter:</strong> Clubs hoeven niet telkens iets nieuws te verzinnen — slimme sjablonen bieden rust en herkenbaarheid.</li>
+<li>🏷️ <strong>Clubstijl wordt merkwaarde:</strong> Hoe consistenter de content, hoe sterker de identiteit.</li>
+</ul>
+<p>TeamReel speelt in op deze dynamiek. Het platform vertaalt technologische mogelijkheden naar de dagelijkse praktijk van de sportclub, met een focus op snelheid, stijl en eenvoud. Wat vroeger een weektaak was, wordt een vaste handeling in het ritme van de sportweek.</p>
+<hr>
+<h2 id="3-visie--doelstellingen">3. Visie &amp; Doelstellingen</h2>
+<h3 id="31-langetermijnvisie">3.1 Langetermijnvisie</h3>
+<p>TeamReel wil uitgroeien tot het digitale content-hart van lokale sportverenigingen. Een plek waar clubs niet alleen content maken, maar ook hun identiteit versterken, hun leden activeren en hun verhalen delen — professioneel, herkenbaar en snel. Binnen vijf jaar is TeamReel een platform waar duizenden clubs in binnen- en buitenland terechtkunnen voor AI-gegenereerde content in hun eigen clubstijl, tools voor video, nieuws en dashboards, en een workflow die aansluit op het ritme van de sportweek.</p>
+<p>De kern blijft onveranderd: toegankelijke technologie die mensen verbindt via hun club.</p>
+<h3 id="32-concrete-ambitie">3.2 Concrete ambitie</h3>
+<p>We bouwen een platform dat elk teamlid in staat stelt om zonder training professionele content te maken, automatisch output genereert in de clubstijl en meegroeit met het ritme van wedstrijden, seizoenen en gebeurtenissen.<br>
+De <strong>Content Generator</strong> vormt het startpunt van dit ecosysteem. Van daaruit breidt TeamReel modulair uit met nieuwe functies, steeds binnen dezelfde visuele en technische kaders uit de <em>Style Foundation</em>.</p>
+<h3 id="33-strategische-ontwerpprincipes">3.3 Strategische ontwerpprincipes</h3>
+<table>
+<thead>
+<tr>
+<th>Principe</th>
+<th>Werking</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Automatisch waar mogelijk</strong></td>
+<td>Minder handwerk betekent meer output en continuïteit.</td>
+</tr>
+<tr>
+<td><strong>Eén club, één stijl</strong></td>
+<td>Alle content volgt dezelfde identiteit, afgestemd op het clublogo en de kleuren.</td>
+</tr>
+<tr>
+<td><strong>Modulair ontwerp</strong></td>
+<td>Nieuwe functies passen altijd binnen de bestaande structuur.</td>
+</tr>
+<tr>
+<td><strong>Output-agnostisch</strong></td>
+<td>De content past zich automatisch aan per platform (Instagram, WhatsApp, web).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="34-doelen-12%E2%80%9324-maanden">3.4 Doelen (12–24 maanden)</h3>
+<table>
+<thead>
+<tr>
+<th>Doelstelling</th>
+<th>Maatstaf</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Werkend SaaS-platform</strong></td>
+<td>Live voor voetbalclubs in Nederland.</td>
+</tr>
+<tr>
+<td><strong>Product-market fit</strong></td>
+<td>10–20 clubs actief gebruiker binnen zes maanden.</td>
+</tr>
+<tr>
+<td><strong>Herhaalbare formats</strong></td>
+<td>Minstens vijf herbruikbare contenttypes in de generator.</td>
+</tr>
+<tr>
+<td><strong>Merkconsistentie</strong></td>
+<td>Alle output voldoet aan vaste clubstijl en tokens.</td>
+</tr>
+<tr>
+<td><strong>Visuele consistentie</strong></td>
+<td>Alle UI-componenten en AI-output volgen tokens uit de <em>Style Foundation</em>.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="4-doelgroepanalyse">4. Doelgroepanalyse</h2>
+<h3 id="41-marktcontext-en-positionering">4.1 Marktcontext en positionering</h3>
+<p>Nederland telt ruim 3.000 amateurvoetbalverenigingen met meer dan één miljoen leden. Deze clubs vormen een unieke maar onderbediende doelgroep: actief op social media, betrokken bij hun community, maar vaak beperkt in tijd en middelen om hun communicatie professioneel te organiseren. Binnen deze verenigingen ligt de verantwoordelijkheid voor contentproductie vaak bij vrijwilligers of trainers. Zij zoeken naar een manier om herkenbare, aantrekkelijke content te maken zonder extra werk of technische kennis.</p>
+<p>Drie trends onderstrepen deze behoefte: (1) digitalisering van clubcommunicatie — online zichtbaarheid is een vast onderdeel geworden van clubcultuur; (2) de snelle opkomst van generatieve AI — technologie maakt professionele output toegankelijk voor iedereen; (3) de groeiende waarde van zichtbaarheid — sponsors en supporters verwachten continuïteit en herkenbaarheid.</p>
+<p>TeamReel speelt hierop in met een laagdrempelige oplossing die wél werkt in de praktijk van de sportclub. Geen losse tools of externe bureaus, maar één centrale plek waar herkenbare clubcontent ontstaat in enkele minuten.</p>
+<h3 id="42-primaire-doelgroep">4.2 Primaire doelgroep</h3>
+<p>De eerste focus ligt op amateurvoetbalverenigingen in Nederland. Binnen deze clubs richt TeamReel zich op actieve teamleden die nu al berichten delen via Instagram, WhatsApp of clubwebsites, maar daar meer consistentie en stijl in willen brengen.</p>
+<table>
+<thead>
+<tr>
+<th>Kenmerk</th>
+<th>Beschrijving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Type club</strong></td>
+<td>Amateurvoetbal (eerste fase).</td>
+</tr>
+<tr>
+<td><strong>Rol binnen club</strong></td>
+<td>Teamleden die zelf content delen.</td>
+</tr>
+<tr>
+<td><strong>Gebruiksmotief</strong></td>
+<td>Snel professionele content genereren, zonder technische drempels.</td>
+</tr>
+<tr>
+<td><strong>Digitale vaardigheden</strong></td>
+<td>Gemiddeld tot hoog – bekend met stories, templates en social media.</td>
+</tr>
+</tbody>
+</table>
+<p>Deze gebruikers zijn visueel ingesteld, mobiel actief en tijdgebonden. Ze willen geen nieuwe tool leren, maar sneller resultaat uit hun bestaande werkwijze.</p>
+<h3 id="43-secundaire-doelgroepen">4.3 Secundaire doelgroepen</h3>
+<table>
+<thead>
+<tr>
+<th>Segment</th>
+<th>Potentieel gebruik</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bestuurders / communicatieteams</strong></td>
+<td>Uniforme uitstraling naar buiten, sponsorwaarde verhogen.</td>
+</tr>
+<tr>
+<td><strong>Trainers &amp; coaches</strong></td>
+<td>Line-ups, uitslagen en teamupdates publiceren zonder extra werk.</td>
+</tr>
+<tr>
+<td><strong>Jeugdteams &amp; ouders</strong></td>
+<td>Deelbare visuals binnen familie- en supportersnetwerken.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-persona-voorbeeld">4.4 Persona (voorbeeld)</h3>
+<blockquote>
+<p><strong>Naam:</strong> Samira<br>
+<strong>Rol:</strong> Aanvoerder Dames 1<br>
+<strong>Wat ze wil:</strong> Elke week een line-up delen zonder Photoshop.<br>
+<strong>Frustratie:</strong> Templates zoeken, logo’s plakken, alles handmatig.<br>
+<strong>Waarom TeamReel past:</strong> Snel, herkenbaar, automatisch in clubstijl.</p>
+</blockquote>
+<p>Deze persona staat symbool voor de doelgroep: digitaal vaardig, betrokken en trots op haar club, maar beperkt in tijd. Elke persona wordt getest binnen de UX-flows zoals beschreven in het <em>Functional Design</em>, zodat gebruikservaring en AI-feedback elkaar versterken.</p>
+<hr>
+<h2 id="5-de-oplossing-teamreel-content-generator">5. De oplossing: TeamReel Content Generator</h2>
+<h3 id="51-wat-is-het">5.1 Wat is het?</h3>
+<p>De TeamReel Content Generator is een online tool waarmee clubs in enkele minuten visuele content maken die past bij hun huisstijl. Het platform is ontworpen voor snelheid, herkenbaarheid en gemak. Gebruikers kiezen een template, vullen enkele gegevens in — zoals opstelling of score — en ontvangen direct een publiceerbare visual of video. Alle visuele elementen en kleuren volgen automatisch de tokens uit de <em>Style Foundation</em>, zodat de output consistent is met het merk en de gebruikersinterface.</p>
+<blockquote>
+<p>Geen designkennis. Geen installatie. Wel resultaat.</p>
+</blockquote>
+<p>Beschikbare formats in de eerste fase:</p>
+<ul>
+<li>Line-up visuals</li>
+<li>Matchday video’s</li>
+<li>Doelpuntmeldingen</li>
+<li>Uitslagenkaarten</li>
+<li>Instagram Reels en stories</li>
+</ul>
+<h3 id="52-hoe-werkt-het">5.2 Hoe werkt het?</h3>
+<ol>
+<li>De gebruiker kiest een format of template.</li>
+<li>De basisgegevens van het team of de wedstrijd worden ingevuld.</li>
+<li>AI combineert deze gegevens met clubkleuren, logo’s en tenues.</li>
+<li>De gebruiker ontvangt een downloadbare video of visual, direct geschikt voor social media.</li>
+</ol>
+<p>Het proces werkt volledig in de browser, op mobiel en desktop, zodat teams ook vlak voor of na de wedstrijd content kunnen aanmaken.</p>
+<h3 id="53-wat-maakt-teamreel-uniek">5.3 Wat maakt TeamReel uniek?</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Omschrijving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Volledig in clubstijl</strong></td>
+<td>Elke output volgt automatisch de huisstijl van de vereniging.</td>
+</tr>
+<tr>
+<td><strong>Herbruikbare AI-sjablonen</strong></td>
+<td>Eén ontwerp wordt hergebruikt voor meerdere teams en formats.</td>
+</tr>
+<tr>
+<td><strong>Snel &amp; schaalbaar</strong></td>
+<td>Klaar in minuten, zonder technische drempel.</td>
+</tr>
+<tr>
+<td><strong>Modulair en uitbreidbaar</strong></td>
+<td>Nieuwe contenttypes kunnen eenvoudig worden toegevoegd.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="54-toekomstmogelijkheden">5.4 Toekomstmogelijkheden</h3>
+<p>De architectuur van TeamReel is sport-agnostisch (clubs → teams → spelers), waardoor nieuwe sporten eenvoudig toe te voegen zijn.<br>
+Na de validatie binnen voetbal kunnen andere teamsporten snel volgen:</p>
+<ul>
+<li>🏑 <strong>Hockey en handbal</strong> – vergelijkbare teamsamenstelling</li>
+<li>🏐 <strong>Volleybal en korfbal</strong> – snelle, visuele sporten met fanbase</li>
+<li>🏟️ <strong>Futsal en zaalvoetbal</strong> – zelfde doelgroep, nieuwe context</li>
+</ul>
+<p>Ook de output groeit mee:</p>
+<ul>
+<li>📨 <strong>Nieuwsbrief-generator</strong> – automatische wedstrijdverslagen</li>
+<li>🏆 <strong>Coach van het Jaar</strong> – content op basis van prestaties</li>
+<li>📊 <strong>Dashboards &amp; statistiekmodules</strong> – inzicht in gebruik en bereik</li>
+</ul>
+<p>TeamReel is ontworpen om te groeien zonder complexer te worden. Elke toevoeging past in het bestaande model — visueel afgestemd op de <em>Brand Identity</em>, technisch schaalbaar volgens het <em>Technical Design</em>, en functioneel consistent met de AI-flows uit het <em>Functional Design</em>. Zo blijft het platform herkenbaar, gebruiksvriendelijk en uitbreidbaar.</p>
+<hr>
+<h2 id="6-verdienmodel--schaalbaarheid">6. Verdienmodel &amp; Schaalbaarheid</h2>
+<p>TeamReel hanteert een hybride verdienmodel dat flexibiliteit biedt voor kleine teams én schaalbaarheid voor grote clubs. Clubs betalen een vast bedrag voor toegang tot het platform en kunnen aanvullende credits aanschaffen voor extra of premium output. Zo blijft het gebruik voorspelbaar in kosten en flexibel in gebruik. Het model sluit aan bij de praktijk van sportverenigingen: lage instap, duidelijk overzicht en ruimte om te groeien.</p>
+<h3 id="61-hybride-verdienstructuur">6.1 Hybride verdienstructuur</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Omschrijving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Abonnement per team of club</strong></td>
+<td>Maandelijkse of jaarlijkse toegang tot basisfunctionaliteit.</td>
+</tr>
+<tr>
+<td><strong>Credits voor output</strong></td>
+<td>Extra of premium contenttypes worden afgerekend per gebruik.</td>
+</tr>
+<tr>
+<td><strong>Clublicentie</strong></td>
+<td>Onbeperkt aantal gebruikers binnen één vereniging.</td>
+</tr>
+<tr>
+<td><strong>Upgrades</strong></td>
+<td>Extra sjablonen, langere video’s, exports in hogere kwaliteit.</td>
+</tr>
+</tbody>
+</table>
+<p>Het creditsysteem is direct gekoppeld aan de AI-workflows. Elke video of visual gebruikt een vast aantal credits, afhankelijk van de complexiteit. Deze logica is consistent met de backendstructuur zoals beschreven in het <em>Technical Design</em>.</p>
+<h3 id="62-indicatieve-prijsstructuur">6.2 Indicatieve prijsstructuur</h3>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Basis</th>
+<th>Uitbreiding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Starterpakket</strong></td>
+<td>€19 / maand</td>
+<td>Inclusief 10 credits.</td>
+</tr>
+<tr>
+<td><strong>Creditbundel</strong></td>
+<td>–</td>
+<td>25 credits voor €12.</td>
+</tr>
+<tr>
+<td><strong>Clublicentie</strong></td>
+<td>€149 / jaar</td>
+<td>Onbeperkt aantal gebruikers.</td>
+</tr>
+<tr>
+<td><strong>Betaalde upgrades</strong></td>
+<td>–</td>
+<td>Premiumformats of meertalige exports.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-schaalvoordelen">6.3 Schaalvoordelen</h3>
+<p>TeamReel is ontworpen voor modulaire groei. Eén template of AI-workflow kan hergebruikt worden door honderden clubs. De infrastructuur volgt dezelfde principes als in het <em>Technical Design</em>: modulaire services, cloudopslag en herbruikbare workflows,aangestuurd door de tokens en designrichtlijnen uit de <em>Style Foundation</em>.</p>
+<p>Belangrijkste schaalvoordelen:</p>
+<ul>
+<li><strong>Herbruikbare workflows:</strong> één AI-logica, meerdere toepassingen.</li>
+<li><strong>Internationale uitbreiding:</strong> vertalingen en clubdata worden dynamisch geladen.</li>
+<li><strong>Licentie-opbouw:</strong> schaalbaar per club, regio of bond.</li>
+<li><strong>Gebruikstracking:</strong> data-analyse van contentgebruik voor strategische inzichten.</li>
+</ul>
+<hr>
+<h2 id="7-roadmap--fases">7. Roadmap &amp; Fases</h2>
+<p>TeamReel ontwikkelt zich iteratief: eerst valideren met gebruikers, daarna uitbreiden met nieuwe modules. De MVP-fase vormt de eerste productiteratie, gevolgd door verbeteringen in gebruikerservaring, stabiliteit en schaalbaarheid.<br>
+Het ontwerp, de UX-flows en de AI-integratie volgen de kaders uit het <em>Functional Design</em> en <em>Technical Design</em>.</p>
+<pre><code class="language-mermaid"><div class="mermaid">gantt
+    title TeamReel – Ontwikkelroadmap 2025–2026
+    dateFormat  YYYY-MM
+    section Fase 1 – Basisontwikkeling
+    Content Generator (Core Product)    :a1, 2025-09, 2m
+    Branding & Tokens Integratie      :a2, 2025-10, 1m
+    Pilotclubs onboarden              :a3, 2025-11, 1m
+    section Fase 2 – Verbetering & Groei
+    UX Optimalisatie en Testing       :b1, 2025-12, 1m
+    Multi-sport uitbreiding           :b2, 2026-01, 2m
+    section Fase 3 – Schaalvergroting
+    Internationale pilots (EN/DE)     :c1, 2026-06, 2m
+    Publieke lancering en SaaS-structuur :c2, 2026-08, 2m
+    Nieuwe modules (Nieuwsbrief, Coach van het Jaar) :c3, 2026-10, 2m
+
+</div></code></pre>
+<h3 id="71-ontwikkelrichtlijnen">7.1 Ontwikkelrichtlijnen</h3>
+<p>De roadmap volgt dezelfde ontwikkelprincipes als in het <em>Technical Design</em>: modulair, veilig en onderhoudbaar.<br>
+Elke fase wordt afgerond met een stabiele release, een testmoment en een update van de documentatie.</p>
+<ul>
+<li><strong>Fase 1 – Basisontwikkeling:</strong> Realisatie van de volledige end-to-end werking van de Content Generator. De nadruk ligt op betrouwbaarheid van de AI-workflows, consistentie van de output en integratie van clubdata in de backend.</li>
+<li><strong>Fase 2 – Verbetering en groei:</strong> Uitbreiding naar meerdere sporten zoals hockey, handbal en volleybal. Deze uitbreiding heeft prioriteit boven aanvullende modules, zodat de kernarchitectuur wordt gevalideerd in verschillende sportcontexten.</li>
+<li><strong>Fase 3 – Schaalvergroting:</strong> Internationale uitrol, optimalisatie van hosting, databeveiliging en gebruikersbeheer.</li>
+<li><strong>Fase 4 – Nieuwe modules:</strong> Introductie van aanvullende functies zoals de Nieuwsbrief-generator en “Coach van het Jaar”. Zodra de multi-sportondersteuning stabiel is, wordt de focus verlegd naar verdiepende toepassingen binnen hetzelfde platform.</li>
+</ul>
+<p>De technische uitvoering sluit aan op de stack en API-logica die in het <em>Technical Design</em> zijn vastgelegd: <strong>Django REST API</strong> voor de backend, <strong>Next.js</strong> voor de frontend, en <strong>cloudopslag met beveiligde toegangstokens</strong> voor video-output. AI-workflows draaien binnen dezelfde infrastructuur en gebruiken clubdata (logo’s, kleuren, line-ups) om dynamische content te genereren zonder extra handwerk.</p>
+<p>De samenwerking tussen ontwerp, ontwikkeling en gebruikers wordt gestuurd via iteratieve releases. Feedback van clubs vormt steeds de basis voor de volgende sprint, waarin UI, AI-flows en contentconsistentie worden getest volgens de <em>Style Foundation</em> en <em>Brand Identity</em>. Zo groeit TeamReel gecontroleerd, met behoud van eenvoud en herkenbaarheid in elke versie van het product.</p>
+<hr>
+<h2 id="8-concurrentie--positionering">8. Concurrentie &amp; Positionering</h2>
+<h3 id="81-concurrentielandschap">8.1 Concurrentielandschap</h3>
+<p>De markt voor sportcommunicatie en contentcreatie groeit snel, maar blijft versnipperd. Er bestaan tools voor ontwerp, data en clubbeheer, maar geen enkel platform dat <strong>AI, video en clubstijl</strong> op een toegankelijke manier combineert. De meeste oplossingen richten zich óf op sportdata, óf op social content, maar zelden op de combinatie van beide binnen één workflow.</p>
+<table>
+<thead>
+<tr>
+<th>Speler</th>
+<th>Type</th>
+<th>Zwakte</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Canva</strong></td>
+<td>Ontwerpplatform</td>
+<td>Geen sportspecifieke sjablonen of koppeling met clubdata.</td>
+</tr>
+<tr>
+<td><strong>Scoreboard</strong></td>
+<td>SaaS voor sportdata</td>
+<td>Richt zich op statistieken, niet op storytelling.</td>
+</tr>
+<tr>
+<td><strong>Club-assistent.nl</strong></td>
+<td>CMS voor sportclubs</td>
+<td>Beperkte visuele mogelijkheden, geen AI.</td>
+</tr>
+<tr>
+<td><strong>Socialclubs.nl</strong></td>
+<td>Marketingbureau</td>
+<td>Niet schaalbaar, afhankelijk van handmatig werk.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-positionering-van-teamreel">8.2 Positionering van TeamReel</h3>
+<p>TeamReel vult het gat tussen designplatformen en sportdata-oplossingen. Het biedt één platform waar clubidentiteit, video en automatisering samenkomen —<br>
+technisch robuust (volgens het <em>Technical Design</em>), functioneel intuïtief (volgens het <em>Functional Design</em>) en visueel herkenbaar (volgens de <em>Brand Identity</em>).</p>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Wat TeamReel onderscheidt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Volledige automatisering</strong></td>
+<td>AI-workflows zetten teaminformatie om in kant-en-klare visuals.</td>
+</tr>
+<tr>
+<td><strong>Direct in clubstijl</strong></td>
+<td>Output volgt automatisch kleuren, logo’s en lettertypes van de vereniging.</td>
+</tr>
+<tr>
+<td><strong>SaaS-architectuur</strong></td>
+<td>Toegang via webapp met veilige API’s en schaalbare hosting.</td>
+</tr>
+<tr>
+<td><strong>Gebruiksgemak</strong></td>
+<td>Ontworpen voor vrijwilligers en trainers, niet voor designers.</td>
+</tr>
+<tr>
+<td><strong>Modulaire uitbreiding</strong></td>
+<td>Nieuwe templates of contenttypes zijn eenvoudig toe te voegen.</td>
+</tr>
+</tbody>
+</table>
+<p>De positionering is bewust pragmatisch: TeamReel is geen marketingbureau of designstudio, maar een <strong>praktische tool die de club zelf in handen houdt</strong>. Door automatisering te combineren met herkenbare stijl, krijgt elke vereniging de middelen om zich professioneel te presenteren — zonder extra werk of kosten.</p>
+<hr>
+<h2 id="9-slot--strategiecheck">9. Slot &amp; Strategiecheck</h2>
+<p>TeamReel is meer dan een product. Het is een manier om de trots, herkenbaarheid en samenwerking binnen sportverenigingen zichtbaar te maken. De visuele stijl, tone-of-voice en technische structuur zijn vastgelegd in de <em>Style Foundation</em> en <em>Brand Identity</em>, zodat elk document, scherm en AI-resultaat dezelfde eenvoud en energie uitstraalt.</p>
+<p>We bouwen aan een schaalbaar platform dat communicatie automatiseert, personaliseert en versterkt. De <strong>Content Generator</strong> vormt het fundament, maar het ecosysteem breidt zich stapsgewijs uit met nieuwe modules en functies. Zo blijft TeamReel relevant voor clubs van elk formaat.</p>
+<p>De samenwerking tussen strategie, ontwerp en techniek wordt gewaarborgd door de samenhang van de vijf kern-documenten: <em>Businessplan</em>, <em>Brand Identity</em>, <em>Functional Design</em>, <em>Technical Design</em> en <em>Projectplan</em>. Samen vormen ze één geïntegreerd raamwerk waarin visie, uitvoering en productontwikkeling op elkaar aansluiten.</p>
+<h3 id="strategiecheck">Strategiecheck</h3>
+<table>
+<thead>
+<tr>
+<th>Vraag</th>
+<th>Antwoord</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Is het probleem urgent en herkenbaar?</strong></td>
+<td>Ja – clubs willen zichtbaar zijn, maar missen tijd en middelen.</td>
+</tr>
+<tr>
+<td><strong>Is de oplossing schaalbaar?</strong></td>
+<td>Ja – modulaire opzet en herbruikbare workflows.</td>
+</tr>
+<tr>
+<td><strong>Is de doelgroep bereikbaar?</strong></td>
+<td>Ja – via social media, KNVB en lokale sportnetwerken.</td>
+</tr>
+<tr>
+<td><strong>Is de techniek haalbaar?</strong></td>
+<td>Ja – bewezen stack (Django REST, Next.js, cloudopslag).</td>
+</tr>
+<tr>
+<td><strong>Is er concurrentie?</strong></td>
+<td>Beperkt – geen directe self-service tool met sportspecifieke focus.</td>
+</tr>
+<tr>
+<td><strong>Is het verdienmodel houdbaar?</strong></td>
+<td>Ja – hybride systeem met vaste licenties en credits per gebruik.</td>
+</tr>
+<tr>
+<td><strong>Is de merkconsistentie geborgd?</strong></td>
+<td>Ja – via Style Foundation en Brand Identity in UI en AI-output.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="aanbeveling">Aanbeveling</h3>
+<p>Start in Q4 2025 met een gecontroleerde pilotfase bij 5–10 voetbalclubs. Verzamel feedback over gebruiksgemak, performance en herkenbaarheid van de output. Gebruik deze inzichten om de templates, UX en workflows verder te verfijnen. Schaal daarna gefaseerd op naar andere sporten en internationale pilots.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong><br>
+<em>TeamReel maakt van elke club een contentmerk — snel, herkenbaar en schaalbaar.</em></p>
+</blockquote>
+
+</body>
+</html>

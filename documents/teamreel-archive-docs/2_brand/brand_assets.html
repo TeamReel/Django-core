@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>brand_assets.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%F0%9F%8E%A8-brand-assets-%E2%80%93-teamreel">🎨 Brand Assets – TeamReel</h1>
+<blockquote>
+<p><strong>Sportieve energie, digitale helderheid.</strong></p>
+</blockquote>
+<hr>
+<h2 id="1-doel-van-dit-document">1. Doel van dit document</h2>
+<p>Dit document bundelt alle visuele bouwstenen van het merk <strong>TeamReel</strong>.<br>
+Het zorgt ervoor dat alle communicatie — van app tot presentatie — herkenbaar, consistent en professioneel blijft.<br>
+De inhoud sluit direct aan op de <em>Style Foundation</em> en <em>Brand Identity</em>.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Herkenbaarheid ontstaat door herhaling — één stijl, overal hetzelfde.</em></p>
+</blockquote>
+<hr>
+<h2 id="2-logos">2. Logo’s</h2>
+<p>TeamReel gebruikt een eenvoudig, herkenbaar logo dat kracht en beweging uitstraalt.<br>
+Het logo staat altijd vrij in witruimte en wordt nooit gecombineerd met andere grafische elementen of tekst.</p>
+<h3 id="21-aanbevolen-logoversies">2.1 Aanbevolen logoversies</h3>
+<p>Maak bij voorkeur <strong>vier varianten</strong> die in elk medium bruikbaar zijn:</p>
+<table>
+<thead>
+<tr>
+<th>Bestandsnaam</th>
+<th>Toepassing</th>
+<th>Achtergrond</th>
+<th>Bestandstype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>logo_primary.svg</code></td>
+<td>Hoofdlogo voor web &amp; print</td>
+<td>Licht of wit</td>
+<td>SVG / PNG</td>
+</tr>
+<tr>
+<td><code>logo_inverse.svg</code></td>
+<td>Gebruik op donkere achtergrond</td>
+<td>Donker</td>
+<td>SVG / PNG</td>
+</tr>
+<tr>
+<td><code>logo_icon.svg</code></td>
+<td>Kleine formaten (favicon, app-icon)</td>
+<td>Transparant</td>
+<td>SVG</td>
+</tr>
+<tr>
+<td><code>logo_monochrome.svg</code></td>
+<td>Eenvoudige variant voor zwart/wit</td>
+<td>Licht of drukwerk</td>
+<td>SVG / PDF</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> bewaar deze logo’s later in <code>/docs/2_brand/visuals/</code> of <code>/assets/branding/</code>.</p>
+</blockquote>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Eén logo, vier contexten — altijd scherp en herkenbaar.</em></p>
+</blockquote>
+<hr>
+<h2 id="3-kleurenpalet">3. Kleurenpalet</h2>
+<p>Het kleurenpalet van TeamReel weerspiegelt sportiviteit, helderheid en betrouwbaarheid.<br>
+De primaire kleur is blauw — energie en vertrouwen.<br>
+Secundaire kleuren ondersteunen de hiërarchie en brengen balans.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Kleur</th>
+<th>Hex-code</th>
+<th>Gebruik</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Primair</strong></td>
+<td>TeamReel Blauw</td>
+<td><code>#007BFF</code></td>
+<td>Knoppen, titels, highlights</td>
+</tr>
+<tr>
+<td><strong>Secundair</strong></td>
+<td>Zwartgrijs</td>
+<td><code>#1C1C1C</code></td>
+<td>Tekst en iconen</td>
+</tr>
+<tr>
+<td><strong>Accent</strong></td>
+<td>Zonnig Geel</td>
+<td><code>#FFD700</code></td>
+<td>Grafische details, hover, sportieve energie</td>
+</tr>
+<tr>
+<td><strong>Achtergrond</strong></td>
+<td>Wit</td>
+<td><code>#FFFFFF</code></td>
+<td>Layout- en componentbasis</td>
+</tr>
+<tr>
+<td><strong>Neutraal</strong></td>
+<td>Lichtgrijs</td>
+<td><code>#F3F4F6</code></td>
+<td>Borders, subtiele scheidingen</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Blauw voor vertrouwen, geel voor energie, wit voor ruimte.</em></p>
+</blockquote>
+<hr>
+<h2 id="4-typografie">4. Typografie</h2>
+<p>De typografie volgt een <strong>sportieve, moderne sans-serif stijl</strong> — strak, leesbaar en energiek.</p>
+<table>
+<thead>
+<tr>
+<th>Gebruik</th>
+<th>Lettertype</th>
+<th>Gewicht</th>
+<th>Alternatief (fallback)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Titels</strong></td>
+<td>Montserrat</td>
+<td>Bold / 700</td>
+<td>Arial Black</td>
+</tr>
+<tr>
+<td><strong>Subkoppen</strong></td>
+<td>Montserrat</td>
+<td>SemiBold / 600</td>
+<td>Helvetica</td>
+</tr>
+<tr>
+<td><strong>Lopende tekst</strong></td>
+<td>Inter</td>
+<td>Regular / 400</td>
+<td>Arial</td>
+</tr>
+<tr>
+<td><strong>Cijfers / UI</strong></td>
+<td>Inter</td>
+<td>Medium / 500</td>
+<td>Roboto</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Sterke vormen, veel witruimte, duidelijke hiërarchie.</em></p>
+</blockquote>
+<hr>
+<h2 id="5-iconografie">5. Iconografie</h2>
+<p>Iconen zijn <strong>lijngebaseerd en afgerond</strong> — sportief maar niet speels.<br>
+Gebruik een uniforme stijlset zoals <a href="https://lucide.dev">Lucide Icons</a> of <a href="https://heroicons.com/">Heroicons</a>.<br>
+Alle iconen volgen dezelfde kleurregels:</p>
+<ul>
+<li>Primair blauw voor actieve elementen</li>
+<li>Neutraal grijs voor niet-actieve elementen</li>
+<li>Wit voor iconen op donkere vlakken</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Eenvoudige vormen versterken herkenning.</em></p>
+</blockquote>
+<hr>
+<h2 id="6-fotografie--beeldstijl">6. Fotografie &amp; beeldstijl</h2>
+<p>Beelden tonen <strong>echte mensen, echte sportmomenten</strong>.<br>
+Geen stockfoto’s of gestileerde concepten.<br>
+Voorkeur voor:</p>
+<ul>
+<li>Actiebeelden met natuurlijke belichting</li>
+<li>Diversiteit in teams en emoties</li>
+<li>Dynamiek (beweging, expressie, energie)</li>
+</ul>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Laat sport zien zoals sport voelt — trots, energie, verbinding.</em></p>
+</blockquote>
+<hr>
+<h2 id="7-toepassing-in-communicatie">7. Toepassing in communicatie</h2>
+<table>
+<thead>
+<tr>
+<th>Toepassing</th>
+<th>Richtlijn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Presentaties</strong></td>
+<td>Gebruik witte of lichte achtergronden met primair blauw als accent.</td>
+</tr>
+<tr>
+<td><strong>Social media</strong></td>
+<td>Logo altijd vrijstaand, geen tekst eroverheen.</td>
+</tr>
+<tr>
+<td><strong>E-mails / templates</strong></td>
+<td>Gebruik primair blauw voor headers, secundair zwart voor tekst.</td>
+</tr>
+<tr>
+<td><strong>Video's / visuals</strong></td>
+<td>Consistente typografie en kleurtonen, afgestemd op de <em>Style Foundation</em>.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Consistentie bouwt vertrouwen, vertrouwen bouwt merkwaarde.</em></p>
+</blockquote>
+<hr>
+<h2 id="8-samenvatting">8. Samenvatting</h2>
+<p>De merkassets van TeamReel zijn ontworpen voor eenvoud, kracht en herhaalbaarheid.<br>
+Met één herkenbare stijl en duidelijke richtlijnen kunnen toekomstige ontwerpen — van UI tot posters — moeiteloos aansluiten bij het merk.</p>
+<blockquote>
+<p><strong>Kernboodschap:</strong> <em>Herkenning is het resultaat van discipline.</em></p>
+</blockquote>
+
+</body>
+</html>
