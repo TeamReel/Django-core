@@ -467,6 +467,8 @@ export default function UsersPage() {
   if (hasActiveFilters) {
       console.log(`[UsersPage] 📊 Results: ${filteredUsers.length}/${users.length}`);
   }
+
+  return (
     <AppShell>
       <PageHeader
         title={
