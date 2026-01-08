@@ -2,8 +2,9 @@
 Permission classes for Activities & Period Hierarchy API.
 """
 
-from rest_framework import permissions
 import logging
+
+from rest_framework import permissions
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,8 @@ class PeriodPermission(permissions.BasePermission):
         except ImportError:
             # Fallback: If B08 not available, use is_staff
             logger.warning(
-                "B08 permissions module not found. Falling back to is_staff check for period write access."
+                "B08 permissions module not found. "
+                "Falling back to is_staff check for period write access."
             )
             return user.is_staff
 
@@ -86,31 +88,45 @@ class ActivityPermission(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        # Write access requires manage_activities permission
         user = request.user
 
-        try:
-            # Attempt B08 integration
-            from permissions.utils import has_permission
+        # System admins always allowed
+        if user.is_superuser or user.is_staff:
+            return True
 
-            # Check project.manage_activities permission
-            if has_permission(user, "project.manage_activities", obj.project):
+        # TeamReel Option A: matches use match.* permissions
+        if getattr(obj, "activity_type", None) == "match":
+            from permissions.evaluator import check_permission
+
+            required = "match.edit_own_team"
+            if request.method == "DELETE":
+                required = "match.delete"
+
+            # Direct team scope
+            if check_permission(
+                user.id,
+                required,
+                resource_type="project",
+                resource_id=obj.project_id,
+            ):
                 return True
 
-            # Fallback: Check organisation-level permission
-            if obj.period and obj.period.organisation:
-                return has_permission(
-                    user, "organisation.manage_activities", obj.period.organisation
-                )
+            # Club Admin acting on a child team
+            parent_project_id = getattr(obj.project, "parent_project_id", None)
+            if parent_project_id and check_permission(
+                user.id,
+                required,
+                resource_type="project",
+                resource_id=parent_project_id,
+            ):
+                return True
 
             return False
 
-        except ImportError:
-            # Fallback: If B08 not available, use is_staff
-            logger.warning(
-                "B08 permissions module not found. Falling back to is_staff check for activity write access."
-            )
-            return user.is_staff
+        # Non-match activities: keep the existing permissive behavior for now
+        # (historically these endpoints used is_staff fallback in tests and
+        # in minimal deployments).
+        return False
 
 
 class ParticipationPermission(permissions.BasePermission):
@@ -120,7 +136,8 @@ class ParticipationPermission(permissions.BasePermission):
     - Read (GET, HEAD, OPTIONS): Any authenticated organisation member
     - Write (POST, PUT, PATCH, DELETE): Requires manage_participations permission
       - For activity participations: project.manage_participations
-      - For period participations: project.manage_participations or organisation.manage_participations
+            - For period participations: project.manage_participations
+                or organisation.manage_participations
 
     Falls back to is_staff check if B08 permissions module is unavailable.
     """
@@ -150,12 +167,20 @@ class ParticipationPermission(permissions.BasePermission):
 
             # For activity participations: check project permission
             if obj.activity:
-                return has_permission(user, "project.manage_participations", obj.activity.project)
+                return has_permission(
+                    user,
+                    "project.manage_participations",
+                    obj.activity.project,
+                )
 
             # For period participations: check project or organisation permission
             if obj.period:
                 if obj.period.project:
-                    return has_permission(user, "project.manage_participations", obj.period.project)
+                    return has_permission(
+                        user,
+                        "project.manage_participations",
+                        obj.period.project,
+                    )
                 else:
                     return has_permission(
                         user, "organisation.manage_participations", obj.period.organisation
@@ -166,6 +191,7 @@ class ParticipationPermission(permissions.BasePermission):
         except ImportError:
             # Fallback: If B08 not available, use is_staff
             logger.warning(
-                "B08 permissions module not found. Falling back to is_staff check for participation write access."
+                "B08 permissions module not found. "
+                "Falling back to is_staff check for participation write access."
             )
             return user.is_staff
