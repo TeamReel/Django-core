@@ -415,6 +415,14 @@ export default function UsersPage() {
   }
 
   // Client-side filtering
+  console.log('[UsersPage] 🔍 Active Filters:', {
+      roleFilter,
+      selectedOrgId,
+      selectedClubId,
+      selectedTeamId,
+      totalUsers: users.length
+  });
+
   const filteredUsers = users.filter((item: any) => {
       const isMembership = !!item.user;
       const user = isMembership ? item.user : item;
@@ -422,21 +430,27 @@ export default function UsersPage() {
       const userOrgs = user.organisations || [];
       const userProjects = user.projects || [];
 
-      // Debug: Log first user's project structure
-      if (users.indexOf(item) === 0 && (selectedClubId || selectedTeamId)) {
-          console.log('[Filter Debug] First user:', user.email);
-          console.log('[Filter Debug] User projects:', userProjects);
-          console.log('[Filter Debug] Selected club:', selectedClubId);
-          console.log('[Filter Debug] Selected team:', selectedTeamId);
-          if (userProjects.length > 0) {
-              console.log('[Filter Debug] Sample project structure:', userProjects[0]);
-          }
+      // Debug: Log first 3 users' filtering decisions
+      const userIndex = users.indexOf(item);
+      const shouldDebug = userIndex < 3 && (roleFilter || selectedClubId || selectedTeamId);
+
+      if (shouldDebug) {
+          console.log(`\n[Filter Debug] User #${userIndex + 1}: ${user.email}`);
+          console.log('  System Role:', systemRole, '| Filter:', roleFilter);
+          console.log('  User Projects:', userProjects.length, userProjects.map((p: any) => `${p.name} (id: ${p.id}, parent: ${p.parent || p.parent_id})`)  );
+          console.log('  Selected Club ID:', selectedClubId);
+          console.log('  Selected Team ID:', selectedTeamId);
       }
 
       // 1. Role Filter (TeamReel Hierarchy)
       if (roleFilter) {
           // Exact match - backend returns normalized roles
-          if (systemRole !== roleFilter) {
+          const matches = systemRole === roleFilter;
+          if (shouldDebug) {
+              console.log(`  🎭 Role Filter: "${systemRole}" === "${roleFilter}" ? ${matches}`);
+          }
+          if (!matches) {
+              if (shouldDebug) console.log('  ❌ FILTERED OUT by Role');
               return false;
           }
       }
@@ -459,24 +473,55 @@ export default function UsersPage() {
               // Check if user is in a team that belongs to this club (via parent field)
               const teamParent = p.parent || p.parent_id;
               const isTeamMemberOfClub = teamParent && (String(teamParent) === String(selectedClubId));
+
+              if (shouldDebug && (isDirectClubMember || isTeamMemberOfClub)) {
+                  console.log(`    🏢 Found club match in project: ${p.name}`, {
+                      isDirectClubMember,
+                      isTeamMemberOfClub,
+                      projectId: p.id,
+                      parentId: teamParent
+                  });
+              }
+
               return isDirectClubMember || isTeamMemberOfClub;
           });
 
-          if (!hasClubMembership) return false;
+          if (shouldDebug) {
+              console.log(`  🏢 Club Filter: hasClubMembership = ${hasClubMembership}`);
+          }
+          if (!hasClubMembership) {
+              if (shouldDebug) console.log('  ❌ FILTERED OUT by Club');
+              return false;
+          }
       }
 
       // 4. Team Filter (Projects with parent!=null)
       if (selectedTeamId) {
           // Check if user has membership in this specific team
-          const hasTeamMembership = userProjects.some((p: any) =>
-              (p.id === selectedTeamId || String(p.id) === selectedTeamId)
-          );
+          const hasTeamMembership = userProjects.some((p: any) => {
+              const matches = (p.id === selectedTeamId || String(p.id) === selectedTeamId);
+              if (shouldDebug && matches) {
+                  console.log(`    ⚽ Found team match: ${p.name} (id: ${p.id})`);
+              }
+              return matches;
+          });
 
-          if (!hasTeamMembership) return false;
+          if (shouldDebug) {
+              console.log(`  ⚽ Team Filter: hasTeamMembership = ${hasTeamMembership}`);
+          }
+          if (!hasTeamMembership) {
+              if (shouldDebug) console.log('  ❌ FILTERED OUT by Team');
+              return false;
+          }
       }
 
+      if (shouldDebug) {
+          console.log('  ✅ PASSED all filters');
+      }
       return true;
   });
+
+  console.log(`[UsersPage] 📊 Filtered Results: ${filteredUsers.length} / ${users.length} users`);
 
   return (
     <AppShell>
@@ -521,7 +566,10 @@ export default function UsersPage() {
                     <label style={{ fontSize: '14px', fontWeight: 500 }}>Role:</label>
                     <select
                         value={roleFilter}
-                        onChange={(e) => setRoleFilter(e.target.value)}
+                        onChange={(e) => {
+                            console.log('[UsersPage] 🎭 Role filter changed to:', e.target.value);
+                            setRoleFilter(e.target.value);
+                        }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
                         <option value="">All Roles</option>
@@ -550,6 +598,7 @@ export default function UsersPage() {
                     <select
                         value={selectedClubId}
                         onChange={(e) => {
+                            console.log('[UsersPage] 🏢 Club filter changed to:', e.target.value);
                             setSelectedClubId(e.target.value);
                             setSelectedTeamId(''); // Reset team filter when club changes
                         }}
@@ -579,7 +628,10 @@ export default function UsersPage() {
                     <label style={{ fontSize: '14px', fontWeight: 500 }}>Team:</label>
                     <select
                         value={selectedTeamId}
-                        onChange={(e) => setSelectedTeamId(e.target.value)}
+                        onChange={(e) => {
+                            console.log('[UsersPage] ⚽ Team filter changed to:', e.target.value);
+                            setSelectedTeamId(e.target.value);
+                        }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
                         <option value="">All Teams</option>
