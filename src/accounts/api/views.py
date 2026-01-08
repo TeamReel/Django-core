@@ -755,6 +755,9 @@ def admin_user_list(request):
     project_id = request.query_params.get("project_id")
     if project_id:
         from projects.models import Project
+        import logging
+
+        logger = logging.getLogger(__name__)
 
         proj = None
         try:
@@ -775,6 +778,14 @@ def admin_user_list(request):
             )
             project_ids.extend(child_projects)
 
+            logger.info(
+                f"[admin_user_list] Filtering by project: {proj.name} (ID: {proj.id}), child projects: {len(list(child_projects))}, total project_ids: {len(project_ids)}"
+            )
+
+            # Count before filter
+            count_before = queryset.count()
+            logger.info(f"[admin_user_list] Users BEFORE project filter: {count_before}")
+
             # Filter by ProjectMembership (new B26 system) OR RoleAssignment (legacy)
             queryset = queryset.filter(
                 Q(
@@ -783,6 +794,10 @@ def admin_user_list(request):
                 )
                 | Q(role_assignments__target_project_id__in=project_ids)
             ).distinct()
+
+            # Count after filter
+            count_after = queryset.count()
+            logger.info(f"[admin_user_list] Users AFTER project filter: {count_after}")
         else:
             return Response({"count": 0, "next": None, "previous": None, "results": []})
 
