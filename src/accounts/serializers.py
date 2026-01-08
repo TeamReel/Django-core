@@ -76,27 +76,29 @@ class UserListSerializer(serializers.ModelSerializer):
         Get user's highest role across all memberships.
 
         Role hierarchy (highest to lowest):
-        1. Land Admin (superadmin)
-        2. Club Admin (org admin or club-level project admin)
-        3. Team Admin (team-level project admin)
-        4. Team Staff (project staff role)
-        5. Team Member (project player role)
-        6. User (default)
+        1. Superadmin (Django superuser - all organisations)
+        2. Land Admin (Organisation admin - e.g., KNVB/DFB admin)
+        3. Club Admin (Project parent admin - e.g., Ajax club)
+        4. Team Admin (Project child admin - e.g., Ajax 1 team)
+        5. Team Staff (project staff/editor role)
+        6. Team Member (project player role)
+        7. Viewer (project viewer role)
+        8. User (default)
         """
         if obj.is_superuser:
-            return "Land Admin"
+            return "Superadmin"
 
-        # Check Organisation-level memberships (Club Admin)
+        # Check Organisation-level memberships (Land Admin)
         try:
             from organisations.models import Membership
 
             org_admin = Membership.objects.filter(user=obj, role="admin", is_active=True).exists()
             if org_admin:
-                return "Club Admin"
+                return "Land Admin"
         except ImportError:
             pass
 
-        # Check Project-level memberships (Team Admin/Staff/Member)
+        # Check Project-level memberships (Club Admin/Team Admin/Staff/Member)
         try:
             from projects.models import ProjectMembership
 
@@ -117,7 +119,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
                 # Check if it's a team-level project (has parent) with admin role
                 if pm.role == "admin" and pm.project.parent_project:
-                    if highest_role != "Club Admin":
+                    if highest_role not in ["Club Admin"]:
                         highest_role = "Team Admin"
 
                 # Staff/Editor role
