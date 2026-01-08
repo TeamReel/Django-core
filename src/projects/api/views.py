@@ -35,7 +35,7 @@ class ProjectCursorPagination(CursorPagination):
 
     page_size = 50
     page_size_query_param = "page_size"
-    max_page_size = 1000  # Increased from 100 to support large organisations with many clubs/teams
+    max_page_size = 200  # Reasonable page size - frontend recursively fetches all pages
     ordering = "-created_at"
 
 

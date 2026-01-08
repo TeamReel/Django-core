@@ -134,46 +134,70 @@ export default function UsersPage() {
       }
   }, [isSuperAdmin]);
 
-  // Fetch ALL clubs (Projects with parent=null) - load once, filter client-side
+  // Helper function to recursively fetch ALL pages from a paginated endpoint
+  const fetchAllPages = async (initialUrl: string): Promise<any[]> => {
+      const allResults: any[] = [];
+      let url: string | null = initialUrl;
+      let pageCount = 0;
+
+      while (url) {
+          pageCount++;
+          console.log(`[UsersPage] Fetching page ${pageCount}:`, url);
+
+          const res: Response = await fetch(url, {
+              credentials: 'include'
+          });
+
+          if (!res.ok) {
+              console.error(`[UsersPage] Failed to fetch page ${pageCount}:`, res.status);
+              break;
+          }
+
+          const data: any = await res.json();
+          // Handle B13 envelope: {status, data: {results, count, next}, meta}
+          const results = data.data?.results || data.results || [];
+          const next: string | null = data.data?.next || data.next || null;
+
+          allResults.push(...results);
+          console.log(`[UsersPage] Page ${pageCount}: fetched ${results.length} items (total so far: ${allResults.length})`);
+
+          // Continue to next page if it exists
+          url = next;
+      }
+
+      console.log(`[UsersPage] ✅ Finished fetching all ${pageCount} pages - Total items: ${allResults.length}`);
+      return allResults;
+  };
+
+  // Fetch ALL clubs (Projects with parent=null) - recursively fetch all pages
   useEffect(() => {
       const fetchClubs = async () => {
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
           try {
-              // Fetch all projects (increased page_size to get clubs + teams)
-              let url = `${apiBaseUrl}/api/v1/projects/?page_size=500`;
-              console.log('[UsersPage] Fetching ALL clubs from:', url);
-              const res = await fetch(url, {
-                  credentials: 'include'
+              // Start with page_size=200 for efficiency, but will fetch ALL pages
+              const initialUrl = `${apiBaseUrl}/api/v1/projects/?page_size=200`;
+              console.log('[UsersPage] Starting recursive fetch for ALL clubs...');
+
+              const allProjects = await fetchAllPages(initialUrl);
+
+              // Filter for parent projects only (clubs) - projects without parent_project
+              const parentProjects = allProjects.filter((p: any) => {
+                  const hasNoParent = !p.parent_project || p.parent_project === null || p.parent_project === undefined;
+                  return hasNoParent;
               });
-              if (res.ok) {
-                  const data = await res.json();
-                  // Handle B13 envelope: {status, data: {results, count}, meta}
-                  const allProjects = data.data?.results || data.results || [];
-                  const totalCount = data.data?.count || data.count || allProjects.length;
-                  console.log('[UsersPage] API returned:', totalCount, 'total projects (fetched:', allProjects.length, ')');
+              console.log('[UsersPage] Total clubs loaded:', parentProjects.length);
 
-                  // Filter for parent projects only (clubs) - projects without parent_project
-                  const parentProjects = allProjects.filter((p: any) => {
-                      const hasNoParent = !p.parent_project || p.parent_project === null || p.parent_project === undefined;
-                      return hasNoParent;
-                  });
-                  console.log('[UsersPage] Total clubs loaded:', parentProjects.length);
-
-                  // Log first 3 clubs to see structure
-                  if (parentProjects.length > 0) {
-                      console.log('[UsersPage] Sample clubs:', parentProjects.slice(0, 3).map((c: any) => ({
-                          name: c.name,
-                          id: c.id,
-                          organisation: c.organisation,
-                          org_id: c.organisation?.id
-                      })));
-                  }
-
-                  if (totalCount > allProjects.length) {
-                      console.warn('[UsersPage] ⚠️ Not all projects fetched! API has', totalCount, 'but only got', allProjects.length);
-                  }
-                  setClubs(parentProjects);
+              // Log first 3 clubs to see structure
+              if (parentProjects.length > 0) {
+                  console.log('[UsersPage] Sample clubs:', parentProjects.slice(0, 3).map((c: any) => ({
+                      name: c.name,
+                      id: c.id,
+                      organisation: c.organisation,
+                      org_id: c.organisation?.id
+                  })));
               }
+
+              setClubs(parentProjects);
           } catch (e) {
               console.error("Failed to fetch clubs for filter", e);
           }
@@ -181,40 +205,30 @@ export default function UsersPage() {
       fetchClubs();
   }, []); // Run once on mount
 
-  // Fetch ALL teams (Projects with parent!=null) - load once, filter client-side
+  // Fetch ALL teams (Projects with parent!=null) - recursively fetch all pages
   useEffect(() => {
       const fetchTeams = async () => {
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
           try {
-              // Fetch all projects (increased page_size to get clubs + teams)
-              let url = `${apiBaseUrl}/api/v1/projects/?page_size=500`;
-              console.log('[UsersPage] Fetching ALL teams from:', url);
-              const res = await fetch(url, {
-                  credentials: 'include'
+              // Start with page_size=200 for efficiency, but will fetch ALL pages
+              const initialUrl = `${apiBaseUrl}/api/v1/projects/?page_size=200`;
+              console.log('[UsersPage] Starting recursive fetch for ALL teams...');
+
+              const allProjects = await fetchAllPages(initialUrl);
+
+              console.log('[UsersPage] Projects with parent_project:', allProjects.filter((p: any) => p.parent_project).length);
+              console.log('[UsersPage] Projects without parent_project:', allProjects.filter((p: any) => !p.parent_project).length);
+
+              // Filter for teams (projects with parent_project)
+              const childProjects = allProjects.filter((p: any) => {
+                  return p.parent_project && p.parent_project !== null && p.parent_project !== undefined;
               });
-              if (res.ok) {
-                  const data = await res.json();
-                  const allProjects = data.data?.results || data.results || [];
-                  const totalCount = data.data?.count || data.count || allProjects.length;
-                  console.log('[UsersPage] API returned:', totalCount, 'total projects (fetched:', allProjects.length, ')');
-                  console.log('[UsersPage] Projects with parent_project:', allProjects.filter((p: any) => p.parent_project).length);
-                  console.log('[UsersPage] Projects without parent_project:', allProjects.filter((p: any) => !p.parent_project).length);
+              console.log('[UsersPage] Total teams loaded:', childProjects.length);
 
-                  // Filter for teams (projects with parent_project)
-                  const childProjects = allProjects.filter((p: any) => {
-                      return p.parent_project && p.parent_project !== null && p.parent_project !== undefined;
-                  });
-                  console.log('[UsersPage] Total teams loaded:', childProjects.length);
-
-                  if (totalCount > allProjects.length) {
-                      console.warn('[UsersPage] ⚠️ Not all projects fetched! API has', totalCount, 'but only got', allProjects.length);
-                  }
-
-                  if (childProjects.length > 0) {
-                      console.log('[UsersPage] Sample teams:', childProjects.slice(0, 5).map((t: any) => `${t.name} (parent: ${t.parent_project})`));
-                  }
-                  setTeams(childProjects);
+              if (childProjects.length > 0) {
+                  console.log('[UsersPage] Sample teams:', childProjects.slice(0, 5).map((t: any) => `${t.name} (parent: ${t.parent_project})`));
               }
+              setTeams(childProjects);
           } catch (e) {
               console.error("Failed to fetch teams for filter", e);
           }
