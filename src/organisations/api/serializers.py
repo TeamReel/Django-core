@@ -10,6 +10,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from organisations.models import Membership, Organisation
+from projects.models import ProjectMembership
+from activities.models import Period, Activity
 
 User = get_user_model()
 
@@ -36,6 +38,11 @@ class OrganisationListSerializer(serializers.ModelSerializer):
     member_count = serializers.SerializerMethodField()
     project_count = serializers.SerializerMethodField()
     user_role = serializers.SerializerMethodField()
+    clubs_count = serializers.SerializerMethodField()
+    teams_count = serializers.SerializerMethodField()
+    total_players_count = serializers.SerializerMethodField()
+    seasons_count = serializers.SerializerMethodField()
+    matches_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Organisation
@@ -48,6 +55,11 @@ class OrganisationListSerializer(serializers.ModelSerializer):
             "project_count",
             "user_role",
             "enable_theme_toggle",
+            "clubs_count",
+            "teams_count",
+            "total_players_count",
+            "seasons_count",
+            "matches_count",
         ]
         read_only_fields = fields
 
@@ -58,6 +70,31 @@ class OrganisationListSerializer(serializers.ModelSerializer):
     def get_project_count(self, obj):
         """Return count of projects."""
         return len(obj.projects.all())
+
+    def get_clubs_count(self, obj):
+        """Return count of root projects (Clubs)."""
+        return obj.projects.filter(parent_project=None).count()
+
+    def get_teams_count(self, obj):
+        """Return count of sub-projects (Teams)."""
+        return obj.projects.exclude(parent_project=None).count()
+
+    def get_total_players_count(self, obj):
+        """Return count of unique users across all projects in the organisation."""
+        return (
+            ProjectMembership.objects.filter(project__organisation=obj)
+            .values("user")
+            .distinct()
+            .count()
+        )
+
+    def get_seasons_count(self, obj):
+        """Return count of seasons."""
+        return Period.objects.filter(project__organisation=obj, parent_period=None).count()
+
+    def get_matches_count(self, obj):
+        """Return count of matches."""
+        return Activity.objects.filter(project__organisation=obj, activity_type="match").count()
 
     def get_user_role(self, obj):
         """Return current user's role in this organisation, or None."""

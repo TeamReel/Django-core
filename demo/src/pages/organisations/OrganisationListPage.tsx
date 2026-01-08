@@ -8,6 +8,15 @@ interface Organisation {
   slug: string;
   name: string;
   description?: string;
+
+  // Counts from API
+  member_count?: number;
+  project_count?: number;
+  clubs_count?: number;
+  teams_count?: number;
+  total_players_count?: number;
+  seasons_count?: number;
+  matches_count?: number;
 }
 
 export default function OrganisationListPage() {
@@ -102,6 +111,44 @@ export default function OrganisationListPage() {
               {org.description && (
                 <p style={{ color: 'var(--app-muted-text)', fontSize: '14px' }}>{org.description}</p>
               )}
+
+              {/* Data Overview Stats */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr 1fr',
+                gap: '12px',
+                margin: '16px 0',
+                padding: '12px',
+                backgroundColor: 'var(--app-bg-subtle, rgba(0,0,0,0.03))',
+                borderRadius: '6px',
+                fontSize: '13px'
+              }}>
+                 <div title="Root Projects (Clubs)">
+                   <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Clubs</div>
+                   <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.clubs_count ?? '-'}</div>
+                 </div>
+                 <div title="Sub Projects (Teams)">
+                   <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Teams</div>
+                   <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.teams_count ?? '-'}</div>
+                 </div>
+                 <div title="Active Player Memberships">
+                   <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Players</div>
+                   <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.total_players_count ?? '-'}</div>
+                 </div>
+                 <div title="Total Matches">
+                   <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Matches</div>
+                   <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.matches_count ?? '-'}</div>
+                 </div>
+                 <div title="Seasons">
+                   <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Seasons</div>
+                   <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.seasons_count ?? '-'}</div>
+                 </div>
+                 <div title="Org Admins">
+                    <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Admins</div>
+                    <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.member_count ?? '-'}</div>
+                 </div>
+              </div>
+
               <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                 <Link
                   to={`/organisations/${org.slug}`}

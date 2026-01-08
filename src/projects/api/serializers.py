@@ -4,6 +4,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from projects.models import Project, ProjectMembership, ProjectInvite, ProjectMembershipPromotion
+from activities.models import Activity, Period
 
 User = get_user_model()
 
@@ -88,6 +89,13 @@ class ProjectListSerializer(serializers.ModelSerializer):
     """
 
     organisation = OrganisationNestedSerializer(read_only=True)
+    member_count = serializers.SerializerMethodField()
+    seasons_count = serializers.SerializerMethodField()
+    matches_count = serializers.SerializerMethodField()
+    parent_id = serializers.UUIDField(source="parent_project.id", allow_null=True, read_only=True)
+    parent_name = serializers.CharField(
+        source="parent_project.name", allow_null=True, read_only=True
+    )
 
     class Meta:
         model = Project
@@ -102,8 +110,22 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "archived_at",
+            "member_count",
+            "seasons_count",
+            "matches_count",
+            "parent_id",
+            "parent_name",
         ]
         read_only_fields = ["id", "slug", "is_active", "created_at", "updated_at", "archived_at"]
+
+    def get_member_count(self, obj):
+        return obj.memberships.count()
+
+    def get_seasons_count(self, obj):
+        return Period.objects.filter(project=obj, parent_period=None).count()
+
+    def get_matches_count(self, obj):
+        return Activity.objects.filter(project=obj, activity_type="match").count()
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):

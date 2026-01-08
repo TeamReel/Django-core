@@ -10,6 +10,12 @@ interface Project {
   name: string;
   description?: string;
   status?: string;
+  // New API fields
+  member_count?: number;
+  seasons_count?: number;
+  matches_count?: number;
+  parent_id?: string | null;
+  parent_name?: string | null;
 }
 
 export default function ProjectListPage() {
@@ -105,58 +111,124 @@ export default function ProjectListPage() {
           />
         )}
 
-        <div style={{
-          display: 'grid',
-          gap: '20px',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))'
-        }}>
-          {projects.map(project => (
-            <div
-              key={project.id}
-              style={{
-                border: '1px solid var(--app-border)',
-                borderRadius: '8px',
-                padding: '20px',
-                backgroundColor: 'var(--app-surface)',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-              }}
-            >
-              <h3 style={{ marginTop: 0, color: 'var(--app-text)' }}>{project.name}</h3>
-              {project.status && (
-                <span style={{
-                  display: 'inline-block',
-                  padding: '4px 8px',
-                  backgroundColor: project.status === 'active' ? '#d4edda' : '#f8d7da',
-                  color: project.status === 'active' ? '#155724' : '#721c24',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  marginBottom: '12px'
-                }}>
-                  {project.status}
-                </span>
-              )}
-              {project.description && (
-                <p style={{ color: 'var(--app-muted-text)', fontSize: '14px' }}>{project.description}</p>
-              )}
-              <Link
-                to={`/organisations/${orgId}/projects/${project.slug || project.id}`}
-                style={{
-                  display: 'inline-block',
-                  marginTop: '12px',
-                  padding: '8px 16px',
-                  backgroundColor: '#007bff',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '4px',
-                  fontSize: '14px'
-                }}
-              >
-                View Details
-              </Link>
-            </div>
-          ))}
-        </div>
+        {!isLoading && !error && projects.length === 0 && (
+          <DefaultEmpty
+            title="No projects found"
+            message="This organisation doesn't have any projects yet. Create your first project to get started."
+          />
+        )}
+
+        {/* Group projects by parent (Club -> Teams) */}
+        {!isLoading && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Render Root Projects (Clubs) */}
+            {projects.filter(p => !p.parent_id).map(club => {
+              const teams = projects.filter(p => p.parent_id === club.id);
+
+              return (
+                <div
+                  key={club.id}
+                  style={{
+                    border: '1px solid var(--app-border)',
+                    borderRadius: '8px',
+                    padding: '24px',
+                    backgroundColor: 'var(--app-surface)',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <h3 style={{ margin: 0, color: 'var(--app-text)', fontSize: '20px' }}>{club.name}</h3>
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          color: '#666',
+                          backgroundColor: '#eee',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          textTransform: 'uppercase'
+                        }}>CLUB</span>
+                      </div>
+                      {club.description && (
+                        <p style={{ color: 'var(--app-muted-text)', fontSize: '14px', marginTop: '8px', marginBottom: '0' }}>{club.description}</p>
+                      )}
+                    </div>
+                    <div>
+                       <Link
+                        to={`/organisations/${orgId}/projects/${club.slug || club.id}`}
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: 'var(--app-primary, #007bff)',
+                          color: 'white',
+                          textDecoration: 'none',
+                          borderRadius: '4px',
+                          fontSize: '14px',
+                          fontWeight: 500
+                        }}
+                      >
+                        Manage Club
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Club Stats */}
+                  <div style={{ display: 'flex', gap: '24px', fontSize: '14px', color: '#555', paddingBottom: '16px', borderBottom: '1px solid #eee' }}>
+                     <div><strong>{teams.length}</strong> Teams</div>
+                     <div><strong>{club.member_count ?? 0}</strong> Direct Members</div>
+                  </div>
+
+                  {/* Teams Grid */}
+                  {teams.length > 0 ? (
+                    <div style={{ marginTop: '16px' }}>
+                      <h4 style={{ fontSize: '13px', textTransform: 'uppercase', color: '#888', margin: '0 0 12px 0', letterSpacing: '0.5px' }}>Active Teams</h4>
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gap: '12px'
+                      }}>
+                        {teams.map(team => (
+                          <div
+                            key={team.id}
+                            style={{
+                              padding: '12px 16px',
+                              backgroundColor: 'rgba(0,0,0,0.02)',
+                              border: '1px solid var(--app-border)',
+                              borderRadius: '6px',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <div>
+                               <Link
+                                 to={`/organisations/${orgId}/projects/${team.slug || team.id}`}
+                                 style={{ fontWeight: 600, color: 'var(--app-text)', textDecoration: 'none', display: 'block' }}
+                               >
+                                 {team.name}
+                               </Link>
+                               <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                                 {team.seasons_count ?? 0} Seasons • {team.matches_count ?? 0} Matches
+                               </div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                               <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--app-text)' }}>{team.member_count ?? 0}</div>
+                               <div style={{ fontSize: '10px', color: '#888' }}>PLAYERS</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: '16px', fontStyle: 'italic', color: '#888', fontSize: '14px' }}>
+                      No teams created for this club yet.
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </AppShell>
   );
