@@ -147,14 +147,21 @@ export default function UsersPage() {
               });
               if (res.ok) {
                   const data = await res.json();
-                  // Handle B13 envelope: {status, data: {results}, meta}
+                  // Handle B13 envelope: {status, data: {results, count}, meta}
                   const allProjects = data.data?.results || data.results || [];
+                  const totalCount = data.data?.count || data.count || allProjects.length;
+                  console.log('[UsersPage] API returned:', totalCount, 'total projects (fetched:', allProjects.length, ')');
+
                   // Filter for parent projects only (clubs) - projects without parent_project
                   const parentProjects = allProjects.filter((p: any) => {
                       const hasNoParent = !p.parent_project || p.parent_project === null || p.parent_project === undefined;
                       return hasNoParent;
                   });
                   console.log('[UsersPage] Total clubs loaded:', parentProjects.length);
+
+                  if (totalCount > allProjects.length) {
+                      console.warn('[UsersPage] ⚠️ Not all projects fetched! API has', totalCount, 'but only got', allProjects.length);
+                  }
                   setClubs(parentProjects);
               }
           } catch (e) {
@@ -178,14 +185,21 @@ export default function UsersPage() {
               if (res.ok) {
                   const data = await res.json();
                   const allProjects = data.data?.results || data.results || [];
-                  console.log('[UsersPage] Total projects fetched:', allProjects.length);
+                  const totalCount = data.data?.count || data.count || allProjects.length;
+                  console.log('[UsersPage] API returned:', totalCount, 'total projects (fetched:', allProjects.length, ')');
                   console.log('[UsersPage] Projects with parent_project:', allProjects.filter((p: any) => p.parent_project).length);
                   console.log('[UsersPage] Projects without parent_project:', allProjects.filter((p: any) => !p.parent_project).length);
+
                   // Filter for teams (projects with parent_project)
                   const childProjects = allProjects.filter((p: any) => {
                       return p.parent_project && p.parent_project !== null && p.parent_project !== undefined;
                   });
                   console.log('[UsersPage] Total teams loaded:', childProjects.length);
+
+                  if (totalCount > allProjects.length) {
+                      console.warn('[UsersPage] ⚠️ Not all projects fetched! API has', totalCount, 'but only got', allProjects.length);
+                  }
+
                   if (childProjects.length > 0) {
                       console.log('[UsersPage] Sample teams:', childProjects.slice(0, 5).map((t: any) => `${t.name} (parent: ${t.parent_project})`));
                   }

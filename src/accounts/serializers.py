@@ -75,7 +75,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
     def get_role(self, obj):
         """
-        Get user's highest role across all memberships.
+        Get user's highest role from RBAC system (primary) with fallback to calculated role.
 
         Role hierarchy (highest to lowest):
         1. Superadmin (Django superuser - all organisations)
@@ -87,6 +87,28 @@ class UserListSerializer(serializers.ModelSerializer):
         7. Viewer (project viewer role)
         8. User (default)
         """
+        # 1. Check RBAC RoleAssignment first (primary source of truth)
+        try:
+            from permissions.models import RoleAssignment
+
+            assignments = RoleAssignment.objects.filter(user=obj).select_related("role")
+            if assignments.exists():
+                # Return highest role based on hierarchy
+                role_priority = {
+                    "Land Admin": 1,
+                    "Club Admin": 2,
+                    "Team Admin": 3,
+                    "Team Staff": 4,
+                    "Team Member": 5,
+                    "Supporter": 6,
+                    "Viewer": 7,
+                }
+                highest = min(assignments, key=lambda ra: role_priority.get(ra.role.name, 999))
+                return highest.role.name
+        except (ImportError, Exception):
+            pass
+
+        # 2. Fallback to calculated role (backwards compatibility)
         if obj.is_superuser:
             return "Superadmin"
 
