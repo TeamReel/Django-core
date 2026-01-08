@@ -447,6 +447,14 @@ export default function UsersPage() {
               const isDirectClubMember = String(p.id) === String(selectedClubId);
               const teamParent = p.parent || p.parent_id;
               const isTeamMemberOfClub = teamParent && (String(teamParent) === String(selectedClubId));
+
+              // Debug first user
+              if (users.indexOf(item) === 0) {
+                  console.log(`[Club Filter] User: ${user.email}, Project: ${p.name} (${p.id})`);
+                  console.log(`  - parent: ${teamParent}, selectedClub: ${selectedClubId}`);
+                  console.log(`  - Direct match: ${isDirectClubMember}, Parent match: ${isTeamMemberOfClub}`);
+              }
+
               return isDirectClubMember || isTeamMemberOfClub;
           });
 
@@ -549,7 +557,7 @@ export default function UsersPage() {
                             setSelectedClubId(clubId);
                             setSelectedTeamId(''); // Reset team filter when club changes
                         }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', maxWidth: '150px' }}
                     >
                         <option value="">All Clubs</option>
                         {clubs
@@ -575,7 +583,7 @@ export default function UsersPage() {
                             console.log('[UsersPage] ⚽ Team filter changed to:', teamId, `(${teamName})`);
                             setSelectedTeamId(teamId);
                         }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', maxWidth: '150px' }}
                     >
                         <option value="">All Teams</option>
                         {teams
