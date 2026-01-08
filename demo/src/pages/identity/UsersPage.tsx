@@ -308,14 +308,19 @@ export default function UsersPage() {
 
           if (roleFilter === 'League Admin') {
               // Check if user is Org Admin of a KNVB/Federation type org
-              // For simplicity in demo, checking "KNVB" or "Federation" in org name
-              roleMatches = userOrgs.some((o: any) => o.name.includes('KNVB') && o.role.toLowerCase().includes('admin'));
+              // For simplicity in demo, checking known League/Fed slugs or names
+              const leagueOrgs = ['knvb', 'dfb', 'the-fa', 'figc', 'rfef', 'fff'];
+              roleMatches = userOrgs.some((o: any) =>
+                  (leagueOrgs.includes(o.slug.toLowerCase()) || o.name.includes('Federation') || o.name.includes('Football Association'))
+                  && o.role.toLowerCase().includes('admin')
+              );
           }
           else if (roleFilter === 'Club Director') {
-              // Org Admin of a club (not KNVB)
-              // Or specifically Role Assignment "Club Admin" (which we might have mapped to "Org Admin")
+              // Org Admin of a club (not In League List)
+              const leagueOrgs = ['knvb', 'dfb', 'the-fa', 'figc', 'rfef', 'fff'];
               roleMatches = userOrgs.some((o: any) =>
-                !o.name.includes('KNVB') &&
+                !leagueOrgs.includes(o.slug.toLowerCase()) &&
+                !o.name.includes('Federation') &&
                 (o.role.toLowerCase().includes('admin') || o.role.toLowerCase().includes('director'))
               );
           }
