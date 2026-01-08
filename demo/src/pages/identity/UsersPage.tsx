@@ -415,13 +415,10 @@ export default function UsersPage() {
   }
 
   // Client-side filtering
-  console.log('[UsersPage] 🔍 Active Filters:', {
-      roleFilter,
-      selectedOrgId,
-      selectedClubId,
-      selectedTeamId,
-      totalUsers: users.length
-  });
+  const hasActiveFilters = roleFilter || selectedOrgId || selectedClubId || selectedTeamId;
+  if (hasActiveFilters) {
+      console.log('[UsersPage] 🔍 Filters:', { roleFilter, selectedOrgId, selectedClubId, selectedTeamId });
+  }
 
   const filteredUsers = users.filter((item: any) => {
       const isMembership = !!item.user;
@@ -429,30 +426,9 @@ export default function UsersPage() {
       const systemRole = user.role || '';
       const userOrgs = user.organisations || [];
       const userProjects = user.projects || [];
-
-      // Debug: Log first 3 users' filtering decisions
-      const userIndex = users.indexOf(item);
-      const shouldDebug = userIndex < 3 && (roleFilter || selectedClubId || selectedTeamId);
-
-      if (shouldDebug) {
-          console.log(`\n[Filter Debug] User #${userIndex + 1}: ${user.email}`);
-          console.log('  System Role:', systemRole, '| Filter:', roleFilter);
-          console.log('  User Projects:', userProjects.length, userProjects.map((p: any) => `${p.name} (id: ${p.id}, parent: ${p.parent || p.parent_id})`)  );
-          console.log('  Selected Club ID:', selectedClubId);
-          console.log('  Selected Team ID:', selectedTeamId);
-      }
-
       // 1. Role Filter (TeamReel Hierarchy)
-      if (roleFilter) {
-          // Exact match - backend returns normalized roles
-          const matches = systemRole === roleFilter;
-          if (shouldDebug) {
-              console.log(`  🎭 Role Filter: "${systemRole}" === "${roleFilter}" ? ${matches}`);
-          }
-          if (!matches) {
-              if (shouldDebug) console.log('  ❌ FILTERED OUT by Role');
-              return false;
-          }
+      if (roleFilter && systemRole !== roleFilter) {
+          return false;
       }
 
       // 2. Organisation Filter
@@ -467,64 +443,30 @@ export default function UsersPage() {
 
       // 3. Club Filter (Projects with parent=null)
       if (selectedClubId) {
-          // Check if user has membership in this club OR any team under this club
           const hasClubMembership = userProjects.some((p: any) => {
               const isDirectClubMember = String(p.id) === String(selectedClubId);
-              // Check if user is in a team that belongs to this club (via parent field)
               const teamParent = p.parent || p.parent_id;
               const isTeamMemberOfClub = teamParent && (String(teamParent) === String(selectedClubId));
-
-              if (shouldDebug) {
-                  console.log(`    📦 Checking project "${p.name}" (id: ${p.id}, parent: ${teamParent})`);
-                  console.log(`       - Direct club member? ${String(p.id)} === ${selectedClubId} → ${isDirectClubMember}`);
-                  console.log(`       - Team member of club? ${String(teamParent)} === ${selectedClubId} → ${isTeamMemberOfClub}`);
-              }
-
-              if (shouldDebug && (isDirectClubMember || isTeamMemberOfClub)) {
-                  console.log(`    ✅ MATCH found in project: ${p.name}`);
-              }
-
               return isDirectClubMember || isTeamMemberOfClub;
           });
 
-          if (shouldDebug) {
-              console.log(`  🏢 Club Filter Result: hasClubMembership = ${hasClubMembership}`);
-          }
-          if (!hasClubMembership) {
-              if (shouldDebug) console.log('  ❌ FILTERED OUT by Club');
-              return false;
-          }
+          if (!hasClubMembership) return false;
       }
 
       // 4. Team Filter (Projects with parent!=null)
       if (selectedTeamId) {
-          // Check if user has membership in this specific team
-          const hasTeamMembership = userProjects.some((p: any) => {
-              const matches = (p.id === selectedTeamId || String(p.id) === selectedTeamId);
-              if (shouldDebug && matches) {
-                  console.log(`    ⚽ Found team match: ${p.name} (id: ${p.id})`);
-              }
-              return matches;
-          });
-
-          if (shouldDebug) {
-              console.log(`  ⚽ Team Filter: hasTeamMembership = ${hasTeamMembership}`);
-          }
-          if (!hasTeamMembership) {
-              if (shouldDebug) console.log('  ❌ FILTERED OUT by Team');
-              return false;
-          }
+          const hasTeamMembership = userProjects.some((p: any) =>
+              p.id === selectedTeamId || String(p.id) === selectedTeamId
+          );
+          if (!hasTeamMembership) return false;
       }
 
-      if (shouldDebug) {
-          console.log('  ✅ PASSED all filters');
-      }
       return true;
   });
 
-  console.log(`[UsersPage] 📊 Filtered Results: ${filteredUsers.length} / ${users.length} users`);
-
-  return (
+  if (hasActiveFilters) {
+      console.log(`[UsersPage] 📊 Results: ${filteredUsers.length}/${users.length}`);
+  }
     <AppShell>
       <PageHeader
         title={
@@ -613,19 +555,13 @@ export default function UsersPage() {
                                 // Filter by selected organisation if set - compare UUID strings
                                 if (selectedOrgId) {
                                     const clubOrg = typeof club.organisation === 'string' ? club.organisation : club.organisation?.id;
-                                    const matches = clubOrg === selectedOrgId || String(clubOrg) === selectedOrgId;
-                                    if (!matches) {
-                                        console.log('[Filter Debug] Club', club.name, 'rejected - org:', clubOrg, 'vs selected:', selectedOrgId);
-                                        return false;
-                                    }
-                                    console.log('[Filter Debug] Club', club.name, 'accepted - org:', clubOrg, 'matches selected:', selectedOrgId);
+                                    return clubOrg === selectedOrgId || String(clubOrg) === selectedOrgId;
                                 }
                                 return true;
                             })
-                            .map(club => {
-                                console.log('[Filter Debug] Rendering club option:', club.name, '(org:', typeof club.organisation === 'string' ? club.organisation : club.organisation?.id, ')');
-                                return <option key={club.id} value={club.id}>{club.name}</option>;
-                            })}
+                            .map(club => (
+                                <option key={club.id} value={club.id}>{club.name}</option>
+                            ))}
                     </select>
 
                     <label style={{ fontSize: '14px', fontWeight: 500 }}>Team:</label>
