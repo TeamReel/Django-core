@@ -395,6 +395,11 @@ export default function UsersPage() {
             params.append('is_active', 'false');
         }
 
+        // Role filter (server-side) so it works across pagination
+        if (roleFilter) {
+            params.append('role_label', roleFilter);
+        }
+
         url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
         console.log('[UsersPage] 📡 API Call:', url);
       } else if (effectiveOrgSlug) {
@@ -418,6 +423,11 @@ export default function UsersPage() {
             params.append('is_active', 'true');
         } else if (statusFilter === 'inactive') {
             params.append('is_active', 'false');
+        }
+
+        // Role filter (server-side)
+        if (roleFilter) {
+            params.append('role_label', roleFilter);
         }
 
         url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
@@ -729,6 +739,24 @@ export default function UsersPage() {
                                 <option key={team.id} value={team.id}>{team.name}</option>
                             ))}
                     </select>
+
+                    <Button
+                        variant="secondary"
+                        onClick={() => {
+                            setStatusFilter('active');
+                            setRoleFilter('');
+                            if (isSuperAdmin) {
+                                setSelectedOrgId('');
+                            }
+                            setSelectedClubId('');
+                            setSelectedClubKey('');
+                            setSelectedTeamId('');
+                            setSelectedTeamKey('');
+                            resetPageToFirst();
+                        }}
+                    >
+                        Clear filters
+                    </Button>
                     </>
 
                 )}

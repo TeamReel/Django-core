@@ -634,6 +634,10 @@ def admin_user_list(request):
         elif role == "user":
             queryset = queryset.filter(groups__name="user", is_superuser=False)
 
+    # Filter by computed demo role label (e.g. "Team Admin", "Club Admin", "Team Member")
+    # This is intentionally in-Python (not DB-annotated) to keep logic aligned with serializer.
+    role_label = request.query_params.get("role_label")
+
     # Filter by organisation (if provided)
     organisation_id = request.query_params.get("organisation_id")
     if organisation_id:
@@ -799,6 +803,101 @@ def admin_user_list(request):
             return Response({"count": 0, "next": None, "previous": None, "results": []})
 
     # Paginate
+    if role_label:
+        # Prefetch relations needed to compute roles without N+1 queries.
+        queryset = queryset.prefetch_related(
+            "organisation_memberships__organisation",
+            "project_memberships__project__organisation",
+            "project_memberships__project__parent_project",
+            "role_assignments__role",
+            "role_assignments__target_organization",
+            "role_assignments__target_project__organisation",
+        )
+
+        wanted = str(role_label).strip().lower()
+
+        def compute_role_label(u):
+            # 0. Superuser is always Superadmin
+            if getattr(u, "is_superuser", False):
+                return "Superadmin"
+
+            # 1. RBAC RoleAssignment (primary)
+            try:
+                assignments = list(getattr(u, "role_assignments", []).all())
+                if assignments:
+                    role_priority = {
+                        "Land Admin": 1,
+                        "Club Admin": 2,
+                        "Team Admin": 3,
+                        "Team Staff": 4,
+                        "Team Member": 5,
+                        "Supporter": 6,
+                        "Viewer": 7,
+                    }
+
+                    best = None
+                    best_rank = 999
+                    for ra in assignments:
+                        name = getattr(getattr(ra, "role", None), "name", None)
+                        if not name:
+                            continue
+                        rank = role_priority.get(name, 999)
+                        if rank < best_rank:
+                            best = name
+                            best_rank = rank
+                    if best:
+                        return best
+            except Exception:
+                pass
+
+            # 2. Organisation membership admin (legacy)
+            try:
+                memberships = list(getattr(u, "organisation_memberships", []).all())
+                if any(
+                    getattr(m, "role", None) == "admin" and getattr(m, "is_active", False)
+                    for m in memberships
+                ):
+                    return "Land Admin"
+            except Exception:
+                pass
+
+            # 3. Project memberships (fallback)
+            try:
+                project_memberships = list(getattr(u, "project_memberships", []).all())
+
+                # Determine highest role across memberships
+                highest = None
+
+                for pm in project_memberships:
+                    proj = getattr(pm, "project", None)
+                    if not proj:
+                        continue
+
+                    pm_role = getattr(pm, "role", None)
+                    is_team = bool(getattr(proj, "parent_project", None))
+
+                    if pm_role == "admin" and not is_team:
+                        return "Club Admin"
+                    if pm_role == "admin" and is_team:
+                        if highest not in ["Club Admin"]:
+                            highest = "Team Admin"
+                    elif pm_role in ["staff", "editor"] and highest not in [
+                        "Club Admin",
+                        "Team Admin",
+                    ]:
+                        highest = "Team Staff"
+                    elif pm_role == "player" and not highest:
+                        highest = "Team Member"
+                    elif pm_role == "viewer" and not highest:
+                        highest = "Viewer"
+
+                return highest or "User"
+            except Exception:
+                return "User"
+
+        queryset_list = list(queryset)
+        queryset = [u for u in queryset_list if compute_role_label(u).strip().lower() == wanted]
+
     paginator = UserPagination()
     page = paginator.paginate_queryset(queryset, request)
     serializer = UserListSerializer(page, many=True)
