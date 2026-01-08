@@ -28,18 +28,36 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_organisations(self, obj):
         """Return list of organisations this user belongs to."""
+        orgs_data = {}
+
+        # 1. Direct organisation memberships
         memberships = Membership.objects.filter(user=obj, is_active=True).select_related(
             "organisation"
         )
-        return [
-            {
+        for m in memberships:
+            orgs_data[m.organisation.id] = {
                 "id": str(m.organisation.id),
                 "name": m.organisation.name,
                 "slug": m.organisation.slug,
                 "role": m.role,
             }
-            for m in memberships
-        ]
+
+        # 2. Project memberships (infer organisation from project)
+        project_memberships = ProjectMembership.objects.filter(user=obj).select_related(
+            "project__organisation"
+        )
+        for pm in project_memberships:
+            if pm.project and pm.project.organisation:
+                org = pm.project.organisation
+                if org.id not in orgs_data:
+                    orgs_data[org.id] = {
+                        "id": str(org.id),
+                        "name": org.name,
+                        "slug": org.slug,
+                        "role": pm.role,
+                    }
+
+        return list(orgs_data.values())
 
 
 class OrganisationListSerializer(serializers.ModelSerializer):

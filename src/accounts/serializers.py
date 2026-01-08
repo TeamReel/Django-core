@@ -83,7 +83,7 @@ class UserListSerializer(serializers.ModelSerializer):
         """Get user's organisations."""
         orgs_data = {}
 
-        # 1. Direct Memberships
+        # 1. Direct Memberships (Organisation level)
         try:
             from organisations.models import Membership
 
@@ -101,7 +101,32 @@ class UserListSerializer(serializers.ModelSerializer):
         except ImportError:
             pass
 
-        # 2. Role Assignments (Project or Org scope)
+        # 2. Project Memberships (Team/Project level → infer Organisation)
+        try:
+            from projects.models import ProjectMembership
+
+            project_memberships = ProjectMembership.objects.filter(user=obj).select_related(
+                "project__organisation"
+            )
+
+            for pm in project_memberships:
+                if pm.project and pm.project.organisation:
+                    org = pm.project.organisation
+                    role_info = pm.role
+
+                    if org.id not in orgs_data:
+                        orgs_data[org.id] = {
+                            "id": str(org.id),
+                            "name": org.name,
+                            "slug": org.slug,
+                            "role": role_info,
+                            "project_membership_id": str(pm.id),
+                        }
+                    # If user has multiple project memberships in same org, keep first role
+        except ImportError:
+            pass
+
+        # 3. Role Assignments (Project or Org scope)
         try:
             from permissions.models import RoleAssignment, ScopeChoices
 
