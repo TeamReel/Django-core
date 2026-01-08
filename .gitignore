@@ -83,3 +83,12 @@ Thumbs.db
 # Spec Kitty tooling
 .kittify/
 node_modules
+
+# Large Data Exports & Backups
+SoccerWiki_*.json
+backup_*
+*.sqlite
+*.pdf
+
+# Temporary Inspection Scripts
+check_*.py
