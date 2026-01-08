@@ -53,7 +53,8 @@ class IsOrganisationMemberOrAdmin(permissions.BasePermission):
                     return True
 
                 # Check for assignment on ANY project in the organisation
-                # This is expensive but necessary for list views if we want to allow project members to see the list
+                # This is expensive but necessary for list views if we want to allow
+                # project members to see the list
                 # Ideally we should filter the list instead of blocking access
                 # But for now, let's allow if they have any role
                 has_any_project_role = RoleAssignment.objects.filter(
@@ -88,6 +89,40 @@ class IsOrganisationMemberOrAdmin(permissions.BasePermission):
         # Superusers (admin role) have full access
         if request.user.is_superuser or request.user.is_staff:
             return True
+
+        # 0. TeamReel RBAC: project scoped permissions
+        from permissions.evaluator import check_permission
+
+        if request.method in permissions.SAFE_METHODS:
+            # Read: allow if they are a member of the project (data layer)
+            from projects.models import ProjectMembership
+
+            if ProjectMembership.objects.filter(
+                project=obj, user=request.user, deleted_at__isnull=True
+            ).exists():
+                return True
+
+            # Or if they hold any role assignment on the project/org (handled below),
+            # or can view/edit via TeamReel permissions.
+
+        else:
+            # Write: allow if they can edit this project
+            if check_permission(
+                request.user.id,
+                "project.edit_own",
+                resource_type="project",
+                resource_id=obj.id,
+            ):
+                return True
+
+            # Club Admin: edit child teams
+            if obj.parent_project_id and check_permission(
+                request.user.id,
+                "project.edit_children",
+                resource_type="project",
+                resource_id=obj.parent_project_id,
+            ):
+                return True
 
         # 1. Check direct organisation membership
         is_member = request.user.organisation_memberships.filter(
@@ -124,7 +159,9 @@ class IsOrganisationMemberOrAdmin(permissions.BasePermission):
 
         # Check for assignment on the organisation
         has_org_role = RoleAssignment.objects.filter(
-            user=request.user, target_organization=obj.organisation, scope=ScopeChoices.ORGANIZATION
+            user=request.user,
+            target_organization=obj.organisation,
+            scope=ScopeChoices.ORGANIZATION,
         ).exists()
 
         if has_org_role:
@@ -166,6 +203,26 @@ class IsProjectMemberOrOrgAdmin(IsOrganisationMemberOrAdmin):
                 ProjectMembership.Role.EDITOR,
                 ProjectMembership.Role.ADMIN,
             ]:
+                return True
+
+        # 1b. TeamReel RBAC: allow write if project permissions are present
+        from permissions.evaluator import check_permission
+
+        if request.method not in permissions.SAFE_METHODS:
+            if check_permission(
+                request.user.id,
+                "project.edit_own",
+                resource_type="project",
+                resource_id=obj.id,
+            ):
+                return True
+
+            if obj.parent_project_id and check_permission(
+                request.user.id,
+                "project.edit_children",
+                resource_type="project",
+                resource_id=obj.parent_project_id,
+            ):
                 return True
 
         # 2. Fallback to Org Admin/Member check

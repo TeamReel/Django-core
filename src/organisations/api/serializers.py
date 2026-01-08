@@ -6,12 +6,12 @@ Provides:
 - OrganisationCreateSerializer: Write serializer with validation
 """
 
+from activities.models import Activity, Period
 from django.contrib.auth import get_user_model
+from projects.models import ProjectMembership
 from rest_framework import serializers
 
 from organisations.models import Membership, Organisation
-from projects.models import ProjectMembership
-from activities.models import Period, Activity
 
 User = get_user_model()
 
@@ -99,8 +99,17 @@ class OrganisationListSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_member_count(self, obj):
-        """Return count of active members."""
-        return len([m for m in obj.memberships.all() if m.is_active])
+        """Return count of active members (direct org + project members)."""
+        direct_user_ids = {m.user_id for m in obj.memberships.all() if m.is_active}
+        project_user_ids = set(
+            ProjectMembership.objects.filter(
+                project__organisation=obj,
+                deleted_at__isnull=True,
+            )
+            .values_list("user_id", flat=True)
+            .distinct()
+        )
+        return len(direct_user_ids | project_user_ids)
 
     def get_project_count(self, obj):
         """Return count of projects."""
@@ -180,8 +189,17 @@ class OrganisationSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_member_count(self, obj):
-        """Return count of active members."""
-        return len([m for m in obj.memberships.all() if m.is_active])
+        """Return count of active members (direct org + project members)."""
+        direct_user_ids = {m.user_id for m in obj.memberships.all() if m.is_active}
+        project_user_ids = set(
+            ProjectMembership.objects.filter(
+                project__organisation=obj,
+                deleted_at__isnull=True,
+            )
+            .values_list("user_id", flat=True)
+            .distinct()
+        )
+        return len(direct_user_ids | project_user_ids)
 
     def get_admin_count(self, obj):
         """Return count of active admin members."""
@@ -299,15 +317,13 @@ class MembershipCreateSerializer(serializers.ModelSerializer):
 
         try:
             user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            raise serializers.ValidationError({"email": "User does not exist."})
+        except User.DoesNotExist as e:
+            raise serializers.ValidationError({"email": "User does not exist."}) from e
 
         attrs["user"] = user
 
         # Resolve organisation
         import uuid
-
-        from organisations.models import Organisation
 
         try:
             # Check if it's a UUID
@@ -317,8 +333,8 @@ class MembershipCreateSerializer(serializers.ModelSerializer):
             # Try as slug
             try:
                 org = Organisation.objects.get(slug=org_pk)
-            except Organisation.DoesNotExist:
-                raise serializers.ValidationError("Organisation not found.")
+            except Organisation.DoesNotExist as e:
+                raise serializers.ValidationError("Organisation not found.") from e
 
         # Store org for create method
         attrs["organisation"] = org

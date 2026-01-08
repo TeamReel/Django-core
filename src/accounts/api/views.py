@@ -13,7 +13,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.decorators.csrf import ensure_csrf_cookie
 from permissions.evaluator import check_permission
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -211,7 +211,12 @@ class LogoutView(APIView):
                 token = RefreshToken(refresh_token)
                 token.blacklist()
             except Exception:
-                pass
+                import logging
+
+                logging.getLogger(__name__).debug(
+                    "Failed to blacklist refresh token during logout",
+                    exc_info=True,
+                )
 
         if request.user.is_authenticated:
             audit_log.record("auth.logout", user=request.user, request=request)
@@ -526,7 +531,42 @@ def admin_user_list(request):
 
     if not is_global_admin:
         organisation_id = request.query_params.get("organisation_id")
-        if organisation_id:
+        project_id = request.query_params.get("project_id")
+
+        # TeamReel Option A:
+        # - Allow project-scoped listing for Club/Team Admin via `profile.edit_team`
+        #   on that project.
+        # - Allow org-scoped listing for Land Admin via `profile.edit_team` on that
+        #   organisation.
+        # Keep legacy org permissions for older flows.
+        if project_id and request.method == "GET":
+            import uuid
+
+            from projects.models import Project
+
+            proj_check = None
+            try:
+                uuid.UUID(project_id)
+                proj_check = Project.all_objects.filter(id=project_id).first()
+            except ValueError:
+                proj_check = Project.all_objects.filter(slug__iexact=project_id).first()
+
+            if not proj_check:
+                return Response({"detail": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            has_perm = check_permission(
+                request.user.id,
+                "profile.edit_team",
+                resource_id=proj_check.id,
+                resource_type="project",
+            )
+            if not has_perm:
+                return Response(
+                    {"detail": "You do not have permission to view users for this project."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        elif organisation_id:
             # Resolve Org
             import uuid
 
@@ -549,9 +589,15 @@ def admin_user_list(request):
             if request.method == "POST":
                 required_perm = "org.invite_users"
 
+            # TeamReel: Land Admin uses `profile.edit_team` at org scope.
             has_perm = check_permission(
                 request.user.id,
                 required_perm,
+                resource_id=org_check.id,
+                resource_type="organisation",
+            ) or check_permission(
+                request.user.id,
+                "profile.edit_team",
                 resource_id=org_check.id,
                 resource_type="organisation",
             )
@@ -580,7 +626,10 @@ def admin_user_list(request):
             if not has_perm:
                 return Response(
                     {
-                        "detail": f"You do not have permission to {required_perm} in this organization."
+                        "detail": (
+                            f"You do not have permission to {required_perm} "
+                            "in this organization."
+                        )
                     },
                     status=status.HTTP_403_FORBIDDEN,
                 )
@@ -670,45 +719,55 @@ def admin_user_list(request):
                 if not has_access:
                     return Response(
                         {
-                            "detail": "You do not have permission to view users in this organization."
+                            "detail": (
+                                "You do not have permission to view users in this organization."
+                            )
                         },
                         status=status.HTTP_403_FORBIDDEN,
                     )
 
-                # PLAYER PRIVACY: Check if user is a non-admin member (Player/Coach/Viewer)
-                # Non-admin members can ONLY see their own user record
-                from organisations.models import Membership
+                # If user has TeamReel Land Admin permissions, allow org-wide listing.
+                # Otherwise keep legacy privacy rules (non-admin org members see self only).
+                has_teamreel_org_perm = check_permission(
+                    request.user.id,
+                    "profile.edit_team",
+                    resource_id=org.id,
+                    resource_type="organisation",
+                )
 
-                user_membership = Membership.objects.filter(
-                    user=request.user, organisation=org, is_active=True
-                ).first()
+                if not has_teamreel_org_perm:
+                    # PLAYER PRIVACY: Non-admin org members can ONLY see their own user record
+                    from organisations.models import Membership
 
-                # If user is a member but NOT an admin, restrict to self only
-                is_org_admin = user_membership and user_membership.role == "admin"
+                    user_membership = Membership.objects.filter(
+                        user=request.user, organisation=org, is_active=True
+                    ).first()
 
-                if not is_org_admin:
-                    # Non-admin members (player/coach/member) can only see themselves
-                    queryset = User.objects.filter(id=request.user.id)
-                    paginator = UserPagination()
-                    page = paginator.paginate_queryset(queryset, request)
-                    if page is not None:
-                        serializer = UserListSerializer(page, many=True)
-                        return paginator.get_paginated_response(serializer.data)
-                    serializer = UserListSerializer(queryset, many=True)
-                    return Response(serializer.data)
+                    is_org_admin = user_membership and user_membership.role == "admin"
+                    if not is_org_admin:
+                        queryset = User.objects.filter(id=request.user.id)
+                        paginator = UserPagination()
+                        page = paginator.paginate_queryset(queryset, request)
+                        if page is not None:
+                            serializer = UserListSerializer(page, many=True)
+                            return paginator.get_paginated_response(serializer.data)
+                        serializer = UserListSerializer(queryset, many=True)
+                        return Response(serializer.data)
 
-            # Filter users who are:
-            # 1. Direct members of the organisation
-            # 2. Have a RoleAssignment on the organisation
-            # 3. Have a RoleAssignment on a project within the organisation
-            # 4. Have NO organisation memberships (unassigned users) - ONLY if explicitly requested
+            # TeamReel Option A:
+            # Include users visible via projects in this organisation (project memberships), plus
+            # legacy org memberships and role assignments.
 
             include_unassigned = (
                 request.query_params.get("include_unassigned", "false").lower() == "true"
             )
 
             filters = (
-                Q(organisation_memberships__organisation=org)
+                Q(
+                    project_memberships__project__organisation=org,
+                    project_memberships__deleted_at__isnull=True,
+                )
+                | Q(organisation_memberships__organisation=org)
                 | Q(role_assignments__target_organization=org)
                 | Q(role_assignments__target_project__organisation=org)
             )
@@ -739,7 +798,8 @@ def admin_user_list(request):
 
         allowed_org_ids = user_org_ids | assigned_org_ids
 
-        # Also include unassigned users if explicitly requested (e.g. for Org Admins looking for new users)
+        # Also include unassigned users if explicitly requested
+        # (e.g. for Org Admins looking for new users)
         include_unassigned = (
             request.query_params.get("include_unassigned", "false").lower() == "true"
         )
@@ -758,8 +818,9 @@ def admin_user_list(request):
     # Filter by project (if provided)
     project_id = request.query_params.get("project_id")
     if project_id:
-        from projects.models import Project
         import logging
+
+        from projects.models import Project
 
         logger = logging.getLogger(__name__)
 
@@ -773,17 +834,37 @@ def admin_user_list(request):
             proj = Project.objects.filter(slug__iexact=project_id).first()
 
         if proj:
+            # Non-global admins must have TeamReel permission to manage/view users for this project.
+            if not is_global_admin:
+                has_perm = check_permission(
+                    request.user.id,
+                    "profile.edit_team",
+                    resource_id=proj.id,
+                    resource_type="project",
+                )
+                if not has_perm:
+                    return Response(
+                        {"detail": "You do not have permission to view users for this project."},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
             # Find all projects to check:
             # 1. The project itself
             # 2. All child projects (if it's a parent/club)
             project_ids = [proj.id]
-            child_projects = Project.objects.filter(parent_project=proj).values_list(
-                "id", flat=True
+            child_project_ids = list(
+                Project.objects.filter(parent_project=proj).values_list("id", flat=True)
             )
-            project_ids.extend(child_projects)
-
+            project_ids.extend(child_project_ids)
             logger.info(
-                f"[admin_user_list] Filtering by project: {proj.name} (ID: {proj.id}), child projects: {len(list(child_projects))}, total project_ids: {len(project_ids)}"
+                (
+                    "[admin_user_list] Filtering by project: %s (ID: %s), "
+                    "child projects: %s, total project_ids: %s"
+                ),
+                proj.name,
+                proj.id,
+                len(child_project_ids),
+                len(project_ids),
             )
 
             # Count before filter
@@ -848,7 +929,12 @@ def admin_user_list(request):
                     if best:
                         return best
             except Exception:
-                pass
+                import logging
+
+                logging.getLogger(__name__).debug(
+                    "Failed to compute RBAC role label from role_assignments",
+                    exc_info=True,
+                )
 
             # 2. Organisation membership admin (legacy)
             try:
@@ -859,7 +945,12 @@ def admin_user_list(request):
                 ):
                     return "Land Admin"
             except Exception:
-                pass
+                import logging
+
+                logging.getLogger(__name__).debug(
+                    "Failed to compute legacy org membership role label",
+                    exc_info=True,
+                )
 
             # 3. Project memberships (fallback)
             try:
@@ -961,27 +1052,93 @@ def admin_user_detail(request, user_id):
             )
 
     if not is_global_admin:
-        # PLAYER PRIVACY: Non-admin members can ONLY access their own user record
-        from organisations.models import Membership
+        # TeamReel Option A:
+        # Permit access if requestor can manage profiles (`profile.edit_team`) for a project/org
+        # where the target user has an active ProjectMembership.
+        from permissions.models import RoleAssignment, ScopeChoices
+        from projects.models import Project, ProjectMembership
 
-        # Check if requesting user is a non-admin member (Player/Coach/Viewer)
-        # Get all memberships for the requestor
-        requestor_memberships = Membership.objects.filter(user=request.user, is_active=True)
+        org_scope_ids = set(
+            RoleAssignment.objects.filter(
+                user=request.user,
+                scope=ScopeChoices.ORGANIZATION,
+                role__permissions__permission="profile.edit_team",
+            ).values_list("target_organization_id", flat=True)
+        )
+        project_scope_ids = set(
+            RoleAssignment.objects.filter(
+                user=request.user,
+                scope=ScopeChoices.PROJECT,
+                role__permissions__permission="profile.edit_team",
+            ).values_list("target_project_id", flat=True)
+        )
 
-        # Check if user is an admin in ANY organisation
-        is_admin_anywhere = requestor_memberships.filter(role="admin").exists()
-
-        # If not admin anywhere and not self, deny access
-        if not is_admin_anywhere:
-            # Return 404 to prevent information leakage
-            return Response(
-                {"error": "not_found", "message": "User not found."},
-                status=status.HTTP_404_NOT_FOUND,
+        allowed_project_ids: set[str] = set()
+        if org_scope_ids:
+            allowed_project_ids.update(
+                Project.all_objects.filter(organisation_id__in=org_scope_ids).values_list(
+                    "id", flat=True
+                )
             )
+        if project_scope_ids:
+            allowed_project_ids.update(
+                Project.all_objects.filter(id__in=project_scope_ids).values_list("id", flat=True)
+            )
+            allowed_project_ids.update(
+                Project.all_objects.filter(parent_project_id__in=project_scope_ids).values_list(
+                    "id", flat=True
+                )
+            )
+
+        has_teamreel_access = False
+        if allowed_project_ids:
+            has_teamreel_access = ProjectMembership.objects.filter(
+                user=user,
+                project_id__in=allowed_project_ids,
+                deleted_at__isnull=True,
+            ).exists()
+
+        if has_teamreel_access:
+            # Non-global admins may only edit safe profile fields via this endpoint.
+            if request.method in ["PUT", "PATCH"]:
+                safe_fields = {"first_name", "last_name", "email"}
+                forbidden_fields = set(request.data.keys()) - safe_fields
+                if forbidden_fields:
+                    return Response(
+                        {
+                            "error": "forbidden_fields",
+                            "message": (
+                                "You cannot modify these fields: "
+                                f"{', '.join(sorted(forbidden_fields))}"
+                            ),
+                            "allowed_fields": sorted(safe_fields),
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+            # Do not allow non-global deletes through this endpoint.
+            if request.method == "DELETE":
+                return Response(
+                    {"detail": "You do not have permission to delete users."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        else:
+            # Legacy behaviour: org admins can manage users in shared organisations.
+            from organisations.models import Membership
+
+            requestor_memberships = Membership.objects.filter(user=request.user, is_active=True)
+            is_admin_anywhere = requestor_memberships.filter(role="admin").exists()
+            if not is_admin_anywhere:
+                return Response(
+                    {"error": "not_found", "message": "User not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
         # For non-global admins, we need to check if they have permission to manage THIS user.
         # This is tricky because the user might belong to multiple organizations.
-        # We'll check if the requestor has 'org.view_members' (for GET) or 'org.remove_users' (for DELETE)
+        # We'll check if the requestor has 'org.view_members' (for GET) or
+        # 'org.remove_users' (for DELETE)
         # on ANY organization that the target user is also a member of.
 
         from permissions.models import RoleAssignment
@@ -1065,7 +1222,10 @@ def admin_user_detail(request, user_id):
             if not has_delete_perm:
                 return Response(
                     {
-                        "detail": "You do not have permission to delete users in the shared organization(s)."
+                        "detail": (
+                            "You do not have permission to delete users in the shared "
+                            "organization(s)."
+                        )
                     },
                     status=status.HTTP_403_FORBIDDEN,
                 )

@@ -5,6 +5,7 @@ Provides:
 - OrganisationViewSet: CRUD operations for organisations
 """
 
+from audit.api import audit_log
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
@@ -15,7 +16,6 @@ from rest_framework.response import Response
 from organisations.metrics import rate_limit_hits
 from organisations.models import Membership, Organisation
 from organisations.ratelimit import check_rate_limit
-from audit.api import audit_log
 
 from .serializers import (
     OrganisationCreateSerializer,
@@ -202,12 +202,67 @@ class MembershipViewSet(viewsets.ModelViewSet):
         List members of the organisation.
         Includes:
         1. Direct Memberships
-        2. Users with RoleAssignments in this org or its projects
+
+        Optional query params:
+        - include_role_assignments=true: include RoleAssignments as virtual entries
+        - include_project_memberships=true: include ProjectMembership users as virtual entries
         """
+        org_slug = self.kwargs.get("organisation_pk")
+        try:
+            org = Organisation.objects.get(slug=org_slug)
+        except Organisation.DoesNotExist:
+            return Response({"detail": "Organisation not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Access check (TeamReel): allow listing if user is in org via:
+        # - direct org membership
+        # - role assignment (org or project in org)
+        # - project membership (data layer)
+        user = request.user
+        from django.db import models
+        from permissions.models import RoleAssignment
+        from projects.models import ProjectMembership
+
+        has_direct_org_membership = Membership.objects.filter(
+            organisation=org, user=user, is_active=True
+        ).exists()
+
+        has_role_assignment = (
+            RoleAssignment.objects.filter(
+                user=user,
+            )
+            .filter(models.Q(target_organization=org) | models.Q(target_project__organisation=org))
+            .exists()
+        )
+
+        has_project_membership = ProjectMembership.objects.filter(
+            user=user,
+            project__organisation=org,
+            deleted_at__isnull=True,
+        ).exists()
+
+        if not (
+            user.is_superuser
+            or has_direct_org_membership
+            or has_role_assignment
+            or has_project_membership
+        ):
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
         response = super().list(request, *args, **kwargs)
 
+        include_role_assignments = (
+            request.query_params.get("include_role_assignments", "false").lower() == "true"
+        )
+        include_project_memberships = (
+            request.query_params.get("include_project_memberships", "false").lower() == "true"
+        )
+
+        if not (include_role_assignments or include_project_memberships):
+            return response
+
         try:
-            # If pagination is used, response.data is {'results': [...], ...} or {'data': [...], ...}
+            # If pagination is used, response.data is {'results': [...], ...}
+            # or {'data': [...], ...}
             # If not, it's [...]
             results = response.data
             if isinstance(response.data, dict):
@@ -220,49 +275,85 @@ class MembershipViewSet(viewsets.ModelViewSet):
             # Get existing user IDs (ensure strings for comparison)
             existing_user_ids = {str(m["user"]["id"]) for m in results}
 
-            # Find users with RoleAssignments in this org or its projects
-            org_slug = self.kwargs.get("organisation_pk")
-            from django.db import models
-
-            from organisations.models import Organisation
-
-            try:
-                org = Organisation.objects.get(slug=org_slug)
-            except Organisation.DoesNotExist:
-                return response
-
-            from permissions.models import RoleAssignment
-
-            # Get assignments for this org OR projects in this org
-            assignments = RoleAssignment.objects.filter(
-                models.Q(target_organization=org) | models.Q(target_project__organisation=org)
-            ).select_related("user", "role", "target_project")
-
             additional_members = []
-            for ra in assignments:
-                if str(ra.user.id) not in existing_user_ids:
-                    # Create a virtual membership structure
-                    role_name = ra.role.name
-                    if ra.target_project:
-                        role_name = f"{role_name} ({ra.target_project.name})"
 
+            if include_role_assignments:
+                # RoleAssignments in this org OR projects in this org
+                assignments = RoleAssignment.objects.filter(
+                    models.Q(target_organization=org) | models.Q(target_project__organisation=org)
+                ).select_related("user", "role", "target_project")
+
+                for ra in assignments:
+                    if str(ra.user.id) not in existing_user_ids:
+                        role_name = ra.role.name
+                        if ra.target_project:
+                            role_name = f"{role_name} ({ra.target_project.name})"
+
+                        additional_members.append(
+                            {
+                                "id": str(ra.id),
+                                "user": {
+                                    "id": str(ra.user.id),
+                                    "email": ra.user.email,
+                                    "first_name": ra.user.first_name,
+                                    "last_name": ra.user.last_name,
+                                },
+                                "organisation": {
+                                    "id": str(org.id),
+                                    "name": org.name,
+                                    "slug": org.slug,
+                                },
+                                "role": role_name,
+                                "joined_at": ra.assigned_at,
+                                "invited_by": None,
+                                "is_active": True,
+                                "source": "assignment",
+                            }
+                        )
+                        existing_user_ids.add(str(ra.user.id))
+
+            if include_project_memberships:
+                project_users = (
+                    ProjectMembership.objects.filter(
+                        project__organisation=org,
+                        deleted_at__isnull=True,
+                    )
+                    .select_related("user")
+                    .values(
+                        "user_id",
+                        "user__email",
+                        "user__first_name",
+                        "user__last_name",
+                    )
+                    .distinct()
+                )
+
+                for pu in project_users:
+                    user_id = str(pu["user_id"])
+                    if user_id in existing_user_ids:
+                        continue
                     additional_members.append(
                         {
-                            "id": str(ra.id),  # Use assignment ID
+                            "id": f"pm:{user_id}",
                             "user": {
-                                "id": str(ra.user.id),
-                                "email": ra.user.email,
-                                "first_name": ra.user.first_name,
-                                "last_name": ra.user.last_name,
+                                "id": user_id,
+                                "email": pu["user__email"],
+                                "first_name": pu["user__first_name"],
+                                "last_name": pu["user__last_name"],
                             },
-                            "organisation": {"id": str(org.id), "name": org.name, "slug": org.slug},
-                            "role": role_name,  # Custom role string
-                            "joined_at": ra.assigned_at,
+                            "organisation": {
+                                "id": str(org.id),
+                                "name": org.name,
+                                "slug": org.slug,
+                            },
+                            "role": "project_member",
+                            "joined_at": None,
                             "invited_by": None,
                             "is_active": True,
+                            "source": "project_membership",
                         }
                     )
-                    existing_user_ids.add(str(ra.user.id))
+                    existing_user_ids.add(user_id)
 
             # Append to results
             if additional_members:
@@ -288,7 +379,7 @@ class MembershipViewSet(viewsets.ModelViewSet):
             import logging
 
             logger = logging.getLogger(__name__)
-            logger.error(f"Error extending membership list with role assignments: {e}")
+            logger.error(f"Error extending membership list with virtual members: {e}")
             return response
 
         return response

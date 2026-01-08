@@ -754,8 +754,10 @@ export default function UsersPage() {
                             setSelectedTeamKey('');
                             resetPageToFirst();
                         }}
+                        aria-label="Clear filters"
+                        title="Clear filters"
                     >
-                        Clear filters
+                        <span aria-hidden="true">✕</span>
                     </Button>
                     </>
 

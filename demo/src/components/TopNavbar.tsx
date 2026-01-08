@@ -54,42 +54,39 @@ interface NotificationResponse {
 
 const navGroups: NavGroup[] = [
   {
-    id: 'identity',
-    label: 'Identity & Context',
+    id: 'app',
+    label: 'App',
     items: [
-      { path: '/organisations', label: 'Organisations', description: 'Manage organisations and membership', icon: '🏢' },
-      { path: '/projects', label: 'Projects', description: 'Browse and manage projects', icon: '📁' },
-      { path: '/users', label: 'Users', description: 'View users and roles', icon: '👥' },
+      { path: '/search', label: 'Search', description: 'Search users, organisations, and projects', icon: '🔎' },
+      { path: '/organisations', label: 'Organisations (Bonds)', description: 'Federations and leagues', icon: '🏢' },
+      { path: '/projects', label: 'Clubs & Teams', description: 'Browse clubs and their teams', icon: '⚽' },
+      { path: '/content', label: 'Content', description: 'Generated content library', icon: '🖼️' },
+      { path: '/studio/create', label: 'Create Content', description: 'AI Studio', icon: '✨' },
+      { path: '/notifications', label: 'Notifications', description: 'Inbox and updates', icon: '🔔' },
+      { path: '/profile', label: 'Profile', description: 'Your profile', icon: '👤' },
+    ],
+  },
+  {
+    id: 'admin',
+    label: 'Admin',
+    items: [
+      { path: '/users', label: 'Users', description: 'Manage users and roles', icon: '👥' },
       { path: '/permissions', label: 'Permissions', description: 'Configure access control', icon: '🔐' },
-    ],
-  },
-  {
-    id: 'config',
-    label: 'Configuration',
-    items: [
-      { path: '/credits', label: 'Credits', description: 'View organisation credits', icon: '💳' },
+      { path: '/credits', label: 'Credits', description: 'Credit balances and transactions', icon: '💳' },
+      { path: '/audit', label: 'Audit Log', description: 'Recorded audit events', icon: '📋' },
       { path: '/usage-events', label: 'Usage Events', description: 'Track usage and analytics', icon: '📈' },
-      { path: '/audit', label: 'Audit Log', description: 'Review recorded audit events', icon: '📋' },
-      { path: '/flags', label: 'Feature Flags', description: 'Toggle experimental features', icon: '🚩' },
-    ],
-  },
-  {
-    id: 'platform',
-    label: 'Platform Status',
-    items: [
+      { path: '/flags', label: 'Feature Flags', description: 'Tenant-aware feature flags', icon: '🚩' },
+      { path: '/security', label: 'Security', description: 'Baseline checks and events', icon: '🔒' },
       { path: '/health', label: 'Health Status', description: 'System health and uptime', icon: '❤️' },
-      { path: '/integration-status', label: 'Integration Status', description: 'Module integration overview', icon: '🔄' },
-      { path: '/constitution', label: 'Constitution', description: 'Core principles and rules', icon: '📜' },
-      { path: '/security', label: 'Security', description: 'Baseline checks and recent events', icon: '🔒' },
       { path: '/observability', label: 'Observability', description: 'Metrics and monitoring', icon: '📊' },
+      { path: '/integration-status', label: 'Integration Status', description: 'Module integration overview', icon: '🔄' },
       { path: '/api-docs', label: 'API Docs', description: 'OpenAPI documentation', icon: '🔌' },
       { path: '/demo/performance', label: 'Cache Performance', description: 'Redis cache metrics and controls', icon: '⚡' },
-    ],
-  },
-  {
-    id: 'frontend',
-    label: 'Frontend Resources',
-    items: [
+      { path: '/constitution', label: 'Constitution', description: 'Core principles and rules', icon: '📜' },
+      { path: '/docs', label: 'Docs', description: 'Documentation and guides', icon: '📚' },
+      { path: '/tasks', label: 'Tasks', description: 'Background task management', icon: '✓' },
+      { path: '/routing-logs', label: 'Routing Logs', description: 'Notification routing decisions', icon: '🔀' },
+      { path: '/deployment', label: 'Deployment', description: 'Deploy and release guides', icon: '🚀' },
       { path: '/design-system', label: 'Design System', description: 'UI components and tokens', icon: '🎨' },
       { path: '/auth-flows', label: 'Auth Flows', description: 'Login and signup demos', icon: '🔐' },
       { path: '/context', label: 'Context Switcher', description: 'Org and project selection', icon: '🔀' },
@@ -98,16 +95,6 @@ const navGroups: NavGroup[] = [
       { path: '/templates', label: 'Templates', description: 'Page layout templates', icon: '📄' },
       { path: '/theme', label: 'Theme Showcase', description: 'Theme system demonstration', icon: '🎭' },
       { path: '/integration', label: 'Integration Patterns', description: 'Frontend integration examples', icon: '🔗' },
-    ],
-  },
-  {
-    id: 'docs',
-    label: 'Documentation',
-    items: [
-      { path: '/docs', label: 'Docs', description: 'Documentation and guides', icon: '📚' },
-      { path: '/tasks', label: 'Tasks', description: 'Background task management', icon: '✓' },
-      { path: '/routing-logs', label: 'Routing Logs', description: 'Notification routing decisions', icon: '🔀' },
-      { path: '/deployment', label: 'Deployment', description: 'Deploy and release guides', icon: '🚀' },
     ],
   },
 ];
@@ -349,40 +336,33 @@ export default function TopNavbar() {
     };
   }, [user]);
 
-  // Filter based on permissions (same logic as Sidebar)
+  // Filter based on permissions (keep Admin grouped; only show what the user can access)
   const filteredNavGroups = navGroups.map(group => {
     const items = group.items.filter(item => {
-      // Admin-only pages
+      // Platform/system admin-only pages
       if (['/integration-status', '/health', '/constitution', '/observability', '/api-docs', '/routing-logs', '/demo/performance'].includes(item.path)) {
         return isSystemAdmin;
       }
 
-      // Org Admin+ pages (includes flags for tenant-aware management)
-      if (['/flags', '/credits', '/audit', '/usage-events'].includes(item.path)) {
+      // Tenant admin pages (org/club/team admins + superadmin)
+      if (['/flags', '/credits', '/audit', '/usage-events', '/users', '/permissions'].includes(item.path)) {
         return isSystemAdmin || isOrgAdmin;
       }
 
-      // Security: Admin or Org Admin/Coach
+      // Security: superadmin or org-role (admin/coach)
       if (item.path === '/security') {
         return isSystemAdmin || hasOrgRole;
       }
 
-      // Frontend resources: Admin-only (demo/documentation pages)
-      if (group.id === 'frontend') {
+      // Docs + frontend resources are superadmin-only
+      if (['/docs', '/tasks', '/deployment', '/design-system', '/auth-flows', '/context', '/demo/files', '/resources', '/templates', '/theme', '/integration'].includes(item.path)) {
         return isSystemAdmin;
       }
 
-      // Documentation: Admin-only (except user-relevant notifications)
-      if (group.id === 'docs') {
-        if (item.path === '/notifications') {
-          return true; // All users can see notifications
-        }
-        return isSystemAdmin;
-      }
-
-      // User-facing pages: everyone
+      // App pages: everyone
       return true;
     });
+
     return { ...group, items };
   }).filter(group => group.items.length > 0);
 

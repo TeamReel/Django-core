@@ -21,11 +21,12 @@ from permissions.cache import (
     get_cached_evaluation,
     set_cached_evaluation,
 )
-from permissions.models import Permission, RoleAssignment, ScopeChoices
+from permissions.models import RoleAssignment, ScopeChoices
 
 # Audit system integration (graceful degradation if not installed)
+# We only need to know whether audit is available; the module isn't used directly here.
 try:
-    from audit.api import audit_log
+    import audit.api as _audit_api  # noqa: F401
 
     AUDIT_AVAILABLE = True
 except ImportError:
@@ -80,8 +81,24 @@ def check_permission(
                 elif resource_type.lower() == "project" and resource_id:
                     # For project checks, org roles apply if project belongs
                     # to this org. We need to look up the project's org.
-                    # For now, skip this check (will be refined in WP03)
-                    pass
+                    try:
+                        from projects.models import Project
+
+                        project_org_id = (
+                            Project.all_objects.filter(id=resource_id)
+                            .values_list("organisation_id", flat=True)
+                            .first()
+                        )
+                        if not project_org_id:
+                            continue
+                        if str(project_org_id) != str(assignment.target_organization_id):
+                            continue
+                    except Exception:
+                        logger.debug(
+                            "Permission evaluation: failed project org lookup",
+                            exc_info=True,
+                        )
+                        continue
                 else:
                     continue  # Not relevant to this resource
             elif assignment.scope == ScopeChoices.PROJECT:
@@ -100,7 +117,9 @@ def check_permission(
                 # Check for wildcard (superuser)
                 if perm.permission == "*":
                     logger.debug(
-                        f"User {user_id} has wildcard permission via " f"{assignment.role.name}"
+                        "User %s has wildcard permission via %s",
+                        user_id,
+                        assignment.role.name,
                     )
                     decision = True
                     break  # Short-circuit
@@ -112,13 +131,15 @@ def check_permission(
         if not decision:
             decision = permission in granted_permissions
             logger.debug(
-                f"Permission check for user {user_id}, permission "
-                f"{permission}: {'granted' if decision else 'denied'} "
-                f"(granted_permissions: {len(granted_permissions)})"
+                "Permission check for user %s, permission %s: %s (granted_permissions: %s)",
+                user_id,
+                permission,
+                "granted" if decision else "denied",
+                len(granted_permissions),
             )
 
     except Exception as e:
-        logger.error(f"Permission evaluation error: {e}", exc_info=True)
+        logger.error("Permission evaluation error: %s", e, exc_info=True)
         decision = False  # Fail closed (deny on error)
 
     # Cache result
@@ -128,8 +149,9 @@ def check_permission(
     # This handles B09 integration and fallback to Django logging
     try:
         # Prepare context for audit
+        # Scope is not tracked without refactoring check_permission.
         context = {
-            "scope": "UNKNOWN",  # We don't track scope in check_permission easily without refactoring
+            "scope": "UNKNOWN",
             "evaluated_roles": (
                 [str(a.role_id) for a in assignments] if "assignments" in locals() else []
             ),
@@ -144,31 +166,7 @@ def check_permission(
             context=context,
         )
     except Exception as e:
-        logger.warning(f"Failed to emit audit event: {e}")
-
-    return decision
-
-    # Emit audit event if permission is sensitive or decision is deny (legacy B08 audit)
-    try:
-        perm_obj = Permission.objects.filter(permission=permission).first()
-        is_sensitive = perm_obj.is_sensitive if perm_obj else False
-    except Exception:
-        is_sensitive = False
-
-    if is_sensitive or not decision:
-        audit_backend.emit(
-            user_id=str(user_id),
-            permission=permission,
-            resource_type=resource_type,
-            resource_id=str(resource_id) if resource_id else None,
-            decision="grant" if decision else "deny",
-            context={
-                "evaluated_roles": (
-                    [str(a.role_id) for a in assignments] if "assignments" in locals() else []
-                ),
-                "cache_hit": cached is not None,
-            },
-        )
+        logger.warning("Failed to emit audit event: %s", e)
 
     return decision
 
@@ -220,7 +218,7 @@ def check_permissions_batch(
 
     # If all cached, return immediately
     if not uncached_permissions:
-        logger.debug(f"Batch check: all {len(permissions)} permissions cached")
+        logger.debug("Batch check: all %s permissions cached", len(permissions))
         return results
 
     # Query role assignments once for all uncached permissions
@@ -245,8 +243,24 @@ def check_permissions_batch(
                 ):
                     pass
                 elif resource_type == "project" and resource_id:
-                    # Skip org-project relationship check for now
-                    pass
+                    try:
+                        from projects.models import Project
+
+                        project_org_id = (
+                            Project.all_objects.filter(id=resource_id)
+                            .values_list("organisation_id", flat=True)
+                            .first()
+                        )
+                        if not project_org_id:
+                            continue
+                        if project_org_id != assignment.target_organization_id:
+                            continue
+                    except Exception:
+                        logger.debug(
+                            "Batch permission evaluation: failed project org lookup",
+                            exc_info=True,
+                        )
+                        continue
                 else:
                     continue
             elif assignment.scope == ScopeChoices.PROJECT:
@@ -271,13 +285,14 @@ def check_permissions_batch(
             set_cached_evaluation(user_id, permission, resource_type, resource_id, decision)
 
         logger.debug(
-            f"Batch check: {cached_count} cached, "
-            f"{len(uncached_permissions)} evaluated "
-            f"(granted_permissions: {len(granted_permissions)})"
+            "Batch check: %s cached, %s evaluated (granted_permissions: %s)",
+            cached_count,
+            len(uncached_permissions),
+            len(granted_permissions),
         )
 
     except Exception as e:
-        logger.error(f"Batch permission evaluation error: {e}", exc_info=True)
+        logger.error("Batch permission evaluation error: %s", e, exc_info=True)
         # Fail closed: deny all uncached permissions
         for permission in uncached_permissions:
             results[permission] = False

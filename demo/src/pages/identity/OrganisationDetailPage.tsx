@@ -228,9 +228,10 @@ export const OrganisationDetailPage: React.FC = () => {
         setOrg(orgData);
 
         // Fetch members using slug
-        console.log('[OrganisationDetailPage] Fetching members from:', `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/`);
+        const membersUrl = `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/?include_project_memberships=true&include_role_assignments=true`;
+        console.log('[OrganisationDetailPage] Fetching members from:', membersUrl);
         const membersResponse = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/`,
+          membersUrl,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -531,6 +532,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   const user = item.user || item;
                   const role = item.role || 'member';
                   const membershipId = item.id; // Membership ID needed for delete
+                  const isVirtualMember = item.source === 'assignment' || item.source === 'project_membership' || String(membershipId).startsWith('pm:');
 
                   return (
                     <tr key={user.id}>
@@ -551,7 +553,7 @@ export const OrganisationDetailPage: React.FC = () => {
                         </Badge>
                       </td>
                       <td>
-                        {userCanManageMembers ? (
+                        {userCanManageMembers && !isVirtualMember ? (
                           <div style={{ display: 'flex', gap: '8px' }}>
                             {['admin', 'member'].includes(role) && (
                               <>
@@ -606,7 +608,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                   if (res.ok) {
                                     // Refresh members
                                     const membersResponse = await fetch(
-                                      `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/`,
+                                      `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/?include_project_memberships=true&include_role_assignments=true`,
                                       {
                                         headers: {
                                           'Content-Type': 'application/json',

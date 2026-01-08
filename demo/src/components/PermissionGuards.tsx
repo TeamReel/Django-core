@@ -12,7 +12,7 @@ interface PermissionGuardProps {
 export function useUserRole() {
   const { user } = useAuth();
 
-  const isSystemAdmin = (user as any)?.role === 'Superadmin';
+  const isSystemAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
 
   const orgs = (user as any)?.organisations || [];
   const isOrgAdmin = orgs.some((org: any) =>

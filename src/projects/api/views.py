@@ -1,28 +1,28 @@
 """DRF views for Projects & Workspaces."""
 
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import CursorPagination
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
-from django.db.models import Q
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
-from projects.models import Project, ProjectMembership, ProjectInvite, ProjectMembershipPromotion
-from projects.services.membership_service import MembershipService
+from projects.models import Project, ProjectInvite, ProjectMembership, ProjectMembershipPromotion
 from projects.services.invitation_service import InvitationService
+from projects.services.membership_service import MembershipService
 from projects.services.promotion_service import PromotionService
 
 from .permissions import IsProjectMemberOrOrgAdmin
 from .serializers import (
+    AcceptInvitationSerializer,
     ProjectDetailSerializer,
+    ProjectInviteSerializer,
     ProjectListSerializer,
+    ProjectMembershipPromotionSerializer,
     ProjectMembershipSerializer,
     ProjectUpdateSerializer,
-    ProjectInviteSerializer,
-    AcceptInvitationSerializer,
-    ProjectMembershipPromotionSerializer,
 )
 
 
@@ -73,6 +73,30 @@ class ProjectViewSet(viewsets.ModelViewSet):
         """
         project = self.get_object()
 
+        # Minimal access control: only project members or admins that can edit team profiles
+        if not request.user.is_superuser:
+            from permissions.evaluator import check_permission
+
+            is_project_member = ProjectMembership.objects.filter(
+                project=project,
+                user=request.user,
+                deleted_at__isnull=True,
+            ).exists()
+
+            # TeamReel: rosters live on teams (child projects). Root projects (clubs)
+            # are containers and should not expose membership lists to basic viewers.
+            is_team_project = project.parent_project_id is not None
+
+            can_edit_team_profiles = check_permission(
+                request.user.id,
+                "profile.edit_team",
+                resource_type="project",
+                resource_id=project.id,
+            )
+
+            if not ((is_project_member and is_team_project) or can_edit_team_profiles):
+                raise PermissionDenied("You do not have access to this project's members.")
+
         # 1. Role Assignments
         from permissions.models import RoleAssignment, ScopeChoices
 
@@ -87,9 +111,35 @@ class ProjectViewSet(viewsets.ModelViewSet):
             organisation=project.organisation, role="admin", is_active=True
         ).select_related("user")
 
+        # 3. Project Memberships (TeamReel data layer)
+        project_memberships = (
+            ProjectMembership.objects.filter(project=project, deleted_at__isnull=True)
+            .select_related("user")
+            .order_by("-created_at")
+        )
+
         # Combine and format
         members_data = []
         seen_user_ids = set()
+
+        # Add project memberships
+        for pm in project_memberships:
+            if pm.user.id not in seen_user_ids:
+                members_data.append(
+                    {
+                        "id": str(pm.id),
+                        "user": {
+                            "id": str(pm.user.id),
+                            "email": pm.user.email,
+                            "first_name": pm.user.first_name,
+                            "last_name": pm.user.last_name,
+                        },
+                        "role": pm.role,
+                        "joined_at": pm.created_at,
+                        "source": "project_membership",
+                    }
+                )
+                seen_user_ids.add(pm.user.id)
 
         # Add explicit assignments
         for ra in assignments:
@@ -155,10 +205,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         # Apply visibility filter for all routes
         user = self.request.user
         if user.is_authenticated and not user.is_superuser:
-            from django.db.models import Q
             from permissions.models import RoleAssignment, ScopeChoices
 
-            # 1. Direct membership
+            # 1. Direct org membership
             user_org_ids = user.organisation_memberships.values_list("organisation_id", flat=True)
 
             # 2. Role Assignments on Projects
@@ -166,20 +215,34 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 user=user, scope=ScopeChoices.PROJECT
             ).values_list("target_project_id", flat=True)
 
+            # 2b. Include related hierarchy for project-scoped roles
+            # - Team Admin (team project) should be able to see its club container
+            assigned_parent_project_ids = Project.all_objects.filter(
+                id__in=assigned_project_ids,
+                parent_project__isnull=False,
+            ).values_list("parent_project_id", flat=True)
+
+            # - Club Admin (club project) should be able to see child teams
+            assigned_child_project_ids = Project.all_objects.filter(
+                parent_project_id__in=assigned_project_ids
+            ).values_list("id", flat=True)
+
             # 3. Role Assignments on Organisations
             assigned_org_ids = RoleAssignment.objects.filter(
                 user=user, scope=ScopeChoices.ORGANIZATION
             ).values_list("target_organization_id", flat=True)
 
-            # 4. Project Memberships (New B26)
+            # 4. Project Memberships (TeamReel data layer)
             membership_project_ids = ProjectMembership.objects.filter(
                 user=user, deleted_at__isnull=True
             ).values_list("project_id", flat=True)
 
             queryset = queryset.filter(
                 Q(organisation_id__in=user_org_ids)
-                | Q(id__in=assigned_project_ids)
                 | Q(organisation_id__in=assigned_org_ids)
+                | Q(id__in=assigned_project_ids)
+                | Q(id__in=assigned_parent_project_ids)
+                | Q(id__in=assigned_child_project_ids)
                 | Q(id__in=membership_project_ids)
             ).distinct()
         else:
@@ -223,7 +286,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             else:
                 user = self.request.user
                 if user.is_authenticated and not user.is_superuser:
-                    from django.db.models import Q
                     from permissions.models import RoleAssignment, ScopeChoices
 
                     # 1. Direct membership
@@ -361,14 +423,21 @@ class ProjectViewSet(viewsets.ModelViewSet):
         # Check permissions (only admins should see stats)
         user = request.user
         if not user.is_superuser:
-            # Check if org admin
+            from permissions.evaluator import check_permission
+
+            can_edit_team_profiles = check_permission(
+                user.id,
+                "profile.edit_team",
+                resource_type="project",
+                resource_id=project.id,
+            )
+
             is_org_admin = user.organisation_memberships.filter(
                 organisation=project.organisation,
                 role="admin",
                 is_active=True,
             ).exists()
 
-            # Check if project admin
             is_project_admin = ProjectMembership.objects.filter(
                 project=project,
                 user=user,
@@ -376,7 +445,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 deleted_at__isnull=True,
             ).exists()
 
-            if not (is_org_admin or is_project_admin):
+            if not (can_edit_team_profiles or is_org_admin or is_project_admin):
                 raise PermissionDenied("Only admins can view membership statistics.")
 
         # Calculate stats
@@ -445,6 +514,82 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectMembershipSerializer
     permission_classes = [IsAuthenticated]
 
+    def _check_can_manage_members(self, project: Project) -> None:
+        user = self.request.user
+
+        if user.is_superuser or user.is_staff:
+            return
+
+        # Legacy: explicit project admin membership
+        if ProjectMembership.objects.filter(
+            project=project,
+            user=user,
+            role=ProjectMembership.Role.ADMIN,
+            deleted_at__isnull=True,
+        ).exists():
+            return
+
+        from permissions.evaluator import check_permission
+
+        # Direct team-member management capability on this project
+        if check_permission(
+            user.id,
+            "profile.edit_team",
+            resource_type="project",
+            resource_id=project.id,
+        ):
+            return
+
+        # Club Admin can manage child teams via project.edit_children on the parent (club)
+        if project.parent_project_id and check_permission(
+            user.id,
+            "project.edit_children",
+            resource_type="project",
+            resource_id=project.parent_project_id,
+        ):
+            return
+
+        raise PermissionDenied("You do not have permission to manage project members.")
+
+    def _check_can_view_members(self, project: Project) -> None:
+        user = self.request.user
+
+        if user.is_superuser or user.is_staff:
+            return
+
+        is_project_member = ProjectMembership.objects.filter(
+            project=project,
+            user=user,
+            deleted_at__isnull=True,
+        ).exists()
+
+        is_team_project = project.parent_project_id is not None
+
+        if is_project_member and is_team_project:
+            return
+
+        from permissions.evaluator import check_permission
+
+        # Admins who can edit team profiles can also view the roster
+        if check_permission(
+            user.id,
+            "profile.edit_team",
+            resource_type="project",
+            resource_id=project.id,
+        ):
+            return
+
+        # Club Admin viewing child team roster
+        if project.parent_project_id and check_permission(
+            user.id,
+            "project.edit_children",
+            resource_type="project",
+            resource_id=project.parent_project_id,
+        ):
+            return
+
+        raise PermissionDenied("You do not have access to this project's members.")
+
     def get_throttles(self):
         """Apply different rate limits for read vs write operations."""
         if self.action in ["list", "retrieve"]:
@@ -481,6 +626,14 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         if not project_pk:
             return ProjectMembership.objects.none()
 
+        try:
+            project = Project.objects.get(pk=project_pk)
+        except Project.DoesNotExist:
+            return ProjectMembership.objects.none()
+
+        # Enforce read access (avoid leaking rosters by UUID guessing)
+        self._check_can_view_members(project)
+
         return ProjectMembership.objects.filter(project_id=project_pk).select_related("user")
 
     def perform_create(self, serializer):
@@ -488,8 +641,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         project_pk = self.kwargs.get("project_pk")
         project = Project.objects.get(pk=project_pk)
 
-        # Check permission: only project admins can add members
-        self.check_project_admin_permission(project)
+        self._check_can_manage_members(project)
 
         # Extract validated data
         user_id = serializer.validated_data["user_id"]
@@ -498,8 +650,8 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         # Get the user instance
         from django.contrib.auth import get_user_model
 
-        User = get_user_model()
-        user = User.objects.get(pk=user_id)
+        user_model = get_user_model()
+        user = user_model.objects.get(pk=user_id)
 
         service = MembershipService()
         try:
@@ -512,7 +664,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
             # Set the instance on the serializer so response data is correct
             serializer.instance = membership
         except ValueError as e:
-            raise ValidationError({"detail": str(e)})
+            raise ValidationError({"detail": str(e)}) from e
 
     def update(self, request, *args, **kwargs):
         """Update membership role with promotion logic."""
@@ -521,8 +673,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
 
-        # Check permission: only project admins can update roles
-        self.check_project_admin_permission(instance.project)
+        self._check_can_manage_members(instance.project)
 
         new_role = serializer.validated_data.get("role")
 
@@ -576,8 +727,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         """Use service to remove member."""
         from django.core.exceptions import ValidationError as DjangoValidationError
 
-        # Check permission: only project admins can remove members
-        self.check_project_admin_permission(instance.project)
+        self._check_can_manage_members(instance.project)
 
         service = MembershipService()
         try:
@@ -586,7 +736,9 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                 actor=self.request.user,
             )
         except DjangoValidationError as e:
-            raise ValidationError({"detail": e.messages[0] if hasattr(e, "messages") else str(e)})
+            raise ValidationError(
+                {"detail": e.messages[0] if hasattr(e, "messages") else str(e)}
+            ) from e
 
     @action(detail=False, methods=["get"], url_path="searchable-users")
     def searchable_users(self, request, project_pk=None):
@@ -606,6 +758,9 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         except Project.DoesNotExist:
             return Response({"detail": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        # This reveals user identities; require manage permission.
+        self._check_can_manage_members(project)
+
         # Get org members not already in project
         existing_member_ids = ProjectMembership.objects.filter(
             project=project, deleted_at__isnull=True
@@ -614,12 +769,18 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         # Get org members excluding project members
         from django.contrib.auth import get_user_model
 
-        User = get_user_model()
+        user_model = get_user_model()
 
         available_users = (
-            User.objects.filter(
-                organisation_memberships__organisation=project.organisation,
-                organisation_memberships__is_active=True,
+            user_model.objects.filter(
+                Q(
+                    organisation_memberships__organisation=project.organisation,
+                    organisation_memberships__is_active=True,
+                )
+                | Q(
+                    project_memberships__project__organisation=project.organisation,
+                    project_memberships__deleted_at__isnull=True,
+                )
             )
             .exclude(id__in=existing_member_ids)
             .distinct()
@@ -628,8 +789,6 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         # Apply search filter if provided
         search_query = request.query_params.get("search", "")
         if search_query:
-            from django.db.models import Q
-
             available_users = available_users.filter(
                 Q(email__icontains=search_query)
                 | Q(first_name__icontains=search_query)
@@ -718,17 +877,35 @@ class ProjectInviteViewSet(viewsets.ModelViewSet):
         if user.is_superuser or user.is_staff:
             return True
 
-        is_admin = ProjectMembership.objects.filter(
-            project=project, user=user, role=ProjectMembership.Role.ADMIN, deleted_at__isnull=True
-        ).exists()
+        # TeamReel: Use RBAC permission checks (Option A)
+        from permissions.evaluator import check_permission
 
-        if not is_admin:
-            raise PermissionDenied(
-                "Only project admins can manage invitations. "
-                "Your current role does not have sufficient permissions."
-            )
+        # Legacy: explicit project admin membership
+        if ProjectMembership.objects.filter(
+            project=project,
+            user=user,
+            role=ProjectMembership.Role.ADMIN,
+            deleted_at__isnull=True,
+        ).exists():
+            return True
 
-        return True
+        if check_permission(
+            user.id,
+            "profile.edit_team",
+            resource_type="project",
+            resource_id=project.id,
+        ):
+            return True
+
+        if project.parent_project_id and check_permission(
+            user.id,
+            "project.edit_children",
+            resource_type="project",
+            resource_id=project.parent_project_id,
+        ):
+            return True
+
+        raise PermissionDenied("You do not have permission to manage invitations for this project.")
 
     def list(self, request, project_pk=None):
         """List pending invitations for a project."""
@@ -756,7 +933,7 @@ class ProjectInviteViewSet(viewsets.ModelViewSet):
                 invited_by=request.user,
             )
         except ValueError as e:
-            raise ValidationError({"detail": str(e)})
+            raise ValidationError({"detail": str(e)}) from e
 
         response_serializer = self.get_serializer(invitation)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
@@ -770,7 +947,7 @@ class ProjectInviteViewSet(viewsets.ModelViewSet):
         try:
             service.cancel_invitation(invitation, request.user)
         except ValueError as e:
-            raise ValidationError({"detail": str(e)})
+            raise ValidationError({"detail": str(e)}) from e
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -784,7 +961,7 @@ class ProjectInviteViewSet(viewsets.ModelViewSet):
         try:
             invitation = service.resend_invitation(invitation, request.user)
         except ValueError as e:
-            raise ValidationError({"detail": str(e)})
+            raise ValidationError({"detail": str(e)}) from e
 
         serializer = self.get_serializer(invitation)
         return Response(serializer.data)
@@ -814,7 +991,7 @@ class ProjectInviteViewSet(viewsets.ModelViewSet):
         try:
             membership = service.accept_invitation(token, accepting_user)
         except ValueError as e:
-            raise ValidationError({"detail": str(e)})
+            raise ValidationError({"detail": str(e)}) from e
 
         # Return membership details
         membership_serializer = ProjectMembershipSerializer(membership)
@@ -846,13 +1023,15 @@ class ProjectMembershipPromotionViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = ProjectMembershipPromotion.objects.filter(project_id=project_pk)
 
             # Check if user is project admin
-            # We can check membership role
-            is_admin = ProjectMembership.objects.filter(
-                project_id=project_pk,
-                user=user,
-                role=ProjectMembership.Role.ADMIN,
-                deleted_at__isnull=True,
-            ).exists()
+            # TeamReel: allow if they can manage team profiles/members
+            from permissions.evaluator import check_permission
+
+            is_admin = check_permission(
+                user.id,
+                "profile.edit_team",
+                resource_type="project",
+                resource_id=project_pk,
+            )
 
             if is_admin:
                 return queryset
@@ -907,14 +1086,16 @@ class ProjectMembershipPromotionViewSet(viewsets.ReadOnlyModelViewSet):
         """Cancel a promotion (requester or admin)."""
         promotion = self.get_object()
 
-        # Check permission: requester or project admin
+        # Check permission: requester or admin
         is_requester = promotion.requested_by == request.user
-        is_admin = ProjectMembership.objects.filter(
-            project=promotion.project,
-            user=request.user,
-            role=ProjectMembership.Role.ADMIN,
-            deleted_at__isnull=True,
-        ).exists()
+        from permissions.evaluator import check_permission
+
+        is_admin = check_permission(
+            request.user.id,
+            "profile.edit_team",
+            resource_type="project",
+            resource_id=promotion.project_id,
+        )
 
         if not (is_requester or is_admin):
             return Response(

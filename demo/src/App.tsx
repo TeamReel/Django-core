@@ -257,27 +257,27 @@ export default function App() {
       <Route
         path="/permissions"
         element={
-          <ProtectedRoute>
+          <OrgAdminRoute>
             <PermissionsPage />
-          </ProtectedRoute>
+          </OrgAdminRoute>
         }
       />
 
       <Route
         path="/users"
         element={
-          <ProtectedRoute>
+          <OrgAdminRoute>
             <UsersPage />
-          </ProtectedRoute>
+          </OrgAdminRoute>
         }
       />
 
       <Route
         path="/users/:userId"
         element={
-          <ProtectedRoute>
+          <OrgAdminRoute>
             <UserDetailPage />
-          </ProtectedRoute>
+          </OrgAdminRoute>
         }
       />
 
@@ -312,9 +312,9 @@ export default function App() {
       <Route
         path="/credits"
         element={
-          <ProtectedRoute>
+          <OrgAdminRoute>
             <CreditsPage />
-          </ProtectedRoute>
+          </OrgAdminRoute>
         }
       />
 

@@ -7,8 +7,9 @@ Creates hierarchical RBAC structure for Land/Club/Team Admin and Member roles.
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
 from projects.models import ProjectMembership
+
+from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
 
 
 class Command(BaseCommand):
@@ -174,7 +175,9 @@ class Command(BaseCommand):
             {
                 "permission": "featureflag.override_team",
                 "resource_type": "featureflag",
-                "description": "Override feature flags at team level (only if not blocked by club/org)",
+                "description": (
+                    "Override feature flags at team level (only if not blocked by club/org)"
+                ),
                 "is_sensitive": True,
             },
             {
@@ -231,6 +234,7 @@ class Command(BaseCommand):
                     "match.delete",
                     "match.view_all",
                     "content.create",
+                    "content.edit_own",
                     "content.edit_all_team",
                     "content.approve",
                     "profile.edit_own",
@@ -259,6 +263,7 @@ class Command(BaseCommand):
                     "match.delete",
                     "match.view_all",
                     "content.create",
+                    "content.edit_own",
                     "content.edit_all_team",
                     "content.approve",
                     "profile.edit_own",
@@ -284,6 +289,7 @@ class Command(BaseCommand):
                     "match.edit_own_team",
                     "match.view_all",
                     "content.create",
+                    "content.edit_own",
                     "content.edit_all_team",  # KEY: Can edit ALL team content
                     "content.approve",
                     "profile.edit_own",
