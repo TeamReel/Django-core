@@ -184,17 +184,6 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
     return null;
   }
 
-  if (activities.length === 0) {
-    return (
-      <Card>
-        <div style={{ padding: '16px' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: '18px' }}>{title}</h3>
-          <div style={{ opacity: 0.5, fontStyle: 'italic' }}>No upcoming activities found.</div>
-        </div>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <div style={{ padding: '16px' }}>
@@ -255,9 +244,15 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
         </div>
 
         <div>
-          {activities.map(activity => (
-            <ActivityItem key={activity.id} activity={activity} />
-          ))}
+          {activities.length === 0 ? (
+            <div style={{ opacity: 0.5, fontStyle: 'italic', padding: '24px 0' }}>
+              No activities found for this filter.
+            </div>
+          ) : (
+            activities.map(activity => (
+              <ActivityItem key={activity.id} activity={activity} />
+            ))
+          )}
         </div>
       </div>
     </Card>
