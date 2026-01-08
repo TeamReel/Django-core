@@ -140,8 +140,8 @@ export default function UsersPage() {
       const fetchClubs = async () => {
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
           try {
-              // Fetch all projects (no org filter)
-              let url = `${apiBaseUrl}/api/v1/projects/?page_size=100`;
+              // Fetch all projects (increased page_size to get clubs + teams)
+              let url = `${apiBaseUrl}/api/v1/projects/?page_size=500`;
               console.log('[UsersPage] Fetching ALL clubs from:', url);
               const res = await fetch(url, {
                   credentials: 'include'
@@ -170,8 +170,8 @@ export default function UsersPage() {
       const fetchTeams = async () => {
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
           try {
-              // Fetch all projects (no filters)
-              let url = `${apiBaseUrl}/api/v1/projects/?page_size=100`;
+              // Fetch all projects (increased page_size to get clubs + teams)
+              let url = `${apiBaseUrl}/api/v1/projects/?page_size=500`;
               console.log('[UsersPage] Fetching ALL teams from:', url);
               const res = await fetch(url, {
                   credentials: 'include'
@@ -179,11 +179,17 @@ export default function UsersPage() {
               if (res.ok) {
                   const data = await res.json();
                   const allProjects = data.data?.results || data.results || [];
+                  console.log('[UsersPage] Total projects fetched:', allProjects.length);
+                  console.log('[UsersPage] Projects with parent_project:', allProjects.filter((p: any) => p.parent_project).length);
+                  console.log('[UsersPage] Projects without parent_project:', allProjects.filter((p: any) => !p.parent_project).length);
                   // Filter for teams (projects with parent_project)
                   const childProjects = allProjects.filter((p: any) => {
                       return p.parent_project && p.parent_project !== null && p.parent_project !== undefined;
                   });
                   console.log('[UsersPage] Total teams loaded:', childProjects.length);
+                  if (childProjects.length > 0) {
+                      console.log('[UsersPage] Sample teams:', childProjects.slice(0, 5).map((t: any) => `${t.name} (parent: ${t.parent_project})`));
+                  }
                   setTeams(childProjects);
               }
           } catch (e) {
