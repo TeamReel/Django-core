@@ -43,7 +43,8 @@
 
 | Role Level | Scope | Read Access | Write Access | Credit Management | Example |
 |------------|-------|-------------|--------------|-------------------|---------|
-| **Land Admin** | Organisation-wide | Alle clubs/teams binnen land | Alle clubs/teams binnen land | Alle credits | KNVB beheerder |
+| **Superadmin** | Cross-organisation | **ALLE organisaties** | **ALLE organisaties** | All organisation credits | Platform admin |
+| **Land Admin** | Organisation-wide | Alle clubs/teams binnen land | Alle clubs/teams binnen land | Alle credits binnen org | KNVB beheerder |
 | **Club Admin** | Club-wide | **ALLE clubs** (cross-club) <br> Alle teams binnen eigen club | Alleen eigen club + teams | Club-level credits | Ajax media manager |
 | **Team Admin** | Team-specific | Alle teams binnen eigen club <br> **ALLE clubs** (read-only) | Team settings + **alle team matches** | Team credits only | Eerste Elftal coach |
 | **Team Member** | User-specific | Eigen team <br> Andere teams binnen club (read-only) | **Only own user profile** (naam, foto, geboortedatum) | Cannot manage credits | Speler, assistent |
