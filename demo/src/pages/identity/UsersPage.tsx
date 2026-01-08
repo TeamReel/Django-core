@@ -119,8 +119,9 @@ export default function UsersPage() {
                   if (res.ok) {
                       const data = await res.json();
                       console.log('[UsersPage] Organisations API response:', data);
-                      const orgs = data.results || [];
-                      console.log('[UsersPage] Parsed organisations:', orgs.length);
+                      // Handle B13 envelope: {status, data: {results}, meta}
+                      const orgs = data.data?.results || data.results || [];
+                      console.log('[UsersPage] Parsed organisations:', orgs.length, orgs);
                       setOrganisations(orgs);
                   }
               } catch (e) {
@@ -148,10 +149,19 @@ export default function UsersPage() {
               if (res.ok) {
                   const data = await res.json();
                   console.log('[UsersPage] Clubs API response:', data);
-                  const allProjects = data.results || [];
+                  // Handle B13 envelope: {status, data: {results}, meta}
+                  const allProjects = data.data?.results || data.results || [];
+                  console.log('[UsersPage] All projects before filter:', allProjects.length);
+                  console.log('[UsersPage] Sample project:', allProjects[0]);
                   // Filter client-side for parent projects (clubs) - projects without parent_project
-                  const parentProjects = allProjects.filter((p: any) => !p.parent_project || p.parent_project === null);
-                  console.log('[UsersPage] All projects:', allProjects.length, 'Parent projects (clubs):', parentProjects.length);
+                  const parentProjects = allProjects.filter((p: any) => {
+                      const hasNoParent = !p.parent_project || p.parent_project === null || p.parent_project === undefined;
+                      if (allProjects.length > 0 && !hasNoParent) {
+                          console.log('[UsersPage] Project has parent:', p.name, 'parent:', p.parent_project);
+                      }
+                      return hasNoParent;
+                  });
+                  console.log('[UsersPage] Parent projects (clubs):', parentProjects.length);
                   console.log('[UsersPage] Sample parent project:', parentProjects[0]);
                   setClubs(parentProjects);
               }
@@ -500,7 +510,7 @@ export default function UsersPage() {
                 <th style={{ minWidth: '100px' }}>Role</th>
                 <th style={{ minWidth: '100px' }}>Status</th>
                 <th style={{ minWidth: '150px' }}>Organisations</th>
-                <th style={{ minWidth: '150px' }}>Parent Project</th>
+                <th style={{ minWidth: '150px' }}>Club</th>
                 <th style={{ textAlign: 'right', minWidth: '150px' }}>Actions</th>
               </tr>
             </thead>
@@ -524,9 +534,17 @@ export default function UsersPage() {
                   const isActive = isMembership ? item.is_active : user.is_active;
 
                   // Get parent projects (clubs) - Projects without parent (parent is null or undefined)
-                  const parentProjects = userProjects.filter((p: any) => p.parent === null || p.parent === undefined || !p.parent);
+                  const parentProjects = userProjects.filter((p: any) => {
+                      const hasNoParent = p.parent === null || p.parent === undefined || !p.parent;
+                      return hasNoParent;
+                  });
 
-                  console.log('[UsersPage] User:', user.email, 'Role:', displayRole, 'Projects:', userProjects.length, 'Parent projects:', parentProjects.length);
+                  if (userProjects.length > 0) {
+                      console.log('[UsersPage] User:', user.email, 'Role:', displayRole, 'Projects:', userProjects.length, 'Parent projects:', parentProjects.length);
+                      if (userProjects.length > 0 && parentProjects.length === 0) {
+                          console.log('[UsersPage]   All projects have parents. Sample project:', userProjects[0]);
+                      }
+                  }
 
                   return (
                     <tr key={item.id || user.id}>
