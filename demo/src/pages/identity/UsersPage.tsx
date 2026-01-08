@@ -443,20 +443,30 @@ export default function UsersPage() {
 
       // 3. Club Filter (Projects with parent=null)
       if (selectedClubId) {
+          // Debug first 3 users
+          const userIndex = users.indexOf(item);
+          if (userIndex < 3) {
+              console.log(`[Club Filter] User ${userIndex + 1}: ${user.email}`);
+              console.log(`  - Projects count: ${userProjects.length}`);
+              console.log(`  - Selected club ID: ${selectedClubId}`);
+              if (userProjects.length > 0) {
+                  userProjects.forEach((p: any) => {
+                      const teamParent = p.parent || p.parent_id;
+                      console.log(`    - Project: ${p.name} (id=${p.id}, parent=${teamParent})`);
+                  });
+              }
+          }
+
           const hasClubMembership = userProjects.some((p: any) => {
               const isDirectClubMember = String(p.id) === String(selectedClubId);
               const teamParent = p.parent || p.parent_id;
               const isTeamMemberOfClub = teamParent && (String(teamParent) === String(selectedClubId));
-
-              // Debug first user
-              if (users.indexOf(item) === 0) {
-                  console.log(`[Club Filter] User: ${user.email}, Project: ${p.name} (${p.id})`);
-                  console.log(`  - parent: ${teamParent}, selectedClub: ${selectedClubId}`);
-                  console.log(`  - Direct match: ${isDirectClubMember}, Parent match: ${isTeamMemberOfClub}`);
-              }
-
               return isDirectClubMember || isTeamMemberOfClub;
           });
+
+          if (userIndex < 3) {
+              console.log(`  - Has club membership: ${hasClubMembership}`);
+          }
 
           if (!hasClubMembership) return false;
       }
