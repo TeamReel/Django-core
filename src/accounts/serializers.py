@@ -263,9 +263,9 @@ class UserListSerializer(serializers.ModelSerializer):
         try:
             from projects.models import ProjectMembership
 
-            project_memberships = ProjectMembership.objects.filter(user=obj).select_related(
-                "project", "project__parent_project"
-            )
+            project_memberships = ProjectMembership.objects.filter(
+                user=obj, deleted_at__isnull=True
+            ).select_related("project", "project__parent_project")
 
             for pm in project_memberships:
                 if pm.project:

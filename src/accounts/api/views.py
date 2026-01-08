@@ -786,13 +786,10 @@ def admin_user_list(request):
             count_before = queryset.count()
             logger.info(f"[admin_user_list] Users BEFORE project filter: {count_before}")
 
-            # Filter by ProjectMembership (new B26 system) OR RoleAssignment (legacy)
+            # Filter by ProjectMembership (new B26 system - active memberships only)
             queryset = queryset.filter(
-                Q(
-                    project_memberships__project_id__in=project_ids,
-                    project_memberships__deleted_at__isnull=True,
-                )
-                | Q(role_assignments__target_project_id__in=project_ids)
+                project_memberships__project_id__in=project_ids,
+                project_memberships__deleted_at__isnull=True,
             ).distinct()
 
             # Count after filter
