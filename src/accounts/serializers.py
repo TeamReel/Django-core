@@ -87,7 +87,11 @@ class UserListSerializer(serializers.ModelSerializer):
         7. Viewer (project viewer role)
         8. User (default)
         """
-        # 1. Check RBAC RoleAssignment first (primary source of truth)
+        # 0. ALWAYS check superuser first (highest privilege)
+        if obj.is_superuser:
+            return "Superadmin"
+
+        # 1. Check RBAC RoleAssignment (primary source of truth)
         try:
             from permissions.models import RoleAssignment
 
@@ -109,8 +113,6 @@ class UserListSerializer(serializers.ModelSerializer):
             pass
 
         # 2. Fallback to calculated role (backwards compatibility)
-        if obj.is_superuser:
-            return "Superadmin"
 
         # Check Organisation-level memberships (Land Admin)
         try:
