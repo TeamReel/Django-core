@@ -1022,11 +1022,39 @@ export default function UsersPage() {
                             {(() => {
                                 if (!canManageUsers) return null;
 
-                                const currentOrgSlug = (orgIdParam || context.organisation?.slug)?.toLowerCase();
-                                const isMemberOfCurrentOrg = userOrgs.some((o: any) => o.slug.toLowerCase() === currentOrgSlug);
-                                const membershipId = isMemberOfCurrentOrg ? userOrgs.find((o: any) => o.slug.toLowerCase() === currentOrgSlug)?.membership_id : null;
+                                // Determine which organisation the actions should apply to.
+                                // Priority:
+                                // 1) Route org context (/organisations/:orgId/users)
+                                // 2) Superadmin selected org filter (dropdown)
+                                // 3) Context switcher org (non-superadmin org context)
+                                const selectedOrg =
+                                    isSuperAdmin && selectedOrgId
+                                        ? organisations.find(o => String(o.id) === String(selectedOrgId))
+                                        : null;
 
-                                if (currentOrgSlug && isMemberOfCurrentOrg && membershipId) {
+                                const effectiveOrgSlugForActions = String(
+                                    orgIdParam || selectedOrg?.slug || context.organisation?.slug || ''
+                                ).toLowerCase();
+
+                                const effectiveOrgIdForActions = String(
+                                    selectedOrg?.id || orgIdParam || context.organisation?.id || ''
+                                );
+
+                                // User can be "in" an organisation either via direct org membership (membership_id)
+                                // or via project memberships (project_membership_id). In both cases, we should NOT
+                                // show an "Assign" button.
+                                const orgEntry = userOrgs.find((o: any) => {
+                                    const slugMatches =
+                                        o?.slug && effectiveOrgSlugForActions && String(o.slug).toLowerCase() === effectiveOrgSlugForActions;
+                                    const idMatches =
+                                        o?.id && effectiveOrgIdForActions && String(o.id) === String(effectiveOrgIdForActions);
+                                    return Boolean(slugMatches || idMatches);
+                                });
+
+                                const isInOrg = Boolean(orgEntry);
+                                const orgMembershipId = orgEntry?.membership_id || null;
+
+                                if (effectiveOrgSlugForActions && isInOrg && orgMembershipId) {
                                     // Show Unassign
                                     return (
                                         <button
@@ -1036,7 +1064,7 @@ export default function UsersPage() {
                                                     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
                                                     const csrfToken = getCookie('csrftoken');
 
-                                                    const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/${membershipId}/`, {
+                                                    const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${effectiveOrgSlugForActions}/members/${orgMembershipId}/`, {
                                                         method: 'DELETE',
                                                         headers: {
                                                             'Content-Type': 'application/json',
@@ -1068,7 +1096,14 @@ export default function UsersPage() {
                                             Unassign
                                         </button>
                                     );
-                                } else if (currentOrgSlug && !isMemberOfCurrentOrg) {
+                                }
+
+                                // If user is already in org (even via project memberships), don't show Assign.
+                                if (effectiveOrgSlugForActions && isInOrg) {
+                                    return null;
+                                }
+
+                                if (effectiveOrgSlugForActions && !isInOrg) {
                                     // Show Assign
                                     return (
                                         <button
