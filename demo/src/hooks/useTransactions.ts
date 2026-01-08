@@ -59,10 +59,21 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
         const payload = await response.json();
         console.log('[useTransactions] Response:', payload);
 
-        // Unwrap envelope: handle both {data: [...]} and {results: [...]}
-        const results = Array.isArray(payload)
-          ? payload
-          : (payload.data || payload.results || []);
+        // Unwrap envelope: handle {data: [...]}, {data: {results: [...]}}, {results: [...]}, or [...]
+        let results: Transaction[] = [];
+
+        if (Array.isArray(payload)) {
+          results = payload;
+        } else if (Array.isArray(payload.data)) {
+          results = payload.data;
+        } else if (payload.data && Array.isArray(payload.data.results)) {
+          results = payload.data.results;
+        } else if (Array.isArray(payload.results)) {
+          results = payload.results;
+        } else {
+          console.warn('[useTransactions] Unexpected response format:', payload);
+          results = [];
+        }
 
         setTransactions(results);
         setError(null);
