@@ -29,6 +29,14 @@ interface Organisation {
     slug: string;
 }
 
+type ProjectOption = {
+    id: string | number;
+    slug?: string;
+    name: string;
+    organisation?: string | { id: string };
+    parent_id?: string | number | null;
+};
+
 export default function UsersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -54,14 +62,22 @@ export default function UsersPage() {
   const page = searchParams.get('page') || '1';
   const limit = 50;
 
+    const resetPageToFirst = () => {
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set('page', '1');
+        setSearchParams(nextParams);
+    };
+
   // Filters
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
-  const [clubs, setClubs] = useState<any[]>([]); // All clubs
-  const [teams, setTeams] = useState<any[]>([]); // All teams
+    const [clubs, setClubs] = useState<ProjectOption[]>([]); // All clubs
+    const [teams, setTeams] = useState<ProjectOption[]>([]); // All teams
   const [availableRoles, setAvailableRoles] = useState<string[]>([]); // All roles from RBAC
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
-  const [selectedClubId, setSelectedClubId] = useState<string>('');
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+    const [selectedClubId, setSelectedClubId] = useState<string>(''); // numeric/string id used for dropdown filtering
+    const [selectedClubKey, setSelectedClubKey] = useState<string>(''); // slug/uuid/id used for API filtering
+    const [selectedTeamId, setSelectedTeamId] = useState<string>(''); // numeric/string id used for dropdown filtering
+    const [selectedTeamKey, setSelectedTeamKey] = useState<string>(''); // slug/uuid/id used for API filtering
   const [statusFilter, setStatusFilter] = useState<string>('active'); // Default to 'active'
   const [roleFilter, setRoleFilter] = useState<string>(''); // Client-side role filter
   const [hasInitializedFilters, setHasInitializedFilters] = useState(false);
@@ -208,7 +224,17 @@ export default function UsersPage() {
               if (!response.ok) {
                   console.error('[UsersPage] Failed to fetch roles:', response.status);
                   // Fallback to hardcoded roles if API fails (403 Forbidden, etc.)
-                  const fallbackRoles = ['Superadmin', 'Land Admin', 'Club Admin', 'Team Admin', 'Team Member', 'Supporter'];
+                  const fallbackRoles = [
+                      'Superadmin',
+                      'Land Admin',
+                      'Club Admin',
+                      'Team Admin',
+                      'Team Staff',
+                      'Team Member',
+                      'Supporter',
+                      'Viewer',
+                      'User',
+                  ];
                   console.log('[UsersPage] Using fallback roles:', fallbackRoles);
                   setAvailableRoles(fallbackRoles);
                   return;
@@ -226,13 +252,89 @@ export default function UsersPage() {
           } catch (e) {
               console.error('[UsersPage] Failed to fetch roles for filter:', e);
               // Fallback to hardcoded roles on error
-              const fallbackRoles = ['Superadmin', 'Land Admin', 'Club Admin', 'Team Admin', 'Team Member', 'Supporter'];
+                            const fallbackRoles = [
+                                    'Superadmin',
+                                    'Land Admin',
+                                    'Club Admin',
+                                    'Team Admin',
+                                    'Team Staff',
+                                    'Team Member',
+                                    'Supporter',
+                                    'Viewer',
+                                    'User',
+                            ];
               console.log('[UsersPage] Using fallback roles after error:', fallbackRoles);
               setAvailableRoles(fallbackRoles);
           }
       };
       fetchRoles();
   }, []);
+
+    const normalizeRole = (value: unknown) => String(value ?? '').trim().toLowerCase();
+
+    const mapMembershipRoleToDisplayRole = (membershipRole: string, hasParent: boolean) => {
+        const role = normalizeRole(membershipRole);
+        if (role === 'admin') return hasParent ? 'Team Admin' : 'Club Admin';
+        if (role === 'staff' || role === 'editor') return 'Team Staff';
+        if (role === 'player') return 'Team Member';
+        if (role === 'viewer') return 'Viewer';
+        return 'User';
+    };
+
+    const getScopedRoleForProjectFilter = (userProjects: any[]) => {
+        // If a Team is selected: map role only within that team membership.
+        if (selectedTeamKey) {
+            const match = userProjects.find((p: any) => String(p.slug || p.id) === String(selectedTeamKey));
+            if (match?.role) {
+                return mapMembershipRoleToDisplayRole(String(match.role), Boolean(match.parent));
+            }
+            return null;
+        }
+
+        // If a Club is selected: map highest role across club + its teams.
+        if (selectedClubKey) {
+            const club = clubs.find(c => String(c.slug || c.id) === String(selectedClubKey));
+
+            const relevant = userProjects.filter((p: any) => {
+                // direct club membership
+                if (club && String(p.id) === String(club.id)) return true;
+                // team under selected club
+                if (club && p.parent && String(p.parent) === String(club.id)) return true;
+                // fallback match on name when IDs don't line up
+                if (club && p.parent_name && club.name && String(p.parent_name) === String(club.name)) return true;
+                return false;
+            });
+
+            if (!relevant.length) return null;
+
+            // Determine highest privilege within the club scope.
+            // Priority: Club Admin > Team Admin > Team Staff > Team Member > Viewer > User
+            const priority = new Map<string, number>([
+                ['Club Admin', 1],
+                ['Team Admin', 2],
+                ['Team Staff', 3],
+                ['Team Member', 4],
+                ['Viewer', 5],
+                ['User', 6],
+            ]);
+
+            let best: string | null = null;
+            let bestRank = 999;
+
+            for (const p of relevant) {
+                const mapped = mapMembershipRoleToDisplayRole(String(p.role || ''), Boolean(p.parent));
+                const rank = priority.get(mapped) ?? 999;
+                if (rank < bestRank) {
+                    best = mapped;
+                    bestRank = rank;
+                }
+            }
+
+            return best;
+        }
+
+        return null;
+    };
 
   // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
   if (orgIdParam && context.isLoading) {
@@ -247,10 +349,12 @@ export default function UsersPage() {
     setIsLoading(true);
     setError(null);
 
-    // Build query params for server-side filtering + pagination
-    const params = new URLSearchParams();
-    params.append('limit', limit.toString());
-    params.append('offset', ((parseInt(page) - 1) * limit).toString());
+        // Build query params for server-side filtering + pagination
+        // Backend uses DRF PageNumberPagination: `page` + `page_size`
+        const pageNumber = Number.parseInt(page, 10) || 1;
+        const params = new URLSearchParams();
+        params.append('page', pageNumber.toString());
+        params.append('page_size', limit.toString());
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
     try {
@@ -276,12 +380,12 @@ export default function UsersPage() {
         }
 
         // Club/Team filter (server-side) - team takes priority
-        if (selectedTeamId) {
-            params.append('project_id', selectedTeamId);
-            console.log('[UsersPage] 🔍 API Filter - Team:', selectedTeamId);
-        } else if (selectedClubId) {
-            params.append('project_id', selectedClubId);
-            console.log('[UsersPage] 🔍 API Filter - Club:', selectedClubId);
+        if (selectedTeamKey) {
+            params.append('project_id', selectedTeamKey);
+            console.log('[UsersPage] 🔍 API Filter - Team:', selectedTeamKey);
+        } else if (selectedClubKey) {
+            params.append('project_id', selectedClubKey);
+            console.log('[UsersPage] 🔍 API Filter - Club:', selectedClubKey);
         }
 
         // Status filter
@@ -351,11 +455,12 @@ export default function UsersPage() {
     if (user) {
         fetchUsers();
     }
-  }, [user, context.organisation, isSuperAdmin, selectedOrgId, selectedClubId, selectedTeamId, projectIdParam, orgIdParam, statusFilter, page]);
+    }, [user, context.organisation, isSuperAdmin, selectedOrgId, selectedClubKey, selectedTeamKey, projectIdParam, orgIdParam, statusFilter, page]);
 
   const handlePageChange = (newPage: number) => {
-    searchParams.set('page', newPage.toString());
-    setSearchParams(searchParams);
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set('page', newPage.toString());
+        setSearchParams(nextParams);
   };
 
   const totalPages = Math.ceil(total / limit);
@@ -433,10 +538,14 @@ export default function UsersPage() {
   const filteredUsers = users.filter((item: any) => {
       const isMembership = !!item.user;
       const user = isMembership ? item.user : item;
-      const systemRole = user.role || '';
+      const userProjects = user.projects || [];
+
+      // If filtering by club/team, use scoped role computed from memberships.
+      const scopedRole = getScopedRoleForProjectFilter(userProjects);
+      const systemRole = scopedRole || user.role || '';
 
       // Role Filter (client-side only)
-      if (roleFilter && systemRole !== roleFilter) {
+      if (roleFilter && normalizeRole(systemRole) !== normalizeRole(roleFilter)) {
           return false;
       }
 
@@ -479,7 +588,10 @@ export default function UsersPage() {
                     <label style={{ fontSize: '14px', fontWeight: 500 }}>Status:</label>
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value);
+                            resetPageToFirst();
+                        }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
                         <option value="all">All</option>
@@ -493,6 +605,7 @@ export default function UsersPage() {
                         onChange={(e) => {
                             console.log('[UsersPage] 🎭 Role filter changed to:', e.target.value);
                             setRoleFilter(e.target.value);
+                            resetPageToFirst();
                         }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
@@ -507,8 +620,11 @@ export default function UsersPage() {
                         value={selectedOrgId}
                         onChange={(e) => {
                             setSelectedOrgId(e.target.value);
-                            setSelectedClubId(''); // Reset club filter when org changes
-                            setSelectedTeamId(''); // Reset team filter when org changes
+                            setSelectedClubId('');
+                            setSelectedClubKey('');
+                            setSelectedTeamId('');
+                            setSelectedTeamKey('');
+                            resetPageToFirst();
                         }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
@@ -523,10 +639,15 @@ export default function UsersPage() {
                         value={selectedClubId}
                         onChange={(e) => {
                             const clubId = e.target.value;
-                            const clubName = clubs.find(c => String(c.id) === clubId)?.name || 'Unknown';
+                            const selectedClub = clubs.find(c => String(c.id) === clubId);
+                            const clubName = selectedClub?.name || 'Unknown';
+                            const clubKey = String(selectedClub?.slug || selectedClub?.id || clubId);
                             console.log('[UsersPage] 🏢 Club filter changed to:', clubId, `(${clubName})`);
                             setSelectedClubId(clubId);
-                            setSelectedTeamId(''); // Reset team filter when club changes
+                            setSelectedClubKey(clubKey);
+                            setSelectedTeamId('');
+                            setSelectedTeamKey('');
+                            resetPageToFirst();
                         }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', maxWidth: '150px' }}
                     >
@@ -550,35 +671,58 @@ export default function UsersPage() {
                         value={selectedTeamId}
                         onChange={(e) => {
                             const teamId = e.target.value;
-                            const teamName = teams.find(t => String(t.id) === teamId)?.name || 'Unknown';
+                            const selectedTeam = teams.find(t => String(t.id) === teamId);
+                            const teamName = selectedTeam?.name || 'Unknown';
+                            const teamKey = String(selectedTeam?.slug || selectedTeam?.id || teamId);
                             console.log('[UsersPage] ⚽ Team filter changed to:', teamId, `(${teamName})`);
                             setSelectedTeamId(teamId);
+                            setSelectedTeamKey(teamKey);
+                            resetPageToFirst();
                         }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', maxWidth: '150px' }}
                     >
                         <option value="">All Teams</option>
                         {teams
                             .filter(team => {
-                                // Filter by selected club if set
-                                if (selectedClubId) {
-                                    const teamParentId = team.parent_id;
-                                    if (teamParentId !== selectedClubId && String(teamParentId) !== String(selectedClubId)) {
-                                        return false;
-                                    }
-                                }
-                                // Filter by selected organisation if set (via parent club)
-                                if (selectedOrgId) {
-                                    const teamParentId = team.parent_id;
-                                    const parentClub = clubs.find(c => String(c.id) === String(teamParentId));
-                                    if (parentClub) {
-                                        const clubOrg = typeof parentClub.organisation === 'string' ? parentClub.organisation : parentClub.organisation?.id;
-                                        if (clubOrg !== selectedOrgId && String(clubOrg) !== String(selectedOrgId)) {
-                                            return false;
-                                        }
-                                    } else {
-                                        return false;
-                                    }
-                                }
+                                                                const selectedClub = selectedClubId
+                                                                    ? clubs.find(c => String(c.id) === String(selectedClubId))
+                                                                    : null;
+
+                                                                const teamParentId = (team as any).parent_id ?? (team as any).parent ?? null;
+                                                                const teamParentName = (team as any).parent_name ?? null;
+
+                                                                // Filter by selected club if set.
+                                                                // Some APIs return `club.id` as an int-like string (e.g. "9"), while `team.parent_id`
+                                                                // may be serialized differently (UUID-like). Fall back to matching by parent_name.
+                                                                if (selectedClub) {
+                                                                    const matchesById =
+                                                                        teamParentId !== null && String(teamParentId) === String(selectedClub.id);
+                                                                    const matchesByName =
+                                                                        teamParentName && selectedClub.name && String(teamParentName) === String(selectedClub.name);
+
+                                                                    if (!matchesById && !matchesByName) return false;
+                                                                }
+
+                                                                // Filter by selected organisation if set (resolve via parent club, fall back to parent_name).
+                                                                if (selectedOrgId) {
+                                                                    let parentClub: ProjectOption | undefined;
+
+                                                                    if (teamParentId !== null) {
+                                                                        parentClub = clubs.find(c => String(c.id) === String(teamParentId));
+                                                                    }
+                                                                    if (!parentClub && teamParentName) {
+                                                                        parentClub = clubs.find(c => c.name === teamParentName);
+                                                                    }
+
+                                                                    if (!parentClub) return false;
+
+                                                                    const clubOrg =
+                                                                        typeof parentClub.organisation === 'string'
+                                                                            ? parentClub.organisation
+                                                                            : parentClub.organisation?.id;
+                                                                    if (!clubOrg) return false;
+                                                                    if (String(clubOrg) !== String(selectedOrgId)) return false;
+                                                                }
                                 return true;
                             })
                             .map(team => (
