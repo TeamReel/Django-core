@@ -474,20 +474,21 @@ export default function UsersPage() {
               const teamParent = p.parent || p.parent_id;
               const isTeamMemberOfClub = teamParent && (String(teamParent) === String(selectedClubId));
 
+              if (shouldDebug) {
+                  console.log(`    📦 Checking project "${p.name}" (id: ${p.id}, parent: ${teamParent})`);
+                  console.log(`       - Direct club member? ${String(p.id)} === ${selectedClubId} → ${isDirectClubMember}`);
+                  console.log(`       - Team member of club? ${String(teamParent)} === ${selectedClubId} → ${isTeamMemberOfClub}`);
+              }
+
               if (shouldDebug && (isDirectClubMember || isTeamMemberOfClub)) {
-                  console.log(`    🏢 Found club match in project: ${p.name}`, {
-                      isDirectClubMember,
-                      isTeamMemberOfClub,
-                      projectId: p.id,
-                      parentId: teamParent
-                  });
+                  console.log(`    ✅ MATCH found in project: ${p.name}`);
               }
 
               return isDirectClubMember || isTeamMemberOfClub;
           });
 
           if (shouldDebug) {
-              console.log(`  🏢 Club Filter: hasClubMembership = ${hasClubMembership}`);
+              console.log(`  🏢 Club Filter Result: hasClubMembership = ${hasClubMembership}`);
           }
           if (!hasClubMembership) {
               if (shouldDebug) console.log('  ❌ FILTERED OUT by Club');
@@ -598,8 +599,10 @@ export default function UsersPage() {
                     <select
                         value={selectedClubId}
                         onChange={(e) => {
-                            console.log('[UsersPage] 🏢 Club filter changed to:', e.target.value);
-                            setSelectedClubId(e.target.value);
+                            const clubId = e.target.value;
+                            const clubName = clubs.find(c => String(c.id) === clubId)?.name || 'Unknown';
+                            console.log('[UsersPage] 🏢 Club filter changed to:', clubId, `(${clubName})`);
+                            setSelectedClubId(clubId);
                             setSelectedTeamId(''); // Reset team filter when club changes
                         }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
@@ -629,8 +632,10 @@ export default function UsersPage() {
                     <select
                         value={selectedTeamId}
                         onChange={(e) => {
-                            console.log('[UsersPage] ⚽ Team filter changed to:', e.target.value);
-                            setSelectedTeamId(e.target.value);
+                            const teamId = e.target.value;
+                            const teamName = teams.find(t => String(t.id) === teamId)?.name || 'Unknown';
+                            console.log('[UsersPage] ⚽ Team filter changed to:', teamId, `(${teamName})`);
+                            setSelectedTeamId(teamId);
                         }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
