@@ -252,6 +252,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
+        # Handle parent_project filtering for clubs/teams distinction
+        parent_filter = self.request.query_params.get("parent_project__isnull")
+        if parent_filter is not None:
+            if parent_filter.lower() in ["true", "1"]:
+                # Clubs only (no parent)
+                queryset = queryset.filter(parent_project__isnull=True)
+            elif parent_filter.lower() in ["false", "0"]:
+                # Teams only (has parent)
+                queryset = queryset.filter(parent_project__isnull=False)
+
         # Ensure distinct is always applied to prevent duplicates
         return queryset.distinct()
 

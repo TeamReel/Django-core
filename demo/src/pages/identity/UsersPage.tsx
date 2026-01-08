@@ -46,15 +46,19 @@ export default function UsersPage() {
     basePath: ''
   });
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const page = searchParams.get('page') || '1';
+  const limit = 50;
 
   // Filters
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [clubs, setClubs] = useState<any[]>([]); // All clubs
   const [teams, setTeams] = useState<any[]>([]); // All teams
+  const [availableRoles, setAvailableRoles] = useState<string[]>([]); // All roles from RBAC
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
@@ -134,107 +138,93 @@ export default function UsersPage() {
       }
   }, [isSuperAdmin]);
 
-  // Helper function to recursively fetch ALL pages from a paginated endpoint
-  const fetchAllPages = async (initialUrl: string): Promise<any[]> => {
+  // Helper to fetch all filter options (clubs/teams) - fetches all pages
+  const fetchAllFilterOptions = async (initialUrl: string): Promise<any[]> => {
       const allResults: any[] = [];
       let url: string | null = initialUrl;
       let pageCount = 0;
 
       while (url) {
           pageCount++;
-          console.log(`[UsersPage] Fetching page ${pageCount}:`, url);
-
-          const res: Response = await fetch(url, {
-              credentials: 'include'
-          });
-
-          if (!res.ok) {
-              console.error(`[UsersPage] Failed to fetch page ${pageCount}:`, res.status);
-              break;
-          }
+          const res: Response = await fetch(url, { credentials: 'include' });
+          if (!res.ok) break;
 
           const data: any = await res.json();
-          // Handle B13 envelope: {status, data: {results, count, next}, meta}
           const results = data.data?.results || data.results || [];
           const next: string | null = data.data?.next || data.next || null;
-
           allResults.push(...results);
-          console.log(`[UsersPage] Page ${pageCount}: fetched ${results.length} items (total so far: ${allResults.length})`);
-
-          // Continue to next page if it exists
           url = next;
       }
-
-      console.log(`[UsersPage] ✅ Finished fetching all ${pageCount} pages - Total items: ${allResults.length}`);
       return allResults;
   };
 
-  // Fetch ALL clubs (Projects with parent=null) - recursively fetch all pages
+  // Fetch ALL clubs (parent_project=null only) for filter dropdown
   useEffect(() => {
       const fetchClubs = async () => {
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
           try {
-              // Start with page_size=200 for efficiency, but will fetch ALL pages
-              const initialUrl = `${apiBaseUrl}/api/v1/projects/?page_size=200`;
-              console.log('[UsersPage] Starting recursive fetch for ALL clubs...');
+              // Fetch ONLY parent projects (clubs) - backend filter for efficiency
+              const initialUrl = `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`;
+              console.log('[UsersPage] Fetching clubs (parent_project=null)...');
 
-              const allProjects = await fetchAllPages(initialUrl);
-
-              // Filter for parent projects only (clubs) - projects without parent_project
-              const parentProjects = allProjects.filter((p: any) => {
-                  const hasNoParent = !p.parent_project || p.parent_project === null || p.parent_project === undefined;
-                  return hasNoParent;
-              });
+              const parentProjects = await fetchAllFilterOptions(initialUrl);
               console.log('[UsersPage] Total clubs loaded:', parentProjects.length);
-
-              // Log first 3 clubs to see structure
-              if (parentProjects.length > 0) {
-                  console.log('[UsersPage] Sample clubs:', parentProjects.slice(0, 3).map((c: any) => ({
-                      name: c.name,
-                      id: c.id,
-                      organisation: c.organisation,
-                      org_id: c.organisation?.id
-                  })));
-              }
-
               setClubs(parentProjects);
           } catch (e) {
               console.error("Failed to fetch clubs for filter", e);
           }
       };
       fetchClubs();
-  }, []); // Run once on mount
+  }, []);
 
-  // Fetch ALL teams (Projects with parent!=null) - recursively fetch all pages
+  // Fetch ALL teams (parent_project!=null only) for filter dropdown
   useEffect(() => {
       const fetchTeams = async () => {
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
           try {
-              // Start with page_size=200 for efficiency, but will fetch ALL pages
-              const initialUrl = `${apiBaseUrl}/api/v1/projects/?page_size=200`;
-              console.log('[UsersPage] Starting recursive fetch for ALL teams...');
+              // Fetch ONLY child projects (teams) - backend filter for efficiency
+              const initialUrl = `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`;
+              console.log('[UsersPage] Fetching teams (parent_project!=null)...');
 
-              const allProjects = await fetchAllPages(initialUrl);
-
-              console.log('[UsersPage] Projects with parent_project:', allProjects.filter((p: any) => p.parent_project).length);
-              console.log('[UsersPage] Projects without parent_project:', allProjects.filter((p: any) => !p.parent_project).length);
-
-              // Filter for teams (projects with parent_project)
-              const childProjects = allProjects.filter((p: any) => {
-                  return p.parent_project && p.parent_project !== null && p.parent_project !== undefined;
-              });
+              const childProjects = await fetchAllFilterOptions(initialUrl);
               console.log('[UsersPage] Total teams loaded:', childProjects.length);
-
-              if (childProjects.length > 0) {
-                  console.log('[UsersPage] Sample teams:', childProjects.slice(0, 5).map((t: any) => `${t.name} (parent: ${t.parent_project})`));
-              }
               setTeams(childProjects);
           } catch (e) {
               console.error("Failed to fetch teams for filter", e);
           }
       };
       fetchTeams();
-  }, []); // Run once on mount
+  }, []);
+
+  // Fetch ALL available roles from RBAC system for filter dropdown
+  useEffect(() => {
+      const fetchRoles = async () => {
+          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+          try {
+              const response = await fetch(`${apiBaseUrl}/api/v1/permissions/roles/`, {
+                  credentials: 'include',
+              });
+
+              if (!response.ok) {
+                  console.error('[UsersPage] Failed to fetch roles:', response.status);
+                  return;
+              }
+
+              const data = await response.json();
+              const results = data.data?.results || data.results || data;
+
+              // Extract role names and add Superadmin (from is_superuser)
+              const roleNames = results.map((role: any) => role.name);
+              const allRoles = ['Superadmin', ...roleNames].sort();
+
+              console.log('[UsersPage] Available roles loaded:', allRoles);
+              setAvailableRoles(allRoles);
+          } catch (e) {
+              console.error('[UsersPage] Failed to fetch roles for filter:', e);
+          }
+      };
+      fetchRoles();
+  }, []);
 
   // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
   if (orgIdParam && context.isLoading) {
@@ -248,6 +238,11 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     setIsLoading(true);
     setError(null);
+
+    // Build query params for server-side filtering + pagination
+    const params = new URLSearchParams();
+    params.append('limit', limit.toString());
+    params.append('offset', ((parseInt(page) - 1) * limit).toString());
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
     try {
@@ -259,57 +254,51 @@ export default function UsersPage() {
       const effectiveProjectId = projectIdParam?.toLowerCase();
 
       if (effectiveProjectId) {
-          // Project members
-          // Use the admin endpoint with filters instead of the specific members endpoint
-          // because the members endpoint might not be implemented or returns different structure
-          url = `${apiBaseUrl}/api/v1/admin/users/?project_id=${effectiveProjectId}`;
+          // Project members - add pagination params
+          params.append('project_id', effectiveProjectId);
           if (effectiveOrgSlug) {
-              url += `&organisation_id=${effectiveOrgSlug}`;
+              params.append('organisation_id', effectiveOrgSlug);
           }
+          url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
       } else if (isSuperAdmin) {
-        url = `${apiBaseUrl}/api/v1/admin/users/?`;
-
-        // Use effectiveOrgSlug if available (from URL), otherwise selectedOrgId (from dropdown)
+        // Superadmin view - add filters to params
         const filterOrg = effectiveOrgSlug || selectedOrgId;
         if (filterOrg) {
-            url += `organisation_id=${filterOrg}&`;
+            params.append('organisation_id', filterOrg);
         }
 
         // Status filter
         if (statusFilter === 'active') {
-            url += `is_active=true&`;
+            params.append('is_active', 'true');
         } else if (statusFilter === 'inactive') {
-            url += `is_active=false&`;
+            params.append('is_active', 'false');
         }
+
+        url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
       } else if (effectiveOrgSlug) {
-        // For regular admins, use the admin endpoint but scoped to their org
-        // The backend admin_user_list endpoint supports filtering by organisation_id
-        // and checks permissions (IsAdmin) which Org Admins have.
-        url = `${apiBaseUrl}/api/v1/admin/users/?organisation_id=${effectiveOrgSlug}`;
+        // Org admin view - scoped to their org
+        params.append('organisation_id', effectiveOrgSlug);
 
-        // If we are NOT in a specific org route (i.e. /users vs /organisations/:slug/users),
-        // and we are an Org Admin, we might want to see unassigned users too (e.g. to invite them).
-        // The user requested: "Only when I click Users from the left navbar, I want to see all users."
-        // This implies that when orgIdParam is missing (Global context), we should include unassigned.
+        // Include unassigned users in global view
         if (!orgIdParam) {
-            url += '&include_unassigned=true';
+            params.append('include_unassigned', 'true');
         }
-      } else {
-        // No org selected and not superadmin -> Global View
-        // Call admin endpoint without organisation_id (backend now handles filtering)
-        url = `${apiBaseUrl}/api/v1/admin/users/?`;
 
-        // Apply Org Filter if selected
+        url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
+      } else {
+        // Global View - apply filters
         if (selectedOrgId) {
-            url += `organisation_id=${selectedOrgId}&`;
+            params.append('organisation_id', selectedOrgId);
         }
 
         // Status filter
         if (statusFilter === 'active') {
-            url += `is_active=true&`;
+            params.append('is_active', 'true');
         } else if (statusFilter === 'inactive') {
-            url += `is_active=false&`;
+            params.append('is_active', 'false');
         }
+
+        url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
       }
 
       const res = await fetch(url, {
@@ -329,7 +318,9 @@ export default function UsersPage() {
       const data = await res.json();
       // Handle B13 envelope or direct DRF response
       const results = data.data?.results || data.results || [];
+      const count = data.data?.count || data.count || 0;
       setUsers(results);
+      setTotal(count);
     } catch (err: any) {
       console.error(err);
       setError(err.message);
@@ -342,7 +333,15 @@ export default function UsersPage() {
     if (user) {
         fetchUsers();
     }
-  }, [user, context.organisation, isSuperAdmin, selectedOrgId, projectIdParam, orgIdParam, statusFilter]);
+  }, [user, context.organisation, isSuperAdmin, selectedOrgId, projectIdParam, orgIdParam, statusFilter, page]);
+
+  const handlePageChange = (newPage: number) => {
+    searchParams.set('page', newPage.toString());
+    setSearchParams(searchParams);
+  };
+
+  const totalPages = Math.ceil(total / limit);
+  const currentPage = parseInt(page);
 
   const handleEditClick = (user: any) => {
       // Normalize user object if it's a membership
@@ -437,8 +436,10 @@ export default function UsersPage() {
       if (selectedClubId) {
           // Check if user has membership in this club OR any team under this club
           const hasClubMembership = userProjects.some((p: any) => {
-              const isDirectClubMember = p.id === selectedClubId || String(p.id) === selectedClubId;
-              const isTeamMemberOfClub = p.parent === selectedClubId || String(p.parent) === selectedClubId;
+              const isDirectClubMember = String(p.id) === String(selectedClubId);
+              // Check if user is in a team that belongs to this club (via parent field)
+              const teamParent = p.parent || p.parent_id;
+              const isTeamMemberOfClub = teamParent && (String(teamParent) === String(selectedClubId));
               return isDirectClubMember || isTeamMemberOfClub;
           });
 
@@ -505,14 +506,9 @@ export default function UsersPage() {
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
                         <option value="">All Roles</option>
-                        <option value="Superadmin">Superadmin</option>
-                        <option value="Land Admin">Land Admin</option>
-                        <option value="Club Admin">Club Admin</option>
-                        <option value="Team Admin">Team Admin</option>
-                        <option value="Team Staff">Team Staff</option>
-                        <option value="Team Member">Team Member</option>
-                        <option value="Viewer">Viewer</option>
-                        <option value="User">User</option>
+                        {availableRoles.map(role => (
+                            <option key={role} value={role}>{role}</option>
+                        ))}
                     </select>
 
                     <label style={{ fontSize: '14px', fontWeight: 500 }}>Organisation:</label>
@@ -572,18 +568,18 @@ export default function UsersPage() {
                             .filter(team => {
                                 // Filter by selected club if set
                                 if (selectedClubId) {
-                                    const teamParent = typeof team.parent_project === 'string' ? team.parent_project : team.parent_project?.id;
-                                    if (teamParent !== selectedClubId && String(teamParent) !== selectedClubId) {
+                                    const teamParentId = team.parent_id;
+                                    if (teamParentId !== selectedClubId && String(teamParentId) !== String(selectedClubId)) {
                                         return false;
                                     }
                                 }
                                 // Filter by selected organisation if set (via parent club)
                                 if (selectedOrgId) {
-                                    const teamParent = typeof team.parent_project === 'string' ? team.parent_project : team.parent_project?.id;
-                                    const parentClub = clubs.find(c => c.id === teamParent || String(c.id) === teamParent);
+                                    const teamParentId = team.parent_id;
+                                    const parentClub = clubs.find(c => String(c.id) === String(teamParentId));
                                     if (parentClub) {
                                         const clubOrg = typeof parentClub.organisation === 'string' ? parentClub.organisation : parentClub.organisation?.id;
-                                        if (clubOrg !== selectedOrgId && String(clubOrg) !== selectedOrgId) {
+                                        if (clubOrg !== selectedOrgId && String(clubOrg) !== String(selectedOrgId)) {
                                             return false;
                                         }
                                     } else {
@@ -989,6 +985,29 @@ export default function UsersPage() {
           </div>
         </Card>
       )}
+
+        {/* Pagination */}
+        {!isLoading && total > limit && (
+          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
+            <Button
+              variant="secondary"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
+              Previous
+            </Button>
+            <span style={{ fontSize: '0.875rem', color: 'var(--app-muted-text)' }}>
+              Page {currentPage} of {totalPages} ({total} total users)
+            </span>
+            <Button
+              variant="secondary"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        )}
 
       <UserEditModal
         opened={isModalOpen}
