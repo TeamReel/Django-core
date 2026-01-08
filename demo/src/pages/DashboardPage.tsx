@@ -97,19 +97,19 @@ export default function DashboardPage() {
                    {/* Stats Row */}
                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginTop: '24px' }}>
                       <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{context.organisation.clubs_count || context.organisation.project_count || 0}</div>
+                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{(context.organisation as any).clubs_count || (context.organisation as any).project_count || 0}</div>
                           <div style={{ fontSize: '13px', opacity: 0.7 }}>Clubs</div>
                       </div>
                       <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{context.organisation.teams_count || 0}</div>
+                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{(context.organisation as any).teams_count || 0}</div>
                           <div style={{ fontSize: '13px', opacity: 0.7 }}>Teams</div>
                       </div>
                       <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{context.organisation.matches_count || 0}</div>
+                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{(context.organisation as any).matches_count || 0}</div>
                           <div style={{ fontSize: '13px', opacity: 0.7 }}>Matches</div>
                       </div>
                       <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{context.organisation.member_count || 0}</div>
+                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{(context.organisation as any).member_count || 0}</div>
                           <div style={{ fontSize: '13px', opacity: 0.7 }}>Members</div>
                       </div>
                    </div>

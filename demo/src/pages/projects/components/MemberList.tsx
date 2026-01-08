@@ -175,7 +175,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                         <div style={{ fontSize: '11px', color: '#888' }}>{user.email}</div>
                       </td>
                       <td>
-                         <Badge variant="neutral" size="small">{position}</Badge>
+                         <Badge variant="default" size="sm">{position}</Badge>
                       </td>
                       <td>
                         <Badge variant={role === 'admin' || role === 'manager' ? 'warning' : 'default'}>

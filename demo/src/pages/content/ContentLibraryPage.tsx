@@ -31,7 +31,7 @@ export default function ContentLibraryPage() {
                        <h4 style={{ fontWeight: 600, marginBottom: '8px' }}>Match Report: Ajax vs Almere</h4>
                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <Badge variant="success">Ready</Badge>
-                          <Button size="sm" variant="default">Download</Button>
+                          <Button size="sm" variant="secondary">Download</Button>
                        </div>
                     </div>
                  </Card>

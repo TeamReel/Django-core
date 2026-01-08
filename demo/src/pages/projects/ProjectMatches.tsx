@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Badge, Button } from '@django-core/design-system';
-import { Table } from '../../../shims/design-system';
+import { Table } from '@/shims/design-system';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -160,7 +160,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                    </Badge>
                 </td>
                 <td style={{ textAlign: 'right' }}>
-                   <Button size="sm" variant="default" onClick={() => navigate(`/matches/${match.id}`)}>View</Button>
+                   <Button size="sm" variant="secondary" onClick={() => navigate(`/matches/${match.id}`)}>View</Button>
                 </td>
               </tr>
             );

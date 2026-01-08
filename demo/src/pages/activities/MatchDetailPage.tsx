@@ -87,7 +87,7 @@ export const MatchDetailPage: React.FC = () => {
       <AppShell>
          <PageContent>
             <Alert variant="error">{error || 'Match not found'}</Alert>
-            <Button variant="default" onClick={() => navigate(-1)} className="mt-4">
+            <Button variant="secondary" onClick={() => navigate(-1)} className="mt-4">
               Go Back
             </Button>
          </PageContent>
