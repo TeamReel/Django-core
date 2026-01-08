@@ -54,8 +54,10 @@ export default function UsersPage() {
   // Filters
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [clubs, setClubs] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('active'); // Default to 'active'
   const [roleFilter, setRoleFilter] = useState<string>(''); // Client-side role filter
   const [hasInitializedFilters, setHasInitializedFilters] = useState(false);
@@ -132,16 +134,18 @@ export default function UsersPage() {
       }
   }, [isSuperAdmin]);
 
-  // Fetch clubs (Projects with parent=null) for filter
+  // Fetch clubs (Projects with parent=null) for filter - organisation specific
   useEffect(() => {
       const fetchClubs = async () => {
+          if (!selectedOrgId) {
+              setClubs([]);
+              return;
+          }
+
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
           try {
-              // Filter for clubs (parent projects without parent)
-              let url = `${apiBaseUrl}/api/v1/projects/?page_size=100`;
-              if (selectedOrgId) {
-                  url += `&organisation=${selectedOrgId}`;
-              }
+              // Filter for clubs within selected organisation
+              let url = `${apiBaseUrl}/api/v1/projects/?page_size=100&organisation=${selectedOrgId}`;
               console.log('[UsersPage] Fetching clubs from:', url);
               const res = await fetch(url, {
                   credentials: 'include'
@@ -171,6 +175,42 @@ export default function UsersPage() {
       };
       fetchClubs();
   }, [selectedOrgId]);
+
+  // Fetch teams (Projects with parent!=null) for filter - club specific
+  useEffect(() => {
+      const fetchTeams = async () => {
+          if (!selectedClubId) {
+              setTeams([]);
+              return;
+          }
+
+          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+          try {
+              // Get all projects, then filter for teams (children of selected club)
+              let url = `${apiBaseUrl}/api/v1/projects/?page_size=100`;
+              if (selectedOrgId) {
+                  url += `&organisation=${selectedOrgId}`;
+              }
+              console.log('[UsersPage] Fetching teams from:', url);
+              const res = await fetch(url, {
+                  credentials: 'include'
+              });
+              if (res.ok) {
+                  const data = await res.json();
+                  const allProjects = data.data?.results || data.results || [];
+                  // Filter for teams (projects with parent === selectedClubId)
+                  const childProjects = allProjects.filter((p: any) => {
+                      return p.parent_project === selectedClubId || String(p.parent_project) === selectedClubId;
+                  });
+                  console.log('[UsersPage] Teams (child projects):', childProjects.length);
+                  setTeams(childProjects);
+              }
+          } catch (e) {
+              console.error("Failed to fetch teams for filter", e);
+          }
+      };
+      fetchTeams();
+  }, [selectedClubId, selectedOrgId]);
 
   // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
   if (orgIdParam && context.isLoading) {
@@ -371,12 +411,24 @@ export default function UsersPage() {
 
       // 3. Club Filter (Projects with parent=null)
       if (selectedClubId) {
-          // Check if user has membership in this specific club project
-          const hasClubMembership = userProjects.some((p: any) =>
-              (p.id === selectedClubId || String(p.id) === selectedClubId)
-          );
+          // Check if user has membership in this club OR any team under this club
+          const hasClubMembership = userProjects.some((p: any) => {
+              const isDirectClubMember = p.id === selectedClubId || String(p.id) === selectedClubId;
+              const isTeamMemberOfClub = p.parent === selectedClubId || String(p.parent) === selectedClubId;
+              return isDirectClubMember || isTeamMemberOfClub;
+          });
 
           if (!hasClubMembership) return false;
+      }
+
+      // 4. Team Filter (Projects with parent!=null)
+      if (selectedTeamId) {
+          // Check if user has membership in this specific team
+          const hasTeamMembership = userProjects.some((p: any) =>
+              (p.id === selectedTeamId || String(p.id) === selectedTeamId)
+          );
+
+          if (!hasTeamMembership) return false;
       }
 
       return true;
@@ -445,6 +497,7 @@ export default function UsersPage() {
                         onChange={(e) => {
                             setSelectedOrgId(e.target.value);
                             setSelectedClubId(''); // Reset club filter when org changes
+                            setSelectedTeamId(''); // Reset team filter when org changes
                         }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
@@ -457,13 +510,29 @@ export default function UsersPage() {
                     <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Club:</label>
                     <select
                         value={selectedClubId}
-                        onChange={(e) => setSelectedClubId(e.target.value)}
+                        onChange={(e) => {
+                            setSelectedClubId(e.target.value);
+                            setSelectedTeamId(''); // Reset team filter when club changes
+                        }}
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                        disabled={!selectedOrgId && !isSuperAdmin}
+                        disabled={!selectedOrgId}
                     >
                         <option value="">All Clubs</option>
                         {clubs.map(club => (
                             <option key={club.id} value={club.id}>{club.name}</option>
+                        ))}
+                    </select>
+
+                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Team:</label>
+                    <select
+                        value={selectedTeamId}
+                        onChange={(e) => setSelectedTeamId(e.target.value)}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        disabled={!selectedClubId}
+                    >
+                        <option value="">All Teams</option>
+                        {teams.map(team => (
+                            <option key={team.id} value={team.id}>{team.name}</option>
                         ))}
                     </select>
                     </>
@@ -511,13 +580,14 @@ export default function UsersPage() {
                 <th style={{ minWidth: '100px' }}>Status</th>
                 <th style={{ minWidth: '150px' }}>Organisations</th>
                 <th style={{ minWidth: '150px' }}>Club</th>
+                <th style={{ minWidth: '150px' }}>Team</th>
                 <th style={{ textAlign: 'right', minWidth: '150px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: '24px', textAlign: 'center', color: 'var(--app-muted-text)' }}>
+                  <td colSpan={8} style={{ padding: '24px', textAlign: 'center', color: 'var(--app-muted-text)' }}>
                     No users found.
                   </td>
                 </tr>
@@ -539,8 +609,14 @@ export default function UsersPage() {
                       return hasNoParent;
                   });
 
+                  // Get child projects (teams) - Projects with parent
+                  const childProjects = userProjects.filter((p: any) => {
+                      const hasParent = p.parent !== null && p.parent !== undefined && p.parent;
+                      return hasParent;
+                  });
+
                   if (userProjects.length > 0) {
-                      console.log('[UsersPage] User:', user.email, 'Role:', displayRole, 'Projects:', userProjects.length, 'Parent projects:', parentProjects.length);
+                      console.log('[UsersPage] User:', user.email, 'Role:', displayRole, 'Projects:', userProjects.length, 'Clubs:', parentProjects.length, 'Teams:', childProjects.length);
                       if (userProjects.length > 0 && parentProjects.length === 0) {
                           console.log('[UsersPage]   All projects have parents. Sample project:', userProjects[0]);
                       }
@@ -602,6 +678,22 @@ export default function UsersPage() {
                                       color: 'var(--app-text)'
                                   }}>
                                       {project.name}
+                                  </span>
+                              )) : <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>-</span>}
+                          </div>
+                      </td>
+                      <td>
+                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                              {childProjects.length > 0 ? childProjects.map((project: any) => (
+                                  <span key={project.id} style={{
+                                      padding: '2px 6px',
+                                      border: '1px solid var(--app-border)',
+                                      borderRadius: '4px',
+                                      fontSize: '11px',
+                                      backgroundColor: 'var(--app-surface-2)',
+                                      color: 'var(--app-text)'
+                                  }}>
+                                      {project.name} ({project.parent_name})
                                   </span>
                               )) : <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>-</span>}
                           </div>
