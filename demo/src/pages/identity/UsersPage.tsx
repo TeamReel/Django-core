@@ -701,30 +701,6 @@ export default function UsersPage() {
                       ...Array.from(parentClubsFromTeams.values())
                   ];
 
-                  // Detailed logging for first 5 users with extensive role debugging
-                  const userIndex = filteredUsers.indexOf(item);
-                  if (userIndex < 5) {
-                      console.log(`\n[UsersPage] 👤 User #${userIndex + 1}: ${user.email}`);
-                      console.log(`  📊 Backend Role Field: "${user.role}" (from API)`);
-                      console.log(`  🎭 Display Role: "${displayRole}"`);
-                      console.log(`  🔐 Is Superuser: ${user.is_superuser || false}`);
-                      console.log(`  📁 Total Projects: ${userProjects.length}`);
-
-                      if (userProjects.length > 0) {
-                          console.log(`  📋 All Projects with Roles:`);
-                          userProjects.forEach((p: any, idx: number) => {
-                              console.log(`     ${idx + 1}. "${p.name}" - Role: "${p.role}" - Parent: ${p.parent ? p.parent_name : 'None (Club)'}`);
-                          });
-                      }
-
-                      console.log(`  🏢 Direct Parent Projects (clubs): ${directParentProjects.length}`, directParentProjects.map((p: any) => `${p.name} (${p.role})`));
-                      console.log(`  ⚽ Child Projects (teams): ${childProjects.length}`, childProjects.map((p: any) => `${p.name} (${p.role})`));
-                      console.log(`  🏆 Parent Clubs from Teams: ${parentClubsFromTeams.size}`, Array.from(parentClubsFromTeams.values()).map((c: any) => c.name));
-                      console.log(`  ✅ All Parent Clubs (combined): ${allParentClubs.length}`, allParentClubs.map(c => c.name));
-
-                      console.log(`  🔍 Full User Object:`, user);
-                  }
-
                   return (
                     <tr key={item.id || user.id}>
                       <td>
