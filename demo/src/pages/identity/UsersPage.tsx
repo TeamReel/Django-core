@@ -304,22 +304,43 @@ export default function UsersPage() {
           const user = isMembership ? item.user : item;
           const userOrgs = user.organisations || [];
 
-          const systemRole = user.role || '';
-          const hasSystemRole = systemRole.toLowerCase().includes(roleFilter.toLowerCase());
+          let roleMatches = false;
 
-          const hasOrgRole = userOrgs.some((o: any) =>
-            o.role?.toLowerCase().includes(roleFilter.toLowerCase())
-          );
+          if (roleFilter === 'League Admin') {
+              // Check if user is Org Admin of a KNVB/Federation type org
+              // For simplicity in demo, checking "KNVB" or "Federation" in org name
+              roleMatches = userOrgs.some((o: any) => o.name.includes('KNVB') && o.role.toLowerCase().includes('admin'));
+          }
+          else if (roleFilter === 'Club Director') {
+              // Org Admin of a club (not KNVB)
+              // Or specifically Role Assignment "Club Admin" (which we might have mapped to "Org Admin")
+              roleMatches = userOrgs.some((o: any) =>
+                !o.name.includes('KNVB') &&
+                (o.role.toLowerCase().includes('admin') || o.role.toLowerCase().includes('director'))
+              );
+          }
+          else if (roleFilter === 'Team Manager') {
+             // Project Admin
+             roleMatches = userOrgs.some((o: any) => o.role.toLowerCase().includes('team admin') || o.role.toLowerCase().includes('coach'));
+          }
+          else if (roleFilter === 'Team Member') {
+             // Project Member
+             roleMatches = userOrgs.some((o: any) => o.role.toLowerCase().includes('team member') || o.role.toLowerCase().includes('player'));
+          }
+          else if (roleFilter === 'Supporter') {
+             roleMatches = userOrgs.some((o: any) => o.role.toLowerCase().includes('supporter'));
+          }
+          else {
+              // Genric fallback
+               const systemRole = user.role || '';
+               const hasSystemRole = systemRole.toLowerCase().includes(roleFilter.toLowerCase());
+               const hasOrgRole = userOrgs.some((o: any) =>
+                  o.role?.toLowerCase().includes(roleFilter.toLowerCase())
+               );
+               roleMatches = hasSystemRole || hasOrgRole;
+          }
 
-          if (!hasSystemRole && !hasOrgRole) return false;
-      }
-      return true;
-  });
-
-  return (
-    <AppShell>
-      <PageHeader
-        title={
+          if (!roleMatches) return false;
             isSuperAdmin
                 ? 'All Users (System Admin)'
                 : orgIdParam
@@ -363,10 +384,10 @@ export default function UsersPage() {
                         style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
                         <option value="">All Roles</option>
-                        <option value="Admin">Admin (All)</option>
-                        <option value="Organization Admin">Org Admin</option>
-                        <option value="Project Admin">Project Admin</option>
-                        <option value="Project Member">Project Member</option>
+                        <option value="League Admin">League Admin</option>
+                        <option value="Club Director">Club Director</option>
+                        <option value="Team Manager">Team Manager</option>
+                        <option value="Team Member">Team Member</option>
                         <option value="Supporter">Supporter</option>
                     </select>
 

@@ -153,9 +153,15 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
     let filtered = allActivities;
 
     if (filter === 'league') {
-      filtered = allActivities.filter(a => a.activity_type.toLowerCase().includes('league'));
+      filtered = allActivities.filter(a =>
+         a.activity_type.toLowerCase().includes('match') &&
+         (a.period?.name?.toLowerCase().includes('league') || a.period?.name?.toLowerCase().includes('competitie') || a.period?.name?.toLowerCase().includes('divisie'))
+      );
     } else if (filter === 'cup') {
-      filtered = allActivities.filter(a => a.activity_type.toLowerCase().includes('cup'));
+      filtered = allActivities.filter(a =>
+        a.activity_type.toLowerCase().includes('match') &&
+        (a.period?.name?.toLowerCase().includes('cup') || a.period?.name?.toLowerCase().includes('beker'))
+      );
     }
 
     // Apply limit after filtering

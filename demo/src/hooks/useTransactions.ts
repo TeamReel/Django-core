@@ -70,9 +70,14 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
           results = payload.data.results;
         } else if (Array.isArray(payload.results)) {
           results = payload.results;
+        } else if (payload.data && Array.isArray(payload.data.data)) {
+            // Handle double-nested data (e.g., { status: 'success', data: { data: [...] } })
+             results = payload.data.data;
         } else {
-          console.warn('[useTransactions] Unexpected response format:', payload);
-          results = [];
+             // Maybe it's mapped directly in payload.data but not an array?
+             // Or maybe payload.data IS the list if it's not a standard DRF pagination
+             console.warn('[useTransactions] Unexpected response format:', payload);
+             results = [];
         }
 
         setTransactions(results);
