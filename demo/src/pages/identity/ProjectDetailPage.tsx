@@ -49,7 +49,6 @@ const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promis
   let nextUrl: string | null = url;
   let pageCount = 0;
   const maxPages = 10; // Safety limit
-  const isDev = Boolean((import.meta as any)?.env?.DEV);
 
   try {
     while (nextUrl && pageCount < maxPages) {
@@ -65,9 +64,6 @@ const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promis
 
       nextUrl = getPagedNextUrl(json);
       if (!nextUrl) break;
-    }
-    if (isDev) {
-      console.log(`[fetchAllPages] Fetched ${results.length} items across ${pageCount} pages from ${url}`);
     }
     return results;
   } catch (err) {
@@ -114,7 +110,6 @@ export const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { context, organisations, projects: contextProjects } = useContextSwitcher();
-  const isDev = Boolean((import.meta as any)?.env?.DEV);
 
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<any[]>([]);
@@ -234,6 +229,26 @@ export const ProjectDetailPage: React.FC = () => {
     const url = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?${params.toString()}`;
     const results = await fetchAllPages<any>(url, { credentials: 'include' });
     return Array.isArray(results) ? results : [];
+  };
+
+  const fetchClubTeamsForPeriodScope = async (): Promise<any[]> => {
+    // Enforce hierarchy: Team = Project where parent_project = Club.
+    // Do NOT fall back to org-wide teams if parent filtering fails.
+    const clubIdValue = String(project?.id || '').trim();
+    if (!clubIdValue) return [];
+
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubIdValue)}&page_size=250`;
+
+    const results = await fetchAllPages<any>(url, { credentials: 'include' });
+    const orgIdValue = String(resolvedOrg?.id || (project as any)?.organisation_id || '').trim();
+
+    const filteredByOrg = orgIdValue
+      ? (results || []).filter((p: any) => String(getOrganisationId(p) || '') === orgIdValue)
+      : (results || []);
+
+    const filteredByParent = (filteredByOrg || []).filter((p: any) => getParentProjectId(p) === clubIdValue);
+    return filteredByParent;
   };
 
   const getDescendantTeamIdsUnderClub = (teams: any[], clubProjectId: string): Set<string> => {
@@ -375,22 +390,6 @@ export const ProjectDetailPage: React.FC = () => {
     navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${option.slug || option.id}`);
   };
 
-  // Debug: Log project options (DEV only)
-  if (isDev) {
-    // eslint-disable-next-line no-console
-    console.log('[ProjectDetailPage] Debug:', {
-      orgProjectsCount: orgProjects.length,
-      projectOptionsCount: projectOptions.length,
-      currentOrgId: resolvedOrg?.id || project?.organisation_id,
-      resolvedOrgId: resolvedOrg?.id,
-      projectOrgId: project?.organisation_id,
-      sampleOrgProjects: orgProjects.slice(0, 2).map(p => ({
-        name: p.name,
-        id: p.id,
-        organisation_id: p.organisation_id,
-      }))
-    });
-  }
 
   // Fetch projects for the current organisation (for switcher dropdown)
   useEffect(() => {
@@ -425,14 +424,6 @@ export const ProjectDetailPage: React.FC = () => {
             ...p,
             organisation_id: p.organisation?.id || p.organisation_id || orgId
           }));
-          if (isDev) {
-            // eslint-disable-next-line no-console
-            console.log('[ProjectDetailPage] Fetched projects:', {
-              count: mapped.length,
-              orgId,
-              sample: mapped[0]
-            });
-          }
           setOrgProjects(mapped);
         }
       } catch (err) {
@@ -559,10 +550,6 @@ export const ProjectDetailPage: React.FC = () => {
               const membersData = await membersByIdResponse.json();
               const membersList = getPagedResults(membersData);
               const normalized = Array.isArray(membersList) ? membersList : [];
-              if (isDev) {
-                // eslint-disable-next-line no-console
-                console.log('[ProjectDetailPage] Fetched members:', normalized.length, 'from', membersByIdEndpoint);
-              }
               setMembers(normalized);
 
               // Clubs often don't have direct memberships; show people via child teams if needed.
@@ -575,10 +562,6 @@ export const ProjectDetailPage: React.FC = () => {
                 params.set('include_project_memberships', 'true');
                 params.set('include_role_assignments', 'true');
                 const orgMembersEndpoint = `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/members/?${params.toString()}`;
-                if (isDev) {
-                  // eslint-disable-next-line no-console
-                  console.log('[ProjectDetailPage] Club members fallback via org members:', orgMembersEndpoint);
-                }
 
                 const orgMembers = await fetchAllPages<any>(orgMembersEndpoint, {
                   headers: {
@@ -601,10 +584,6 @@ export const ProjectDetailPage: React.FC = () => {
                   })
                 );
 
-                if (isDev) {
-                  // eslint-disable-next-line no-console
-                  console.log('[ProjectDetailPage] Club people derived from child teams:', filtered.length);
-                }
                 setMembers(Array.isArray(filtered) ? filtered : []);
               }
             } else {
@@ -623,10 +602,6 @@ export const ProjectDetailPage: React.FC = () => {
                 params.set('include_project_memberships', 'true');
                 params.set('include_role_assignments', 'true');
                 const orgMembersEndpoint = `${apiBaseUrl}/api/v1/organisations/${orgSlugForMembers}/members/?${params.toString()}`;
-                if (isDev) {
-                  // eslint-disable-next-line no-console
-                  console.log('[ProjectDetailPage] Falling back to org members endpoint:', orgMembersEndpoint);
-                }
 
                 const orgMembersResponse = await fetch(orgMembersEndpoint, {
                   headers: {
@@ -646,14 +621,6 @@ export const ProjectDetailPage: React.FC = () => {
                     )
                   );
 
-                  if (isDev) {
-                    // eslint-disable-next-line no-console
-                    console.log(
-                      '[ProjectDetailPage] Filtered org members for project:',
-                      orgMembersList.length,
-                      'members'
-                    );
-                  }
                   setMembers(Array.isArray(orgMembersList) ? orgMembersList : []);
                 } else {
                   console.error(
@@ -708,10 +675,6 @@ export const ProjectDetailPage: React.FC = () => {
      try {
        // Fetch children of this project
        const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${project.id}&page_size=250`;
-       if (isDev) {
-         // eslint-disable-next-line no-console
-         console.log('[ProjectDetailPage] Fetching child teams with parent_project=', project.id, 'URL:', url);
-       }
        const results = await fetchAllPages<Project>(url, { credentials: 'include' });
 
        const parentId = String(project.id);
@@ -725,18 +688,6 @@ export const ProjectDetailPage: React.FC = () => {
 
        const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
        const finalResults = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
-
-       if (isDev) {
-         // eslint-disable-next-line no-console
-         console.log(
-           '[ProjectDetailPage] Fetched child teams (raw):',
-           results.length,
-           'filtered(org):',
-           filteredByOrg.length,
-           'filtered(parent):',
-           filteredByParent.length
-         );
-       }
        setChildProjects(finalResults as Project[]);
      } catch (e) {
        console.error('Failed to fetch child teams', e);
@@ -762,29 +713,29 @@ export const ProjectDetailPage: React.FC = () => {
         const filteredSeasons = (results || []).filter(isSeasonPeriod);
         setSeasons(filteredSeasons);
       } else {
-        // For clubs: mirror OrganisationDetailPage behaviour.
-        // 1) fetch all org periods once
-        // 2) fetch all org teams once
-        // 3) filter seasons to teams under this club
-
-        const [teams, orgPeriods] = await Promise.all([
-          fetchOrgTeamsForPeriodFiltering(),
-          fetchOrgPeriodsForFiltering(),
-        ]);
-
-        const clubId = String(project.id);
-        const teamIdsUnderClub = new Set(
-          (teams || [])
-            .filter((t: any) => getParentProjectId(t) === clubId)
-            .map((t: any) => String(t?.id || ''))
-            .filter(Boolean)
+        // Clubs: enforce hierarchy strictly.
+        // 1) Resolve direct child teams for this club (required dependency)
+        // 2) Fetch org periods using the same org-wide query as OrganisationDetail
+        // 3) Filter to root season periods for those teamIds
+        const clubIdValue = String(project.id);
+        const teams = await fetchClubTeamsForPeriodScope();
+        const teamIds = new Set(
+          (teams || []).map((t: any) => String(t?.id || '')).filter(Boolean)
         );
 
+        if (teamIds.size === 0) {
+          setSeasons([]);
+          return;
+        }
+
+        const orgPeriods = await fetchOrgPeriodsForFiltering();
         const filteredSeasons = (orgPeriods || [])
-          .filter(isSeasonPeriod)
           .filter((p: any) => {
             const teamId = String(p?.project_id ?? p?.project?.id ?? '');
-            return teamIdsUnderClub.has(teamId);
+            if (!teamId || !teamIds.has(teamId)) return false;
+            const parentId = getPeriodParentId(p);
+            if (parentId) return false;
+            return isSeasonPeriod(p);
           });
 
         setSeasons(filteredSeasons);
@@ -909,15 +860,7 @@ export const ProjectDetailPage: React.FC = () => {
   // Trigger data fetch on tab change
   useEffect(() => {
     if (!project) return;
-    if (isDev) {
-      // eslint-disable-next-line no-console
-      console.log('[ProjectDetailPage] Tab changed to:', activeTab, 'isLikelyTeam:', isLikelyTeam, 'project:', project.name);
-    }
     if (activeTab === 'teams') {
-      if (isDev) {
-        // eslint-disable-next-line no-console
-        console.log('[ProjectDetailPage] Club detected, fetching child teams. Current childProjects:', childProjects.length);
-      }
       if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
     } else if (activeTab === 'seasons') {
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
