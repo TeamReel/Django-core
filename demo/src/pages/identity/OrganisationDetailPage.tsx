@@ -302,7 +302,7 @@ export const OrganisationDetailPage: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
-          'X-Organisation-ID': String(currentOrgId || ''),
+          'X-Organisation-ID': String(org?.id || currentOrgId || ''),
         },
         credentials: 'include',
       });
@@ -339,7 +339,7 @@ export const OrganisationDetailPage: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': String(currentOrgId || ''),
+            'X-Organisation-ID': String(org?.id || currentOrgId || ''),
           },
           credentials: 'include',
         }),
@@ -347,7 +347,7 @@ export const OrganisationDetailPage: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': String(currentOrgId || ''),
+            'X-Organisation-ID': String(org?.id || currentOrgId || ''),
           },
           credentials: 'include',
         }),
@@ -591,7 +591,7 @@ export const OrganisationDetailPage: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': String(currentOrgId || ''),
+            'X-Organisation-ID': String(org?.id || currentOrgId || ''),
           },
           credentials: 'include',
         });
@@ -691,7 +691,7 @@ export const OrganisationDetailPage: React.FC = () => {
             headers: {
               'Content-Type': 'application/json',
               'X-Requested-With': 'XMLHttpRequest',
-              'X-Organisation-ID': String(currentOrgId || ''),
+              'X-Organisation-ID': String(orgData.id || currentOrgId || ''),
             },
             credentials: 'include',
           });
