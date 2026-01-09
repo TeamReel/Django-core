@@ -106,8 +106,12 @@ export const ProjectSeasonsPage: React.FC = () => {
         if (!orgRes.ok) throw new Error('Failed to load organisation');
         if (!projectRes.ok) throw new Error('Failed to load project');
 
-        const orgJson: Organisation = await orgRes.json();
-        const projectJson: Project = await projectRes.json();
+        const rawOrg: any = await orgRes.json();
+        const rawProject: any = await projectRes.json();
+
+        const orgJson: Organisation = rawOrg?.data || rawOrg;
+        const projectJson: Project = rawProject?.data || rawProject;
+
         setOrg(orgJson);
         setProject(projectJson);
 
@@ -124,8 +128,11 @@ export const ProjectSeasonsPage: React.FC = () => {
           { credentials: 'include' }
         );
         if (!seasonsRes.ok) throw new Error('Failed to load seasons');
-        const seasonsJson: ListResponse<Period> | Period[] = await seasonsRes.json();
-        const seasonResults = Array.isArray(seasonsJson) ? seasonsJson : (seasonsJson.results || []);
+        const rawSeasons: any = await seasonsRes.json();
+        const seasonsData = rawSeasons?.data || rawSeasons;
+        const seasonResults = Array.isArray(seasonsData)
+          ? seasonsData
+          : seasonsData?.results || seasonsData?.data?.results || [];
         setSeasons(seasonResults);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load seasons');

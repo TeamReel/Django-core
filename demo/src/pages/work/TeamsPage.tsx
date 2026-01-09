@@ -9,6 +9,7 @@ import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
+import ProjectDetailModal from '../identity/ProjectDetailModal';
 import WorkFilterBar, { OrganisationOption, ProjectOption } from './WorkFilterBar';
 
 export default function TeamsPage() {
@@ -26,6 +27,9 @@ export default function TeamsPage() {
   const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
   const [clubs, setClubs] = useState<ProjectOption[]>([]);
   const [teams, setTeams] = useState<ProjectOption[]>([]);
+
+  const [detailProject, setDetailProject] = useState<any | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
@@ -70,7 +74,7 @@ export default function TeamsPage() {
   // Fetch org options for superadmin
   useEffect(() => {
     if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name })));
+      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
       return;
     }
 
@@ -81,7 +85,7 @@ export default function TeamsPage() {
         if (!res.ok) return;
         const data = await res.json();
         const orgs = data.data?.results || data.results || [];
-        setOrganisations(orgs.map((o: any) => ({ id: String(o.id), name: o.name })));
+        setOrganisations(orgs.map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       } catch {
         // ignore
       }
@@ -117,6 +121,11 @@ export default function TeamsPage() {
   const filteredTeams = useMemo(() => {
     let list = [...teams];
 
+    const selectedOrg = selectedOrgId
+      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
+      : null;
+    const selectedOrgIdResolved = selectedOrg?.id ? String(selectedOrg.id) : selectedOrgId;
+
     if (selectedTeamId) {
       list = list.filter((t) => String(t.id) === String(selectedTeamId));
     }
@@ -143,7 +152,7 @@ export default function TeamsPage() {
         if (!parentClub) return false;
 
         const clubOrg = typeof parentClub.organisation === 'string' ? parentClub.organisation : parentClub.organisation?.id;
-        return String(clubOrg) === String(selectedOrgId);
+        return String(clubOrg) === String(selectedOrgIdResolved);
       });
     }
 
@@ -154,7 +163,7 @@ export default function TeamsPage() {
     }
 
     return list;
-  }, [teams, selectedOrgId, selectedClubId, selectedTeamId, clubs, statusFilter]);
+  }, [teams, selectedOrgId, selectedClubId, selectedTeamId, clubs, statusFilter, organisations]);
 
   const breadcrumbs = [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
@@ -256,8 +265,25 @@ export default function TeamsPage() {
 
                     const parentClubSlugOrId = parentClub?.slug || parentClub?.id;
                     const orgRef = (parentClub as any)?.organisation as string | { id: string } | undefined;
-                    const parentClubOrgSlugOrId = (typeof orgRef === 'string' ? orgRef : (orgRef as any)?.id) || selectedOrgId;
-                    const parentClubOrgName = typeof orgRef === 'string' ? undefined : (orgRef as any)?.name;
+
+                    const parentClubOrgId = (typeof orgRef === 'string' ? orgRef : (orgRef as any)?.id) || '';
+                    const parentClubOrgFromList = parentClubOrgId
+                      ? organisations.find((o) => String(o.id) === String(parentClubOrgId))
+                      : undefined;
+                    const selectedOrg = selectedOrgId
+                      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
+                      : undefined;
+
+                    const parentClubOrgSlugOrId =
+                      (orgRef as any)?.slug ||
+                      parentClubOrgFromList?.slug ||
+                      selectedOrg?.slug ||
+                      parentClubOrgId ||
+                      selectedOrg?.id ||
+                      selectedOrgId;
+
+                    const parentClubOrgName =
+                      (typeof orgRef === 'string' ? undefined : (orgRef as any)?.name) || parentClubOrgFromList?.name;
                     const teamSlugOrId = team.slug || team.id;
 
                     const teamDetailPath = parentClubSlugOrId
@@ -319,7 +345,10 @@ export default function TeamsPage() {
                         <td style={{ textAlign: 'right' }}>
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                             <button
-                              onClick={() => navigate(teamDetailPath)}
+                              onClick={() => {
+                                setDetailProject(team);
+                                setIsDetailModalOpen(true);
+                              }}
                               style={{
                                 padding: '6px 12px',
                                 borderRadius: '4px',
@@ -379,6 +408,12 @@ export default function TeamsPage() {
             </div>
           </Card>
         )}
+
+        <ProjectDetailModal
+          opened={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          project={detailProject}
+        />
       </PageContent>
     </AppShell>
   );

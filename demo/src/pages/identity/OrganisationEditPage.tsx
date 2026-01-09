@@ -126,7 +126,9 @@ export const OrganisationEditPage: React.FC = () => {
         throw new Error(errorMessage);
       }
 
-      navigate(`/organisations/${id}`);
+      const updated = await response.json().catch(() => null);
+      const slugOrId = updated?.slug || updated?.id || resolvedOrg?.slug || id;
+      navigate(`/organisations/${slugOrId}`);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -167,7 +169,7 @@ export const OrganisationEditPage: React.FC = () => {
                 onSelect={handleOrganisationSwitch}
               />
             ),
-            onClick: () => navigate(`/organisations/${id}`),
+            onClick: () => navigate(`/organisations/${resolvedOrg?.slug || id}`),
           },
           { label: 'Edit', current: true },
         ]}

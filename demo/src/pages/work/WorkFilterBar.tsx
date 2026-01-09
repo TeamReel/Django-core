@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Button } from '@django-core/design-system';
 
-export type OrganisationOption = { id: string; name: string };
+export type OrganisationOption = { id: string; name: string; slug?: string };
 
 export type ProjectOption = {
   id: string | number;

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Badge, Button, Card } from '@django-core/design-system';
+import { Alert, Badge, Button, Card, Tab, TabList, TabPanel, Tabs } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 
@@ -41,6 +41,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const [club, setClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
   const [competition, setCompetition] = useState<Period | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'links'>('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,10 +130,15 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         if (!seasonRes.ok) throw new Error('Failed to load season');
         if (!competitionRes.ok) throw new Error('Failed to load competition');
 
-        setOrg(await orgRes.json());
-        setProject(await projectRes.json());
-        setSeason(await seasonRes.json());
-        setCompetition(await competitionRes.json());
+        const rawOrg: any = await orgRes.json();
+        const rawProject: any = await projectRes.json();
+        const rawSeason: any = await seasonRes.json();
+        const rawCompetition: any = await competitionRes.json();
+
+        setOrg(rawOrg?.data || rawOrg);
+        setProject(rawProject?.data || rawProject);
+        setSeason(rawSeason?.data || rawSeason);
+        setCompetition(rawCompetition?.data || rawCompetition);
 
         if (isTeamRoute && clubRes && (clubRes as any).ok) {
           try {
@@ -195,23 +201,54 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         <PageContent>
           {error && <Alert variant="error">{error}</Alert>}
 
-          <Card>
-            {loading ? (
-              <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>Loading…</div>
-            ) : competition ? (
-              <div style={{ padding: '16px', display: 'grid', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Badge variant="default">Competition</Badge>
-                  <span style={{ color: 'var(--app-text-secondary)' }}>
-                    {new Date(competition.start_date).toLocaleDateString()} – {new Date(competition.end_date).toLocaleDateString()}
-                  </span>
+          <Tabs value={activeTab} onChange={(v) => setActiveTab(v as any)}>
+            <TabList className="mb-6">
+              <Tab value="overview">Overview</Tab>
+              <Tab value="links">Matches & Squad</Tab>
+            </TabList>
+
+            <TabPanel value="overview">
+              <Card>
+                {loading ? (
+                  <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>Loading…</div>
+                ) : competition ? (
+                  <div style={{ padding: '16px', display: 'grid', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Badge variant="default">Competition</Badge>
+                      <span style={{ color: 'var(--app-text-secondary)' }}>
+                        {new Date(competition.start_date).toLocaleDateString()} – {new Date(competition.end_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div style={{ color: 'var(--app-text-secondary)' }}>
+                      Use the tabs/buttons to drill down into matches and squad.
+                    </div>
+                  </div>
+                ) : null}
+              </Card>
+            </TabPanel>
+
+            <TabPanel value="links">
+              <Card>
+                <div style={{ padding: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <Button
+                    onClick={() =>
+                      navigate(`${seasonsBasePath}/${effectiveSeasonId}/competitions/${effectiveCompetitionId}/matches`)
+                    }
+                  >
+                    Matches
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      navigate(`${seasonsBasePath}/${effectiveSeasonId}/competitions/${effectiveCompetitionId}/squad`)
+                    }
+                  >
+                    Squad
+                  </Button>
                 </div>
-                <div style={{ color: 'var(--app-text-secondary)' }}>
-                  Use the buttons above to view matches and squad for this competition.
-                </div>
-              </div>
-            ) : null}
-          </Card>
+              </Card>
+            </TabPanel>
+          </Tabs>
         </PageContent>
       </div>
     </AppShell>

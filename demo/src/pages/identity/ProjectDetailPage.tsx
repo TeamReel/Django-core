@@ -34,7 +34,7 @@ import AppShell from '../../components/AppShell';
  */
 export const ProjectDetailPage: React.FC = () => {
   const { orgId, projectId, clubId } = useParams<{ orgId: string; projectId: string; clubId?: string }>();
-  const [activeTab, setActiveTab] = useState('details');
+  const [activeTab, setActiveTab] = useState('overview');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { context, organisations, projects: contextProjects } = useContextSwitcher();
@@ -67,6 +67,27 @@ export const ProjectDetailPage: React.FC = () => {
   const orgSlugOrId = resolvedOrg?.slug || resolvedOrg?.id;
 
   const clubsListPath = orgSlugOrId ? `/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}` : '/clubs';
+
+  // Prefer canonical org slug in the URL when the user arrived via an ID-based link.
+  useEffect(() => {
+    if (!orgId) return;
+    if (context.isLoading) return;
+    if (!resolvedOrg?.slug || !resolvedOrg?.id) return;
+
+    const orgIdLooksLikeId = String(orgId) === String(resolvedOrg.id);
+    const orgIdAlreadySlug = String(orgId).toLowerCase() === String(resolvedOrg.slug).toLowerCase();
+    if (!orgIdLooksLikeId || orgIdAlreadySlug) return;
+
+    const targetOrg = resolvedOrg.slug;
+
+    // Keep the rest of the path identical, only swap the org segment.
+    if (clubId) {
+      navigate(`/organisations/${targetOrg}/projects/${clubId}/teams/${projectId}`, { replace: true });
+    } else {
+      navigate(`/organisations/${targetOrg}/projects/${projectId}`, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId, resolvedOrg?.id, resolvedOrg?.slug, clubId, projectId, context.isLoading]);
 
   // Breadcrumb context switcher setup
   const {
@@ -387,6 +408,15 @@ export const ProjectDetailPage: React.FC = () => {
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons`
     : `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/seasons`;
 
+  const hasParentClub = Boolean(
+    (project as any)?.parent_project ||
+      (project as any)?.parent ||
+      (project as any)?.parent_id ||
+      (project as any)?.parent_project_id
+  );
+
+  const isLikelyTeam = isTeamRoute || hasParentClub;
+
   const backPath = isTeamRoute
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`
     : clubsListPath;
@@ -466,6 +496,45 @@ export const ProjectDetailPage: React.FC = () => {
             >
               Back
             </button>
+            {!isLikelyTeam ? (
+              <button
+                onClick={() =>
+                  navigate(
+                    `/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(
+                      String(project.slug || project.id)
+                    )}`
+                  )
+                }
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
+                View Teams
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate(seasonsPath)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
+                View Seasons
+              </button>
+            )}
             <button
               onClick={() => navigate(`/users?project_id=${project.slug || project.id}&organisation_id=${resolvedOrg?.slug || resolvedOrg?.id}`)}
               style={{
@@ -518,110 +587,186 @@ export const ProjectDetailPage: React.FC = () => {
 
         <Tabs value={activeTab} onChange={setActiveTab}>
           <TabList className="mb-6">
-            <Tab value="details">Details</Tab>
-            <Tab value="matches">Wedstrijden</Tab>
+            <Tab value="overview">Overview</Tab>
+            <Tab value="people">People</Tab>
+            <Tab value="hierarchy">{isLikelyTeam ? 'Seasons' : 'Teams'}</Tab>
+            <Tab value="matches">Matches</Tab>
+            <Tab value="audit">Audit</Tab>
           </TabList>
 
-          <TabPanel value="details">
-            {/* Project summary cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card data-testid="project-summary-status">
-            <div className="text-sm text-gray-600">Status</div>
-            <div className="text-lg font-bold">
-              <Badge variant={project.is_active ? 'success' : 'warning'}>
-                {project.is_active ? 'Active' : 'Inactive'}
-              </Badge>
+          <TabPanel value="overview">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card data-testid="project-summary-status">
+                <div className="text-sm text-gray-600">Status</div>
+                <div className="text-lg font-bold">
+                  <Badge variant={project.is_active ? 'success' : 'warning'}>
+                    {project.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+              </Card>
+              <Card data-testid="project-summary-members">
+                <div className="text-sm text-gray-600">Members</div>
+                <div className="text-2xl font-bold">{members.length}</div>
+              </Card>
+              <Card data-testid="project-summary-created">
+                <div className="text-sm text-gray-600">Created</div>
+                <div className="text-sm font-semibold">{new Date(project.created_at || '').toLocaleDateString()}</div>
+              </Card>
             </div>
-          </Card>
-          <Card data-testid="project-summary-members">
-            <div className="text-sm text-gray-600">Team Members</div>
-            <div className="text-2xl font-bold">{members.length}</div>
-          </Card>
-          <Card data-testid="project-summary-created">
-            <div className="text-sm text-gray-600">Created</div>
-            <div className="text-sm font-semibold">
-              {new Date(project.created_at || '').toLocaleDateString()}
-            </div>
-          </Card>
-        </div>
 
-        <Card className="mb-6">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <div>
-              <h3 className="text-lg font-semibold" style={{ margin: 0 }}>Seasons & Competitions</h3>
-              <div className="text-sm text-gray-600">Browse season → competition → matches & squad</div>
-            </div>
-            <Button
-              variant="secondary"
-              onClick={() => navigate(seasonsPath)}
-            >
-              View Seasons
-            </Button>
-          </div>
-        </Card>
+            {project.description && (
+              <Card className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">Description</h3>
+                <p className="text-gray-700" data-testid="project-description">
+                  {project.description}
+                </p>
+              </Card>
+            )}
 
-        {/* Project description */}
-        {project.description && (
-          <Card className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Description</h3>
-            <p className="text-gray-700" data-testid="project-description">
-              {project.description}
-            </p>
-          </Card>
-        )}
+            <Card>
+              <div style={{ display: 'grid', gap: '6px' }}>
+                <div className="text-sm text-gray-600">Quick links</div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {!isLikelyTeam ? (
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        navigate(
+                          `/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(
+                            String(project.slug || project.id)
+                          )}`
+                        )
+                      }
+                    >
+                      View Teams
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" onClick={() => navigate(seasonsPath)}>
+                      View Seasons
+                    </Button>
+                  )}
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      navigate(
+                        `/users?project_id=${project.slug || project.id}&organisation_id=${resolvedOrg?.slug || resolvedOrg?.id}`
+                      )
+                    }
+                  >
+                    View Users
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </TabPanel>
 
-        {/* Team members */}
-        <Card className="mb-6">
-          <MemberList
-             projectId={project.slug || project.id}
-             initialMembers={members}
-          />
-        </Card>
+          <TabPanel value="people">
+            <Card>
+              <MemberList projectId={project.slug || project.id} initialMembers={members} />
+            </Card>
+          </TabPanel>
 
-        {/* Recent activity */}
-        <Card>
-          <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-          {recentEvents.length > 0 ? (
-            <Table>
-              <thead>
-                <tr>
-                  <th>Event</th>
-                  <th>User</th>
-                  <th>Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentEvents.map((event) => (
-                  <tr key={event.id}>
-                    <td>
-                      <Badge variant="default" data-testid={`event-type-${event.id}`}>
-                        {event.event_type}
-                      </Badge>
-                    </td>
-                    <td style={{ fontSize: '0.85rem' }} data-testid={`event-user-${event.id}`}>
-                      {event.user?.name || 'System'}
-                    </td>
-                    <td style={{ fontSize: '0.85rem' }} data-testid={`event-time-${event.id}`}>
-                      {new Date(event.timestamp).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          ) : (
-            <Alert variant="info">No recent activity</Alert>
-          )}
-        </Card>
-        </TabPanel>
+          <TabPanel value="hierarchy">
+            {!isLikelyTeam ? (
+              <Card>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '12px',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <div>
+                    <h3 className="text-lg font-semibold" style={{ margin: 0 }}>
+                      Teams
+                    </h3>
+                    <div className="text-sm text-gray-600">Browse teams under this club</div>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      navigate(
+                        `/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(
+                          String(project.slug || project.id)
+                        )}`
+                      )
+                    }
+                  >
+                    View Teams
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <Card>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '12px',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <div>
+                    <h3 className="text-lg font-semibold" style={{ margin: 0 }}>
+                      Seasons & Competitions
+                    </h3>
+                    <div className="text-sm text-gray-600">Browse season → competition → matches & squad</div>
+                  </div>
+                  <Button variant="secondary" onClick={() => navigate(seasonsPath)}>
+                    View Seasons
+                  </Button>
+                </div>
+              </Card>
+            )}
+          </TabPanel>
 
-        <TabPanel value="matches">
-          <Card>
-            <div className="p-4">
-              <ProjectMatches projectId={project.slug || project.id} />
-            </div>
-          </Card>
-        </TabPanel>
-      </Tabs>
+          <TabPanel value="matches">
+            <Card>
+              <div className="p-4">
+                <ProjectMatches projectId={project.slug || project.id} />
+              </div>
+            </Card>
+          </TabPanel>
+
+          <TabPanel value="audit">
+            <Card>
+              <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
+              {recentEvents.length > 0 ? (
+                <Table>
+                  <thead>
+                    <tr>
+                      <th>Event</th>
+                      <th>User</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentEvents.map((event) => (
+                      <tr key={event.id}>
+                        <td>
+                          <Badge variant="default" data-testid={`event-type-${event.id}`}>
+                            {event.event_type}
+                          </Badge>
+                        </td>
+                        <td style={{ fontSize: '0.85rem' }} data-testid={`event-user-${event.id}`}>
+                          {event.user?.name || 'System'}
+                        </td>
+                        <td style={{ fontSize: '0.85rem' }} data-testid={`event-time-${event.id}`}>
+                          {new Date(event.timestamp).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <Alert variant="info">No recent activity</Alert>
+              )}
+            </Card>
+          </TabPanel>
+        </Tabs>
       </PageContent>
       </div>
     </AppShell>

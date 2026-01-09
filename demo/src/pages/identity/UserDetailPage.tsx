@@ -6,6 +6,10 @@ import {
   Card,
   Alert,
   Badge,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanel,
 } from '@django-core/design-system';
 import {
   PageHeader,
@@ -34,6 +38,7 @@ export const UserDetailPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [organisations, setOrganisations] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'profile' | 'memberships'>('profile');
 
   // Get current org for context switcher
   const currentOrg = orgId ? contextOrganisations.find(o => o.slug === orgId || o.id === orgId) : null;
@@ -359,92 +364,140 @@ export const UserDetailPage: React.FC = () => {
       />
 
       <PageContent>
-      <Card>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Profile Information</h3>
+      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as any)}>
+        <TabList className="mb-6">
+          <Tab value="profile">Profile</Tab>
+          <Tab value="memberships">Organisations</Tab>
+        </TabList>
+
+        <TabPanel value="profile">
+          <Card>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>
+              Profile Information
+            </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Full Name</label>
-                <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{user.first_name} {user.last_name}</div>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    color: 'var(--app-muted-text)',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Full Name
+                </label>
+                <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>
+                  {user.first_name} {user.last_name}
+                </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Email</label>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    color: 'var(--app-muted-text)',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Email
+                </label>
                 <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{user.email}</div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>System Role</label>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    color: 'var(--app-muted-text)',
+                    marginBottom: '4px',
+                  }}
+                >
+                  System Role
+                </label>
                 <Badge variant={String(user.role || '').toLowerCase() === 'superadmin' ? 'primary' : 'default'}>
                   {user.role}
                 </Badge>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Status</label>
-                <Badge variant={user.is_active ? 'success' : 'error'}>
-                  {user.is_active ? 'Active' : 'Inactive'}
-                </Badge>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    color: 'var(--app-muted-text)',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Status
+                </label>
+                <Badge variant={user.is_active ? 'success' : 'error'}>{user.is_active ? 'Active' : 'Inactive'}</Badge>
               </div>
             </div>
-          </div>
+          </Card>
+        </TabPanel>
 
-
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Organisations</h3>
+        <TabPanel value="memberships">
+          <Card>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>
+              Organisations
+            </h3>
             {user.organisations && user.organisations.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {user.organisations.map((org: any) => {
-                        const myOrg = organisations.find(o => o.id === org.id);
-                        const isSuperAdmin = Boolean((currentUser as any)?.is_superuser) || String((currentUser as any)?.role || '').toLowerCase() === 'superadmin';
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {user.organisations.map((org: any) => {
+                  const myOrg = organisations.find((o) => o.id === org.id);
+                  const isSuperAdmin =
+                    Boolean((currentUser as any)?.is_superuser) ||
+                    String((currentUser as any)?.role || '').toLowerCase() === 'superadmin';
 
-                        // Check if I can manage this org (admin/owner) OR I am superadmin
-                        // AND we have a membership ID to delete
-                        const canRemove = org.membership_id && (
-                            isSuperAdmin ||
-                            (myOrg && (myOrg.user_role === 'admin' || myOrg.user_role === 'owner'))
-                        );
+                  const canRemove =
+                    org.membership_id &&
+                    (isSuperAdmin || (myOrg && (myOrg.user_role === 'admin' || myOrg.user_role === 'owner')));
 
-                        return (
-                        <div key={org.id} style={{
-                            padding: '12px',
-                            border: '1px solid #eee',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
-                            <div>
-                                <div style={{ fontWeight: 500 }}>{org.name}</div>
-                                <div style={{ fontSize: '12px', color: '#666' }}>{org.slug}</div>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Badge variant="default">{org.role}</Badge>
-                                {canRemove && (
-                                    <button
-                                        onClick={() => handleRemoveFromOrg(org.slug, org.membership_id)}
-                                        style={{
-                                            padding: '4px 8px',
-                                            borderRadius: '4px',
-                                            border: '1px solid #dc3545',
-                                            backgroundColor: 'white',
-                                            color: '#dc3545',
-                                            cursor: 'pointer',
-                                            fontSize: '12px'
-                                        }}
-                                    >
-                                        Remove
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        );
-                    })}
-                </div>
+                  return (
+                    <div
+                      key={org.id}
+                      style={{
+                        padding: '12px',
+                        border: '1px solid #eee',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 500 }}>{org.name}</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>{org.slug}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Badge variant="default">{org.role}</Badge>
+                        {canRemove && (
+                          <button
+                            onClick={() => handleRemoveFromOrg(org.slug, org.membership_id)}
+                            style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              border: '1px solid #dc3545',
+                              backgroundColor: 'white',
+                              color: '#dc3545',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                            }}
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
-                <div style={{ color: '#666', fontStyle: 'italic' }}>No organisation memberships</div>
+              <div style={{ color: '#666', fontStyle: 'italic' }}>No organisation memberships</div>
             )}
-          </div>
-        </div>
-      </Card>
+          </Card>
+        </TabPanel>
+      </Tabs>
       </PageContent>
 
       <UserEditModal

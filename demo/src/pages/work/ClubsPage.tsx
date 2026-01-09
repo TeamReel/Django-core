@@ -9,6 +9,7 @@ import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
+import ProjectDetailModal from '../identity/ProjectDetailModal';
 import WorkFilterBar, { OrganisationOption, ProjectOption } from './WorkFilterBar';
 
 export default function ClubsPage() {
@@ -25,6 +26,9 @@ export default function ClubsPage() {
 
   const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
   const [clubs, setClubs] = useState<ProjectOption[]>([]);
+
+  const [detailProject, setDetailProject] = useState<any | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -65,7 +69,7 @@ export default function ClubsPage() {
   // Fetch org options for superadmin
   useEffect(() => {
     if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name })));
+      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
       return;
     }
 
@@ -76,7 +80,7 @@ export default function ClubsPage() {
         if (!res.ok) return;
         const data = await res.json();
         const orgs = data.data?.results || data.results || [];
-        setOrganisations(orgs.map((o: any) => ({ id: String(o.id), name: o.name })));
+        setOrganisations(orgs.map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       } catch {
         // ignore
       }
@@ -110,10 +114,15 @@ export default function ClubsPage() {
   const filteredClubs = useMemo(() => {
     let list = [...clubs];
 
+    const selectedOrg = selectedOrgId
+      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
+      : null;
+    const selectedOrgIdResolved = selectedOrg?.id ? String(selectedOrg.id) : selectedOrgId;
+
     if (selectedOrgId) {
       list = list.filter((club) => {
         const clubOrg = typeof club.organisation === 'string' ? club.organisation : club.organisation?.id;
-        return String(clubOrg) === String(selectedOrgId);
+        return String(clubOrg) === String(selectedOrgIdResolved);
       });
     }
 
@@ -220,7 +229,21 @@ export default function ClubsPage() {
                 </thead>
                 <tbody>
                   {filteredClubs.map((club: any) => {
-                    const orgSlugOrId = club.organisation?.slug || club.organisation?.id || selectedOrgId;
+                    const orgIdFromProject = club.organisation?.id || (typeof club.organisation === 'string' ? club.organisation : undefined);
+                    const orgSlugFromProject = club.organisation?.slug;
+                    const orgFromList = orgIdFromProject
+                      ? organisations.find((o) => String(o.id) === String(orgIdFromProject))
+                      : undefined;
+                    const selectedOrg = selectedOrgId
+                      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
+                      : undefined;
+                    const orgSlugOrId =
+                      orgSlugFromProject ||
+                      orgFromList?.slug ||
+                      selectedOrg?.slug ||
+                      orgIdFromProject ||
+                      selectedOrg?.id ||
+                      selectedOrgId;
                     const clubSlugOrId = club.slug || club.id;
                     return (
                       <tr key={club.id}>
@@ -257,7 +280,10 @@ export default function ClubsPage() {
                         <td style={{ textAlign: 'right' }}>
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                             <button
-                              onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)}
+                              onClick={() => {
+                                setDetailProject(club);
+                                setIsDetailModalOpen(true);
+                              }}
                               style={{
                                 padding: '6px 12px',
                                 borderRadius: '4px',
@@ -270,22 +296,6 @@ export default function ClubsPage() {
                               }}
                             >
                               View
-                            </button>
-
-                            <button
-                              onClick={() => navigate(`/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(String(club.id))}`)}
-                              style={{
-                                padding: '6px 12px',
-                                borderRadius: '4px',
-                                border: '1px solid var(--app-border)',
-                                backgroundColor: 'var(--app-surface-2)',
-                                color: 'var(--app-text)',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                fontWeight: 500,
-                              }}
-                            >
-                              Teams
                             </button>
 
                             {userCanEditProject && (
@@ -333,6 +343,12 @@ export default function ClubsPage() {
             </div>
           </Card>
         )}
+
+        <ProjectDetailModal
+          opened={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          project={detailProject}
+        />
       </PageContent>
     </AppShell>
   );

@@ -138,10 +138,15 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
         if (!competitionRes.ok) throw new Error('Failed to load competition');
         if (!participationRes.ok) throw new Error('Failed to load squad');
 
-        setOrg(await orgRes.json());
-        setProject(await projectRes.json());
-        setSeason(await seasonRes.json());
-        setCompetition(await competitionRes.json());
+        const rawOrg: any = await orgRes.json();
+        const rawProject: any = await projectRes.json();
+        const rawSeason: any = await seasonRes.json();
+        const rawCompetition: any = await competitionRes.json();
+
+        setOrg(rawOrg?.data || rawOrg);
+        setProject(rawProject?.data || rawProject);
+        setSeason(rawSeason?.data || rawSeason);
+        setCompetition(rawCompetition?.data || rawCompetition);
 
         if (isTeamRoute && clubRes && (clubRes as any).ok) {
           try {
@@ -151,10 +156,11 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
           }
         }
 
-        const participationJson: ListResponse<Participation> | Participation[] = await participationRes.json();
-        const participationResults = Array.isArray(participationJson)
-          ? participationJson
-          : (participationJson.results || []);
+        const rawParticipation: any = await participationRes.json();
+        const participationData = rawParticipation?.data || rawParticipation;
+        const participationResults = Array.isArray(participationData)
+          ? participationData
+          : participationData?.results || participationData?.data?.results || [];
         setMembers(participationResults);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load squad');

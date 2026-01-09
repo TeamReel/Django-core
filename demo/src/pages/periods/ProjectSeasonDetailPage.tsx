@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Badge, Button, Card } from '@django-core/design-system';
+import { Alert, Badge, Button, Card, Tab, TabList, TabPanel, Tabs } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
@@ -42,6 +42,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [club, setClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
   const [competitions, setCompetitions] = useState<Period[]>([]);
+  const [activeTab, setActiveTab] = useState<'competitions' | 'details'>('competitions');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -113,9 +114,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         if (!projectRes.ok) throw new Error('Failed to load project');
         if (!seasonRes.ok) throw new Error('Failed to load season');
 
-        const orgJson: Organisation = await orgRes.json();
-        const projectJson: Project = await projectRes.json();
-        const seasonJson: Period = await seasonRes.json();
+        const rawOrg: any = await orgRes.json();
+        const rawProject: any = await projectRes.json();
+        const rawSeason: any = await seasonRes.json();
+
+        const orgJson: Organisation = rawOrg?.data || rawOrg;
+        const projectJson: Project = rawProject?.data || rawProject;
+        const seasonJson: Period = rawSeason?.data || rawSeason;
+
         setOrg(orgJson);
         setProject(projectJson);
         setSeason(seasonJson);
@@ -133,10 +139,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           { credentials: 'include' }
         );
         if (!competitionsRes.ok) throw new Error('Failed to load competitions');
-        const competitionsJson: ListResponse<Period> | Period[] = await competitionsRes.json();
-        const competitionResults = Array.isArray(competitionsJson)
-          ? competitionsJson
-          : (competitionsJson.results || []);
+        const rawCompetitions: any = await competitionsRes.json();
+        const competitionsData = rawCompetitions?.data || rawCompetitions;
+        const competitionResults = Array.isArray(competitionsData)
+          ? competitionsData
+          : competitionsData?.results || competitionsData?.data?.results || [];
         setCompetitions(competitionResults);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load season');
@@ -169,50 +176,71 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         <PageContent>
           {error && <Alert variant="error">{error}</Alert>}
 
-          <Card>
-            {loading ? (
-              <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>Loading competitions…</div>
-            ) : competitions.length === 0 ? (
-              <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>No competitions found.</div>
-            ) : (
-              <Table>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left' }}>Competition</th>
-                    <th style={{ textAlign: 'left' }}>Dates</th>
-                    <th style={{ textAlign: 'center' }}>Matches</th>
-                    <th style={{ textAlign: 'right' }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {competitions.map((competition) => (
-                    <tr key={competition.id}>
-                      <td style={{ fontWeight: 600 }}>{competition.name}</td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        {new Date(competition.start_date).toLocaleDateString()} – {new Date(competition.end_date).toLocaleDateString()}
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <Badge variant="default">{competition.children_count ?? '—'}</Badge>
-                      </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() =>
-                            navigate(
-                              `${seasonsBasePath}/${effectiveSeasonId}/competitions/${competition.id}`
-                            )
-                          }
-                        >
-                          View
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            )}
-          </Card>
+          <Tabs value={activeTab} onChange={(v) => setActiveTab(v as any)}>
+            <TabList className="mb-6">
+              <Tab value="competitions">Competitions</Tab>
+              <Tab value="details">Details</Tab>
+            </TabList>
+
+            <TabPanel value="competitions">
+              <Card>
+                {loading ? (
+                  <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>Loading competitions…</div>
+                ) : competitions.length === 0 ? (
+                  <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>No competitions found.</div>
+                ) : (
+                  <Table>
+                    <thead>
+                      <tr>
+                        <th style={{ textAlign: 'left' }}>Competition</th>
+                        <th style={{ textAlign: 'left' }}>Dates</th>
+                        <th style={{ textAlign: 'center' }}>Matches</th>
+                        <th style={{ textAlign: 'right' }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {competitions.map((competition) => (
+                        <tr key={competition.id}>
+                          <td style={{ fontWeight: 600 }}>{competition.name}</td>
+                          <td style={{ whiteSpace: 'nowrap' }}>
+                            {new Date(competition.start_date).toLocaleDateString()} –{' '}
+                            {new Date(competition.end_date).toLocaleDateString()}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <Badge variant="default">{competition.children_count ?? '—'}</Badge>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => navigate(`${seasonsBasePath}/${effectiveSeasonId}/competitions/${competition.id}`)}
+                            >
+                              View
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
+              </Card>
+            </TabPanel>
+
+            <TabPanel value="details">
+              <Card>
+                <div style={{ padding: '16px', display: 'grid', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Badge variant="default">Season</Badge>
+                    <span style={{ color: 'var(--app-text-secondary)' }}>
+                      {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '—'} –{' '}
+                      {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '—'}
+                    </span>
+                  </div>
+                  <div style={{ color: 'var(--app-text-secondary)' }}>Use the Competitions tab to drill down to matches.</div>
+                </div>
+              </Card>
+            </TabPanel>
+          </Tabs>
         </PageContent>
       </div>
     </AppShell>

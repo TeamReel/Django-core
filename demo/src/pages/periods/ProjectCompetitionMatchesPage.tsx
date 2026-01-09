@@ -138,10 +138,15 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
         if (!seasonRes.ok) throw new Error('Failed to load season');
         if (!competitionRes.ok) throw new Error('Failed to load competition');
 
-        const orgJson: Organisation = await orgRes.json();
-        const projectJson: Project = await projectRes.json();
-        const seasonJson: Period = await seasonRes.json();
-        const competitionJson: Period = await competitionRes.json();
+        const rawOrg: any = await orgRes.json();
+        const rawProject: any = await projectRes.json();
+        const rawSeason: any = await seasonRes.json();
+        const rawCompetition: any = await competitionRes.json();
+
+        const orgJson: Organisation = rawOrg?.data || rawOrg;
+        const projectJson: Project = rawProject?.data || rawProject;
+        const seasonJson: Period = rawSeason?.data || rawSeason;
+        const competitionJson: Period = rawCompetition?.data || rawCompetition;
         setOrg(orgJson);
         setProject(projectJson);
         setSeason(seasonJson);
@@ -161,8 +166,11 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
         );
         if (!matchesRes.ok) throw new Error('Failed to load matches');
 
-        const matchesJson: ListResponse<Match> | Match[] = await matchesRes.json();
-        const matchResults = Array.isArray(matchesJson) ? matchesJson : (matchesJson.results || []);
+        const rawMatches: any = await matchesRes.json();
+        const matchesData = rawMatches?.data || rawMatches;
+        const matchResults = Array.isArray(matchesData)
+          ? matchesData
+          : matchesData?.results || matchesData?.data?.results || [];
         setMatches(matchResults);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load matches');

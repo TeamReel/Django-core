@@ -64,8 +64,8 @@ export const OrganisationCreatePage: React.FC = () => {
 
       const newOrg = await response.json();
       // Navigate to the new organisation's dashboard
-      if (newOrg.id) {
-        navigate(`/organisations/${newOrg.id}`);
+      if (newOrg?.slug || newOrg?.id) {
+        navigate(`/organisations/${newOrg.slug || newOrg.id}`);
       } else {
         // Fallback if ID is missing
         navigate('/organisations');
