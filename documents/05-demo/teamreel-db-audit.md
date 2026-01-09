@@ -1,6 +1,6 @@
 # TeamReel Production Database Audit
 
-**Last Updated:** 2026-01-08 09:15
+**Last Updated:** 2026-01-09 10:58
 **Environment:** Railway PostgreSQL Production
 **Database Host:** switchback.proxy.rlwy.net:17304
 **Database Name:** railway
@@ -20,7 +20,7 @@ This comprehensive audit can be regenerated to reflect the current production da
 ### Using Django Management Command
 ```powershell
 # Connect to Railway production database
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python manage.py audit_production_db > documents/05-demo/teamreel-db-audit-temp.md
 ```
 
@@ -56,10 +56,12 @@ python manage.py audit_production_db > documents/05-demo/teamreel-db-audit-temp.
 ## �📊 Executive Summary
 
 - **Total Models Scanned:** 41
-- **Empty Models:** 21
-- **Total Records:** 8,029
-- **Database Fill:** 68.3%
-- **TeamReel Progress:** Core Hierarchy 100% + RBAC + Players + Matches Expanded (All federations) ✅
+- **Empty Models:** 25
+- **Total Records:** 14,927
+- **Database Fill:** 39.0%
+- **TeamReel Progress:** Core hierarchy present; supporting systems (billing/notifications/settings) still empty
+
+> **Note on “Database Fill”**: This is the % of models that are **non-empty** (16/41 = 39.0%), not the % of “realism” or total rows.
 
 ---
 
@@ -67,40 +69,15 @@ python manage.py audit_production_db > documents/05-demo/teamreel-db-audit-temp.
 
 ### Completed Levels
 
-1. **Level 1: Users** - 2,121 users (1 admin + 2,120 demo users)
-2. **Level 2: Organisations** - 5 European football federations
-3. **Level 3: Clubs** - 92 top-tier clubs (Eredivisie, Bundesliga, Pro League, Premier League, Serie A)
-4. **Level 4: Teams** - 220 teams as Child Projects with `parent_project=Club`
-   - 🇳🇱 Netherlands: 72 teams (First, Reserves, Women, Youth per club)
-   - 🇩🇪 Germany: 36 teams (First, Reserves per club)
-   - 🇧🇪 Belgium: 32 teams (A, B per club)
-   - 🏴 England: 40 teams (First, U21 per club)
-   - 🇮🇹 Italy: 40 teams (1a Squadra, Primavera per club)
-5. **Level 5: Seasons** - 50 root Periods (10 per federation, 2015-2025) with `parent_period=NULL`
-6. **Level 6: Competitions** - 350 child Periods (7 per federation per season) with `parent_period=Season`
-   - Generic types: League, Cup, European, League Cup, Play-offs, Friendly, Youth
-   - Product-agnostic naming with federation examples in metadata
-7. **RBAC Memberships** - 433 organisation-level users with RBAC roles (no period)
-   - 1 Land Admin (KNVB directeur)
-   - 18 Club Admins (Eredivisie directeuren)
-   - 72 Team Admins (coaches per team)
-   - 288 Team Members with functional roles (Keeper, Speler, Assistent, Verzorger)
-   - 54 Supporters (3 fans per club)
-8. **RBAC Permissions & Roles** - Production-ready hierarchical access control
-   - 23 Permissions across 7 resource types
-   - 5 Roles (Land/Club/Team Admin, Team Member, Supporter)
-   - 433 Role Assignments with scope enforcement
-9. **Level 9: Players** - 2,190 ProjectMemberships with season-specific data
-   - **KNVB Season 2024/2025:** 1,358 memberships (all 18 Eredivisie clubs + reserves/youth/women)
-   - **International Season 2024/25:** 302 memberships (DFB: 101, FIGC: 99, The FA: 102)
-   - **Historical Seasons:** 98 memberships (Ajax, PSV, Feyenoord for 2020-2023)
-   - **Note:** 1,758 period-based + 432 non-period RBAC roles = 2,190 total
+This section reflects the **current audit counts** (not historical claims). Detailed breakdown by federation/season is tracked elsewhere.
 
-10. **Level 10: Matches** - 627 Activities with `opponent_project` FK (LEAN data via relationships)
-   - **League matches:** 612 (18 Eredivisie teams × 34 matches each)
-   - **Cup matches:** 15 (knock-out: R16→QF→SF→F)
-   - **Data strategy:** Lean metadata (round, status only) - all other data via FK relationships
-   - **Architecture:** 1 match = 1 Activity record (no duplicates per team)
+1. **Users** - 2,765 (`accounts_user`)
+2. **Organisations** - 5 (`organisations_organisation`) *(THIN)*
+3. **Projects (Clubs/Teams)** - 312 (`projects_project`)
+4. **Periods (Seasons/Competitions)** - 675 (`activities_period`)
+5. **Activities (Matches/Events)** - 852 (`activities_activity`)
+6. **Project Memberships (Players/Staff)** - 2,353 (`projects_membership`)
+7. **RBAC Roles/Assignments** - 5 roles, 1,546 assignments (`permissions_role`, `permissions_roleassignment`)
 
 ## Detailed Table Status
 
@@ -108,28 +85,28 @@ python manage.py audit_production_db > documents/05-demo/teamreel-db-audit-temp.
 
 | Model | Table | Count | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **accounts.User** | `accounts_user` | 2,121 | ✅ READY | 1 admin + 2,120 players/staff across all seasons |
-| **organisations.Organisation** | `organisations_organisation` | 5 | ✅ READY | KNVB, DFB, RBFA, The FA, FIGC |
-| **organisations.Membership** | `organisations_membership` | 1 | ✅ READY | KNVB Land Admin (Jan de Jong) |
-| **projects.Project** | `projects_project` | 312 | 627 | ✅ READY | 612 league + 15 cup matches (LEAN metadata) |
-| **activities.Participation** | `activities_participation` | 0 | 🔜 NEXT | Player match participation (lineups, subs, goals) with period |
-| **activities.Period** | `activities_period` | 400 | ✅ READY | 50 seasons + 350 competitions (normalized to League/Cup/Youth) |
-| **activities.Activity** | `activities_activity` | 1,307 | ✅ READY | 680 new random matches + 627 legacy Eredivisie matches |
-| **activities.Participation** | `activities_participation` | 0 | 🔜 NEXT | Need player match participation |
+| **accounts.User** | `accounts_user` | 2,765 | ✅ READY | Demo users present |
+| **organisations.Organisation** | `organisations_organisation` | 5 | ⚠️ THIN | Federations present |
+| **organisations.Membership** | `organisations_membership` | 2,250 | ✅ READY | Org-level memberships present |
+| **projects.Project** | `projects_project` | 312 | ✅ READY | Clubs/teams present |
+| **activities.Period** | `activities_period` | 675 | ✅ READY | Seasons/competitions present |
+| **activities.Activity** | `activities_activity` | 852 | ✅ READY | Matches/events present |
+| **projects.ProjectMembership** | `projects_membership` | 2,353 | ✅ READY | Player/staff memberships present |
+| **activities.Participation** | `activities_participation` | 0 | 🔜 NEXT | Match participation (lineups, subs, goals) |
 
 ### 🔐 RBAC & Permissions
 
 | Model | Table | Count | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | **permissions.Permission** | `permissions_permission` | 23 | ✅ READY | TeamReel permissions (org, project, match, content, etc.) |
-| **permissions.Role** | `permissions_role` | 5 | ✅ READY | Land/Club/Team Admin, Team Member, Supporter |
-| **permissions.RoleAssignment** | `permissions_roleassignment` | 433 | ✅ READY | All users assigned with scope enforcement |
+| **permissions.Role** | `permissions_role` | 5 | ⚠️ THIN | Role definitions present |
+| **permissions.RoleAssignment** | `permissions_roleassignment` | 1,546 | ✅ READY | Role assignments present |
 
 ### 📊 Supporting Systems
 
 | Model | Table | Count | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **audit.AuditEvent** | `audit_events` | 837 | ✅ OK | Audit logging from seeding operations |
+| **audit.AuditEvent** | `audit_events` | 2,790 | ✅ OK | Audit logging present |
 | **settings.FeatureFlag** | `settings_feature_flag` | 0 | ❌ EMPTY | Feature flags |
 | **settings.Setting** | `settings_setting` | 0 | ❌ EMPTY | Configuration settings |
 | **transactions.UsageEvent** | `transactions_usageevent` | 0 | ❌ EMPTY | Usage tracking |
@@ -147,9 +124,8 @@ python manage.py audit_production_db > documents/05-demo/teamreel-db-audit-temp.
 | **auth.Permission** | `auth_permission` | 164 | ✅ OK | Django permissions |
 | **contenttypes.ContentType** | `django_content_type` | 41 | ✅ OK | Content types |
 | **auth.Group** | `auth_group` | 1 | ✅ OK | Default group |
-| **observability.SystemMetric** | `observability_systemmetric` | 44 | ✅ OK | System health metrics |
-| **contenttypes.ContentType** | `django_content_type` | 41 | ✅ OK | Content types |
-| **observability.SystemMetric** | `observability_systemmetric` | 4 | ✅ OK | System health metrics |
+| **observability.SystemMetric** | `observability_systemmetric` | 1,144 | ✅ OK | System health metrics |
+| **sessions.Session** | `django_session` | 1 | ⚠️ THIN | Active sessions exist |
 
 ### 🔄 Runtime Tables (Expected Empty)
 
@@ -157,7 +133,7 @@ python manage.py audit_production_db > documents/05-demo/teamreel-db-audit-temp.
 | :--- | :--- | :--- | :--- | :--- |
 | **token_blacklist.OutstandingToken** | `token_blacklist_outstandingtoken` | 0 | EMPTY-OK | JWT tokens |
 | **token_blacklist.BlacklistedToken** | `token_blacklist_blacklistedtoken` | 0 | EMPTY-OK | Revoked tokens |
-| **rtc_websockets.WebSocketConnection** | `realtime_websocket_connection` | 1 | EMPTY-OK | WebSocket connections |
+| **rtc_websockets.WebSocketConnection** | `realtime_websocket_connection` | 0 | EMPTY-OK | WebSocket connections |
 | **rtc_websockets.RealtimeMessage** | `realtime_message` | 0 | EMPTY-OK | Real-time messages |
 | **rtc_websockets.PresenceStatus** | `realtime_presence_status` | 0 | EMPTY-OK | User presence |
 | **rtc_websockets.ActivityEvent** | `realtime_activity_event` | 0 | EMPTY-OK | Activity events |
@@ -167,18 +143,17 @@ python manage.py audit_production_db > documents/05-demo/teamreel-db-audit-temp.
 | **transactions.BalancePolicy** | `transactions_balancepolicy` | 0 | EMPTY-OK | Balance policies |
 | **files.FileAsset** | `files_fileasset` | 0 | EMPTY-OK | File uploads |
 | **admin.LogEntry** | `django_admin_log` | 0 | EMPTY-OK | Admin actions |
-| **sessions.Session** | `django_session` | 0 | EMPTY-OK | User sessions |
 | **search.SearchEntry** | `search_searchentry` | 0 | EMPTY-OK | Search index |
 | **projects.ProjectInvite** | `projects_invite` | 0 | EMPTY-OK | Project invitations |
 | **projects.ProjectMembershipPromotion** | `projects_promotion` | 0 | EMPTY-OK | Membership promotions |
 
 ## Top 5 Largest Tables
 
-1. **accounts.User** - 2,121 records ✅ (Players, coaches, staff across all seasons)
-2. **projects.ProjectMembership** - 2,190 records ✅ (1,758 period-based players + 432 RBAC roles)
-3. **activities.Activity** - 1,307 records ✅ (680 random league + 627 legacy Eredivisie matches)
-4. **audit.AuditEvent** - 837 records ✅ (Seeding operations audit trail)
-5. **permissions.RoleAssignment** - 433 records ✅ (RBAC role assignments)
+1. **audit.AuditEvent** - 2,790 records ✅
+2. **accounts.User** - 2,765 records ✅
+3. **projects.ProjectMembership** - 2,353 records ✅
+4. **organisations.Membership** - 2,250 records ✅
+5. **permissions.RoleAssignment** - 1,546 records ✅
 
 ## Club Distribution by Federation
 
@@ -192,6 +167,11 @@ Bundesliga 2024/2025: Bayern München, Bayer Leverkusen, Eintracht Frankfurt, RB
 Jupiler Pro League 2024/2025: Club Brugge, Union Saint-Gilloise, Royal Antwerp, KAA Gent, RSC Anderlecht, KRC Genk, Standard Liège, Cercle Brugge, OH Leuven, KV Mechelen, Sporting Charleroi, STVV, KVC Westerlo, Beerschot VA, KAS Eupen, FCV Dender
 
 ## Changelog
+
+### 2026-01-09 10:58 - Production Re-Audit (No Seeding) ✅
+- **Ran:** `python manage.py audit_production_db`
+- **Result:** 41 models scanned, 25 empty, 14,927 total records, 39.0% non-empty models
+- **Notable:** Supporting systems remain empty (settings/billing/notifications). Match participation is still empty (`activities_participation = 0`).
 
 ### 2026-01-08 09:15 - Match Expansion: All Federations + Competition Normalization ✅
 - **Added:** 680 new random league matches across 4 federations

@@ -58,7 +58,11 @@ const navGroups: NavGroup[] = [
     label: 'Work',
     items: [
       { path: '/organisations', label: 'Federations', description: 'Land/federation organisations (e.g., KNVB)', icon: '🏢' },
-      { path: '/projects', label: 'Clubs & Teams', description: 'Browse clubs and their teams', icon: '⚽' },
+      { path: '/clubs', label: 'Clubs', description: 'Root projects (parent_project = null)', icon: '🏟️' },
+      { path: '/teams', label: 'Teams', description: 'Child projects (parent_project != null)', icon: '⚽' },
+      { path: '/seasons', label: 'Seasons', description: 'Team-scoped periods (parent_period = null)', icon: '🗓️' },
+      { path: '/competitions', label: 'Competitions', description: 'Child periods under seasons', icon: '🏆' },
+      { path: '/matches', label: 'Matches', description: 'Match activities (filter by team)', icon: '🎯' },
       { path: '/users', label: 'Users', description: 'Players, staff, and members', icon: '👥' },
     ],
   },

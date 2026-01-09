@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import {
   Button,
@@ -17,6 +17,8 @@ import { canCreateProject, canEditProject, canDeleteProject } from '../../utils/
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import LoadingState from '../../components/LoadingState';
+import { fetchAllPages } from '../../utils/fetchAllPages';
+import WorkFilterBar, { OrganisationOption, ProjectOption } from '../work/WorkFilterBar';
 
 /**
  * T008 - Projects List Page
@@ -47,9 +49,17 @@ export const ProjectsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters (like UsersPage)
+  // Filters (aligned with UsersPage / Work pages)
   const [statusFilter, setStatusFilter] = useState<string>('active'); // Default to 'active'
-  const [selectedOrgFilter, setSelectedOrgFilter] = useState<string>(''); // '' = All Organisations
+  const [selectedOrgId, setSelectedOrgId] = useState<string>(''); // '' = All Organisations
+  const [selectedClubId, setSelectedClubId] = useState<string>('');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+
+  const [filterOrganisationOptions, setFilterOrganisationOptions] = useState<OrganisationOption[]>([]);
+  const [clubs, setClubs] = useState<ProjectOption[]>([]);
+  const [teams, setTeams] = useState<ProjectOption[]>([]);
+
+  const [orgNavigationIndex, setOrgNavigationIndex] = useState<Array<{ id: string; slug?: string }>>([]);
 
   // Edit modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -93,6 +103,81 @@ export const ProjectsPage: React.FC = () => {
   const userCanCreateProject = canCreateProject(permissionContext);
   const userCanEditProject = canEditProject(permissionContext);
   const userCanDeleteProject = canDeleteProject(permissionContext);
+
+  // Initialize org filter:
+  // - Org-scoped route: lock selection to resolved org
+  // - Global route: default to context org for non-superadmins
+  useEffect(() => {
+    if (resolvedOrg?.id) {
+      setSelectedOrgId(String(resolvedOrg.id));
+      return;
+    }
+
+    if (!isSuperAdmin && context.organisation?.id) {
+      setSelectedOrgId(String(context.organisation.id));
+    }
+  }, [resolvedOrg?.id, context.organisation?.id, isSuperAdmin]);
+
+  // Organisation options for filter dropdown
+  useEffect(() => {
+    if (!isSuperAdmin) {
+      const opts = organisations.map((o: any) => ({ id: String(o.id), name: o.name }));
+      setFilterOrganisationOptions(opts);
+      setOrgNavigationIndex(organisations.map((o: any) => ({ id: String(o.id), slug: o.slug })));
+      return;
+    }
+
+    const load = async () => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=100`, { credentials: 'include' });
+        if (!res.ok) {
+          // Fallback to context switcher orgs if the list endpoint is restricted
+          const fallback = organisations.map((o: any) => ({ id: String(o.id), name: o.name }));
+          setFilterOrganisationOptions(fallback);
+          setOrgNavigationIndex(organisations.map((o: any) => ({ id: String(o.id), slug: o.slug })));
+          return;
+        }
+        const data = await res.json();
+        const orgs = data.data?.results || data.results || [];
+        setFilterOrganisationOptions(orgs.map((o: any) => ({ id: String(o.id), name: o.name })));
+        setOrgNavigationIndex(orgs.map((o: any) => ({ id: String(o.id), slug: o.slug })));
+      } catch {
+        const fallback = organisations.map((o: any) => ({ id: String(o.id), name: o.name }));
+        setFilterOrganisationOptions(fallback);
+        setOrgNavigationIndex(organisations.map((o: any) => ({ id: String(o.id), slug: o.slug })));
+      }
+    };
+
+    load();
+  }, [isSuperAdmin, organisations]);
+
+  // Club/Team options for filter dropdowns
+  useEffect(() => {
+    const load = async () => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      try {
+        const [allClubs, allTeams] = await Promise.all([
+          fetchAllPages<ProjectOption>(
+            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+            { credentials: 'include' },
+          ),
+          fetchAllPages<ProjectOption>(
+            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+            { credentials: 'include' },
+          ),
+        ]);
+        setClubs(allClubs);
+        setTeams(allTeams);
+      } catch {
+        // Non-blocking: filters will still work for status/org without club/team options.
+        setClubs([]);
+        setTeams([]);
+      }
+    };
+
+    load();
+  }, []);
 
   // Query params for sort and filter
   const sort = searchParams.get('sort') || 'name';
@@ -460,34 +545,49 @@ export const ProjectsPage: React.FC = () => {
               </Button>
             )}
 
-            {/* Filters - show on global view or org-scoped view */}
-            <label style={{ fontSize: '14px', fontWeight: 500 }}>Status:</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="all">All</option>
-            </select>
+            {/* Filters (same UX as Users/Work) */}
+            <WorkFilterBar
+              showOrganisation
+              organisations={filterOrganisationOptions}
+              clubs={clubs}
+              teams={teams}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              selectedOrgId={selectedOrgId}
+              onOrganisationChange={(value) => {
+                setSelectedOrgId(value);
+                setSelectedClubId('');
+                setSelectedTeamId('');
 
-            {/* Organisation Filter - only on global view */}
-            {!currentOrgSlug && (
-              <>
-                <label style={{ fontSize: '14px', fontWeight: 500 }}>Filter by Org:</label>
-                <select
-                  value={selectedOrgFilter}
-                  onChange={(e) => setSelectedOrgFilter(e.target.value)}
-                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                >
-                  <option value="">All Organisations</option>
-                  {organisations.map(org => (
-                    <option key={org.id} value={org.id}>{org.name}</option>
-                  ))}
-                </select>
-              </>
-            )}
+                // If we're on an org-scoped route, switch route when org changes.
+                if (currentOrgSlug) {
+                  if (!value) {
+                    navigate('/projects');
+                    return;
+                  }
+
+                  const match = orgNavigationIndex.find((o) => String(o.id) === String(value));
+                  if (match?.slug) {
+                    navigate(`/organisations/${match.slug}/projects`);
+                  }
+                }
+              }}
+              selectedClubId={selectedClubId}
+              onClubChange={(value) => {
+                setSelectedClubId(value);
+                setSelectedTeamId('');
+              }}
+              selectedTeamId={selectedTeamId}
+              onTeamChange={(value) => {
+                setSelectedTeamId(value);
+              }}
+              onClear={() => {
+                setStatusFilter('active');
+                setSelectedClubId('');
+                setSelectedTeamId('');
+                if (isSuperAdmin && !currentOrgSlug) setSelectedOrgId('');
+              }}
+            />
 
             {/* Create Project button - show on global view or org-scoped with permission */}
             {(!currentOrgSlug || (currentOrgSlug && userCanCreateProject)) && (
@@ -546,11 +646,31 @@ export const ProjectsPage: React.FC = () => {
             filteredProjects = filteredProjects.filter(p => p.is_active === false);
           }
 
-          // Organisation filter (only for global view)
-          if (!currentOrgSlug && selectedOrgFilter) {
-            filteredProjects = filteredProjects.filter(p => {
-              const projOrgId = (p as any).organisation?.id || p.organisation_id;
-              return projOrgId === selectedOrgFilter;
+          // Organisation filter
+          if (!currentOrgSlug && selectedOrgId) {
+            filteredProjects = filteredProjects.filter((p: any) => {
+              const projOrgId = p.organisation?.id || p.organisation_id;
+              return String(projOrgId) === String(selectedOrgId);
+            });
+          }
+
+          // Club/team filters
+          if (selectedTeamId) {
+            filteredProjects = filteredProjects.filter((p: any) => String(p.id) === String(selectedTeamId));
+          } else if (selectedClubId) {
+            const selectedClub = clubs.find((c) => String(c.id) === String(selectedClubId));
+            const selectedClubName = selectedClub?.name;
+
+            filteredProjects = filteredProjects.filter((p: any) => {
+              const projectId = String(p.id);
+              if (projectId === String(selectedClubId)) return true;
+
+              const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
+              const parentName = p.parent_name ?? p.parent_project_name ?? null;
+
+              const matchesById = parentId !== null && String(parentId) === String(selectedClubId);
+              const matchesByName = selectedClubName && parentName && String(parentName) === String(selectedClubName);
+              return matchesById || matchesByName;
             });
           }
 

@@ -92,3 +92,6 @@ backup_*
 
 # Temporary Inspection Scripts
 check_*.py
+
+# Temporary demo audit outputs
+documents/05-demo/*-temp.md

@@ -85,6 +85,13 @@ import ProjectCompetitionDetailPage from './pages/periods/ProjectCompetitionDeta
 import ProjectCompetitionMatchesPage from './pages/periods/ProjectCompetitionMatchesPage';
 import ProjectCompetitionSquadPage from './pages/periods/ProjectCompetitionSquadPage';
 
+// Work hierarchy pages
+import ClubsPage from './pages/work/ClubsPage';
+import TeamsPage from './pages/work/TeamsPage';
+import SeasonsPage from './pages/work/SeasonsPage';
+import CompetitionsPage from './pages/work/CompetitionsPage';
+import MatchesPage from './pages/work/MatchesPage';
+
 
 export default function App() {
   const { user } = useAuth();
@@ -113,10 +120,56 @@ export default function App() {
 
       {/* Activity / Match Routes */}
       <Route
+        path="/matches"
+        element={
+          <ProtectedRoute>
+            <MatchesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/matches/:matchId"
         element={
           <ProtectedRoute>
             <MatchDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Work hierarchy list pages */}
+      <Route
+        path="/clubs"
+        element={
+          <ProtectedRoute>
+            <ClubsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/teams"
+        element={
+          <ProtectedRoute>
+            <TeamsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/seasons"
+        element={
+          <ProtectedRoute>
+            <SeasonsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/competitions"
+        element={
+          <ProtectedRoute>
+            <CompetitionsPage />
           </ProtectedRoute>
         }
       />
