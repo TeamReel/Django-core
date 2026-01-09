@@ -24,17 +24,19 @@ type ListResponse<T> = { results: T[]; count: number };
 
 export const ProjectCompetitionSquadPage: React.FC = () => {
   const navigate = useNavigate();
-  const { orgId, projectId, seasonId, competitionId } = useParams<{
+  const { orgId, projectId, seasonId, competitionId, clubId } = useParams<{
     orgId: string;
     projectId: string;
     seasonId: string;
     competitionId: string;
+    clubId?: string;
   }>();
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
   const [org, setOrg] = useState<Organisation | null>(null);
   const [project, setProject] = useState<Project | null>(null);
+  const [club, setClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
   const [competition, setCompetition] = useState<Period | null>(null);
   const [members, setMembers] = useState<Participation[]>([]);
@@ -46,19 +48,57 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
   const effectiveSeasonId = seasonId || '';
   const effectiveCompetitionId = competitionId || '';
 
+  const isTeamRoute = Boolean(clubId);
+  const clubSlugOrId = clubId || '';
+
+  const projectDetailPath = isTeamRoute
+    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}`
+    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
+
+  const seasonsBasePath = isTeamRoute
+    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
+    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
+
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
       { label: 'Federations', onClick: () => navigate('/organisations') },
       { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
       { label: 'Clubs & Teams', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects`) },
-      { label: project?.name || 'Club/Team', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`) },
-      { label: 'Seasons', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`) },
-      { label: season?.name || 'Season', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons/${effectiveSeasonId}`) },
-      { label: competition?.name || 'Competition', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons/${effectiveSeasonId}/competitions/${effectiveCompetitionId}`) },
+      ...(isTeamRoute
+        ? [
+            {
+              label: club?.name || 'Club',
+              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+            },
+            { label: 'Teams' },
+            { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
+          ]
+        : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),
+      { label: 'Seasons', onClick: () => navigate(seasonsBasePath) },
+      { label: season?.name || 'Season', onClick: () => navigate(`${seasonsBasePath}/${effectiveSeasonId}`) },
+      {
+        label: competition?.name || 'Competition',
+        onClick: () =>
+          navigate(`${seasonsBasePath}/${effectiveSeasonId}/competitions/${effectiveCompetitionId}`),
+      },
       { label: 'Squad', current: true },
     ],
-    [navigate, org?.name, project?.name, season?.name, competition?.name, orgSlugOrId, projectSlugOrId, effectiveSeasonId, effectiveCompetitionId]
+    [
+      navigate,
+      org?.name,
+      project?.name,
+      club?.name,
+      season?.name,
+      competition?.name,
+      orgSlugOrId,
+      seasonsBasePath,
+      projectDetailPath,
+      effectiveSeasonId,
+      effectiveCompetitionId,
+      isTeamRoute,
+      clubSlugOrId,
+    ]
   );
 
   useEffect(() => {
@@ -68,7 +108,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [orgRes, projectRes, seasonRes, competitionRes, participationRes] = await Promise.all([
+        const [orgRes, projectRes, seasonRes, competitionRes, participationRes, clubRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
           fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
           fetch(`${apiBaseUrl}/api/v1/periods/${effectiveSeasonId}/`, { credentials: 'include' }),
@@ -76,6 +116,11 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
           fetch(`${apiBaseUrl}/api/v1/participations/?period_id=${encodeURIComponent(effectiveCompetitionId)}&page_size=250`, {
             credentials: 'include',
           }),
+          isTeamRoute
+            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
+                credentials: 'include',
+              })
+            : Promise.resolve(null as any),
         ]);
 
         if (!orgRes.ok) throw new Error('Failed to load organisation');
@@ -88,6 +133,14 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
         setProject(await projectRes.json());
         setSeason(await seasonRes.json());
         setCompetition(await competitionRes.json());
+
+        if (isTeamRoute && clubRes && (clubRes as any).ok) {
+          try {
+            setClub(await (clubRes as any).json());
+          } catch {
+            // ignore
+          }
+        }
 
         const participationJson: ListResponse<Participation> | Participation[] = await participationRes.json();
         const participationResults = Array.isArray(participationJson)
@@ -115,7 +168,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
               variant="secondary"
               onClick={() =>
                 navigate(
-                  `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons/${effectiveSeasonId}/competitions/${effectiveCompetitionId}`
+                  `${seasonsBasePath}/${effectiveSeasonId}/competitions/${effectiveCompetitionId}`
                 )
               }
             >

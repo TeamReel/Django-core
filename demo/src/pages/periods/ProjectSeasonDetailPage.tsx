@@ -33,12 +33,13 @@ type Organisation = {
 
 export const ProjectSeasonDetailPage: React.FC = () => {
   const navigate = useNavigate();
-  const { orgId, projectId, seasonId } = useParams<{ orgId: string; projectId: string; seasonId: string }>();
+  const { orgId, projectId, seasonId, clubId } = useParams<{ orgId: string; projectId: string; seasonId: string; clubId?: string }>();
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
   const [org, setOrg] = useState<Organisation | null>(null);
   const [project, setProject] = useState<Project | null>(null);
+  const [club, setClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
   const [competitions, setCompetitions] = useState<Period[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,17 +49,37 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const projectSlugOrId = projectId || '';
   const effectiveSeasonId = seasonId || '';
 
+  const isTeamRoute = Boolean(clubId);
+  const clubSlugOrId = clubId || '';
+
+  const projectDetailPath = isTeamRoute
+    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}`
+    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
+
+  const seasonsBasePath = isTeamRoute
+    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
+    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
+
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
       { label: 'Federations', onClick: () => navigate('/organisations') },
       { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
       { label: 'Clubs & Teams', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects`) },
-      { label: project?.name || 'Club/Team', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`) },
-      { label: 'Seasons', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`) },
+      ...(isTeamRoute
+        ? [
+            {
+              label: club?.name || 'Club',
+              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+            },
+            { label: 'Teams' },
+            { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
+          ]
+        : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),
+      { label: 'Seasons', onClick: () => navigate(seasonsBasePath) },
       { label: season?.name || 'Season', current: true },
     ],
-    [navigate, org?.name, project?.name, season?.name, orgSlugOrId, projectSlugOrId]
+    [navigate, org?.name, project?.name, club?.name, season?.name, orgSlugOrId, seasonsBasePath, projectDetailPath, isTeamRoute, clubSlugOrId]
   );
 
   useEffect(() => {
@@ -68,10 +89,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [orgRes, projectRes, seasonRes] = await Promise.all([
+        const [orgRes, projectRes, seasonRes, clubRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
           fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
           fetch(`${apiBaseUrl}/api/v1/periods/${effectiveSeasonId}/`, { credentials: 'include' }),
+          isTeamRoute
+            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
+                credentials: 'include',
+              })
+            : Promise.resolve(null as any),
         ]);
 
         if (!orgRes.ok) throw new Error('Failed to load organisation');
@@ -84,6 +110,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         setOrg(orgJson);
         setProject(projectJson);
         setSeason(seasonJson);
+
+        if (isTeamRoute && clubRes && (clubRes as any).ok) {
+          try {
+            setClub(await (clubRes as any).json());
+          } catch {
+            // ignore
+          }
+        }
 
         const competitionsRes = await fetch(
           `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&parent_id=${encodeURIComponent(effectiveSeasonId)}&page_size=250`,
@@ -115,7 +149,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             <div style={{ display: 'flex', gap: '8px' }}>
               <Button
                 variant="secondary"
-                onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`)}
+                onClick={() => navigate(seasonsBasePath)}
               >
                 Back to Seasons
               </Button>
@@ -157,7 +191,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           variant="secondary"
                           onClick={() =>
                             navigate(
-                              `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons/${effectiveSeasonId}/competitions/${competition.id}`
+                              `${seasonsBasePath}/${effectiveSeasonId}/competitions/${competition.id}`
                             )
                           }
                         >

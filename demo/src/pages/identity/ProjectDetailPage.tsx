@@ -33,7 +33,7 @@ import AppShell from '../../components/AppShell';
  * - Shows recent audit events filtered by project_id
  */
 export const ProjectDetailPage: React.FC = () => {
-  const { orgId, projectId } = useParams<{ orgId: string; projectId: string }>();
+  const { orgId, projectId, clubId } = useParams<{ orgId: string; projectId: string; clubId?: string }>();
   const [activeTab, setActiveTab] = useState('details');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -45,6 +45,7 @@ export const ProjectDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [orgProjects, setOrgProjects] = useState<Project[]>([]); // For switcher
+  const [club, setClub] = useState<Project | null>(null);
 
   // Resolve org and project slugs
   const resolvedOrg = (orgId
@@ -59,6 +60,9 @@ export const ProjectDetailPage: React.FC = () => {
     : context.project) || context.project;
 
   const currentProjectSlug = (resolvedProject as any)?.slug || targetId?.toLowerCase(); // Use slug for API calls
+
+  const isTeamRoute = Boolean(clubId);
+  const clubSlugOrId = clubId || '';
 
   // Breadcrumb context switcher setup
   const {
@@ -182,6 +186,28 @@ export const ProjectDetailPage: React.FC = () => {
         const projectData = rawProjectData.data || rawProjectData;
         setProject(projectData);
 
+        if (isTeamRoute && clubSlugOrId) {
+          try {
+            const clubRes = await fetch(
+              `${apiBaseUrl}/api/v1/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${clubSlugOrId}/`,
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'include',
+              }
+            );
+            if (clubRes.ok) {
+              const rawClub = await clubRes.json();
+              const clubData = rawClub.data || rawClub;
+              setClub(clubData);
+            }
+          } catch {
+            // ignore
+          }
+        }
+
         // Fetch project members
         // Use the new 'members' action on the project viewset
         const membersEndpoint = resolvedOrg
@@ -248,7 +274,7 @@ export const ProjectDetailPage: React.FC = () => {
     };
 
     fetchProjectDetails();
-  }, [currentProjectSlug, context.isLoading, resolvedProject]);
+  }, [currentProjectSlug, context.isLoading, resolvedProject, isTeamRoute, clubSlugOrId, resolvedOrg?.slug, resolvedOrg?.id]);
 
   if (loading || context.isLoading) {
     return (
@@ -313,6 +339,10 @@ export const ProjectDetailPage: React.FC = () => {
     });
   }
 
+  const teamOrProjectDetailPath = isTeamRoute
+    ? `/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${clubSlugOrId}/teams/${project.slug || project.id}`
+    : `/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}`;
+
   return (
     <AppShell>
       <div>
@@ -323,6 +353,16 @@ export const ProjectDetailPage: React.FC = () => {
           { label: 'Organisations', onClick: () => navigate('/organisations') },
           { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
           { label: 'Projects', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
+          ...(isTeamRoute
+            ? [
+                {
+                  label: club?.name || 'Club',
+                  onClick: () =>
+                    navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${clubSlugOrId}`),
+                },
+                { label: 'Teams' },
+              ]
+            : []),
           {
             label: (
               <select
@@ -347,7 +387,10 @@ export const ProjectDetailPage: React.FC = () => {
                   fontWeight: 500
                 }}
               >
-                {effectiveProjectOptions.map(proj => (
+                {(isTeamRoute
+                  ? effectiveProjectOptions.filter((p) => String(p.id) === String(project.id))
+                  : effectiveProjectOptions
+                ).map(proj => (
                   <option key={proj.id} value={proj.slug || proj.id}>{proj.label}</option>
                 ))}
               </select>
