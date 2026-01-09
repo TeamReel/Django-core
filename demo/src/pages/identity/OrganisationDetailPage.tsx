@@ -422,45 +422,50 @@ export const OrganisationDetailPage: React.FC = () => {
     const apiV1BaseUrl = getApiV1BaseUrl();
     try {
       const unique = new Map<string, any>();
-      let fetchedCount = 0;
-      for (const t of teams as any[]) {
-        const teamId = t?.id;
-        if (!teamId) continue;
-        const params = new URLSearchParams();
-        params.set('page_size', '250');
-        params.set('project_id', String(teamId));
 
-        const url = `${apiV1BaseUrl}/periods/?${params.toString()}`;
-        // console.log('[OrganisationDetailPage] Fetching periods for team', teamId, url);
-        const periods = await fetchAllPages<any>(url, {
-          credentials: 'include',
-        });
-
-        if (periods && periods.length > 0) {
-           fetchedCount += periods.length;
-           // Log first period to debug structure
-           if (unique.size === 0) {
-              console.log('[OrganisationDetailPage] Sample period structure:', periods[0]);
-           }
+        // Chunk requests to avoid rate limiting and long sequential wait
+        const chunkSize = 6; // Railway/Python can handle 6-10 concurrent easily
+        const teamChunks = [];
+        for (let i = 0; i < teams.length; i += chunkSize) {
+          teamChunks.push(teams.slice(i, i + chunkSize));
         }
 
-        for (const p of periods || []) {
-          if (!p?.id) continue;
-          unique.set(String(p.id), p);
-        }
+        console.log(`[OrganisationDetailPage] Fetching periods for ${teams.length} teams in ${teamChunks.length} chunks`);
+
+        for (const chunk of teamChunks) {
+           await Promise.all(chunk.map(async (t: any) => {
+              const teamId = t?.id;
+              if (!teamId) return;
+              const params = new URLSearchParams();
+              params.set('page_size', '250');
+              params.set('project_id', String(teamId));
+
+              try {
+                const url = `${apiV1BaseUrl}/periods/?${params.toString()}`;
+                const periods = await fetchAllPages<any>(url, {
+                    credentials: 'include',
+                });
+                for (const p of periods || []) {
+                    if (!p?.id) continue;
+                    unique.set(String(p.id), p);
+                }
+              } catch (e) {
+                 console.warn(`Failed to fetch periods for team ${teamId}`, e);
+              }
+           }));
+        } // Close chunk loop
+
+        console.log('[OrganisationDetailPage] Total unique periods fetched via teams:', unique.size);
+
+        const merged = Array.from(unique.values());
+        setOrgPeriods(merged);
+        recomputePeriodCounts(merged);
+      } catch (e) {
+        console.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
+      } finally {
+        setOrgPeriodsLoading(false);
       }
-
-      console.log('[OrganisationDetailPage] Total unique periods fetched via teams:', unique.size);
-
-      const merged = Array.from(unique.values());
-      setOrgPeriods(merged);
-      recomputePeriodCounts(merged);
-    } catch (e) {
-      console.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
-    } finally {
-      setOrgPeriodsLoading(false);
-    }
-  };
+    };
 
   const fetchFederationCounts = async (organisationId: string) => {
     if (!organisationId) return;
