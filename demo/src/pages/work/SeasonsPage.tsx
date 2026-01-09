@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card } from '@django-core/design-system';
@@ -28,6 +28,7 @@ type Period = {
 
 export default function SeasonsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { context, organisations: myOrganisations } = useContextSwitcher();
 
@@ -54,6 +55,14 @@ export default function SeasonsPage() {
       setSelectedOrgId(String(context.organisation.id));
     }
   }, [context.organisation?.id, isSuperAdmin]);
+
+  // Preselect org for superadmin via query param
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    const params = new URLSearchParams(location.search);
+    const orgId = params.get('org_id');
+    if (orgId) setSelectedOrgId(orgId);
+  }, [isSuperAdmin, location.search]);
 
   // Fetch org options for superadmin
   useEffect(() => {
