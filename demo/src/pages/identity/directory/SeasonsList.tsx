@@ -114,18 +114,14 @@ export const SeasonsList: React.FC = () => {
   // Fetch seasons
   useEffect(() => {
       const loadSeasons = async () => {
-        setSeasons([]);
-        if (!selectedTeamId) return;
-
         setSeasonsLoading(true);
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
         try {
           const params = new URLSearchParams();
           params.set('page_size', '250');
-          params.set('type', 'season');
-          params.set('parent_id', 'null');
-          params.set('project_id', String(selectedTeamId));
+          params.set('parent_period__isnull', 'true');
+          if (selectedTeamId) params.set('project_id', String(selectedTeamId));
           if (selectedOrgId) params.set('organisation_id', selectedOrgId);
 
           const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
@@ -187,17 +183,13 @@ export const SeasonsList: React.FC = () => {
       {isLoading && <LoadingState message="Loading options..." />}
       {error && <Alert variant="error">{error}</Alert>}
 
-      {!isLoading && !error && !selectedTeamId && (
-        <Alert variant="info">Select a team in the filters to view seasons.</Alert>
+      {!isLoading && !error && seasonsLoading && <LoadingState message="Loading seasons..." />}
+
+      {!isLoading && !error && !seasonsLoading && seasons.length === 0 && (
+          <Alert variant="info">No seasons found. Use filters to narrow your search.</Alert>
       )}
 
-      {!isLoading && !error && selectedTeamId && seasonsLoading && <LoadingState message="Loading seasons..." />}
-
-      {!isLoading && !error && selectedTeamId && !seasonsLoading && seasons.length === 0 && (
-          <Alert variant="info">No seasons found for the selected team.</Alert>
-      )}
-
-      {!isLoading && !error && selectedTeamId && !seasonsLoading && seasons.length > 0 && (
+      {!isLoading && !error && !seasonsLoading && seasons.length > 0 && (
         <Card>
           <div className="overflow-x-auto">
             <Table>

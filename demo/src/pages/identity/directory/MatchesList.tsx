@@ -108,9 +108,6 @@ export const MatchesList: React.FC = () => {
   // Fetch matches
   useEffect(() => {
     const loadMatches = async () => {
-      setMatches([]);
-      if (!selectedTeamId) return;
-
       setMatchesLoading(true);
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -118,7 +115,7 @@ export const MatchesList: React.FC = () => {
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('activity_type', 'match');
-        params.set('project_id', String(selectedTeamId));
+        if (selectedTeamId) params.set('project_id', String(selectedTeamId));
         if (selectedOrgId) params.set('organisation_id', selectedOrgId);
 
         const all = await fetchAllPages<Activity>(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`);
@@ -168,17 +165,15 @@ export const MatchesList: React.FC = () => {
         {isLoading && <LoadingState message="Loading options..." />}
         {error && <Alert variant="error">{error}</Alert>}
 
-        {!isLoading && !error && !selectedTeamId && (
-          <Alert variant="info">Select a team in the filters to view matches.</Alert>
+        {!isLoading && !error && matchesLoading && (
+          <LoadingState message="Loading matches..." />
         )}
 
-        {!isLoading && !error && selectedTeamId && matchesLoading && <LoadingState message="Loading matches..." />}
-
-        {!isLoading && !error && selectedTeamId && !matchesLoading && matches.length === 0 && (
-          <Alert variant="info">No matches found for the selected team.</Alert>
+        {!isLoading && !error && !matchesLoading && matches.length === 0 && (
+          <Alert variant="info">No matches found. Use filters to narrow your search.</Alert>
         )}
 
-        {!isLoading && !error && selectedTeamId && !matchesLoading && matches.length > 0 && (
+        {!isLoading && !error && !matchesLoading && matches.length > 0 && (
           <Card>
             <div className="overflow-x-auto">
               <Table>

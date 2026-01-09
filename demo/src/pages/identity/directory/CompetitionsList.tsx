@@ -111,16 +111,14 @@ export const CompetitionsList: React.FC = () => {
 
   useEffect(() => {
     const loadCompetitions = async () => {
-      setCompetitions([]);
-      if (!selectedTeamId) return;
-
       setCompetitionsLoading(true);
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
       try {
         const params = new URLSearchParams();
         params.set('page_size', '250');
-        params.set('project_id', String(selectedTeamId));
+        params.set('parent_period__isnull', 'false');
+        if (selectedTeamId) params.set('project_id', String(selectedTeamId));
         if (selectedOrgId) params.set('organisation_id', selectedOrgId);
 
         const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
@@ -128,10 +126,7 @@ export const CompetitionsList: React.FC = () => {
 
         const data = await res.json();
         const results = data.data?.results || data.results || data.data || [];
-        const periods: Period[] = Array.isArray(results) ? results : [];
-
-        // Competitions are periods with a parent (season)
-        setCompetitions(periods.filter((p) => (p as any).parent_period_id || p.parent_period));
+        setCompetitions(Array.isArray(results) ? results : []);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load competitions');
       } finally {
@@ -185,19 +180,15 @@ export const CompetitionsList: React.FC = () => {
       {isLoading && <LoadingState message="Loading options..." />}
       {error && <Alert variant="error">{error}</Alert>}
 
-      {!isLoading && !error && !selectedTeamId && (
-        <Alert variant="info">Select a team in the filters to view competitions.</Alert>
-      )}
-
-      {!isLoading && !error && selectedTeamId && competitionsLoading && (
+      {!isLoading && !error && competitionsLoading && (
         <LoadingState message="Loading competitions..." />
       )}
 
-      {!isLoading && !error && selectedTeamId && !competitionsLoading && competitions.length === 0 && (
-        <Alert variant="info">No competitions found for the selected team.</Alert>
+      {!isLoading && !error && !competitionsLoading && competitions.length === 0 && (
+        <Alert variant="info">No competitions found. Use filters to narrow your search.</Alert>
       )}
 
-      {!isLoading && !error && selectedTeamId && !competitionsLoading && competitions.length > 0 && (
+      {!isLoading && !error && !competitionsLoading && competitions.length > 0 && (
         <Card>
           <div className="overflow-x-auto">
             <Table>

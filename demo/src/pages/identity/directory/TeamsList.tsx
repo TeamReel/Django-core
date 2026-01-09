@@ -307,14 +307,30 @@ export const TeamsList: React.FC = () => {
                                             setDetailProject(team);
                                             setIsDetailModalOpen(true);
                                         }}
-                                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded border border-gray-300 text-xs font-medium hover:bg-gray-200"
+                                        style={{
+                                            padding: '4px 8px',
+                                            borderRadius: '4px',
+                                            border: '1px solid #6c757d',
+                                            backgroundColor: 'var(--app-surface)',
+                                            color: '#6c757d',
+                                            cursor: 'pointer',
+                                            fontSize: '12px'
+                                        }}
                                     >
                                         View
                                     </button>
                                      {userCanEditProject && (
                                         <button
                                             onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/edit`)}
-                                            className="px-3 py-1 bg-blue-50 text-blue-600 rounded border border-blue-200 text-xs font-medium hover:bg-blue-100"
+                                            style={{
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                border: '1px solid #007bff',
+                                                backgroundColor: 'var(--app-surface)',
+                                                color: '#007bff',
+                                                cursor: 'pointer',
+                                                fontSize: '12px'
+                                            }}
                                         >
                                             Edit
                                         </button>
@@ -322,7 +338,15 @@ export const TeamsList: React.FC = () => {
                                     {userCanDeleteProject && (
                                         <button
                                             onClick={() => handleDeleteProject(String(orgSlugOrId), String(team.id), String(team.name))}
-                                            className="px-3 py-1 bg-red-50 text-red-600 rounded border border-red-200 text-xs font-medium hover:bg-red-100"
+                                            style={{
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                border: '1px solid #dc3545',
+                                                backgroundColor: 'var(--app-surface)',
+                                                color: '#dc3545',
+                                                cursor: 'pointer',
+                                                fontSize: '12px'
+                                            }}
                                         >
                                             Delete
                                         </button>
