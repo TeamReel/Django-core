@@ -217,6 +217,36 @@ export const ProjectDetailPage: React.FC = () => {
     return filteredByOrg as Project[];
   };
 
+  const fetchOrgTeamsForPeriodFiltering = async (): Promise<any[]> => {
+    // Mirrors OrganisationDetailPage: use org-scoped endpoint to get all teams.
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const orgSlug = String(resolvedOrg?.slug || resolvedOrg?.id || orgId || '').trim();
+    if (!orgSlug) return [];
+
+    const params = new URLSearchParams();
+    params.set('page_size', '250');
+    params.set('parent_project__isnull', 'false');
+
+    const url = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?${params.toString()}`;
+    const results = await fetchAllPages<any>(url, { credentials: 'include' });
+    return Array.isArray(results) ? results : [];
+  };
+
+  const fetchOrgPeriodsForFiltering = async (): Promise<any[]> => {
+    // Mirrors OrganisationDetailPage: fetch all periods for the organisation.
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const orgIdValue = String(resolvedOrg?.id || (project as any)?.organisation_id || '').trim();
+    if (!orgIdValue) return [];
+
+    const params = new URLSearchParams();
+    params.set('page_size', '250');
+    params.set('organisation_id', orgIdValue);
+
+    const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+    const results = await fetchAllPages<any>(url, { credentials: 'include' });
+    return Array.isArray(results) ? results : [];
+  };
+
   const mergeUniqueById = <T extends { id: any }>(items: T[]): T[] => {
     const seen = new Set<string>();
     const out: T[] = [];
@@ -663,22 +693,31 @@ export const ProjectDetailPage: React.FC = () => {
         const filteredSeasons = (results || []).filter(isSeasonPeriod);
         setSeasons(filteredSeasons);
       } else {
-        // For clubs: fetch all periods for all child teams
-        const teams = await ensureChildTeamsLoaded();
-        const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
+        // For clubs: mirror OrganisationDetailPage behaviour.
+        // 1) fetch all org periods once
+        // 2) fetch all org teams once
+        // 3) filter seasons to teams under this club
 
-        // Fetch in parallel
-        const fetches = teamIds.map(async (teamId) => {
-          const params = new URLSearchParams();
-          params.set('project_id', String(teamId));
-          params.set('page_size', '100');
-          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
-          return await fetchAllPages<any>(url, { credentials: 'include' });
-        });
+        const [teams, orgPeriods] = await Promise.all([
+          fetchOrgTeamsForPeriodFiltering(),
+          fetchOrgPeriodsForFiltering(),
+        ]);
 
-        const pages = await Promise.all(fetches);
-        const combined = mergeUniqueById((pages || []).flat());
-        const filteredSeasons = combined.filter(isSeasonPeriod);
+        const clubId = String(project.id);
+        const teamIdsUnderClub = new Set(
+          (teams || [])
+            .filter((t: any) => getParentProjectId(t) === clubId)
+            .map((t: any) => String(t?.id || ''))
+            .filter(Boolean)
+        );
+
+        const filteredSeasons = (orgPeriods || [])
+          .filter(isSeasonPeriod)
+          .filter((p: any) => {
+            const teamId = String(p?.project_id ?? p?.project?.id ?? '');
+            return teamIdsUnderClub.has(teamId);
+          });
+
         setSeasons(filteredSeasons);
       }
     } catch (e) {
@@ -705,22 +744,26 @@ export const ProjectDetailPage: React.FC = () => {
         const filteredCompetitions = (results || []).filter(isCompetitionPeriod);
         setCompetitions(filteredCompetitions);
       } else {
-        // For clubs: fetch all periods for all child teams
-        const teams = await ensureChildTeamsLoaded();
-        const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
+        const [teams, orgPeriods] = await Promise.all([
+          fetchOrgTeamsForPeriodFiltering(),
+          fetchOrgPeriodsForFiltering(),
+        ]);
 
-        // Fetch in parallel
-        const fetches = teamIds.map(async (teamId) => {
-          const params = new URLSearchParams();
-          params.set('project_id', String(teamId));
-          params.set('page_size', '100');
-          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
-          return await fetchAllPages<any>(url, { credentials: 'include' });
-        });
+        const clubId = String(project.id);
+        const teamIdsUnderClub = new Set(
+          (teams || [])
+            .filter((t: any) => getParentProjectId(t) === clubId)
+            .map((t: any) => String(t?.id || ''))
+            .filter(Boolean)
+        );
 
-        const pages = await Promise.all(fetches);
-        const combined = mergeUniqueById((pages || []).flat());
-        const filteredCompetitions = combined.filter(isCompetitionPeriod);
+        const filteredCompetitions = (orgPeriods || [])
+          .filter(isCompetitionPeriod)
+          .filter((p: any) => {
+            const teamId = String(p?.project_id ?? p?.project?.id ?? '');
+            return teamIdsUnderClub.has(teamId);
+          });
+
         setCompetitions(filteredCompetitions);
       }
     } catch (e) {
