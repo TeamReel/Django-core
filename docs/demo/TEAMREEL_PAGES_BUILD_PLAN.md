@@ -170,24 +170,34 @@ Uit het business plan: hybride model met **abonnement (per team of club)** + **c
 **Richting (huidige intentie):**
 - Balance/credits/transactions primair op **teamniveau**.
 - License primair op **teamniveau** (later uitbreidbaar naar club of user).
+- Credits worden gebruikt voor **content generatie**; we houden daarom ook **usage/content output** bij.
 
 **UX-plaatsing (voor later, maar nu al rekening mee houden):**
 - Team detail krijgt een tab **Billing** of **Credits** met:
   - current balance
   - transactions/usage
-  - license status (active/expired/tier)
+  - license status (tier/limits/renewal)
+- Team detail krijgt een tab **Content / Gallery**:
+  - overzicht van gemaakte content (thumbnails/cards)
+  - filters (type, periode, wedstrijd)
+  - “usage counters”: #generations, credits spent
 - Federation/Club niveau toont hoog-over totals + links.
 
-**Open vragen (Billing model) – graag jouw keuzes:**
-1) Is “credits balance” één shared pot per team, of per seizoen/competition?
-2) Wat is de minimale license info die je in de demo wil tonen?
-  - (A) alleen status + einddatum
-  - (B) tier + limits + renewal
-3) Transactions: wil je één unified ledger (credits + purchases + usage) of aparte tabellen?
-4) Welke plek is leidend voor aankopen/top-ups in de UI?
-  - (A) Team detail (Billing)
-  - (B) Centrale `/credits` pagina
-  - (C) Allebei (maar dan één is read-only en de ander beheer)
+**Besluiten (Billing model):**
+1) Credits/balance = **shared pot per team** (voor content generatie).
+2) License info in demo = **Optie B** (tier + limits + renewal).
+3) Transactions = **zoals de huidige `/credits` pagina**, maar in detail pages altijd **context-geborgd** (org/club/team scoped en dus automatisch gefilterd).
+4) Aankopen/top-ups leidend = **Optie B**: centrale **`/credits`** pagina.
+
+**Implicatie voor Organisation detail (herbruikbaarheid):**
+- Organisation detail moet in de Governance/Operations/Billing-achtige stukken altijd “scoped summaries” bieden (totals + links).
+- Dezelfde secties moeten later 1-op-1 herbruikbaar zijn op **Club detail** en **Team detail** (met alleen scope/filter anders).
+
+**Extra requirement (Content):**
+- Omdat credits gekoppeld zijn aan content generatie, moet er per team (en indirect per organisation) zichtbaar zijn:
+  - hoeveel content is gemaakt
+  - een mini-gallery / content library entrypoint
+  - usage events (credits spent) gekoppeld aan content items
 
 ---
 
