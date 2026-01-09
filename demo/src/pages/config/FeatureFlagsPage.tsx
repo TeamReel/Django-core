@@ -50,6 +50,9 @@ export const FeatureFlagsPage: React.FC = () => {
   const navigate = useNavigate();
   const { context, organisations, switchContext } = useContextSwitcher();
   const { user } = useAuth();
+  const debugLog = (...args: unknown[]) => {
+    if (import.meta.env.DEV) console.log(...args);
+  };
   const [flags, setFlags] = useState<(FeatureFlag | ApiFeatureFlag)[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -80,7 +83,7 @@ export const FeatureFlagsPage: React.FC = () => {
 
   // Custom handler to switch organisation without page reload
   const handleOrganisationSwitch = async (option: BreadcrumbSwitcherOption) => {
-    console.log('[FeatureFlagsPage] Switching to org:', option.label, option.id);
+    debugLog('[FeatureFlagsPage] Switching to org:', option.label, option.id);
 
     // SIMPLIFIED APPROACH FOR NON-ORG-SCOPED ROUTES:
     // The Feature Flags page is at /config/feature-flags (not org-scoped in the URL)
@@ -130,17 +133,17 @@ export const FeatureFlagsPage: React.FC = () => {
 
           // Safety check: Non-superadmins cannot fetch global flags
           if (!isSuperadmin && !targetOrgId) {
-             console.log('[FeatureFlagsPage] Skipping fetch: Non-superadmin cannot fetch global flags');
+             debugLog('[FeatureFlagsPage] Skipping fetch: Non-superadmin cannot fetch global flags');
              return;
           }
 
           // Skip fetch if in org mode but no org selected (avoids 403 on global fetch)
           if (editMode === 'org' && !targetOrgId) {
-            console.log('[FeatureFlagsPage] Skipping fetch: Org mode but no org selected');
+            debugLog('[FeatureFlagsPage] Skipping fetch: Org mode but no org selected');
             return;
           }
 
-          console.log('[FeatureFlagsPage] Fetching flags from API for org:', targetOrgId);
+          debugLog('[FeatureFlagsPage] Fetching flags from API for org:', targetOrgId);
           const apiFlags = await fetchFlags(targetOrgId);
           setFlags(apiFlags);
         } catch (err: any) {
@@ -154,7 +157,7 @@ export const FeatureFlagsPage: React.FC = () => {
           }
 
           // Only fallback if 404 (endpoint missing) or other network errors
-          console.log('Falling back to local storage due to non-auth error');
+          debugLog('Falling back to local storage due to non-auth error');
           setUseApi(false);
           const targetOrgId = editMode === 'org' ? currentOrgId : null;
           const resolvedFlags = getAllFlagsWithResolution(targetOrgId);
@@ -166,12 +169,12 @@ export const FeatureFlagsPage: React.FC = () => {
 
         // Safety check: Non-superadmins cannot fetch global flags
         if (!isSuperadmin && !targetOrgId) {
-          console.log('[FeatureFlagsPage] Skipping storage fetch: Non-superadmin cannot fetch global flags');
+          debugLog('[FeatureFlagsPage] Skipping storage fetch: Non-superadmin cannot fetch global flags');
           return;
         }
 
         const resolvedFlags = getAllFlagsWithResolution(targetOrgId);
-        console.log('[FeatureFlagsPage] Loaded flags from storage for org:', targetOrgId, 'Count:', resolvedFlags.length);
+        debugLog('[FeatureFlagsPage] Loaded flags from storage for org:', targetOrgId, 'Count:', resolvedFlags.length);
         setFlags(resolvedFlags);
       }
     };
@@ -180,7 +183,7 @@ export const FeatureFlagsPage: React.FC = () => {
 
     // Listen for storage changes (cross-tab or same-tab via custom event)
     const handleStorageChange = (e: Event) => {
-      console.log('[FeatureFlagsPage] Storage event received:', e.type);
+      debugLog('[FeatureFlagsPage] Storage event received:', e.type);
       // Use setTimeout to ensure state is updated after storage write completes
       setTimeout(() => {
         loadFlags();
@@ -210,14 +213,14 @@ export const FeatureFlagsPage: React.FC = () => {
   // Toggle flag (tenant-aware)
   const handleToggleFlag = async (flag: FeatureFlag | ApiFeatureFlag) => {
     if (updating) {
-      console.log('[FeatureFlagsPage] Already updating, ignoring click');
+      debugLog('[FeatureFlagsPage] Already updating, ignoring click');
       return;
     }
 
     const currentState = flag.enabled;
     const newState = !currentState;
 
-    console.log('[FeatureFlagsPage] handleToggleFlag called:', {
+    debugLog('[FeatureFlagsPage] handleToggleFlag called:', {
       flagKey: flag.key,
       currentState,
       newState,
@@ -233,30 +236,30 @@ export const FeatureFlagsPage: React.FC = () => {
       try {
         if (editMode === 'global') {
            // Superadmin toggles global default
-           console.log('[FeatureFlagsPage] API: Updating global flag:', apiFlag.global_id, newState);
+           debugLog('[FeatureFlagsPage] API: Updating global flag:', apiFlag.global_id, newState);
            await updateGlobalFlag(apiFlag.global_id, newState);
         } else if (currentOrgId) {
            // Org Override or standalone org flag
            if ((apiFlag.resolutionSource === 'override' || apiFlag.resolutionSource === 'organisation') && apiFlag.org_override_id) {
-             console.log('[FeatureFlagsPage] API: Updating org flag:', apiFlag.org_override_id, newState);
+             debugLog('[FeatureFlagsPage] API: Updating org flag:', apiFlag.org_override_id, newState);
              await updateOrgOverride(apiFlag.org_override_id, newState);
            } else {
              // Create new override
-             console.log('[FeatureFlagsPage] API: Creating org override:', currentOrgId, apiFlag.key, newState);
+             debugLog('[FeatureFlagsPage] API: Creating org override:', currentOrgId, apiFlag.key, newState);
              await createOrgOverride(currentOrgId, apiFlag.key, newState);
            }
         }
 
         // Reload flags to reflect changes
         const targetOrgId = editMode === 'org' ? currentOrgId : null;
-        console.log('[FeatureFlagsPage] Reloading flags after update. editMode:', editMode, 'targetOrgId:', targetOrgId);
+        debugLog('[FeatureFlagsPage] Reloading flags after update. editMode:', editMode, 'targetOrgId:', targetOrgId);
         const apiFlags = await fetchFlags(targetOrgId);
-        console.log('[FeatureFlagsPage] Reloaded flags:', apiFlags);
+        debugLog('[FeatureFlagsPage] Reloaded flags:', apiFlags);
         setFlags(apiFlags);
 
         // Trigger featureFlagsChanged event so other components (like theme toggle) can react
         window.dispatchEvent(new CustomEvent('featureFlagsChanged'));
-        console.log('[FeatureFlagsPage] Successfully updated flag and reloaded data');
+        debugLog('[FeatureFlagsPage] Successfully updated flag and reloaded data');
       } catch (err) {
         console.error('Failed to toggle flag via API:', err);
         alert('Failed to update flag. See console for details.');
@@ -271,19 +274,19 @@ export const FeatureFlagsPage: React.FC = () => {
     if (isSuperadmin) {
       if (editMode === 'global') {
         // Superadmin toggles global default
-        console.log('[FeatureFlagsPage] Setting global flag:', flag.key, newState);
+        debugLog('[FeatureFlagsPage] Setting global flag:', flag.key, newState);
         setGlobalFlag(flag.key, newState);
       } else if (currentOrgId) {
         // Superadmin toggles org provisioning
         // If we are in org mode, the toggle represents the PROVISIONING status
         // So we toggle the provisioned state, not the enabled state directly
         const newProvisionedState = !isProvisioned;
-        console.log('[FeatureFlagsPage] Setting org provisioning (as superadmin):', currentOrgId, flag.key, newProvisionedState);
+        debugLog('[FeatureFlagsPage] Setting org provisioning (as superadmin):', currentOrgId, flag.key, newProvisionedState);
         setOrgProvisioning(currentOrgId, flag.key, newProvisionedState);
       }
     } else if (currentOrgId) {
       // Org Admin toggles org-specific override
-      console.log('[FeatureFlagsPage] Setting org flag:', currentOrgId, flag.key, newState);
+      debugLog('[FeatureFlagsPage] Setting org flag:', currentOrgId, flag.key, newState);
       setOrgFlag(currentOrgId, flag.key, newState);
     } else {
       console.warn('[FeatureFlagsPage] Cannot toggle flag: not superadmin and no currentOrgId');
@@ -301,7 +304,7 @@ export const FeatureFlagsPage: React.FC = () => {
       const apiFlag = flag as ApiFeatureFlag;
       if (apiFlag.org_override_id) {
         try {
-          console.log('[FeatureFlagsPage] API: Deleting org override:', apiFlag.org_override_id);
+          debugLog('[FeatureFlagsPage] API: Deleting org override:', apiFlag.org_override_id);
           await deleteOrgOverride(apiFlag.org_override_id);
           // Reload flags
           const targetOrgId = editMode === 'org' ? currentOrgId : null;

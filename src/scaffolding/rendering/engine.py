@@ -50,6 +50,7 @@ def create_jinja_env(template_dir: Path) -> Environment:
         undefined=StrictUndefined,  # Fail on undefined variables
         trim_blocks=True,  # Remove first newline after block
         lstrip_blocks=True,  # Strip leading spaces before block
+        keep_trailing_newline=True,  # Preserve final newline for golden-file stability
     )
 
     # Add custom filters for naming conventions
@@ -113,7 +114,7 @@ class TemplateRenderer:
     - Error handling with line numbers
     """
 
-    def __init__(self, template_dir: Path, variables: Dict[str, Any]):
+    def __init__(self, template_dir: Path | None = None, variables: Dict[str, Any] | None = None):
         """
         Initialize template renderer.
 
@@ -122,40 +123,42 @@ class TemplateRenderer:
             variables: User-provided variables for substitution
         """
         self.template_dir = template_dir
-        self.variables = self._merge_with_builtin_variables(variables)
-        self.env = create_jinja_env(template_dir)
+        self.variables = self._merge_with_builtin_variables(variables or {})
+        self.env = self._create_env(template_dir)
 
-    def render(self, template_file: str) -> str:
-        """
-        Render a single template file with variables.
+    def render(self, template: str, variables: Dict[str, Any] | None = None) -> str:
+        """Render a template.
 
-        Args:
-            template_file: Relative path to template file (e.g., 'models.py.j2')
-
-        Returns:
-            Rendered content as string
-
-        Raises:
-            TemplateError: If rendering fails (syntax error, undefined variable, etc.)
+        Supports two modes (for backward compatibility with tests):
+        - File mode: when initialized with template_dir and variables is None, `template` is a relative file path.
+        - String mode: when variables is provided OR template_dir is None, `template` is a raw Jinja2 template string.
         """
         try:
-            template = self.env.get_template(template_file)
-            return template.render(**self.variables)
+            if variables is None and self.template_dir is not None:
+                # File mode: normalize Windows separators for Jinja2
+                template_file = template.replace("\\", "/")
+                jinja_template = self.env.get_template(template_file)
+                return jinja_template.render(**self.variables)
+
+            # String mode
+            merged_vars = self._merge_with_builtin_variables(variables or {})
+            jinja_template = self.env.from_string(template)
+            return jinja_template.render(**merged_vars)
         except TemplateSyntaxError as e:
             error_msg = format_user_error(
-                f"Template syntax error in {template_file}, line {e.lineno}: {e.message}",
+                f"Template syntax error in {template}, line {e.lineno}: {e.message}",
                 "Check template syntax, ensure all blocks are closed",
             )
             raise TemplateError(error_msg) from e
         except UndefinedError as e:
             error_msg = format_user_error(
-                f"Undefined variable in {template_file}: {e}",
+                f"Undefined variable in {template}: {e}",
                 "Check variable names match CLI inputs or built-in variables",
             )
             raise TemplateError(error_msg) from e
         except TemplateError as e:
             # Re-raise other template errors with context
-            raise TemplateError(f"Failed to render {template_file}: {e}") from e
+            raise TemplateError(f"Failed to render {template}: {e}") from e
 
     def render_directory(self, output_dir: Path) -> List[Path]:
         """
@@ -195,7 +198,7 @@ class TemplateRenderer:
 
                 # Render template
                 try:
-                    content = self.render(str(rel_path))
+                    content = self.render(rel_path.as_posix())
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     output_path.write_text(content, encoding="utf-8")
                     created_files.append(output_path)
@@ -257,3 +260,22 @@ class TemplateRenderer:
         merged = get_builtin_variables()
         merged.update(user_vars)
         return merged
+
+    def _create_env(self, template_dir: Path | None) -> Environment:
+        if template_dir is not None:
+            return create_jinja_env(template_dir)
+
+        # In-memory env (no loader), used by placeholder/golden tests
+        env = Environment(
+            autoescape=False,
+            undefined=StrictUndefined,
+            trim_blocks=True,
+            lstrip_blocks=True,
+            keep_trailing_newline=True,
+        )
+        env.filters["snake_case"] = lambda s: (s.lower().replace("-", "_").replace(" ", "_"))
+        env.filters["pascal_case"] = lambda s: "".join(
+            word.capitalize() for word in s.replace("_", " ").replace("-", " ").split()
+        )
+        env.filters["kebab_case"] = lambda s: (s.lower().replace("_", "-").replace(" ", "-"))
+        return env

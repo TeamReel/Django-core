@@ -96,6 +96,8 @@ class CodeGenerator:
         staging_dir = self._create_staging_dir(name)
         logger.debug(f"Created staging directory: {staging_dir}")
 
+        moved_to_target = False
+
         try:
             # Build files in staging (T027)
             created_files = self._build_files(staging_dir)
@@ -103,17 +105,28 @@ class CodeGenerator:
 
             # Atomic move staging → target (T028)
             self._atomic_move(staging_dir, target_dir)
+            moved_to_target = True
             logger.info(f"Generated app '{name}' at {target_dir}")
 
             # Validate generated code if requested (WP05 integration)
             if validate:
-                self._validate_generated_code(target_dir, project_root, force)
+                # Stash context so tests can monkeypatch _validate_generated_code(target_dir)
+                self._validation_project_root = project_root
+                self._validation_force = force
+                # Backward compatible with tests that monkeypatch this method
+                self._validate_generated_code(target_dir)
 
-        except Exception:
+        except Exception as exc:
             # Rollback: cleanup staging on any failure (T029)
             if staging_dir.exists():
                 shutil.rmtree(staging_dir, ignore_errors=True)
                 logger.debug(f"Rolled back: removed staging directory {staging_dir}")
+
+            # If we already moved into place, remove target as well
+            # for non-constitutional failures (ValidationFailure keeps files for inspection).
+            if moved_to_target and target_dir.exists() and not isinstance(exc, ValidationFailure):
+                shutil.rmtree(target_dir, ignore_errors=True)
+                logger.debug(f"Rolled back: removed target directory {target_dir}")
             raise
 
     def generate_project(
@@ -222,7 +235,10 @@ class CodeGenerator:
             raise OSError(f"Atomic move failed: {target_dir} not created after move")
 
     def _validate_generated_code(
-        self, target_dir: Path, project_root: Path, force: bool = False
+        self,
+        target_dir: Path,
+        project_root: Optional[Path] = None,
+        force: bool = False,
     ) -> None:
         """
         Validate generated code using check_policy.py (WP05 integration).
@@ -241,6 +257,15 @@ class CodeGenerator:
             FileNotFoundError: If check_policy.py not found
             TimeoutError: If validation times out
         """
+        effective_force = getattr(self, "_validation_force", force)
+
+        if project_root is None:
+            project_root = getattr(self, "_validation_project_root", None)
+
+        if project_root is None:
+            # target_dir is usually <project_root>/src/<app_name>
+            project_root = target_dir.parent.parent
+
         check_policy_path = project_root / "check_policy.py"
 
         if not check_policy_path.exists():
@@ -264,7 +289,7 @@ class CodeGenerator:
             error_msg = format_validation_report(report)
             click.echo(error_msg, err=True)
 
-            if force:
+            if effective_force:
                 # Warning but continue
                 click.secho(
                     "\n⚠ Validation failed but continuing due to --force flag",
@@ -286,7 +311,7 @@ class CodeGenerator:
 
         except Exception as e:
             logger.error(f"Unexpected error during validation: {e}")
-            if force:
+            if effective_force:
                 click.secho(
                     f"\n⚠ Validation error ({e}) but continuing due to --force flag",
                     fg="yellow",
@@ -311,16 +336,19 @@ class CodeGenerator:
         Raises:
             ValidationError: If name is invalid
         """
+        if not name:
+            raise ValidationError("Invalid app name: cannot be empty")
+
+        # Check not starting with number (must run before snake_case regex)
+        if name[0].isdigit():
+            raise ValidationError(f"Invalid app name '{name}': cannot start with number")
+
         # Check snake_case pattern
         if not re.match(r"^[a-z][a-z0-9_]*$", name):
             raise ValidationError(
                 f"Invalid app name '{name}': must be lowercase with underscores "
                 "only (snake_case). Examples: payments, user_auth, api_v2"
             )
-
-        # Check not starting with number
-        if name[0].isdigit():
-            raise ValidationError(f"Invalid app name '{name}': cannot start with number")
 
         # Check not Python keyword
         if keyword.iskeyword(name):

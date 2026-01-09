@@ -13,6 +13,9 @@ import pytest
 from security_baseline.rules.registry import SecurityRuleRegistry
 
 
+FAR_FUTURE_EXPIRES = "2099-12-31"
+
+
 @pytest.fixture
 def registry():
     """Fresh registry instance for each test."""
@@ -40,7 +43,7 @@ class TestExemptionLoading:
             {
                 "rule_id": "SEC010-HSTS-HEADER",
                 "justification": "Staging HTTPS configuration in progress",
-                "expires": "2025-12-31",
+                "expires": FAR_FUTURE_EXPIRES,
                 "environments": ["staging"],
                 "approved_by": "security-team",
                 "approved_date": "2025-01-15",
@@ -65,7 +68,7 @@ class TestExemptionLoading:
                 {
                     "rule_id": "SEC001-DEBUG-MODE",
                     # Missing justification
-                    "expires": "2025-12-31",
+                    "expires": FAR_FUTURE_EXPIRES,
                 },
                 {
                     "rule_id": "SEC002-SECRET-KEY",
@@ -75,7 +78,7 @@ class TestExemptionLoading:
                 {
                     # Missing rule_id
                     "justification": "Test reason",
-                    "expires": "2025-12-31",
+                    "expires": FAR_FUTURE_EXPIRES,
                 },
             ]
 
@@ -94,7 +97,7 @@ class TestExemptionLoading:
             {
                 "rule_id": "SEC001-DEBUG-MODE",
                 "justification": "Production emergency patch",
-                "expires": "2025-12-31",
+                "expires": FAR_FUTURE_EXPIRES,
                 "environments": ["production"],  # Only for production
             }
         ]
@@ -112,7 +115,7 @@ class TestExemptionLoading:
             {
                 "rule_id": "SEC001-DEBUG-MODE",
                 "justification": "Global exemption",
-                "expires": "2025-12-31",
+                "expires": FAR_FUTURE_EXPIRES,
                 # No 'environments' key - applies to all
             }
         ]
@@ -217,7 +220,7 @@ class TestAuditLogging:
                 {
                     "rule_id": "SEC001-DEBUG-MODE",
                     "justification": "Development environment",
-                    "expires": "2025-12-31",
+                    "expires": FAR_FUTURE_EXPIRES,
                 }
             ]
 
@@ -226,7 +229,7 @@ class TestAuditLogging:
         # Should log the exemption loading
         assert "Loaded exemption for SEC001-DEBUG-MODE" in caplog.text
         assert "Development environment" in caplog.text
-        assert "2025-12-31" in caplog.text
+        assert FAR_FUTURE_EXPIRES in caplog.text
 
     def test_exemption_check_logged(self, registry):
         """Test that exemption application can be audited."""
@@ -234,7 +237,7 @@ class TestAuditLogging:
             {
                 "rule_id": "SEC001-DEBUG-MODE",
                 "justification": "Development exemption",
-                "expires": "2025-12-31",
+                "expires": FAR_FUTURE_EXPIRES,
             }
         ]
 
@@ -252,12 +255,12 @@ class TestAuditLogging:
             {
                 "rule_id": "SEC001-DEBUG-MODE",
                 "justification": "Dev exemption",
-                "expires": "2025-12-31",
+                "expires": FAR_FUTURE_EXPIRES,
             },
             {
                 "rule_id": "SEC004-SESSION-COOKIE-SECURE",
                 "justification": "HTTP localhost",
-                "expires": "2025-12-31",
+                "expires": FAR_FUTURE_EXPIRES,
             },
         ]
 
@@ -279,7 +282,7 @@ class TestExemptionIntegration:
             {
                 "rule_id": "SEC001-DEBUG-MODE",
                 "justification": "Testing exemption",
-                "expires": "2025-12-31",
+                "expires": FAR_FUTURE_EXPIRES,
             }
         ]
 
@@ -296,7 +299,7 @@ class TestExemptionIntegration:
             {
                 "rule_id": "SEC001-DEBUG-MODE",
                 "justification": "Only this one exempt",
-                "expires": "2025-12-31",
+                "expires": FAR_FUTURE_EXPIRES,
             }
         ]
 

@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import AppShell from '../components/AppShell';
 
+const debugLog = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.log(...args);
+};
+
 interface Notification {
   id: string;
   type: {
@@ -38,8 +42,8 @@ export default function NotificationsPage() {
       }
 
       const data = await response.json();
-      console.log('Fetched notifications:', data);
-      console.log('Array length:', (data.results || data).length);
+      debugLog('Fetched notifications:', data);
+      debugLog('Array length:', (data.results || data).length);
       setNotifications(data.results || data);
       setError(null);
     } catch (err) {

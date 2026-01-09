@@ -28,6 +28,7 @@ addopts = """
     -v
     --tb=short
     --strict-markers
+    --import-mode=importlib
     --reuse-db
     --cov=src
     --cov-report=term-missing:skip-covered

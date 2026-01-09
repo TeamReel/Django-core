@@ -10,6 +10,9 @@ class UserManager(BaseUserManager):
 
     def create_user(self, email: str, password: Optional[str] = None, **extra_fields):
         """Create and save a regular user with email and password."""
+        # Backwards compatibility: older tests/code may still pass `username=`.
+        # Our User model is email-as-username and has no `username` field.
+        extra_fields.pop("username", None)
         if not email:
             raise ValueError("Users must have an email address")
 
@@ -21,6 +24,8 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, email: str, password: Optional[str] = None, **extra_fields):
         """Create and save a superuser with email and password."""
+        # Backwards compatibility: ignore legacy `username` kwarg.
+        extra_fields.pop("username", None)
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)

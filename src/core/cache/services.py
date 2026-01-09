@@ -63,7 +63,10 @@ class CacheService:
         """
 
         def _get_from_cache() -> Any:  # noqa: ANN401
-            return self.cache.get(key, default)
+            value = self.cache.get(key, default)
+            # Treat None as a cache miss for consistent semantics (and to
+            # behave sensibly with mocked cache backends).
+            return default if value is None else value
 
         def _fallback() -> Any:  # noqa: ANN401
             logger.warning(

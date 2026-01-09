@@ -549,7 +549,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         ):
             return
 
-        raise PermissionDenied("You do not have permission to manage project members.")
+        raise PermissionDenied("Only project admins can manage project members.")
 
     def _check_can_view_members(self, project: Project) -> None:
         user = self.request.user
@@ -563,9 +563,8 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
             deleted_at__isnull=True,
         ).exists()
 
-        is_team_project = project.parent_project_id is not None
-
-        if is_project_member and is_team_project:
+        # Any active project member can view the member list.
+        if is_project_member:
             return
 
         from permissions.evaluator import check_permission
@@ -905,7 +904,7 @@ class ProjectInviteViewSet(viewsets.ModelViewSet):
         ):
             return True
 
-        raise PermissionDenied("You do not have permission to manage invitations for this project.")
+        raise PermissionDenied("Only project admins can manage invitations for this project.")
 
     def list(self, request, project_pk=None):
         """List pending invitations for a project."""

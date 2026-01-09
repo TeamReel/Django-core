@@ -14,6 +14,10 @@
 
 const STORAGE_KEY = 'feature_flags_tenant_aware';
 
+const debugLog = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.log(...args);
+};
+
 export interface FeatureFlag {
   id: string;
   name: string;
@@ -88,7 +92,7 @@ export function saveFlagStorage(storage: FlagStorage): void {
   try {
     const jsonData = JSON.stringify(storage);
     localStorage.setItem(STORAGE_KEY, jsonData);
-    console.log('[FeatureFlags] Storage saved:', storage);
+    debugLog('[FeatureFlags] Storage saved:', storage);
     // Dispatch event for other components to react (same tab)
     window.dispatchEvent(new CustomEvent('featureFlagsChanged'));
     // For cross-tab updates, the 'storage' event will fire automatically
@@ -208,7 +212,7 @@ export function hasOrgOverride(orgId: string | null, flagKey: string): boolean {
  */
 export function getAllFlagsWithResolution(orgId: string | null): FeatureFlag[] {
   const storage = getFlagStorage();
-  console.log('[FeatureFlags] Resolving flags for orgId:', orgId, 'Storage:', storage);
+  debugLog('[FeatureFlags] Resolving flags for orgId:', orgId, 'Storage:', storage);
 
   return DEFAULT_FLAGS.map(flag => {
     // Determine provisioning status
@@ -217,9 +221,9 @@ export function getAllFlagsWithResolution(orgId: string | null): FeatureFlag[] {
     if (orgId) {
       if (storage.provisioning && storage.provisioning[orgId] && storage.provisioning[orgId][flag.key] !== undefined) {
         isProvisioned = storage.provisioning[orgId][flag.key];
-        console.log(`[FeatureFlags] Flag ${flag.key} provisioning for org ${orgId}:`, isProvisioned);
+        debugLog(`[FeatureFlags] Flag ${flag.key} provisioning for org ${orgId}:`, isProvisioned);
       } else {
-        console.log(`[FeatureFlags] Flag ${flag.key} has no explicit provisioning for org ${orgId}, defaulting to true`);
+        debugLog(`[FeatureFlags] Flag ${flag.key} has no explicit provisioning for org ${orgId}, defaulting to true`);
       }
     }
 

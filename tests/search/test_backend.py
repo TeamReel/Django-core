@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+from django.db import connection
 from search.backend.postgres import PostgresSearchBackend
 from search.utils import sanitize_query
 
@@ -42,13 +43,19 @@ class TestSearchBackend:
 
         # Verify
         mock_entry_model.objects.all.assert_called_once()
-        mock_query.assert_called_with("test query")
+        # Backend builds a prefix query and uses raw search_type for partial matching
+        mock_query.assert_called_with("test:* & query:*", search_type="raw")
         # Should filter by search vector
         assert mock_qs.filter.call_count >= 1
-        # Should annotate rank
-        mock_qs.annotate.assert_called_once()
-        # Should order by rank
-        mock_qs.order_by.assert_called_with("-rank")
+        if connection.vendor == "postgresql":
+            # Should annotate rank
+            mock_qs.annotate.assert_called_once()
+            # Should order by rank
+            mock_qs.order_by.assert_called_with("-rank")
+        else:
+            # SQLite fallback does not annotate rank
+            mock_qs.annotate.assert_not_called()
+            mock_qs.order_by.assert_called_with("-last_updated")
 
     @patch("search.backend.postgres.SearchEntry")
     @patch("search.backend.postgres.SearchQuery")

@@ -221,8 +221,13 @@ class InvitationService:
         if invitation.status != ProjectInvite.Status.PENDING:
             raise ValueError(f"Cannot resend invitation with status {invitation.status}.")
 
-        # Extend expiry by 7 days
-        invitation.expires_at = timezone.now() + timezone.timedelta(days=7)
+        # Extend expiry by 7 days beyond the later of (current expiry, now)
+        base = invitation.expires_at
+        now = timezone.now()
+        if base is None or base < now:
+            base = now
+
+        invitation.expires_at = base + timezone.timedelta(days=7)
         invitation.save()
 
         # Send email again

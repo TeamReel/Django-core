@@ -91,13 +91,11 @@ class ProjectMembership(models.Model):
         app_label = "projects"
         db_table = "projects_membership"
         ordering = ["-created_at"]
-        # unique_together removed - using UniqueConstraint with condition instead
-        # This allows multiple memberships per (project, user) across different periods/roles
         constraints = [
             models.UniqueConstraint(
-                fields=["project", "user", "period", "role"],
+                fields=["project", "user"],
                 condition=models.Q(deleted_at__isnull=True),
-                name="unique_project_user_period_role",
+                name="unique_active_project_membership",
             )
         ]
         indexes = [

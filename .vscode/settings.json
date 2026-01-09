@@ -1,4 +1,5 @@
 {
+    "python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python.exe",
     "chat.promptFilesRecommendations": {
         "spec-kitty.constitution": true,
         "spec-kitty.specify": true,

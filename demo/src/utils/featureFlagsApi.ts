@@ -2,6 +2,10 @@ import { FeatureFlag } from './featureFlagStorage';
 
 const API_BASE = '/api/v1/settings/feature-flags';
 
+const debugLog = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.log(...args);
+};
+
 export interface ApiFeatureFlag extends FeatureFlag {
   global_id: string;
   org_override_id: string | null;
@@ -75,11 +79,11 @@ export async function createOrgOverride(orgId: string, key: string, enabled: boo
 }
 
 export async function updateOrgOverride(overrideId: string, enabled: boolean): Promise<void> {
-  console.log('[featureFlagsApi] updateOrgOverride called:', { overrideId, enabled });
+  debugLog('[featureFlagsApi] updateOrgOverride called:', { overrideId, enabled });
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
   const url = `${baseUrl}${API_BASE}/${overrideId}/`;
-  console.log('[featureFlagsApi] Making PATCH request to:', url);
+  debugLog('[featureFlagsApi] Making PATCH request to:', url);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
@@ -102,7 +106,7 @@ export async function updateOrgOverride(overrideId: string, enabled: boolean): P
 
     clearTimeout(timeoutId);
 
-    console.log('[featureFlagsApi] updateOrgOverride response:', {
+    debugLog('[featureFlagsApi] updateOrgOverride response:', {
       ok: response.ok,
       status: response.status,
       statusText: response.statusText
@@ -114,7 +118,7 @@ export async function updateOrgOverride(overrideId: string, enabled: boolean): P
       throw new Error(`Failed to update org override: ${response.statusText} - ${errorText}`);
     }
 
-    console.log('[featureFlagsApi] updateOrgOverride completed successfully');
+    debugLog('[featureFlagsApi] updateOrgOverride completed successfully');
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === 'AbortError') {
@@ -186,6 +190,6 @@ function getCsrfToken(): string {
       }
     }
   }
-  console.log('[featureFlagsApi] CSRF token:', cookieValue ? `${cookieValue.substring(0, 10)}...` : 'NOT FOUND');
+  debugLog('[featureFlagsApi] CSRF token:', cookieValue ? `${cookieValue.substring(0, 10)}...` : 'NOT FOUND');
   return cookieValue;
 }

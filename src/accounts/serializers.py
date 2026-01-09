@@ -74,101 +74,19 @@ class UserListSerializer(serializers.ModelSerializer):
         ]
 
     def get_role(self, obj):
+        """Return the canonical platform role slug.
+
+        API contracts and tests expect this to be one of: "superadmin", "admin", "user".
+        Organization/project-specific roles are exposed via the organisations/projects fields.
         """
-        Get user's highest role from RBAC system (primary) with fallback to calculated role.
 
-        Role hierarchy (highest to lowest):
-        1. Superadmin (Django superuser - all organisations)
-        2. Land Admin (Organisation admin - e.g., KNVB/DFB admin)
-        3. Club Admin (Project parent admin - e.g., Ajax club)
-        4. Team Admin (Project child admin - e.g., Ajax 1 team)
-        5. Team Staff (project staff/editor role)
-        6. Team Member (project player role)
-        7. Viewer (project viewer role)
-        8. User (default)
-        """
-        # 0. ALWAYS check superuser first (highest privilege)
-        if obj.is_superuser:
-            return "Superadmin"
+        if getattr(obj, "is_superuser", False):
+            return "superadmin"
 
-        # 1. Check RBAC RoleAssignment (primary source of truth)
-        try:
-            from permissions.models import RoleAssignment
+        if getattr(obj, "is_admin", False) or getattr(obj, "is_staff", False):
+            return "admin"
 
-            assignments = RoleAssignment.objects.filter(user=obj).select_related("role")
-            if assignments.exists():
-                # Return highest role based on hierarchy
-                role_priority = {
-                    "Land Admin": 1,
-                    "Club Admin": 2,
-                    "Team Admin": 3,
-                    "Team Staff": 4,
-                    "Team Member": 5,
-                    "Supporter": 6,
-                    "Viewer": 7,
-                }
-                highest = min(assignments, key=lambda ra: role_priority.get(ra.role.name, 999))
-                return highest.role.name
-        except (ImportError, Exception):
-            pass
-
-        # 2. Fallback to calculated role (backwards compatibility)
-
-        # Check Organisation-level memberships (Land Admin)
-        try:
-            from organisations.models import Membership
-
-            org_admin = Membership.objects.filter(user=obj, role="admin", is_active=True).exists()
-            if org_admin:
-                return "Land Admin"
-        except ImportError:
-            pass
-
-        # Check Project-level memberships (Club Admin/Team Admin/Staff/Member)
-        try:
-            from projects.models import ProjectMembership
-
-            project_memberships = (
-                ProjectMembership.objects.filter(user=obj)
-                .select_related("project")
-                .order_by("role")
-            )
-
-            highest_role = None
-            for pm in project_memberships:
-                if not pm.project:
-                    continue
-
-                # Check if it's a club-level project (no parent) with admin role
-                if pm.role == "admin" and not pm.project.parent_project:
-                    return "Club Admin"
-
-                # Check if it's a team-level project (has parent) with admin role
-                if pm.role == "admin" and pm.project.parent_project:
-                    if highest_role not in ["Club Admin"]:
-                        highest_role = "Team Admin"
-
-                # Staff/Editor role
-                elif pm.role in ["staff", "editor"] and highest_role not in [
-                    "Club Admin",
-                    "Team Admin",
-                ]:
-                    highest_role = "Team Staff"
-
-                # Player role
-                elif pm.role == "player" and not highest_role:
-                    highest_role = "Team Member"
-
-                # Viewer role (lowest, only assign if no other role)
-                elif pm.role == "viewer" and not highest_role:
-                    highest_role = "Viewer"
-
-            if highest_role:
-                return highest_role
-        except ImportError:
-            pass
-
-        return "User"
+        return "user"
 
     def get_organisations(self, obj):
         """Get user's organisations."""

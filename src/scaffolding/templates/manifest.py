@@ -24,10 +24,11 @@ class TemplateManifest:
     """
 
     name: str
-    description: str
-    variables: dict[str, dict[str, Any]]
-    files: list[Any]
-    template_dir: Path
+    description: str = ""
+    version: str = "1.0.0"
+    variables: dict[str, dict[str, Any]] = field(default_factory=dict)
+    files: list[Any] = field(default_factory=list)
+    template_dir: Path = field(default_factory=lambda: Path("."))
     extends: Optional[str] = None
     _source: str = field(default="unknown", repr=False)
 
@@ -58,6 +59,10 @@ class TemplateManifest:
         if missing:
             raise ValueError(f"Missing required fields: {', '.join(missing)}")
 
+        version = data.get("version", "1.0.0")
+        if version is not None and not isinstance(version, str):
+            raise ValueError(f"Field 'version' must be string, got {type(version).__name__}")
+
         # Validate field types
         if not isinstance(data["name"], str):
             raise ValueError(f"Field 'name' must be string, got {type(data['name']).__name__}")
@@ -79,6 +84,7 @@ class TemplateManifest:
 
         return cls(
             name=data["name"],
+            version=version or "1.0.0",
             description=data["description"],
             variables=data["variables"],
             files=data["files"],

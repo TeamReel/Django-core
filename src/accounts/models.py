@@ -44,6 +44,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.first_name if self.first_name else self.email
 
     @property
+    def username(self) -> str:
+        """Backwards-compatible username-like identifier.
+
+        The core User model is email-as-username and does not persist a separate
+        `username` field. Some legacy code/tests still reference `user.username`.
+        """
+        if not self.email:
+            return ""
+        return self.email.split("@", 1)[0]
+
+    @property
     def is_superadmin(self) -> bool:
         """Check if user is a superadmin (platform administrator)."""
         return self.is_superuser

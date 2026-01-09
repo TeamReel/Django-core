@@ -1,0 +1,44 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+
+# Build outputs
+dist
+build
+.vite
+
+# Development
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage
+.nyc_output
+playwright-report
+test-results
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Misc
+*.md
+!README.md

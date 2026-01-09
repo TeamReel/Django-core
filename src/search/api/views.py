@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
+from django.db import connection
 from django.contrib.postgres.search import SearchHeadline, SearchQuery
 
 from search.backend.postgres import PostgresSearchBackend
@@ -60,7 +61,8 @@ class SearchAPIView(APIView):
         # Ideally backend.search would return the query object or we re-parse it.
         # backend.search uses sanitize_query internally.
         clean_query = sanitize_query(query_string)
-        if clean_query:
+        # SearchHeadline is PostgreSQL-specific; on SQLite this will raise.
+        if clean_query and connection.vendor == "postgresql":
             # Reconstruct the prefix query for highlighting to match the search behavior
             terms = [term for term in clean_query.split() if term]
             if terms:

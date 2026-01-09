@@ -54,14 +54,33 @@ interface NotificationResponse {
 
 const navGroups: NavGroup[] = [
   {
-    id: 'app',
-    label: 'App',
+    id: 'home',
+    label: 'Home',
     items: [
+      { path: '/dashboard', label: 'Dashboard', description: 'Overview and quick actions', icon: '🏠' },
       { path: '/search', label: 'Search', description: 'Search users, organisations, and projects', icon: '🔎' },
+    ],
+  },
+  {
+    id: 'football',
+    label: 'Football',
+    items: [
       { path: '/organisations', label: 'Organisations (Bonds)', description: 'Federations and leagues', icon: '🏢' },
       { path: '/projects', label: 'Clubs & Teams', description: 'Browse clubs and their teams', icon: '⚽' },
-      { path: '/content', label: 'Content', description: 'Generated content library', icon: '🖼️' },
-      { path: '/studio/create', label: 'Create Content', description: 'AI Studio', icon: '✨' },
+    ],
+  },
+  {
+    id: 'content',
+    label: 'Content',
+    items: [
+      { path: '/content', label: 'Library', description: 'Generated content library', icon: '🖼️' },
+      { path: '/studio/create', label: 'Create', description: 'AI Studio', icon: '✨' },
+    ],
+  },
+  {
+    id: 'account',
+    label: 'Account',
+    items: [
       { path: '/notifications', label: 'Notifications', description: 'Inbox and updates', icon: '🔔' },
       { path: '/profile', label: 'Profile', description: 'Your profile', icon: '👤' },
     ],
@@ -72,21 +91,21 @@ const navGroups: NavGroup[] = [
     items: [
       { path: '/users', label: 'Users', description: 'Manage users and roles', icon: '👥' },
       { path: '/permissions', label: 'Permissions', description: 'Configure access control', icon: '🔐' },
-      { path: '/credits', label: 'Credits', description: 'Credit balances and transactions', icon: '💳' },
       { path: '/audit', label: 'Audit Log', description: 'Recorded audit events', icon: '📋' },
       { path: '/usage-events', label: 'Usage Events', description: 'Track usage and analytics', icon: '📈' },
+      { path: '/credits', label: 'Credits', description: 'Credit balances and transactions', icon: '💳' },
       { path: '/flags', label: 'Feature Flags', description: 'Tenant-aware feature flags', icon: '🚩' },
       { path: '/security', label: 'Security', description: 'Baseline checks and events', icon: '🔒' },
       { path: '/health', label: 'Health Status', description: 'System health and uptime', icon: '❤️' },
       { path: '/observability', label: 'Observability', description: 'Metrics and monitoring', icon: '📊' },
       { path: '/integration-status', label: 'Integration Status', description: 'Module integration overview', icon: '🔄' },
       { path: '/api-docs', label: 'API Docs', description: 'OpenAPI documentation', icon: '🔌' },
-      { path: '/demo/performance', label: 'Cache Performance', description: 'Redis cache metrics and controls', icon: '⚡' },
-      { path: '/constitution', label: 'Constitution', description: 'Core principles and rules', icon: '📜' },
       { path: '/docs', label: 'Docs', description: 'Documentation and guides', icon: '📚' },
       { path: '/tasks', label: 'Tasks', description: 'Background task management', icon: '✓' },
       { path: '/routing-logs', label: 'Routing Logs', description: 'Notification routing decisions', icon: '🔀' },
       { path: '/deployment', label: 'Deployment', description: 'Deploy and release guides', icon: '🚀' },
+      { path: '/demo/performance', label: 'Cache Performance', description: 'Redis cache metrics and controls', icon: '⚡' },
+      { path: '/constitution', label: 'Constitution', description: 'Core principles and rules', icon: '📜' },
       { path: '/design-system', label: 'Design System', description: 'UI components and tokens', icon: '🎨' },
       { path: '/auth-flows', label: 'Auth Flows', description: 'Login and signup demos', icon: '🔐' },
       { path: '/context', label: 'Context Switcher', description: 'Org and project selection', icon: '🔀' },
@@ -106,6 +125,9 @@ export default function TopNavbar() {
   const { signOut, loading: signOutLoading } = useSignOut();
   const { mode, setTheme } = useTheme();
   const { context } = useContextSwitcher();
+  const debugLog = (...args: unknown[]) => {
+    if (import.meta.env.DEV) console.log(...args);
+  };
   const themeToggleEnabled = useFeatureFlag('dark_mode', true); // Theme toggle feature flag (resolved with org overrides)
   const [themeToggleGlobalEnabled, setThemeToggleGlobalEnabled] = useState<boolean>(true); // Global flag value (for superadmins)
   const { isSystemAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
@@ -137,8 +159,6 @@ export default function TopNavbar() {
   const handleMouseEnterTrigger = useCallback((groupId: string) => {
     if (isTouchDevice) return; // Disable hover on touch devices
 
-    console.log('Mouse enter trigger:', groupId, 'isTouchDevice:', isTouchDevice);
-
     // Clear any pending close timer
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
@@ -152,24 +172,19 @@ export default function TopNavbar() {
   const handleMouseLeaveTrigger = useCallback((groupId: string) => {
     if (isTouchDevice) return;
 
-    console.log('Mouse leave trigger:', groupId);
-
     // If we are already hovering the dropdown (due to overlap), don't close
     if (isDropdownHoveredRef.current) {
-      console.log('Ignoring leave trigger because dropdown is hovered');
       return;
     }
 
     // Delay closing to allow moving to dropdown panel
     closeTimerRef.current = setTimeout(() => {
-      console.log('Closing dropdown after delay');
       setOpenDropdown(null);
     }, 300); // Increased from 200ms to 300ms
   }, [isTouchDevice]);
 
   const handleMouseEnterDropdown = useCallback((groupId: string) => {
     if (isTouchDevice) return;
-    console.log('Mouse enter dropdown panel:', groupId);
     isDropdownHoveredRef.current = true;
 
     // Cancel close timer when entering dropdown
@@ -181,7 +196,6 @@ export default function TopNavbar() {
 
   const handleMouseLeaveDropdown = useCallback((groupId: string) => {
     if (isTouchDevice) return;
-    console.log('Mouse leave dropdown panel:', groupId);
     isDropdownHoveredRef.current = false;
 
     // Close after delay when leaving dropdown
@@ -234,7 +248,7 @@ export default function TopNavbar() {
             const globalValue = themeFlag.global_value !== null && themeFlag.global_value !== undefined
               ? themeFlag.global_value
               : true; // Default to true if no global value found
-            console.log('[TopNavbar] Global dark_mode flag for superadmin:', globalValue, 'raw:', themeFlag);
+            debugLog('[TopNavbar] Global dark_mode flag for superadmin:', globalValue, 'raw:', themeFlag);
             setThemeToggleGlobalEnabled(globalValue);
           }
         }
@@ -247,7 +261,7 @@ export default function TopNavbar() {
 
     // Listen for feature flag changes
     const handleFlagChange = () => {
-      console.log('[TopNavbar] Feature flags changed, refetching global flag');
+      debugLog('[TopNavbar] Feature flags changed, refetching global flag');
       fetchGlobalFlag();
     };
 
@@ -269,19 +283,17 @@ export default function TopNavbar() {
   }, []);
 
   const handleLanguageChange = (lang: 'EN' | 'NL' | 'DE' | 'IT' | 'FR') => {
-    console.log('Language change clicked:', lang);
+    debugLog('Language change clicked:', lang);
     setLanguage(lang);
     localStorage.setItem('demo_language', lang);
     setLanguageMenuOpen(false);
     // Dispatch custom event for other components to listen
     window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
-    console.log('Language changed event dispatched');
+    debugLog('Language changed event dispatched');
   };
 
   const toggleTheme = () => {
-    console.log('Theme toggle clicked! Current mode:', mode);
     const newMode = mode === 'light' ? 'dark' : 'light';
-    console.log('Switching to:', newMode);
     setTheme({ mode: newMode });
   };
 
@@ -292,16 +304,14 @@ export default function TopNavbar() {
     const fetchUnreadCount = async () => {
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-        console.log('[TopNavbar] Fetching notifications from:', `${apiBaseUrl}/api/v1/user-notifications/`);
+        debugLog('[TopNavbar] Fetching notifications from:', `${apiBaseUrl}/api/v1/user-notifications/`);
         const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, {
           credentials: 'include',
         });
 
         if (response.ok) {
           const data: NotificationResponse = await response.json();
-          console.log('[TopNavbar] Notifications API response:', data);
-          console.log('[TopNavbar] data.results:', data.results);
-          console.log('[TopNavbar] data.data:', (data as any).data);
+          debugLog('[TopNavbar] Notifications API response:', data);
 
           // Handle B13 envelope structure
           const notifications = data.results
@@ -309,12 +319,12 @@ export default function TopNavbar() {
             || (data as any).data?.data
             || (data as any).data
             || [];
-          console.log('[TopNavbar] Parsed notifications:', notifications);
+          debugLog('[TopNavbar] Parsed notifications:', notifications);
 
           const unread = Array.isArray(notifications)
             ? notifications.filter(n => !n.is_read).length
             : 0;
-          console.log('[TopNavbar] Unread count:', unread);
+          debugLog('[TopNavbar] Unread count:', unread);
           setUnreadCount(unread);
         } else {
           console.error('[TopNavbar] Notifications API error:', response.status, response.statusText);
@@ -518,7 +528,6 @@ export default function TopNavbar() {
                     onKeyDown={(e) => handleKeyDown(group.id, e)}
                     onMouseEnter={() => handleMouseEnterTrigger(group.id)}
                     onMouseLeave={() => {
-                      console.log('Mouse leave BUTTON:', group.id);
                       handleMouseLeaveTrigger(group.id);
                     }}
                     aria-haspopup="menu"

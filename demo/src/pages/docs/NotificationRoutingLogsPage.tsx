@@ -29,6 +29,9 @@ interface RoutingLog {
 export const NotificationRoutingLogsPage: React.FC = () => {
   const { context, organisations, switchContext } = useContextSwitcher();
   const { user } = useAuth();
+  const debugLog = (...args: unknown[]) => {
+    if (import.meta.env.DEV) console.log(...args);
+  };
   const [logs, setLogs] = useState<RoutingLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +57,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
 
   // Handler to switch organisation without page reload
   const handleOrganisationSwitch = async (option: BreadcrumbSwitcherOption) => {
-    console.log('[NotificationRoutingLogsPage] Switching to org:', option.label, option.id);
+    debugLog('[NotificationRoutingLogsPage] Switching to org:', option.label, option.id);
 
     if (option.id === '' || option.label === 'Global') {
       // Clear org selection for global view
