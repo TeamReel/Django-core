@@ -2497,7 +2497,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 </Card>
               );
             })()}
-            </>
+              </>
             )}
           </Card>
         )}
