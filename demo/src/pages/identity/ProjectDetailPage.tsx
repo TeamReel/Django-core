@@ -336,9 +336,10 @@ export const ProjectDetailPage: React.FC = () => {
           const membersData = await membersResponse.json();
           // Handle B13 response envelope
           const membersList = membersData.data?.results || membersData.results || membersData.data || membersData || [];
+          console.log('[ProjectDetailPage] Fetched members:', membersList.length, 'from', membersEndpoint);
           setMembers(Array.isArray(membersList) ? membersList : []);
         } else {
-            console.error(`Project members endpoint failed with status ${membersResponse.status}`);
+            console.error(`[ProjectDetailPage] Project members endpoint failed with status ${membersResponse.status} for ${membersEndpoint}`);
             setMembers([]);
         }
 
@@ -380,7 +381,9 @@ export const ProjectDetailPage: React.FC = () => {
      try {
        // Fetch children of this project
        const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${project.id}&page_size=250`;
+       console.log('[ProjectDetailPage] Fetching child teams with parent_project=', project.id, 'URL:', url);
        const results = await fetchAllPages<Project>(url, { credentials: 'include' });
+       console.log('[ProjectDetailPage] Fetched child teams:', results.length, 'teams');
        setChildProjects(results);
      } catch (e) {
        console.error('Failed to fetch child teams', e);
@@ -444,10 +447,13 @@ export const ProjectDetailPage: React.FC = () => {
   // Trigger data fetch on tab change
   useEffect(() => {
     if (!project) return;
+    console.log('[ProjectDetailPage] Tab changed to:', activeTab, 'isLikelyTeam:', isLikelyTeam, 'project:', project.name);
     if (activeTab === 'hierarchy') {
       if (isLikelyTeam) {
+        console.log('[ProjectDetailPage] Team detected, fetching seasons. Current seasons:', seasons.length);
         if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
       } else {
+        console.log('[ProjectDetailPage] Club detected, fetching child teams. Current childProjects:', childProjects.length);
         if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
       }
     } else if (activeTab === 'matches') {
