@@ -275,6 +275,8 @@ export const ProjectDetailPage: React.FC = () => {
         const projectData = rawProjectData.data || rawProjectData;
         setProject(projectData);
 
+        const projectIdForApi = String((projectData as any)?.id || '');
+
         // If a team is accessed via the legacy URL (/organisations/:org/projects/:team),
         // try to redirect to the nested team URL with club in between.
         if (!isTeamRoute) {
@@ -334,54 +336,81 @@ export const ProjectDetailPage: React.FC = () => {
         }
 
         // Fetch project members
-        // Use the new 'members' action on the project viewset
-        const membersEndpoint = resolvedOrg
-          ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/members/`
-          : `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/members/`;
+        // IMPORTANT: The working API shape elsewhere in the demo uses numeric project IDs.
+        // Slug-based /projects/:slug/members/ can 500.
+        try {
+          if (!projectIdForApi) {
+            setMembers([]);
+          } else {
+            const membersByIdEndpoint = `${apiBaseUrl}/api/v1/projects/${projectIdForApi}/members/`;
+            const membersByIdResponse = await fetch(membersByIdEndpoint, {
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+              },
+              credentials: 'include',
+            });
 
-        const membersResponse = await fetch(
-          membersEndpoint,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'include',
-          }
-        );
+            if (membersByIdResponse.ok) {
+              const membersData = await membersByIdResponse.json();
+              const membersList =
+                membersData.data?.results || membersData.results || membersData.data || membersData || [];
+              console.log('[ProjectDetailPage] Fetched members:', membersList.length, 'from', membersByIdEndpoint);
+              setMembers(Array.isArray(membersList) ? membersList : []);
+            } else {
+              console.error(
+                `[ProjectDetailPage] Project members endpoint failed with status ${membersByIdResponse.status} for ${membersByIdEndpoint}`
+              );
 
-        if (membersResponse.ok) {
-          const membersData = await membersResponse.json();
-          // Handle B13 response envelope
-          const membersList = membersData.data?.results || membersData.results || membersData.data || membersData || [];
-          console.log('[ProjectDetailPage] Fetched members:', membersList.length, 'from', membersEndpoint);
-          setMembers(Array.isArray(membersList) ? membersList : []);
-        } else {
-            console.error(`[ProjectDetailPage] Project members endpoint failed with status ${membersResponse.status} for ${membersEndpoint}`);
-            // Try alternative endpoint: direct project members
-            try {
-              const altEndpoint = `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/members/`;
-              console.log('[ProjectDetailPage] Trying alternative endpoint:', altEndpoint);
-              const altResponse = await fetch(altEndpoint, {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-Requested-With': 'XMLHttpRequest',
-                },
-                credentials: 'include',
-              });
-              if (altResponse.ok) {
-                const altData = await altResponse.json();
-                const altList = altData.data?.results || altData.results || altData.data || altData || [];
-                console.log('[ProjectDetailPage] Alternative endpoint returned:', altList.length, 'members');
-                setMembers(Array.isArray(altList) ? altList : []);
-              } else {
-                console.error('[ProjectDetailPage] Alternative endpoint also failed:', altResponse.status);
+              // Fallback: fetch org members with memberships included, then filter client-side.
+              // This avoids showing ALL org members by only selecting those linked to this project.
+              const orgSlugForMembers = resolvedOrg?.slug;
+              if (!orgSlugForMembers) {
                 setMembers([]);
+              } else {
+                const params = new URLSearchParams();
+                params.set('page_size', '250');
+                params.set('include_project_memberships', 'true');
+                params.set('include_role_assignments', 'true');
+                const orgMembersEndpoint = `${apiBaseUrl}/api/v1/organisations/${orgSlugForMembers}/members/?${params.toString()}`;
+                console.log('[ProjectDetailPage] Falling back to org members endpoint:', orgMembersEndpoint);
+
+                const orgMembersResponse = await fetch(orgMembersEndpoint, {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                  },
+                  credentials: 'include',
+                });
+
+                if (orgMembersResponse.ok) {
+                  const orgMembersData = await orgMembersResponse.json();
+                  let orgMembersList = orgMembersData.data?.results || orgMembersData.results || [];
+
+                  orgMembersList = orgMembersList.filter((u: any) =>
+                    u.project_memberships?.some(
+                      (m: any) => String(m.project_id || m.project?.id) === String(projectIdForApi)
+                    )
+                  );
+
+                  console.log(
+                    '[ProjectDetailPage] Filtered org members for project:',
+                    orgMembersList.length,
+                    'members'
+                  );
+                  setMembers(Array.isArray(orgMembersList) ? orgMembersList : []);
+                } else {
+                  console.error(
+                    `[ProjectDetailPage] Org members fallback failed with status ${orgMembersResponse.status} for ${orgMembersEndpoint}`
+                  );
+                  setMembers([]);
+                }
               }
-            } catch (altErr) {
-              console.error('[ProjectDetailPage] Alternative endpoint error:', altErr);
-              setMembers([]);
             }
+          }
+        } catch (membersErr) {
+          console.error('[ProjectDetailPage] Members fetch error:', membersErr);
+          setMembers([]);
         }
 
         // Fetch recent audit events for this project
@@ -424,8 +453,40 @@ export const ProjectDetailPage: React.FC = () => {
        const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${project.id}&page_size=250`;
        console.log('[ProjectDetailPage] Fetching child teams with parent_project=', project.id, 'URL:', url);
        const results = await fetchAllPages<Project>(url, { credentials: 'include' });
-       console.log('[ProjectDetailPage] Fetched child teams:', results.length, 'teams');
-       setChildProjects(results);
+
+       const parentId = String(project.id);
+       const orgId = String((project as any)?.organisation_id || (project as any)?.organisation?.id || resolvedOrg?.id || '');
+
+       const getParentProjectId = (p: any): string | null => {
+         const parent = p?.parent_project || p?.parent || p?.parent_project_id || p?.parent_id;
+         if (!parent) return null;
+         if (typeof parent === 'object') return String(parent.id || parent.slug || '');
+         return String(parent);
+       };
+
+       const getOrganisationId = (p: any): string | null => {
+         const oid = p?.organisation_id || p?.organisation?.id;
+         return oid ? String(oid) : null;
+       };
+
+       // Server-side parent_project filtering appears unreliable in production.
+       // We defensively filter by organisation + actual parent id.
+       const filteredByOrg = orgId
+         ? (results as any[]).filter((p: any) => String(getOrganisationId(p) || '') === orgId)
+         : (results as any[]);
+
+       const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
+       const finalResults = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
+
+       console.log(
+         '[ProjectDetailPage] Fetched child teams (raw):',
+         results.length,
+         'filtered(org):',
+         filteredByOrg.length,
+         'filtered(parent):',
+         filteredByParent.length
+       );
+       setChildProjects(finalResults as Project[]);
      } catch (e) {
        console.error('Failed to fetch child teams', e);
      } finally {
