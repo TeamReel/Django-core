@@ -47,6 +47,7 @@ export const OrganisationDetailPage: React.FC = () => {
   const { user } = useAuth();
   const [org, setOrg] = useState<Organisation | null>(null);
   const [members, setMembers] = useState<User[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
   const [clubs, setClubs] = useState<Project[]>([]);
   const [clubsCount, setClubsCount] = useState(0);
   const [clubsPage, setClubsPage] = useState(1);
@@ -798,6 +799,40 @@ export const OrganisationDetailPage: React.FC = () => {
     }
   };
 
+  // Lazy load members only when Users tab is active (performance optimization)
+  const fetchMembers = async () => {
+    if (membersLoading || members.length > 0) return;
+    if (!org?.id && !currentOrgId) return;
+
+    setMembersLoading(true);
+    const apiV1BaseUrl = getApiV1BaseUrl();
+    const orgId = String(org?.id || currentOrgId);
+
+    try {
+      const params = new URLSearchParams();
+      params.set('include_project_memberships', 'true');
+      params.set('include_role_assignments', 'true');
+      params.set('page_size', '250');
+
+      const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
+      const allMembers = await fetchAllPages<any>(membersUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Organisation-ID': orgId,
+        },
+        credentials: 'include',
+      });
+      console.log('[OrganisationDetailPage] Members loaded:', allMembers.length);
+      setMembers(allMembers);
+    } catch (e) {
+      console.error('[OrganisationDetailPage] Members fetch failed:', e);
+      setMembers([]);
+    } finally {
+      setMembersLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchOrgDetails = async () => {
       if (!currentOrgSlug) return;
@@ -831,29 +866,7 @@ export const OrganisationDetailPage: React.FC = () => {
         // In production this triggers a call to `/api/v1/context/set/` which may not exist,
         // spamming the console with 404s without improving this page.
 
-        // Fetch members (can be large). Fetch all pages so "Users" can show everything.
-        try {
-          const params = new URLSearchParams();
-          params.set('include_project_memberships', 'true');
-          params.set('include_role_assignments', 'true');
-          params.set('page_size', '250');
-
-          const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
-          const allMembers = await fetchAllPages<any>(membersUrl, {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-              'X-Organisation-ID': String(orgData.id || currentOrgId || ''),
-            },
-            credentials: 'include',
-          });
-          console.log('[OrganisationDetailPage] Members loaded:', allMembers.length);
-          setMembers(allMembers);
-        } catch (e) {
-         console.error('[OrganisationDetailPage] Members fetch failed:', e);
-         console.error('[OrganisationDetailPage] Members fetch failed:', e);
-          setMembers([]);
-        }
+        // Members are now loaded lazily when Users tab is opened (performance optimization)
 
         // Federation-wide counts (high-over)
         const organisationIdForCounts = String(orgData.id || currentOrgId || '');
@@ -893,6 +906,11 @@ export const OrganisationDetailPage: React.FC = () => {
          fetchScheduledMatches(orgId);
          fetchRecentPlayedMatches(orgId);
        }
+    }
+
+    // Lazy load members only when Users tab is active
+    if (activeTab === 'users') {
+      fetchMembers();
     }
   }, [activeTab, org?.id, currentOrgId]);
 
@@ -1303,6 +1321,10 @@ export const OrganisationDetailPage: React.FC = () => {
               </div>
             </div>
 
+            {membersLoading ? (
+              <Alert variant="info">Loading members...</Alert>
+            ) : (
+              <>
             {userCanInvite && (
               <div className="mb-6 p-4 bg-gray-50 rounded-md">
                 <h4 className="text-sm font-medium mb-2">Add user to federation</h4>
@@ -2475,6 +2497,8 @@ export const OrganisationDetailPage: React.FC = () => {
                 </Card>
               );
             })()}
+            </>
+            )}
           </Card>
         )}
 
