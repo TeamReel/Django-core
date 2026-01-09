@@ -15,8 +15,7 @@ json_path = _archive_path if _archive_path.exists() else _root_path
 
 if not json_path.exists():
     raise FileNotFoundError(
-        "SoccerWiki JSON not found. Expected at either: "
-        f"{_archive_path} or {_root_path}"
+        "SoccerWiki JSON not found. Expected at either: " f"{_archive_path} or {_root_path}"
     )
 
 with open(json_path, "r", encoding="utf-8") as f:
