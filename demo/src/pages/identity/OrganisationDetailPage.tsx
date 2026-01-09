@@ -1024,6 +1024,7 @@ export const OrganisationDetailPage: React.FC = () => {
         title={org.name}
         subtitle="Federation overview"
         breadcrumbs={[
+          { label: 'Dashboard', onClick: () => navigate('/') },
           { label: 'Federations', onClick: () => navigate('/organisations') },
           {
             label: (
@@ -1045,7 +1046,12 @@ export const OrganisationDetailPage: React.FC = () => {
             </Button>
             {userCanEditOrg && (
               <>
-                <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${orgSlugOrId}/edit`)}>
+                <Button variant="secondary" size="sm" onClick={() => {
+                  setActiveTab('overview');
+                  setTimeout(() => {
+                    handleEdit();
+                  }, 100);
+                }}>
                   Edit
                 </Button>
                 <Button variant="secondary" size="sm" onClick={handleDelete} disabled={deleteLoading}>
