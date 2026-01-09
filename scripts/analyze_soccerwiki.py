@@ -7,7 +7,17 @@ from pathlib import Path
 from collections import Counter
 
 # Load SoccerWiki data
-json_path = Path(__file__).parent.parent / "SoccerWiki_Nederland.json"
+# Prefer the archive location to keep repo root clean.
+_repo_root = Path(__file__).parent.parent
+_archive_path = _repo_root / "archive" / "data" / "soccerwiki" / "SoccerWiki_Nederland.json"
+_root_path = _repo_root / "SoccerWiki_Nederland.json"
+json_path = _archive_path if _archive_path.exists() else _root_path
+
+if not json_path.exists():
+    raise FileNotFoundError(
+        "SoccerWiki JSON not found. Expected at either: "
+        f"{_archive_path} or {_root_path}"
+    )
 
 with open(json_path, "r", encoding="utf-8") as f:
     data = json.load(f)

@@ -67,8 +67,10 @@ backup = {
     "teams_with_players": len(set(m["team_name"] for m in memberships_data)),
 }
 
-# Save to file
-filename = "backup_season_2024_2025.json"
+# Save to file (keep repo root clean)
+archive_dir = os.path.join(os.path.dirname(__file__), "..", "..", "archive", "backups")
+os.makedirs(archive_dir, exist_ok=True)
+filename = os.path.join(archive_dir, "backup_season_2024_2025.json")
 with open(filename, "w", encoding="utf-8") as f:
     json.dump(backup, f, indent=2)
 
