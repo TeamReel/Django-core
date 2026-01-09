@@ -378,78 +378,93 @@ export const OrganisationDetailPage: React.FC = () => {
     }
   };
 
+  const recomputePeriodCounts = (allPeriods: any[]) => {
+    const seasonsByProjectId: Record<string, number> = {};
+    const competitionsByProjectId: Record<string, number> = {};
+
+    const seasons = allPeriods.filter((p: any) => {
+      const isSeason = isSeasonPeriod(p);
+      if (isSeason) {
+        const projectId = p.project_id ?? p.project?.id ?? null;
+        if (projectId) {
+          const key = String(projectId);
+          seasonsByProjectId[key] = (seasonsByProjectId[key] || 0) + 1;
+        }
+      }
+      return isSeason;
+    });
+
+    const competitions = allPeriods.filter((p: any) => {
+      const isCompetition = isCompetitionPeriod(p);
+      if (isCompetition) {
+        const projectId = p.project_id ?? p.project?.id ?? null;
+        if (projectId) {
+          const key = String(projectId);
+          competitionsByProjectId[key] = (competitionsByProjectId[key] || 0) + 1;
+        }
+      }
+      return isCompetition;
+    });
+
+    setSeasonsCount(seasons.length);
+    setCompetitionsCount(competitions.length);
+    setTeamSeasonsCountById(seasonsByProjectId);
+    setTeamCompetitionsCountById(competitionsByProjectId);
+  };
+
+  const ensureOrgPeriodsLoaded = async () => {
+    console.log('[OrganisationDetailPage] ensureOrgPeriodsLoaded called', { activeTab, teamsCount: teams.length, orgPeriodsCount: orgPeriods.length, loading: orgPeriodsLoading });
+    if (orgPeriodsLoading) return;
+    if (orgPeriods.length > 0) return;
+    if (!teams || teams.length === 0) return;
+
+    setOrgPeriodsLoading(true);
+    const apiV1BaseUrl = getApiV1BaseUrl();
+    try {
+      const unique = new Map<string, any>();
+      let fetchedCount = 0;
+      for (const t of teams as any[]) {
+        const teamId = t?.id;
+        if (!teamId) continue;
+        const params = new URLSearchParams();
+        params.set('page_size', '250');
+        params.set('project_id', String(teamId));
+
+        const url = `${apiV1BaseUrl}/periods/?${params.toString()}`;
+        // console.log('[OrganisationDetailPage] Fetching periods for team', teamId, url);
+        const periods = await fetchAllPages<any>(url, {
+          credentials: 'include',
+        });
+
+        if (periods && periods.length > 0) {
+           fetchedCount += periods.length;
+           // Log first period to debug structure
+           if (unique.size === 0) {
+              console.log('[OrganisationDetailPage] Sample period structure:', periods[0]);
+           }
+        }
+
+        for (const p of periods || []) {
+          if (!p?.id) continue;
+          unique.set(String(p.id), p);
+        }
+      }
+
+      console.log('[OrganisationDetailPage] Total unique periods fetched via teams:', unique.size);
+
+      const merged = Array.from(unique.values());
+      setOrgPeriods(merged);
+      recomputePeriodCounts(merged);
+    } catch (e) {
+      console.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
+    } finally {
+      setOrgPeriodsLoading(false);
+    }
+  };
+
   const fetchFederationCounts = async (organisationId: string) => {
     if (!organisationId) return;
     const apiV1BaseUrl = getApiV1BaseUrl();
-
-    const recomputePeriodCounts = (allPeriods: any[]) => {
-      const seasonsByProjectId: Record<string, number> = {};
-      const competitionsByProjectId: Record<string, number> = {};
-
-      const seasons = allPeriods.filter((p: any) => {
-        const isSeason = isSeasonPeriod(p);
-        if (isSeason) {
-          const projectId = p.project_id ?? p.project?.id ?? null;
-          if (projectId) {
-            const key = String(projectId);
-            seasonsByProjectId[key] = (seasonsByProjectId[key] || 0) + 1;
-          }
-        }
-        return isSeason;
-      });
-
-      const competitions = allPeriods.filter((p: any) => {
-        const isCompetition = isCompetitionPeriod(p);
-        if (isCompetition) {
-          const projectId = p.project_id ?? p.project?.id ?? null;
-          if (projectId) {
-            const key = String(projectId);
-            competitionsByProjectId[key] = (competitionsByProjectId[key] || 0) + 1;
-          }
-        }
-        return isCompetition;
-      });
-
-      setSeasonsCount(seasons.length);
-      setCompetitionsCount(competitions.length);
-      setTeamSeasonsCountById(seasonsByProjectId);
-      setTeamCompetitionsCountById(competitionsByProjectId);
-    };
-
-    const ensureOrgPeriodsLoaded = async () => {
-      if (orgPeriodsLoading) return;
-      if (orgPeriods.length > 0) return;
-      if (!teams || teams.length === 0) return;
-
-      setOrgPeriodsLoading(true);
-      try {
-        const unique = new Map<string, any>();
-        for (const t of teams as any[]) {
-          const teamId = t?.id;
-          if (!teamId) continue;
-          const params = new URLSearchParams();
-          params.set('page_size', '250');
-          params.set('project_id', String(teamId));
-
-          const periods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${params.toString()}`, {
-            credentials: 'include',
-          });
-
-          for (const p of periods || []) {
-            if (!p?.id) continue;
-            unique.set(String(p.id), p);
-          }
-        }
-
-        const merged = Array.from(unique.values());
-        setOrgPeriods(merged);
-        recomputePeriodCounts(merged);
-      } catch (e) {
-        console.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
-      } finally {
-        setOrgPeriodsLoading(false);
-      }
-    };
 
     try {
       // Teams count (child projects)
@@ -500,42 +515,8 @@ export const OrganisationDetailPage: React.FC = () => {
     }
 
     // Fallback: if org-level period filtering isn't supported, load periods via team scope.
-    // This matches the TeamReel model (periods are team-scoped).
     if (!orgPeriodsLoading && orgPeriods.length === 0) {
-      try {
-        // Only works after teams are loaded.
-        // If teams aren't loaded yet, tab-specific effects will call this again.
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        (async () => {
-          const unique = new Map<string, any>();
-          if (teams && teams.length > 0) {
-            setOrgPeriodsLoading(true);
-            try {
-              for (const t of teams as any[]) {
-                const teamId = t?.id;
-                if (!teamId) continue;
-                const params = new URLSearchParams();
-                params.set('page_size', '250');
-                params.set('project_id', String(teamId));
-                const periods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${params.toString()}`, {
-                  credentials: 'include',
-                });
-                for (const p of periods || []) {
-                  if (!p?.id) continue;
-                  unique.set(String(p.id), p);
-                }
-              }
-              const merged = Array.from(unique.values());
-              setOrgPeriods(merged);
-              recomputePeriodCounts(merged);
-            } finally {
-              setOrgPeriodsLoading(false);
-            }
-          }
-        })();
-      } catch {
-        // ignore
-      }
+      ensureOrgPeriodsLoaded();
     }
   };
 
@@ -743,42 +724,13 @@ export const OrganisationDetailPage: React.FC = () => {
 
   useEffect(() => {
     // When teams are loaded, ensure periods are loaded for tabs that need them.
-    if (teams.length === 0) return;
-    if (orgPeriods.length > 0) return;
-    if (orgPeriodsLoading) return;
-    if (!(activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'clubs')) return;
-
-    const load = async () => {
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      setOrgPeriodsLoading(true);
-      try {
-        const unique = new Map<string, any>();
-        for (const t of teams as any[]) {
-          const teamId = t?.id;
-          if (!teamId) continue;
-          const params = new URLSearchParams();
-          params.set('page_size', '250');
-          params.set('project_id', String(teamId));
-          const periods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${params.toString()}`, {
-            credentials: 'include',
-          });
-          for (const p of periods || []) {
-            if (!p?.id) continue;
-            unique.set(String(p.id), p);
-          }
-        }
-        const merged = Array.from(unique.values());
-        setOrgPeriods(merged);
-      } catch (e) {
-        console.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
-      } finally {
-        setOrgPeriodsLoading(false);
-      }
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    load();
-  }, [activeTab, teams, orgPeriods.length, orgPeriodsLoading]);
+    // This allows lazy loading of periods only when needed (or when teams are finally available).
+    if (activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'clubs') {
+       if (teams.length > 0) {
+           ensureOrgPeriodsLoaded();
+       }
+    }
+  }, [activeTab, teams]);
 
   useEffect(() => {
     if (activeTab === 'clubs') {
