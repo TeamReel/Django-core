@@ -44,7 +44,7 @@ function AppWithProviders() {
   const routerAdapter = useReactRouterAdapter();
   const location = useLocation();
 
-  const contextConfig: ContextSwitcherConfig = {
+  const contextConfig: ContextSwitcherConfig = React.useMemo(() => ({
     routerAdapter,
     apiBaseUrl: import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api/v1` : '/api/v1',
     onContextError: (error: any) => {
@@ -57,7 +57,7 @@ function AppWithProviders() {
       }
       // Silently handle other errors - context switching is optional
     },
-  };
+  }), [routerAdapter]);
 
   return (
     <ThemeProvider storage={themeStorage}>

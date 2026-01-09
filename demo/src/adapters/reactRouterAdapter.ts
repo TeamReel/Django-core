@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { RouterAdapter } from '@django-core/context-switcher';
 
@@ -11,7 +12,7 @@ export function useReactRouterAdapter(): RouterAdapter {
   const navigate = useNavigate();
   const location = useLocation();
 
-  return {
+  return useMemo(() => ({
     /**
      * Get current pathname from React Router location.
      */
@@ -108,5 +109,5 @@ export function useReactRouterAdapter(): RouterAdapter {
       // Return fallback path or dashboard
       return options?.fallbackPath || '/dashboard';
     },
-  };
+  }), [location.pathname, navigate]);
 }
