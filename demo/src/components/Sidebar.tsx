@@ -28,17 +28,6 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'work',
-    label: 'Work (TeamReel)',
-    items: [
-      { path: '/clubs', label: 'Clubs', icon: '🏟️' },
-      { path: '/teams', label: 'Teams', icon: '⚽' },
-      { path: '/seasons', label: 'Seasons', icon: '🗓️' },
-      { path: '/competitions', label: 'Competitions', icon: '🏆' },
-      { path: '/matches', label: 'Matches', icon: '🎯' },
-    ],
-  },
-  {
     id: 'config',
     label: 'Configuration',
     items: [

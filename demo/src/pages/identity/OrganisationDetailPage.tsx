@@ -51,7 +51,7 @@ export const OrganisationDetailPage: React.FC = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'member'>('member');
   const [inviteLoading, setInviteLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'projects' | 'governance' | 'audit'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'clubs' | 'governance' | 'audit'>('overview');
   const [memberSearch, setMemberSearch] = useState('');
 
   // Resolve slug from ID if needed
@@ -95,7 +95,7 @@ export const OrganisationDetailPage: React.FC = () => {
     () => [
       { id: 'overview' as const, label: 'Overview' },
       { id: 'users' as const, label: 'Users' },
-      { id: 'projects' as const, label: 'Projects' },
+      { id: 'clubs' as const, label: 'Clubs' },
       { id: 'governance' as const, label: 'Governance' },
       { id: 'audit' as const, label: 'Audit' },
     ],
@@ -289,9 +289,9 @@ export const OrganisationDetailPage: React.FC = () => {
           setMembers([]);
         }
 
-        // Fetch projects using slug (preview)
+        // Fetch clubs (root projects) for this organisation (preview)
         const projectsResponse = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/?limit=5`,
+          `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/?page_size=5&parent_project__isnull=true`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -306,7 +306,15 @@ export const OrganisationDetailPage: React.FC = () => {
           const projectsData = await projectsResponse.json();
           // Handle B13 response envelope
           const projectsList = projectsData.data?.results || projectsData.results || projectsData.data || projectsData || [];
-          setProjects(Array.isArray(projectsList) ? projectsList : []);
+          const list = Array.isArray(projectsList) ? projectsList : [];
+
+          // Defensive client-side filter: some endpoints may still return teams.
+          const clubsOnly = list.filter((p: any) => {
+            const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
+            return !parentId;
+          });
+
+          setProjects(clubsOnly);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch organisation details');
@@ -747,17 +755,24 @@ export const OrganisationDetailPage: React.FC = () => {
           </Card>
         )}
 
-        {/* Projects */}
-        {activeTab === 'projects' && (
+        {/* Clubs */}
+        {activeTab === 'clubs' && (
           <Card className="mb-6">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
-              <h3 className="text-lg font-semibold">Recent Projects</h3>
+              <h3 className="text-lg font-semibold">Recent Clubs</h3>
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => navigate(`/organisations/${currentOrgSlug}/projects`)}
+                onClick={() => {
+                  if (isSuperAdmin && currentOrgSlug) {
+                    navigate(`/clubs?org_id=${encodeURIComponent(String(currentOrgSlug))}`);
+                    return;
+                  }
+
+                  navigate('/clubs');
+                }}
               >
-                View All Projects
+                View All Clubs
               </Button>
             </div>
             {projects.length > 0 ? (
@@ -765,7 +780,7 @@ export const OrganisationDetailPage: React.FC = () => {
               <Table>
                 <thead>
                   <tr>
-                    <th>Project Name</th>
+                    <th>Club Name</th>
                     <th>Team Size</th>
                     <th>Status</th>
                     <th>Actions</th>
