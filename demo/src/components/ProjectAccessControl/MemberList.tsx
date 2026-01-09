@@ -12,16 +12,24 @@ interface ProjectMembership {
 
 interface MemberListProps {
   projectId: string;
+  initialMembers?: any[];
 }
 
-export const MemberList: React.FC<MemberListProps> = ({ projectId }) => {
-  const [members, setMembers] = useState<ProjectMembership[]>([]);
-  const [loading, setLoading] = useState(true);
+export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMembers }) => {
+  const [members, setMembers] = useState<ProjectMembership[]>(initialMembers || []);
+  const [loading, setLoading] = useState(!initialMembers);
   const [error, setError] = useState<string | null>(null);
   const [memberToRemove, setMemberToRemove] = useState<ProjectMembership | null>(null);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
 
   useEffect(() => {
+    // If initialMembers provided, use those instead of fetching
+    if (initialMembers && initialMembers.length > 0) {
+      setMembers(initialMembers);
+      setLoading(false);
+      return;
+    }
+
     const fetchMembers = async () => {
       setLoading(true);
       setError(null);
@@ -50,7 +58,7 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId }) => {
     if (projectId) {
       fetchMembers();
     }
-  }, [projectId]);
+  }, [projectId, initialMembers]);
 
   const handleRemoveClick = (member: ProjectMembership) => {
     setMemberToRemove(member);

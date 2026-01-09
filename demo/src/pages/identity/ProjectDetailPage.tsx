@@ -338,19 +338,8 @@ export const ProjectDetailPage: React.FC = () => {
           const membersList = membersData.data?.results || membersData.results || membersData.data || membersData || [];
           setMembers(Array.isArray(membersList) ? membersList : []);
         } else {
-            // Fallback to org members if endpoint fails (e.g. during transition)
-            console.warn("Project members endpoint failed, falling back to org members");
-            if (resolvedOrg) {
-                const fallbackEndpoint = `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/members/`;
-                const fallbackResponse = await fetch(fallbackEndpoint, {
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include'
-                });
-                if (fallbackResponse.ok) {
-                    const data = await fallbackResponse.json();
-                    setMembers(data.results || []);
-                }
-            }
+            console.error(`Project members endpoint failed with status ${membersResponse.status}`);
+            setMembers([]);
         }
 
         // Fetch recent audit events for this project
