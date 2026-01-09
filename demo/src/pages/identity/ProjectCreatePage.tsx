@@ -105,7 +105,7 @@ export const ProjectCreatePage: React.FC = () => {
               />
             ),
           },
-          { label: 'Projects', onClick: () => navigate(`/organisations/${currentOrgSlug}/projects`) },
+          { label: 'Clubs', onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(currentOrgSlug))}`) },
           { label: 'Create', current: true },
         ]}
       />

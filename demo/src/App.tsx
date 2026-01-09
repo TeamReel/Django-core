@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -95,6 +95,11 @@ import MatchesPage from './pages/work/MatchesPage';
 
 export default function App() {
   const { user } = useAuth();
+
+  const OrgProjectsRedirect = () => {
+    const { orgId } = useParams<{ orgId: string }>();
+    return <Navigate to={`/clubs?org_id=${encodeURIComponent(String(orgId || ''))}`} replace />;
+  };
 
   return (
     <Routes>
@@ -354,7 +359,7 @@ export default function App() {
         path="/organisations/:orgId/projects"
         element={
           <ProtectedRoute>
-            <ProjectsPage />
+            <OrgProjectsRedirect />
           </ProtectedRoute>
         }
       />
@@ -400,7 +405,7 @@ export default function App() {
         path="/projects"
         element={
           <ProtectedRoute>
-            <ProjectsPage />
+            <Navigate to="/clubs" replace />
           </ProtectedRoute>
         }
       />

@@ -157,17 +157,17 @@ export const MatchDetailPage: React.FC = () => {
               : { label: 'Federation' },
             competitionPeriod?.organisation?.id
               ? {
-                  label: 'Clubs & Teams',
-                  onClick: () => navigate(`/organisations/${competitionPeriod.organisation.id}/projects`),
+                  label: 'Clubs',
+                  onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(competitionPeriod.organisation.id))}`),
                 }
-              : { label: 'Clubs & Teams', onClick: () => navigate('/projects') },
+              : { label: 'Clubs', onClick: () => navigate('/clubs') },
             competitionPeriod?.organisation?.id
               ? {
                   label: match.project.name,
                   onClick: () =>
                     navigate(`/organisations/${competitionPeriod.organisation.id}/projects/${match.project.id}`),
                 }
-              : { label: match.project.name, onClick: () => navigate('/projects') },
+              : { label: match.project.name, onClick: () => navigate('/clubs') },
             seasonPeriod && competitionPeriod?.organisation?.id
               ? {
                   label: seasonPeriod.name,

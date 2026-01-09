@@ -61,14 +61,23 @@ export const ProjectSeasonsPage: React.FC = () => {
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
       { label: 'Federations', onClick: () => navigate('/organisations') },
       { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
-      { label: 'Clubs & Teams', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects`) },
+      {
+        label: 'Clubs',
+        onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}`),
+      },
       ...(isTeamRoute
         ? [
             {
               label: club?.name || 'Club',
               onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
             },
-            { label: 'Teams' },
+            {
+              label: 'Teams',
+              onClick: () =>
+                navigate(
+                  `/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(String(clubSlugOrId))}`
+                ),
+            },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
         : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),

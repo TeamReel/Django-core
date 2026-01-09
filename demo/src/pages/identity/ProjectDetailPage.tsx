@@ -64,6 +64,10 @@ export const ProjectDetailPage: React.FC = () => {
   const isTeamRoute = Boolean(clubId);
   const clubSlugOrId = clubId || '';
 
+  const orgSlugOrId = resolvedOrg?.slug || resolvedOrg?.id;
+
+  const clubsListPath = orgSlugOrId ? `/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}` : '/clubs';
+
   // Breadcrumb context switcher setup
   const {
     organisationOptions,
@@ -186,6 +190,42 @@ export const ProjectDetailPage: React.FC = () => {
         const projectData = rawProjectData.data || rawProjectData;
         setProject(projectData);
 
+        // If a team is accessed via the legacy URL (/organisations/:org/projects/:team),
+        // try to redirect to the nested team URL with club in between.
+        if (!isTeamRoute) {
+          const parent =
+            (projectData as any)?.parent_project ||
+            (projectData as any)?.parent ||
+            (projectData as any)?.parent_id ||
+            (projectData as any)?.parent_project_id ||
+            null;
+
+          const parentName = (projectData as any)?.parent_name || null;
+
+          let inferredClubSlugOrId: string | null = null;
+          if (parent && typeof parent === 'object') {
+            inferredClubSlugOrId = String((parent as any).slug || (parent as any).id || '');
+          } else if (parent) {
+            inferredClubSlugOrId = String(parent);
+          }
+
+          if (inferredClubSlugOrId && orgSlugOrId) {
+            navigate(
+              `/organisations/${orgSlugOrId}/projects/${encodeURIComponent(inferredClubSlugOrId)}/teams/${encodeURIComponent(
+                String((projectData as any).slug || (projectData as any).id)
+              )}`,
+              { replace: true }
+            );
+            return;
+          }
+
+          // Best-effort: if we only have parent_name, we cannot safely map to a slug.
+          // In that case we keep rendering, but breadcrumbs will still point users to Clubs.
+          if (parentName) {
+            // no-op
+          }
+        }
+
         if (isTeamRoute && clubSlugOrId) {
           try {
             const clubRes = await fetch(
@@ -285,8 +325,8 @@ export const ProjectDetailPage: React.FC = () => {
             breadcrumbs={[
               { label: 'Dashboard', onClick: () => navigate('/dashboard') },
               { label: 'Federations', onClick: () => navigate('/organisations') },
-              { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
-              { label: 'Clubs & Teams', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
+              { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+              { label: 'Clubs', onClick: () => navigate(clubsListPath) },
               { label: 'Details', current: true },
             ]}
           />
@@ -311,8 +351,8 @@ export const ProjectDetailPage: React.FC = () => {
             breadcrumbs={[
               { label: 'Dashboard', onClick: () => navigate('/dashboard') },
               { label: 'Federations', onClick: () => navigate('/organisations') },
-              { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
-              { label: 'Clubs & Teams', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
+              { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+              { label: 'Clubs', onClick: () => navigate(clubsListPath) },
               { label: 'Details', current: true },
             ]}
           />
@@ -320,8 +360,8 @@ export const ProjectDetailPage: React.FC = () => {
             <Alert variant="error" data-testid="project-detail-error">
               {error || 'Project not found'}
             </Alert>
-            <Button variant="secondary" onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`)}>
-              Back to Projects
+            <Button variant="secondary" onClick={() => navigate(clubsListPath)}>
+              Back to Clubs
             </Button>
           </PageContent>
         </div>
@@ -340,8 +380,16 @@ export const ProjectDetailPage: React.FC = () => {
   }
 
   const teamOrProjectDetailPath = isTeamRoute
-    ? `/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${clubSlugOrId}/teams/${project.slug || project.id}`
-    : `/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}`;
+    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}`
+    : `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}`;
+
+  const seasonsPath = isTeamRoute
+    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons`
+    : `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/seasons`;
+
+  const backPath = isTeamRoute
+    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`
+    : clubsListPath;
 
   return (
     <AppShell>
@@ -349,18 +397,21 @@ export const ProjectDetailPage: React.FC = () => {
         <PageHeader
         title={project.name}
         breadcrumbs={[
-          { label: 'Home', onClick: () => navigate('/') },
-          { label: 'Organisations', onClick: () => navigate('/organisations') },
-          { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
-          { label: 'Projects', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
+          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+          { label: 'Federations', onClick: () => navigate('/organisations') },
+          { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+          { label: 'Clubs', onClick: () => navigate(clubsListPath) },
           ...(isTeamRoute
             ? [
                 {
                   label: club?.name || 'Club',
                   onClick: () =>
-                    navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${clubSlugOrId}`),
+                    navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
                 },
-                { label: 'Teams' },
+                {
+                  label: 'Teams',
+                  onClick: () => navigate(`/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(String(clubSlugOrId))}`),
+                },
               ]
             : []),
           {
@@ -401,7 +452,7 @@ export const ProjectDetailPage: React.FC = () => {
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
-              onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`)}
+              onClick={() => navigate(backPath)}
               style={{
                 padding: '6px 12px',
                 borderRadius: '4px',
@@ -502,7 +553,7 @@ export const ProjectDetailPage: React.FC = () => {
             </div>
             <Button
               variant="secondary"
-              onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}/seasons`)}
+              onClick={() => navigate(seasonsPath)}
             >
               View Seasons
             </Button>

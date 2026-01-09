@@ -269,7 +269,7 @@ export const MemberDetailPage: React.FC = () => {
                   value="organisations"
                   onChange={(e) => {
                     const value = e.target.value;
-                    if (value === 'projects') navigate('/projects');
+                    if (value === 'clubs') navigate('/clubs');
                     else if (value === 'users') navigate('/users');
                   }}
                   style={{
@@ -284,7 +284,7 @@ export const MemberDetailPage: React.FC = () => {
                   }}
                 >
                   <option value="organisations">Organisations</option>
-                  <option value="projects">Projects</option>
+                  <option value="clubs">Clubs</option>
                   <option value="users">Users</option>
                 </select>
               ),

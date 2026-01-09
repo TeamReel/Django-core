@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card } from '@django-core/design-system';
@@ -8,10 +8,12 @@ import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import WorkFilterBar, { OrganisationOption, ProjectOption } from './WorkFilterBar';
 
 export default function TeamsPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { context, organisations: myOrganisations } = useContextSwitcher();
 
@@ -30,12 +32,40 @@ export default function TeamsPage() {
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  const permissionContext = useMemo(
+    () => ({
+      currentOrganisation: context.organisation as any,
+      isSuperAdmin,
+    }),
+    [context.organisation, isSuperAdmin]
+  );
+
+  const userCanEditProject = canEditProject(permissionContext);
+  const userCanDeleteProject = canDeleteProject(permissionContext);
+
+  const getCsrfToken = () =>
+    document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('csrftoken='))
+      ?.split('=')[1] || '';
+
   // Initialize org filter for non-superadmins
   useEffect(() => {
     if (!isSuperAdmin && context.organisation?.id) {
       setSelectedOrgId(String(context.organisation.id));
     }
   }, [context.organisation?.id, isSuperAdmin]);
+
+  // Allow deep-linking into org/club/team context (e.g. from Clubs or Federation detail)
+  useEffect(() => {
+    const orgId = searchParams.get('org_id');
+    const clubId = searchParams.get('club_id');
+    const teamId = searchParams.get('team_id');
+
+    if (orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
+    if (clubId) setSelectedClubId(String(clubId));
+    if (teamId) setSelectedTeamId(String(teamId));
+  }, [isSuperAdmin, searchParams]);
 
   // Fetch org options for superadmin
   useEffect(() => {
@@ -132,6 +162,32 @@ export default function TeamsPage() {
     { label: 'Teams', current: true },
   ];
 
+  const handleDeleteProject = async (orgSlugOrId: string, projectSlugOrId: string, projectName: string) => {
+    if (!window.confirm(`Are you sure you want to delete ${projectName}?`)) return;
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        alert('Failed to delete team');
+        return;
+      }
+
+      setTeams((prev) => prev.filter((p: any) => String(p.id) !== String(projectSlugOrId) && String(p.slug) !== String(projectSlugOrId)));
+      if (String(selectedTeamId) === String(projectSlugOrId)) setSelectedTeamId('');
+    } catch (e) {
+      console.error(e);
+      alert('Error deleting team');
+    }
+  };
+
   return (
     <AppShell>
       <PageHeader
@@ -186,29 +242,135 @@ export default function TeamsPage() {
                   <tr>
                     <th>Team</th>
                     <th>Club</th>
+                    <th>Federation</th>
                     <th>Status</th>
+                    <th style={{ textAlign: 'right', minWidth: '220px' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredTeams.map((team: any) => {
-                    const orgSlugOrId = team.organisation?.slug || team.organisation?.id || selectedOrgId;
+                    const parentId = team.parent_id ?? team.parent ?? null;
+                    const parentName = team.parent_name ?? null;
+                    let parentClub = parentId !== null ? clubs.find((c) => String(c.id) === String(parentId)) : undefined;
+                    if (!parentClub && parentName) parentClub = clubs.find((c) => c.name === parentName);
+
+                    const parentClubSlugOrId = parentClub?.slug || parentClub?.id;
+                    const orgRef = (parentClub as any)?.organisation as string | { id: string } | undefined;
+                    const parentClubOrgSlugOrId = (typeof orgRef === 'string' ? orgRef : (orgRef as any)?.id) || selectedOrgId;
+                    const parentClubOrgName = typeof orgRef === 'string' ? undefined : (orgRef as any)?.name;
+                    const teamSlugOrId = team.slug || team.id;
+
+                    const teamDetailPath = parentClubSlugOrId
+                      ? `/organisations/${parentClubOrgSlugOrId}/projects/${parentClubSlugOrId}/teams/${teamSlugOrId}`
+                      : `/organisations/${parentClubOrgSlugOrId}/projects/${teamSlugOrId}`;
+
+                    const clubDetailPath = parentClubSlugOrId
+                      ? `/organisations/${parentClubOrgSlugOrId}/projects/${parentClubSlugOrId}`
+                      : '';
+
                     return (
                       <tr key={team.id}>
                         <td>
                           <a
-                            href={`/organisations/${orgSlugOrId}/projects/${team.slug || team.id}`}
+                            href={teamDetailPath}
                             className="text-blue-600 hover:underline"
                             style={{ fontSize: '0.85rem' }}
                             onClick={(e) => {
                               e.preventDefault();
-                              navigate(`/organisations/${orgSlugOrId}/projects/${team.slug || team.id}`);
+                              navigate(teamDetailPath);
                             }}
                           >
                             {team.name}
                           </a>
                         </td>
-                        <td style={{ fontSize: '0.85rem' }}>{team.parent_name || '-'}</td>
+                        <td style={{ fontSize: '0.85rem' }}>
+                          {parentClubSlugOrId ? (
+                            <a
+                              href={clubDetailPath}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(clubDetailPath);
+                              }}
+                            >
+                              {parentClub?.name || team.parent_name || 'Club'}
+                            </a>
+                          ) : (
+                            team.parent_name || '-'
+                          )}
+                        </td>
+                        <td style={{ fontSize: '0.85rem' }}>
+                          {parentClubOrgSlugOrId ? (
+                            <a
+                              href={`/organisations/${parentClubOrgSlugOrId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${parentClubOrgSlugOrId}`);
+                              }}
+                            >
+                              {parentClubOrgName || 'Federation'}
+                            </a>
+                          ) : (
+                            parentClubOrgName || '-'
+                          )}
+                        </td>
                         <td>{team.is_active === false ? 'Inactive' : 'Active'}</td>
+                        <td style={{ textAlign: 'right' }}>
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                            <button
+                              onClick={() => navigate(teamDetailPath)}
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                border: '1px solid var(--app-border)',
+                                backgroundColor: 'var(--app-surface-2)',
+                                color: 'var(--app-text)',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                              }}
+                            >
+                              View
+                            </button>
+
+                            {userCanEditProject && parentClubOrgSlugOrId && (
+                              <button
+                                onClick={() => navigate(`/organisations/${parentClubOrgSlugOrId}/projects/${teamSlugOrId}/edit`)}
+                                style={{
+                                  padding: '6px 12px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #007bff',
+                                  backgroundColor: 'var(--app-surface)',
+                                  color: '#007bff',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                  fontWeight: 500,
+                                }}
+                              >
+                                Edit
+                              </button>
+                            )}
+
+                            {userCanDeleteProject && parentClubOrgSlugOrId && (
+                              <button
+                                onClick={() => handleDeleteProject(String(parentClubOrgSlugOrId), String(teamSlugOrId), String(team.name))}
+                                style={{
+                                  padding: '6px 12px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #dc3545',
+                                  backgroundColor: 'var(--app-surface)',
+                                  color: '#dc3545',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                  fontWeight: 500,
+                                }}
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     );
                   })}

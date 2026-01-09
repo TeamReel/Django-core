@@ -22,7 +22,6 @@ const navGroups: NavGroup[] = [
     label: 'Identity & Context',
     items: [
       { path: '/organisations', label: 'Organisations', icon: '🏢' },
-      { path: '/projects', label: 'Projects', icon: '📁' },
       { path: '/users', label: 'Users', icon: '👥' },
       { path: '/permissions', label: 'Permissions', icon: '🔐' },
       { path: '/profile', label: 'Profile', icon: '👤' },

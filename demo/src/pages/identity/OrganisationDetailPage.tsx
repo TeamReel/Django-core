@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Button,
@@ -51,6 +51,8 @@ export const OrganisationDetailPage: React.FC = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'member'>('member');
   const [inviteLoading, setInviteLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'projects' | 'governance' | 'audit'>('overview');
+  const [memberSearch, setMemberSearch] = useState('');
 
   // Resolve slug from ID if needed
   const resolvedOrg = organisations.find(o =>
@@ -88,6 +90,17 @@ export const OrganisationDetailPage: React.FC = () => {
   const handleOrganisationSwitch = (option: { id: string; label: string; slug: string }) => {
     navigate(`/organisations/${option.slug || option.id}`);
   };
+
+  const tabs = useMemo(
+    () => [
+      { id: 'overview' as const, label: 'Overview' },
+      { id: 'users' as const, label: 'Users' },
+      { id: 'projects' as const, label: 'Projects' },
+      { id: 'governance' as const, label: 'Governance' },
+      { id: 'audit' as const, label: 'Audit' },
+    ],
+    []
+  );
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,7 +241,7 @@ export const OrganisationDetailPage: React.FC = () => {
         const orgData = rawOrgData.data || rawOrgData;
         setOrg(orgData);
 
-        // Fetch members using slug
+        // Fetch members (can be large). Keep API call as-is, but UI defaults to overview tab.
         const membersUrl = `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/?include_project_memberships=true&include_role_assignments=true`;
         console.log('[OrganisationDetailPage] Fetching members from:', membersUrl);
         const membersResponse = await fetch(
@@ -276,7 +289,7 @@ export const OrganisationDetailPage: React.FC = () => {
           setMembers([]);
         }
 
-        // Fetch projects using slug
+        // Fetch projects using slug (preview)
         const projectsResponse = await fetch(
           `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/?limit=5`,
           {
@@ -362,6 +375,7 @@ export const OrganisationDetailPage: React.FC = () => {
       <div>
         <PageHeader
         title={org.name}
+        subtitle="Federation overview"
         breadcrumbs={[
           { label: 'Dashboard', onClick: () => navigate('/dashboard') },
           { label: 'Federations', onClick: () => navigate('/organisations') },
@@ -421,6 +435,36 @@ export const OrganisationDetailPage: React.FC = () => {
             >
               View All Users
             </button>
+            <button
+              onClick={() => navigate(`/clubs?org_id=${encodeURIComponent(String(org.slug || org.id))}`)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500
+              }}
+            >
+              Clubs
+            </button>
+            <button
+              onClick={() => navigate(`/teams?org_id=${encodeURIComponent(String(org.slug || org.id))}`)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500
+              }}
+            >
+              Teams
+            </button>
             {userCanEditOrg && (
               <>
                 <button
@@ -462,142 +506,334 @@ export const OrganisationDetailPage: React.FC = () => {
       />
 
       <PageContent>
-        {/* Organisation summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card data-testid="org-summary-members">
-            <div className="text-sm text-gray-600">Members</div>
-            <div className="text-2xl font-bold">{org.member_count || members.length || 0}</div>
-          </Card>
-          <Card data-testid="org-summary-projects">
-            <div className="text-sm text-gray-600">Projects</div>
-            <div className="text-2xl font-bold">{org.project_count || projects.length || 0}</div>
-          </Card>
-          <Card data-testid="org-summary-credits">
-            <div className="text-sm text-gray-600">Credits Available</div>
-            <div className="text-2xl font-bold">{org.credit_balance || 0}</div>
-          </Card>
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--app-border)', marginBottom: '20px', flexWrap: 'wrap' }}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                padding: '10px 14px',
+                borderRadius: '6px 6px 0 0',
+                border: '1px solid var(--app-border)',
+                borderBottom: activeTab === tab.id ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
+                backgroundColor: activeTab === tab.id ? 'var(--app-surface)' : 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: activeTab === tab.id ? 600 : 500,
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Members section */}
-        <Card className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Members</h3>
-          </div>
+        {/* Overview */}
+        {activeTab === 'overview' && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card data-testid="org-summary-members">
+                <div className="text-sm text-gray-600">Users</div>
+                <div className="text-2xl font-bold">{org.member_count || members.length || 0}</div>
+              </Card>
+              <Card data-testid="org-summary-projects">
+                <div className="text-sm text-gray-600">Projects</div>
+                <div className="text-2xl font-bold">{org.project_count || projects.length || 0}</div>
+              </Card>
+              <Card data-testid="org-summary-credits">
+                <div className="text-sm text-gray-600">Credits</div>
+                <div className="text-2xl font-bold">{org.credit_balance || 0}</div>
+              </Card>
+            </div>
 
-          {userCanInvite && (
-            <div className="mb-6 p-4 bg-gray-50 rounded-md">
-              <h4 className="text-sm font-medium mb-2">Add Member</h4>
-              <form onSubmit={handleInvite} className="flex gap-2 items-end">
-                <div style={{ flex: 1 }}>
-                  <label className="block text-xs text-gray-500 mb-1">User Email</label>
+            <Card className="mb-6">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div>
+                  <div className="text-lg font-semibold">Federation navigation</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>
+                    Use these to explore clubs, teams, seasons and matches under this federation.
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <Button variant="secondary" size="sm" onClick={() => navigate(`/clubs?org_id=${encodeURIComponent(String(org.slug || org.id))}`)}>
+                    View clubs
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => navigate(`/teams?org_id=${encodeURIComponent(String(org.slug || org.id))}`)}>
+                    View teams
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${currentOrgSlug}/users`)}>
+                    View users
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${currentOrgSlug}/projects`)}>
+                    View projects
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </>
+        )}
+
+        {/* Users */}
+        {activeTab === 'users' && (
+          <Card className="mb-6">
+            <div className="flex justify-between items-center mb-4" style={{ gap: '12px', flexWrap: 'wrap' }}>
+              <h3 className="text-lg font-semibold">Users</h3>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ width: '280px', maxWidth: '100%' }}>
                   <Input
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="e.g. user@example.com"
-                    required
-                    type="email"
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
+                    placeholder="Search users (name/email)"
                   />
                 </div>
-                <div style={{ width: '120px' }}>
-                  <label className="block text-xs text-gray-500 mb-1">Role</label>
-                  <select
-                    className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white"
-                    value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value as 'admin' | 'member')}
-                  >
-                    <option value="member">Member</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-                <Button type="submit" loading={inviteLoading}>
-                  Add
+                <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${currentOrgSlug}/users`)}>
+                  View all
                 </Button>
-              </form>
+              </div>
             </div>
-          )}
 
-          {members.length > 0 ? (
-            <Card>
-            <Table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {members.map((item: any) => {
-                  // Handle Membership object structure
-                  const user = item.user || item;
-                  const role = item.role || 'member';
-                  const membershipId = item.id; // Membership ID needed for delete
-                  const isVirtualMember = item.source === 'assignment' || item.source === 'project_membership' || String(membershipId).startsWith('pm:');
+            {userCanInvite && (
+              <div className="mb-6 p-4 bg-gray-50 rounded-md">
+                <h4 className="text-sm font-medium mb-2">Add user to federation</h4>
+                <form onSubmit={handleInvite} className="flex gap-2 items-end" style={{ flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: '240px' }}>
+                    <label className="block text-xs text-gray-500 mb-1">User Email</label>
+                    <Input
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="e.g. user@example.com"
+                      required
+                      type="email"
+                    />
+                  </div>
+                  <div style={{ width: '120px' }}>
+                    <label className="block text-xs text-gray-500 mb-1">Role</label>
+                    <select
+                      className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white"
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value as 'admin' | 'member')}
+                    >
+                      <option value="member">Member</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <Button type="submit" loading={inviteLoading}>
+                    Add
+                  </Button>
+                </form>
+              </div>
+            )}
 
-                  return (
-                    <tr key={user.id}>
+            {(() => {
+              const normalizedQuery = memberSearch.trim().toLowerCase();
+              const filteredMembers = members.filter((item: any) => {
+                const u = item.user || item;
+                const haystack = `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase();
+                return !normalizedQuery || haystack.includes(normalizedQuery);
+              });
+
+              const preview = filteredMembers.slice(0, 50);
+
+              if (filteredMembers.length === 0) return <Alert variant="info">No users match your search.</Alert>;
+
+              return (
+                <>
+                  {filteredMembers.length > 50 && (
+                    <Alert variant="info">Showing first 50 users. Use “View all” for the complete list.</Alert>
+                  )}
+                  <Card>
+                    <Table>
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>Role</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {preview.map((item: any) => {
+                          const user = item.user || item;
+                          const role = item.role || 'member';
+                          const membershipId = item.id;
+                          const isVirtualMember = item.source === 'assignment' || item.source === 'project_membership' || String(membershipId).startsWith('pm:');
+
+                          return (
+                            <tr key={user.id}>
+                              <td>
+                                <Link
+                                  to={`/organisations/${currentOrgSlug}/users/${user.id}`}
+                                  className="text-blue-600 hover:underline"
+                                  style={{ fontSize: '0.85rem' }}
+                                >
+                                  {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                                </Link>
+                              </td>
+                              <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
+                              <td>
+                                <Badge variant="default">{role}</Badge>
+                              </td>
+                              <td>
+                                {userCanManageMembers && !isVirtualMember ? (
+                                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    <button
+                                      onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
+                                      style={{
+                                        padding: '6px 12px',
+                                        borderRadius: '4px',
+                                        border: '1px solid var(--app-border)',
+                                        backgroundColor: 'var(--app-surface-2)',
+                                        color: 'var(--app-text)',
+                                        cursor: 'pointer',
+                                        fontSize: '12px',
+                                        fontWeight: 500
+                                      }}
+                                    >
+                                      View
+                                    </button>
+                                    <button
+                                      onClick={async () => {
+                                        if (!window.confirm(`Remove ${user.email} from federation?`)) return;
+                                        try {
+                                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                          const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                                          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/${membershipId}/`, {
+                                            method: 'DELETE',
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                              'X-CSRFToken': csrfToken || '',
+                                            },
+                                            credentials: 'include',
+                                          });
+
+                                          if (!res.ok) {
+                                            alert('Failed to remove user');
+                                            return;
+                                          }
+
+                                          // Local update (avoid re-fetch storm)
+                                          setMembers((prev) => prev.filter((m: any) => String(m.id) !== String(membershipId)));
+                                        } catch (e) {
+                                          console.error(e);
+                                          alert('Error removing user');
+                                        }
+                                      }}
+                                      style={{
+                                        padding: '6px 12px',
+                                        borderRadius: '4px',
+                                        border: '1px solid #dc3545',
+                                        backgroundColor: 'var(--app-surface)',
+                                        color: '#dc3545',
+                                        cursor: 'pointer',
+                                        fontSize: '12px',
+                                        fontWeight: 500
+                                      }}
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                ) : null}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </Table>
+                  </Card>
+                </>
+              );
+            })()}
+          </Card>
+        )}
+
+        {/* Projects */}
+        {activeTab === 'projects' && (
+          <Card className="mb-6">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
+              <h3 className="text-lg font-semibold">Recent Projects</h3>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => navigate(`/organisations/${currentOrgSlug}/projects`)}
+              >
+                View All Projects
+              </Button>
+            </div>
+            {projects.length > 0 ? (
+              <Card>
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Project Name</th>
+                    <th>Team Size</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projects.map((project) => (
+                    <tr key={project.id}>
                       <td>
                         <Link
-                          to={`/organisations/${currentOrgSlug}/users/${user.id}`}
+                          to={`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`}
                           className="text-blue-600 hover:underline"
                           style={{ fontSize: '0.85rem' }}
-                          data-testid={`user-link-${user.id}`}
                         >
-                          {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                          {project.name}
                         </Link>
                       </td>
-                      <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
                       <td>
-                        <Badge variant="default" data-testid={`member-role-${user.id}`}>
-                          {role}
+                        <Badge variant="default">{project.member_count || 0}</Badge>
+                      </td>
+                      <td>
+                        <Badge variant={project.is_active ? 'success' : 'warning'}>
+                          {project.is_active ? 'Active' : 'Inactive'}
                         </Badge>
                       </td>
                       <td>
-                        {userCanManageMembers && !isVirtualMember ? (
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            {['admin', 'member'].includes(role) && (
-                              <>
-                                <button
-                                  onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
-                                  style={{
-                                      padding: '6px 12px',
-                                      borderRadius: '4px',
-                                      border: '1px solid var(--app-border)',
-                                      backgroundColor: 'var(--app-surface-2)',
-                                      color: 'var(--app-text)',
-                                      cursor: 'pointer',
-                                      fontSize: '12px',
-                                      fontWeight: 500
-                                  }}
-                                >
-                                  View
-                                </button>
-                                <button
-                                  onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}?action=edit`)}
-                                  style={{
-                                      padding: '6px 12px',
-                                      borderRadius: '4px',
-                                      border: '1px solid #0056b3',
-                                      backgroundColor: 'var(--app-surface)',
-                                      color: '#007bff',
-                                      cursor: 'pointer',
-                                      fontSize: '12px',
-                                      fontWeight: 500
-                                  }}
-                                >
-                                  Edit
-                                </button>
-                              </>
-                            )}
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <button
+                            onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '4px',
+                              border: '1px solid var(--app-border)',
+                              backgroundColor: 'var(--app-surface-2)',
+                              color: 'var(--app-text)',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              fontWeight: 500
+                            }}
+                          >
+                            View
+                          </button>
+                          {userCanEditProject && (
+                            <button
+                              onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}/edit`)}
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                border: '1px solid #007bff',
+                                backgroundColor: 'var(--app-surface)',
+                                color: '#007bff',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: 500
+                              }}
+                            >
+                              Edit
+                            </button>
+                          )}
+                          {userCanDeleteProject && (
                             <button
                               onClick={async () => {
-                                if (!window.confirm(`Remove ${user.email} from organisation?`)) return;
+                                if (!window.confirm(`Are you sure you want to delete project ${project.name}?`)) return;
                                 try {
                                   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
                                   const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
-                                  const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/${membershipId}/`, {
+                                  const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/${project.slug || project.id}/`, {
                                     method: 'DELETE',
                                     headers: {
                                       'Content-Type': 'application/json',
@@ -607,219 +843,61 @@ export const OrganisationDetailPage: React.FC = () => {
                                   });
 
                                   if (res.ok) {
-                                    // Refresh members
-                                    const membersResponse = await fetch(
-                                      `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/?include_project_memberships=true&include_role_assignments=true`,
-                                      {
-                                        headers: {
-                                          'Content-Type': 'application/json',
-                                          'X-Requested-With': 'XMLHttpRequest',
-                                          'X-Organisation-ID': String(currentOrgId || ''),
-                                        },
-                                        credentials: 'include',
-                                      }
-                                    );
-                                    if (membersResponse.ok) {
-                                      const membersData = await membersResponse.json();
-                                      setMembers(Array.isArray(membersData) ? membersData : membersData.results || []);
-                                    }
+                                    setProjects((prev) => prev.filter((p) => String(p.id) !== String(project.id)));
                                   } else {
-                                    alert('Failed to remove member');
+                                    alert('Error deleting project');
                                   }
                                 } catch (e) {
                                   console.error(e);
-                                  alert('Error removing member');
+                                  alert('Error deleting project');
                                 }
                               }}
-                            style={{
+                              style={{
                                 padding: '6px 12px',
                                 borderRadius: '4px',
-                                border: '1px solid #bd2130',
+                                border: '1px solid #dc3545',
                                 backgroundColor: 'var(--app-surface)',
                                 color: '#dc3545',
                                 cursor: 'pointer',
                                 fontSize: '12px',
                                 fontWeight: 500
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ) : null}
-                    </td>
-                  </tr>
-                );
-              })}
-              </tbody>
-            </Table>
-            </Card>
-          ) : (
-            <Alert variant="info">No members yet</Alert>
-          )}
-        </Card>
-
-        {/* Projects section */}
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 className="text-lg font-semibold">Recent Projects</h3>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate(`/organisations/${currentOrgSlug}/projects`)}
-            >
-              View All Projects
-            </Button>
-          </div>
-          {projects.length > 0 ? (
-            <Card>
-            <Table>
-              <thead>
-                <tr>
-                  <th>Project Name</th>
-                  <th>Team Size</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {projects.map((project) => (
-                  <tr key={project.id}>
-                    <td>
-                      <Link
-                        to={`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`}
-                        className="text-blue-600 hover:underline"
-                        style={{ fontSize: '0.85rem' }}
-                        data-testid={`project-link-${project.id}`}
-                      >
-                        {project.name}
-                      </Link>
-                    </td>
-                    <td>
-                      <Badge variant="default">{project.member_count || 0}</Badge>
-                    </td>
-                    <td>
-                      <Badge
-                        variant={project.is_active ? 'success' : 'warning'}
-                        data-testid={`project-status-${project.id}`}
-                      >
-                        {project.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                          <button
-                              onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`)}
-                              style={{
-                                  padding: '6px 12px',
-                                  borderRadius: '4px',
-                                  border: '1px solid var(--app-border)',
-                                  backgroundColor: 'var(--app-surface-2)',
-                                  color: 'var(--app-text)',
-                                  cursor: 'pointer',
-                                  fontSize: '12px',
-                                  fontWeight: 500
                               }}
-                          >
-                              View
-                          </button>
-                          {userCanEditProject && (
-                            <button
-                                onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}/edit`)}
-                                style={{
-                                    padding: '6px 12px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #0056b3',
-                                    backgroundColor: 'var(--app-surface)',
-                                    color: '#007bff',
-                                    cursor: 'pointer',
-                                    fontSize: '12px',
-                                    fontWeight: 500
-                                }}
                             >
-                                Edit
+                              Delete
                             </button>
                           )}
-                          {userCanDeleteProject && (
-                            <button
-                                onClick={async () => {
-                                    if (!window.confirm(`Are you sure you want to delete project ${project.name}?`)) return;
-                                    try {
-                                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                        const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+              </Card>
+            ) : (
+              <Alert variant="info">No projects yet</Alert>
+            )}
+          </Card>
+        )}
 
-                                        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/${project.slug || project.id}/`, {
-                                            method: 'DELETE',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRFToken': csrfToken || '',
-                                            },
-                                            credentials: 'include',
-                                        });
+        {/* Governance */}
+        {activeTab === 'governance' && (
+          <Card className="mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Governance & Compliance</h3>
+            </div>
+            <PolicyList organisationId={org.id || currentOrgId || ''} />
+          </Card>
+        )}
 
-                                        if (res.ok) {
-                                          // Refresh projects
-                                          const projectsResponse = await fetch(
-                                              `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/?limit=5`,
-                                              {
-                                                  headers: {
-                                                      'Content-Type': 'application/json',
-                                                      'X-Requested-With': 'XMLHttpRequest',
-                                                      'X-Organisation-ID': String(currentOrgId || ''),
-                                                  },
-                                                  credentials: 'include',
-                                              }
-                                          );
-                                          if (projectsResponse.ok) {
-                                              const projectsData = await projectsResponse.json();
-                                              setProjects(projectsData.results || []);
-                                          }
-                                      }
-                                  } catch (e) {
-                                      console.error(e);
-                                      alert('Error deleting project');
-                                  }
-                              }}
-                              style={{
-                                  padding: '6px 12px',
-                                  borderRadius: '4px',
-                                  border: '1px solid #bd2130',
-                                  backgroundColor: 'var(--app-surface)',
-                                  color: '#dc3545',
-                                  cursor: 'pointer',
-                                  fontSize: '12px',
-                                  fontWeight: 500
-                              }}
-                          >
-                              Delete
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            </Card>
-          ) : (
-            <Alert variant="info">No projects yet</Alert>
-          )}
-        </Card>
-
-        {/* Governance Section */}
-        <Card className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Governance & Compliance</h3>
-          </div>
-          <PolicyList organisationId={org.id || currentOrgId || ''} />
-        </Card>
-
-        {/* Audit Log Section */}
-        <Card>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Audit Trail</h3>
-          </div>
-          <AuditLogTable organisationId={org.id || currentOrgId || ''} limit={10} />
-        </Card>
+        {/* Audit */}
+        {activeTab === 'audit' && (
+          <Card>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Audit Trail</h3>
+            </div>
+            <AuditLogTable organisationId={org.id || currentOrgId || ''} limit={10} />
+          </Card>
+        )}
 
       </PageContent>
       </div>
