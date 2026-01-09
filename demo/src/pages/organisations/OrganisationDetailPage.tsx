@@ -266,10 +266,12 @@ export default function OrganisationDetailPage() {
               }}>
                 {teams.map(team => {
                   const parentClub = clubs.find(c => c.id === team.parent);
+                  const parentClubSlugOrId = (parentClub as any)?.slug || (parentClub as any)?.id || team.parent;
+                  const teamSlugOrId = (team as any)?.slug || (team as any)?.id;
                   return (
                     <Link
                       key={team.id}
-                      to={`/organisations/${organisation.slug}/projects/${team.slug}`}
+                      to={`/organisations/${organisation.slug}/projects/${parentClubSlugOrId}/teams/${teamSlugOrId}`}
                       style={{
                         display: 'block',
                         padding: '16px',

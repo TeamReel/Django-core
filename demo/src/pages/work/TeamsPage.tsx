@@ -263,7 +263,7 @@ export default function TeamsPage() {
                     let parentClub = parentId !== null ? clubs.find((c) => String(c.id) === String(parentId)) : undefined;
                     if (!parentClub && parentName) parentClub = clubs.find((c) => c.name === parentName);
 
-                    const parentClubSlugOrId = parentClub?.slug || parentClub?.id;
+                    const parentClubSlugOrId = parentClub?.slug || parentClub?.id || (parentId !== null ? String(parentId) : undefined);
                     const orgRef = (parentClub as any)?.organisation as string | { id: string } | undefined;
 
                     const parentClubOrgId = (typeof orgRef === 'string' ? orgRef : (orgRef as any)?.id) || '';
@@ -290,9 +290,7 @@ export default function TeamsPage() {
                       ? `/organisations/${parentClubOrgSlugOrId}/projects/${parentClubSlugOrId}/teams/${teamSlugOrId}`
                       : `/organisations/${parentClubOrgSlugOrId}/projects/${teamSlugOrId}`;
 
-                    const clubDetailPath = parentClubSlugOrId
-                      ? `/organisations/${parentClubOrgSlugOrId}/projects/${parentClubSlugOrId}`
-                      : '';
+                    const clubDetailPath = parentClubSlugOrId ? `/organisations/${parentClubOrgSlugOrId}/projects/${parentClubSlugOrId}` : '';
 
                     return (
                       <tr key={team.id}>
