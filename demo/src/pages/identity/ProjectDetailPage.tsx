@@ -435,10 +435,9 @@ export const ProjectDetailPage: React.FC = () => {
 
             if (membersByIdResponse.ok) {
               const membersData = await membersByIdResponse.json();
-              const membersList =
-                membersData.data?.results || membersData.results || membersData.data || membersData || [];
-              console.log('[ProjectDetailPage] Fetched members:', membersList.length, 'from', membersByIdEndpoint);
+              const membersList = getPagedResults(membersData);
               const normalized = Array.isArray(membersList) ? membersList : [];
+              console.log('[ProjectDetailPage] Fetched members:', normalized.length, 'from', membersByIdEndpoint);
               setMembers(normalized);
 
               // Clubs often don't have direct memberships; show people via child teams if needed.
@@ -505,7 +504,7 @@ export const ProjectDetailPage: React.FC = () => {
 
                 if (orgMembersResponse.ok) {
                   const orgMembersData = await orgMembersResponse.json();
-                  let orgMembersList = orgMembersData.data?.results || orgMembersData.results || [];
+                  let orgMembersList = getPagedResults(orgMembersData);
 
                   orgMembersList = orgMembersList.filter((u: any) =>
                     u.project_memberships?.some(
@@ -608,12 +607,30 @@ export const ProjectDetailPage: React.FC = () => {
     setSeasonsLoading(true);
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     try {
+      const organisationId = String(
+        (project as any)?.organisation_id || (project as any)?.organisation?.id || resolvedOrg?.id || ''
+      );
+
+      // Preferred: org-wide seasons (matches the OrganisationDetailPage pattern).
+      if (organisationId) {
+        const params = new URLSearchParams();
+        params.set('organisation_id', organisationId);
+        params.set('parent_id', 'null');
+        params.set('page_size', '250');
+        const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+        const results = await fetchAllPages<any>(url, { credentials: 'include' });
+        if (Array.isArray(results) && results.length > 0) {
+          setSeasons(results);
+          return;
+        }
+      }
+
+      // Fallback: team-scoped seasons.
       if (isLikelyTeam) {
         const params = new URLSearchParams();
         params.set('project_id', String(project.id));
+        params.set('parent_id', 'null');
         params.set('page_size', '250');
-        // Root periods = seasons
-        params.set('parent_period__isnull', 'true');
 
         const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
         const results = await fetchAllPages<any>(url, { credentials: 'include' });
@@ -624,8 +641,8 @@ export const ProjectDetailPage: React.FC = () => {
         const fetches = teamIds.map(async (teamId) => {
           const params = new URLSearchParams();
           params.set('project_id', String(teamId));
+          params.set('parent_id', 'null');
           params.set('page_size', '100');
-          params.set('parent_period__isnull', 'true');
           const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
           return await fetchAllPages<any>(url, { credentials: 'include' });
         });
@@ -646,26 +663,112 @@ export const ProjectDetailPage: React.FC = () => {
     setCompetitionsLoading(true);
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     try {
-      if (isLikelyTeam) {
-        const params = new URLSearchParams();
-        params.set('project_id', String(project.id));
-        params.set('page_size', '250');
-        // Non-root periods = competitions
-        params.set('parent_period__isnull', 'false');
-        const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
-        const results = await fetchAllPages<any>(url, { credentials: 'include' });
-        setCompetitions(Array.isArray(results) ? results : []);
-      } else {
+      const organisationId = String(
+        (project as any)?.organisation_id || (project as any)?.organisation?.id || resolvedOrg?.id || ''
+      );
+
+      // Load seasons first (competitions are children of seasons).
+      // Avoid relying on React state timing by fetching into a local list if needed.
+      const loadSeasonList = async (): Promise<any[]> => {
+        if (Array.isArray(seasons) && seasons.length > 0) return seasons;
+
+        if (organisationId) {
+          const params = new URLSearchParams();
+          params.set('organisation_id', organisationId);
+          params.set('parent_id', 'null');
+          params.set('page_size', '250');
+          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+          const results = await fetchAllPages<any>(url, { credentials: 'include' });
+          if (Array.isArray(results) && results.length > 0) return results;
+        }
+
+        if (isLikelyTeam) {
+          const params = new URLSearchParams();
+          params.set('project_id', String(project.id));
+          params.set('parent_id', 'null');
+          params.set('page_size', '250');
+          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+          const results = await fetchAllPages<any>(url, { credentials: 'include' });
+          return Array.isArray(results) ? results : [];
+        }
+
         const teams = await ensureChildTeamsLoaded();
         const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
         const fetches = teamIds.map(async (teamId) => {
           const params = new URLSearchParams();
           params.set('project_id', String(teamId));
+          params.set('parent_id', 'null');
           params.set('page_size', '100');
-          params.set('parent_period__isnull', 'false');
           const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
           return await fetchAllPages<any>(url, { credentials: 'include' });
         });
+        const pages = await Promise.all(fetches);
+        return mergeUniqueById((pages || []).flat());
+      };
+
+      const seasonList = await loadSeasonList();
+      if (Array.isArray(seasonList) && seasonList.length > 0 && seasons.length === 0) {
+        setSeasons(seasonList);
+      }
+
+      const seasonIds = (Array.isArray(seasonList) ? seasonList : [])
+        .map((s: any) => String(s?.id || ''))
+        .filter(Boolean);
+
+      // Preferred: org-wide competitions via season parent_id.
+      if (organisationId && seasonIds.length > 0) {
+        const fetches = seasonIds.map(async (seasonId) => {
+          const params = new URLSearchParams();
+          params.set('organisation_id', organisationId);
+          params.set('parent_id', seasonId);
+          params.set('page_size', '250');
+          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+          return await fetchAllPages<any>(url, { credentials: 'include' });
+        });
+        const pages = await Promise.all(fetches);
+        const combined = mergeUniqueById((pages || []).flat());
+        if (combined.length > 0) {
+          setCompetitions(combined);
+          return;
+        }
+      }
+
+      // Fallback: team-scoped competitions.
+      if (isLikelyTeam) {
+        if (seasonIds.length === 0) {
+          setCompetitions([]);
+          return;
+        }
+        const fetches = seasonIds.map(async (seasonId) => {
+          const params = new URLSearchParams();
+          params.set('project_id', String(project.id));
+          params.set('parent_id', seasonId);
+          params.set('page_size', '250');
+          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+          return await fetchAllPages<any>(url, { credentials: 'include' });
+        });
+        const pages = await Promise.all(fetches);
+        const combined = mergeUniqueById((pages || []).flat());
+        setCompetitions(combined);
+      } else {
+        const teams = await ensureChildTeamsLoaded();
+        const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
+        if (teamIds.length === 0 || seasonIds.length === 0) {
+          setCompetitions([]);
+          return;
+        }
+
+        const fetches = teamIds.flatMap((teamId) =>
+          seasonIds.map(async (seasonId) => {
+            const params = new URLSearchParams();
+            params.set('project_id', teamId);
+            params.set('parent_id', seasonId);
+            params.set('page_size', '100');
+            const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+            return await fetchAllPages<any>(url, { credentials: 'include' });
+          })
+        );
+
         const pages = await Promise.all(fetches);
         const combined = mergeUniqueById((pages || []).flat());
         setCompetitions(combined);
