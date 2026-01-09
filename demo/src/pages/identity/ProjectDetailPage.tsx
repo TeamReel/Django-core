@@ -101,6 +101,8 @@ export const ProjectDetailPage: React.FC = () => {
   const [childProjectsLoading, setChildProjectsLoading] = useState(false);
   const [seasons, setSeasons] = useState<any[]>([]);
   const [seasonsLoading, setSeasonsLoading] = useState(false);
+  const [competitions, setCompetitions] = useState<any[]>([]);
+  const [competitionsLoading, setCompetitionsLoading] = useState(false);
   const [allMatches, setAllMatches] = useState<any[]>([]);
   const [allMatchesLoading, setAllMatchesLoading] = useState(false);
 
@@ -110,6 +112,62 @@ export const ProjectDetailPage: React.FC = () => {
   const [recentPlayedMatches, setRecentPlayedMatches] = useState<any[]>([]);
   const [recentPlayedMatchesLoading, setRecentPlayedMatchesLoading] = useState(false);
   const [matchesCount, setMatchesCount] = useState<number | null>(null);
+
+  const getParentProjectId = (p: any): string | null => {
+    const parent = p?.parent_project || p?.parent || p?.parent_project_id || p?.parent_id;
+    if (!parent) return null;
+    if (typeof parent === 'object') return String(parent.id || parent.slug || '');
+    return String(parent);
+  };
+
+  const getOrganisationId = (p: any): string | null => {
+    const oid = p?.organisation_id || p?.organisation?.id;
+    return oid ? String(oid) : null;
+  };
+
+  const ensureChildTeamsLoaded = async (): Promise<Project[]> => {
+    if (!project?.id) return [];
+    if (childProjects.length > 0) return childProjects;
+
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${project.id}&page_size=250`;
+    const results = await fetchAllPages<Project>(url, { credentials: 'include' });
+
+    const parentId = String(project.id);
+    const orgId = String(
+      (project as any)?.organisation_id || (project as any)?.organisation?.id || resolvedOrg?.id || ''
+    );
+
+    const filteredByOrg = orgId
+      ? (results as any[]).filter((p: any) => String(getOrganisationId(p) || '') === orgId)
+      : (results as any[]);
+
+    const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
+    const finalResults = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
+
+    setChildProjects(finalResults as Project[]);
+    return finalResults as Project[];
+  };
+
+  const mergeUniqueById = <T extends { id: any }>(items: T[]): T[] => {
+    const seen = new Set<string>();
+    const out: T[] = [];
+    for (const item of items) {
+      const key = String((item as any)?.id ?? '');
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(item);
+    }
+    return out;
+  };
+
+  const sortByStartTimeDesc = (items: any[]): any[] => {
+    return [...items].sort((a, b) => {
+      const ta = a?.start_time ? new Date(a.start_time).getTime() : 0;
+      const tb = b?.start_time ? new Date(b.start_time).getTime() : 0;
+      return tb - ta;
+    });
+  };
 
   // Resolve org and project slugs
   const resolvedOrg = (orgId
@@ -356,7 +414,45 @@ export const ProjectDetailPage: React.FC = () => {
               const membersList =
                 membersData.data?.results || membersData.results || membersData.data || membersData || [];
               console.log('[ProjectDetailPage] Fetched members:', membersList.length, 'from', membersByIdEndpoint);
-              setMembers(Array.isArray(membersList) ? membersList : []);
+              const normalized = Array.isArray(membersList) ? membersList : [];
+              setMembers(normalized);
+
+              // Clubs often don't have direct memberships; show people via child teams if needed.
+              if (!isTeamRoute && normalized.length === 0 && resolvedOrg?.slug) {
+                const teams = await ensureChildTeamsLoaded();
+                const teamIds = new Set(teams.map((t: any) => String(t.id)));
+
+                const params = new URLSearchParams();
+                params.set('page_size', '250');
+                params.set('include_project_memberships', 'true');
+                params.set('include_role_assignments', 'true');
+                const orgMembersEndpoint = `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/members/?${params.toString()}`;
+                console.log('[ProjectDetailPage] Club members fallback via org members:', orgMembersEndpoint);
+
+                const orgMembers = await fetchAllPages<any>(orgMembersEndpoint, {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                  },
+                  credentials: 'include',
+                });
+
+                const clubId = String(projectIdForApi);
+                const filtered = (orgMembers || []).filter((u: any) =>
+                  u.project_memberships?.some((m: any) => {
+                    const pid = String(m.project_id || m.project?.id || '');
+                    if (pid === clubId) return true;
+                    if (teamIds.has(pid)) return true;
+                    const parentId = String(
+                      m.project?.parent_project_id || m.project?.parent_id || m.project?.parent_project?.id || ''
+                    );
+                    return parentId === clubId;
+                  })
+                );
+
+                console.log('[ProjectDetailPage] Club people derived from child teams:', filtered.length);
+                setMembers(Array.isArray(filtered) ? filtered : []);
+              }
             } else {
               console.error(
                 `[ProjectDetailPage] Project members endpoint failed with status ${membersByIdResponse.status} for ${membersByIdEndpoint}`
@@ -457,18 +553,6 @@ export const ProjectDetailPage: React.FC = () => {
        const parentId = String(project.id);
        const orgId = String((project as any)?.organisation_id || (project as any)?.organisation?.id || resolvedOrg?.id || '');
 
-       const getParentProjectId = (p: any): string | null => {
-         const parent = p?.parent_project || p?.parent || p?.parent_project_id || p?.parent_id;
-         if (!parent) return null;
-         if (typeof parent === 'object') return String(parent.id || parent.slug || '');
-         return String(parent);
-       };
-
-       const getOrganisationId = (p: any): string | null => {
-         const oid = p?.organisation_id || p?.organisation?.id;
-         return oid ? String(oid) : null;
-       };
-
        // Server-side parent_project filtering appears unreliable in production.
        // We defensively filter by organisation + actual parent id.
        const filteredByOrg = orgId
@@ -499,20 +583,72 @@ export const ProjectDetailPage: React.FC = () => {
     setSeasonsLoading(true);
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     try {
-      const params = new URLSearchParams();
-      params.set('project_id', String(project.id));
-      params.set('type', 'season');
-      params.set('page_size', '250');
-      // Ensure we get root periods (seasons)
-      params.set('parent_period__isnull', 'true');
+      if (isLikelyTeam) {
+        const params = new URLSearchParams();
+        params.set('project_id', String(project.id));
+        params.set('page_size', '250');
+        // Root periods = seasons
+        params.set('parent_period__isnull', 'true');
 
-      const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
-      const results = await fetchAllPages<any>(url, { credentials: 'include' });
-      setSeasons(results);
+        const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+        const results = await fetchAllPages<any>(url, { credentials: 'include' });
+        setSeasons(Array.isArray(results) ? results : []);
+      } else {
+        const teams = await ensureChildTeamsLoaded();
+        const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
+        const fetches = teamIds.map(async (teamId) => {
+          const params = new URLSearchParams();
+          params.set('project_id', String(teamId));
+          params.set('page_size', '100');
+          params.set('parent_period__isnull', 'true');
+          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+          return await fetchAllPages<any>(url, { credentials: 'include' });
+        });
+
+        const pages = await Promise.all(fetches);
+        const combined = mergeUniqueById((pages || []).flat());
+        setSeasons(combined);
+      }
     } catch (e) {
       console.error('Failed to fetch seasons', e);
     } finally {
       setSeasonsLoading(false);
+    }
+  };
+
+  const fetchCompetitions = async () => {
+    if (!project?.id) return;
+    setCompetitionsLoading(true);
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    try {
+      if (isLikelyTeam) {
+        const params = new URLSearchParams();
+        params.set('project_id', String(project.id));
+        params.set('page_size', '250');
+        // Non-root periods = competitions
+        params.set('parent_period__isnull', 'false');
+        const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+        const results = await fetchAllPages<any>(url, { credentials: 'include' });
+        setCompetitions(Array.isArray(results) ? results : []);
+      } else {
+        const teams = await ensureChildTeamsLoaded();
+        const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
+        const fetches = teamIds.map(async (teamId) => {
+          const params = new URLSearchParams();
+          params.set('project_id', String(teamId));
+          params.set('page_size', '100');
+          params.set('parent_period__isnull', 'false');
+          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+          return await fetchAllPages<any>(url, { credentials: 'include' });
+        });
+        const pages = await Promise.all(fetches);
+        const combined = mergeUniqueById((pages || []).flat());
+        setCompetitions(combined);
+      }
+    } catch (e) {
+      console.error('Failed to fetch competitions', e);
+    } finally {
+      setCompetitionsLoading(false);
     }
   };
 
@@ -521,15 +657,35 @@ export const ProjectDetailPage: React.FC = () => {
     setAllMatchesLoading(true);
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     try {
-      const params = new URLSearchParams();
-      params.set('project_id', String(project.id));
-      params.set('activity_type', 'match');
-      params.set('page_size', '250');
-      params.set('ordering', '-start_time');
+      if (isLikelyTeam) {
+        const params = new URLSearchParams();
+        params.set('project_id', String(project.id));
+        params.set('activity_type', 'match');
+        params.set('page_size', '250');
+        params.set('ordering', '-start_time');
 
-      const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
-      const results = await fetchAllPages<any>(url, { credentials: 'include' });
-      setAllMatches(results);
+        const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
+        const results = await fetchAllPages<any>(url, { credentials: 'include' });
+        setAllMatches(Array.isArray(results) ? results : []);
+      } else {
+        const teams = await ensureChildTeamsLoaded();
+        const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
+
+        const fetches = teamIds.map(async (teamId) => {
+          const params = new URLSearchParams();
+          params.set('project_id', String(teamId));
+          params.set('activity_type', 'match');
+          params.set('page_size', '100');
+          params.set('ordering', '-start_time');
+          const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
+          return await fetchAllPages<any>(url, { credentials: 'include' });
+        });
+
+        const pages = await Promise.all(fetches);
+        const combined = mergeUniqueById((pages || []).flat());
+        const sorted = sortByStartTimeDesc(combined);
+        setAllMatches(sorted.slice(0, 250));
+      }
     } catch (e) {
       console.error('Failed to fetch matches', e);
     } finally {
@@ -550,16 +706,15 @@ export const ProjectDetailPage: React.FC = () => {
   useEffect(() => {
     if (!project) return;
     console.log('[ProjectDetailPage] Tab changed to:', activeTab, 'isLikelyTeam:', isLikelyTeam, 'project:', project.name);
-    if (activeTab === 'hierarchy') {
-      if (isLikelyTeam) {
-        console.log('[ProjectDetailPage] Team detected, fetching seasons. Current seasons:', seasons.length);
-        if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
-      } else {
-        console.log('[ProjectDetailPage] Club detected, fetching child teams. Current childProjects:', childProjects.length);
-        if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
-      }
+    if (activeTab === 'teams') {
+      console.log('[ProjectDetailPage] Club detected, fetching child teams. Current childProjects:', childProjects.length);
+      if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
+    } else if (activeTab === 'seasons') {
+      if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
+    } else if (activeTab === 'competitions') {
+      if (competitions.length === 0 && !competitionsLoading) fetchCompetitions();
     } else if (activeTab === 'matches') {
-       if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
+      if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
     }
   }, [activeTab, project?.id, isLikelyTeam]);
 
@@ -575,19 +730,41 @@ export const ProjectDetailPage: React.FC = () => {
       // 1. Scheduled Matches
       try {
         setScheduledMatchesLoading(true);
-        const params = new URLSearchParams();
-        params.set('activity_type', 'match');
-         // We filter by project_id so that we get matches for the Club or Field Team
-        params.set('project_id', projectId);
-        params.set('start_time__gte', new Date().toISOString());
-        params.set('ordering', 'start_time');
-        params.set('page_size', '5');
+        if (isLikelyTeam) {
+          const params = new URLSearchParams();
+          params.set('activity_type', 'match');
+          params.set('project_id', projectId);
+          params.set('start_time__gte', new Date().toISOString());
+          params.set('ordering', 'start_time');
+          params.set('page_size', '5');
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
-        if (res.ok) {
-           const json = await res.json();
-           const results = json.data?.results || json.results || [];
-           setScheduledMatches(results);
+          const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
+          if (res.ok) {
+            const json = await res.json();
+            const results = json.data?.results || json.results || [];
+            setScheduledMatches(results);
+          }
+        } else {
+          const teams = await ensureChildTeamsLoaded();
+          const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
+          const fetches = teamIds.map(async (teamId) => {
+            const params = new URLSearchParams();
+            params.set('activity_type', 'match');
+            params.set('project_id', String(teamId));
+            params.set('start_time__gte', new Date().toISOString());
+            params.set('ordering', 'start_time');
+            params.set('page_size', '5');
+            const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
+            return await fetchAllPages<any>(url, { credentials: 'include' });
+          });
+          const pages = await Promise.all(fetches);
+          const combined = mergeUniqueById((pages || []).flat());
+          const sorted = [...combined].sort((a, b) => {
+            const ta = a?.start_time ? new Date(a.start_time).getTime() : 0;
+            const tb = b?.start_time ? new Date(b.start_time).getTime() : 0;
+            return ta - tb;
+          });
+          setScheduledMatches(sorted.slice(0, 5));
         }
       } catch (e) {
         console.warn('Failed to fetch scheduled matches', e);
@@ -598,18 +775,37 @@ export const ProjectDetailPage: React.FC = () => {
       // 2. Recent Played Matches
       try {
         setRecentPlayedMatchesLoading(true);
-        const params = new URLSearchParams();
-        params.set('activity_type', 'match');
-        params.set('project_id', projectId);
-        params.set('start_time__lt', new Date().toISOString());
-        params.set('ordering', '-start_time');
-        params.set('page_size', '10');
+        if (isLikelyTeam) {
+          const params = new URLSearchParams();
+          params.set('activity_type', 'match');
+          params.set('project_id', projectId);
+          params.set('start_time__lt', new Date().toISOString());
+          params.set('ordering', '-start_time');
+          params.set('page_size', '10');
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
-        if (res.ok) {
-           const json = await res.json();
-           const results = json.data?.results || json.results || [];
-           setRecentPlayedMatches(results);
+          const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
+          if (res.ok) {
+            const json = await res.json();
+            const results = json.data?.results || json.results || [];
+            setRecentPlayedMatches(results);
+          }
+        } else {
+          const teams = await ensureChildTeamsLoaded();
+          const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
+          const fetches = teamIds.map(async (teamId) => {
+            const params = new URLSearchParams();
+            params.set('activity_type', 'match');
+            params.set('project_id', String(teamId));
+            params.set('start_time__lt', new Date().toISOString());
+            params.set('ordering', '-start_time');
+            params.set('page_size', '10');
+            const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
+            return await fetchAllPages<any>(url, { credentials: 'include' });
+          });
+          const pages = await Promise.all(fetches);
+          const combined = mergeUniqueById((pages || []).flat());
+          const sorted = sortByStartTimeDesc(combined);
+          setRecentPlayedMatches(sorted.slice(0, 10));
         }
       } catch (e) {
          console.warn('Failed to fetch recent matches', e);
@@ -619,15 +815,20 @@ export const ProjectDetailPage: React.FC = () => {
 
       // 3. Matches Count
       try {
-        const params = new URLSearchParams();
-        params.set('activity_type', 'match');
-        params.set('project_id', projectId);
-        params.set('page_size', '1');
-        const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
-        if (res.ok) {
-           const json = await res.json();
-           const count = json.data?.count ?? json.count ?? 0;
-           setMatchesCount(count);
+        if (isLikelyTeam) {
+          const params = new URLSearchParams();
+          params.set('activity_type', 'match');
+          params.set('project_id', projectId);
+          params.set('page_size', '1');
+          const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
+          if (res.ok) {
+            const json = await res.json();
+            const count = json.data?.count ?? json.count ?? 0;
+            setMatchesCount(count);
+          }
+        } else {
+          // Clubs aggregate matches across teams; we don't have a cheap count endpoint for that.
+          setMatchesCount(null);
         }
       } catch (e) {
          // ignore
@@ -711,7 +912,9 @@ export const ProjectDetailPage: React.FC = () => {
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'people', label: 'People' },
-    { id: 'hierarchy', label: isLikelyTeam ? 'Seasons' : 'Teams' },
+    ...(!isLikelyTeam ? [{ id: 'teams', label: 'Teams' }] : []),
+    { id: 'seasons', label: 'Seasons' },
+    { id: 'competitions', label: 'Competitions' },
     { id: 'matches', label: 'Matches' },
     { id: 'audit', label: 'Audit' },
   ];
@@ -895,7 +1098,13 @@ export const ProjectDetailPage: React.FC = () => {
                  <Card>
                   <div className="flex justify-between items-center mb-4">
                      <h3 className="text-lg font-semibold">{!isLikelyTeam ? 'Teams' : 'Seasons'}</h3>
-                     <Button variant="secondary" size="sm" onClick={() => setActiveTab('hierarchy')}>Manage { !isLikelyTeam ? 'Teams' : 'Seasons' }</Button>
+                       <Button
+                         variant="secondary"
+                         size="sm"
+                         onClick={() => setActiveTab(!isLikelyTeam ? 'teams' : 'seasons')}
+                       >
+                         Manage { !isLikelyTeam ? 'Teams' : 'Seasons' }
+                       </Button>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg text-center">
                      <div className="text-sm text-gray-600 mb-2">
@@ -951,9 +1160,14 @@ export const ProjectDetailPage: React.FC = () => {
                       <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => setActiveTab('people')}>
                         Manage Members
                       </Button>
-                      <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => setActiveTab('hierarchy')}>
-                        { !isLikelyTeam ? 'Manage Teams' : 'Manage Seasons' }
-                      </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          style={{ width: '100%', justifyContent: 'flex-start' }}
+                          onClick={() => setActiveTab(!isLikelyTeam ? 'teams' : 'seasons')}
+                        >
+                          { !isLikelyTeam ? 'Manage Teams' : 'Manage Seasons' }
+                        </Button>
                       <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}/edit`)}>
                         Edit Project Settings
                       </Button>
@@ -966,100 +1180,173 @@ export const ProjectDetailPage: React.FC = () => {
 
           {activeTab === 'people' && (
             <Card>
-              <MemberList projectId={project.slug || project.id} initialMembers={members} />
+                {isLikelyTeam ? (
+                  <MemberList projectId={String(project.id)} initialMembers={members as any} />
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold mb-4">People</h3>
+                    {members.length === 0 ? (
+                      <Alert variant="info">No people found for this club.</Alert>
+                    ) : (
+                      <Table style={compactTableStyle}>
+                        <thead>
+                          <tr>
+                            <th style={compactThStyle}>Name</th>
+                            <th style={compactThStyle}>Email</th>
+                            <th style={compactThStyle}>Role</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {members.map((item: any) => {
+                            const user = item.user || item;
+                            const name =
+                              user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || '-';
+                            const email = user.email || '-';
+                            const role = item.role || user.role || 'member';
+                            return (
+                              <tr key={String(user.id || item.id)}>
+                                <td style={compactTextTdStyle}>{name}</td>
+                                <td style={compactTextTdStyle}>{email}</td>
+                                <td style={compactTextTdStyle}>
+                                  <Badge variant="default">{String(role)}</Badge>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </Table>
+                    )}
+                  </>
+                )}
             </Card>
           )}
 
-          {activeTab === 'hierarchy' && (
-            <Card>
-              <div className="flex justify-between items-center mb-4">
-                 <h3 className="text-lg font-semibold">{!isLikelyTeam ? 'Teams' : 'Seasons'}</h3>
-                 {!isLikelyTeam ? (
-                    <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId || project.slug || project.id}/projects/create`)}>Add Team</Button>
-                 ) : (
-                    <Button variant="secondary" size="sm" onClick={() => navigate(seasonsPath)}>Manage Seasons</Button>
-                 )}
-              </div>
+            {activeTab === 'teams' && !isLikelyTeam && (
+              <Card>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Teams</h3>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      navigate(
+                        `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/projects/create`
+                      )
+                    }
+                  >
+                    Add Team
+                  </Button>
+                </div>
 
-              {!isLikelyTeam ? (
-                // TEAMS LIST
-                childProjectsLoading ? (
-                   <div className="text-center py-4 text-gray-500">Loading teams...</div>
+                {childProjectsLoading ? (
+                  <div className="text-center py-4 text-gray-500">Loading teams...</div>
                 ) : childProjects.length === 0 ? (
-                   <Alert variant="info">No teams found in this club.</Alert>
+                  <Alert variant="info">No teams found in this club.</Alert>
                 ) : (
-                   <Table style={compactTableStyle}>
-                      <thead>
-                        <tr>
-                          <th style={compactThStyle}>Team</th>
-                          <th style={compactThStyle}>Status</th>
-                          <th style={compactThStyle} className="text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {childProjects.map((team: any) => (
-                          <tr key={team.id}>
-                            <td style={compactTextTdStyle}>
-                              <Link
-                                to={`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${team.slug || team.id}`}
-                                className="font-medium text-blue-600 hover:underline"
+                  <Table style={compactTableStyle}>
+                    <thead>
+                      <tr>
+                        <th style={compactThStyle}>Team</th>
+                        <th style={compactThStyle}>Status</th>
+                        <th style={compactThStyle} className="text-right">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {childProjects.map((team: any) => (
+                        <tr key={team.id}>
+                          <td style={compactTextTdStyle}>
+                            <Link
+                              to={`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
+                                team.slug || team.id
+                              }`}
+                              className="font-medium text-blue-600 hover:underline"
+                            >
+                              {team.name}
+                            </Link>
+                          </td>
+                          <td style={compactTdStyle}>
+                            <Badge variant={team.is_active ? 'success' : 'warning'}>
+                              {team.is_active ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </td>
+                          <td style={compactTdStyle}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                              <button
+                                onClick={() =>
+                                  navigate(
+                                    `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
+                                      team.slug || team.id
+                                    }`
+                                  )
+                                }
+                                className="text-xs text-blue-600 hover:underline"
                               >
-                                {team.name}
-                              </Link>
-                            </td>
-                            <td style={compactTdStyle}>
-                              <Badge variant={team.is_active ? 'success' : 'warning'}>
-                                {team.is_active ? 'Active' : 'Inactive'}
-                              </Badge>
-                            </td>
-                            <td style={compactTdStyle}>
-                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                <button
-                                  onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${team.slug || team.id}`)}
-                                  className="text-xs text-blue-600 hover:underline"
-                                >
-                                  View
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                   </Table>
-                )
-              ) : (
-                // SEASONS LIST
-                seasonsLoading ? (
-                   <div className="text-center py-4 text-gray-500">Loading seasons...</div>
-                ) : seasons.length === 0 ? (
-                   <Alert variant="info">No seasons found for this team.</Alert>
-                ) : (
-                   <Table style={compactTableStyle}>
-                      <thead>
-                        <tr>
-                          <th style={compactThStyle}>Season</th>
-                          <th style={compactThStyle}>Dates</th>
-                          <th style={compactThStyle} className="text-right">Actions</th>
+                                View
+                              </button>
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {seasons.map((season: any) => (
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
+              </Card>
+            )}
+
+            {activeTab === 'seasons' && (
+              <Card>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Seasons</h3>
+                  {isLikelyTeam && (
+                    <Button variant="secondary" size="sm" onClick={() => navigate(seasonsPath)}>
+                      Manage Seasons
+                    </Button>
+                  )}
+                </div>
+
+                {seasonsLoading ? (
+                  <div className="text-center py-4 text-gray-500">Loading seasons...</div>
+                ) : seasons.length === 0 ? (
+                  <Alert variant="info">No seasons found.</Alert>
+                ) : (
+                  <Table style={compactTableStyle}>
+                    <thead>
+                      <tr>
+                        <th style={compactThStyle}>Season</th>
+                        {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
+                        <th style={compactThStyle}>Dates</th>
+                        <th style={compactThStyle} className="text-right">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {seasons.map((season: any) => {
+                        const clubSlug = String(project.slug || project.id);
+                        const teamSlugOrId = String(
+                          isLikelyTeam ? project.slug || project.id : season.project?.slug || season.project_id || season.project?.id || ''
+                        );
+                        const seasonHref = isLikelyTeam
+                          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.id}`
+                          : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${season.id}`;
+
+                        return (
                           <tr key={season.id}>
                             <td style={compactTextTdStyle}>
-                              <Link
-                                to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.id}`}
-                                className="font-medium text-blue-600 hover:underline"
-                              >
+                              <Link to={seasonHref} className="font-medium text-blue-600 hover:underline">
                                 {season.name}
                               </Link>
                             </td>
+                            {!isLikelyTeam && <td style={compactTextTdStyle}>{season.project?.name || '-'}</td>}
                             <td style={compactTextTdStyle}>
-                               {season.start_date || '?'} — {season.end_date || '?'}
+                              {season.start_date || '?'} — {season.end_date || '?'}
                             </td>
                             <td style={compactTdStyle}>
                               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                 <button
-                                  onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.id}`)}
+                                  onClick={() => navigate(seasonHref)}
                                   className="text-xs text-blue-600 hover:underline"
                                 >
                                   View
@@ -1067,13 +1354,71 @@ export const ProjectDetailPage: React.FC = () => {
                               </div>
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
-                   </Table>
-                )
-              )}
-            </Card>
-          )}
+                        );
+                      })}
+                    </tbody>
+                  </Table>
+                )}
+              </Card>
+            )}
+
+            {activeTab === 'competitions' && (
+              <Card>
+                <h3 className="text-lg font-semibold mb-4">Competitions</h3>
+                {competitionsLoading ? (
+                  <div className="text-center py-4 text-gray-500">Loading competitions...</div>
+                ) : competitions.length === 0 ? (
+                  <Alert variant="info">No competitions found.</Alert>
+                ) : (
+                  <Table style={compactTableStyle}>
+                    <thead>
+                      <tr>
+                        <th style={compactThStyle}>Competition</th>
+                        <th style={compactThStyle}>Season</th>
+                        {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
+                        <th style={compactThStyle} className="text-right">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {competitions.map((comp: any) => {
+                        const seasonId = String(comp.parent_period_id || comp.parent_period?.id || '');
+                        const clubSlug = String(project.slug || project.id);
+                        const teamSlugOrId = String(
+                          isLikelyTeam ? project.slug || project.id : comp.project?.slug || comp.project_id || comp.project?.id || ''
+                        );
+                        const compHref = isLikelyTeam
+                          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${seasonId}/competitions/${comp.id}`
+                          : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${seasonId}/competitions/${comp.id}`;
+
+                        return (
+                          <tr key={comp.id}>
+                            <td style={compactTextTdStyle}>
+                              <Link to={compHref} className="font-medium text-blue-600 hover:underline">
+                                {comp.name}
+                              </Link>
+                            </td>
+                            <td style={compactTextTdStyle}>{comp.parent_period?.name || '-'}</td>
+                            {!isLikelyTeam && <td style={compactTextTdStyle}>{comp.project?.name || '-'}</td>}
+                            <td style={compactTdStyle}>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                <button
+                                  onClick={() => navigate(compHref)}
+                                  className="text-xs text-blue-600 hover:underline"
+                                >
+                                  View
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </Table>
+                )}
+              </Card>
+            )}
 
           {activeTab === 'matches' && (
             <Card>
