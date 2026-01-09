@@ -90,6 +90,7 @@ if REDIS_URL:
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
                 "SOCKET_CONNECT_TIMEOUT": 5,
                 "SOCKET_TIMEOUT": 5,
+                "IGNORE_EXCEPTIONS": True,  # Gracefully degrade when Redis unavailable
             },
             "KEY_PREFIX": "django-core",
         }
