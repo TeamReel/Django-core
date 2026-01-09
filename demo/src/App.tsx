@@ -29,6 +29,7 @@ import {
   UsersPage,
   UserDetailPage,
   ProfilePage,
+  DirectoryPage,
 } from './pages/identity';
 
 // Config pages
@@ -119,6 +120,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/directory"
+        element={
+          <ProtectedRoute>
+            <DirectoryPage />
           </ProtectedRoute>
         }
       />
