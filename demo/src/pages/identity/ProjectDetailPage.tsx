@@ -49,6 +49,7 @@ const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promis
   let nextUrl: string | null = url;
   let pageCount = 0;
   const maxPages = 10; // Safety limit
+  const isDev = Boolean((import.meta as any)?.env?.DEV);
 
   try {
     while (nextUrl && pageCount < maxPages) {
@@ -65,7 +66,9 @@ const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promis
       nextUrl = getPagedNextUrl(json);
       if (!nextUrl) break;
     }
-    console.log(`[fetchAllPages] Fetched ${results.length} items across ${pageCount} pages from ${url}`);
+    if (isDev) {
+      console.log(`[fetchAllPages] Fetched ${results.length} items across ${pageCount} pages from ${url}`);
+    }
     return results;
   } catch (err) {
     console.error(`[fetchAllPages] Error fetching ${url}:`, err);
@@ -111,6 +114,7 @@ export const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { context, organisations, projects: contextProjects } = useContextSwitcher();
+  const isDev = Boolean((import.meta as any)?.env?.DEV);
 
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<any[]>([]);
@@ -232,6 +236,44 @@ export const ProjectDetailPage: React.FC = () => {
     return Array.isArray(results) ? results : [];
   };
 
+  const getDescendantTeamIdsUnderClub = (teams: any[], clubProjectId: string): Set<string> => {
+    const clubIdValue = String(clubProjectId);
+    const parentById = new Map<string, string | null>();
+    for (const t of teams || []) {
+      const tid = String(t?.id || '');
+      if (!tid) continue;
+      parentById.set(tid, getParentProjectId(t));
+    }
+
+    const isUnderClub = (teamId: string): boolean => {
+      let current: string | null = String(teamId);
+      // Protect against cycles / bad data
+      for (let i = 0; i < 50; i++) {
+        const parent = parentById.get(current);
+        if (!parent) return false;
+        if (String(parent) === clubIdValue) return true;
+        current = String(parent);
+      }
+      return false;
+    };
+
+    const out = new Set<string>();
+    for (const t of teams || []) {
+      const tid = String(t?.id || '');
+      if (!tid) continue;
+      if (isUnderClub(tid)) out.add(tid);
+    }
+    return out;
+  };
+
+  const filterActivitiesToClubTeams = (activities: any[], teamIdsUnderClub: Set<string>): any[] => {
+    if (!teamIdsUnderClub.size) return [];
+    return (activities || []).filter((a: any) => {
+      const pid = String(a?.project_id ?? a?.project?.id ?? '');
+      return pid && teamIdsUnderClub.has(pid);
+    });
+  };
+
   const fetchOrgPeriodsForFiltering = async (): Promise<any[]> => {
     // Mirrors OrganisationDetailPage: fetch all periods for the organisation.
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -333,19 +375,22 @@ export const ProjectDetailPage: React.FC = () => {
     navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${option.slug || option.id}`);
   };
 
-  // Debug: Log project options
-  console.log('[ProjectDetailPage] Debug:', {
-    orgProjectsCount: orgProjects.length,
-    projectOptionsCount: projectOptions.length,
-    currentOrgId: resolvedOrg?.id || project?.organisation_id,
-    resolvedOrgId: resolvedOrg?.id,
-    projectOrgId: project?.organisation_id,
-    sampleOrgProjects: orgProjects.slice(0, 2).map(p => ({
-      name: p.name,
-      id: p.id,
-      organisation_id: p.organisation_id,
-    }))
-  });
+  // Debug: Log project options (DEV only)
+  if (isDev) {
+    // eslint-disable-next-line no-console
+    console.log('[ProjectDetailPage] Debug:', {
+      orgProjectsCount: orgProjects.length,
+      projectOptionsCount: projectOptions.length,
+      currentOrgId: resolvedOrg?.id || project?.organisation_id,
+      resolvedOrgId: resolvedOrg?.id,
+      projectOrgId: project?.organisation_id,
+      sampleOrgProjects: orgProjects.slice(0, 2).map(p => ({
+        name: p.name,
+        id: p.id,
+        organisation_id: p.organisation_id,
+      }))
+    });
+  }
 
   // Fetch projects for the current organisation (for switcher dropdown)
   useEffect(() => {
@@ -380,11 +425,14 @@ export const ProjectDetailPage: React.FC = () => {
             ...p,
             organisation_id: p.organisation?.id || p.organisation_id || orgId
           }));
-          console.log('[ProjectDetailPage] Fetched projects:', {
-            count: mapped.length,
-            orgId,
-            sample: mapped[0]
-          });
+          if (isDev) {
+            // eslint-disable-next-line no-console
+            console.log('[ProjectDetailPage] Fetched projects:', {
+              count: mapped.length,
+              orgId,
+              sample: mapped[0]
+            });
+          }
           setOrgProjects(mapped);
         }
       } catch (err) {
@@ -511,7 +559,10 @@ export const ProjectDetailPage: React.FC = () => {
               const membersData = await membersByIdResponse.json();
               const membersList = getPagedResults(membersData);
               const normalized = Array.isArray(membersList) ? membersList : [];
-              console.log('[ProjectDetailPage] Fetched members:', normalized.length, 'from', membersByIdEndpoint);
+              if (isDev) {
+                // eslint-disable-next-line no-console
+                console.log('[ProjectDetailPage] Fetched members:', normalized.length, 'from', membersByIdEndpoint);
+              }
               setMembers(normalized);
 
               // Clubs often don't have direct memberships; show people via child teams if needed.
@@ -524,7 +575,10 @@ export const ProjectDetailPage: React.FC = () => {
                 params.set('include_project_memberships', 'true');
                 params.set('include_role_assignments', 'true');
                 const orgMembersEndpoint = `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/members/?${params.toString()}`;
-                console.log('[ProjectDetailPage] Club members fallback via org members:', orgMembersEndpoint);
+                if (isDev) {
+                  // eslint-disable-next-line no-console
+                  console.log('[ProjectDetailPage] Club members fallback via org members:', orgMembersEndpoint);
+                }
 
                 const orgMembers = await fetchAllPages<any>(orgMembersEndpoint, {
                   headers: {
@@ -547,7 +601,10 @@ export const ProjectDetailPage: React.FC = () => {
                   })
                 );
 
-                console.log('[ProjectDetailPage] Club people derived from child teams:', filtered.length);
+                if (isDev) {
+                  // eslint-disable-next-line no-console
+                  console.log('[ProjectDetailPage] Club people derived from child teams:', filtered.length);
+                }
                 setMembers(Array.isArray(filtered) ? filtered : []);
               }
             } else {
@@ -566,7 +623,10 @@ export const ProjectDetailPage: React.FC = () => {
                 params.set('include_project_memberships', 'true');
                 params.set('include_role_assignments', 'true');
                 const orgMembersEndpoint = `${apiBaseUrl}/api/v1/organisations/${orgSlugForMembers}/members/?${params.toString()}`;
-                console.log('[ProjectDetailPage] Falling back to org members endpoint:', orgMembersEndpoint);
+                if (isDev) {
+                  // eslint-disable-next-line no-console
+                  console.log('[ProjectDetailPage] Falling back to org members endpoint:', orgMembersEndpoint);
+                }
 
                 const orgMembersResponse = await fetch(orgMembersEndpoint, {
                   headers: {
@@ -586,11 +646,14 @@ export const ProjectDetailPage: React.FC = () => {
                     )
                   );
 
-                  console.log(
-                    '[ProjectDetailPage] Filtered org members for project:',
-                    orgMembersList.length,
-                    'members'
-                  );
+                  if (isDev) {
+                    // eslint-disable-next-line no-console
+                    console.log(
+                      '[ProjectDetailPage] Filtered org members for project:',
+                      orgMembersList.length,
+                      'members'
+                    );
+                  }
                   setMembers(Array.isArray(orgMembersList) ? orgMembersList : []);
                 } else {
                   console.error(
@@ -645,7 +708,10 @@ export const ProjectDetailPage: React.FC = () => {
      try {
        // Fetch children of this project
        const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${project.id}&page_size=250`;
-       console.log('[ProjectDetailPage] Fetching child teams with parent_project=', project.id, 'URL:', url);
+       if (isDev) {
+         // eslint-disable-next-line no-console
+         console.log('[ProjectDetailPage] Fetching child teams with parent_project=', project.id, 'URL:', url);
+       }
        const results = await fetchAllPages<Project>(url, { credentials: 'include' });
 
        const parentId = String(project.id);
@@ -660,14 +726,17 @@ export const ProjectDetailPage: React.FC = () => {
        const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
        const finalResults = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
 
-       console.log(
-         '[ProjectDetailPage] Fetched child teams (raw):',
-         results.length,
-         'filtered(org):',
-         filteredByOrg.length,
-         'filtered(parent):',
-         filteredByParent.length
-       );
+       if (isDev) {
+         // eslint-disable-next-line no-console
+         console.log(
+           '[ProjectDetailPage] Fetched child teams (raw):',
+           results.length,
+           'filtered(org):',
+           filteredByOrg.length,
+           'filtered(parent):',
+           filteredByParent.length
+         );
+       }
        setChildProjects(finalResults as Project[]);
      } catch (e) {
        console.error('Failed to fetch child teams', e);
@@ -789,22 +858,36 @@ export const ProjectDetailPage: React.FC = () => {
         const results = await fetchAllPages<any>(url, { credentials: 'include' });
         setAllMatches(Array.isArray(results) ? results : []);
       } else {
-        const teams = await ensureChildTeamsLoaded();
-        const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
+        // Clubs: avoid per-team fan-out (can overload API and trigger 500s).
+        // Fetch org-wide matches and filter down to teams under this club.
+        const orgIdValue = String(resolvedOrg?.id || (project as any)?.organisation_id || '').trim();
+        if (!orgIdValue) {
+          setAllMatches([]);
+          return;
+        }
 
-        const fetches = teamIds.map(async (teamId) => {
-          const params = new URLSearchParams();
-          params.set('project_id', String(teamId));
-          params.set('activity_type', 'match');
-          params.set('page_size', '100');
-          params.set('ordering', '-start_time');
-          const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
-          return await fetchAllPages<any>(url, { credentials: 'include' });
-        });
+        const teams = await fetchOrgTeamsForPeriodFiltering();
+        const teamIdsUnderClub = getDescendantTeamIdsUnderClub(teams, String(project.id));
+        if (!teamIdsUnderClub.size) {
+          setAllMatches([]);
+          return;
+        }
 
-        const pages = await Promise.all(fetches);
-        const combined = mergeUniqueById((pages || []).flat());
-        const sorted = sortByStartTimeDesc(combined);
+        const params = new URLSearchParams();
+        params.set('organisation_id', orgIdValue);
+        params.set('activity_type', 'match');
+        params.set('page_size', '250');
+        params.set('ordering', '-start_time');
+
+        const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
+        if (!res.ok) {
+          setAllMatches([]);
+          return;
+        }
+        const json = await res.json();
+        const results = getPagedResults(json);
+        const filtered = filterActivitiesToClubTeams(results, teamIdsUnderClub);
+        const sorted = sortByStartTimeDesc(mergeUniqueById(filtered));
         setAllMatches(sorted.slice(0, 250));
       }
     } catch (e) {
@@ -826,9 +909,15 @@ export const ProjectDetailPage: React.FC = () => {
   // Trigger data fetch on tab change
   useEffect(() => {
     if (!project) return;
-    console.log('[ProjectDetailPage] Tab changed to:', activeTab, 'isLikelyTeam:', isLikelyTeam, 'project:', project.name);
+    if (isDev) {
+      // eslint-disable-next-line no-console
+      console.log('[ProjectDetailPage] Tab changed to:', activeTab, 'isLikelyTeam:', isLikelyTeam, 'project:', project.name);
+    }
     if (activeTab === 'teams') {
-      console.log('[ProjectDetailPage] Club detected, fetching child teams. Current childProjects:', childProjects.length);
+      if (isDev) {
+        // eslint-disable-next-line no-console
+        console.log('[ProjectDetailPage] Club detected, fetching child teams. Current childProjects:', childProjects.length);
+      }
       if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
     } else if (activeTab === 'seasons') {
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
@@ -866,26 +955,36 @@ export const ProjectDetailPage: React.FC = () => {
             setScheduledMatches(results);
           }
         } else {
-          const teams = await ensureChildTeamsLoaded();
-          const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
-          const fetches = teamIds.map(async (teamId) => {
+          const orgIdValue = String(resolvedOrg?.id || (project as any)?.organisation_id || '').trim();
+          if (!orgIdValue) {
+            setScheduledMatches([]);
+          } else {
+            const teams = await fetchOrgTeamsForPeriodFiltering();
+            const teamIdsUnderClub = getDescendantTeamIdsUnderClub(teams, String(project.id));
+
             const params = new URLSearchParams();
             params.set('activity_type', 'match');
-            params.set('project_id', String(teamId));
+            params.set('organisation_id', orgIdValue);
             params.set('start_time__gte', new Date().toISOString());
             params.set('ordering', 'start_time');
-            params.set('page_size', '5');
-            const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
-            return await fetchAllPages<any>(url, { credentials: 'include' });
-          });
-          const pages = await Promise.all(fetches);
-          const combined = mergeUniqueById((pages || []).flat());
-          const sorted = [...combined].sort((a, b) => {
-            const ta = a?.start_time ? new Date(a.start_time).getTime() : 0;
-            const tb = b?.start_time ? new Date(b.start_time).getTime() : 0;
-            return ta - tb;
-          });
-          setScheduledMatches(sorted.slice(0, 5));
+            // Fetch a bit more than we display so filtering doesn't starve results.
+            params.set('page_size', '50');
+
+            const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
+            if (res.ok) {
+              const json = await res.json();
+              const results = getPagedResults(json);
+              const filtered = filterActivitiesToClubTeams(results, teamIdsUnderClub);
+              const sorted = [...filtered].sort((a, b) => {
+                const ta = a?.start_time ? new Date(a.start_time).getTime() : 0;
+                const tb = b?.start_time ? new Date(b.start_time).getTime() : 0;
+                return ta - tb;
+              });
+              setScheduledMatches(mergeUniqueById(sorted).slice(0, 5));
+            } else {
+              setScheduledMatches([]);
+            }
+          }
         }
       } catch (e) {
         console.warn('Failed to fetch scheduled matches', e);
@@ -911,22 +1010,31 @@ export const ProjectDetailPage: React.FC = () => {
             setRecentPlayedMatches(results);
           }
         } else {
-          const teams = await ensureChildTeamsLoaded();
-          const teamIds = teams.map((t: any) => String(t.id)).filter(Boolean);
-          const fetches = teamIds.map(async (teamId) => {
+          const orgIdValue = String(resolvedOrg?.id || (project as any)?.organisation_id || '').trim();
+          if (!orgIdValue) {
+            setRecentPlayedMatches([]);
+          } else {
+            const teams = await fetchOrgTeamsForPeriodFiltering();
+            const teamIdsUnderClub = getDescendantTeamIdsUnderClub(teams, String(project.id));
+
             const params = new URLSearchParams();
             params.set('activity_type', 'match');
-            params.set('project_id', String(teamId));
+            params.set('organisation_id', orgIdValue);
             params.set('start_time__lt', new Date().toISOString());
             params.set('ordering', '-start_time');
-            params.set('page_size', '10');
-            const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
-            return await fetchAllPages<any>(url, { credentials: 'include' });
-          });
-          const pages = await Promise.all(fetches);
-          const combined = mergeUniqueById((pages || []).flat());
-          const sorted = sortByStartTimeDesc(combined);
-          setRecentPlayedMatches(sorted.slice(0, 10));
+            params.set('page_size', '100');
+
+            const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
+            if (res.ok) {
+              const json = await res.json();
+              const results = getPagedResults(json);
+              const filtered = filterActivitiesToClubTeams(results, teamIdsUnderClub);
+              const sorted = sortByStartTimeDesc(mergeUniqueById(filtered));
+              setRecentPlayedMatches(sorted.slice(0, 10));
+            } else {
+              setRecentPlayedMatches([]);
+            }
+          }
         }
       } catch (e) {
          console.warn('Failed to fetch recent matches', e);
