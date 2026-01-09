@@ -164,6 +164,11 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const orgSlugOrId = String(org?.slug || org?.id || currentOrgSlug || '');
 
+  const getApiV1BaseUrl = () => {
+    const raw = String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    return raw.endsWith('/api/v1') ? raw : `${raw}/api/v1`;
+  };
+
   const getPeriodType = (p: any): string => {
     const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
     return String(t || '').toLowerCase();
@@ -248,13 +253,13 @@ export const OrganisationDetailPage: React.FC = () => {
     if (!organisationId) return;
     setFederationMatchesLoading(true);
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiV1BaseUrl = getApiV1BaseUrl();
       const params = new URLSearchParams();
       params.set('page_size', '100');
       params.set('activity_type', 'match');
       params.set('organisation_id', organisationId);
 
-      const all = await fetchAllPages<any>(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, {
+      const all = await fetchAllPages<any>(`${apiV1BaseUrl}/activities/?${params.toString()}`, {
         credentials: 'include',
       });
 
@@ -291,8 +296,8 @@ export const OrganisationDetailPage: React.FC = () => {
     if (!currentOrgSlug) return;
     setClubsLoading(true);
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-      const url = `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`;
+      const apiV1BaseUrl = getApiV1BaseUrl();
+      const url = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`;
       const res = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -325,9 +330,9 @@ export const OrganisationDetailPage: React.FC = () => {
     if (!currentOrgSlug) return;
     setTeamsLoading(true);
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-      const clubsUrl = `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=true`;
-      const teamsUrl = `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=false`;
+      const apiV1BaseUrl = getApiV1BaseUrl();
+      const clubsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=true`;
+      const teamsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=false`;
 
       const [clubsAll, teamsAll] = await Promise.all([
         fetchAllPages<Project>(clubsUrl, {
@@ -371,7 +376,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const fetchFederationCounts = async (organisationId: string) => {
     if (!organisationId) return;
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiV1BaseUrl = getApiV1BaseUrl();
 
     const recomputePeriodCounts = (allPeriods: any[]) => {
       const seasonsByProjectId: Record<string, number> = {};
@@ -422,7 +427,7 @@ export const OrganisationDetailPage: React.FC = () => {
           params.set('page_size', '250');
           params.set('project_id', String(teamId));
 
-          const periods = await fetchAllPages<any>(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, {
+          const periods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${params.toString()}`, {
             credentials: 'include',
           });
 
@@ -446,7 +451,7 @@ export const OrganisationDetailPage: React.FC = () => {
       // Teams count (child projects)
       if (currentOrgSlug) {
         const teamsRes = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/?page_size=1&parent_project__isnull=false`,
+          `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=1&parent_project__isnull=false`,
           { credentials: 'include' }
         );
         if (teamsRes.ok) {
@@ -462,7 +467,7 @@ export const OrganisationDetailPage: React.FC = () => {
         params.set('page_size', '250');
         params.set('organisation_id', organisationId);
 
-        const allPeriods = await fetchAllPages<any>(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, {
+        const allPeriods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${params.toString()}`, {
           credentials: 'include',
         });
 
@@ -479,7 +484,7 @@ export const OrganisationDetailPage: React.FC = () => {
         params.set('page_size', '1');
         params.set('activity_type', 'match');
         params.set('organisation_id', organisationId);
-        const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
+        const res = await fetch(`${apiV1BaseUrl}/activities/?${params.toString()}`, { credentials: 'include' });
         if (res.ok) {
           const json = await res.json();
           const { count } = parseListEnvelope(json);
@@ -508,7 +513,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 const params = new URLSearchParams();
                 params.set('page_size', '250');
                 params.set('project_id', String(teamId));
-                const periods = await fetchAllPages<any>(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, {
+                const periods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${params.toString()}`, {
                   credentials: 'include',
                 });
                 for (const p of periods || []) {
@@ -536,7 +541,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
     try {
       setInviteLoading(true);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiV1BaseUrl = getApiV1BaseUrl();
 
       // First find user by email (in a real app this would be an invite flow)
       // For this demo, we'll assume we need the user ID.
@@ -557,7 +562,7 @@ export const OrganisationDetailPage: React.FC = () => {
         .find(row => row.startsWith('csrftoken='))
         ?.split('=')[1];
 
-      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/`, {
+      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -581,7 +586,7 @@ export const OrganisationDetailPage: React.FC = () => {
         params.set('include_project_memberships', 'true');
         params.set('include_role_assignments', 'true');
         params.set('page_size', '250');
-        const membersUrl = `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/?${params.toString()}`;
+        const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
         const allMembers = await fetchAllPages<any>(membersUrl, {
           headers: {
             'Content-Type': 'application/json',
@@ -612,7 +617,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
     try {
       setDeleteLoading(true);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiV1BaseUrl = getApiV1BaseUrl();
 
       // Get CSRF token from cookie
       const csrfToken = document.cookie
@@ -620,7 +625,7 @@ export const OrganisationDetailPage: React.FC = () => {
         .find(row => row.startsWith('csrftoken='))
         ?.split('=')[1];
 
-      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/`, {
+      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -650,10 +655,10 @@ export const OrganisationDetailPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiV1BaseUrl = getApiV1BaseUrl();
 
         // Fetch organisation details using slug
-        const orgResponse = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/`, {
+        const orgResponse = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -681,7 +686,7 @@ export const OrganisationDetailPage: React.FC = () => {
           params.set('include_role_assignments', 'true');
           params.set('page_size', '250');
 
-          const membersUrl = `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/?${params.toString()}`;
+          const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
           const allMembers = await fetchAllPages<any>(membersUrl, {
             headers: {
               'Content-Type': 'application/json',
@@ -737,7 +742,7 @@ export const OrganisationDetailPage: React.FC = () => {
     if (!(activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'clubs')) return;
 
     const load = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiV1BaseUrl = getApiV1BaseUrl();
       setOrgPeriodsLoading(true);
       try {
         const unique = new Map<string, any>();
@@ -747,7 +752,7 @@ export const OrganisationDetailPage: React.FC = () => {
           const params = new URLSearchParams();
           params.set('page_size', '250');
           params.set('project_id', String(teamId));
-          const periods = await fetchAllPages<any>(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, {
+          const periods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${params.toString()}`, {
             credentials: 'include',
           });
           for (const p of periods || []) {
@@ -779,10 +784,10 @@ export const OrganisationDetailPage: React.FC = () => {
   }, [memberSearch]);
 
   const saveProjectEdits = async (project: Project, patch: Partial<Project>) => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiV1BaseUrl = getApiV1BaseUrl();
     const projectSlugOrId = (project as any).slug || project.id;
 
-    const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/${projectSlugOrId}/`, {
+    const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${projectSlugOrId}/`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -1194,9 +1199,9 @@ export const OrganisationDetailPage: React.FC = () => {
                                       onClick={async () => {
                                         if (!window.confirm(`Remove ${user.email} from federation?`)) return;
                                         try {
-                                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                          const apiV1BaseUrl = getApiV1BaseUrl();
                                           const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-                                          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/members/${membershipId}/`, {
+                                          const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/${membershipId}/`, {
                                             method: 'DELETE',
                                             headers: {
                                               'Content-Type': 'application/json',
@@ -1462,9 +1467,9 @@ export const OrganisationDetailPage: React.FC = () => {
                                           onClick={async () => {
                                             if (!window.confirm(`Are you sure you want to delete project ${club.name}?`)) return;
                                             try {
-                                              const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                              const apiV1BaseUrl = getApiV1BaseUrl();
                                               const res = await fetch(
-                                                `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/${club.slug || club.id}/`,
+                                                `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${club.slug || club.id}/`,
                                                 {
                                                   method: 'DELETE',
                                                   headers: {
@@ -1678,9 +1683,9 @@ export const OrganisationDetailPage: React.FC = () => {
                                           onClick={async () => {
                                             if (!window.confirm(`Are you sure you want to delete project ${team.name}?`)) return;
                                             try {
-                                              const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                              const apiV1BaseUrl = getApiV1BaseUrl();
                                               const res = await fetch(
-                                                `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/${team.slug || team.id}/`,
+                                                `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${team.slug || team.id}/`,
                                                 {
                                                   method: 'DELETE',
                                                   headers: {
