@@ -22,12 +22,18 @@ export async function fetchAllPages<T>(
 
     const results = (
       json?.data?.results ||
+      json?.data?.data ||
       json?.results ||
       (Array.isArray(json?.data) ? json.data : null) ||
       (Array.isArray(json) ? json : null) ||
       []
     ) as T[];
-    const next = (json?.data?.next || json?.next || null) as string | null;
+    const next = (
+      json?.meta?.pagination?.next ||
+      json?.data?.next ||
+      json?.next ||
+      null
+    ) as string | null;
 
     if (Array.isArray(results)) {
       all.push(...results);
