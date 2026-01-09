@@ -380,6 +380,8 @@ export const ProjectDetailPage: React.FC = () => {
       }
     };
 
+    fetchProjectDetails();
+  }, [currentProjectSlug, resolvedOrg, context.isLoading, isTeamRoute, clubSlugOrId, orgSlugOrId, resolvedProject?.id]);
 
   // Fetch Tab Data Handlers
   const fetchChildTeams = async () => {
@@ -440,6 +442,15 @@ export const ProjectDetailPage: React.FC = () => {
       setAllMatchesLoading(false);
     }
   };
+
+  // Calculate isLikelyTeam before using it in effects
+  const hasParentClub = Boolean(
+    (project as any)?.parent_project ||
+      (project as any)?.parent ||
+      (project as any)?.parent_id ||
+      (project as any)?.parent_project_id
+  );
+  const isLikelyTeam = isTeamRoute || hasParentClub;
 
   // Trigger data fetch on tab change
   useEffect(() => {
@@ -600,15 +611,6 @@ export const ProjectDetailPage: React.FC = () => {
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons`
     : `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/seasons`;
 
-  const hasParentClub = Boolean(
-    (project as any)?.parent_project ||
-      (project as any)?.parent ||
-      (project as any)?.parent_id ||
-      (project as any)?.parent_project_id
-  );
-
-  const isLikelyTeam = isTeamRoute || hasParentClub;
-
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'people', label: 'People' },
@@ -655,7 +657,6 @@ export const ProjectDetailPage: React.FC = () => {
                 onSelect={handleProjectSwitch}
                 hasDropdown={effectiveProjectOptions.length > 1}
                 type="project"
-                variant="button"
             />
             <button
               onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/edit`)}
