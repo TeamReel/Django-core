@@ -191,7 +191,8 @@ export const ProjectDetailPage: React.FC = () => {
 
   const ensureChildTeamsLoaded = async (): Promise<Project[]> => {
     if (!project?.id) return [];
-    if (childProjects.length > 0) return childProjects;
+    // Don't use cached childProjects - always fetch fresh to avoid stale data
+    // (childProjects might be set with partial data from dashboard preview)
 
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${project.id}&page_size=250`;
