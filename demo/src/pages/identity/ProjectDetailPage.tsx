@@ -757,7 +757,7 @@ export const ProjectDetailPage: React.FC = () => {
                                   {m.start_time ? new Date(m.start_time).toLocaleDateString() : '-'}
                                 </td>
                                 <td style={compactTextTdStyle}>
-                                  <Badge variant="secondary">Finished</Badge>
+                                  <Badge variant="default">Finished</Badge>
                                 </td>
                                 <td style={compactTdStyle}>
                                   <button

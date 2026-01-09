@@ -118,6 +118,8 @@ export const OrganisationDetailPage: React.FC = () => {
   const [federationMatchesLoading, setFederationMatchesLoading] = useState(false);
   const [scheduledMatches, setScheduledMatches] = useState<any[]>([]);
   const [scheduledMatchesLoading, setScheduledMatchesLoading] = useState(false);
+  const [recentPlayedMatches, setRecentPlayedMatches] = useState<any[]>([]);
+  const [recentPlayedMatchesLoading, setRecentPlayedMatchesLoading] = useState(false);
 
   // Compute period hierarchy for recursive activity counts
   const periodChildrenMap = useMemo(() => {
@@ -332,6 +334,33 @@ export const OrganisationDetailPage: React.FC = () => {
       console.error(e);
     } finally {
       setScheduledMatchesLoading(false);
+    }
+  };
+
+  const fetchRecentPlayedMatches = async (organisationId: string) => {
+    if (!organisationId) return;
+    setRecentPlayedMatchesLoading(true);
+    try {
+      const apiV1BaseUrl = getApiV1BaseUrl();
+      const params = new URLSearchParams();
+      params.set('page_size', '5');
+      params.set('activity_type', 'match');
+      params.set('organisation_id', organisationId);
+      params.set('ordering', '-start_time'); // Newest first
+      params.set('start_time__lt', new Date().toISOString()); // Only past matches
+
+      const res = await fetch(`${apiV1BaseUrl}/activities/?${params.toString()}`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const { results } = parseListEnvelope(json);
+        setRecentPlayedMatches(results);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setRecentPlayedMatchesLoading(false);
     }
   };
 
@@ -791,7 +820,10 @@ export const OrganisationDetailPage: React.FC = () => {
 
     if (activeTab === 'overview') {
        const orgId = String(org?.id || currentOrgId || '');
-       if (orgId) fetchScheduledMatches(orgId);
+       if (orgId) {
+         fetchScheduledMatches(orgId);
+         fetchRecentPlayedMatches(orgId);
+       }
     }
   }, [activeTab, org?.id, currentOrgId]);
 
@@ -990,10 +1022,52 @@ export const OrganisationDetailPage: React.FC = () => {
               <div className="lg:col-span-2 space-y-6">
                 <Card>
                   <div className="flex justify-between items-center mb-4">
-                     <h3 className="text-lg font-semibold">Recent Activity</h3>
-                     <Button variant="secondary" size="sm" onClick={() => setActiveTab('audit')}>View full log</Button>
+                     <h3 className="text-lg font-semibold">Recent Results</h3>
+                     <Button variant="secondary" size="sm" onClick={() => setActiveTab('matches')}>View All Matches</Button>
                   </div>
-                  <AuditLogTable organisationId={org.id || currentOrgId || ''} limit={5} />
+                  {recentPlayedMatchesLoading ? (
+                      <div className="text-sm text-gray-500 py-4 text-center">Loading recent matches...</div>
+                  ) : recentPlayedMatches.length === 0 ? (
+                      <div className="text-sm text-gray-500 py-4 text-center">No recent matches played.</div>
+                  ) : (
+                      <div className="overflow-x-auto">
+                        <Table style={compactTableStyle}>
+                          <thead>
+                            <tr>
+                              <th style={compactThStyle}>Match</th>
+                              <th style={compactThStyle}>Date</th>
+                              <th style={compactThStyle}>Result</th>
+                              <th style={compactThStyle}></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {recentPlayedMatches.map((m: any) => (
+                              <tr key={m.id}>
+                                <td style={compactTextTdStyle}>
+                                  <div className="font-medium">{m.title || m.name || 'Match'}</div>
+                                  <div className="text-xs text-gray-500">{m.period?.name || '-'}</div>
+                                </td>
+                                <td style={compactTextTdStyle}>
+                                  {m.start_time ? new Date(m.start_time).toLocaleDateString() : '-'}
+                                </td>
+                                <td style={compactTextTdStyle}>
+                                  {/* Placeholder for scores if available in metadata or similar */}
+                                  <Badge variant="default">Finished</Badge>
+                                </td>
+                                <td style={compactTdStyle}>
+                                  <button
+                                    className="text-xs text-blue-600 hover:underline"
+                                    onClick={() => navigate(`/matches/${m.id}`)}
+                                  >
+                                    View
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
+                  )}
                 </Card>
 
                  <Card>
