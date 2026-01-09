@@ -116,6 +116,8 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const [federationMatches, setFederationMatches] = useState<any[]>([]);
   const [federationMatchesLoading, setFederationMatchesLoading] = useState(false);
+  const [scheduledMatches, setScheduledMatches] = useState<any[]>([]);
+  const [scheduledMatchesLoading, setScheduledMatchesLoading] = useState(false);
 
   // Compute period hierarchy for recursive activity counts
   const periodChildrenMap = useMemo(() => {
@@ -303,6 +305,33 @@ export const OrganisationDetailPage: React.FC = () => {
       setFederationMatches([]);
     } finally {
       setFederationMatchesLoading(false);
+    }
+  };
+
+  const fetchScheduledMatches = async (organisationId: string) => {
+    if (!organisationId) return;
+    setScheduledMatchesLoading(true);
+    try {
+      const apiV1BaseUrl = getApiV1BaseUrl();
+      const params = new URLSearchParams();
+      params.set('page_size', '5');
+      params.set('activity_type', 'match');
+      params.set('organisation_id', organisationId);
+      params.set('ordering', 'start_time');
+      params.set('start_time__gte', new Date().toISOString());
+
+      const res = await fetch(`${apiV1BaseUrl}/activities/?${params.toString()}`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const { results } = parseListEnvelope(json);
+        setScheduledMatches(results);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setScheduledMatchesLoading(false);
     }
   };
 
@@ -759,6 +788,11 @@ export const OrganisationDetailPage: React.FC = () => {
       const orgId = String(org?.id || currentOrgId || '');
       if (orgId) fetchFederationMatches(orgId);
     }
+
+    if (activeTab === 'overview') {
+       const orgId = String(org?.id || currentOrgId || '');
+       if (orgId) fetchScheduledMatches(orgId);
+    }
   }, [activeTab, org?.id, currentOrgId]);
 
   useEffect(() => {
@@ -930,139 +964,108 @@ export const OrganisationDetailPage: React.FC = () => {
 
         {/* Overview */}
         {activeTab === 'overview' && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <Card>
-                <div className="text-sm text-gray-600">Clubs</div>
-                <div className="text-2xl font-bold">{org.clubs_count || clubsCount || 0}</div>
-                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('clubs')}>
-                    Open tab
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`/clubs?org_id=${encodeURIComponent(orgSlugOrId)}`)}
-                  >
-                    View all
-                  </Button>
-                </div>
-              </Card>
-              <Card>
-                <div className="text-sm text-gray-600">Teams</div>
-                <div className="text-2xl font-bold">{org.teams_count || teamsCount || 0}</div>
-                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('teams')}>
-                    Open tab
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`/teams?org_id=${encodeURIComponent(orgSlugOrId)}`)}
-                  >
-                    View all
-                  </Button>
-                </div>
-              </Card>
-              <Card>
-                <div className="text-sm text-gray-600">Users</div>
-                <div className="text-2xl font-bold">{org.member_count || members.length || 0}</div>
-                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('users')}>
-                    Open tab
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`/organisations/${currentOrgSlug}/users`)}
-                  >
-                    View all
-                  </Button>
-                </div>
-              </Card>
+          <div className="space-y-6">
+            {/* Top Stats Row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+               <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('clubs')}>
+                  <div className="text-sm font-medium text-gray-500">Clubs</div>
+                  <div className="text-2xl font-bold mt-1">{org.clubs_count || clubsCount || 0}</div>
+               </Card>
+               <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('teams')}>
+                  <div className="text-sm font-medium text-gray-500">Teams</div>
+                  <div className="text-2xl font-bold mt-1">{org.teams_count || teamsCount || 0}</div>
+               </Card>
+               <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('users')}>
+                  <div className="text-sm font-medium text-gray-500">Users</div>
+                  <div className="text-2xl font-bold mt-1">{org.member_count || members.length || 0}</div>
+               </Card>
+               <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('matches')}>
+                  <div className="text-sm font-medium text-gray-500">Active Matches</div>
+                  <div className="text-2xl font-bold mt-1">{matchesCount ?? '—'}</div>
+               </Card>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <Card>
-                <div className="text-sm text-gray-600">Seasons</div>
-                <div className="text-2xl font-bold">{seasonsCount ?? '—'}</div>
-                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('seasons')}>
-                    Open tab
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`/seasons?org_id=${encodeURIComponent(orgSlugOrId)}`)}
-                  >
-                    View all
-                  </Button>
-                </div>
-              </Card>
-              <Card>
-                <div className="text-sm text-gray-600">Competitions</div>
-                <div className="text-2xl font-bold">{competitionsCount ?? '—'}</div>
-                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('competitions')}>
-                    Open tab
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`/competitions?org_id=${encodeURIComponent(orgSlugOrId)}`)}
-                  >
-                    View all
-                  </Button>
-                </div>
-              </Card>
-              <Card>
-                <div className="text-sm text-gray-600">Matches</div>
-                <div className="text-2xl font-bold">{matchesCount ?? '—'}</div>
-                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('matches')}>
-                    Open tab
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`/matches?org_id=${encodeURIComponent(orgSlugOrId)}`)}
-                  >
-                    View all
-                  </Button>
-                </div>
-              </Card>
-            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Column: Recent Activity & Competitions (2/3) */}
+              <div className="lg:col-span-2 space-y-6">
+                <Card>
+                  <div className="flex justify-between items-center mb-4">
+                     <h3 className="text-lg font-semibold">Recent Activity</h3>
+                     <Button variant="secondary" size="sm" onClick={() => setActiveTab('audit')}>View full log</Button>
+                  </div>
+                  <AuditLogTable organisationId={org.id || currentOrgId || ''} limit={5} />
+                </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <Card>
-                <div className="text-sm text-gray-600">Governance</div>
-                <div className="text-2xl font-bold">Policies</div>
-                <div style={{ marginTop: '10px' }}>
-                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('governance')}>
-                    Open tab
-                  </Button>
-                </div>
-              </Card>
-              <Card>
-                <div className="text-sm text-gray-600">Audit</div>
-                <div className="text-2xl font-bold">Trail</div>
-                <div style={{ marginTop: '10px' }}>
-                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('audit')}>
-                    Open tab
-                  </Button>
-                </div>
-              </Card>
-              <Card>
-                <div className="text-sm text-gray-600">Admin</div>
-                <div className="text-2xl font-bold">Operations</div>
-                <div style={{ marginTop: '10px' }}>
-                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('operations')}>
-                    Open tab
-                  </Button>
-                </div>
-              </Card>
+                 <Card>
+                  <div className="flex justify-between items-center mb-4">
+                     <h3 className="text-lg font-semibold">Competitions</h3>
+                     <Button variant="secondary" size="sm" onClick={() => setActiveTab('competitions')}>Manage Competitions</Button>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="p-3 bg-gray-50 rounded-lg text-center flex-1">
+                       <div className="font-bold text-lg text-gray-900">{seasonsCount ?? 0}</div>
+                       <div>Active Seasons</div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg text-center flex-1">
+                       <div className="font-bold text-lg text-gray-900">{competitionsCount ?? 0}</div>
+                       <div>Competitions</div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Right Column: Scheduled & Quick Links (1/3) */}
+              <div className="space-y-6">
+                 <Card>
+                    <h3 className="text-lg font-semibold mb-3">Scheduled Matches</h3>
+                    {scheduledMatchesLoading ? (
+                      <div className="text-sm text-gray-500 py-2">Loading...</div>
+                    ) : scheduledMatches.length === 0 ? (
+                      <div className="text-sm text-gray-500 py-2">No upcoming matches scheduled.</div>
+                    ) : (
+                      <div className="space-y-3">
+                         {scheduledMatches.map((m: any) => (
+                           <div key={m.id} className="pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+                              <div className="font-medium text-sm text-gray-900">{m.title || m.name || 'Match'}</div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {m.start_time ? new Date(m.start_time).toLocaleString(undefined, {
+                                  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                }) : 'TBA'}
+                              </div>
+                              <button
+                                className="text-xs text-blue-600 mt-1 hover:underline bg-transparent border-0 p-0 cursor-pointer"
+                                onClick={() => navigate(`/matches/${m.id}`)}
+                              >
+                                View Details →
+                              </button>
+                           </div>
+                         ))}
+                      </div>
+                    )}
+                    <div className="mt-4 pt-3 border-t border-gray-100">
+                      <Button variant="secondary" size="sm" style={{ width: '100%' }} onClick={() => setActiveTab('matches')}>
+                        View All Matches
+                      </Button>
+                    </div>
+                 </Card>
+
+                 <Card>
+                    <h3 className="text-lg font-semibold mb-3">Quick Actions</h3>
+                    <div className="space-y-2">
+                       <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => setActiveTab('users')}>
+                         Manage Users
+                       </Button>
+                       <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => setActiveTab('governance')}>
+                         View Policies
+                       </Button>
+                       <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => setActiveTab('operations')}>
+                         System Operations
+                       </Button>
+                    </div>
+                 </Card>
+              </div>
             </div>
-          </>
+          </div>
         )}
 
         {/* Users */}
