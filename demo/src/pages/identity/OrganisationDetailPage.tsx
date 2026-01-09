@@ -546,8 +546,8 @@ export const OrganisationDetailPage: React.FC = () => {
                 <div className="text-2xl font-bold">{org.member_count || members.length || 0}</div>
               </Card>
               <Card data-testid="org-summary-projects">
-                <div className="text-sm text-gray-600">Projects</div>
-                <div className="text-2xl font-bold">{org.project_count || projects.length || 0}</div>
+                <div className="text-sm text-gray-600">Clubs</div>
+                <div className="text-2xl font-bold">{org.clubs_count || projects.length || 0}</div>
               </Card>
               <Card data-testid="org-summary-credits">
                 <div className="text-sm text-gray-600">Credits</div>
@@ -573,8 +573,8 @@ export const OrganisationDetailPage: React.FC = () => {
                   <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${currentOrgSlug}/users`)}>
                     View users
                   </Button>
-                  <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${currentOrgSlug}/projects`)}>
-                    View projects
+                  <Button variant="secondary" size="sm" onClick={() => navigate(`/clubs?org_id=${encodeURIComponent(String(org.slug || org.id))}`)}>
+                    View clubs
                   </Button>
                 </div>
               </div>
@@ -889,7 +889,7 @@ export const OrganisationDetailPage: React.FC = () => {
               </Table>
               </Card>
             ) : (
-              <Alert variant="info">No projects yet</Alert>
+              <Alert variant="info">No clubs yet</Alert>
             )}
           </Card>
         )}
