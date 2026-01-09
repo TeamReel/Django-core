@@ -100,6 +100,11 @@ export const OrganisationDetailPage: React.FC = () => {
   const [seasonClubFilterId, setSeasonClubFilterId] = useState<string>('');
   const [seasonTeamFilterId, setSeasonTeamFilterId] = useState<string>('');
 
+  const [competitionSearch, setCompetitionSearch] = useState('');
+  const [matchSearch, setMatchSearch] = useState('');
+  const [federationMatches, setFederationMatches] = useState<any[]>([]);
+  const [federationMatchesLoading, setFederationMatchesLoading] = useState(false);
+
   // Resolve slug from ID if needed
   const resolvedOrg = organisations.find(o =>
     o.slug?.toLowerCase() === id?.toLowerCase() || o.id === id
@@ -155,11 +160,70 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const orgSlugOrId = String(org?.slug || org?.id || currentOrgSlug || '');
 
+  const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%' };
+  const compactThStyle: React.CSSProperties = { padding: '8px 10px', fontSize: '0.8rem' };
+  const compactTdStyle: React.CSSProperties = { padding: '8px 10px', fontSize: '0.85rem', verticalAlign: 'middle' };
+  const compactTextTdStyle: React.CSSProperties = {
+    ...compactTdStyle,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    maxWidth: 0,
+  };
+  const compactActionsStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '8px',
+    flexWrap: 'wrap',
+  };
+
+  type ActionTone = 'neutral' | 'primary' | 'danger';
+  const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
+    const base: React.CSSProperties = {
+      padding: '4px 8px',
+      borderRadius: '4px',
+      backgroundColor: 'var(--app-surface)',
+      cursor: 'pointer',
+      fontSize: '12px',
+      lineHeight: 1.2,
+    };
+    if (tone === 'primary') {
+      return { ...base, border: '1px solid #007bff', color: '#007bff' };
+    }
+    if (tone === 'danger') {
+      return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+    }
+    return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
+  };
+
   const getCsrfToken = () =>
     document.cookie
       .split('; ')
       .find((row) => row.startsWith('csrftoken='))
       ?.split('=')[1] || '';
+
+  const fetchFederationMatches = async (organisationId: string) => {
+    if (!organisationId) return;
+    setFederationMatchesLoading(true);
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const params = new URLSearchParams();
+      params.set('page_size', '100');
+      params.set('activity_type', 'match');
+      params.set('organisation_id', organisationId);
+
+      const all = await fetchAllPages<any>(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, {
+        credentials: 'include',
+      });
+
+      setFederationMatches(Array.isArray(all) ? all : []);
+    } catch (e) {
+      console.error(e);
+      setFederationMatches([]);
+    } finally {
+      setFederationMatchesLoading(false);
+    }
+  };
 
   const parseListEnvelope = (raw: any): { results: any[]; count: number } => {
     const envelope = raw?.data ?? raw;
@@ -543,6 +607,11 @@ export const OrganisationDetailPage: React.FC = () => {
     if (activeTab === 'teams' || activeTab === 'seasons') {
       fetchTeamsForOrg();
     }
+
+    if (activeTab === 'matches') {
+      const orgId = String(org?.id || currentOrgId || '');
+      if (orgId) fetchFederationMatches(orgId);
+    }
   }, [activeTab]);
 
   useEffect(() => {
@@ -709,57 +778,120 @@ export const OrganisationDetailPage: React.FC = () => {
               <Card>
                 <div className="text-sm text-gray-600">Clubs</div>
                 <div className="text-2xl font-bold">{org.clubs_count || clubsCount || 0}</div>
-                <div style={{ marginTop: '10px' }}>
+                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <Button variant="secondary" size="sm" onClick={() => setActiveTab('clubs')}>
-                    Open Clubs
+                    Open tab
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => navigate(`/clubs?org_id=${encodeURIComponent(orgSlugOrId)}`)}
+                  >
+                    View all
                   </Button>
                 </div>
               </Card>
               <Card>
                 <div className="text-sm text-gray-600">Teams</div>
                 <div className="text-2xl font-bold">{org.teams_count || teamsCount || 0}</div>
-                <div style={{ marginTop: '10px' }}>
+                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <Button variant="secondary" size="sm" onClick={() => setActiveTab('teams')}>
-                    Open Teams
+                    Open tab
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => navigate(`/teams?org_id=${encodeURIComponent(orgSlugOrId)}`)}
+                  >
+                    View all
                   </Button>
                 </div>
               </Card>
               <Card>
                 <div className="text-sm text-gray-600">Users</div>
                 <div className="text-2xl font-bold">{org.member_count || members.length || 0}</div>
-                <div style={{ marginTop: '10px' }}>
+                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <Button variant="secondary" size="sm" onClick={() => setActiveTab('users')}>
-                    Open Users
+                    Open tab
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => navigate(`/organisations/${currentOrgSlug}/users`)}
+                  >
+                    View all
                   </Button>
                 </div>
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <Card>
                 <div className="text-sm text-gray-600">Seasons</div>
                 <div className="text-2xl font-bold">{seasonsCount ?? '—'}</div>
-                <div style={{ marginTop: '10px' }}>
+                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <Button variant="secondary" size="sm" onClick={() => setActiveTab('seasons')}>
-                    Open Seasons
+                    Open tab
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => navigate(`/seasons?org_id=${encodeURIComponent(orgSlugOrId)}`)}
+                  >
+                    View all
                   </Button>
                 </div>
               </Card>
               <Card>
                 <div className="text-sm text-gray-600">Competitions</div>
                 <div className="text-2xl font-bold">{competitionsCount ?? '—'}</div>
-                <div style={{ marginTop: '10px' }}>
+                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <Button variant="secondary" size="sm" onClick={() => setActiveTab('competitions')}>
-                    Open Competitions
+                    Open tab
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => navigate(`/competitions?org_id=${encodeURIComponent(orgSlugOrId)}`)}
+                  >
+                    View all
                   </Button>
                 </div>
               </Card>
               <Card>
                 <div className="text-sm text-gray-600">Matches</div>
                 <div className="text-2xl font-bold">{matchesCount ?? '—'}</div>
-                <div style={{ marginTop: '10px' }}>
+                <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <Button variant="secondary" size="sm" onClick={() => setActiveTab('matches')}>
-                    Open Matches
+                    Open tab
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => navigate(`/matches?org_id=${encodeURIComponent(orgSlugOrId)}`)}
+                  >
+                    View all
+                  </Button>
+                </div>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card>
+                <div className="text-sm text-gray-600">Governance</div>
+                <div className="text-2xl font-bold">Policies</div>
+                <div style={{ marginTop: '10px' }}>
+                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('governance')}>
+                    Open tab
+                  </Button>
+                </div>
+              </Card>
+              <Card>
+                <div className="text-sm text-gray-600">Audit</div>
+                <div className="text-2xl font-bold">Trail</div>
+                <div style={{ marginTop: '10px' }}>
+                  <Button variant="secondary" size="sm" onClick={() => setActiveTab('audit')}>
+                    Open tab
                   </Button>
                 </div>
               </Card>
@@ -768,7 +900,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 <div className="text-2xl font-bold">Operations</div>
                 <div style={{ marginTop: '10px' }}>
                   <Button variant="secondary" size="sm" onClick={() => setActiveTab('operations')}>
-                    Open Operations
+                    Open tab
                   </Button>
                 </div>
               </Card>
@@ -985,101 +1117,105 @@ export const OrganisationDetailPage: React.FC = () => {
               <Alert variant="info">Loading clubs…</Alert>
             ) : clubs.length > 0 ? (
               <Card>
-              <Table>
-                <thead>
-                  <tr>
-                    <th>Club Name</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clubs.map((club) => (
-                    <tr key={club.id}>
-                      <td>
-                        <Link
-                          to={`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`}
-                          className="text-blue-600 hover:underline"
-                          style={{ fontSize: '0.85rem' }}
-                        >
-                          {club.name}
-                        </Link>
-                      </td>
-                      <td>
-                        <Badge variant={club.is_active ? 'success' : 'warning'}>
-                          {club.is_active ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedClub(club);
-                              setIsClubModalOpen(true);
-                            }}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`)}
-                          >
-                            Open
-                          </Button>
-                          {userCanEditProject && (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedEditProject(club);
-                                setIsEditModalOpen(true);
-                              }}
+                <div className="overflow-x-auto">
+                  <Table style={compactTableStyle}>
+                    <colgroup>
+                      <col />
+                      <col style={{ width: '120px' }} />
+                      <col style={{ width: '310px' }} />
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <th style={compactThStyle}>Club</th>
+                        <th style={compactThStyle}>Status</th>
+                        <th style={compactThStyle}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clubs.map((club) => (
+                        <tr key={club.id}>
+                          <td style={compactTextTdStyle}>
+                            <Link
+                              to={`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`}
+                              className="text-blue-600 hover:underline"
+                              style={{ ...compactTextTdStyle, display: 'inline-block', maxWidth: '100%' }}
                             >
-                              Edit
-                            </Button>
-                          )}
-                          {userCanDeleteProject && (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={async () => {
-                                if (!window.confirm(`Are you sure you want to delete project ${club.name}?`)) return;
-                                try {
-                                  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                  const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                              {club.name}
+                            </Link>
+                          </td>
+                          <td style={compactTdStyle}>
+                            <Badge variant={club.is_active ? 'success' : 'warning'}>
+                              {club.is_active ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </td>
+                          <td style={compactTdStyle}>
+                            <div style={compactActionsStyle}>
+                              <button
+                                onClick={() => {
+                                  setSelectedClub(club);
+                                  setIsClubModalOpen(true);
+                                }}
+                                style={actionButtonStyle('neutral')}
+                              >
+                                View
+                              </button>
+                              <button
+                                onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`)}
+                                style={actionButtonStyle('primary')}
+                              >
+                                Open
+                              </button>
+                              {userCanEditProject && (
+                                <button
+                                  onClick={() => {
+                                    setSelectedEditProject(club);
+                                    setIsEditModalOpen(true);
+                                  }}
+                                  style={actionButtonStyle('primary')}
+                                >
+                                  Edit
+                                </button>
+                              )}
+                              {userCanDeleteProject && (
+                                <button
+                                  onClick={async () => {
+                                    if (!window.confirm(`Are you sure you want to delete project ${club.name}?`)) return;
+                                    try {
+                                      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                      const res = await fetch(
+                                        `${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/${club.slug || club.id}/`,
+                                        {
+                                          method: 'DELETE',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': getCsrfToken(),
+                                          },
+                                          credentials: 'include',
+                                        }
+                                      );
 
-                                  const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/${club.slug || club.id}/`, {
-                                    method: 'DELETE',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      'X-CSRFToken': csrfToken || '',
-                                    },
-                                    credentials: 'include',
-                                  });
-
-                                  if (res.ok) {
-                                    setClubs((prev) => prev.filter((p) => String(p.id) !== String(club.id)));
-                                  } else {
-                                    alert('Error deleting project');
-                                  }
-                                } catch (e) {
-                                  console.error(e);
-                                  alert('Error deleting project');
-                                }
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+                                      if (res.ok) {
+                                        setClubs((prev) => prev.filter((p) => String(p.id) !== String(club.id)));
+                                      } else {
+                                        alert('Error deleting project');
+                                      }
+                                    } catch (e) {
+                                      console.error(e);
+                                      alert('Error deleting project');
+                                    }
+                                  }}
+                                  style={actionButtonStyle('danger')}
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
               </Card>
             ) : (
               <Alert variant="info">No clubs yet</Alert>
@@ -1178,19 +1314,28 @@ export const OrganisationDetailPage: React.FC = () => {
                         <div className="text-sm font-semibold" style={{ marginBottom: '10px' }}>
                           {clubNameById.get(clubId) || `Club ${clubId}`}
                         </div>
-                        <Table>
-                          <thead>
-                            <tr>
-                              <th>Team</th>
-                              <th>Players</th>
-                              <th>Seasons</th>
-                              <th>Competitions</th>
-                              <th>Status</th>
-                              <th>Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {(clubTeams || []).map((team: any) => {
+                        <div className="overflow-x-auto">
+                          <Table style={compactTableStyle}>
+                            <colgroup>
+                              <col />
+                              <col style={{ width: '90px' }} />
+                              <col style={{ width: '95px' }} />
+                              <col style={{ width: '120px' }} />
+                              <col style={{ width: '120px' }} />
+                              <col style={{ width: '330px' }} />
+                            </colgroup>
+                            <thead>
+                              <tr>
+                                <th style={compactThStyle}>Team</th>
+                                <th style={compactThStyle}>Players</th>
+                                <th style={compactThStyle}>Seasons</th>
+                                <th style={compactThStyle}>Competitions</th>
+                                <th style={compactThStyle}>Status</th>
+                                <th style={compactThStyle}>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(clubTeams || []).map((team: any) => {
                               const teamSlugOrId = team.slug || team.id;
                               const clubSlugOrId = clubSlugById.get(clubId) || clubId;
                               const teamIdKey = String(team.id);
@@ -1199,56 +1344,51 @@ export const OrganisationDetailPage: React.FC = () => {
                               const competitionsCount = teamCompetitionsCountById[teamIdKey] ?? 0;
                               return (
                                 <tr key={team.id}>
-                                  <td style={{ fontSize: '0.85rem' }}>{team.name}</td>
-                                  <td>
+                                  <td style={compactTextTdStyle}>{team.name}</td>
+                                  <td style={compactTdStyle}>
                                     <Badge variant="default">{playersCount}</Badge>
                                   </td>
-                                  <td>
+                                  <td style={compactTdStyle}>
                                     <Badge variant="default">{seasonsCount}</Badge>
                                   </td>
-                                  <td>
+                                  <td style={compactTdStyle}>
                                     <Badge variant="default">{competitionsCount}</Badge>
                                   </td>
-                                  <td>
+                                  <td style={compactTdStyle}>
                                     <Badge variant={team.is_active ? 'success' : 'warning'}>
                                       {team.is_active ? 'Active' : 'Inactive'}
                                     </Badge>
                                   </td>
-                                  <td>
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                      <Button
-                                        variant="secondary"
-                                        size="sm"
+                                  <td style={compactTdStyle}>
+                                    <div style={compactActionsStyle}>
+                                      <button
                                         onClick={() => {
                                           setSelectedClub(team);
                                           setIsClubModalOpen(true);
                                         }}
+                                        style={actionButtonStyle('neutral')}
                                       >
                                         View
-                                      </Button>
-                                      <Button
-                                        variant="secondary"
-                                        size="sm"
+                                      </button>
+                                      <button
                                         onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`)}
+                                        style={actionButtonStyle('primary')}
                                       >
                                         Open
-                                      </Button>
+                                      </button>
                                       {userCanEditProject && (
-                                        <Button
-                                          variant="secondary"
-                                          size="sm"
+                                        <button
                                           onClick={() => {
                                             setSelectedEditProject(team);
                                             setIsEditModalOpen(true);
                                           }}
+                                          style={actionButtonStyle('primary')}
                                         >
                                           Edit
-                                        </Button>
+                                        </button>
                                       )}
                                       {userCanDeleteProject && (
-                                        <Button
-                                          variant="secondary"
-                                          size="sm"
+                                        <button
                                           onClick={async () => {
                                             if (!window.confirm(`Are you sure you want to delete project ${team.name}?`)) return;
                                             try {
@@ -1274,17 +1414,19 @@ export const OrganisationDetailPage: React.FC = () => {
                                               alert('Error deleting team');
                                             }
                                           }}
+                                          style={actionButtonStyle('danger')}
                                         >
                                           Delete
-                                        </Button>
+                                        </button>
                                       )}
                                     </div>
                                   </td>
                                 </tr>
                               );
-                            })}
-                          </tbody>
-                        </Table>
+                              })}
+                            </tbody>
+                          </Table>
+                        </div>
                       </Card>
                     ))}
                   </div>
@@ -1405,15 +1547,23 @@ export const OrganisationDetailPage: React.FC = () => {
               return (
                 <Card>
                   <div className="overflow-x-auto">
-                    <Table>
+                    <Table style={compactTableStyle}>
+                      <colgroup>
+                        <col />
+                        <col style={{ width: '220px' }} />
+                        <col style={{ width: '220px' }} />
+                        <col style={{ width: '120px' }} />
+                        <col style={{ width: '95px' }} />
+                        <col style={{ width: '140px' }} />
+                      </colgroup>
                       <thead>
                         <tr>
-                          <th>Season</th>
-                          <th>Team</th>
-                          <th>Club</th>
-                          <th>Competitions</th>
-                          <th>Matches</th>
-                          <th>Actions</th>
+                          <th style={compactThStyle}>Season</th>
+                          <th style={compactThStyle}>Team</th>
+                          <th style={compactThStyle}>Club</th>
+                          <th style={compactThStyle}>Competitions</th>
+                          <th style={compactThStyle}>Matches</th>
+                          <th style={compactThStyle}>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1436,20 +1586,20 @@ export const OrganisationDetailPage: React.FC = () => {
 
                           return (
                             <tr key={seasonId}>
-                              <td style={{ fontSize: '0.85rem' }}>{season.name}</td>
-                              <td style={{ fontSize: '0.85rem' }}>{team?.name || teamId || '—'}</td>
-                              <td style={{ fontSize: '0.85rem' }}>{clubId ? clubNameById.get(clubId) || clubId : '—'}</td>
-                              <td>
+                              <td style={compactTextTdStyle}>{season.name}</td>
+                              <td style={compactTextTdStyle}>{team?.name || teamId || '—'}</td>
+                              <td style={compactTextTdStyle}>{clubId ? clubNameById.get(clubId) || clubId : '—'}</td>
+                              <td style={compactTdStyle}>
                                 <Badge variant="default">{competitionsCount}</Badge>
                               </td>
-                              <td>
+                              <td style={compactTdStyle}>
                                 <Badge variant="default">{matchesCount}</Badge>
                               </td>
-                              <td>
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                  <Button variant="secondary" size="sm" onClick={() => navigate(openHref)}>
+                              <td style={compactTdStyle}>
+                                <div style={compactActionsStyle}>
+                                  <button onClick={() => navigate(openHref)} style={actionButtonStyle('primary')}>
                                     Open
-                                  </Button>
+                                  </button>
                                 </div>
                               </td>
                             </tr>
@@ -1468,14 +1618,117 @@ export const OrganisationDetailPage: React.FC = () => {
         {activeTab === 'competitions' && (
           <Card className="mb-6">
             <div className="flex justify-between items-center mb-4" style={{ gap: '12px', flexWrap: 'wrap' }}>
-              <h3 className="text-lg font-semibold">Competitions (high-over)</h3>
+              <h3 className="text-lg font-semibold">Competitions</h3>
               <Button variant="secondary" size="sm" onClick={() => navigate(`/competitions?org_id=${encodeURIComponent(orgSlugOrId)}`)}>
                 View all competitions
               </Button>
             </div>
-            <Alert variant="info">
-              Total competitions in this federation: {competitionsCount ?? '—'}. Use the competitions list page to filter by club/team/season.
-            </Alert>
+
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
+              <div style={{ width: '240px', maxWidth: '100%' }}>
+                <Input value={competitionSearch} onChange={(e) => setCompetitionSearch(e.target.value)} placeholder="Search competitions" />
+              </div>
+            </div>
+
+            {(() => {
+              const clubNameById = new Map<string, string>();
+              const clubSlugById = new Map<string, string>();
+              for (const c of allClubsForTeams as any[]) {
+                clubNameById.set(String(c.id), c.name);
+                clubSlugById.set(String(c.id), (c as any).slug || String(c.id));
+              }
+
+              const teamById = new Map<string, any>();
+              for (const t of teams as any[]) teamById.set(String(t.id), t);
+
+              const seasonById = new Map<string, any>();
+              for (const p of orgPeriods as any[]) {
+                const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
+                const type = p.type ?? p.data?.type;
+                const isSeason = String(type).toLowerCase() === 'season' && !parentId;
+                if (isSeason) seasonById.set(String(p.id), p);
+              }
+
+              const normalized = competitionSearch.trim().toLowerCase();
+              const competitions = (orgPeriods as any[])
+                .filter((p: any) => {
+                  const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
+                  return Boolean(parentId);
+                })
+                .filter((comp: any) => {
+                  if (!normalized) return true;
+                  return String(comp.name || '').toLowerCase().includes(normalized);
+                });
+
+              if (competitions.length === 0) {
+                return <Alert variant="info">No competitions found for this federation.</Alert>;
+              }
+
+              return (
+                <Card>
+                  <div className="overflow-x-auto">
+                    <Table style={compactTableStyle}>
+                      <colgroup>
+                        <col />
+                        <col style={{ width: '220px' }} />
+                        <col style={{ width: '220px' }} />
+                        <col style={{ width: '220px' }} />
+                        <col style={{ width: '95px' }} />
+                        <col style={{ width: '140px' }} />
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th style={compactThStyle}>Competition</th>
+                          <th style={compactThStyle}>Season</th>
+                          <th style={compactThStyle}>Team</th>
+                          <th style={compactThStyle}>Club</th>
+                          <th style={compactThStyle}>Matches</th>
+                          <th style={compactThStyle}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {competitions.map((comp: any) => {
+                          const seasonId = String(comp.parent_period_id ?? comp.parent_period?.id ?? '');
+                          const season = seasonId ? seasonById.get(seasonId) : null;
+
+                          const teamId = String(comp.project_id ?? comp.project?.id ?? '');
+                          const team = teamId ? teamById.get(teamId) : null;
+                          const teamSlugOrId = team?.slug || team?.id || teamId;
+
+                          const clubId = team
+                            ? String(team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? '')
+                            : '';
+                          const clubSlugOrId = clubId ? clubSlugById.get(clubId) || clubId : '';
+
+                          const openHref = clubSlugOrId
+                            ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonId}/competitions/${comp.id}`
+                            : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonId}/competitions/${comp.id}`;
+
+                          return (
+                            <tr key={comp.id}>
+                              <td style={compactTextTdStyle}>{comp.name}</td>
+                              <td style={compactTextTdStyle}>{season?.name || comp.parent_period?.name || seasonId || '—'}</td>
+                              <td style={compactTextTdStyle}>{team?.name || teamId || '—'}</td>
+                              <td style={compactTextTdStyle}>{clubId ? clubNameById.get(clubId) || clubId : '—'}</td>
+                              <td style={compactTdStyle}>
+                                <Badge variant="default">{comp.activities_count ?? 0}</Badge>
+                              </td>
+                              <td style={compactTdStyle}>
+                                <div style={compactActionsStyle}>
+                                  <button onClick={() => navigate(openHref)} style={actionButtonStyle('primary')}>
+                                    Open
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </Table>
+                  </div>
+                </Card>
+              );
+            })()}
           </Card>
         )}
 
@@ -1483,14 +1736,89 @@ export const OrganisationDetailPage: React.FC = () => {
         {activeTab === 'matches' && (
           <Card className="mb-6">
             <div className="flex justify-between items-center mb-4" style={{ gap: '12px', flexWrap: 'wrap' }}>
-              <h3 className="text-lg font-semibold">Matches (high-over)</h3>
+              <h3 className="text-lg font-semibold">Matches</h3>
               <Button variant="secondary" size="sm" onClick={() => navigate(`/matches?org_id=${encodeURIComponent(orgSlugOrId)}`)}>
                 View all matches
               </Button>
             </div>
-            <Alert variant="info">
-              Total matches in this federation: {matchesCount ?? '—'}. Use the matches list page to filter by club/team/competition.
-            </Alert>
+
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
+              <div style={{ width: '240px', maxWidth: '100%' }}>
+                <Input value={matchSearch} onChange={(e) => setMatchSearch(e.target.value)} placeholder="Search matches" />
+              </div>
+            </div>
+
+            {federationMatchesLoading ? (
+              <Alert variant="info">Loading matches…</Alert>
+            ) : (() => {
+              const clubNameById = new Map<string, string>();
+              for (const c of allClubsForTeams as any[]) {
+                clubNameById.set(String(c.id), c.name);
+              }
+
+              const teamById = new Map<string, any>();
+              for (const t of teams as any[]) teamById.set(String(t.id), t);
+
+              const normalized = matchSearch.trim().toLowerCase();
+              const matches = (federationMatches || []).filter((m: any) => {
+                if (!normalized) return true;
+                return String(m.title || '').toLowerCase().includes(normalized);
+              });
+
+              if (matches.length === 0) {
+                return <Alert variant="info">No matches found for this federation.</Alert>;
+              }
+
+              return (
+                <Card>
+                  <div className="overflow-x-auto">
+                    <Table style={compactTableStyle}>
+                      <colgroup>
+                        <col />
+                        <col style={{ width: '220px' }} />
+                        <col style={{ width: '220px' }} />
+                        <col style={{ width: '190px' }} />
+                        <col style={{ width: '140px' }} />
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th style={compactThStyle}>Match</th>
+                          <th style={compactThStyle}>Competition</th>
+                          <th style={compactThStyle}>Team</th>
+                          <th style={compactThStyle}>Start</th>
+                          <th style={compactThStyle}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {matches.map((m: any) => {
+                          const teamId = String(m.project?.id ?? m.project_id ?? '');
+                          const team = teamId ? teamById.get(teamId) : null;
+                          const clubId = team
+                            ? String(team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? '')
+                            : '';
+
+                          return (
+                            <tr key={m.id}>
+                              <td style={compactTextTdStyle}>{m.title || m.name || m.id}</td>
+                              <td style={compactTextTdStyle}>{m.period?.name || '-'}</td>
+                              <td style={compactTextTdStyle}>{team?.name || teamId || '-'}</td>
+                              <td style={compactTextTdStyle}>{m.start_time || '-'}</td>
+                              <td style={compactTdStyle}>
+                                <div style={compactActionsStyle}>
+                                  <button onClick={() => navigate(`/matches/${m.id}`)} style={actionButtonStyle('primary')}>
+                                    Open
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </Table>
+                  </div>
+                </Card>
+              );
+            })()}
           </Card>
         )}
 
