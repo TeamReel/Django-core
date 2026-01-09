@@ -42,6 +42,11 @@ export interface Organisation {
   updated_at?: string;
   logo_url?: string;
   user_role?: 'admin' | 'member';
+  metadata?: {
+    type?: string;
+    country?: string;
+    [key: string]: any;
+  };
 }
 
 /**

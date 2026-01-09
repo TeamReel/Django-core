@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { canPerformAction, PermissionContext } from '../../utils/permissions';
 import AppShell from '../../components/AppShell';
 
 interface Organisation {
@@ -8,6 +9,12 @@ interface Organisation {
   slug: string;
   name: string;
   description?: string;
+  user_role?: 'admin' | 'member';
+  metadata?: {
+    type?: string;
+    country?: string;
+    [key: string]: any;
+  };
 }
 
 interface Project {
@@ -37,6 +44,16 @@ export default function OrganisationDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'clubs' | 'teams'>('overview');
   const { switchContext } = useContextSwitcher();
+
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    type: '',
+    country: ''
+  });
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -104,6 +121,68 @@ export default function OrganisationDetailPage() {
   const clubs = projects.filter(p => !p.parent);
   const teams = projects.filter(p => p.parent);
 
+  // Permission context for edit check
+  const permissionContext: PermissionContext = {
+    currentOrganisation: organisation || undefined,
+    isSuperAdmin: false,
+  };
+  const canEdit = organisation && canPerformAction('update', 'organisation', permissionContext);
+
+  // Handle edit mode toggle
+  const handleEditClick = () => {
+    if (!organisation) return;
+    setEditFormData({
+      name: organisation.name || '',
+      type: organisation.metadata?.type || '',
+      country: organisation.metadata?.country || ''
+    });
+    setSaveError(null);
+    setIsEditMode(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditMode(false);
+    setSaveError(null);
+  };
+
+  const handleSave = async () => {
+    if (!organisation) return;
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${organisation.slug}/`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editFormData.name,
+          metadata: {
+            ...organisation.metadata,
+            type: editFormData.type || undefined,
+            country: editFormData.country || undefined
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.name?.[0] || 'Failed to update organisation');
+      }
+
+      const updatedOrg = await response.json();
+      setOrganisation(updatedOrg);
+      setIsEditMode(false);
+    } catch (err: any) {
+      setSaveError(err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <AppShell>
       <div>
@@ -168,40 +247,239 @@ export default function OrganisationDetailPage() {
             padding: '24px',
             backgroundColor: 'var(--app-surface)'
           }}>
-            <h2 style={{ marginTop: 0, color: 'var(--app-text)' }}>Federation Details</h2>
-            <dl style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '12px' }}>
-              <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Name:</dt>
-              <dd style={{ margin: 0, color: 'var(--app-text)' }}>{organisation.name}</dd>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ margin: 0, color: 'var(--app-text)' }}>Federation Details</h2>
+              {!isEditMode && canEdit && (
+                <button
+                  onClick={handleEditClick}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#0056b3',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#003d82'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0056b3'}
+                >
+                  Edit
+                </button>
+              )}
+            </div>
 
-              <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Slug:</dt>
-              <dd style={{ margin: 0, fontFamily: 'monospace', color: 'var(--app-text)' }}>{organisation.slug}</dd>
+            {saveError && (
+              <div style={{
+                padding: '12px',
+                backgroundColor: '#ffeef0',
+                border: '1px solid #f5c2c7',
+                borderRadius: '4px',
+                color: '#dc3545',
+                marginBottom: '16px'
+              }}>
+                {saveError}
+              </div>
+            )}
 
-              <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Clubs:</dt>
-              <dd style={{ margin: 0, color: 'var(--app-text)' }}>{clubs.length}</dd>
+            {!isEditMode ? (
+              // Read mode
+              <>
+                <dl style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '12px' }}>
+                  <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Name:</dt>
+                  <dd style={{ margin: 0, color: 'var(--app-text)' }}>{organisation.name}</dd>
 
-              <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Teams:</dt>
-              <dd style={{ margin: 0, color: 'var(--app-text)' }}>{teams.length}</dd>
+                  <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Type:</dt>
+                  <dd style={{ margin: 0, color: 'var(--app-text)' }}>
+                    {organisation.metadata?.type || <span style={{ color: 'var(--app-muted-text)', fontStyle: 'italic' }}>Not set</span>}
+                  </dd>
 
-              <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>ID:</dt>
-              <dd style={{ margin: 0, fontFamily: 'monospace', color: 'var(--app-text)' }}>{organisation.id}</dd>
-            </dl>
+                  <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Country:</dt>
+                  <dd style={{ margin: 0, color: 'var(--app-text)' }}>
+                    {organisation.metadata?.country || <span style={{ color: 'var(--app-muted-text)', fontStyle: 'italic' }}>Not set</span>}
+                  </dd>
 
-            <Link
-              to={`/organisations/${organisation.slug}/projects`}
-              style={{
-                display: 'inline-block',
-                marginTop: '24px',
-                padding: '10px 20px',
-                backgroundColor: '#0056b3',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: 600,
-              }}
-            >
-              View All Projects →
-            </Link>
+                  <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Slug:</dt>
+                  <dd style={{ margin: 0, fontFamily: 'monospace', color: 'var(--app-text)' }}>{organisation.slug}</dd>
+
+                  <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Clubs:</dt>
+                  <dd style={{ margin: 0, color: 'var(--app-text)' }}>{clubs.length}</dd>
+
+                  <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>Teams:</dt>
+                  <dd style={{ margin: 0, color: 'var(--app-text)' }}>{teams.length}</dd>
+
+                  <dt style={{ fontWeight: 600, color: 'var(--app-muted-text)' }}>ID:</dt>
+                  <dd style={{ margin: 0, fontFamily: 'monospace', color: 'var(--app-text)' }}>{organisation.id}</dd>
+                </dl>
+
+                <Link
+                  to={`/organisations/${organisation.slug}/projects`}
+                  style={{
+                    display: 'inline-block',
+                    marginTop: '24px',
+                    padding: '10px 20px',
+                    backgroundColor: '#0056b3',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                  }}
+                >
+                  View All Projects →
+                </Link>
+              </>
+            ) : (
+              // Edit mode
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontWeight: 600,
+                      color: 'var(--app-text)'
+                    }}>
+                      Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      disabled={isSaving}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        fontSize: '14px',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '6px',
+                        backgroundColor: 'var(--app-surface)',
+                        color: 'var(--app-text)',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="Enter organisation name"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontWeight: 600,
+                      color: 'var(--app-text)'
+                    }}>
+                      Type
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.type}
+                      onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
+                      disabled={isSaving}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        fontSize: '14px',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '6px',
+                        backgroundColor: 'var(--app-surface)',
+                        color: 'var(--app-text)',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="e.g., Federation, League, Association"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontWeight: 600,
+                      color: 'var(--app-text)'
+                    }}>
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.country}
+                      onChange={(e) => setEditFormData({ ...editFormData, country: e.target.value })}
+                      disabled={isSaving}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        fontSize: '14px',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '6px',
+                        backgroundColor: 'var(--app-surface)',
+                        color: 'var(--app-text)',
+                        boxSizing: 'border-box'
+                      }}
+                      placeholder="e.g., Netherlands, Germany, England"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving || !editFormData.name.trim()}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: isSaving ? '#6c757d' : '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: isSaving || !editFormData.name.trim() ? 'not-allowed' : 'pointer',
+                      opacity: isSaving || !editFormData.name.trim() ? 0.6 : 1,
+                      transition: 'background-color 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSaving && editFormData.name.trim()) {
+                        e.currentTarget.style.backgroundColor = '#218838';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSaving && editFormData.name.trim()) {
+                        e.currentTarget.style.backgroundColor = '#28a745';
+                      }
+                    }}
+                  >
+                    {isSaving ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: 'transparent',
+                      color: 'var(--app-text)',
+                      border: '1px solid var(--app-border)',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: isSaving ? 'not-allowed' : 'pointer',
+                      opacity: isSaving ? 0.6 : 1,
+                      transition: 'background-color 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSaving) {
+                        e.currentTarget.style.backgroundColor = 'var(--app-surface-2)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSaving) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 

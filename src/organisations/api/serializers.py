@@ -185,6 +185,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "project_count",
             "user_role",
             "enable_theme_toggle",
+            "metadata",
         ]
         read_only_fields = fields
 
@@ -233,7 +234,15 @@ class OrganisationCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organisation
-        fields = ["id", "name", "slug", "description", "is_active", "enable_theme_toggle"]
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "is_active",
+            "enable_theme_toggle",
+            "metadata",
+        ]
         read_only_fields = ["id", "slug"]
 
     def validate_name(self, value):
