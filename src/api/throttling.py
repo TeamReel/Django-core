@@ -1,7 +1,28 @@
+import logging
 from rest_framework.throttling import SimpleRateThrottle
+from django_redis.exceptions import ConnectionInterrupted
+
+logger = logging.getLogger(__name__)
 
 
-class AuthenticatedUserThrottle(SimpleRateThrottle):
+class GracefulThrottleMixin:
+    """
+    Mixin to handle Redis connection failures gracefully.
+    If Redis is unavailable, throttling is disabled (fail-open for availability).
+    """
+
+    def allow_request(self, request, view):
+        """
+        Override to catch Redis connection errors.
+        """
+        try:
+            return super().allow_request(request, view)
+        except (ConnectionInterrupted, ConnectionError, TimeoutError) as e:
+            logger.warning(f"Throttling disabled due to cache failure: {e.__class__.__name__}")
+            return True  # Fail-open: allow request when Redis is down
+
+
+class AuthenticatedUserThrottle(GracefulThrottleMixin, SimpleRateThrottle):
     """
     Rate limiter for authenticated users: 100 requests per minute.
 
@@ -36,7 +57,7 @@ class AuthenticatedUserThrottle(SimpleRateThrottle):
         return "1000/min"  # FR-020: 1000 requests per minute (Increased for Demo)
 
 
-class AnonymousUserThrottle(SimpleRateThrottle):
+class AnonymousUserThrottle(GracefulThrottleMixin, SimpleRateThrottle):
     """
     Rate limiter for anonymous users: 10 requests per minute per IP.
 
