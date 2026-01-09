@@ -68,9 +68,11 @@ RUN python manage.py collectstatic --noinput --clear
 # Expose port for Gunicorn (Railway sets PORT dynamically)
 EXPOSE 8080
 
-# Health check using B18 endpoints
+# Health check using Railway's /health/ endpoint
+# Note: Railway overrides this with its own healthcheck configuration
+# This is kept for local Docker deployments
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8080}/health/')" || exit 1
+    CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\", \"8080\")}/health/')" || exit 1
 
 # Default command: Run Gunicorn via Python startup script
 CMD ["sh", "-c", "python /app/scripts/start.py"]
