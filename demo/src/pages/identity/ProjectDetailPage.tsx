@@ -19,34 +19,58 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
 
+const getPagedResults = (json: any): any[] => {
+  // Supports both legacy DRF shapes and this app's envelope (BaseAPIPagination).
+  // - { results: [...] }
+  // - { data: { results: [...] } }
+  // - { data: [...] }
+  if (Array.isArray(json?.data)) return json.data;
+  if (Array.isArray(json?.data?.results)) return json.data.results;
+  if (Array.isArray(json?.results)) return json.results;
+  return [];
+};
+
+const getPagedNextUrl = (json: any): string | null => {
+  return (
+    json?.meta?.pagination?.next ||
+    json?.data?.next ||
+    json?.next ||
+    null
+  );
+};
+
+const getPagedCount = (json: any): number | null => {
+  const c = json?.meta?.pagination?.count ?? json?.data?.count ?? json?.count;
+  return typeof c === 'number' ? c : null;
+};
+
 const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promise<T[]> => {
-    const results: T[] = [];
-    let nextUrl: string | null = url;
-    let pageCount = 0;
-    const maxPages = 10; // Safety limit
+  const results: T[] = [];
+  let nextUrl: string | null = url;
+  let pageCount = 0;
+  const maxPages = 10; // Safety limit
 
-    try {
-        while (nextUrl && pageCount < maxPages) {
-            const res: Response = await fetch(nextUrl, options);
-            if (!res.ok) {
-                console.warn(`[fetchAllPages] Request failed for ${nextUrl}: ${res.status}`);
-                break;
-            }
-            const json: any = await res.json();
-            const pageResults = json.data?.results || json.results || [];
-            results.push(...pageResults);
-            pageCount++;
+  try {
+    while (nextUrl && pageCount < maxPages) {
+      const res: Response = await fetch(nextUrl, options);
+      if (!res.ok) {
+        console.warn(`[fetchAllPages] Request failed for ${nextUrl}: ${res.status}`);
+        break;
+      }
+      const json: any = await res.json();
+      const pageResults = getPagedResults(json);
+      results.push(...(pageResults as T[]));
+      pageCount++;
 
-            // Check for next page
-            nextUrl = json.data?.next || json.next || null;
-            if (!nextUrl) break;
-        }
-        console.log(`[fetchAllPages] Fetched ${results.length} items across ${pageCount} pages from ${url}`);
-        return results;
-    } catch (err) {
-        console.error(`[fetchAllPages] Error fetching ${url}:`, err);
-        return results;
+      nextUrl = getPagedNextUrl(json);
+      if (!nextUrl) break;
     }
+    console.log(`[fetchAllPages] Fetched ${results.length} items across ${pageCount} pages from ${url}`);
+    return results;
+  } catch (err) {
+    console.error(`[fetchAllPages] Error fetching ${url}:`, err);
+    return results;
+  }
 };
 
 /**
@@ -510,23 +534,24 @@ export const ProjectDetailPage: React.FC = () => {
         }
 
         // Fetch recent audit events for this project
-        // Note: audit API might still expect project ID, not slug
-        // If backend supports slug, change this to currentProjectSlug
-        const projectIdForAudit = resolvedProject?.id || currentProjectSlug;
-        const eventsResponse = await fetch(
-          `${apiBaseUrl}/api/v1/audit/?project_id=${projectIdForAudit}&limit=10`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'include',
-          }
-        );
+        // Backend route is /api/v1/activity/ (AuditEventViewSet) and filtering uses `project=<project_id>`.
+        const projectIdForAudit = String(resolvedProject?.id ?? project?.id ?? '');
+        if (projectIdForAudit) {
+          const eventsResponse = await fetch(
+            `${apiBaseUrl}/api/v1/activity/?project=${encodeURIComponent(projectIdForAudit)}&limit=10`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+              },
+              credentials: 'include',
+            }
+          );
 
-        if (eventsResponse.ok) {
-          const eventsData = await eventsResponse.json();
-          setRecentEvents(eventsData.results || []);
+          if (eventsResponse.ok) {
+            const eventsData = await eventsResponse.json();
+            setRecentEvents(eventsData.data?.results || eventsData.results || []);
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch project details');
@@ -741,7 +766,7 @@ export const ProjectDetailPage: React.FC = () => {
           const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
           if (res.ok) {
             const json = await res.json();
-            const results = json.data?.results || json.results || [];
+            const results = getPagedResults(json);
             setScheduledMatches(results);
           }
         } else {
@@ -786,7 +811,7 @@ export const ProjectDetailPage: React.FC = () => {
           const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
           if (res.ok) {
             const json = await res.json();
-            const results = json.data?.results || json.results || [];
+            const results = getPagedResults(json);
             setRecentPlayedMatches(results);
           }
         } else {
@@ -823,8 +848,8 @@ export const ProjectDetailPage: React.FC = () => {
           const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
           if (res.ok) {
             const json = await res.json();
-            const count = json.data?.count ?? json.count ?? 0;
-            setMatchesCount(count);
+            const count = getPagedCount(json);
+            setMatchesCount(count ?? 0);
           }
         } else {
           // Clubs aggregate matches across teams; we don't have a cheap count endpoint for that.
@@ -909,13 +934,14 @@ export const ProjectDetailPage: React.FC = () => {
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons`
     : `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/seasons`;
 
+  // Tab order: hierarchy first (teams → seasons → competitions → matches), then users/people, then audit.
   const tabs = [
     { id: 'overview', label: 'Overview' },
-    { id: 'people', label: 'People' },
     ...(!isLikelyTeam ? [{ id: 'teams', label: 'Teams' }] : []),
     { id: 'seasons', label: 'Seasons' },
     { id: 'competitions', label: 'Competitions' },
     { id: 'matches', label: 'Matches' },
+    { id: 'people', label: 'Users' },
     { id: 'audit', label: 'Audit' },
   ];
 
