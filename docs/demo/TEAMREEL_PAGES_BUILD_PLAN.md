@@ -52,12 +52,45 @@ Voor elke pagina:
 **Must-haves**
 - **Breadcrumbs aanwezig** met **Federation switcher** (alle federations waar je toegang toe hebt).
 - Pagina is **hoog-over** (dashboard-achtig): kerncijfers + navigatie naar lagere niveaus.
+
+## Federation detail = “dashboard + tabs”
+Deze pagina is het startpunt binnen een federation. Het moet **alle data zichtbaar** kunnen maken, zonder dat je naar losse list pages móet.
+
+### Tabs (voorstel – relevant per federation)
+- **Overview**: KPI’s + snelle navigatie.
+- **Clubs**: alle clubs binnen deze federation.
+- **Teams**: alle teams binnen deze federation (optioneel: gegroepeerd per club).
+- **Seasons**: alle seasons binnen deze federation (via teams).
+- **Competitions**: alle competitions binnen deze federation.
+- **Matches**: alle matches binnen deze federation.
+- **Users**: leden/gebruikers binnen deze federation.
+- **Governance/Preferences**: federation settings/policies.
+- **Audit**: auditlog scoped op federation.
+
+### “Alle data kunnen zien” (belangrijk)
+- In tabellen: **geen hard limit zoals 5 items**.
+- Als performance een zorg is: gebruik **server-side paginering** (bijv. `page_size=50` met next/prev) i.p.v. een preview-limit.
+- In de tab zelf moet je naar **alle pages** kunnen navigeren zodat uiteindelijk alles zichtbaar is.
+- De knop “View all …” blijft OK, maar mag niet de enige manier zijn om alles te zien.
+
+### Clubs tab (spec)
 - Tab heet **Clubs** (niet Projects).
-- Clubs list toont **alleen root projects** voor deze org (geen teams).
-- Knoppen/linkjes naar:
-  - Clubs list (org-filter)
-  - Teams list (org-filter)
-  - Users list (org-context)
+- Toont **alleen root projects** voor deze org (geen teams).
+- Tabel/kaarten: Club naam, status, #teams (indien beschikbaar), actions.
+- Breadcrumb switcher regels blijven gelden.
+
+### Teams tab (spec)
+- Toont alle teams binnen federation.
+- Indien mogelijk: kolommen Club (parent), Team naam, status.
+- Switcher blijft op Federation-niveau in breadcrumb; teams zijn peers binnen federation scope.
+
+### Seasons / Competitions / Matches tabs (spec)
+- Doel: “alles binnen federation” zichtbaar maken.
+- Filters in tab (minimaal): Team/Club selector (afhankelijk van data availability).
+- Match tab: link naar match detail (met correcte breadcrumbs).
+
+### Quick links (optioneel)
+- Knoppen/linkjes naar de losse overview pages (Clubs/Teams/Users/Seasons/Competitions/Matches) blijven handig, maar zijn secundair aan tabs.
 
 **Check**
 - Count labels in overview: “Clubs” toont clubs-count.
@@ -65,6 +98,39 @@ Voor elke pagina:
 
 **Validatie**
 - Open federation → Clubs tab → controleer dat club-items `parent_project = null` representeren.
+
+---
+
+## Open vragen (Federation detail)
+
+### 1) “Governance” vs “Preferences” – wat wil je hier precies?
+Opties:
+
+**Optie A: Tab hernoemen naar “Preferences” (en Governance laten vervallen)**
+- ✅ Voordelen: sluit aan bij wat jij verwacht (“Preferences”); eenvoudiger navigatie.
+- ❌ Nadelen: als Governance ook policies/roles/audit-achtige dingen bevat, kan dat verwarrend worden.
+
+**Optie B: “Governance” houden, en binnen die tab secties “Preferences/Policies/Feature flags”**
+- ✅ Voordelen: governance is een brede container; product-agnostic.
+- ❌ Nadelen: jij noemt expliciet “Preferences”; label mismatch.
+
+**Optie C: Twee tabs: “Preferences” + “Governance”**
+- ✅ Voordelen: maximale duidelijkheid; scheidt settings vs beleid.
+- ❌ Nadelen: meer tabs; kan te druk worden op federation niveau.
+
+⭐ Aanbeveling (voor Core-App demo): **Optie B**
+- Rationale: governance is een veilige container op federatieniveau; “Preferences” kan als sectie/kop zichtbaar zijn.
+- Als jij het label echt “Preferences” wil hebben in de UI, kies Optie A.
+
+### 2) Hoe wil je “Teams” tonen binnen federation?
+- (A) Platte lijst (Team, Club, Status)
+- (B) Gegroepeerd per club (accordion/sections)
+- (C) Alleen via Club detail (geen federation-wide teams tab)
+
+### 3) Federation-wide Seasons/Competitions/Matches: hoe zwaar mag dit zijn?
+- (A) Altijd federation-wide laden met paginering
+- (B) Eerst een filter verplicht (kies club/team), daarna data laden
+- (C) Alleen totals + “View all” links (maar dit botst met “alle data kunnen zien”)
 
 ---
 
