@@ -1325,170 +1325,172 @@ export const OrganisationDetailPage: React.FC = () => {
               <Alert variant="info">Loading members...</Alert>
             ) : (
               <>
-            {userCanInvite && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-md">
-                <h4 className="text-sm font-medium mb-2">Add user to federation</h4>
-                <form onSubmit={handleInvite} className="flex gap-2 items-end" style={{ flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1, minWidth: '240px' }}>
-                    <label className="block text-xs text-gray-500 mb-1">User Email</label>
-                    <Input
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      placeholder="e.g. user@example.com"
-                      required
-                      type="email"
-                    />
-                  </div>
-                  <div style={{ width: '120px' }}>
-                    <label className="block text-xs text-gray-500 mb-1">Role</label>
-                    <select
-                      className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white"
-                      value={inviteRole}
-                      onChange={(e) => setInviteRole(e.target.value as 'admin' | 'member')}
-                    >
-                      <option value="member">Member</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </div>
-                  <Button type="submit" loading={inviteLoading}>
-                    Add
-                  </Button>
-                </form>
-              </div>
-            )}
-
-            {(() => {
-              const normalizedQuery = memberSearch.trim().toLowerCase();
-              const filteredMembers = members.filter((item: any) => {
-                const u = item.user || item;
-                const haystack = `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase();
-                return !normalizedQuery || haystack.includes(normalizedQuery);
-              });
-
-              if (filteredMembers.length === 0) return <Alert variant="info">No users match your search.</Alert>;
-
-              const totalPages = Math.max(1, Math.ceil(filteredMembers.length / usersPageSize));
-              const safePage = Math.min(usersPage, totalPages);
-              const start = (safePage - 1) * usersPageSize;
-              const pageItems = filteredMembers.slice(start, start + usersPageSize);
-
-              return (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>
-                      Page {safePage} of {totalPages} ({filteredMembers.length} users)
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <Button variant="secondary" size="sm" disabled={safePage <= 1} onClick={() => setUsersPage((p) => Math.max(1, p - 1))}>
-                        Previous
+                {userCanInvite && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-md">
+                    <h4 className="text-sm font-medium mb-2">Add user to federation</h4>
+                    <form onSubmit={handleInvite} className="flex gap-2 items-end" style={{ flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: '240px' }}>
+                        <label className="block text-xs text-gray-500 mb-1">User Email</label>
+                        <Input
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
+                          placeholder="e.g. user@example.com"
+                          required
+                          type="email"
+                        />
+                      </div>
+                      <div style={{ width: '120px' }}>
+                        <label className="block text-xs text-gray-500 mb-1">Role</label>
+                        <select
+                          className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white"
+                          value={inviteRole}
+                          onChange={(e) => setInviteRole(e.target.value as 'admin' | 'member')}
+                        >
+                          <option value="member">Member</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                      <Button type="submit" loading={inviteLoading}>
+                        Add
                       </Button>
-                      <Button variant="secondary" size="sm" disabled={safePage >= totalPages} onClick={() => setUsersPage((p) => Math.min(totalPages, p + 1))}>
-                        Next
-                      </Button>
-                    </div>
+                    </form>
                   </div>
-                  <Card>
-                    <Table>
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-                          <th>Email</th>
-                          <th>Role</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pageItems.map((item: any) => {
-                          const user = item.user || item;
-                          const role = item.role || 'member';
-                          const membershipId = item.id;
-                          const isVirtualMember = item.source === 'assignment' || item.source === 'project_membership' || String(membershipId).startsWith('pm:');
+                )}
 
-                          return (
-                            <tr key={user.id}>
-                              <td>
-                                <Link
-                                  to={`/organisations/${currentOrgSlug}/users/${user.id}`}
-                                  className="text-blue-600 hover:underline"
-                                  style={{ fontSize: '0.85rem' }}
-                                >
-                                  {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
-                                </Link>
-                              </td>
-                              <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
-                              <td>
-                                <Badge variant="default">{role}</Badge>
-                              </td>
-                              <td>
-                                {userCanManageMembers && !isVirtualMember ? (
-                                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                    <button
-                                      onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
-                                      style={{
-                                        padding: '6px 12px',
-                                        borderRadius: '4px',
-                                        border: '1px solid var(--app-border)',
-                                        backgroundColor: 'var(--app-surface-2)',
-                                        color: 'var(--app-text)',
-                                        cursor: 'pointer',
-                                        fontSize: '12px',
-                                        fontWeight: 500
-                                      }}
-                                    >
-                                      View
-                                    </button>
-                                    <button
-                                      onClick={async () => {
-                                        if (!window.confirm(`Remove ${user.email} from federation?`)) return;
-                                        try {
-                                          const apiV1BaseUrl = getApiV1BaseUrl();
-                                          const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-                                          const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/${membershipId}/`, {
-                                            method: 'DELETE',
-                                            headers: {
-                                              'Content-Type': 'application/json',
-                                              'X-CSRFToken': csrfToken || '',
-                                            },
-                                            credentials: 'include',
-                                          });
+                {(() => {
+                  const normalizedQuery = memberSearch.trim().toLowerCase();
+                  const filteredMembers = members.filter((item: any) => {
+                    const u = item.user || item;
+                    const haystack = `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase();
+                    return !normalizedQuery || haystack.includes(normalizedQuery);
+                  });
 
-                                          if (!res.ok) {
-                                            alert('Failed to remove user');
-                                            return;
-                                          }
+                  if (filteredMembers.length === 0) return <Alert variant="info">No users match your search.</Alert>;
 
-                                          // Local update (avoid re-fetch storm)
-                                          setMembers((prev) => prev.filter((m: any) => String(m.id) !== String(membershipId)));
-                                        } catch (e) {
-                                          console.error(e);
-                                          alert('Error removing user');
-                                        }
-                                      }}
-                                      style={{
-                                        padding: '6px 12px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #dc3545',
-                                        backgroundColor: 'var(--app-surface)',
-                                        color: '#dc3545',
-                                        cursor: 'pointer',
-                                        fontSize: '12px',
-                                        fontWeight: 500
-                                      }}
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                ) : null}
-                              </td>
+                  const totalPages = Math.max(1, Math.ceil(filteredMembers.length / usersPageSize));
+                  const safePage = Math.min(usersPage, totalPages);
+                  const start = (safePage - 1) * usersPageSize;
+                  const pageItems = filteredMembers.slice(start, start + usersPageSize);
+
+                  return (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>
+                          Page {safePage} of {totalPages} ({filteredMembers.length} users)
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <Button variant="secondary" size="sm" disabled={safePage <= 1} onClick={() => setUsersPage((p) => Math.max(1, p - 1))}>
+                            Previous
+                          </Button>
+                          <Button variant="secondary" size="sm" disabled={safePage >= totalPages} onClick={() => setUsersPage((p) => Math.min(totalPages, p + 1))}>
+                            Next
+                          </Button>
+                        </div>
+                      </div>
+                      <Card>
+                        <Table>
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                              <th>Email</th>
+                              <th>Role</th>
+                              <th>Actions</th>
                             </tr>
-                          );
-                        })}
-                      </tbody>
-                    </Table>
-                  </Card>
-                </>
-              );
-            })()}
+                          </thead>
+                          <tbody>
+                            {pageItems.map((item: any) => {
+                              const user = item.user || item;
+                              const role = item.role || 'member';
+                              const membershipId = item.id;
+                              const isVirtualMember = item.source === 'assignment' || item.source === 'project_membership' || String(membershipId).startsWith('pm:');
+
+                              return (
+                                <tr key={user.id}>
+                                  <td>
+                                    <Link
+                                      to={`/organisations/${currentOrgSlug}/users/${user.id}`}
+                                      className="text-blue-600 hover:underline"
+                                      style={{ fontSize: '0.85rem' }}
+                                    >
+                                      {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                                    </Link>
+                                  </td>
+                                  <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
+                                  <td>
+                                    <Badge variant="default">{role}</Badge>
+                                  </td>
+                                  <td>
+                                    {userCanManageMembers && !isVirtualMember ? (
+                                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        <button
+                                          onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
+                                          style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '4px',
+                                            border: '1px solid var(--app-border)',
+                                            backgroundColor: 'var(--app-surface-2)',
+                                            color: 'var(--app-text)',
+                                            cursor: 'pointer',
+                                            fontSize: '12px',
+                                            fontWeight: 500
+                                          }}
+                                        >
+                                          View
+                                        </button>
+                                        <button
+                                          onClick={async () => {
+                                            if (!window.confirm(`Remove ${user.email} from federation?`)) return;
+                                            try {
+                                              const apiV1BaseUrl = getApiV1BaseUrl();
+                                              const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                                              const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/${membershipId}/`, {
+                                                method: 'DELETE',
+                                                headers: {
+                                                  'Content-Type': 'application/json',
+                                                  'X-CSRFToken': csrfToken || '',
+                                                },
+                                                credentials: 'include',
+                                              });
+
+                                              if (!res.ok) {
+                                                alert('Failed to remove user');
+                                                return;
+                                              }
+
+                                              // Local update (avoid re-fetch storm)
+                                              setMembers((prev) => prev.filter((m: any) => String(m.id) !== String(membershipId)));
+                                            } catch (e) {
+                                              console.error(e);
+                                              alert('Error removing user');
+                                            }
+                                          }}
+                                          style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '4px',
+                                            border: '1px solid #dc3545',
+                                            backgroundColor: 'var(--app-surface)',
+                                            color: '#dc3545',
+                                            cursor: 'pointer',
+                                            fontSize: '12px',
+                                            fontWeight: 500
+                                          }}
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
+                                    ) : null}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </Table>
+                      </Card>
+                    </>
+                  );
+                })()}
+              </>
+            )}
           </Card>
         )}
 
