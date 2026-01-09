@@ -11,3 +11,4 @@ export { ProfilePage } from './ProfilePage';
 export { default as UsersPage } from './UsersPage';
 export { default as UserDetailPage } from './UserDetailPage';
 export { MemberDetailPage } from './MemberDetailPage';
+export { DirectoryPage } from './DirectoryPage';

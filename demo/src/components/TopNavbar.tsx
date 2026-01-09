@@ -57,6 +57,7 @@ const navGroups: NavGroup[] = [
     id: 'work',
     label: 'Work',
     items: [
+      { path: '/directory', label: 'Directory', description: 'Central directory of all entities', icon: '📂' },
       { path: '/organisations', label: 'Federations', description: 'Land/federation organisations (e.g., KNVB)', icon: '🏢' },
       { path: '/clubs', label: 'Clubs', description: 'Root projects (parent_project = null)', icon: '🏟️' },
       { path: '/teams', label: 'Teams', description: 'Child projects (parent_project != null)', icon: '⚽' },

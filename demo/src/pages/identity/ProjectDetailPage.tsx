@@ -19,6 +19,12 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
 
+const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promise<T[]> => {
+    return [];
+};
+
+
+
 /**
  * T009 - Project Detail Page
  *
@@ -609,6 +615,7 @@ export const ProjectDetailPage: React.FC = () => {
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`
     : clubsListPath;
 
+
   return (
     <AppShell>
       <div>
@@ -622,129 +629,35 @@ export const ProjectDetailPage: React.FC = () => {
           ...(isTeamRoute
             ? [
                 {
-                  label: club?.name || 'Club',
-                  onClick: () =>
-                    navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+                   label: club?.name || 'Club',
+                   onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)
                 },
-                {
-                  label: 'Teams',
-                  onClick: () => navigate(`/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(String(clubSlugOrId))}`),
-                },
+                { label: project.name, current: true }
               ]
-            : []),
-          {
-            label: (
-              <select
-                value={project.slug || project.id}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const selectedProject = effectiveProjectOptions.find(p => (p.slug || p.id) === value);
-                  if (selectedProject) handleProjectSwitch({
-                    id: selectedProject.id,
-                    label: selectedProject.label,
-                    slug: selectedProject.slug || ''
-                  });
-                }}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 500
-                }}
-              >
-                {(isTeamRoute
-                  ? effectiveProjectOptions.filter((p) => String(p.id) === String(project.id))
-                  : effectiveProjectOptions
-                ).map(proj => (
-                  <option key={proj.id} value={proj.slug || proj.id}>{proj.label}</option>
-                ))}
-              </select>
-            ),
-            current: true,
-          },
+            : [{ label: project.name, current: true }]
+          )
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => navigate(backPath)}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '4px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 500
-              }}
-            >
+            <Button variant="secondary" size="sm" onClick={() => navigate(backPath)}>
               Back
-            </button>
-            {!isLikelyTeam ? (
-              <button
-                onClick={() =>
-                  navigate(
-                    `/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(
-                      String(project.slug || project.id)
-                    )}`
-                  )
-                }
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                }}
-              >
-                View Teams
-              </button>
-            ) : (
-              <button
-                onClick={() => navigate(seasonsPath)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                }}
-              >
-                View Seasons
-              </button>
-            )}
+            </Button>
+            {/* Context Switcher for Projects */}
+            <BreadcrumbContextSwitcher
+                currentId={String(project.id)}
+                options={effectiveProjectOptions}
+                onSelect={handleProjectSwitch}
+                hasDropdown={effectiveProjectOptions.length > 1}
+                type="project"
+                variant="button"
+            />
             <button
-              onClick={() => navigate(`/users?project_id=${project.slug || project.id}&organisation_id=${resolvedOrg?.slug || resolvedOrg?.id}`)}
+              onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/edit`)}
               style={{
                 padding: '6px 12px',
                 borderRadius: '4px',
                 border: '1px solid var(--app-border)',
                 backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 500
-              }}
-            >
-              View Project Users
-            </button>
-            <button
-              onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}/edit`)}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '4px',
-                border: '1px solid #0056b3',
-                backgroundColor: 'var(--app-surface)',
                 color: 'var(--app-text)',
                 cursor: 'pointer',
                 fontSize: '12px',
