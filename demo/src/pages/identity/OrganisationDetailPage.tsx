@@ -121,6 +121,13 @@ export const OrganisationDetailPage: React.FC = () => {
   const [recentPlayedMatches, setRecentPlayedMatches] = useState<any[]>([]);
   const [recentPlayedMatchesLoading, setRecentPlayedMatchesLoading] = useState(false);
 
+  // Inline edit state for Overview
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editType, setEditType] = useState('');
+  const [editCountry, setEditCountry] = useState('');
+  const [saving, setSaving] = useState(false);
+
   // Compute period hierarchy for recursive activity counts
   const periodChildrenMap = useMemo(() => {
     const map = new Map<string, any[]>();
@@ -729,6 +736,68 @@ export const OrganisationDetailPage: React.FC = () => {
     }
   };
 
+  const handleEdit = () => {
+    setEditName(org?.name || '');
+    setEditType(org?.metadata?.type || '');
+    setEditCountry(org?.metadata?.country || '');
+    setIsEditMode(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditMode(false);
+    setEditName('');
+    setEditType('');
+    setEditCountry('');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!org || !editName.trim()) {
+      alert('Organisation name is required');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const apiV1BaseUrl = getApiV1BaseUrl();
+
+      // Get CSRF token from cookie
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+
+      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken || '',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: editName.trim(),
+          metadata: {
+            ...org.metadata,
+            type: editType.trim(),
+            country: editCountry.trim(),
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update organisation (${response.status})`);
+      }
+
+      const updatedOrg = await response.json();
+      setOrg(updatedOrg);
+      setIsEditMode(false);
+    } catch (err) {
+      console.error('Update error:', err);
+      alert('Failed to update organisation');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   useEffect(() => {
     const fetchOrgDetails = async () => {
       if (!currentOrgSlug) return;
@@ -1016,6 +1085,82 @@ export const OrganisationDetailPage: React.FC = () => {
                   <div className="text-2xl font-bold mt-1">{matchesCount ?? '—'}</div>
                </Card>
             </div>
+
+            {/* Organisation Details Card */}
+            <Card>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Organisation Details</h3>
+                {!isEditMode && canEditOrganisation(permissionContext) && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleEdit}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
+
+              {isEditMode ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <Input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="Organisation name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <Input
+                      value={editType}
+                      onChange={(e) => setEditType(e.target.value)}
+                      placeholder="e.g., League, Federation, Association"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                    <Input
+                      value={editCountry}
+                      onChange={(e) => setEditCountry(e.target.value)}
+                      placeholder="e.g., Netherlands, Belgium"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      onClick={handleSaveEdit}
+                      loading={saving}
+                      disabled={saving}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={handleCancelEdit}
+                      disabled={saving}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-sm font-medium text-gray-500">Name</div>
+                    <div className="text-base text-gray-900 mt-1">{org?.name || '—'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-500">Type</div>
+                    <div className="text-base text-gray-900 mt-1">{org?.metadata?.type || '—'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-500">Country</div>
+                    <div className="text-base text-gray-900 mt-1">{org?.metadata?.country || '—'}</div>
+                  </div>
+                </div>
+              )}
+            </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Recent Activity & Competitions (2/3) */}
