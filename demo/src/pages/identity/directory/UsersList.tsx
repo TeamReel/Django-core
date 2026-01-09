@@ -147,25 +147,25 @@ export const UsersList: React.FC = () => {
             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
             try {
-                const params = new URLSearchParams();
-                params.set('page_size', '100');
-                if (selectedOrgId) params.set('organisation_id', selectedOrgId);
-                // Note: project_id on user endpoint might assume membership.
-                // Currently UsersPage fetches all users then filters client side for projects usually,
-                // or uses specific API if available.
-                // The original UsersPage uses fetchAllPages logic sometimes or just list.
-                // We'll reset users and fetch fresh.
+                // Find the selected organisation to get its slug
+                const selectedOrg = selectedOrgId
+                    ? organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
+                    : null;
 
-                // Construct URL
-                // If we want filtering by project at API level:
-                // users/?project_id=...
-                if (selectedTeamId) {
-                    params.set('project_id', selectedTeamId);
-                } else if (selectedClubId) {
-                    params.set('project_id', selectedClubId);
+                if (!selectedOrg?.slug && !isSuperAdmin) {
+                    setUsers([]);
+                    return;
                 }
 
-                const url = `${apiBaseUrl}/api/v1/users/?${params.toString()}`;
+                const params = new URLSearchParams();
+                params.set('page_size', '250');
+                params.set('include_project_memberships', 'true');
+                params.set('include_role_assignments', 'true');
+
+                // Use the organisations/:slug/members/ endpoint
+                const orgSlug = selectedOrg?.slug || (organisations[0]?.slug || '');
+                const url = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/?${params.toString()}`;
+
                 const res = await fetch(url, { credentials: 'include' });
 
                 if (!res.ok) throw new Error('Failed to fetch users');
@@ -173,11 +173,26 @@ export const UsersList: React.FC = () => {
                 const data = await res.json();
                 let results = data.data?.results || data.results || [];
 
-                // Client side filtering for status if API doesn't support it or just to be safe
+                // Client-side filtering for project membership
+                if (selectedTeamId) {
+                    results = results.filter((u: any) =>
+                        u.project_memberships?.some((m: any) =>
+                            String(m.project_id || m.project?.id) === String(selectedTeamId)
+                        )
+                    );
+                } else if (selectedClubId) {
+                    results = results.filter((u: any) =>
+                        u.project_memberships?.some((m: any) =>
+                            String(m.project_id || m.project?.id) === String(selectedClubId)
+                        )
+                    );
+                }
+
+                // Client side filtering for status
                 if (statusFilter === 'active') {
-                    results = results.filter((u: any) => u.is_active);
+                    results = results.filter((u: any) => u.is_active !== false);
                 } else if (statusFilter === 'inactive') {
-                     results = results.filter((u: any) => !u.is_active);
+                     results = results.filter((u: any) => u.is_active === false);
                 }
 
                 setUsers(results);
@@ -228,7 +243,6 @@ export const UsersList: React.FC = () => {
 
                  {/* Club Filter */}
                 <div className="w-full md:w-48">
-                    <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Club</label>
                     <select
                         className="w-full border rounded px-2 py-1 text-sm h-[34px]"
                         value={selectedClubId}
@@ -249,7 +263,6 @@ export const UsersList: React.FC = () => {
 
                 {/* Team Filter */}
                 <div className="w-full md:w-48">
-                    <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                     <select
                         className="w-full border rounded px-2 py-1 text-sm h-[34px]"
                         value={selectedTeamId}
@@ -276,7 +289,6 @@ export const UsersList: React.FC = () => {
 
                 {/* Status Filter */}
                 <div className="w-full md:w-32">
-                    <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                     <select
                         className="w-full border rounded px-2 py-1 text-sm h-[34px]"
                         value={statusFilter}
@@ -296,6 +308,14 @@ export const UsersList: React.FC = () => {
                  }}>
                      Clear
                  </Button>
+                 {selectedOrgId && (
+                   <Button variant="primary" onClick={() => {
+                     const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
+                     navigate(`/organisations/${orgSlug}/members/invite`);
+                   }}>
+                     Invite User
+                   </Button>
+                 )}
             </div>
 
             {isLoading && <LoadingState message="Loading users..." />}

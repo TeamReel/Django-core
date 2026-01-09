@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { Alert, Card } from '@django-core/design-system';
+import { Alert, Card, Button } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
@@ -187,8 +187,9 @@ export const TeamsList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: '16px' }}>
-      <WorkFilterBar
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: '300px' }}>
+          <WorkFilterBar
         showTeam={true}
         organisations={organisations}
         clubs={clubs}
@@ -218,6 +219,16 @@ export const TeamsList: React.FC = () => {
           if (isSuperAdmin) setSelectedOrgId('');
         }}
       />
+        </div>
+        {userCanEditProject && selectedOrgId && selectedClubId && (
+          <Button variant="primary" size="md" onClick={() => {
+            const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
+            const clubSlug = clubs.find(c => String(c.id) === selectedClubId)?.slug || selectedClubId;
+            navigate(`/organisations/${orgSlug}/projects/${clubSlug}/teams/create`);
+          }}>
+            Create Team
+          </Button>
+        )}
       </div>
 
       {isLoading && <LoadingState message="Loading teams..." />}
