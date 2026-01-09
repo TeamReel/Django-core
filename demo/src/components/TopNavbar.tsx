@@ -54,11 +54,12 @@ interface NotificationResponse {
 
 const navGroups: NavGroup[] = [
   {
-    id: 'football',
-    label: 'Football',
+    id: 'work',
+    label: 'Work',
     items: [
-      { path: '/organisations', label: 'Federations', description: 'KNVB, UEFA, and other bonds', icon: '🏢' },
-      { path: '/projects', label: 'Clubs & Teams', description: 'Browse all clubs and their teams', icon: '⚽' },
+      { path: '/organisations', label: 'Federations', description: 'Land/federation organisations (e.g., KNVB)', icon: '🏢' },
+      { path: '/projects', label: 'Clubs & Teams', description: 'Browse clubs and their teams', icon: '⚽' },
+      { path: '/users', label: 'Users', description: 'Players, staff, and members', icon: '👥' },
     ],
   },
   {
@@ -66,43 +67,38 @@ const navGroups: NavGroup[] = [
     label: 'Content',
     items: [
       { path: '/content', label: 'Library', description: 'Generated content archive', icon: '🖼️' },
-      { path: '/studio/create', label: 'AI Studio', description: 'Create match content', icon: '✨' },
+      { path: '/studio/create', label: 'AI Studio', description: 'Create content from activities', icon: '✨' },
+      { path: '/notifications', label: 'Notifications', description: 'Updates and system messages', icon: '🔔' },
     ],
   },
   {
-    id: 'data',
-    label: 'Data',
+    id: 'billing',
+    label: 'Billing',
     items: [
-      { path: '/users', label: 'Users', description: 'Players, staff, and members', icon: '👥' },
-      { path: '/credits', label: 'Credits', description: 'Balance and transactions', icon: '💳' },
-      { path: '/audit', label: 'Activity Log', description: 'Recent actions and changes', icon: '📋' },
+      { path: '/credits', label: 'Pricing & Credits', description: 'Balance and transactions', icon: '💳' },
     ],
   },
   {
-    id: 'platform',
-    label: 'Platform',
+    id: 'support',
+    label: 'Support',
+    items: [
+      { path: '/docs', label: 'Guides', description: 'How-to and integration guides', icon: '📚' },
+      { path: '/deployment', label: 'Deployment', description: 'Release and environment notes', icon: '🚀' },
+    ],
+  },
+  {
+    id: 'admin',
+    label: 'Admin',
     items: [
       { path: '/permissions', label: 'Permissions', description: 'Role-based access control', icon: '🔐' },
       { path: '/flags', label: 'Feature Flags', description: 'Feature toggles per organisation', icon: '🚩' },
       { path: '/security', label: 'Security', description: 'Access logs and events', icon: '🔒' },
       { path: '/integration-status', label: 'Integration Status', description: 'Module health overview', icon: '🔄' },
-    ],
-  },
-  {
-    id: 'observability',
-    label: 'Observability',
-    items: [
       { path: '/health', label: 'Health Check', description: 'System uptime and status', icon: '❤️' },
       { path: '/observability', label: 'Metrics', description: 'Performance monitoring', icon: '📊' },
       { path: '/usage-events', label: 'Usage Events', description: 'Analytics and tracking', icon: '📈' },
       { path: '/demo/performance', label: 'Cache Performance', description: 'Redis metrics', icon: '⚡' },
       { path: '/routing-logs', label: 'Notification Routing', description: 'Delivery decisions', icon: '🔀' },
-    ],
-  },
-  {
-    id: 'developer',
-    label: 'Developer',
-    items: [
       { path: '/api-docs', label: 'API Documentation', description: 'OpenAPI/Swagger specs', icon: '🔌' },
       { path: '/docs', label: 'Guides', description: 'Integration guides', icon: '📚' },
       { path: '/design-system', label: 'Design System', description: 'UI components library', icon: '🎨' },
@@ -125,7 +121,7 @@ export default function TopNavbar() {
   };
   const themeToggleEnabled = useFeatureFlag('dark_mode', true); // Theme toggle feature flag (resolved with org overrides)
   const [themeToggleGlobalEnabled, setThemeToggleGlobalEnabled] = useState<boolean>(true); // Global flag value (for superadmins)
-  const { isSystemAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
+  const { isSystemAdmin, isLandAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState<'EN' | 'NL' | 'DE' | 'IT' | 'FR'>('EN');
@@ -342,26 +338,22 @@ export default function TopNavbar() {
   }, [user]);
 
   // Filter based on permissions (keep Admin grouped; only show what the user can access)
+  const isAdmin = isSystemAdmin || isLandAdmin;
   const filteredNavGroups = navGroups.map(group => {
     const items = group.items.filter(item => {
-      // Platform/system admin-only pages
-      if (['/integration-status', '/health', '/constitution', '/observability', '/api-docs', '/routing-logs', '/demo/performance'].includes(item.path)) {
-        return isSystemAdmin;
+      // Admin group: superadmin or land admin only
+      if (group.id === 'admin') {
+        return isAdmin;
       }
 
-      // Tenant admin pages (org/club/team admins + superadmin)
-      if (['/flags', '/credits', '/audit', '/usage-events', '/users', '/permissions'].includes(item.path)) {
+      // Users/Credits/Audit are tenant admin pages (org/club/team admins + superadmin)
+      if (['/credits', '/audit', '/users'].includes(item.path)) {
         return isSystemAdmin || isOrgAdmin;
       }
 
-      // Security: superadmin or org-role (admin/coach)
-      if (item.path === '/security') {
-        return isSystemAdmin || hasOrgRole;
-      }
-
-      // Docs + frontend resources are superadmin-only
-      if (['/docs', '/tasks', '/deployment', '/design-system', '/auth-flows', '/context', '/demo/files', '/resources', '/templates', '/theme', '/integration'].includes(item.path)) {
-        return isSystemAdmin;
+      // Support docs/deployment are admin-only routes
+      if (['/docs', '/deployment'].includes(item.path)) {
+        return isAdmin;
       }
 
       // App pages: everyone
@@ -639,7 +631,7 @@ export default function TopNavbar() {
           </div>
 
           {/* Right side: User controls */}
-          {user && (
+          {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Search Bar */}
             <div className="nav-search-container" style={{ width: '300px', maxWidth: '300px' }}>
@@ -772,8 +764,62 @@ export default function TopNavbar() {
 
             {/* Profile Avatar Dropdown */}
             <ProfileAvatarDropdown />
+
+            {/* Explicit Log out */}
+            <button
+              onClick={async () => {
+                try {
+                  await signOut();
+                } finally {
+                  navigate('/login');
+                }
+              }}
+              disabled={signOutLoading}
+              style={{
+                padding: '8px 12px',
+                backgroundColor: 'transparent',
+                border: '1px solid var(--app-border)',
+                borderRadius: '6px',
+                cursor: signOutLoading ? 'default' : 'pointer',
+                fontSize: '14px',
+                color: 'var(--app-text)',
+                opacity: signOutLoading ? 0.6 : 1,
+              }}
+              aria-label="Log out"
+              title="Log out"
+            >
+              Log out
+            </button>
           </div>
-        )}
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Link
+                to="/login"
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  textDecoration: 'none',
+                  color: 'var(--app-text)',
+                  border: '1px solid var(--app-border)',
+                }}
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/register"
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  textDecoration: 'none',
+                  color: 'white',
+                  backgroundColor: '#2563eb',
+                  border: '1px solid #2563eb',
+                }}
+              >
+                Register
+              </Link>
+            </div>
+          )}
       </div>
 
       <style>{`

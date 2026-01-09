@@ -86,7 +86,7 @@ export default function LoginPage() {
       <div style={{ marginTop: '30px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
         <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>Quick Login (Demo Accounts)</h3>
         <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>
-          Test different roles with football-themed data (5 leagues, 25 clubs, ~280 users)
+          Test different roles with sport-themed data (organisations, teams, users)
         </p>
         <div style={{ display: 'grid', gap: '10px' }}>
           {[

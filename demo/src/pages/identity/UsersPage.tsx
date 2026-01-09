@@ -105,7 +105,8 @@ export default function UsersPage() {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   // Check if user is superadmin based on the role returned by /auth/me/
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
+    const userRole = String((user as any)?.role || '').toLowerCase();
+    const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
   // Determine if current user has admin rights in the current context
   const currentOrgSlug = (orgIdParam || context.organisation?.slug)?.toLowerCase();
@@ -528,12 +529,12 @@ export default function UsersPage() {
 
   // Construct breadcrumbs
   const breadcrumbs: any[] = [
-    { label: 'Home', href: '/' },
+        { label: 'Dashboard', href: '/dashboard' },
   ];
 
   if (orgIdParam) {
-    breadcrumbs.push({ label: 'Organisations', onClick: () => navigate('/organisations') });
-    breadcrumbs.push({ label: (myOrganisations.find(o => o.slug === orgIdParam || o.id === orgIdParam) || context.organisation)?.name || 'Organisation', onClick: () => navigate(`/organisations/${orgIdParam}`) });
+        breadcrumbs.push({ label: 'Federations', onClick: () => navigate('/organisations') });
+        breadcrumbs.push({ label: (myOrganisations.find(o => o.slug === orgIdParam || o.id === orgIdParam) || context.organisation)?.name || 'Federation', onClick: () => navigate(`/organisations/${orgIdParam}`) });
     breadcrumbs.push({ label: 'Users', current: true });
   } else {
     breadcrumbs.push({ label: 'Users', current: true });

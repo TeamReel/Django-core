@@ -12,7 +12,6 @@ import {
   ProtectedRoute,
   AdminOnlyRoute,
   OrgAdminRoute,
-  SecurityRoute,
 } from './components/PermissionGuards';
 
 // Identity pages
@@ -306,9 +305,9 @@ export default function App() {
       <Route
         path="/permissions"
         element={
-          <OrgAdminRoute>
+          <AdminOnlyRoute>
             <PermissionsPage />
-          </OrgAdminRoute>
+          </AdminOnlyRoute>
         }
       />
 
@@ -352,9 +351,9 @@ export default function App() {
       <Route
         path="/flags"
         element={
-          <OrgAdminRoute>
+          <AdminOnlyRoute>
             <FeatureFlagsPage />
-          </OrgAdminRoute>
+          </AdminOnlyRoute>
         }
       />
 
@@ -379,18 +378,18 @@ export default function App() {
       <Route
         path="/usage-events"
         element={
-          <OrgAdminRoute>
+          <AdminOnlyRoute>
             <UsageEventsPage />
-          </OrgAdminRoute>
+          </AdminOnlyRoute>
         }
       />
 
       <Route
         path="/routing-logs"
         element={
-          <SecurityRoute>
+          <AdminOnlyRoute>
             <NotificationRoutingLogsPage />
-          </SecurityRoute>
+          </AdminOnlyRoute>
         }
       />
 
@@ -416,9 +415,9 @@ export default function App() {
       <Route
         path="/security"
         element={
-          <SecurityRoute>
+          <AdminOnlyRoute>
             <SecurityPage />
-          </SecurityRoute>
+          </AdminOnlyRoute>
         }
       />
 

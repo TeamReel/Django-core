@@ -60,7 +60,8 @@ export const OrganisationDetailPage: React.FC = () => {
   const currentOrgId = resolvedOrg?.id; // Keep ID for headers if needed
 
   // Permission checks using centralized helper
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
+  const userRole = String((user as any)?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
   const permissionContext = {
     currentOrganisation: (org || resolvedOrg) as any,
     isSuperAdmin,
@@ -314,8 +315,8 @@ export const OrganisationDetailPage: React.FC = () => {
           <PageHeader
             title="Organisation Details"
             breadcrumbs={[
-              { label: 'Home', onClick: () => navigate('/') },
-              { label: 'Organisations', onClick: () => navigate('/organisations') },
+              { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+              { label: 'Federations', onClick: () => navigate('/organisations') },
               { label: 'Loading...', current: true },
             ]}
           />
@@ -338,8 +339,8 @@ export const OrganisationDetailPage: React.FC = () => {
           <PageHeader
             title="Organisation Details"
             breadcrumbs={[
-              { label: 'Home', onClick: () => navigate('/') },
-              { label: 'Organisations', onClick: () => navigate('/organisations') },
+              { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+              { label: 'Federations', onClick: () => navigate('/organisations') },
               { label: 'Error', current: true },
             ]}
           />
@@ -362,8 +363,8 @@ export const OrganisationDetailPage: React.FC = () => {
         <PageHeader
         title={org.name}
         breadcrumbs={[
-          { label: 'Home', onClick: () => navigate('/') },
-          { label: 'Organisations', onClick: () => navigate('/organisations') },
+          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+          { label: 'Federations', onClick: () => navigate('/organisations') },
           {
             label: (
               <select

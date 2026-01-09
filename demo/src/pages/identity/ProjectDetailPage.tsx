@@ -257,10 +257,10 @@ export const ProjectDetailPage: React.FC = () => {
           <PageHeader
             title="Project Details"
             breadcrumbs={[
-              { label: 'Home', onClick: () => navigate('/') },
-              { label: 'Organisations', onClick: () => navigate('/organisations') },
-              { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
-              { label: 'Projects', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
+              { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+              { label: 'Federations', onClick: () => navigate('/organisations') },
+              { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
+              { label: 'Clubs & Teams', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
               { label: 'Details', current: true },
             ]}
           />
@@ -283,10 +283,10 @@ export const ProjectDetailPage: React.FC = () => {
           <PageHeader
             title="Project Details"
             breadcrumbs={[
-              { label: 'Home', onClick: () => navigate('/') },
-              { label: 'Organisations', onClick: () => navigate('/organisations') },
-              { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
-              { label: 'Projects', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
+              { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+              { label: 'Federations', onClick: () => navigate('/organisations') },
+              { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
+              { label: 'Clubs & Teams', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects`) },
               { label: 'Details', current: true },
             ]}
           />

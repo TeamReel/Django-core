@@ -287,8 +287,8 @@ export const UserDetailPage: React.FC = () => {
       <PageHeader
         title="User Details"
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          ...(orgId ? [{ label: 'Organisations', href: '/organisations' }] : []),
+          { label: 'Dashboard', href: '/dashboard' },
+          ...(orgId ? [{ label: 'Federations', href: '/organisations' }] : []),
           ...(currentOrg ? [{ label: currentOrg.name, href: `/organisations/${orgId}` }] : []),
           { label: usersLabel, onClick: () => navigate(backPath) },
           ...(orgId && userOptions.length > 1 ? [{
@@ -374,7 +374,7 @@ export const UserDetailPage: React.FC = () => {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>System Role</label>
-                <Badge variant={user.role === 'Superadmin' ? 'primary' : 'default'}>
+                <Badge variant={String(user.role || '').toLowerCase() === 'superadmin' ? 'primary' : 'default'}>
                   {user.role}
                 </Badge>
               </div>
@@ -394,7 +394,7 @@ export const UserDetailPage: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {user.organisations.map((org: any) => {
                         const myOrg = organisations.find(o => o.id === org.id);
-                        const isSuperAdmin = Boolean((currentUser as any)?.is_superuser) || (currentUser as any)?.role === 'Superadmin';
+                        const isSuperAdmin = Boolean((currentUser as any)?.is_superuser) || String((currentUser as any)?.role || '').toLowerCase() === 'superadmin';
 
                         // Check if I can manage this org (admin/owner) OR I am superadmin
                         // AND we have a membership ID to delete

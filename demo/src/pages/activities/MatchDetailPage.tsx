@@ -147,20 +147,20 @@ export const MatchDetailPage: React.FC = () => {
         <PageHeader
           title={match.title}
           breadcrumbs={([
-            { label: 'Home', onClick: () => navigate('/') },
-            { label: 'Organisations', onClick: () => navigate('/organisations') },
+            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+            { label: 'Federations', onClick: () => navigate('/organisations') },
             competitionPeriod?.organisation?.id
               ? {
-                  label: competitionPeriod.organisation?.name || 'Organisation',
+                  label: competitionPeriod.organisation?.name || 'Federation',
                   onClick: () => navigate(`/organisations/${competitionPeriod.organisation.id}`),
                 }
-              : { label: 'Organisation' },
+              : { label: 'Federation' },
             competitionPeriod?.organisation?.id
               ? {
-                  label: 'Projects',
+                  label: 'Clubs & Teams',
                   onClick: () => navigate(`/organisations/${competitionPeriod.organisation.id}/projects`),
                 }
-              : { label: 'Projects', onClick: () => navigate('/projects') },
+              : { label: 'Clubs & Teams', onClick: () => navigate('/projects') },
             competitionPeriod?.organisation?.id
               ? {
                   label: match.project.name,

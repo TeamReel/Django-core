@@ -84,7 +84,8 @@ export const ProjectsPage: React.FC = () => {
   const apiOrgSlug = orgId ? currentOrgSlug : undefined;
 
   // Permission checks using centralized helper
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
+  const userRole = String((user as any)?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
   const permissionContext = {
     currentOrganisation: resolvedOrg,
     isSuperAdmin,
@@ -390,13 +391,13 @@ export const ProjectsPage: React.FC = () => {
 
   // Always show breadcrumbs with current org info
   const breadcrumbItems = currentOrgId ? [
-    { label: 'Home', onClick: () => navigate('/') },
-    { label: 'Organisations', onClick: () => navigate('/organisations') },
-    { label: orgName || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}`) },
-    { label: 'Projects', current: true },
+    { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+    { label: 'Federations', onClick: () => navigate('/organisations') },
+    { label: orgName || 'Federation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}`) },
+    { label: 'Clubs & Teams', current: true },
   ] : [
-    { label: 'Home', onClick: () => navigate('/') },
-    { label: 'Projects', current: true },
+    { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+    { label: 'Clubs & Teams', current: true },
   ];
 
   console.log('ProjectsPage render:', { orgId, currentOrgId, orgName, contextOrgId: context.organisation?.id, breadcrumbItems });

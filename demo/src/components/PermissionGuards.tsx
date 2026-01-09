@@ -12,9 +12,14 @@ interface PermissionGuardProps {
 export function useUserRole() {
   const { user } = useAuth();
 
-  const isSystemAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
+  const role = String((user as any)?.role || '').toLowerCase();
+  const isSystemAdmin = Boolean((user as any)?.is_superuser) || role === 'superadmin';
 
   const orgs = (user as any)?.organisations || [];
+  const isLandAdmin = orgs.some((org: any) => {
+    const role = String(org?.role || '').toLowerCase().replace(/[_-]/g, ' ').trim();
+    return role.includes('land admin');
+  });
   const isOrgAdmin = orgs.some((org: any) =>
     org.role?.toLowerCase().includes('admin')
   );
@@ -23,10 +28,11 @@ export function useUserRole() {
     org.role?.toLowerCase().includes('coach')
   );
 
-  const isPlayer = (user as any)?.role === 'player';
+  const isPlayer = role === 'player';
 
   return {
     isSystemAdmin,
+    isLandAdmin,
     isOrgAdmin,
     isCoach,
     isPlayer,
@@ -40,7 +46,7 @@ export function useUserRole() {
  */
 export function AdminOnlyRoute({ children }: PermissionGuardProps) {
   const { user, isLoading } = useAuth();
-  const { isSystemAdmin } = useUserRole();
+  const { isSystemAdmin, isLandAdmin } = useUserRole();
 
   if (isLoading) {
     return <LoadingState message="Checking permissions..." />;
@@ -50,7 +56,7 @@ export function AdminOnlyRoute({ children }: PermissionGuardProps) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!isSystemAdmin) {
+  if (!isSystemAdmin && !isLandAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
 

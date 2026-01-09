@@ -51,7 +51,8 @@ export const OrganisationsPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Permission checks - can user create organisations?
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
+  const userRole = String((user as any)?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
   // Note: Organisation creation is typically a superadmin action
   // Individual org edit/delete uses per-org permissions
 
@@ -166,10 +167,10 @@ export const OrganisationsPage: React.FC = () => {
     <AppShell>
       <div>
         <PageHeader
-        title="Organisations"
+        title="Federations"
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Organisations', current: true },
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Federations', current: true },
         ]}
         actions={
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -256,7 +257,7 @@ export const OrganisationsPage: React.FC = () => {
                 // Check if user can edit/delete this specific org
                 const orgWithRole = myOrganisations.find(o => o.id === org.id);
                 const permissionContext = {
-                  currentOrganisation: orgWithRole as any,
+                  currentOrganisation: (orgWithRole || org) as any,
                   isSuperAdmin,
                 };
                 const userCanEdit = canPerformAction('update', 'organisation', permissionContext);

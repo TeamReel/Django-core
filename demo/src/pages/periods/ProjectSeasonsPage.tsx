@@ -47,11 +47,11 @@ export const ProjectSeasonsPage: React.FC = () => {
 
   const breadcrumbs = useMemo(
     () => [
-      { label: 'Home', onClick: () => navigate('/') },
-      { label: 'Organisations', onClick: () => navigate('/organisations') },
-      { label: org?.name || 'Organisation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
-      { label: 'Projects', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects`) },
-      { label: project?.name || 'Project', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`) },
+      { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+      { label: 'Federations', onClick: () => navigate('/organisations') },
+      { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+      { label: 'Clubs & Teams', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects`) },
+      { label: project?.name || 'Club/Team', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`) },
       { label: 'Seasons', current: true },
     ],
     [navigate, org?.name, project?.name, orgSlugOrId, projectSlugOrId]
