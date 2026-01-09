@@ -37,36 +37,10 @@ def main():
         time.sleep(5)
 
         # One-time fix: Reset rtc_websockets schema to fix integer→UUID migration
-        # Safe for demo - WebSocket data is ephemeral (connections/presence/activity)
-        print("\n[Startup] Checking for migration compatibility issues...")
-        try:
-            result = subprocess.run(
-                [
-                    "python",
-                    "-c",
-                    "import django; django.setup(); "
-                    "from django.db import connection; "
-                    "cursor = connection.cursor(); "
-                    "cursor.execute('DROP TABLE IF EXISTS realtime_websocket_connection CASCADE'); "
-                    "cursor.execute('DROP TABLE IF EXISTS realtime_presence_status CASCADE'); "
-                    "cursor.execute('DROP TABLE IF EXISTS realtime_message CASCADE'); "
-                    "cursor.execute('DROP TABLE IF EXISTS realtime_activity_event CASCADE'); "
-                    "cursor.execute(\"DELETE FROM django_migrations WHERE app = 'rtc_websockets'\"); "
-                    "print('✓ Reset rtc_websockets schema and migration state')",
-                ],
-                check=False,
-                cwd="/app",
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode == 0:
-                stdout = (result.stdout or "").strip()
-                if stdout:
-                    print(stdout)
-            else:
-                print("Note: rtc_websockets reset skipped (expected on first deploy)")
-        except Exception as e:
-            print(f"Warning: Could not reset rtc_websockets schema: {e}")
+        # DISABLED: Causes crashes when run in background while server is processing requests
+        # Should be run manually if needed: railway run python manage.py migrate rtc_websockets --fake-initial
+        # print("\n[Startup] Checking for migration compatibility issues...")
+        print("\n[Startup] Skipping rtc_websockets reset (run manually if needed)...")
 
         # Run migrations (non-fatal for liveness; readiness should catch issues)
         print("\n[Startup] Running database migrations...")
