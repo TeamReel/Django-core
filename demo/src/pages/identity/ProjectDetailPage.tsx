@@ -20,10 +20,16 @@ import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
 
 const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promise<T[]> => {
-    return [];
+    // Basic implementation to support the demo
+    try {
+        const res = await fetch(url, options);
+        if (!res.ok) return [];
+        const json = await res.json();
+        return json.data?.results || json.results || [];
+    } catch {
+        return [];
+    }
 };
-
-
 
 /**
  * T009 - Project Detail Page
