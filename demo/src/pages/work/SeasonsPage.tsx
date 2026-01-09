@@ -58,7 +58,7 @@ export default function SeasonsPage() {
   // Fetch org options for superadmin
   useEffect(() => {
     if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name })));
+      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
       return;
     }
 
@@ -69,7 +69,7 @@ export default function SeasonsPage() {
         if (!res.ok) return;
         const data = await res.json();
         const orgs = data.data?.results || data.results || [];
-        setOrganisations(orgs.map((o: any) => ({ id: String(o.id), name: o.name })));
+        setOrganisations(orgs.map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       } catch {
         // ignore
       }
@@ -139,6 +139,14 @@ export default function SeasonsPage() {
     const t = teams.find((x) => String(x.id) === String(selectedTeamId));
     return t?.name || 'Team';
   }, [teams, selectedTeamId]);
+
+  const selectedOrg = selectedOrgId
+    ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
+    : null;
+  const orgSlugOrId = selectedOrg?.slug || selectedOrg?.id || selectedOrgId;
+
+  const selectedTeam = selectedTeamId ? teams.find((t) => String(t.id) === String(selectedTeamId)) : null;
+  const teamSlugOrId = (selectedTeam as any)?.slug || (selectedTeam as any)?.id || selectedTeamId;
 
   const breadcrumbs = [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
@@ -217,12 +225,12 @@ export default function SeasonsPage() {
                     <tr key={season.id}>
                       <td>
                         <a
-                          href={`/organisations/${selectedOrgId}/projects/${selectedTeamId}/seasons/${season.id}`}
+                          href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.id}`}
                           className="text-blue-600 hover:underline"
                           style={{ fontSize: '0.85rem' }}
                           onClick={(e) => {
                             e.preventDefault();
-                            navigate(`/organisations/${selectedOrgId}/projects/${selectedTeamId}/seasons/${season.id}`);
+                            navigate(`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.id}`);
                           }}
                         >
                           {season.name}

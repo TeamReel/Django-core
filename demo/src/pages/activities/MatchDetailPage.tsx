@@ -145,6 +145,8 @@ export const MatchDetailPage: React.FC = () => {
     (competitionPeriod as any)?.organisation?.slug ||
     (competitionPeriod as any)?.organisation?.id;
 
+  const projectSlugOrId = (match.project as any)?.slug || match.project.id;
+
   return (
     <AppShell>
       <div>
@@ -169,7 +171,7 @@ export const MatchDetailPage: React.FC = () => {
               ? {
                   label: match.project.name,
                   onClick: () =>
-                    navigate(`/organisations/${federationSlugOrId}/projects/${match.project.id}`),
+                    navigate(`/organisations/${federationSlugOrId}/projects/${projectSlugOrId}`),
                 }
               : { label: match.project.name, onClick: () => navigate('/clubs') },
             seasonPeriod && federationSlugOrId
@@ -177,7 +179,7 @@ export const MatchDetailPage: React.FC = () => {
                   label: seasonPeriod.name,
                   onClick: () =>
                     navigate(
-                      `/organisations/${federationSlugOrId}/projects/${match.project.id}/seasons/${seasonPeriod.id}`
+                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonPeriod.id}`
                     ),
                 }
               : seasonPeriod
@@ -188,18 +190,18 @@ export const MatchDetailPage: React.FC = () => {
                   label: competitionPeriod.name,
                   onClick: () =>
                     navigate(
-                      `/organisations/${federationSlugOrId}/projects/${match.project.id}/seasons/${seasonPeriod.id}/competitions/${competitionPeriod.id}`
+                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonPeriod.id}/competitions/${competitionPeriod.id}`
                     ),
                 }
               : competitionPeriod
                 ? { label: competitionPeriod.name }
                 : null,
-            competitionPeriod && seasonPeriod && competitionPeriod?.organisation?.id
+            competitionPeriod && seasonPeriod && federationSlugOrId
               ? {
                   label: 'Matches',
                   onClick: () =>
                     navigate(
-                      `/organisations/${competitionPeriod.organisation.id}/projects/${match.project.id}/seasons/${seasonPeriod.id}/competitions/${competitionPeriod.id}/matches`
+                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonPeriod.id}/competitions/${competitionPeriod.id}/matches`
                     ),
                 }
               : { label: 'Matches', onClick: () => navigate(-1) },
