@@ -47,7 +47,7 @@ export default function ProjectDetailPage() {
   const [displayLimit, setDisplayLimit] = useState(10);
 
   // Permission checks
-  const isSuperAdmin = (user as any)?.role === 'Superadmin';
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
   const currentOrgSlug = (orgId || context.organisation?.slug)?.toLowerCase();
   const currentOrg = organisations.find(o => o.slug?.toLowerCase() === currentOrgSlug);
   const permissionContext = {

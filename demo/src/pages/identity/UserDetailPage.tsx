@@ -394,7 +394,7 @@ export const UserDetailPage: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {user.organisations.map((org: any) => {
                         const myOrg = organisations.find(o => o.id === org.id);
-                        const isSuperAdmin = (currentUser as any)?.role === 'Superadmin';
+                        const isSuperAdmin = Boolean((currentUser as any)?.is_superuser) || (currentUser as any)?.role === 'Superadmin';
 
                         // Check if I can manage this org (admin/owner) OR I am superadmin
                         // AND we have a membership ID to delete

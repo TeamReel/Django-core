@@ -84,7 +84,7 @@ export const ProjectsPage: React.FC = () => {
   const apiOrgSlug = orgId ? currentOrgSlug : undefined;
 
   // Permission checks using centralized helper
-  const isSuperAdmin = (user as any)?.role === 'Superadmin';
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
   const permissionContext = {
     currentOrganisation: resolvedOrg,
     isSuperAdmin,

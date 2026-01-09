@@ -70,7 +70,7 @@ export const CreditsPage: React.FC = () => {
   const currentOrgName = context.organisation?.name || '';
 
   // Determine role for test controls visibility
-  const isSuperAdmin = (user as any)?.role === 'Superadmin';
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
   const isOrgAdmin = (user as any)?.memberships?.some(
     (m: any) => m.organisation?.id === currentOrgId && m.role === 'admin'
   ) || false;

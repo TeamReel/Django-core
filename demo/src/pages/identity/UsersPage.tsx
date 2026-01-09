@@ -105,7 +105,7 @@ export default function UsersPage() {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   // Check if user is superadmin based on the role returned by /auth/me/
-  const isSuperAdmin = (user as any)?.role === 'Superadmin';
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
 
   // Determine if current user has admin rights in the current context
   const currentOrgSlug = (orgIdParam || context.organisation?.slug)?.toLowerCase();
