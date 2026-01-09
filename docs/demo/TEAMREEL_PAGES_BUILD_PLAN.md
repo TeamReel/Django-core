@@ -66,6 +66,7 @@ Deze pagina is het startpunt binnen een federation. Het moet **alle data zichtba
 - **Users**: leden/gebruikers binnen deze federation.
 - **Governance**: federation settings/policies.
 - **Audit**: auditlog scoped op federation.
+- **Operations (Admin)**: federation-level “admin dashboards” (samenvatting + links).
 
 ### “Alle data kunnen zien” (belangrijk)
 - Voor **Clubs/Teams/Users** tabs: geen “top 5 preview”. Gebruik paginering zodat je binnen de tab door alles kan bladeren.
@@ -129,8 +130,12 @@ Besluit: **Optie B**
 - Binnen Governance tonen we expliciet:
   - **Feature flags** (tenant-scoped settings)
   - **Audit trail** (koppeling naar Audit tab en/of highlights)
-  - **Notification settings / routing** (op federatieniveau)
+  - **Notification settings / routing** (op federatieniveau; zie beslissing hieronder)
   - Policies / rules (waar aanwezig)
+
+**Notification settings / routing – besluit: Optie C (allebei)**
+- (1) **Tenant notification preferences** (wat mag wel/niet, per kanaal/event)
+- (2) **Routing logs / delivery decisions** (observability: waarom een notificatie wel/niet verstuurd werd)
 
 ### 2) Hoe wil je “Teams” tonen binnen federation?
 Besluit: **Optie B** (gegroepeerd per club)
@@ -139,6 +144,50 @@ Besluit: **Optie B** (gegroepeerd per club)
 Besluit: **Optie C**
 - Federation detail blijft hoog-over: totals + links naar volledige lijsten.
 - “Alle data kunnen zien” borgen we via de list pages (met goede filters) en via club/team detail tabs.
+
+---
+
+## Operations (Admin) tab – inhoud (Federation detail)
+Doel: “alles wat onder Admin in TopNavbar staat” federatie-scoped zichtbaar maken zonder de Overview vol te proppen.
+
+**Inhoud = samenvatting + links (geen dubbele navigatiekaart op Overview)**
+- **Permissions**: RBAC overzicht voor deze federation
+- **Feature Flags**: tenant flags
+- **Security**: access/security events
+- **Integration Status**: module health
+- **Health / Observability / Metrics**: uptime + performance
+- **Usage Events**: gebruik/analytics
+- **Notification Routing (routing logs)**: delivery decisions
+- **API Docs**: link (voor admins)
+
+Noot: deze tab is bedoeld als **operations dashboard** (hoog-over), met doorlink naar de bestaande admin pages.
+
+---
+
+## Toekomst: Billing/Balance per Team (meegenomen in plan)
+Uit het business plan: hybride model met **abonnement (per team of club)** + **credits per output**.
+
+**Richting (huidige intentie):**
+- Balance/credits/transactions primair op **teamniveau**.
+- License primair op **teamniveau** (later uitbreidbaar naar club of user).
+
+**UX-plaatsing (voor later, maar nu al rekening mee houden):**
+- Team detail krijgt een tab **Billing** of **Credits** met:
+  - current balance
+  - transactions/usage
+  - license status (active/expired/tier)
+- Federation/Club niveau toont hoog-over totals + links.
+
+**Open vragen (Billing model) – graag jouw keuzes:**
+1) Is “credits balance” één shared pot per team, of per seizoen/competition?
+2) Wat is de minimale license info die je in de demo wil tonen?
+  - (A) alleen status + einddatum
+  - (B) tier + limits + renewal
+3) Transactions: wil je één unified ledger (credits + purchases + usage) of aparte tabellen?
+4) Welke plek is leidend voor aankopen/top-ups in de UI?
+  - (A) Team detail (Billing)
+  - (B) Centrale `/credits` pagina
+  - (C) Allebei (maar dan één is read-only en de ander beheer)
 
 ---
 
