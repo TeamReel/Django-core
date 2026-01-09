@@ -1,6 +1,7 @@
 import logging
 from rest_framework.throttling import SimpleRateThrottle
 from django_redis.exceptions import ConnectionInterrupted
+import redis.exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,13 @@ class GracefulThrottleMixin:
         """
         try:
             return super().allow_request(request, view)
-        except (ConnectionInterrupted, ConnectionError, TimeoutError) as e:
+        except (
+            ConnectionInterrupted,
+            ConnectionError,
+            TimeoutError,
+            redis.exceptions.TimeoutError,
+            redis.exceptions.ConnectionError,
+        ) as e:
             logger.warning(f"Throttling disabled due to cache failure: {e.__class__.__name__}")
             return True  # Fail-open: allow request when Redis is down
 
