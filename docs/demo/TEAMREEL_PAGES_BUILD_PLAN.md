@@ -30,10 +30,12 @@ Deze staan niet allemaal in scope voor “hierarchy pages”, maar zijn wél rel
 
 - **AI Studio / Content Generator**
   - Templates (line-up, matchday, goal, post-match, etc.)
-  - Workflow-cyclus: input → validatie → generatie → **goedkeuring** → opslaan
-  - Regeneratie/feedback-loop (keuren of opnieuw genereren)
+  - Workflow-cyclus (nu): input → validatie → generatie → opslaan (draft)
+  - Regeneratie/feedback-loop (nu): opnieuw genereren op basis van feedback
+  - **Goedkeuring/approval queue (later):** pas toevoegen zodra AI flows “end-to-end” staan; plek (AI Studio vs Team detail vs beide) nog te bepalen.
 - **Contentbibliotheek (archive/library)**
-  - Doorzoekbaar overzicht van visuals/video’s per team (en samenvatting op club/federation)
+  - **Centraal:** `/content` als doorzoekbaar overzicht (met filters op federation/club/team/season/match waar mogelijk)
+  - **Ingebed:** Team detail tab “Content/Gallery” + samenvatting/entrypoint op club/federation detail
   - Content items hebben status (draft/approved/published) en koppeling aan match/season
 - **Rapportage / Dashboards**
   - Usage per club/team (generaties, gemiddelde score, credits used)
@@ -41,7 +43,7 @@ Deze staan niet allemaal in scope voor “hierarchy pages”, maar zijn wél rel
 - **Clubstijl & data-inheritance**
   - Club beheert logo/kleuren/sponsor/tenue; teams erven dit (met beperkte overrides)
 - **Rollen**
-  - Clubbeheerder / Teambeheerder / Maker / Supporter beïnvloeden wat je ziet (en approval rights)
+  - Clubbeheerder / Teambeheerder / Maker / Supporter beïnvloeden wat je ziet (approval rights later)
 - **Sharing / Public links (Supporter)**
   - Publieke view/deel-links voor content (later), zonder dat dit de admin pages vervuilt
 - **Automatische triggers**
