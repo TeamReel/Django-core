@@ -46,7 +46,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         // Ensure ordering by newest first
         params.append('ordering', '-timestamp');
 
-        const response = await fetch(`${apiBaseUrl}/api/v1/audit/?${params.toString()}`, {
+        const response = await fetch(`${apiBaseUrl}/api/v1/activity/?${params.toString()}`, {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',

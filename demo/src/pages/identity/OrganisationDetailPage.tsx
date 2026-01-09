@@ -105,9 +105,43 @@ export const OrganisationDetailPage: React.FC = () => {
   const [seasonTeamFilterId, setSeasonTeamFilterId] = useState<string>('');
 
   const [competitionSearch, setCompetitionSearch] = useState('');
+  const [compClubFilterId, setCompClubFilterId] = useState<string>('');
+  const [compTeamFilterId, setCompTeamFilterId] = useState<string>('');
+  const [compSeasonFilterId, setCompSeasonFilterId] = useState<string>('');
+
   const [matchSearch, setMatchSearch] = useState('');
+  const [matchClubFilterId, setMatchClubFilterId] = useState<string>('');
+  const [matchTeamFilterId, setMatchTeamFilterId] = useState<string>('');
+  const [matchCompFilterId, setMatchCompFilterId] = useState<string>('');
+
   const [federationMatches, setFederationMatches] = useState<any[]>([]);
   const [federationMatchesLoading, setFederationMatchesLoading] = useState(false);
+
+  // Compute period hierarchy for recursive activity counts
+  const periodChildrenMap = useMemo(() => {
+    const map = new Map<string, any[]>();
+    for (const p of orgPeriods) {
+      const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
+      if (parentId) {
+        const key = String(parentId);
+        const arr = map.get(key) || [];
+        arr.push(p);
+        map.set(key, arr);
+      }
+    }
+    return map;
+  }, [orgPeriods]);
+
+  const getRecursiveMatchesCount = (p: any): number => {
+    let count = (p.activities_count ?? 0);
+    const children = periodChildrenMap.get(String(p.id));
+    if (children) {
+      for (const child of children) {
+        count += getRecursiveMatchesCount(child);
+      }
+    }
+    return count;
+  };
 
   // Resolve slug from ID if needed
   const resolvedOrg = organisations.find(o =>
@@ -1299,7 +1333,7 @@ export const OrganisationDetailPage: React.FC = () => {
                           color: 'var(--app-text)',
                         }}
                       >
-                        <option value="all">All</option>
+                        <option value="all">All Status</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                       </select>
@@ -1831,7 +1865,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
                           const seasonId = season.id;
                           const competitionsCount = competitionsBySeasonId[String(seasonId)] || 0;
-                          const matchesCount = season.activities_count ?? 0;
+                          const matchesCount = getRecursiveMatchesCount(season);
 
                           const openHref = clubSlugOrId
                             ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonId}`
@@ -1881,6 +1915,56 @@ export const OrganisationDetailPage: React.FC = () => {
               <div style={{ width: '240px', maxWidth: '100%' }}>
                 <Input value={competitionSearch} onChange={(e) => setCompetitionSearch(e.target.value)} placeholder="Search competitions" />
               </div>
+              <select
+                value={compClubFilterId}
+                onChange={(e) => {
+                  setCompClubFilterId(e.target.value);
+                  setCompTeamFilterId('');
+                  setCompSeasonFilterId('');
+                }}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+              >
+                <option value="">All clubs</option>
+                {allClubsForTeams.map((c: any) => (
+                  <option key={c.id} value={String(c.id)}>{c.name}</option>
+                ))}
+              </select>
+              <select
+                value={compTeamFilterId}
+                onChange={(e) => {
+                  setCompTeamFilterId(e.target.value);
+                  setCompSeasonFilterId('');
+                }}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+              >
+                <option value="">All teams</option>
+                {(teams as any[])
+                  .filter((t: any) => {
+                    if (!compClubFilterId) return true;
+                    const parentId = String(t.parent_id ?? t.parent ?? t.parent_project ?? t.parent_project_id ?? '');
+                    return parentId === String(compClubFilterId);
+                  })
+                  .map((t: any) => (
+                    <option key={t.id} value={String(t.id)}>{t.name}</option>
+                  ))}
+              </select>
+              <select
+                value={compSeasonFilterId}
+                onChange={(e) => setCompSeasonFilterId(e.target.value)}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+              >
+                <option value="">All seasons</option>
+                {(orgPeriods as any[])
+                  .filter((p: any) => isSeasonPeriod(p))
+                  .filter((s: any) => {
+                     const teamId = String(s.project_id ?? s.project?.id ?? '');
+                     if (compTeamFilterId && teamId !== compTeamFilterId) return false;
+                     return true;
+                  })
+                  .map((s: any) => (
+                    <option key={s.id} value={String(s.id)}>{s.name}</option>
+                  ))}
+              </select>
             </div>
 
             {(() => {
@@ -1896,19 +1980,26 @@ export const OrganisationDetailPage: React.FC = () => {
 
               const seasonById = new Map<string, any>();
               for (const p of orgPeriods as any[]) {
-                const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
-                const type = p.type ?? p.data?.type;
-                const isSeason = String(type).toLowerCase() === 'season' && !parentId;
+                const isSeason = isSeasonPeriod(p);
                 if (isSeason) seasonById.set(String(p.id), p);
               }
 
               const normalized = competitionSearch.trim().toLowerCase();
               const competitions = (orgPeriods as any[])
-                .filter((p: any) => {
-                  const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
-                  return Boolean(parentId);
-                })
+                .filter((p: any) => isCompetitionPeriod(p))
                 .filter((comp: any) => {
+                  const seasonId = String(comp.parent_period_id ?? comp.parent_period?.id ?? '');
+                  if (compSeasonFilterId && seasonId !== compSeasonFilterId) return false;
+
+                  const teamId = String(comp.project_id ?? comp.project?.id ?? '');
+                  if (compTeamFilterId && teamId !== compTeamFilterId) return false;
+
+                  const team = teamId ? teamById.get(teamId) : null;
+                  const clubId = team
+                    ? String(team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? '')
+                    : '';
+                  if (compClubFilterId && clubId !== compClubFilterId) return false;
+
                   if (!normalized) return true;
                   return String(comp.name || '').toLowerCase().includes(normalized);
                 });
@@ -1957,6 +2048,8 @@ export const OrganisationDetailPage: React.FC = () => {
                             ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonId}/competitions/${comp.id}`
                             : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonId}/competitions/${comp.id}`;
 
+                          const matchesCount = getRecursiveMatchesCount(comp);
+
                           return (
                             <tr key={comp.id}>
                               <td style={compactTextTdStyle}>{comp.name}</td>
@@ -1964,7 +2057,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>{team?.name || teamId || '—'}</td>
                               <td style={compactTextTdStyle}>{clubId ? clubNameById.get(clubId) || clubId : '—'}</td>
                               <td style={compactTdStyle}>
-                                <Badge variant="default">{comp.activities_count ?? 0}</Badge>
+                                <Badge variant="default">{matchesCount}</Badge>
                               </td>
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
@@ -1999,6 +2092,56 @@ export const OrganisationDetailPage: React.FC = () => {
               <div style={{ width: '240px', maxWidth: '100%' }}>
                 <Input value={matchSearch} onChange={(e) => setMatchSearch(e.target.value)} placeholder="Search matches" />
               </div>
+              <select
+                value={matchClubFilterId}
+                onChange={(e) => {
+                  setMatchClubFilterId(e.target.value);
+                  setMatchTeamFilterId('');
+                  setMatchCompFilterId('');
+                }}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+              >
+                <option value="">All clubs</option>
+                {allClubsForTeams.map((c: any) => (
+                  <option key={c.id} value={String(c.id)}>{c.name}</option>
+                ))}
+              </select>
+              <select
+                value={matchTeamFilterId}
+                onChange={(e) => {
+                  setMatchTeamFilterId(e.target.value);
+                  setMatchCompFilterId('');
+                }}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+              >
+                <option value="">All teams</option>
+                {(teams as any[])
+                  .filter((t: any) => {
+                    if (!matchClubFilterId) return true;
+                    const parentId = String(t.parent_id ?? t.parent ?? t.parent_project ?? t.parent_project_id ?? '');
+                    return parentId === String(matchClubFilterId);
+                  })
+                  .map((t: any) => (
+                    <option key={t.id} value={String(t.id)}>{t.name}</option>
+                  ))}
+              </select>
+              <select
+                value={matchCompFilterId}
+                onChange={(e) => setMatchCompFilterId(e.target.value)}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+              >
+                <option value="">All competitions</option>
+                {(orgPeriods as any[])
+                  .filter((p: any) => isCompetitionPeriod(p))
+                  .filter((c: any) => {
+                     const teamId = String(c.project_id ?? c.project?.id ?? '');
+                     if (matchTeamFilterId && teamId !== matchTeamFilterId) return false;
+                     return true;
+                  })
+                  .map((c: any) => (
+                    <option key={c.id} value={String(c.id)}>{c.name}</option>
+                  ))}
+              </select>
             </div>
 
             {federationMatchesLoading ? (
@@ -2012,10 +2155,48 @@ export const OrganisationDetailPage: React.FC = () => {
               const teamById = new Map<string, any>();
               for (const t of teams as any[]) teamById.set(String(t.id), t);
 
+              // Map period ID -> Parent ID for hierarchy checks
+              const periodParentIdMap = new Map<string, string>();
+              for (const p of orgPeriods) {
+                const pid = p.parent_period_id ?? p.parent_period?.id ?? '';
+                if (pid) periodParentIdMap.set(String(p.id), String(pid));
+              }
+
               const normalized = matchSearch.trim().toLowerCase();
               const matches = (federationMatches || []).filter((m: any) => {
+                const teamId = String(m.project?.id ?? m.project_id ?? '');
+                if (matchTeamFilterId && teamId !== matchTeamFilterId) return false;
+
+                const team = teamId ? teamById.get(teamId) : null;
+                const clubId = team
+                    ? String(team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? '')
+                    : '';
+                if (matchClubFilterId && clubId !== matchClubFilterId) return false;
+
+                const periodId = String(m.period?.id ?? m.period_id ?? '');
+                if (matchCompFilterId) {
+                   if (periodId === matchCompFilterId) {
+                       // Direct match
+                   } else {
+                       // Check parent (Round -> Competition)
+                       const parentId = periodParentIdMap.get(periodId);
+                       if (parentId !== matchCompFilterId) {
+                           // If parent doesn't match, one level deeper?
+                           // Assuming 2 levels max (Competition -> [Round? ->] Match)
+                           // If parent found, check its parent (grandparent)
+                           // But standard structure is Comp -> Round -> Match.
+                           // So if Match.period = Round, Round.parent = Comp.
+                           // If Comp is selected, we want matches of Round.
+                           // So we check if periodId's parent == filterId.
+                           if (!parentId || parentId !== matchCompFilterId) {
+                               return false;
+                           }
+                       }
+                   }
+                }
+
                 if (!normalized) return true;
-                return String(m.title || '').toLowerCase().includes(normalized);
+                return String(m.title || m.name || m.id).toLowerCase().includes(normalized);
               });
 
               if (matches.length === 0) {
