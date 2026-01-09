@@ -27,12 +27,12 @@ const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promis
 
     try {
         while (nextUrl && pageCount < maxPages) {
-            const res = await fetch(nextUrl, options);
+            const res: Response = await fetch(nextUrl, options);
             if (!res.ok) {
                 console.warn(`[fetchAllPages] Request failed for ${nextUrl}: ${res.status}`);
                 break;
             }
-            const json = await res.json();
+            const json: any = await res.json();
             const pageResults = json.data?.results || json.results || [];
             results.push(...pageResults);
             pageCount++;
