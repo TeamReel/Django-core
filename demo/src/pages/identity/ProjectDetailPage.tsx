@@ -32,6 +32,30 @@ import AppShell from '../../components/AppShell';
  * - Lists team members with roles
  * - Shows recent audit events filtered by project_id
  */
+
+const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%' };
+const compactThStyle: React.CSSProperties = {
+  textAlign: 'left',
+  padding: '8px 12px',
+  fontSize: '12px',
+  fontWeight: 600,
+  color: 'var(--app-muted-text)',
+  borderBottom: '1px solid var(--app-border)',
+  whiteSpace: 'nowrap',
+};
+const compactTdStyle: React.CSSProperties = {
+  padding: '6px 12px',
+  borderBottom: '1px solid var(--app-border)',
+  verticalAlign: 'middle',
+  height: '40px',
+};
+const compactTextTdStyle: React.CSSProperties = {
+  ...compactTdStyle,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+};
+
 export const ProjectDetailPage: React.FC = () => {
   const { orgId, projectId, clubId } = useParams<{ orgId: string; projectId: string; clubId?: string }>();
   const [activeTab, setActiveTab] = useState('overview');
@@ -46,6 +70,13 @@ export const ProjectDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [orgProjects, setOrgProjects] = useState<Project[]>([]); // For switcher
   const [club, setClub] = useState<Project | null>(null);
+
+  // Dashboard Data
+  const [scheduledMatches, setScheduledMatches] = useState<any[]>([]);
+  const [scheduledMatchesLoading, setScheduledMatchesLoading] = useState(false);
+  const [recentPlayedMatches, setRecentPlayedMatches] = useState<any[]>([]);
+  const [recentPlayedMatchesLoading, setRecentPlayedMatchesLoading] = useState(false);
+  const [matchesCount, setMatchesCount] = useState<number | null>(null);
 
   // Resolve org and project slugs
   const resolvedOrg = (orgId
@@ -337,6 +368,79 @@ export const ProjectDetailPage: React.FC = () => {
     fetchProjectDetails();
   }, [currentProjectSlug, context.isLoading, resolvedProject, isTeamRoute, clubSlugOrId, resolvedOrg?.slug, resolvedOrg?.id]);
 
+  // Fetch Dashboard Data (Matches, Stats)
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!project?.id) return;
+
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const projectId = String(project.id);
+
+      // 1. Scheduled Matches
+      try {
+        setScheduledMatchesLoading(true);
+        const params = new URLSearchParams();
+        params.set('activity_type', 'match');
+         // We filter by project_id so that we get matches for the Club or Field Team
+        params.set('project_id', projectId);
+        params.set('start_time__gte', new Date().toISOString());
+        params.set('ordering', 'start_time');
+        params.set('page_size', '5');
+
+        const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
+        if (res.ok) {
+           const json = await res.json();
+           const results = json.data?.results || json.results || [];
+           setScheduledMatches(results);
+        }
+      } catch (e) {
+        console.warn('Failed to fetch scheduled matches', e);
+      } finally {
+        setScheduledMatchesLoading(false);
+      }
+
+      // 2. Recent Played Matches
+      try {
+        setRecentPlayedMatchesLoading(true);
+        const params = new URLSearchParams();
+        params.set('activity_type', 'match');
+        params.set('project_id', projectId);
+        params.set('start_time__lt', new Date().toISOString());
+        params.set('ordering', '-start_time');
+        params.set('page_size', '10');
+
+        const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
+        if (res.ok) {
+           const json = await res.json();
+           const results = json.data?.results || json.results || [];
+           setRecentPlayedMatches(results);
+        }
+      } catch (e) {
+         console.warn('Failed to fetch recent matches', e);
+      } finally {
+         setRecentPlayedMatchesLoading(false);
+      }
+
+      // 3. Matches Count
+      try {
+        const params = new URLSearchParams();
+        params.set('activity_type', 'match');
+        params.set('project_id', projectId);
+        params.set('page_size', '1');
+        const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
+        if (res.ok) {
+           const json = await res.json();
+           const count = json.data?.count ?? json.count ?? 0;
+           setMatchesCount(count);
+        }
+      } catch (e) {
+         // ignore
+      }
+    };
+
+    fetchDashboardData();
+  }, [project?.id]);
+
   if (loading || context.isLoading) {
     return (
       <AppShell>
@@ -595,69 +699,152 @@ export const ProjectDetailPage: React.FC = () => {
           </TabList>
 
           <TabPanel value="overview">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <Card data-testid="project-summary-status">
-                <div className="text-sm text-gray-600">Status</div>
-                <div className="text-lg font-bold">
-                  <Badge variant={project.is_active ? 'success' : 'warning'}>
-                    {project.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
-                </div>
-              </Card>
-              <Card data-testid="project-summary-members">
-                <div className="text-sm text-gray-600">Members</div>
-                <div className="text-2xl font-bold">{members.length}</div>
-              </Card>
-              <Card data-testid="project-summary-created">
-                <div className="text-sm text-gray-600">Created</div>
-                <div className="text-sm font-semibold">{new Date(project.created_at || '').toLocaleDateString()}</div>
-              </Card>
+            {/* Top Stats Row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+               <Card style={{ padding: '16px' }}>
+                  <div className="text-sm font-medium text-gray-500">Status</div>
+                  <div className="text-lg font-bold mt-1">
+                     <Badge variant={project.is_active ? 'success' : 'warning'}>
+                       {project.is_active ? 'Active' : 'Inactive'}
+                     </Badge>
+                  </div>
+               </Card>
+               <Card style={{ padding: '16px' }}>
+                  <div className="text-sm font-medium text-gray-500">Members</div>
+                  <div className="text-2xl font-bold mt-1">{members.length}</div>
+               </Card>
+               <Card style={{ padding: '16px' }}>
+                  <div className="text-sm font-medium text-gray-500">Matches</div>
+                  <div className="text-2xl font-bold mt-1">{matchesCount ?? '—'}</div>
+               </Card>
+               <Card style={{ padding: '16px' }}>
+                  <div className="text-sm font-medium text-gray-500">Created</div>
+                  <div className="text-sm font-semibold mt-1">{new Date(project.created_at || '').toLocaleDateString()}</div>
+               </Card>
             </div>
 
-            {project.description && (
-              <Card className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <p className="text-gray-700" data-testid="project-description">
-                  {project.description}
-                </p>
-              </Card>
-            )}
-
-            <Card>
-              <div style={{ display: 'grid', gap: '6px' }}>
-                <div className="text-sm text-gray-600">Quick links</div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {!isLikelyTeam ? (
-                    <Button
-                      variant="secondary"
-                      onClick={() =>
-                        navigate(
-                          `/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(
-                            String(project.slug || project.id)
-                          )}`
-                        )
-                      }
-                    >
-                      View Teams
-                    </Button>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Column: Recent Results & Hierarchy (2/3) */}
+              <div className="lg:col-span-2 space-y-6">
+                <Card>
+                  <div className="flex justify-between items-center mb-4">
+                     <h3 className="text-lg font-semibold">Recent Results</h3>
+                     <Button variant="secondary" size="sm" onClick={() => setActiveTab('matches')}>View All Matches</Button>
+                  </div>
+                  {recentPlayedMatchesLoading ? (
+                      <div className="text-sm text-gray-500 py-4 text-center">Loading recent matches...</div>
+                  ) : recentPlayedMatches.length === 0 ? (
+                      <div className="text-sm text-gray-500 py-4 text-center">No recent matches played.</div>
                   ) : (
-                    <Button variant="secondary" onClick={() => navigate(seasonsPath)}>
-                      View Seasons
-                    </Button>
+                      <div className="overflow-x-auto">
+                        <Table style={compactTableStyle}>
+                          <thead>
+                            <tr>
+                              <th style={compactThStyle}>Match</th>
+                              <th style={compactThStyle}>Date</th>
+                              <th style={compactThStyle}>Result</th>
+                              <th style={compactThStyle}></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {recentPlayedMatches.map((m: any) => (
+                              <tr key={m.id}>
+                                <td style={compactTextTdStyle}>
+                                  <div className="font-medium">{m.title || m.name || 'Match'}</div>
+                                  <div className="text-xs text-gray-500">{m.period?.name || '-'}</div>
+                                </td>
+                                <td style={compactTextTdStyle}>
+                                  {m.start_time ? new Date(m.start_time).toLocaleDateString() : '-'}
+                                </td>
+                                <td style={compactTextTdStyle}>
+                                  <Badge variant="secondary">Finished</Badge>
+                                </td>
+                                <td style={compactTdStyle}>
+                                  <button
+                                    className="text-xs text-blue-600 hover:underline"
+                                    onClick={() => navigate(`/matches/${m.id}`)}
+                                  >
+                                    View
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
                   )}
-                  <Button
-                    variant="secondary"
-                    onClick={() =>
-                      navigate(
-                        `/users?project_id=${project.slug || project.id}&organisation_id=${resolvedOrg?.slug || resolvedOrg?.id}`
-                      )
-                    }
-                  >
-                    View Users
-                  </Button>
-                </div>
+                </Card>
+
+                 {/* Hierarchy Card (Teams or Seasons) */}
+                 <Card>
+                  <div className="flex justify-between items-center mb-4">
+                     <h3 className="text-lg font-semibold">{!isLikelyTeam ? 'Teams' : 'Seasons'}</h3>
+                     <Button variant="secondary" size="sm" onClick={() => setActiveTab('hierarchy')}>Manage { !isLikelyTeam ? 'Teams' : 'Seasons' }</Button>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg text-center">
+                     <div className="text-sm text-gray-600 mb-2">
+                        {!isLikelyTeam
+                           ? `Manage the teams that belong to ${project.name}`
+                           : `Manage seasons and competitions for ${project.name}`
+                        }
+                     </div>
+                  </div>
+                </Card>
+
+                {project.description && (
+                  <Card>
+                    <h3 className="text-lg font-semibold mb-2">Description</h3>
+                    <p className="text-gray-700">{project.description}</p>
+                  </Card>
+                )}
               </div>
-            </Card>
+
+              {/* Right Column: Scheduled & Quick Actions (1/3) */}
+              <div className="space-y-6">
+                 <Card>
+                    <h3 className="text-lg font-semibold mb-3">Scheduled Matches</h3>
+                    {scheduledMatchesLoading ? (
+                      <div className="text-sm text-gray-500 py-2">Loading...</div>
+                    ) : scheduledMatches.length === 0 ? (
+                      <div className="text-sm text-gray-500 py-2">No upcoming matches scheduled.</div>
+                    ) : (
+                      <div className="space-y-3">
+                         {scheduledMatches.map((m: any) => (
+                           <div key={m.id} className="pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+                              <div className="font-medium text-sm text-gray-900">{m.title || m.name || 'Match'}</div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {m.start_time ? new Date(m.start_time).toLocaleString(undefined, {
+                                  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                }) : 'TBA'}
+                              </div>
+                              <button
+                                className="text-xs text-blue-600 mt-1 hover:underline bg-transparent border-0 p-0 cursor-pointer"
+                                onClick={() => navigate(`/matches/${m.id}`)}
+                              >
+                                View Details →
+                              </button>
+                           </div>
+                         ))}
+                      </div>
+                    )}
+                 </Card>
+
+                 <Card>
+                    <h3 className="text-lg font-semibold mb-3">Quick Actions</h3>
+                    <div className="space-y-2">
+                      <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => setActiveTab('people')}>
+                        Manage Members
+                      </Button>
+                      <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => setActiveTab('hierarchy')}>
+                        { !isLikelyTeam ? 'Manage Teams' : 'Manage Seasons' }
+                      </Button>
+                      <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}/edit`)}>
+                        Edit Project Settings
+                      </Button>
+                    </div>
+                 </Card>
+              </div>
+            </div>
           </TabPanel>
 
           <TabPanel value="people">
