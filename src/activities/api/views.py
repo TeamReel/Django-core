@@ -157,10 +157,29 @@ class PeriodViewSet(viewsets.ModelViewSet):
         if organisation_id:
             queryset = queryset.filter(organisation_id=organisation_id)
 
+        # Filter by project (slug or numeric ID)
+        project = self.request.query_params.get("project")
+        if project and project not in {"undefined", "null"}:
+            from projects.models import Project
+
+            if project.isdigit():
+                queryset = queryset.filter(project_id=int(project))
+            else:
+                # Slug is unique per org; visibility filters above prevent leaking data
+                queryset = queryset.filter(project__slug=project)
+
+        # Filter by period type (stored in metadata)
+        period_type = self.request.query_params.get("type")
+        if period_type and period_type not in {"undefined", "null"}:
+            queryset = queryset.filter(metadata__type=period_type)
+
         # Filter by project_id
         project_id = self.request.query_params.get("project_id")
-        if project_id:
-            queryset = queryset.filter(project_id=project_id)
+        if project_id and project_id not in {"undefined", "null"}:
+            try:
+                queryset = queryset.filter(project_id=int(project_id))
+            except (TypeError, ValueError):
+                return queryset.none()
 
         # Filter by parent_id (supports parent_id=null for roots)
         parent_id = self.request.query_params.get("parent_id")
@@ -297,8 +316,11 @@ class ActivityViewSet(viewsets.ModelViewSet):
 
         # Filter by project_id
         project_id = self.request.query_params.get("project_id")
-        if project_id:
-            queryset = queryset.filter(project_id=project_id)
+        if project_id and project_id not in {"undefined", "null"}:
+            try:
+                queryset = queryset.filter(project_id=int(project_id))
+            except (TypeError, ValueError):
+                return queryset.none()
 
         # Filter by organisation_id (indirectly via project)
         organisation_id = self.request.query_params.get("organisation_id")

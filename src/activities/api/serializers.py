@@ -24,8 +24,10 @@ class PeriodSerializer(serializers.ModelSerializer):
     children_count = serializers.IntegerField(read_only=True, required=False)
     activities_count = serializers.IntegerField(read_only=True, required=False)
 
-    # Backwards-compatible alias: expose model.metadata as API field "data"
-    data = serializers.JSONField(source="metadata", required=False, default=dict)
+    # NOTE: We cannot declare a serializer field named "data" because DRF
+    # reserves `.data` for the serialized representation property.
+    # We expose model.metadata as API key "data" via (de)serialization hooks.
+    metadata = serializers.JSONField(required=False, default=dict)
 
     # Write fields (use _id suffix for FK assignment)
     organisation_id = serializers.UUIDField(write_only=True)
@@ -46,7 +48,7 @@ class PeriodSerializer(serializers.ModelSerializer):
             "description",
             "start_date",
             "end_date",
-            "data",
+            "metadata",
             "created_at",
             "updated_at",
             "created_by",
@@ -54,6 +56,25 @@ class PeriodSerializer(serializers.ModelSerializer):
             "activities_count",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["data"] = rep.pop("metadata", {})
+        return rep
+
+    def to_internal_value(self, data):
+        # Backwards-compatible input: accept {data: {...}} and store into metadata
+        if hasattr(data, "copy"):
+            mutable = data.copy()
+        elif isinstance(data, dict):
+            mutable = dict(data)
+        else:
+            mutable = data
+
+        if isinstance(mutable, dict) and "data" in mutable and "metadata" not in mutable:
+            mutable["metadata"] = mutable.get("data")
+
+        return super().to_internal_value(mutable)
 
     def get_organisation(self, obj):
         """Return nested organisation representation"""

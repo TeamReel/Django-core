@@ -41,8 +41,12 @@ urlpatterns = [
     # B18: Platform Observability Foundation - Health probes
     path("health/live", liveness_view, name="health_live"),
     path("health/ready", readiness_view, name="health_ready"),
+    # Railway/Docker health check endpoint
+    # Keep this as a lightweight liveness probe so deploys don't fail during
+    # migrations or dependency warmup.
+    path("health/", liveness_view, name="health_check"),
     # Legacy health check endpoint (pre-B18)
-    path("health/", health_check, name="health_check"),
+    path("health/legacy/", health_check, name="health_check_legacy"),
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("api/ws/", include("rtc_websockets.urls")),
