@@ -1455,7 +1455,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                             setSelectedEditProject(club);
                                             setIsEditModalOpen(true);
                                           }}
-                                          style={actionButtonStyle('primary')}
+                                          style={actionButtonStyle('neutral')}
                                         >
                                           Edit
                                         </button>
@@ -1671,7 +1671,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                             setSelectedEditProject(team);
                                             setIsEditModalOpen(true);
                                           }}
-                                          style={actionButtonStyle('primary')}
+                                          style={actionButtonStyle('neutral')}
                                         >
                                           Edit
                                         </button>
