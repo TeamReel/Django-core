@@ -135,15 +135,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         }
 
         const competitionsRes = await fetch(
-          `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&parent_id=${encodeURIComponent(effectiveSeasonId)}&page_size=250`,
+          `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&page_size=250`,
           { credentials: 'include' }
         );
         if (!competitionsRes.ok) throw new Error('Failed to load competitions');
         const rawCompetitions: any = await competitionsRes.json();
         const competitionsData = rawCompetitions?.data || rawCompetitions;
-        const competitionResults = Array.isArray(competitionsData)
+        const allPeriods = Array.isArray(competitionsData)
           ? competitionsData
           : competitionsData?.results || competitionsData?.data?.results || [];
+        // Filter client-side for competitions (children of this season)
+        const competitionResults = allPeriods.filter((p: Period) =>
+          p.parent_period && (p.parent_period.id === effectiveSeasonId || String(p.parent_period) === effectiveSeasonId)
+        );
         setCompetitions(competitionResults);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load season');

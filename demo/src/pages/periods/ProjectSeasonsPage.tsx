@@ -10,6 +10,7 @@ type Period = {
   name: string;
   start_date: string;
   end_date: string;
+  parent_period?: { id: string; name: string } | string | null;
   children_count?: number;
 };
 
@@ -124,15 +125,17 @@ export const ProjectSeasonsPage: React.FC = () => {
         }
 
         const seasonsRes = await fetch(
-          `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&parent_id=null&page_size=250`,
+          `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&page_size=250`,
           { credentials: 'include' }
         );
         if (!seasonsRes.ok) throw new Error('Failed to load seasons');
         const rawSeasons: any = await seasonsRes.json();
         const seasonsData = rawSeasons?.data || rawSeasons;
-        const seasonResults = Array.isArray(seasonsData)
+        const allPeriods = Array.isArray(seasonsData)
           ? seasonsData
           : seasonsData?.results || seasonsData?.data?.results || [];
+        // Filter client-side for seasons (periods without parent)
+        const seasonResults = allPeriods.filter((p: Period) => !p.parent_period);
         setSeasons(seasonResults);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load seasons');

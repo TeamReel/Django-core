@@ -208,10 +208,13 @@ export const ProjectDetailPage: React.FC = () => {
       : (results as any[]);
 
     const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
-    const finalResults = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
+    // For displaying in Teams tab, use direct children only
+    // But for period queries (seasons/competitions), we need ALL nested teams
+    const directChildren = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
 
-    setChildProjects(finalResults as Project[]);
-    return finalResults as Project[];
+    setChildProjects(directChildren as Project[]);
+    // Return ALL teams (including grandchildren) for period fetching
+    return filteredByOrg as Project[];
   };
 
   const mergeUniqueById = <T extends { id: any }>(items: T[]): T[] => {
