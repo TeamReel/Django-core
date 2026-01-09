@@ -25,6 +25,30 @@ Doel: gestructureerd (en herhaalbaar) alle kernpagina’s nalopen en afmaken zod
 - **Modals:** In overview-tabellen is “View” een **modal** (niet navigeren), consistent met Organisations.
 - **Pagina “diepte” (UX):** Hoe hoger in de hiërarchie (Federation/Club), hoe meer **hoog-over / dashboard**. Lager (Team/Season/Competition/Match) wordt de UI **detailgerichter**.
 
+## Aanvullende product-capabilities (uit Businessplan / Functional Design)
+Deze staan niet allemaal in scope voor “hierarchy pages”, maar zijn wél relevant om nu al rekening mee te houden in de structuur (tabs, entrypoints, breadcrumbs).
+
+- **AI Studio / Content Generator**
+  - Templates (line-up, matchday, goal, post-match, etc.)
+  - Workflow-cyclus: input → validatie → generatie → **goedkeuring** → opslaan
+  - Regeneratie/feedback-loop (keuren of opnieuw genereren)
+- **Contentbibliotheek (archive/library)**
+  - Doorzoekbaar overzicht van visuals/video’s per team (en samenvatting op club/federation)
+  - Content items hebben status (draft/approved/published) en koppeling aan match/season
+- **Rapportage / Dashboards**
+  - Usage per club/team (generaties, gemiddelde score, credits used)
+  - Export/rapportages (later)
+- **Clubstijl & data-inheritance**
+  - Club beheert logo/kleuren/sponsor/tenue; teams erven dit (met beperkte overrides)
+- **Rollen**
+  - Clubbeheerder / Teambeheerder / Maker / Supporter beïnvloeden wat je ziet (en approval rights)
+- **Sharing / Public links (Supporter)**
+  - Publieke view/deel-links voor content (later), zonder dat dit de admin pages vervuilt
+- **Automatische triggers**
+  - Tijd/data based triggers voor generatie (later)
+- **Toekomstmodules (business plan)**
+  - Nieuwsbrief-generator, Coach van het Jaar, statistiekmodules
+
 ## Data model (verwachte demo-hiërarchie)
 - Organisation (Federation)
   - Project (Club) = root project (`parent_project = null`)
