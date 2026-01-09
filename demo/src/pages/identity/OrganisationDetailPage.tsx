@@ -328,11 +328,14 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const fetchTeamsForOrg = async () => {
     if (!currentOrgSlug) return;
+    console.log('[OrganisationDetailPage] fetchTeamsForOrg starting', { currentOrgSlug, orgId: org?.id || currentOrgId });
     setTeamsLoading(true);
     try {
       const apiV1BaseUrl = getApiV1BaseUrl();
       const clubsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=true`;
       const teamsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=false`;
+
+      console.log('[OrganisationDetailPage] Fetching teams from', teamsUrl);
 
       const [clubsAll, teamsAll] = await Promise.all([
         fetchAllPages<Project>(clubsUrl, {
@@ -363,6 +366,7 @@ export const OrganisationDetailPage: React.FC = () => {
         return Boolean(parentId);
       });
 
+      console.log('[OrganisationDetailPage] Teams loaded:', teamsOnly.length, 'Clubs loaded:', clubsOnly.length);
       setAllClubsForTeams(clubsOnly);
       setTeams(teamsOnly);
     } catch (e) {
@@ -674,6 +678,7 @@ export const OrganisationDetailPage: React.FC = () => {
         const rawOrgData = await orgResponse.json();
         // Handle B13 response envelope
         const orgData = rawOrgData.data || rawOrgData;
+        console.log('[OrganisationDetailPage] Org data loaded', orgData);
         setOrg(orgData);
         // NOTE: We intentionally avoid calling the context switcher here.
         // In production this triggers a call to `/api/v1/context/set/` which may not exist,
@@ -695,9 +700,11 @@ export const OrganisationDetailPage: React.FC = () => {
             },
             credentials: 'include',
           });
+          console.log('[OrganisationDetailPage] Members loaded:', allMembers.length);
           setMembers(allMembers);
         } catch (e) {
-          console.error('[OrganisationDetailPage] Members fetch failed:', e);
+         console.error('[OrganisationDetailPage] Members fetch failed:', e);
+         console.error('[OrganisationDetailPage] Members fetch failed:', e);
           setMembers([]);
         }
 
@@ -732,7 +739,7 @@ export const OrganisationDetailPage: React.FC = () => {
       const orgId = String(org?.id || currentOrgId || '');
       if (orgId) fetchFederationMatches(orgId);
     }
-  }, [activeTab]);
+  }, [activeTab, org?.id, currentOrgId]);
 
   useEffect(() => {
     // When teams are loaded, ensure periods are loaded for tabs that need them.
