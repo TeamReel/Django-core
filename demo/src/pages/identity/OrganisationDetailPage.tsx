@@ -164,6 +164,44 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const orgSlugOrId = String(org?.slug || org?.id || currentOrgSlug || '');
 
+  const getPeriodType = (p: any): string => {
+    const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
+    return String(t || '').toLowerCase();
+  };
+
+  const getPeriodParentId = (p: any): string => {
+    const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
+    return parentId ? String(parentId) : '';
+  };
+
+  const isSeasonPeriod = (p: any): boolean => {
+    const type = getPeriodType(p);
+    if (type === 'season') return true;
+
+    // Fallback for older/legacy seeders that didn't set metadata.type.
+    // Treat a root period named like "Season ..." / "Seizoen ..." as a season.
+    const parentId = getPeriodParentId(p);
+    if (parentId) return false;
+
+    const name = String(p?.name || '').toLowerCase();
+    if (name.startsWith('season') || name.startsWith('seizoen')) return true;
+
+    // Some seeders store season info under metadata fields.
+    const seasonKey = p?.data?.season ?? p?.metadata?.season;
+    if (seasonKey) return true;
+
+    return false;
+  };
+
+  const isCompetitionPeriod = (p: any): boolean => {
+    const parentId = getPeriodParentId(p);
+    if (parentId) return true;
+
+    const type = getPeriodType(p);
+    // Allow explicit typing when present
+    return ['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type);
+  };
+
   const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%' };
   const compactThStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.8rem' };
   const compactTdStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.85rem', verticalAlign: 'middle' };
@@ -340,9 +378,7 @@ export const OrganisationDetailPage: React.FC = () => {
       const competitionsByProjectId: Record<string, number> = {};
 
       const seasons = allPeriods.filter((p: any) => {
-        const type = p.type ?? p.data?.type;
-        const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
-        const isSeason = String(type).toLowerCase() === 'season' && !parentId;
+        const isSeason = isSeasonPeriod(p);
         if (isSeason) {
           const projectId = p.project_id ?? p.project?.id ?? null;
           if (projectId) {
@@ -354,8 +390,7 @@ export const OrganisationDetailPage: React.FC = () => {
       });
 
       const competitions = allPeriods.filter((p: any) => {
-        const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
-        const isCompetition = Boolean(parentId);
+        const isCompetition = isCompetitionPeriod(p);
         if (isCompetition) {
           const projectId = p.project_id ?? p.project?.id ?? null;
           if (projectId) {
@@ -1240,10 +1275,8 @@ export const OrganisationDetailPage: React.FC = () => {
                 const clubId = team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? null;
                 if (!clubId) continue;
 
-                const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
-                const type = p.type ?? p.data?.type;
-                const isSeason = String(type).toLowerCase() === 'season' && !parentId;
-                const isCompetition = Boolean(parentId);
+                const isSeason = isSeasonPeriod(p);
+                const isCompetition = isCompetitionPeriod(p);
                 const key = String(clubId);
                 if (isSeason) clubSeasonsCount[key] = (clubSeasonsCount[key] || 0) + 1;
                 if (isCompetition) clubCompetitionsCount[key] = (clubCompetitionsCount[key] || 0) + 1;
@@ -1774,9 +1807,7 @@ export const OrganisationDetailPage: React.FC = () => {
               const normalized = seasonSearch.trim().toLowerCase();
               const seasons = (orgPeriods as any[])
                 .filter((p: any) => {
-                  const type = p.type ?? p.data?.type;
-                  const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
-                  return String(type).toLowerCase() === 'season' && !parentId;
+                  return isSeasonPeriod(p);
                 })
                 .filter((season: any) => {
                   const teamId = String(season.project_id ?? season.project?.id ?? '');
