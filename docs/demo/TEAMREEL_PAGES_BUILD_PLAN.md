@@ -59,19 +59,21 @@ Deze pagina is het startpunt binnen een federation. Het moet **alle data zichtba
 ### Tabs (voorstel – relevant per federation)
 - **Overview**: KPI’s + snelle navigatie.
 - **Clubs**: alle clubs binnen deze federation.
-- **Teams**: alle teams binnen deze federation (optioneel: gegroepeerd per club).
-- **Seasons**: alle seasons binnen deze federation (via teams).
-- **Competitions**: alle competitions binnen deze federation.
-- **Matches**: alle matches binnen deze federation.
+- **Teams**: alle teams binnen deze federation, **gegroepeerd per club**.
+- **Seasons**: federation-wide **hoog-over** (samenvatting + links).
+- **Competitions**: federation-wide **hoog-over** (samenvatting + links).
+- **Matches**: federation-wide **hoog-over** (samenvatting + links).
 - **Users**: leden/gebruikers binnen deze federation.
-- **Governance/Preferences**: federation settings/policies.
+- **Governance**: federation settings/policies.
 - **Audit**: auditlog scoped op federation.
 
 ### “Alle data kunnen zien” (belangrijk)
-- In tabellen: **geen hard limit zoals 5 items**.
-- Als performance een zorg is: gebruik **server-side paginering** (bijv. `page_size=50` met next/prev) i.p.v. een preview-limit.
-- In de tab zelf moet je naar **alle pages** kunnen navigeren zodat uiteindelijk alles zichtbaar is.
-- De knop “View all …” blijft OK, maar mag niet de enige manier zijn om alles te zien.
+- Voor **Clubs/Teams/Users** tabs: geen “top 5 preview”. Gebruik paginering zodat je binnen de tab door alles kan bladeren.
+- Voor **Seasons/Competitions/Matches op federation niveau** (keuze: hoog-over): toon samenvattingen en bied duidelijke links naar de volledige lijsten (gefilterd op federation/club/team) waar je wél alles kan doorbladeren.
+
+### Redundante navigatie (belangrijk)
+- Als er op Overview een extra blok “Federation navigation” staat met knoppen, is dat redundant met TopNavbar + PageHeader actions.
+- In de uiteindelijke build: **dit extra navigatieblok verwijderen** en de pagina rustiger maken.
 
 ### Clubs tab (spec)
 - Tab heet **Clubs** (niet Projects).
@@ -81,16 +83,20 @@ Deze pagina is het startpunt binnen een federation. Het moet **alle data zichtba
 
 ### Teams tab (spec)
 - Toont alle teams binnen federation.
-- Indien mogelijk: kolommen Club (parent), Team naam, status.
-- Switcher blijft op Federation-niveau in breadcrumb; teams zijn peers binnen federation scope.
+- Presentatie: **gegroepeerd per club** (sections/accordion), zodat het federation-niveau hoog-over blijft.
+- Binnen elke club-sectie: Team naam, status, actions.
+- Switcher blijft op Federation-niveau in breadcrumb.
 
 ### Seasons / Competitions / Matches tabs (spec)
-- Doel: “alles binnen federation” zichtbaar maken.
-- Filters in tab (minimaal): Team/Club selector (afhankelijk van data availability).
-- Match tab: link naar match detail (met correcte breadcrumbs).
+- Doel: federation-wide **hoog-over** inzicht, niet alles in één gigantische lijst.
+- Toon: totals, meest recente items (optioneel), en **links naar volledige lijsten** waar je alles kunt doorbladeren.
+- “Volledige lijst” flows:
+  - Federation → kies Club/Team (filter) → open Seasons/Competitions/Matches list page met filters.
+  - Federation → direct “View all matches” (maar dan met duidelijke filters bovenaan op de list page).
 
-### Quick links (optioneel)
-- Knoppen/linkjes naar de losse overview pages (Clubs/Teams/Users/Seasons/Competitions/Matches) blijven handig, maar zijn secundair aan tabs.
+### Quick links
+- Links naar de losse overview pages (Clubs/Teams/Users/Seasons/Competitions/Matches) blijven handig.
+- Voorkeur: in tabs zelf “View all …” links tonen i.p.v. een aparte extra navigatie-card op Overview.
 
 **Check**
 - Count labels in overview: “Clubs” toont clubs-count.
@@ -118,19 +124,21 @@ Opties:
 - ✅ Voordelen: maximale duidelijkheid; scheidt settings vs beleid.
 - ❌ Nadelen: meer tabs; kan te druk worden op federation niveau.
 
-⭐ Aanbeveling (voor Core-App demo): **Optie B**
-- Rationale: governance is een veilige container op federatieniveau; “Preferences” kan als sectie/kop zichtbaar zijn.
-- Als jij het label echt “Preferences” wil hebben in de UI, kies Optie A.
+Besluit: **Optie B**
+- Governance blijft als tab-label.
+- Binnen Governance tonen we expliciet:
+  - **Feature flags** (tenant-scoped settings)
+  - **Audit trail** (koppeling naar Audit tab en/of highlights)
+  - **Notification settings / routing** (op federatieniveau)
+  - Policies / rules (waar aanwezig)
 
 ### 2) Hoe wil je “Teams” tonen binnen federation?
-- (A) Platte lijst (Team, Club, Status)
-- (B) Gegroepeerd per club (accordion/sections)
-- (C) Alleen via Club detail (geen federation-wide teams tab)
+Besluit: **Optie B** (gegroepeerd per club)
 
 ### 3) Federation-wide Seasons/Competitions/Matches: hoe zwaar mag dit zijn?
-- (A) Altijd federation-wide laden met paginering
-- (B) Eerst een filter verplicht (kies club/team), daarna data laden
-- (C) Alleen totals + “View all” links (maar dit botst met “alle data kunnen zien”)
+Besluit: **Optie C**
+- Federation detail blijft hoog-over: totals + links naar volledige lijsten.
+- “Alle data kunnen zien” borgen we via de list pages (met goede filters) en via club/team detail tabs.
 
 ---
 
