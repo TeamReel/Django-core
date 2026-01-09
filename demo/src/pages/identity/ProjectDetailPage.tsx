@@ -451,6 +451,21 @@ export const ProjectDetailPage: React.FC = () => {
           </Card>
         </div>
 
+        <Card className="mb-6">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <div>
+              <h3 className="text-lg font-semibold" style={{ margin: 0 }}>Seasons & Competitions</h3>
+              <div className="text-sm text-gray-600">Browse season → competition → matches & squad</div>
+            </div>
+            <Button
+              variant="secondary"
+              onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}/seasons`)}
+            >
+              View Seasons
+            </Button>
+          </div>
+        </Card>
+
         {/* Project description */}
         {project.description && (
           <Card className="mb-6">

@@ -24,6 +24,9 @@ class PeriodSerializer(serializers.ModelSerializer):
     children_count = serializers.IntegerField(read_only=True, required=False)
     activities_count = serializers.IntegerField(read_only=True, required=False)
 
+    # Backwards-compatible alias: expose model.metadata as API field "data"
+    data = serializers.JSONField(source="metadata", required=False, default=dict)
+
     # Write fields (use _id suffix for FK assignment)
     organisation_id = serializers.UUIDField(write_only=True)
     project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)

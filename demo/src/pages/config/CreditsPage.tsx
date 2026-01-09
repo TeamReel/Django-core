@@ -45,6 +45,9 @@ type TabType = 'balance' | 'transactions';
 export const CreditsPage: React.FC = () => {
   const { context, organisations, switchContext } = useContextSwitcher();
   const { user } = useAuth();
+  const debugLog = (...args: unknown[]) => {
+    if (import.meta.env.DEV) console.log(...args);
+  };
   const [searchParams, setSearchParams] = useSearchParams();
   const [credits, setCredits] = useState<CreditsBalance | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,7 +90,7 @@ export const CreditsPage: React.FC = () => {
 
   // Handler to switch organisation without page reload
   const handleOrganisationSwitch = async (option: BreadcrumbSwitcherOption) => {
-    console.log('[CreditsPage] Switching to org:', option.label, option.id);
+    debugLog('[CreditsPage] Switching to org:', option.label, option.id);
 
     // SIMPLIFIED APPROACH FOR NON-ORG-SCOPED ROUTES:
     // The Credits page is at /config/credits (not org-scoped in the URL)
@@ -107,12 +110,12 @@ export const CreditsPage: React.FC = () => {
       const client = createApiClient({ baseUrl: apiBaseUrl });
 
       try {
-        console.log('[CreditsPage] Fetching credit transactions for org:', currentOrgId);
+        debugLog('[CreditsPage] Fetching credit transactions for org:', currentOrgId);
 
         // Build query params with filters
         const params = new URLSearchParams();
         params.append('organization_id', currentOrgId);
-        console.log('[CreditsPage] Query params:', params.toString());
+        debugLog('[CreditsPage] Query params:', params.toString());
         if (sourceTypeFilter) {
           params.append('source_type', sourceTypeFilter);
         }
@@ -135,7 +138,7 @@ export const CreditsPage: React.FC = () => {
         if (response.error) {
           console.error('[CreditsPage] Error fetching transactions:', response.error);
           if (response.error.code === 401) {
-            console.log('[CreditsPage] 401 detected, redirecting to login');
+            debugLog('[CreditsPage] 401 detected, redirecting to login');
             window.location.href = '/login';
             return;
           }
@@ -143,39 +146,39 @@ export const CreditsPage: React.FC = () => {
         } else if (response.data) {
           // Handle B13 response envelope and pagination
           const rawData = response.data as any;
-          console.log('[CreditsPage] Full API response:', rawData);
-          console.log('[CreditsPage] rawData.data:', rawData.data);
-          console.log('[CreditsPage] rawData.data.results:', rawData.data?.results);
+          debugLog('[CreditsPage] Full API response:', rawData);
+          debugLog('[CreditsPage] rawData.data:', rawData.data);
+          debugLog('[CreditsPage] rawData.data.results:', rawData.data?.results);
           let allTransactions: any[] = [];
 
           if (Array.isArray(rawData)) {
-            console.log('[CreditsPage] Using rawData directly (array)');
+            debugLog('[CreditsPage] Using rawData directly (array)');
             allTransactions = rawData;
           } else if (Array.isArray(rawData.data?.data)) {
-            console.log('[CreditsPage] Using rawData.data.data');
+            debugLog('[CreditsPage] Using rawData.data.data');
             allTransactions = rawData.data.data;
           } else if (Array.isArray(rawData.data?.results)) {
-            console.log('[CreditsPage] Using rawData.data.results');
+            debugLog('[CreditsPage] Using rawData.data.results');
             allTransactions = rawData.data.results;
           } else if (Array.isArray(rawData.results)) {
-            console.log('[CreditsPage] Using rawData.results');
+            debugLog('[CreditsPage] Using rawData.results');
             allTransactions = rawData.results;
           } else if (Array.isArray(rawData.data)) {
-            console.log('[CreditsPage] Using rawData.data');
+            debugLog('[CreditsPage] Using rawData.data');
             allTransactions = rawData.data;
           } else {
-            console.log('[CreditsPage] Could not find transactions array in response');
-            console.log('[CreditsPage] Response keys:', Object.keys(rawData));
+            debugLog('[CreditsPage] Could not find transactions array in response');
+            debugLog('[CreditsPage] Response keys:', Object.keys(rawData));
             if (rawData.data) {
-              console.log('[CreditsPage] rawData.data keys:', Object.keys(rawData.data));
+              debugLog('[CreditsPage] rawData.data keys:', Object.keys(rawData.data));
             }
           }
 
-          console.log('[CreditsPage] Raw transactions count:', allTransactions.length);
+          debugLog('[CreditsPage] Raw transactions count:', allTransactions.length);
           if (allTransactions.length > 0) {
-            console.log('[CreditsPage] First transaction sample:', allTransactions[0]);
-            console.log('[CreditsPage] First transaction project field:', allTransactions[0].project);
-            console.log('[CreditsPage] First transaction project_name field:', allTransactions[0].project_name);
+            debugLog('[CreditsPage] First transaction sample:', allTransactions[0]);
+            debugLog('[CreditsPage] First transaction project field:', allTransactions[0].project);
+            debugLog('[CreditsPage] First transaction project_name field:', allTransactions[0].project_name);
           }
 
           // Additional filtering: credits are adjustments with no project association
@@ -184,7 +187,7 @@ export const CreditsPage: React.FC = () => {
           const creditTransactions = allTransactions.filter(
             (txn: any) => !txn.project_name
           );
-          console.log('[CreditsPage] Found', creditTransactions.length, 'credit transactions');
+          debugLog('[CreditsPage] Found', creditTransactions.length, 'credit transactions');
           setTransactions(creditTransactions);
         }
       } catch (err) {
@@ -206,11 +209,11 @@ export const CreditsPage: React.FC = () => {
     const client = createApiClient({ baseUrl: apiBaseUrl });
 
     try {
-      console.log('[CreditsPage] Fetching balance tab transactions for org:', currentOrgId);
+      debugLog('[CreditsPage] Fetching balance tab transactions for org:', currentOrgId);
       const response = await client.get<Transaction[]>(
         `/api/v1/transactions/?organization_id=${currentOrgId}`
       );
-      console.log('[CreditsPage] Balance tab API response:', response);
+      debugLog('[CreditsPage] Balance tab API response:', response);
 
       if (!response.error && response.data) {
         const rawData = response.data as any;
@@ -236,7 +239,7 @@ export const CreditsPage: React.FC = () => {
         // Get latest 5 for preview
         setRecentTransactions(creditTransactions.slice(0, 5));
       } else if (response.error && response.error.code === 401) {
-        console.log('[CreditsPage] 401 detected in balance tab, redirecting to login');
+        debugLog('[CreditsPage] 401 detected in balance tab, redirecting to login');
         window.location.href = '/login';
       }
     } catch (err) {
@@ -266,7 +269,7 @@ export const CreditsPage: React.FC = () => {
       if (!isSuperAdmin && organisations.length > 0) {
          const isCurrentOrgValid = organisations.some(o => String(o.id) === currentOrgId);
          if (!isCurrentOrgValid) {
-            console.log('[CreditsPage] Skipping fetch for invalid org:', currentOrgId);
+          debugLog('[CreditsPage] Skipping fetch for invalid org:', currentOrgId);
             setLoading(false);
             return;
          }
@@ -279,7 +282,7 @@ export const CreditsPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        console.log('[CreditsPage] Fetching credits for org:', currentOrgId);
+        debugLog('[CreditsPage] Fetching credits for org:', currentOrgId);
         const response = await client.get<CreditsBalance>(
           `/api/v1/credits/?organisation_id=${currentOrgId}`
         );
@@ -295,7 +298,7 @@ export const CreditsPage: React.FC = () => {
           }
           setCredits(null);
         } else if (response.data) {
-          console.log('[CreditsPage] Credits loaded:', response.data);
+          debugLog('[CreditsPage] Credits loaded:', response.data);
           // Handle B13 response envelope
           const creditsData = (response.data as any).data || response.data;
           setCredits(creditsData);
@@ -333,7 +336,7 @@ export const CreditsPage: React.FC = () => {
     const client = createApiClient({ baseUrl: apiBaseUrl });
 
     try {
-      console.log(`[CreditsPage] Creating credit transaction: ${amount} for org:`, currentOrgId);
+      debugLog(`[CreditsPage] Creating credit transaction: ${amount} for org:`, currentOrgId);
 
       // Generate unique idempotency key
       const idempotencyKey = `demo-credit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -351,12 +354,12 @@ export const CreditsPage: React.FC = () => {
         console.error('[CreditsPage] Error creating transaction:', response.error);
         setToastMessage(`Failed to create transaction: ${response.error.message || 'Unknown error'}`);
       } else {
-        console.log('[CreditsPage] Transaction created successfully:', response.data);
+        debugLog('[CreditsPage] Transaction created successfully:', response.data);
         setToastMessage(`Successfully added ${action} credits`);
 
         // Refetch both credits balance and transactions
         // Force refetch by switching tab and back (triggers useEffect)
-        console.log('[CreditsPage] Refetching data. ActiveTab:', activeTab);
+        debugLog('[CreditsPage] Refetching data. ActiveTab:', activeTab);
 
         if (activeTab === 'transactions') {
           // Rebuild params exactly as in useEffect to ensure consistency
@@ -367,7 +370,7 @@ export const CreditsPage: React.FC = () => {
           if (dateFromFilter) params.append('timestamp__gte', `${dateFromFilter}T00:00:00`);
           if (dateToFilter) params.append('timestamp__lte', `${dateToFilter}T23:59:59`);
 
-          console.log('[CreditsPage] Refetching transactions with params:', params.toString());
+          debugLog('[CreditsPage] Refetching transactions with params:', params.toString());
 
           const txnResponse = await client.get<Transaction[]>(
             `/api/v1/transactions/?${params.toString()}`
@@ -375,7 +378,7 @@ export const CreditsPage: React.FC = () => {
 
           if (!txnResponse.error && txnResponse.data) {
             const rawData = txnResponse.data as any;
-            console.log('[CreditsPage] Refetch response rawData:', rawData);
+            debugLog('[CreditsPage] Refetch response rawData:', rawData);
 
             let allTransactions: any[] = [];
 
@@ -391,7 +394,7 @@ export const CreditsPage: React.FC = () => {
               allTransactions = rawData.data;
             }
 
-            console.log('[CreditsPage] Refetched transactions count:', allTransactions.length);
+            debugLog('[CreditsPage] Refetched transactions count:', allTransactions.length);
 
             const creditTransactions = allTransactions.filter(
               (txn: Transaction & { project?: string | null }) => !txn.project

@@ -3,7 +3,7 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
 from accounts.models import User
-from organisations.models import Organisation
+from organisations.models import Membership, Organisation
 from projects.models import Project
 from search.models import SearchEntry
 
@@ -12,9 +12,10 @@ from search.models import SearchEntry
 def test_user(db):
     """Create a test user."""
     return User.objects.create_user(
-        username="testuser",
         email="test@example.com",
         password="testpass123",
+        is_active=True,
+        email_verified=True,
     )
 
 
@@ -25,8 +26,11 @@ def test_organisation(db, test_user):
         name="Test Organisation",
         description="A test organisation for search testing",
         slug="test-org",
-        created_by=test_user,
+        creator=test_user,
     )
+
+    # Search visibility is based on organisation memberships.
+    Membership.objects.create(user=test_user, organisation=org, role="admin")
     return org
 
 
@@ -37,7 +41,8 @@ def test_project(db, test_organisation, test_user):
         name="Test Project",
         description="A test project for search testing",
         organisation=test_organisation,
-        created_by=test_user,
+        creator=test_user,
+        slug="test-project",
     )
     return project
 

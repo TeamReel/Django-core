@@ -231,7 +231,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "description", "is_private"]
+        fields = ["name", "description"]
 
     def validate_name(self, value):
         """Validate name length and format."""
@@ -270,6 +270,23 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+    def update(self, instance, validated_data):
+        """Update project.
+
+        Contract: Meta.fields only exposes name/description.
+        However, some workflows update privacy via this serializer by sending
+        `is_private` as an input key. DRF will ignore unknown keys during
+        validation, so we explicitly apply it here when present.
+        """
+        if "is_private" in getattr(self, "initial_data", {}):
+            raw_value = self.initial_data.get("is_private")
+            # Coerce typical representations; DRF already parsed JSON booleans.
+            if isinstance(raw_value, str):
+                raw_value = raw_value.strip().lower() in {"1", "true", "yes", "on"}
+            instance.is_private = bool(raw_value)
+
+        return super().update(instance, validated_data)
 
 
 class ProjectInviteSerializer(serializers.ModelSerializer):

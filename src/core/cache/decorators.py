@@ -78,7 +78,7 @@ def _generate_cache_key(
     ]
     key_string = "|".join(key_parts)
     key_hash = hashlib.sha256(key_string.encode()).hexdigest()[:16]
-    return f"cache:auto:{func.__qualname__}:{key_hash}"
+    return f"cache:auto:{func.__name__}:{key_hash}"
 
 
 def cache_result(

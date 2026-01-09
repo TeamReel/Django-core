@@ -79,6 +79,13 @@ import MatchDetailPage from './pages/activities/MatchDetailPage';
 import AIStudioPage from './pages/aistudio/AIStudioPage';
 import ContentLibraryPage from './pages/content/ContentLibraryPage';
 
+// Period (Season/Competition) pages
+import ProjectSeasonsPage from './pages/periods/ProjectSeasonsPage';
+import ProjectSeasonDetailPage from './pages/periods/ProjectSeasonDetailPage';
+import ProjectCompetitionDetailPage from './pages/periods/ProjectCompetitionDetailPage';
+import ProjectCompetitionMatchesPage from './pages/periods/ProjectCompetitionMatchesPage';
+import ProjectCompetitionSquadPage from './pages/periods/ProjectCompetitionSquadPage';
+
 
 export default function App() {
   const { user } = useAuth();
@@ -111,6 +118,48 @@ export default function App() {
         element={
           <ProtectedRoute>
             <MatchDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* TeamReel hierarchy: Seasons/Competitions under a Project */}
+      <Route
+        path="/organisations/:orgId/projects/:projectId/seasons"
+        element={
+          <ProtectedRoute>
+            <ProjectSeasonsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organisations/:orgId/projects/:projectId/seasons/:seasonId"
+        element={
+          <ProtectedRoute>
+            <ProjectSeasonDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organisations/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId"
+        element={
+          <ProtectedRoute>
+            <ProjectCompetitionDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organisations/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/matches"
+        element={
+          <ProtectedRoute>
+            <ProjectCompetitionMatchesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organisations/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/squad"
+        element={
+          <ProtectedRoute>
+            <ProjectCompetitionSquadPage />
           </ProtectedRoute>
         }
       />

@@ -1,0 +1,12 @@
+{
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist",
+  "installCommand": "pnpm install",
+  "framework": "vite",
+  "env": {
+    "VITE_API_BASE_URL": {
+      "description": "Backend API URL (e.g., https://django-core-app.onrender.com)",
+      "value": "https://django-core-app.onrender.com"
+    }
+  }
+}

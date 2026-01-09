@@ -188,12 +188,13 @@ class TestExemptions:
 
     def test_is_exempted_no_match(self):
         """Test exemption check with no matching exemption."""
+        future_date = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
         exemptions = [
             {
                 "package": "requests",
                 "cve": "CVE-2023-99999",
                 "justification": "Different package",
-                "expires": "2025-12-31",
+                "expires": future_date,
             }
         ]
 
@@ -241,6 +242,7 @@ class TestSeverityFiltering:
 
     def test_filter_by_severity_with_exemptions(self):
         """Test filtering with exempted vulnerabilities."""
+        future_date = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
         vulnerabilities = [
             {
                 "name": "django",
@@ -256,7 +258,7 @@ class TestSeverityFiltering:
                 "package": "django",
                 "cve": "CVE-2023-001",
                 "justification": "Test",
-                "expires": "2025-12-31",
+                "expires": future_date,
             }
         ]
 

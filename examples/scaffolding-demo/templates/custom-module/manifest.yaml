@@ -1,0 +1,112 @@
+# Custom Module Template Manifest
+# ================================
+# This manifest defines a template for generating a complete Django app
+# with models, views, serializers, URLs, and tests.
+#
+# Usage:
+#   kitty scaffold custom-module --app-name=inventory --model-name=Product
+#
+# See the README.md for detailed documentation.
+
+name: custom-module
+description: Generate a Django app with models, views, serializers, and tests
+version: "1.0.0"
+author: "Django Core-App Team"
+
+# Template variables
+# These are the inputs required when running the scaffold command
+variables:
+  - name: app_name
+    description: Name of the Django app (lowercase, underscores allowed)
+    required: true
+    validation: "^[a-z][a-z0-9_]*$"
+    example: "inventory"
+
+  - name: model_name
+    description: Name of the primary model (PascalCase)
+    required: true
+    validation: "^[A-Z][a-zA-Z0-9]*$"
+    example: "Product"
+
+  - name: model_name_plural
+    description: Plural form of the model name (auto-generated if not provided)
+    required: false
+    default: "{{ model_name }}s"
+
+  - name: include_tests
+    description: Generate test file with pytest fixtures and test cases
+    required: false
+    default: true
+    type: boolean
+
+  - name: include_serializers
+    description: Generate DRF serializers
+    required: false
+    default: true
+    type: boolean
+
+  - name: include_urls
+    description: Generate URL routing configuration
+    required: false
+    default: true
+    type: boolean
+
+  - name: author
+    description: Author name for file headers
+    required: false
+    default: "Django Core-App"
+
+# Files to generate
+# Each file maps a Jinja2 template to its destination path
+files:
+  # Core app structure
+  - source: __init__.py.j2
+    destination: "{{ app_name }}/__init__.py"
+
+  - source: apps.py.j2
+    destination: "{{ app_name }}/apps.py"
+
+  - source: models.py.j2
+    destination: "{{ app_name }}/models.py"
+
+  - source: views.py.j2
+    destination: "{{ app_name }}/views.py"
+
+  # Optional files based on variables
+  - source: serializers.py.j2
+    destination: "{{ app_name }}/serializers.py"
+    condition: "{{ include_serializers }}"
+
+  - source: urls.py.j2
+    destination: "{{ app_name }}/urls.py"
+    condition: "{{ include_urls }}"
+
+  - source: tests.py.j2
+    destination: "{{ app_name }}/tests.py"
+    condition: "{{ include_tests }}"
+
+  - source: admin.py.j2
+    destination: "{{ app_name }}/admin.py"
+
+# Post-generation hooks
+# Messages and commands to run after files are generated
+post_generate:
+  - message: "✅ App '{{ app_name }}' created successfully!"
+  - message: ""
+  - message: "📁 Generated files:"
+  - message: "   - {{ app_name }}/__init__.py"
+  - message: "   - {{ app_name }}/apps.py"
+  - message: "   - {{ app_name }}/models.py"
+  - message: "   - {{ app_name }}/views.py"
+  - message: "   - {{ app_name }}/serializers.py (if include_serializers)"
+  - message: "   - {{ app_name }}/urls.py (if include_urls)"
+  - message: "   - {{ app_name }}/tests.py (if include_tests)"
+  - message: "   - {{ app_name }}/admin.py"
+  - message: ""
+  - message: "📋 Next steps:"
+  - message: "   1. Add '{{ app_name }}' to INSTALLED_APPS in settings.py"
+  - message: "   2. Run: python manage.py makemigrations {{ app_name }}"
+  - message: "   3. Run: python manage.py migrate"
+  - message: "   4. Add URL patterns to your project's urls.py"
+  - message: ""
+  - message: "📖 See the README.md for more details."

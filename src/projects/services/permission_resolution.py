@@ -146,14 +146,18 @@ class PermissionResolutionService:
 
             return result
 
-        # Check if private projects feature is enabled
-        private_projects_enabled = FeatureFlag.objects.filter(
-            key="project_access_control.private_projects",
-            enabled=True,
-            scope_type="GLOBAL",
-        ).exists()
+        # Private project enforcement is controlled by a global feature flag.
+        # Defaults to enforced unless explicitly disabled.
+        private_flag = (
+            FeatureFlag.objects.filter(
+                key="project_access_control.private_projects",
+                scope_type="GLOBAL",
+            )
+            .order_by("-id")
+            .first()
+        )
+        private_projects_enabled = True if private_flag is None else bool(private_flag.enabled)
 
-        # If feature is disabled, ignore is_private (treat as public)
         is_private_enforced = project.is_private and private_projects_enabled
 
         if is_private_enforced:
