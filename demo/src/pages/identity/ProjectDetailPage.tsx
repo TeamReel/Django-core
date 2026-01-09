@@ -5,12 +5,7 @@ import {
   Card,
   Badge,
   Alert,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanel,
 } from '@django-core/design-system';
-import { ProjectMatches } from '../projects/ProjectMatches';
 import { MemberList } from '../projects/components/MemberList';
 import { Table } from '../../shims/design-system';
 import {
@@ -70,6 +65,14 @@ export const ProjectDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [orgProjects, setOrgProjects] = useState<Project[]>([]); // For switcher
   const [club, setClub] = useState<Project | null>(null);
+
+  // Tab Data State
+  const [childProjects, setChildProjects] = useState<Project[]>([]);
+  const [childProjectsLoading, setChildProjectsLoading] = useState(false);
+  const [seasons, setSeasons] = useState<any[]>([]);
+  const [seasonsLoading, setSeasonsLoading] = useState(false);
+  const [allMatches, setAllMatches] = useState<any[]>([]);
+  const [allMatchesLoading, setAllMatchesLoading] = useState(false);
 
   // Dashboard Data
   const [scheduledMatches, setScheduledMatches] = useState<any[]>([]);
@@ -365,8 +368,81 @@ export const ProjectDetailPage: React.FC = () => {
       }
     };
 
-    fetchProjectDetails();
-  }, [currentProjectSlug, context.isLoading, resolvedProject, isTeamRoute, clubSlugOrId, resolvedOrg?.slug, resolvedOrg?.id]);
+
+  // Fetch Tab Data Handlers
+  const fetchChildTeams = async () => {
+     if (!project?.id) return;
+     setChildProjectsLoading(true);
+     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+     try {
+       // Fetch children of this project
+       const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${project.id}&page_size=250`;
+       const results = await fetchAllPages<Project>(url, { credentials: 'include' });
+       setChildProjects(results);
+     } catch (e) {
+       console.error('Failed to fetch child teams', e);
+     } finally {
+       setChildProjectsLoading(false);
+     }
+  };
+
+  const fetchSeasons = async () => {
+    if (!project?.id) return;
+    setSeasonsLoading(true);
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    try {
+      const params = new URLSearchParams();
+      params.set('project_id', String(project.id));
+      params.set('type', 'season');
+      params.set('page_size', '250');
+      // Ensure we get root periods (seasons)
+      params.set('parent_period__isnull', 'true');
+
+      const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+      const results = await fetchAllPages<any>(url, { credentials: 'include' });
+      setSeasons(results);
+    } catch (e) {
+      console.error('Failed to fetch seasons', e);
+    } finally {
+      setSeasonsLoading(false);
+    }
+  };
+
+  const fetchAllMatches = async () => {
+    if (!project?.id) return;
+    setAllMatchesLoading(true);
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    try {
+      const params = new URLSearchParams();
+      params.set('project_id', String(project.id));
+      params.set('activity_type', 'match');
+      params.set('page_size', '250');
+      params.set('ordering', '-start_time');
+
+      const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
+      const results = await fetchAllPages<any>(url, { credentials: 'include' });
+      setAllMatches(results);
+    } catch (e) {
+      console.error('Failed to fetch matches', e);
+    } finally {
+      setAllMatchesLoading(false);
+    }
+  };
+
+  // Trigger data fetch on tab change
+  useEffect(() => {
+    if (!project) return;
+    if (activeTab === 'hierarchy') {
+      if (isLikelyTeam) {
+        if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
+      } else {
+        if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
+      }
+    } else if (activeTab === 'matches') {
+       if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
+    }
+  }, [activeTab, project?.id, isLikelyTeam]);
+
 
   // Fetch Dashboard Data (Matches, Stats)
   useEffect(() => {
@@ -520,6 +596,14 @@ export const ProjectDetailPage: React.FC = () => {
   );
 
   const isLikelyTeam = isTeamRoute || hasParentClub;
+
+  const tabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'people', label: 'People' },
+    { id: 'hierarchy', label: isLikelyTeam ? 'Seasons' : 'Teams' },
+    { id: 'matches', label: 'Matches' },
+    { id: 'audit', label: 'Audit' },
+  ];
 
   const backPath = isTeamRoute
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`
@@ -689,16 +773,31 @@ export const ProjectDetailPage: React.FC = () => {
           </Alert>
         )}
 
-        <Tabs value={activeTab} onChange={setActiveTab}>
-          <TabList className="mb-6">
-            <Tab value="overview">Overview</Tab>
-            <Tab value="people">People</Tab>
-            <Tab value="hierarchy">{isLikelyTeam ? 'Seasons' : 'Teams'}</Tab>
-            <Tab value="matches">Matches</Tab>
-            <Tab value="audit">Audit</Tab>
-          </TabList>
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--app-border)', marginBottom: '20px', flexWrap: 'wrap' }}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                padding: '10px 14px',
+                borderRadius: '6px 6px 0 0',
+                border: '1px solid var(--app-border)',
+                borderBottom: activeTab === tab.id ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
+                backgroundColor: activeTab === tab.id ? 'var(--app-surface)' : 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: activeTab === tab.id ? 600 : 500,
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-          <TabPanel value="overview">
+          {activeTab === 'overview' && (
+            <>
             {/* Top Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                <Card style={{ padding: '16px' }}>
@@ -845,80 +944,166 @@ export const ProjectDetailPage: React.FC = () => {
                  </Card>
               </div>
             </div>
-          </TabPanel>
+            </>
+          )}
 
-          <TabPanel value="people">
+          {activeTab === 'people' && (
             <Card>
               <MemberList projectId={project.slug || project.id} initialMembers={members} />
             </Card>
-          </TabPanel>
+          )}
 
-          <TabPanel value="hierarchy">
-            {!isLikelyTeam ? (
-              <Card>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: '12px',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <div>
-                    <h3 className="text-lg font-semibold" style={{ margin: 0 }}>
-                      Teams
-                    </h3>
-                    <div className="text-sm text-gray-600">Browse teams under this club</div>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    onClick={() =>
-                      navigate(
-                        `/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(
-                          String(project.slug || project.id)
-                        )}`
-                      )
-                    }
-                  >
-                    View Teams
-                  </Button>
-                </div>
-              </Card>
-            ) : (
-              <Card>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: '12px',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <div>
-                    <h3 className="text-lg font-semibold" style={{ margin: 0 }}>
-                      Seasons & Competitions
-                    </h3>
-                    <div className="text-sm text-gray-600">Browse season → competition → matches & squad</div>
-                  </div>
-                  <Button variant="secondary" onClick={() => navigate(seasonsPath)}>
-                    View Seasons
-                  </Button>
-                </div>
-              </Card>
-            )}
-          </TabPanel>
-
-          <TabPanel value="matches">
+          {activeTab === 'hierarchy' && (
             <Card>
-              <div className="p-4">
-                <ProjectMatches projectId={project.slug || project.id} />
+              <div className="flex justify-between items-center mb-4">
+                 <h3 className="text-lg font-semibold">{!isLikelyTeam ? 'Teams' : 'Seasons'}</h3>
+                 {!isLikelyTeam ? (
+                    <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId || project.slug || project.id}/projects/create`)}>Add Team</Button>
+                 ) : (
+                    <Button variant="secondary" size="sm" onClick={() => navigate(seasonsPath)}>Manage Seasons</Button>
+                 )}
               </div>
-            </Card>
-          </TabPanel>
 
-          <TabPanel value="audit">
+              {!isLikelyTeam ? (
+                // TEAMS LIST
+                childProjectsLoading ? (
+                   <div className="text-center py-4 text-gray-500">Loading teams...</div>
+                ) : childProjects.length === 0 ? (
+                   <Alert variant="info">No teams found in this club.</Alert>
+                ) : (
+                   <Table style={compactTableStyle}>
+                      <thead>
+                        <tr>
+                          <th style={compactThStyle}>Team</th>
+                          <th style={compactThStyle}>Status</th>
+                          <th style={compactThStyle} className="text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {childProjects.map((team: any) => (
+                          <tr key={team.id}>
+                            <td style={compactTextTdStyle}>
+                              <Link
+                                to={`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${team.slug || team.id}`}
+                                className="font-medium text-blue-600 hover:underline"
+                              >
+                                {team.name}
+                              </Link>
+                            </td>
+                            <td style={compactTdStyle}>
+                              <Badge variant={team.is_active ? 'success' : 'warning'}>
+                                {team.is_active ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </td>
+                            <td style={compactTdStyle}>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                <button
+                                  onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${team.slug || team.id}`)}
+                                  className="text-xs text-blue-600 hover:underline"
+                                >
+                                  View
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                   </Table>
+                )
+              ) : (
+                // SEASONS LIST
+                seasonsLoading ? (
+                   <div className="text-center py-4 text-gray-500">Loading seasons...</div>
+                ) : seasons.length === 0 ? (
+                   <Alert variant="info">No seasons found for this team.</Alert>
+                ) : (
+                   <Table style={compactTableStyle}>
+                      <thead>
+                        <tr>
+                          <th style={compactThStyle}>Season</th>
+                          <th style={compactThStyle}>Dates</th>
+                          <th style={compactThStyle} className="text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {seasons.map((season: any) => (
+                          <tr key={season.id}>
+                            <td style={compactTextTdStyle}>
+                              <Link
+                                to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.id}`}
+                                className="font-medium text-blue-600 hover:underline"
+                              >
+                                {season.name}
+                              </Link>
+                            </td>
+                            <td style={compactTextTdStyle}>
+                               {season.start_date || '?'} — {season.end_date || '?'}
+                            </td>
+                            <td style={compactTdStyle}>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                <button
+                                  onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.id}`)}
+                                  className="text-xs text-blue-600 hover:underline"
+                                >
+                                  View
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                   </Table>
+                )
+              )}
+            </Card>
+          )}
+
+          {activeTab === 'matches' && (
+            <Card>
+               <h3 className="text-lg font-semibold mb-4">Matches</h3>
+               {allMatchesLoading ? (
+                   <div className="text-center py-4 text-gray-500">Loading matches...</div>
+               ) : allMatches.length === 0 ? (
+                   <Alert variant="info">No matches found.</Alert>
+               ) : (
+                   <Table style={compactTableStyle}>
+                      <thead>
+                        <tr>
+                          <th style={compactThStyle}>Match</th>
+                          <th style={compactThStyle}>Competition</th>
+                          <th style={compactThStyle}>Date</th>
+                          <th style={compactThStyle} className="text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allMatches.map((m: any) => (
+                          <tr key={m.id}>
+                             <td style={compactTextTdStyle}>
+                                <div className="font-medium">{m.title || m.name}</div>
+                             </td>
+                             <td style={compactTextTdStyle}>{m.period?.name || '-'}</td>
+                             <td style={compactTextTdStyle}>
+                                {m.start_time ? new Date(m.start_time).toLocaleString() : '-'}
+                             </td>
+                             <td style={compactTdStyle}>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                   <button
+                                     onClick={() => navigate(`/matches/${m.id}`)}
+                                     className="text-xs text-blue-600 hover:underline"
+                                   >
+                                     View
+                                   </button>
+                                </div>
+                             </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                   </Table>
+               )}
+            </Card>
+          )}
+
+          {activeTab === 'audit' && (
             <Card>
               <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
               {recentEvents.length > 0 ? (
@@ -952,8 +1137,7 @@ export const ProjectDetailPage: React.FC = () => {
                 <Alert variant="info">No recent activity</Alert>
               )}
             </Card>
-          </TabPanel>
-        </Tabs>
+          )}
       </PageContent>
       </div>
     </AppShell>
