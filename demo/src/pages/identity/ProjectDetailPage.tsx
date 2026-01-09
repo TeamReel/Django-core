@@ -20,14 +20,32 @@ import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
 
 const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promise<T[]> => {
-    // Basic implementation to support the demo
+    const results: T[] = [];
+    let nextUrl: string | null = url;
+    let pageCount = 0;
+    const maxPages = 10; // Safety limit
+
     try {
-        const res = await fetch(url, options);
-        if (!res.ok) return [];
-        const json = await res.json();
-        return json.data?.results || json.results || [];
-    } catch {
-        return [];
+        while (nextUrl && pageCount < maxPages) {
+            const res = await fetch(nextUrl, options);
+            if (!res.ok) {
+                console.warn(`[fetchAllPages] Request failed for ${nextUrl}: ${res.status}`);
+                break;
+            }
+            const json = await res.json();
+            const pageResults = json.data?.results || json.results || [];
+            results.push(...pageResults);
+            pageCount++;
+
+            // Check for next page
+            nextUrl = json.data?.next || json.next || null;
+            if (!nextUrl) break;
+        }
+        console.log(`[fetchAllPages] Fetched ${results.length} items across ${pageCount} pages from ${url}`);
+        return results;
+    } catch (err) {
+        console.error(`[fetchAllPages] Error fetching ${url}:`, err);
+        return results;
     }
 };
 
@@ -340,7 +358,30 @@ export const ProjectDetailPage: React.FC = () => {
           setMembers(Array.isArray(membersList) ? membersList : []);
         } else {
             console.error(`[ProjectDetailPage] Project members endpoint failed with status ${membersResponse.status} for ${membersEndpoint}`);
-            setMembers([]);
+            // Try alternative endpoint: direct project members
+            try {
+              const altEndpoint = `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/members/`;
+              console.log('[ProjectDetailPage] Trying alternative endpoint:', altEndpoint);
+              const altResponse = await fetch(altEndpoint, {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'include',
+              });
+              if (altResponse.ok) {
+                const altData = await altResponse.json();
+                const altList = altData.data?.results || altData.results || altData.data || altData || [];
+                console.log('[ProjectDetailPage] Alternative endpoint returned:', altList.length, 'members');
+                setMembers(Array.isArray(altList) ? altList : []);
+              } else {
+                console.error('[ProjectDetailPage] Alternative endpoint also failed:', altResponse.status);
+                setMembers([]);
+              }
+            } catch (altErr) {
+              console.error('[ProjectDetailPage] Alternative endpoint error:', altErr);
+              setMembers([]);
+            }
         }
 
         // Fetch recent audit events for this project
