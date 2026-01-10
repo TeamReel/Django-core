@@ -1208,25 +1208,71 @@ export const ProjectDetailPage: React.FC = () => {
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <Button variant="secondary" size="sm" onClick={() => navigate(backPath)}>
+            <button
+              onClick={() => navigate(backPath)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500,
+              }}
+            >
               Back
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate(teamOrProjectDetailPath)}>
+            </button>
+            <button
+              onClick={() => navigate(teamOrProjectDetailPath)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500,
+              }}
+            >
               View
-            </Button>
+            </button>
             {userCanEditProject && (
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/edit`)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid #007bff',
+                  backgroundColor: 'var(--app-surface)',
+                  color: '#007bff',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
               >
                 Edit
-              </Button>
+              </button>
             )}
             {userCanDeleteProject && (
-              <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleteLoading}>
+              <button
+                onClick={handleDelete}
+                disabled={deleteLoading}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid #dc3545',
+                  backgroundColor: 'var(--app-surface)',
+                  color: '#dc3545',
+                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  opacity: deleteLoading ? 0.6 : 1,
+                }}
+              >
                 {deleteLoading ? 'Deleting...' : 'Delete'}
-              </Button>
+              </button>
             )}
           </div>
         }
