@@ -23,8 +23,10 @@ const getPagedResults = (json: any): any[] => {
   // Supports both legacy DRF shapes and this app's envelope (BaseAPIPagination).
   // - { results: [...] }
   // - { data: { results: [...] } }
+  // - { data: { data: [...] } }
   // - { data: [...] }
   if (Array.isArray(json?.data)) return json.data;
+  if (Array.isArray(json?.data?.data)) return json.data.data;
   if (Array.isArray(json?.data?.results)) return json.data.results;
   if (Array.isArray(json?.results)) return json.results;
   return [];
@@ -289,7 +291,11 @@ export const ProjectDetailPage: React.FC = () => {
     });
   };
 
-  const fetchOrgPeriodsForFiltering = async (): Promise<any[]> => {
+  const fetchOrgPeriodsForFiltering = async (opts?: {
+    parentId?: string;
+    type?: string;
+    pageSize?: number;
+  }): Promise<any[]> => {
     // Mirrors OrganisationDetailPage: fetch all periods for the organisation.
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     const orgIdValue = String(
@@ -301,8 +307,14 @@ export const ProjectDetailPage: React.FC = () => {
     if (!orgIdValue) return [];
 
     const params = new URLSearchParams();
-    params.set('page_size', '250');
+    params.set('page_size', String(opts?.pageSize ?? 250));
     params.set('organisation_id', orgIdValue);
+    if (typeof opts?.parentId === 'string' && opts.parentId.length > 0) {
+      params.set('parent_id', opts.parentId);
+    }
+    if (typeof opts?.type === 'string' && opts.type.length > 0) {
+      params.set('type', opts.type);
+    }
 
     const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
     const results = await fetchAllPages<any>(url, { credentials: 'include' });
@@ -738,7 +750,9 @@ export const ProjectDetailPage: React.FC = () => {
           return;
         }
 
-        const orgPeriods = await fetchOrgPeriodsForFiltering();
+        // Fetch root periods only, then filter down to season periods.
+        // This avoids relying on pagination/order across all period types.
+        const orgPeriods = await fetchOrgPeriodsForFiltering({ parentId: 'null' });
         const filteredSeasons = (orgPeriods || [])
           .filter((p: any) => {
             const teamId = String(p?.project_id ?? p?.project?.id ?? '');
