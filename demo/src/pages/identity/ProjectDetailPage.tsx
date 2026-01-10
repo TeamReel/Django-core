@@ -454,10 +454,6 @@ export const ProjectDetailPage: React.FC = () => {
   });
 
   // Custom handlers for navigation
-  const handleOrganisationSwitch = (option: BreadcrumbSwitcherOption) => {
-    navigate(`/organisations/${option.slug || option.id}`);
-  };
-
   const handleProjectSwitch = (option: BreadcrumbSwitcherOption) => {
     navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${option.slug || option.id}`);
   };
@@ -479,7 +475,8 @@ export const ProjectDetailPage: React.FC = () => {
         if (!orgSlug) return;
 
         const response = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/?page_size=100`,
+          // For the club detail context switcher we only want clubs (root projects), not teams.
+          `${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/?page_size=250&parent_project__isnull=true`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -1183,18 +1180,7 @@ export const ProjectDetailPage: React.FC = () => {
         breadcrumbs={[
           { label: 'Dashboard', onClick: () => navigate('/dashboard') },
           { label: 'Federations', onClick: () => navigate('/organisations') },
-          {
-            label: (
-              <BreadcrumbContextSwitcher
-                currentId={String(resolvedOrg?.id || '')}
-                options={organisationOptions}
-                onSelect={handleOrganisationSwitch}
-                hasDropdown={organisationOptions.length > 1}
-                type="organisation"
-              />
-            ),
-            onClick: () => navigate(`/organisations/${orgSlugOrId}`),
-          },
+          { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
           { label: 'Clubs', onClick: () => navigate(clubsListPath) },
           ...(isTeamRoute
             ? [
@@ -1225,9 +1211,12 @@ export const ProjectDetailPage: React.FC = () => {
             <Button variant="secondary" size="sm" onClick={() => navigate(backPath)}>
               Back
             </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate(teamOrProjectDetailPath)}>
+              View
+            </Button>
             {userCanEditProject && (
               <Button
-                variant="secondary"
+                variant="outline"
                 size="sm"
                 onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/edit`)}
               >
@@ -1235,7 +1224,7 @@ export const ProjectDetailPage: React.FC = () => {
               </Button>
             )}
             {userCanDeleteProject && (
-              <Button variant="secondary" size="sm" onClick={handleDelete} disabled={deleteLoading}>
+              <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleteLoading}>
                 {deleteLoading ? 'Deleting...' : 'Delete'}
               </Button>
             )}
