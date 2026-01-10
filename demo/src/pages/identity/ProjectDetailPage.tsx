@@ -1211,6 +1211,10 @@ export const ProjectDetailPage: React.FC = () => {
                    label: club?.name || 'Club',
                    onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)
                 },
+                {
+                   label: 'Teams',
+                   onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)
+                },
                 { label: project.name, current: true }
               ]
             : [
