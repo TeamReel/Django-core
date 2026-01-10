@@ -201,18 +201,28 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         );
         if (!competitionsRes.ok) throw new Error('Failed to load competitions');
         const rawCompetitions: any = await competitionsRes.json();
+        console.log('[SeasonDetail] Raw competitions response:', rawCompetitions);
         const competitionsData = rawCompetitions?.data || rawCompetitions;
         const allPeriods = Array.isArray(competitionsData)
           ? competitionsData
           : competitionsData?.results || competitionsData?.data?.results || [];
+        console.log('[SeasonDetail] All periods:', allPeriods.length);
+        console.log('[SeasonDetail] Looking for parent_period:', effectiveSeasonId);
         // Filter client-side for competitions (children of this season)
-        const competitionResults = allPeriods.filter((p: Period) =>
-          p.parent_period && (p.parent_period.id === effectiveSeasonId || String(p.parent_period) === effectiveSeasonId)
-        );
+        const competitionResults = allPeriods.filter((p: Period) => {
+          const parentId = p.parent_period?.id || String(p.parent_period || '');
+          const matches = parentId === effectiveSeasonId || String(parentId) === String(effectiveSeasonId);
+          if (matches) {
+            console.log('[SeasonDetail] Competition match:', p.name, 'parent:', parentId);
+          }
+          return p.parent_period && matches;
+        });
+        console.log('[SeasonDetail] Filtered competitions:', competitionResults.length, competitionResults);
         setCompetitions(competitionResults);
 
         // Fetch matches for competitions in this season
         const competitionIds = competitionResults.map((c: Period) => c.id);
+        console.log('[SeasonDetail] Competition IDs:', competitionIds);
         if (competitionIds.length > 0) {
           try {
             const matchesRes = await fetch(
@@ -221,13 +231,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             );
             if (matchesRes.ok) {
               const rawMatches: any = await matchesRes.json();
+              console.log('[SeasonDetail] Raw matches response:', rawMatches);
               const matchesData = rawMatches?.data || rawMatches;
               const allMatches = Array.isArray(matchesData)
                 ? matchesData
                 : matchesData?.results || matchesData?.data?.results || [];
-              const seasonMatches = allMatches.filter((m: any) =>
-                competitionIds.includes(String(m.period_id || m.period?.id || ''))
-              );
+              console.log('[SeasonDetail] All matches:', allMatches.length);
+              const seasonMatches = allMatches.filter((m: any) => {
+                const periodId = String(m.period_id || m.period?.id || '');
+                const matches = competitionIds.includes(periodId);
+                if (matches) {
+                  console.log('[SeasonDetail] Match in season:', m.title || m.name, 'period:', periodId);
+                }
+                return matches;
+              });
+              console.log('[SeasonDetail] Filtered matches:', seasonMatches.length, seasonMatches);
               setMatches(seasonMatches);
             }
           } catch (e) {
