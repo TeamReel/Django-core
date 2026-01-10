@@ -202,10 +202,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         if (!competitionsRes.ok) throw new Error('Failed to load competitions');
         const rawCompetitions: any = await competitionsRes.json();
         console.log('[SeasonDetail] Raw competitions response:', rawCompetitions);
-        const competitionsData = rawCompetitions?.data || rawCompetitions;
-        const allPeriods = Array.isArray(competitionsData)
-          ? competitionsData
-          : competitionsData?.results || competitionsData?.data?.results || [];
+
+        // Handle multiple envelope formats
+        let allPeriods: Period[] = [];
+        if (Array.isArray(rawCompetitions)) {
+          allPeriods = rawCompetitions;
+        } else if (Array.isArray(rawCompetitions?.data)) {
+          allPeriods = rawCompetitions.data;
+        } else if (Array.isArray(rawCompetitions?.data?.data)) {
+          allPeriods = rawCompetitions.data.data;
+        } else if (Array.isArray(rawCompetitions?.data?.results)) {
+          allPeriods = rawCompetitions.data.results;
+        } else if (Array.isArray(rawCompetitions?.results)) {
+          allPeriods = rawCompetitions.results;
+        }
+
         console.log('[SeasonDetail] All periods:', allPeriods.length);
         console.log('[SeasonDetail] Looking for parent_period:', effectiveSeasonId);
         // Filter client-side for competitions (children of this season)
@@ -232,10 +243,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             if (matchesRes.ok) {
               const rawMatches: any = await matchesRes.json();
               console.log('[SeasonDetail] Raw matches response:', rawMatches);
-              const matchesData = rawMatches?.data || rawMatches;
-              const allMatches = Array.isArray(matchesData)
-                ? matchesData
-                : matchesData?.results || matchesData?.data?.results || [];
+
+              // Handle multiple envelope formats
+              let allMatches: any[] = [];
+              if (Array.isArray(rawMatches)) {
+                allMatches = rawMatches;
+              } else if (Array.isArray(rawMatches?.data)) {
+                allMatches = rawMatches.data;
+              } else if (Array.isArray(rawMatches?.data?.data)) {
+                allMatches = rawMatches.data.data;
+              } else if (Array.isArray(rawMatches?.data?.results)) {
+                allMatches = rawMatches.data.results;
+              } else if (Array.isArray(rawMatches?.results)) {
+                allMatches = rawMatches.results;
+              }
+
               console.log('[SeasonDetail] All matches:', allMatches.length);
               const seasonMatches = allMatches.filter((m: any) => {
                 const periodId = String(m.period_id || m.period?.id || '');
@@ -261,10 +283,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           );
           if (membersRes.ok) {
             const rawMembers: any = await membersRes.json();
-            const membersData = rawMembers?.data || rawMembers;
-            const membersList = Array.isArray(membersData)
-              ? membersData
-              : membersData?.results || membersData?.data?.results || [];
+
+            // Handle multiple envelope formats
+            let membersList: any[] = [];
+            if (Array.isArray(rawMembers)) {
+              membersList = rawMembers;
+            } else if (Array.isArray(rawMembers?.data)) {
+              membersList = rawMembers.data;
+            } else if (Array.isArray(rawMembers?.data?.data)) {
+              membersList = rawMembers.data.data;
+            } else if (Array.isArray(rawMembers?.data?.results)) {
+              membersList = rawMembers.data.results;
+            } else if (Array.isArray(rawMembers?.results)) {
+              membersList = rawMembers.results;
+            }
+
             setMembers(membersList);
           }
         } catch (e) {
