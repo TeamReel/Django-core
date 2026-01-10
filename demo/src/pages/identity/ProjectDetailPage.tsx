@@ -391,12 +391,26 @@ export const ProjectDetailPage: React.FC = () => {
   // Use fetched project.organisation if available (has user_role), fallback to resolvedOrg from context
   const orgForPermissions = (project as any)?.organisation || resolvedOrg;
 
+  // Debug: Log permission context
+  console.log('[ProjectDetailPage] Permission Debug:', {
+    isSuperAdmin,
+    orgForPermissions: orgForPermissions,
+    user_role: (orgForPermissions as any)?.user_role,
+    projectOrg: (project as any)?.organisation,
+    resolvedOrg: resolvedOrg
+  });
+
   const permissionContext = {
     currentOrganisation: orgForPermissions as any,
     isSuperAdmin,
   };
   const userCanEditProject = canEditProject(permissionContext);
   const userCanDeleteProject = canDeleteProject(permissionContext);
+
+  console.log('[ProjectDetailPage] Permission Results:', {
+    userCanEditProject,
+    userCanDeleteProject
+  });
 
   const handleDelete = async () => {
     if (!project) return;

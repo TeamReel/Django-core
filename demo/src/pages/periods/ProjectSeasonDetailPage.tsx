@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Badge, Button, Card, Tab, TabList, TabPanel, Tabs } from '@django-core/design-system';
+import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
+import { useAuth } from '@django-core/auth-ui';
+import { canDeleteProject, canEditProject } from '../../utils/permissions';
 
 type Period = {
   id: string;
@@ -29,11 +31,55 @@ type Organisation = {
   id: string;
   name: string;
   slug?: string;
+  user_role?: 'admin' | 'member';
+};
+
+const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%' };
+const compactThStyle: React.CSSProperties = {
+  textAlign: 'left',
+  padding: '8px 12px',
+  fontSize: '12px',
+  fontWeight: 600,
+  color: 'var(--app-muted-text)',
+  borderBottom: '1px solid var(--app-border)',
+  whiteSpace: 'nowrap',
+};
+const compactTdStyle: React.CSSProperties = {
+  padding: '6px 12px',
+  borderBottom: '1px solid var(--app-border)',
+  verticalAlign: 'middle',
+  height: '40px',
+};
+const compactTextTdStyle: React.CSSProperties = {
+  ...compactTdStyle,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+};
+
+type ActionTone = 'neutral' | 'primary' | 'danger';
+const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
+  const base: React.CSSProperties = {
+    padding: '4px 8px',
+    borderRadius: '4px',
+    backgroundColor: 'var(--app-surface)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    lineHeight: 1.2,
+  };
+  if (tone === 'primary') {
+    return { ...base, border: '1px solid #007bff', color: '#007bff' };
+  }
+  if (tone === 'danger') {
+    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+  }
+  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
 };
 
 export const ProjectSeasonDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { orgId, projectId, seasonId, clubId } = useParams<{ orgId: string; projectId: string; seasonId: string; clubId?: string }>();
+  const { user } = useAuth();
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -42,7 +88,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [club, setClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
   const [competitions, setCompetitions] = useState<Period[]>([]);
-  const [activeTab, setActiveTab] = useState<'competitions' | 'details'>('competitions');
+  const [matches, setMatches] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +100,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   const isTeamRoute = Boolean(clubId);
   const clubSlugOrId = clubId || '';
+
+  // Permission checks
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) || Boolean((user as any)?.is_staff) || (user as any)?.role === 'Superadmin';
+  const permissionContext = {
+    currentOrganisation: org as any,
+    isSuperAdmin,
+  };
+  const userCanEditProject = canEditProject(permissionContext);
+  const userCanDeleteProject = canDeleteProject(permissionContext);
 
   const projectDetailPath = isTeamRoute
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}`
@@ -78,10 +135,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             },
             {
               label: 'Teams',
-              onClick: () =>
-                navigate(
-                  `/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(String(clubSlugOrId))}`
-                ),
+              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
             },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
@@ -91,6 +145,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     ],
     [navigate, org?.name, project?.name, club?.name, season?.name, orgSlugOrId, seasonsBasePath, projectDetailPath, isTeamRoute, clubSlugOrId]
   );
+
+  const tabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'competitions', label: 'Competitions' },
+    { id: 'matches', label: 'Matches' },
+    { id: 'people', label: 'Users' },
+  ];
 
   useEffect(() => {
     const run = async () => {
@@ -149,6 +210,48 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           p.parent_period && (p.parent_period.id === effectiveSeasonId || String(p.parent_period) === effectiveSeasonId)
         );
         setCompetitions(competitionResults);
+
+        // Fetch matches for competitions in this season
+        const competitionIds = competitionResults.map((c: Period) => c.id);
+        if (competitionIds.length > 0) {
+          try {
+            const matchesRes = await fetch(
+              `${apiBaseUrl}/api/v1/activities/?activity_type=match&page_size=250&ordering=-start_time`,
+              { credentials: 'include' }
+            );
+            if (matchesRes.ok) {
+              const rawMatches: any = await matchesRes.json();
+              const matchesData = rawMatches?.data || rawMatches;
+              const allMatches = Array.isArray(matchesData)
+                ? matchesData
+                : matchesData?.results || matchesData?.data?.results || [];
+              const seasonMatches = allMatches.filter((m: any) =>
+                competitionIds.includes(String(m.period_id || m.period?.id || ''))
+              );
+              setMatches(seasonMatches);
+            }
+          } catch (e) {
+            console.error('Failed to fetch matches:', e);
+          }
+        }
+
+        // Fetch members for the team/project
+        try {
+          const membersRes = await fetch(
+            `${apiBaseUrl}/api/v1/projects/${projectJson.id}/members/`,
+            { credentials: 'include' }
+          );
+          if (membersRes.ok) {
+            const rawMembers: any = await membersRes.json();
+            const membersData = rawMembers?.data || rawMembers;
+            const membersList = Array.isArray(membersData)
+              ? membersData
+              : membersData?.results || membersData?.data?.results || [];
+            setMembers(membersList);
+          }
+        } catch (e) {
+          console.error('Failed to fetch members:', e);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load season');
       } finally {
@@ -157,7 +260,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     };
 
     run();
-  }, [apiBaseUrl, orgSlugOrId, projectSlugOrId, effectiveSeasonId]);
+  }, [apiBaseUrl, orgSlugOrId, projectSlugOrId, effectiveSeasonId, isTeamRoute, clubSlugOrId]);
 
   return (
     <AppShell>
@@ -166,13 +269,60 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           title={season ? season.name : 'Season'}
           breadcrumbs={breadcrumbs}
           actions={
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Button
-                variant="secondary"
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
                 onClick={() => navigate(seasonsBasePath)}
+                style={actionButtonStyle('neutral')}
               >
-                Back to Seasons
-              </Button>
+                Back
+              </button>
+              <button
+                onClick={() => navigate(`${seasonsBasePath}/${effectiveSeasonId}`)}
+                style={actionButtonStyle('neutral')}
+              >
+                View
+              </button>
+              {userCanEditProject && (
+                <button
+                  onClick={() => navigate(`${seasonsBasePath}/${effectiveSeasonId}/edit`)}
+                  style={actionButtonStyle('primary')}
+                >
+                  Edit
+                </button>
+              )}
+              {userCanDeleteProject && (
+                <button
+                  onClick={async () => {
+                    if (!window.confirm(`Are you sure you want to delete season ${season?.name}?`)) return;
+                    try {
+                      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                      const res = await fetch(
+                        `${apiBaseUrl}/api/v1/periods/${effectiveSeasonId}/`,
+                        {
+                          method: 'DELETE',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken || '',
+                          },
+                          credentials: 'include',
+                        }
+                      );
+
+                      if (res.ok) {
+                        navigate(seasonsBasePath);
+                      } else {
+                        alert('Error deleting season');
+                      }
+                    } catch (e) {
+                      console.error(e);
+                      alert('Error deleting season');
+                    }
+                  }}
+                  style={actionButtonStyle('danger')}
+                >
+                  Delete
+                </button>
+              )}
             </div>
           }
         />
@@ -180,71 +330,289 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         <PageContent>
           {error && <Alert variant="error">{error}</Alert>}
 
-          <Tabs value={activeTab} onChange={(v) => setActiveTab(v as any)}>
-            <TabList className="mb-6">
-              <Tab value="competitions">Competitions</Tab>
-              <Tab value="details">Details</Tab>
-            </TabList>
-
-            <TabPanel value="competitions">
-              <Card>
-                {loading ? (
-                  <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>Loading competitions…</div>
-                ) : competitions.length === 0 ? (
-                  <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>No competitions found.</div>
-                ) : (
-                  <Table>
-                    <thead>
-                      <tr>
-                        <th style={{ textAlign: 'left' }}>Competition</th>
-                        <th style={{ textAlign: 'left' }}>Dates</th>
-                        <th style={{ textAlign: 'center' }}>Matches</th>
-                        <th style={{ textAlign: 'right' }}>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {competitions.map((competition) => (
-                        <tr key={competition.id}>
-                          <td style={{ fontWeight: 600 }}>{competition.name}</td>
-                          <td style={{ whiteSpace: 'nowrap' }}>
-                            {new Date(competition.start_date).toLocaleDateString()} –{' '}
-                            {new Date(competition.end_date).toLocaleDateString()}
-                          </td>
-                          <td style={{ textAlign: 'center' }}>
-                            <Badge variant="default">{competition.children_count ?? '—'}</Badge>
-                          </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => navigate(`${seasonsBasePath}/${effectiveSeasonId}/competitions/${competition.id}`)}
-                            >
-                              View
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-              </Card>
-            </TabPanel>
-
-            <TabPanel value="details">
-              <Card>
-                <div style={{ padding: '16px', display: 'grid', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Badge variant="default">Season</Badge>
-                    <span style={{ color: 'var(--app-text-secondary)' }}>
-                      {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '—'} –{' '}
-                      {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '—'}
-                    </span>
-                  </div>
-                  <div style={{ color: 'var(--app-text-secondary)' }}>Use the Competitions tab to drill down to matches.</div>
+          {loading ? (
+            <Card><div style={{ padding: '16px' }}>Loading...</div></Card>
+          ) : (
+            <>
+              <div style={{ borderBottom: '1px solid var(--app-border)', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', gap: '24px' }}>
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      style={{
+                        padding: '12px 0',
+                        background: 'none',
+                        border: 'none',
+                        borderBottom: activeTab === tab.id ? '2px solid var(--app-primary)' : '2px solid transparent',
+                        color: activeTab === tab.id ? 'var(--app-primary)' : 'var(--app-text-secondary)',
+                        fontWeight: activeTab === tab.id ? 600 : 400,
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                      }}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
                 </div>
-              </Card>
-            </TabPanel>
-          </Tabs>
+              </div>
+
+              {activeTab === 'overview' && (
+                <Card>
+                  <div style={{ padding: '16px', display: 'grid', gap: '16px' }}>
+                    <div>
+                      <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 600 }}>Season Information</h3>
+                      <div style={{ display: 'grid', gap: '8px', fontSize: '14px' }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <span style={{ color: 'var(--app-text-secondary)', width: '120px' }}>Period:</span>
+                          <span>
+                            {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '—'} –{' '}
+                            {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '—'}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <span style={{ color: 'var(--app-text-secondary)', width: '120px' }}>Competitions:</span>
+                          <Badge variant="info">{competitions.length}</Badge>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <span style={{ color: 'var(--app-text-secondary)', width: '120px' }}>Matches:</span>
+                          <Badge variant="info">{matches.length}</Badge>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <span style={{ color: 'var(--app-text-secondary)', width: '120px' }}>Team Members:</span>
+                          <Badge variant="info">{members.length}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 600 }}>Quick Actions</h3>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <Button size="sm" variant="secondary" onClick={() => setActiveTab('competitions')}>
+                          View Competitions
+                        </Button>
+                        <Button size="sm" variant="secondary" onClick={() => setActiveTab('matches')}>
+                          View Matches
+                        </Button>
+                        <Button size="sm" variant="secondary" onClick={() => setActiveTab('people')}>
+                          View Team Members
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {activeTab === 'competitions' && (
+                <Card>
+                  <div style={{ padding: '16px' }}>
+                    <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Competitions</h3>
+                    {competitions.length === 0 ? (
+                      <Alert variant="info">No competitions found in this season.</Alert>
+                    ) : (
+                      <Table style={compactTableStyle}>
+                        <thead>
+                          <tr>
+                            <th style={compactThStyle}>Competition</th>
+                            <th style={compactThStyle}>Dates</th>
+                            <th style={compactThStyle}>Matches</th>
+                            <th style={compactThStyle} className="text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {competitions.map((competition) => (
+                            <tr key={competition.id}>
+                              <td style={compactTextTdStyle}>{competition.name}</td>
+                              <td style={compactTextTdStyle}>
+                                {new Date(competition.start_date).toLocaleDateString()} –{' '}
+                                {new Date(competition.end_date).toLocaleDateString()}
+                              </td>
+                              <td style={compactTdStyle}>
+                                <Badge variant="default">{competition.children_count ?? 0}</Badge>
+                              </td>
+                              <td style={compactTdStyle}>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                  <button
+                                    onClick={() => navigate(`${seasonsBasePath}/${effectiveSeasonId}/competitions/${competition.id}`)}
+                                    style={actionButtonStyle('neutral')}
+                                  >
+                                    View
+                                  </button>
+                                  {userCanEditProject && (
+                                    <button
+                                      onClick={() => navigate(`${seasonsBasePath}/${effectiveSeasonId}/competitions/${competition.id}/edit`)}
+                                      style={actionButtonStyle('primary')}
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
+                                  {userCanDeleteProject && (
+                                    <button
+                                      onClick={async () => {
+                                        if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
+                                        try {
+                                          const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                                          const res = await fetch(
+                                            `${apiBaseUrl}/api/v1/periods/${competition.id}/`,
+                                            {
+                                              method: 'DELETE',
+                                              headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRFToken': csrfToken || '',
+                                              },
+                                              credentials: 'include',
+                                            }
+                                          );
+
+                                          if (res.ok) {
+                                            setCompetitions((prev) => prev.filter((c) => c.id !== competition.id));
+                                          } else {
+                                            alert('Error deleting competition');
+                                          }
+                                        } catch (e) {
+                                          console.error(e);
+                                          alert('Error deleting competition');
+                                        }
+                                      }}
+                                      style={actionButtonStyle('danger')}
+                                    >
+                                      Delete
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
+                  </div>
+                </Card>
+              )}
+
+              {activeTab === 'matches' && (
+                <Card>
+                  <div style={{ padding: '16px' }}>
+                    <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Matches</h3>
+                    {matches.length === 0 ? (
+                      <Alert variant="info">No matches found in this season.</Alert>
+                    ) : (
+                      <Table style={compactTableStyle}>
+                        <thead>
+                          <tr>
+                            <th style={compactThStyle}>Match</th>
+                            <th style={compactThStyle}>Competition</th>
+                            <th style={compactThStyle}>Date</th>
+                            <th style={compactThStyle} className="text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {matches.map((match) => (
+                            <tr key={match.id}>
+                              <td style={compactTextTdStyle}>{match.title || match.name}</td>
+                              <td style={compactTextTdStyle}>{match.period?.name || '—'}</td>
+                              <td style={compactTextTdStyle}>
+                                {match.start_time ? new Date(match.start_time).toLocaleString() : '—'}
+                              </td>
+                              <td style={compactTdStyle}>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                  <button
+                                    onClick={() => navigate(`/matches/${match.id}`)}
+                                    style={actionButtonStyle('neutral')}
+                                  >
+                                    View
+                                  </button>
+                                  {userCanEditProject && (
+                                    <button
+                                      onClick={() => navigate(`/matches/${match.id}/edit`)}
+                                      style={actionButtonStyle('primary')}
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
+                                  {userCanDeleteProject && (
+                                    <button
+                                      onClick={async () => {
+                                        if (!window.confirm(`Are you sure you want to delete match ${match.title || match.name}?`)) return;
+                                        try {
+                                          const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                                          const res = await fetch(
+                                            `${apiBaseUrl}/api/v1/activities/${match.id}/`,
+                                            {
+                                              method: 'DELETE',
+                                              headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRFToken': csrfToken || '',
+                                              },
+                                              credentials: 'include',
+                                            }
+                                          );
+
+                                          if (res.ok) {
+                                            setMatches((prev) => prev.filter((m) => m.id !== match.id));
+                                          } else {
+                                            alert('Error deleting match');
+                                          }
+                                        } catch (e) {
+                                          console.error(e);
+                                          alert('Error deleting match');
+                                        }
+                                      }}
+                                      style={actionButtonStyle('danger')}
+                                    >
+                                      Delete
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
+                  </div>
+                </Card>
+              )}
+
+              {activeTab === 'people' && (
+                <Card>
+                  <div style={{ padding: '16px' }}>
+                    <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Team Members</h3>
+                    {members.length === 0 ? (
+                      <Alert variant="info">No members found.</Alert>
+                    ) : (
+                      <Table style={compactTableStyle}>
+                        <thead>
+                          <tr>
+                            <th style={compactThStyle}>Name</th>
+                            <th style={compactThStyle}>Email</th>
+                            <th style={compactThStyle}>Role</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {members.map((item: any) => {
+                            const user = item.user || item;
+                            const name =
+                              user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || '-';
+                            const email = user.email || '-';
+                            const role = item.role || user.role || 'member';
+                            return (
+                              <tr key={String(user.id || item.id)}>
+                                <td style={compactTextTdStyle}>{name}</td>
+                                <td style={compactTextTdStyle}>{email}</td>
+                                <td style={compactTextTdStyle}>
+                                  <Badge variant="default">{String(role)}</Badge>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </Table>
+                    )}
+                  </div>
+                </Card>
+              )}
+            </>
+          )}
         </PageContent>
       </div>
     </AppShell>
