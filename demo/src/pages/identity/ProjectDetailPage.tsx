@@ -108,6 +108,25 @@ const compactTextTdStyle: React.CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
+type ActionTone = 'neutral' | 'primary' | 'danger';
+const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
+  const base: React.CSSProperties = {
+    padding: '4px 8px',
+    borderRadius: '4px',
+    backgroundColor: 'var(--app-surface)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    lineHeight: 1.2,
+  };
+  if (tone === 'primary') {
+    return { ...base, border: '1px solid #007bff', color: '#007bff' };
+  }
+  if (tone === 'danger') {
+    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+  }
+  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
+};
+
 export const ProjectDetailPage: React.FC = () => {
   const { orgId, projectId, clubId } = useParams<{ orgId: string; projectId: string; clubId?: string }>();
   const [activeTab, setActiveTab] = useState('overview');
@@ -1582,10 +1601,58 @@ export const ProjectDetailPage: React.FC = () => {
                                     }`
                                   )
                                 }
-                                className="text-xs text-blue-600 hover:underline"
+                                style={actionButtonStyle('neutral')}
                               >
                                 View
                               </button>
+                              {userCanEditProject && (
+                                <button
+                                  onClick={() =>
+                                    navigate(
+                                      `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
+                                        team.slug || team.id
+                                      }/edit`
+                                    )
+                                  }
+                                  style={actionButtonStyle('primary')}
+                                >
+                                  Edit
+                                </button>
+                              )}
+                              {userCanDeleteProject && (
+                                <button
+                                  onClick={async () => {
+                                    if (!window.confirm(`Are you sure you want to delete team ${team.name}?`)) return;
+                                    try {
+                                      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                                      const res = await fetch(
+                                        `${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${team.slug || team.id}/`,
+                                        {
+                                          method: 'DELETE',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': csrfToken || '',
+                                          },
+                                          credentials: 'include',
+                                        }
+                                      );
+
+                                      if (res.ok) {
+                                        setChildProjects((prev) => prev.filter((p) => String(p.id) !== String(team.id)));
+                                      } else {
+                                        alert('Error deleting team');
+                                      }
+                                    } catch (e) {
+                                      console.error(e);
+                                      alert('Error deleting team');
+                                    }
+                                  }}
+                                  style={actionButtonStyle('danger')}
+                                >
+                                  Delete
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -1648,10 +1715,52 @@ export const ProjectDetailPage: React.FC = () => {
                               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                 <button
                                   onClick={() => navigate(seasonHref)}
-                                  className="text-xs text-blue-600 hover:underline"
+                                  style={actionButtonStyle('neutral')}
                                 >
                                   View
                                 </button>
+                                {userCanEditProject && (
+                                  <button
+                                    onClick={() => navigate(`${seasonHref}/edit`)}
+                                    style={actionButtonStyle('primary')}
+                                  >
+                                    Edit
+                                  </button>
+                                )}
+                                {userCanDeleteProject && (
+                                  <button
+                                    onClick={async () => {
+                                      if (!window.confirm(`Are you sure you want to delete season ${season.name}?`)) return;
+                                      try {
+                                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                        const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                                        const res = await fetch(
+                                          `${apiBaseUrl}/api/v1/periods/${season.id}/`,
+                                          {
+                                            method: 'DELETE',
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                              'X-CSRFToken': csrfToken || '',
+                                            },
+                                            credentials: 'include',
+                                          }
+                                        );
+
+                                        if (res.ok) {
+                                          setSeasons((prev) => prev.filter((p) => String(p.id) !== String(season.id)));
+                                        } else {
+                                          alert('Error deleting season');
+                                        }
+                                      } catch (e) {
+                                        console.error(e);
+                                        alert('Error deleting season');
+                                      }
+                                    }}
+                                    style={actionButtonStyle('danger')}
+                                  >
+                                    Delete
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -1706,10 +1815,52 @@ export const ProjectDetailPage: React.FC = () => {
                               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                 <button
                                   onClick={() => navigate(compHref)}
-                                  className="text-xs text-blue-600 hover:underline"
+                                  style={actionButtonStyle('neutral')}
                                 >
                                   View
                                 </button>
+                                {userCanEditProject && (
+                                  <button
+                                    onClick={() => navigate(`${compHref}/edit`)}
+                                    style={actionButtonStyle('primary')}
+                                  >
+                                    Edit
+                                  </button>
+                                )}
+                                {userCanDeleteProject && (
+                                  <button
+                                    onClick={async () => {
+                                      if (!window.confirm(`Are you sure you want to delete competition ${comp.name}?`)) return;
+                                      try {
+                                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                        const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                                        const res = await fetch(
+                                          `${apiBaseUrl}/api/v1/periods/${comp.id}/`,
+                                          {
+                                            method: 'DELETE',
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                              'X-CSRFToken': csrfToken || '',
+                                            },
+                                            credentials: 'include',
+                                          }
+                                        );
+
+                                        if (res.ok) {
+                                          setCompetitions((prev) => prev.filter((p) => String(p.id) !== String(comp.id)));
+                                        } else {
+                                          alert('Error deleting competition');
+                                        }
+                                      } catch (e) {
+                                        console.error(e);
+                                        alert('Error deleting competition');
+                                      }
+                                    }}
+                                    style={actionButtonStyle('danger')}
+                                  >
+                                    Delete
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -1752,10 +1903,52 @@ export const ProjectDetailPage: React.FC = () => {
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                    <button
                                      onClick={() => navigate(`/matches/${m.id}`)}
-                                     className="text-xs text-blue-600 hover:underline"
+                                     style={actionButtonStyle('neutral')}
                                    >
                                      View
                                    </button>
+                                   {userCanEditProject && (
+                                     <button
+                                       onClick={() => navigate(`/matches/${m.id}/edit`)}
+                                       style={actionButtonStyle('primary')}
+                                     >
+                                       Edit
+                                     </button>
+                                   )}
+                                   {userCanDeleteProject && (
+                                     <button
+                                       onClick={async () => {
+                                         if (!window.confirm(`Are you sure you want to delete match ${m.title || m.name}?`)) return;
+                                         try {
+                                           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                           const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                                           const res = await fetch(
+                                             `${apiBaseUrl}/api/v1/activities/${m.id}/`,
+                                             {
+                                               method: 'DELETE',
+                                               headers: {
+                                                 'Content-Type': 'application/json',
+                                                 'X-CSRFToken': csrfToken || '',
+                                               },
+                                               credentials: 'include',
+                                             }
+                                           );
+
+                                           if (res.ok) {
+                                             setAllMatches((prev) => prev.filter((p) => String(p.id) !== String(m.id)));
+                                           } else {
+                                             alert('Error deleting match');
+                                           }
+                                         } catch (e) {
+                                           console.error(e);
+                                           alert('Error deleting match');
+                                         }
+                                       }}
+                                       style={actionButtonStyle('danger')}
+                                     >
+                                       Delete
+                                     </button>
+                                   )}
                                 </div>
                              </td>
                           </tr>
