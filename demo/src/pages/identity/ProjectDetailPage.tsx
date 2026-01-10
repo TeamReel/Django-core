@@ -387,8 +387,12 @@ export const ProjectDetailPage: React.FC = () => {
   const clubsListPath = orgSlugOrId ? `/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}` : '/clubs';
 
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || Boolean((user as any)?.is_staff) || (user as any)?.role === 'Superadmin';
+
+  // Use fetched project.organisation if available (has user_role), fallback to resolvedOrg from context
+  const orgForPermissions = (project as any)?.organisation || resolvedOrg;
+
   const permissionContext = {
-    currentOrganisation: resolvedOrg as any,
+    currentOrganisation: orgForPermissions as any,
     isSuperAdmin,
   };
   const userCanEditProject = canEditProject(permissionContext);
