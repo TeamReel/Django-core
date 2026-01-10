@@ -292,7 +292,12 @@ export const ProjectDetailPage: React.FC = () => {
   const fetchOrgPeriodsForFiltering = async (): Promise<any[]> => {
     // Mirrors OrganisationDetailPage: fetch all periods for the organisation.
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-    const orgIdValue = String(resolvedOrg?.id || (project as any)?.organisation_id || '').trim();
+    const orgIdValue = String(
+      resolvedOrg?.id ||
+        (project as any)?.organisation?.id ||
+        (project as any)?.organisation_id ||
+        ''
+    ).trim();
     if (!orgIdValue) return [];
 
     const params = new URLSearchParams();
@@ -325,9 +330,10 @@ export const ProjectDetailPage: React.FC = () => {
   };
 
   // Resolve org and project slugs
+  const projectOrg = (project as any)?.organisation || null;
   const resolvedOrg = (orgId
     ? organisations.find(o => o.slug.toLowerCase() === orgId?.toLowerCase() || o.id === orgId)
-    : context.organisation) || context.organisation;
+    : context.organisation) || context.organisation || projectOrg;
 
   const targetId = projectId || id;
 
@@ -394,12 +400,16 @@ export const ProjectDetailPage: React.FC = () => {
   // Fetch projects for the current organisation (for switcher dropdown)
   useEffect(() => {
     const fetchOrgProjects = async () => {
-      const orgId = resolvedOrg?.id || project?.organisation_id;
+      const orgId = resolvedOrg?.id || (project as any)?.organisation?.id || (project as any)?.organisation_id;
       if (!orgId) return;
 
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-        const orgSlug = resolvedOrg?.slug || organisations.find(o => o.id === orgId)?.slug;
+        const orgSlug =
+          resolvedOrg?.slug ||
+          (project as any)?.organisation?.slug ||
+          organisations.find(o => o.id === orgId)?.slug ||
+          (typeof orgId === 'string' ? orgId : undefined);
         if (!orgSlug) return;
 
         const response = await fetch(
