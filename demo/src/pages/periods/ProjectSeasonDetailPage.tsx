@@ -10,6 +10,7 @@ import { canDeleteProject, canEditProject } from '../../utils/permissions';
 type Period = {
   id: string;
   name: string;
+  slug?: string;
   start_date: string;
   end_date: string;
   parent_period?: { id: string; name: string } | null;
@@ -152,6 +153,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     { id: 'matches', label: 'Matches' },
     { id: 'people', label: 'Users' },
   ];
+
+  // Helper to count matches per competition
+  const getMatchCountForCompetition = (competitionId: string): number => {
+    return matches.filter((m: any) => {
+      const periodId = String(m.period_id || m.period?.id || '');
+      return periodId === competitionId;
+    }).length;
+  };
 
   useEffect(() => {
     const run = async () => {
@@ -478,19 +487,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 {new Date(competition.end_date).toLocaleDateString()}
                               </td>
                               <td style={compactTdStyle}>
-                                <Badge variant="default">{competition.children_count ?? 0}</Badge>
+                                <Badge variant="default">{getMatchCountForCompetition(competition.id)}</Badge>
                               </td>
                               <td style={compactTdStyle}>
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                   <button
-                                    onClick={() => navigate(`${seasonsBasePath}/${effectiveSeasonId}/competitions/${competition.id}`)}
+                                    onClick={() => navigate(`${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}`)}
                                     style={actionButtonStyle('neutral')}
                                   >
                                     View
                                   </button>
                                   {userCanEditProject && (
                                     <button
-                                      onClick={() => navigate(`${seasonsBasePath}/${effectiveSeasonId}/competitions/${competition.id}/edit`)}
+                                      onClick={() => navigate(`${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}/edit`)}
                                       style={actionButtonStyle('primary')}
                                     >
                                       Edit
