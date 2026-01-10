@@ -16,8 +16,10 @@ import {
   type BreadcrumbSwitcherOption,
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { useAuth } from '@django-core/auth-ui';
 import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
+import { canDeleteProject, canEditProject } from '../../utils/permissions';
 
 const getPagedResults = (json: any): any[] => {
   // Supports both legacy DRF shapes and this app's envelope (BaseAPIPagination).
@@ -112,6 +114,7 @@ export const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { context, organisations, projects: contextProjects } = useContextSwitcher();
+  const { user } = useAuth();
 
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<any[]>([]);
@@ -120,6 +123,7 @@ export const ProjectDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [orgProjects, setOrgProjects] = useState<Project[]>([]); // For switcher
   const [club, setClub] = useState<Project | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Tab Data State
   const [childProjects, setChildProjects] = useState<Project[]>([]);
@@ -363,6 +367,56 @@ export const ProjectDetailPage: React.FC = () => {
 
   const clubsListPath = orgSlugOrId ? `/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}` : '/clubs';
 
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) || Boolean((user as any)?.is_staff) || (user as any)?.role === 'Superadmin';
+  const permissionContext = {
+    currentOrganisation: resolvedOrg as any,
+    isSuperAdmin,
+  };
+  const userCanEditProject = canEditProject(permissionContext);
+  const userCanDeleteProject = canDeleteProject(permissionContext);
+
+  const handleDelete = async () => {
+    if (!project) return;
+    if (!window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setDeleteLoading(true);
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+
+      const orgSlug = String(resolvedOrg?.slug || resolvedOrg?.id || '').trim();
+      const projectSlugOrId = String((project as any)?.slug || project.id);
+      const endpoint = orgSlug
+        ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectSlugOrId)}/`
+        : `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectSlugOrId)}/`;
+
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken || '',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete project (${response.status})`);
+      }
+
+      navigate(clubsListPath);
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to delete project');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   // Prefer canonical org slug in the URL when the user arrived via an ID-based link.
   useEffect(() => {
     if (!orgId) return;
@@ -400,7 +454,7 @@ export const ProjectDetailPage: React.FC = () => {
   });
 
   // Custom handlers for navigation
-  const handleOrganisationSwitch = (option: { id: string; label: string; slug: string }) => {
+  const handleOrganisationSwitch = (option: BreadcrumbSwitcherOption) => {
     navigate(`/organisations/${option.slug || option.id}`);
   };
 
@@ -1129,7 +1183,18 @@ export const ProjectDetailPage: React.FC = () => {
         breadcrumbs={[
           { label: 'Dashboard', onClick: () => navigate('/dashboard') },
           { label: 'Federations', onClick: () => navigate('/organisations') },
-          { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+          {
+            label: (
+              <BreadcrumbContextSwitcher
+                currentId={String(resolvedOrg?.id || '')}
+                options={organisationOptions}
+                onSelect={handleOrganisationSwitch}
+                hasDropdown={organisationOptions.length > 1}
+                type="organisation"
+              />
+            ),
+            onClick: () => navigate(`/organisations/${orgSlugOrId}`),
+          },
           { label: 'Clubs', onClick: () => navigate(clubsListPath) },
           ...(isTeamRoute
             ? [
@@ -1139,37 +1204,41 @@ export const ProjectDetailPage: React.FC = () => {
                 },
                 { label: project.name, current: true }
               ]
-            : [{ label: project.name, current: true }]
+            : [
+                {
+                  label: (
+                    <BreadcrumbContextSwitcher
+                      currentId={String(project.id)}
+                      options={effectiveProjectOptions}
+                      onSelect={handleProjectSwitch}
+                      hasDropdown={effectiveProjectOptions.length > 1}
+                      type="project"
+                    />
+                  ),
+                  current: true,
+                },
+              ]
           )
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <Button variant="secondary" size="sm" onClick={() => navigate(backPath)}>
               Back
             </Button>
-            {/* Context Switcher for Projects */}
-            <BreadcrumbContextSwitcher
-                currentId={String(project.id)}
-                options={effectiveProjectOptions}
-                onSelect={handleProjectSwitch}
-                hasDropdown={effectiveProjectOptions.length > 1}
-                type="project"
-            />
-            <button
-              onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/edit`)}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '4px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 500
-              }}
-            >
-              Edit Project
-            </button>
+            {userCanEditProject && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/edit`)}
+              >
+                Edit
+              </Button>
+            )}
+            {userCanDeleteProject && (
+              <Button variant="secondary" size="sm" onClick={handleDelete} disabled={deleteLoading}>
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </Button>
+            )}
           </div>
         }
       />
