@@ -1719,8 +1719,8 @@ export const ProjectDetailPage: React.FC = () => {
                           isLikelyTeam ? project.slug || project.id : season.project?.slug || season.project_id || season.project?.id || ''
                         );
                         const seasonHref = isLikelyTeam
-                          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.id}`
-                          : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${season.id}`;
+                          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.slug || season.id}`
+                          : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${season.slug || season.id}`;
 
                         return (
                           <tr key={season.id}>
@@ -1816,13 +1816,14 @@ export const ProjectDetailPage: React.FC = () => {
                     <tbody>
                       {competitions.map((comp: any) => {
                         const seasonId = String(comp.parent_period_id || comp.parent_period?.id || '');
+                        const seasonSlug = String(comp.parent_period?.slug || '');
                         const clubSlug = String(project.slug || project.id);
                         const teamSlugOrId = String(
                           isLikelyTeam ? project.slug || project.id : comp.project?.slug || comp.project_id || comp.project?.id || ''
                         );
                         const compHref = isLikelyTeam
-                          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${seasonId}/competitions/${comp.id}`
-                          : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${seasonId}/competitions/${comp.id}`;
+                          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
+                          : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
 
                         return (
                           <tr key={comp.id}>

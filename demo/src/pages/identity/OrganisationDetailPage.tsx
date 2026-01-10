@@ -2116,12 +2116,13 @@ export const OrganisationDetailPage: React.FC = () => {
                           const clubSlugOrId = clubId ? clubSlugById.get(clubId) || clubId : '';
 
                           const seasonId = season.id;
+                          const seasonSlug = season.slug;
                           const competitionsCount = competitionsBySeasonId[String(seasonId)] || 0;
                           const matchesCount = getRecursiveMatchesCount(season);
 
                           const openHref = clubSlugOrId
-                            ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonId}`
-                            : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonId}`;
+                            ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`
+                            : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`;
 
                           return (
                             <tr key={seasonId}>
@@ -2296,9 +2297,10 @@ export const OrganisationDetailPage: React.FC = () => {
                             : '';
                           const clubSlugOrId = clubId ? clubSlugById.get(clubId) || clubId : '';
 
+                          const seasonSlug = season?.slug || comp.parent_period?.slug;
                           const openHref = clubSlugOrId
-                            ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonId}/competitions/${comp.id}`
-                            : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonId}/competitions/${comp.id}`;
+                            ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
+                            : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
 
                           const matchesCount = getRecursiveMatchesCount(comp);
 

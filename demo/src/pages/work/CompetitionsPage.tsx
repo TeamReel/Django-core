@@ -13,9 +13,10 @@ import WorkFilterBar, { OrganisationOption, ProjectOption } from './WorkFilterBa
 type Period = {
   id: string;
   name: string;
+  slug?: string;
   start_date?: string;
   end_date?: string;
-  parent_period?: { id: string; name: string } | null;
+  parent_period?: { id: string; name: string; slug?: string } | null;
   parent_period_id?: string | null;
   children_count?: number;
   activities_count?: number;
@@ -230,17 +231,18 @@ export default function CompetitionsPage() {
                 <tbody>
                   {competitions.map((comp) => {
                     const seasonId = (comp as any).parent_period_id || comp.parent_period?.id;
+                    const seasonSlug = comp.parent_period?.slug;
                     return (
                       <tr key={comp.id}>
                         <td>
                           <a
-                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonId}/competitions/${comp.id}`}
+                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
                             className="text-blue-600 hover:underline"
                             style={{ fontSize: '0.85rem' }}
                             onClick={(e) => {
                               e.preventDefault();
                               navigate(
-                                `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonId}/competitions/${comp.id}`,
+                                `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
                               );
                             }}
                           >

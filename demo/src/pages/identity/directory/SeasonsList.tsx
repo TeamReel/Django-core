@@ -11,13 +11,14 @@ import WorkFilterBar, { OrganisationOption, ProjectOption } from '../../work/Wor
 type Period = {
   id: string;
   name: string;
+  slug?: string;
   start_date?: string;
   end_date?: string;
   project?: { id: string; name: string } | null;
   project_id?: string | null;
   organisation?: { id: string; name: string } | null;
   organisation_id?: string | null;
-  parent_period?: { id: string; name: string } | null;
+  parent_period?: { id: string; name: string; slug?: string } | null;
   parent_period_id?: string | null;
   children_count?: number;
   activities_count?: number;
@@ -218,11 +219,11 @@ export const SeasonsList: React.FC = () => {
                     <tr key={season.id}>
                         <td>
                         <a
-                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.id}`}
+                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.slug || season.id}`}
                             className="text-blue-600 hover:underline"
                             onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.id}`);
+                                navigate(`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.slug || season.id}`);
                             }}
                         >
                             {season.name}
