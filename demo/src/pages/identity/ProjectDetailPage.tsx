@@ -1018,7 +1018,21 @@ export const ProjectDetailPage: React.FC = () => {
   // Trigger data fetch on tab change
   useEffect(() => {
     if (!project) return;
-    if (activeTab === 'teams') {
+    if (activeTab === 'hierarchy') {
+      // Load data needed for hierarchy view
+      if (isLikelyTeam) {
+        // Team view: seasons, competitions, matches
+        if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
+        if (competitions.length === 0 && !competitionsLoading) fetchCompetitions();
+        if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
+      } else {
+        // Club view: teams, seasons
+        if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
+        if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
+        if (competitions.length === 0 && !competitionsLoading) fetchCompetitions();
+        if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
+      }
+    } else if (activeTab === 'teams') {
       if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
       // Also load seasons for count calculation in Teams tab
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
@@ -1244,6 +1258,7 @@ export const ProjectDetailPage: React.FC = () => {
   // Tab order: hierarchy first (teams → seasons → competitions → matches), then users/people, then audit.
   const tabs = [
     { id: 'overview', label: 'Overview' },
+    { id: 'hierarchy', label: 'Hierarchy' },
     ...(!isLikelyTeam ? [{ id: 'teams', label: 'Teams' }] : []),
     { id: 'seasons', label: 'Seasons' },
     { id: 'competitions', label: 'Competitions' },
@@ -1566,6 +1581,315 @@ export const ProjectDetailPage: React.FC = () => {
               </div>
             </div>
             </>
+          )}
+
+          {/* Hierarchy Tab */}
+          {activeTab === 'hierarchy' && (
+            <Card>
+              {isLikelyTeam ? (
+                // Team View: Competitions/Matches grouped by Season
+                <>
+                  <h3 className="text-lg font-semibold mb-4">Hierarchy: Competitions & Matches (grouped by season)</h3>
+                  {seasonsLoading || competitionsLoading ? (
+                    <Alert variant="info">Loading hierarchy data...</Alert>
+                  ) : seasons.length === 0 ? (
+                    <Alert variant="info">No seasons found for this team.</Alert>
+                  ) : (
+                    (() => {
+                      // Group competitions by season
+                      const compsBySeason = new Map<string, any[]>();
+                      for (const comp of competitions) {
+                        const parentId = String(comp.parent_period_id || comp.parent_period?.id || '');
+                        if (!parentId) continue;
+                        const arr = compsBySeason.get(parentId) || [];
+                        arr.push(comp);
+                        compsBySeason.set(parentId, arr);
+                      }
+
+                      // Calculate match counts
+                      const matchesByComp = new Map<string, number>();
+                      for (const match of allMatches) {
+                        const compId = String(match.period_id || match.period?.id || '');
+                        matchesByComp.set(compId, (matchesByComp.get(compId) || 0) + 1);
+                      }
+
+                      return seasons.map((season: any) => {
+                        const seasonId = String(season.id);
+                        const seasonComps = compsBySeason.get(seasonId) || [];
+                        const totalMatches = seasonComps.reduce((sum, comp) => {
+                          return sum + (matchesByComp.get(String(comp.id)) || 0);
+                        }, 0);
+
+                        return (
+                          <div key={seasonId} style={{ marginBottom: '2rem' }}>
+                            <div
+                              style={{
+                                backgroundColor: 'var(--app-surface-2)',
+                                padding: '12px 16px',
+                                borderRadius: '4px',
+                                marginBottom: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                              }}
+                            >
+                              <h4 style={{ margin: 0, flex: 1, fontSize: '16px', fontWeight: 600 }}>
+                                {season.name || `Season ${seasonId}`}
+                              </h4>
+                              <Badge variant="info">{seasonComps.length} competitions</Badge>
+                              <Badge variant="info">{totalMatches} matches</Badge>
+                              <Badge variant="info">{members.length} players</Badge>
+                            </div>
+
+                            {seasonComps.length === 0 ? (
+                              <div style={{ paddingLeft: '16px', color: 'var(--app-muted-text)', fontSize: '14px' }}>
+                                No competitions in this season
+                              </div>
+                            ) : (
+                              <Table style={{ ...compactTableStyle, marginLeft: '16px' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={compactThStyle}>Competition</th>
+                                    <th style={compactThStyle}>Matches</th>
+                                    <th style={compactThStyle}>Status</th>
+                                    <th style={compactThStyle} className="text-right">Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {seasonComps.map((comp: any) => {
+                                    const compMatchCount = matchesByComp.get(String(comp.id)) || 0;
+                                    return (
+                                      <tr key={comp.id}>
+                                        <td style={compactTextTdStyle}>
+                                          <Link
+                                            to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${
+                                              project.slug || project.id
+                                            }/seasons/${season.slug || season.id}/competitions/${comp.slug || comp.id}`}
+                                            className="font-medium text-blue-600 hover:underline"
+                                          >
+                                            {comp.name}
+                                          </Link>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                          <Badge variant="info">{compMatchCount}</Badge>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                          <Badge variant={comp.is_active ? 'success' : 'warning'}>
+                                            {comp.is_active ? 'Active' : 'Inactive'}
+                                          </Badge>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                            <button
+                                              onClick={() =>
+                                                navigate(
+                                                  `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${
+                                                    project.slug || project.id
+                                                  }/seasons/${season.slug || season.id}/competitions/${comp.slug || comp.id}`
+                                                )
+                                              }
+                                              style={actionButtonStyle('neutral')}
+                                            >
+                                              View
+                                            </button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </Table>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()
+                  )}
+                </>
+              ) : (
+                // Club View: Seasons grouped by Team
+                <>
+                  <h3 className="text-lg font-semibold mb-4">Hierarchy: Seasons (grouped by team)</h3>
+                  {childProjectsLoading || seasonsLoading ? (
+                    <Alert variant="info">Loading hierarchy data...</Alert>
+                  ) : childProjects.length === 0 ? (
+                    <Alert variant="info">No teams found in this club.</Alert>
+                  ) : (
+                    (() => {
+                      // Group seasons by team
+                      const seasonsByTeam = new Map<string, any[]>();
+                      for (const season of seasons) {
+                        const teamId = String(season.project_id || season.project?.id || '');
+                        if (!teamId) continue;
+                        const arr = seasonsByTeam.get(teamId) || [];
+                        arr.push(season);
+                        seasonsByTeam.set(teamId, arr);
+                      }
+
+                      // Group competitions by season
+                      const compsBySeason = new Map<string, any[]>();
+                      for (const comp of competitions) {
+                        const parentId = String(comp.parent_period_id || comp.parent_period?.id || '');
+                        if (!parentId) continue;
+                        const arr = compsBySeason.get(parentId) || [];
+                        arr.push(comp);
+                        compsBySeason.set(parentId, arr);
+                      }
+
+                      // Calculate match counts by competition
+                      const matchesByComp = new Map<string, number>();
+                      for (const match of allMatches) {
+                        const compId = String(match.period_id || match.period?.id || '');
+                        matchesByComp.set(compId, (matchesByComp.get(compId) || 0) + 1);
+                      }
+
+                      return childProjects.map((team: any) => {
+                        const teamId = String(team.id);
+                        const teamSeasons = seasonsByTeam.get(teamId) || [];
+
+                        return (
+                          <div key={teamId} style={{ marginBottom: '2rem' }}>
+                            <div
+                              style={{
+                                backgroundColor: 'var(--app-surface-2)',
+                                padding: '12px 16px',
+                                borderRadius: '4px',
+                                marginBottom: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                              }}
+                            >
+                              <h4 style={{ margin: 0, flex: 1, fontSize: '16px', fontWeight: 600 }}>
+                                <Link
+                                  to={`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
+                                    team.slug || team.id
+                                  }`}
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  {team.name}
+                                </Link>
+                              </h4>
+                              <Badge variant="info">{teamSeasons.length} seasons</Badge>
+                              <Badge variant="info">{team.member_count || 0} players</Badge>
+                            </div>
+
+                            {teamSeasons.length === 0 ? (
+                              <div style={{ paddingLeft: '16px', color: 'var(--app-muted-text)', fontSize: '14px' }}>
+                                No seasons for this team
+                              </div>
+                            ) : (
+                              <Table style={{ ...compactTableStyle, marginLeft: '16px' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={compactThStyle}>Season</th>
+                                    <th style={compactThStyle}>Competitions</th>
+                                    <th style={compactThStyle}>Matches</th>
+                                    <th style={compactThStyle}>Status</th>
+                                    <th style={compactThStyle} className="text-right">Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {teamSeasons.map((season: any) => {
+                                    const seasonId = String(season.id);
+                                    const seasonComps = compsBySeason.get(seasonId) || [];
+                                    const totalMatches = seasonComps.reduce((sum, comp) => {
+                                      return sum + (matchesByComp.get(String(comp.id)) || 0);
+                                    }, 0);
+
+                                    return (
+                                      <tr key={season.id}>
+                                        <td style={compactTextTdStyle}>
+                                          <Link
+                                            to={`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
+                                              team.slug || team.id
+                                            }/seasons/${season.slug || season.id}`}
+                                            className="font-medium text-blue-600 hover:underline"
+                                          >
+                                            {season.name}
+                                          </Link>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                          <Badge variant="info">{seasonComps.length}</Badge>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                          <Badge variant="info">{totalMatches}</Badge>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                          <Badge variant={season.is_active !== false ? 'success' : 'warning'}>
+                                            {season.is_active !== false ? 'Active' : 'Inactive'}
+                                          </Badge>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                            <button
+                                              onClick={() =>
+                                                navigate(
+                                                  `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
+                                                    team.slug || team.id
+                                                  }/seasons/${season.slug || season.id}`
+                                                )
+                                              }
+                                              style={actionButtonStyle('neutral')}
+                                            >
+                                              View
+                                            </button>
+                                            {userCanEditProject && (
+                                              <button
+                                                onClick={() =>
+                                                  navigate(
+                                                    `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
+                                                      team.slug || team.id
+                                                    }/seasons/${season.slug || season.id}/edit`
+                                                  )
+                                                }
+                                                style={actionButtonStyle('primary')}
+                                              >
+                                                Edit
+                                              </button>
+                                            )}
+                                            {userCanDeleteProject && (
+                                              <button
+                                                onClick={async () => {
+                                                  if (
+                                                    !window.confirm(`Are you sure you want to delete season ${season.name}?`)
+                                                  )
+                                                    return;
+                                                  try {
+                                                    const apiBaseUrl =
+                                                      import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                                    const res = await fetch(`${apiBaseUrl}/api/v1/periods/${season.id}/`, {
+                                                      method: 'DELETE',
+                                                      credentials: 'include',
+                                                    });
+                                                    if (res.ok) {
+                                                      setSeasons(seasons.filter((s: any) => s.id !== season.id));
+                                                    }
+                                                  } catch (err) {
+                                                    console.error('Failed to delete season', err);
+                                                  }
+                                                }}
+                                                style={actionButtonStyle('danger')}
+                                              >
+                                                Delete
+                                              </button>
+                                            )}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </Table>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()
+                  )}
+                </>
+              )}
+            </Card>
           )}
 
           {activeTab === 'people' && (

@@ -81,7 +81,7 @@ export const OrganisationDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     'overview'
     | 'clubs'
-    | 'teams'
+    | 'hierarchy'
     | 'seasons'
     | 'competitions'
     | 'matches'
@@ -196,7 +196,7 @@ export const OrganisationDetailPage: React.FC = () => {
     () => [
       { id: 'overview' as const, label: 'Overview' },
       { id: 'clubs' as const, label: 'Clubs' },
-      { id: 'teams' as const, label: 'Teams' },
+      { id: 'hierarchy' as const, label: 'Hierarchy' },
       { id: 'seasons' as const, label: 'Seasons' },
       { id: 'competitions' as const, label: 'Competitions' },
       { id: 'matches' as const, label: 'Matches' },
@@ -891,7 +891,7 @@ export const OrganisationDetailPage: React.FC = () => {
     if (activeTab === 'clubs') {
       fetchClubsPage(clubsPage);
     }
-    if (activeTab === 'teams' || activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'matches' || activeTab === 'clubs') {
+    if (activeTab === 'hierarchy' || activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'matches' || activeTab === 'clubs') {
       fetchTeamsForOrg();
     }
 
@@ -917,7 +917,7 @@ export const OrganisationDetailPage: React.FC = () => {
   useEffect(() => {
     // When teams are loaded, ensure periods are loaded for tabs that need them.
     // This allows lazy loading of periods only when needed (or when teams are finally available).
-    if (activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'clubs') {
+    if (activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'clubs' || activeTab === 'hierarchy') {
        if (teams.length > 0) {
            ensureOrgPeriodsLoaded();
        }
@@ -925,7 +925,7 @@ export const OrganisationDetailPage: React.FC = () => {
   }, [activeTab, teams]);
 
   useEffect(() => {
-    if (activeTab === 'clubs') {
+    if (activeTab === 'clubs' || activeTab === 'hierarchy') {
       fetchClubsPage(clubsPage);
     }
   }, [clubsPage]);
@@ -1096,7 +1096,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   <div className="text-sm font-medium text-gray-500">Clubs</div>
                   <div className="text-2xl font-bold mt-1">{org.clubs_count || clubsCount || 0}</div>
                </Card>
-               <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('teams')}>
+               <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('hierarchy')}>
                   <div className="text-sm font-medium text-gray-500">Teams</div>
                   <div className="text-2xl font-bold mt-1">{org.teams_count || teamsCount || 0}</div>
                </Card>
@@ -1764,8 +1764,8 @@ export const OrganisationDetailPage: React.FC = () => {
           </Card>
         )}
 
-        {/* Teams */}
-        {activeTab === 'teams' && (
+        {/* Hierarchy (Teams grouped by Club) */}
+        {activeTab === 'hierarchy' && (
           <Card className="mb-6">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
               <h3 className="text-lg font-semibold">Teams (grouped by club)</h3>
