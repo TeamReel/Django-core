@@ -42,7 +42,7 @@ const compactActionsStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
   gap: '8px',
-  flexWrap: 'nowrap'
+  flexWrap: 'wrap'
 };
 
 // Button styling function

@@ -38,7 +38,7 @@ const compactActionsStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
   gap: '8px',
-  flexWrap: 'nowrap'
+  flexWrap: 'wrap'
 };
 
 // Button styling function
@@ -80,6 +80,7 @@ export const ClubsList: React.FC = () => {
 
   const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
   const [clubs, setClubs] = useState<ProjectOption[]>([]);
+  const [teams, setTeams] = useState<ProjectOption[]>([]);
 
   const [detailProject, setDetailProject] = useState<any | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -146,11 +147,18 @@ export const ClubsList: React.FC = () => {
       setError(null);
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       try {
-        const allClubs = await fetchAllPages<ProjectOption>(
-          `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
-          { credentials: 'include' },
-        );
+        const [allClubs, allTeams] = await Promise.all([
+          fetchAllPages<ProjectOption>(
+            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+            { credentials: 'include' },
+          ),
+          fetchAllPages<ProjectOption>(
+            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+            { credentials: 'include' },
+          ),
+        ]);
         setClubs(allClubs);
+        setTeams(allTeams);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load clubs');
       } finally {
@@ -320,6 +328,14 @@ export const ClubsList: React.FC = () => {
                     selectedOrg?.id ||
                     selectedOrgId;
                   const clubSlugOrId = club.slug || club.id;
+
+                  // Calculate teams count for this club from teams data
+                  const teamsForClub = teams.filter(t => {
+                    const parentId = t.parent_id || (t as any).parent_project_id;
+                    return String(parentId) === String(club.id);
+                  });
+                  const teamsCount = teamsForClub.length;
+
                   return (
                     <tr key={club.id}>
                       <td style={compactTextTdStyle}>
@@ -352,7 +368,7 @@ export const ClubsList: React.FC = () => {
                       </td>
                       <td style={compactTdStyle}>
                         <Badge variant="default">
-                          {(club as any).teams_count || club.children_count || 0}
+                          {teamsCount}
                         </Badge>
                       </td>
                       <td style={compactTdStyle}>
