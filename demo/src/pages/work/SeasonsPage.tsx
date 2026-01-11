@@ -234,12 +234,12 @@ export default function SeasonsPage() {
                     <tr key={season.id}>
                       <td>
                         <a
-                          href={`/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${season.id}`}
+                          href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.id}`}
                           className="text-blue-600 hover:underline"
                           style={{ fontSize: '0.85rem' }}
                           onClick={(e) => {
                             e.preventDefault();
-                            navigate(`/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${season.id}`);
+                            navigate(`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.id}`);
                           }}
                         >
                           {season.name}

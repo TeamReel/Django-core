@@ -236,13 +236,13 @@ export default function CompetitionsPage() {
                       <tr key={comp.id}>
                         <td>
                           <a
-                            href={`/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
+                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
                             className="text-blue-600 hover:underline"
                             style={{ fontSize: '0.85rem' }}
                             onClick={(e) => {
                               e.preventDefault();
                               navigate(
-                                `/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
+                                `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
                               );
                             }}
                           >

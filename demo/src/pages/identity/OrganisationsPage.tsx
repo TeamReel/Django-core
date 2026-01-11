@@ -186,7 +186,7 @@ export const OrganisationsPage: React.FC = () => {
             </select>
 
             {isSuperAdmin && (
-              <Button variant="primary" size="md" onClick={() => navigate('/federations/create')}>
+              <Button variant="primary" size="md" onClick={() => navigate('/organisations/create')}>
                 Create Organisation
               </Button>
             )}
@@ -273,7 +273,7 @@ export const OrganisationsPage: React.FC = () => {
                           textDecoration: 'underline',
                           fontSize: '0.85rem'
                         }}
-                        onClick={() => navigate(`/federations/${org.slug || org.id}`)}
+                        onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
                         onMouseEnter={(e) => e.currentTarget.style.color = '#1d4ed8'}
                         onMouseLeave={(e) => e.currentTarget.style.color = '#2563eb'}
                       >

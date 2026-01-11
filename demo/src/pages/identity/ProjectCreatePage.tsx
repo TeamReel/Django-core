@@ -58,7 +58,7 @@ export const ProjectCreatePage: React.FC = () => {
         ?.split('=')[1];
 
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/clubs/`, {
+      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ export const ProjectCreatePage: React.FC = () => {
       }
 
       const project = await response.json();
-      navigate(`/federations/${currentOrgSlug}/clubs/${project.slug || project.id}`);
+      navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -152,7 +152,7 @@ export const ProjectCreatePage: React.FC = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => navigate(`/federations/${resolvedOrg?.slug || currentOrgId}/projects`)}
+                onClick={() => navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}/projects`)}
               >
                 Cancel
               </Button>

@@ -115,7 +115,7 @@ export default function DashboardPage() {
                    </div>
                    <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
                      <Link
-                       to={`/federations/${context.organisation.slug}/projects`}
+                       to={`/organisations/${context.organisation.slug}/projects`}
                        style={{
                          padding: '10px 20px',
                          backgroundColor: '#007bff',
@@ -128,7 +128,7 @@ export default function DashboardPage() {
                        View Projects
                      </Link>
                      <Link
-                       to={`/federations/${context.organisation.slug}`}
+                       to={`/organisations/${context.organisation.slug}`}
                        style={{
                          padding: '10px 20px',
                          backgroundColor: 'var(--app-surface-2)',

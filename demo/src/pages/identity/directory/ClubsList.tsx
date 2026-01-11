@@ -137,7 +137,7 @@ export const ClubsList: React.FC = () => {
     if (!window.confirm(`Are you sure you want to delete ${projectName}?`)) return;
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/clubs/${projectSlugOrId}/`, {
+      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ export const ClubsList: React.FC = () => {
         {userCanEditProject && selectedOrgId && (
           <Button variant="primary" size="md" onClick={() => {
             const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-            navigate(`/federations/${orgSlug}/clubs/create`);
+            navigate(`/organisations/${orgSlug}/projects/create`);
           }}>
             Create Club
           </Button>
@@ -241,12 +241,12 @@ export const ClubsList: React.FC = () => {
                     <tr key={club.id}>
                       <td>
                         <a
-                          href={`/federations/${orgSlugOrId}/clubs/${club.slug || club.id}`}
+                          href={`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`}
                           className="text-blue-600 hover:underline"
                           style={{ fontSize: '0.85rem' }}
                           onClick={(e) => {
                             e.preventDefault();
-                            navigate(`/federations/${orgSlugOrId}/clubs/${club.slug || club.id}`);
+                            navigate(`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`);
                           }}
                         >
                           {club.name}
@@ -255,11 +255,11 @@ export const ClubsList: React.FC = () => {
                       <td style={{ fontSize: '0.85rem' }}>
                         {orgSlugOrId ? (
                           <a
-                            href={`/federations/${orgSlugOrId}`}
+                            href={`/organisations/${orgSlugOrId}`}
                             className="text-blue-600 hover:underline"
                             onClick={(e) => {
                               e.preventDefault();
-                              navigate(`/federations/${orgSlugOrId}`);
+                              navigate(`/organisations/${orgSlugOrId}`);
                             }}
                           >
                             {club.organisation?.name || 'Federation'}
@@ -291,7 +291,7 @@ export const ClubsList: React.FC = () => {
 
                           {userCanEditProject && (
                             <button
-                              onClick={() => navigate(`/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/edit`)}
+                              onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/edit`)}
                               style={{
                                 padding: '4px 8px',
                                 borderRadius: '4px',

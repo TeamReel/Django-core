@@ -247,7 +247,7 @@ export const MemberDetailPage: React.FC = () => {
           />
           <PageContent>
             <Alert variant="error">{error || 'Member not found'}</Alert>
-            <Button variant="secondary" onClick={() => navigate(`/federations/${orgSlug}`)}>
+            <Button variant="secondary" onClick={() => navigate(`/organisations/${orgSlug}`)}>
                 Back to Organisation
             </Button>
           </PageContent>
@@ -318,7 +318,7 @@ export const MemberDetailPage: React.FC = () => {
                 <select
                   value={member.id}
                   onChange={(e) => {
-                    navigate(`/federations/${orgSlug}/members/${e.target.value}`);
+                    navigate(`/organisations/${orgSlug}/members/${e.target.value}`);
                   }}
                   style={{
                     padding: '4px 8px',
@@ -341,7 +341,7 @@ export const MemberDetailPage: React.FC = () => {
           ]}
           actions={
             <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => navigate(`/federations/${orgSlug}`)}>
+                <Button variant="secondary" onClick={() => navigate(`/organisations/${orgSlug}`)}>
                     Back
                 </Button>
                 {!isEditing && (

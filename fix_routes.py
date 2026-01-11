@@ -1,10 +1,10 @@
 import pathlib
 
-files = list(pathlib.Path(r'C:\Users\brian\Documents\django-core\demo\src').rglob('*.tsx'))
+files = list(pathlib.Path(r"C:\Users\brian\Documents\django-core\demo\src").rglob("*.tsx"))
 count = 0
 
 for p in files:
-    content = p.read_text(encoding='utf-8')
+    content = p.read_text(encoding="utf-8")
     original = content
 
     # Fix simple navigate calls
@@ -22,7 +22,7 @@ for p in files:
     content = content.replace('from "../../clubs/', 'from "../../projects/')
 
     if content != original:
-        p.write_text(content, encoding='utf-8')
+        p.write_text(content, encoding="utf-8")
         count += 1
 
-print(f'Fixed {count} files')
+print(f"Fixed {count} files")

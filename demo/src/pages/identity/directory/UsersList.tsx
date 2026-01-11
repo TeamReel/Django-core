@@ -311,7 +311,7 @@ export const UsersList: React.FC = () => {
                  {selectedOrgId && (
                    <Button variant="primary" onClick={() => {
                      const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-                     navigate(`/federations/${orgSlug}/members/invite`);
+                     navigate(`/organisations/${orgSlug}/members/invite`);
                    }}>
                      Invite User
                    </Button>

@@ -166,7 +166,7 @@ export const MatchesList: React.FC = () => {
           <Button variant="primary" size="md" onClick={() => {
             const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
             const teamSlug = teams.find(t => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
-            navigate(`/federations/${orgSlug}/teams/${teamSlug}/matches/create`);
+            navigate(`/organisations/${orgSlug}/teams/${teamSlug}/matches/create`);
           }}>
             Create Match
           </Button>

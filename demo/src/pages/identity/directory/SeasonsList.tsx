@@ -185,7 +185,7 @@ export const SeasonsList: React.FC = () => {
           <Button variant="primary" size="md" onClick={() => {
             const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
             const teamSlug = teams.find(t => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
-            navigate(`/federations/${orgSlug}/teams/${teamSlug}/seasons/create`);
+            navigate(`/organisations/${orgSlug}/teams/${teamSlug}/seasons/create`);
           }}>
             Create Season
           </Button>
@@ -219,11 +219,11 @@ export const SeasonsList: React.FC = () => {
                     <tr key={season.id}>
                         <td>
                         <a
-                            href={`/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${season.slug || season.id}`}
+                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.slug || season.id}`}
                             className="text-blue-600 hover:underline"
                             onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${season.slug || season.id}`);
+                                navigate(`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.slug || season.id}`);
                             }}
                         >
                             {season.name}

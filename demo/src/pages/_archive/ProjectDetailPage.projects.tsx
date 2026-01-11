@@ -73,7 +73,7 @@ export default function ProjectDetailPage() {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
     // Fetch project details
-    fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/clubs/${projectId}/`, {
+    fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/projects/${projectId}/`, {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' }
     })
@@ -146,7 +146,7 @@ export default function ProjectDetailPage() {
         }}>
           {error}
         </div>
-        <Link to={`/federations/${orgId}/projects`}>Back to Projects</Link>
+        <Link to={`/organisations/${orgId}/projects`}>Back to Projects</Link>
       </AppShell>
     );
   }
@@ -163,10 +163,10 @@ export default function ProjectDetailPage() {
           <Link to="/federations">Federations</Link>
           {orgId && orgName && (
             <>
-              {' '}/ <Link to={`/federations/${orgId}`}>{orgName}</Link>
+              {' '}/ <Link to={`/organisations/${orgId}`}>{orgName}</Link>
             </>
           )}
-          {' '}/ <Link to={`/federations/${orgId}/projects`}>Projects</Link> / {project.name}
+          {' '}/ <Link to={`/organisations/${orgId}/projects`}>Projects</Link> / {project.name}
         </nav>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
@@ -266,7 +266,7 @@ export default function ProjectDetailPage() {
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
                 <Link
-                  to={`/federations/${orgId}/projects`}
+                  to={`/organisations/${orgId}/projects`}
                   style={{
                     padding: '8px 16px',
                     backgroundColor: 'var(--app-surface-2)',

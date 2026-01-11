@@ -74,7 +74,7 @@ export default function OrganisationDetailPage() {
         await switchContext(data);
 
         // Fetch projects for this organisation
-        return fetch(`${apiBaseUrl}/api/v1/organisations/${data.slug}/clubs/`, {
+        return fetch(`${apiBaseUrl}/api/v1/organisations/${data.slug}/projects/`, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -315,7 +315,7 @@ export default function OrganisationDetailPage() {
                 </dl>
 
                 <Link
-                  to={`/federations/${organisation.slug}/projects`}
+                  to={`/organisations/${organisation.slug}/projects`}
                   style={{
                     display: 'inline-block',
                     marginTop: '24px',
@@ -496,7 +496,7 @@ export default function OrganisationDetailPage() {
                 clubs.map(club => (
                   <Link
                     key={club.id}
-                    to={`/federations/${organisation.slug}/clubs/${club.slug}`}
+                    to={`/organisations/${organisation.slug}/projects/${club.slug}`}
                     style={{
                       display: 'block',
                       padding: '20px',
@@ -549,7 +549,7 @@ export default function OrganisationDetailPage() {
                   return (
                     <Link
                       key={team.id}
-                      to={`/federations/${organisation.slug}/clubs/${parentClubSlugOrId}/teams/${teamSlugOrId}`}
+                      to={`/organisations/${organisation.slug}/projects/${parentClubSlugOrId}/teams/${teamSlugOrId}`}
                       style={{
                         display: 'block',
                         padding: '16px',

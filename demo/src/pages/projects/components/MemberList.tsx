@@ -78,7 +78,7 @@ export const MemberList: React.FC<MemberListProps> = ({
       // If we have a selected period, we should fetch members scoped to that period
       // Note: currently the generic /members endpoint might not support period filtering directly
       // unless backend supports it.
-      // Plan assumes: GET /clubs/:id/members?period=:periodId OR generic list with filter
+      // Plan assumes: GET /projects/:id/members?period=:periodId OR generic list with filter
 
       // For now, if initialMembers are empty or we want to filter:
       if (!selectedPeriod) return;

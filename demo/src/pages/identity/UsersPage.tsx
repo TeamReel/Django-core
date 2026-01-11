@@ -534,7 +534,7 @@ export default function UsersPage() {
 
   if (orgIdParam) {
         breadcrumbs.push({ label: 'Federations', onClick: () => navigate('/federations') });
-        breadcrumbs.push({ label: (myOrganisations.find(o => o.slug === orgIdParam || o.id === orgIdParam) || context.organisation)?.name || 'Federation', onClick: () => navigate(`/federations/${orgIdParam}`) });
+        breadcrumbs.push({ label: (myOrganisations.find(o => o.slug === orgIdParam || o.id === orgIdParam) || context.organisation)?.name || 'Federation', onClick: () => navigate(`/organisations/${orgIdParam}`) });
     breadcrumbs.push({ label: 'Users', current: true });
   } else {
     breadcrumbs.push({ label: 'Users', current: true });
@@ -588,7 +588,7 @@ export default function UsersPage() {
         actions={
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                 {orgIdParam && (
-                    <Button variant="secondary" onClick={() => navigate(`/federations/${orgIdParam}`)}>
+                    <Button variant="secondary" onClick={() => navigate(`/organisations/${orgIdParam}`)}>
                         Back to Organisation
                     </Button>
                 )}
@@ -865,7 +865,7 @@ export default function UsersPage() {
                             onClick={() => {
                                 if (orgIdParam || context.organisation) {
                                     // Navigate to user detail within org context
-                                    navigate(`/federations/${orgIdParam || context.organisation?.slug}/users/${user.id}`);
+                                    navigate(`/organisations/${orgIdParam || context.organisation?.slug}/users/${user.id}`);
                                 } else {
                                     navigate(`/users/${user.id}`);
                                 }
@@ -959,7 +959,7 @@ export default function UsersPage() {
                             <button
                                 onClick={() => {
                                     if (isMembership && (orgIdParam || context.organisation)) {
-                                        navigate(`/federations/${orgIdParam || context.organisation?.slug}/members/${item.id}?action=edit`);
+                                        navigate(`/organisations/${orgIdParam || context.organisation?.slug}/members/${item.id}?action=edit`);
                                     } else {
                                         handleEditClick(item);
                                     }
@@ -1027,7 +1027,7 @@ export default function UsersPage() {
 
                                 // Determine which organisation the actions should apply to.
                                 // Priority:
-                                // 1) Route org context (/federations/:orgId/users)
+                                // 1) Route org context (/organisations/:orgId/users)
                                 // 2) Superadmin selected org filter (dropdown)
                                 // 3) Context switcher org (non-superadmin org context)
                                 const selectedOrg =

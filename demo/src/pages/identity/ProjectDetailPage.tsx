@@ -253,7 +253,7 @@ export const ProjectDetailPage: React.FC = () => {
     params.set('page_size', '250');
     params.set('parent_project__isnull', 'false');
 
-    const url = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/clubs/?${params.toString()}`;
+    const url = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?${params.toString()}`;
     const results = await fetchAllPages<any>(url, { credentials: 'include' });
     return Array.isArray(results) ? results : [];
   };
@@ -431,7 +431,7 @@ export const ProjectDetailPage: React.FC = () => {
       const orgSlug = String(resolvedOrg?.slug || resolvedOrg?.id || '').trim();
       const projectSlugOrId = String((project as any)?.slug || project.id);
       const endpoint = orgSlug
-        ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/clubs/${encodeURIComponent(projectSlugOrId)}/`
+        ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectSlugOrId)}/`
         : `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectSlugOrId)}/`;
 
       const response = await fetch(endpoint, {
@@ -470,9 +470,9 @@ export const ProjectDetailPage: React.FC = () => {
 
     // Keep the rest of the path identical, only swap the org segment.
     if (clubId) {
-      navigate(`/federations/${targetOrg}/clubs/${clubId}/teams/${projectId}`, { replace: true });
+      navigate(`/organisations/${targetOrg}/projects/${clubId}/teams/${projectId}`, { replace: true });
     } else {
-      navigate(`/federations/${targetOrg}/clubs/${projectId}`, { replace: true });
+      navigate(`/organisations/${targetOrg}/projects/${projectId}`, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId, resolvedOrg?.id, resolvedOrg?.slug, clubId, projectId, context.isLoading]);
@@ -494,7 +494,7 @@ export const ProjectDetailPage: React.FC = () => {
 
   // Custom handlers for navigation
   const handleProjectSwitch = (option: BreadcrumbSwitcherOption) => {
-    navigate(`/federations/${resolvedOrg?.slug || resolvedOrg?.id}/clubs/${option.slug || option.id}`);
+    navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${option.slug || option.id}`);
   };
 
 
@@ -515,7 +515,7 @@ export const ProjectDetailPage: React.FC = () => {
 
         const response = await fetch(
           // For the club detail context switcher we only want clubs (root projects), not teams.
-          `${apiBaseUrl}/api/v1/organisations/${orgSlug}/clubs/?page_size=250&parent_project__isnull=true`,
+          `${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/?page_size=250&parent_project__isnull=true`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -562,7 +562,7 @@ export const ProjectDetailPage: React.FC = () => {
 
         // Use nested route if we have org context, otherwise top-level
         const endpoint = resolvedOrg
-          ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/clubs/${currentProjectSlug}/`
+          ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/`
           : `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/`;
 
         const projectResponse = await fetch(endpoint, {
@@ -584,7 +584,7 @@ export const ProjectDetailPage: React.FC = () => {
 
         const projectIdForApi = String((projectData as any)?.id || '');
 
-        // If a team is accessed via the legacy URL (/federations/:org/clubs/:team),
+        // If a team is accessed via the legacy URL (/organisations/:org/projects/:team),
         // try to redirect to the nested team URL with club in between.
         if (!isTeamRoute) {
           const parent =
@@ -605,7 +605,7 @@ export const ProjectDetailPage: React.FC = () => {
 
           if (inferredClubSlugOrId && orgSlugOrId) {
             navigate(
-              `/federations/${orgSlugOrId}/clubs/${encodeURIComponent(inferredClubSlugOrId)}/teams/${encodeURIComponent(
+              `/organisations/${orgSlugOrId}/projects/${encodeURIComponent(inferredClubSlugOrId)}/teams/${encodeURIComponent(
                 String((projectData as any).slug || (projectData as any).id)
               )}`,
               { replace: true }
@@ -623,7 +623,7 @@ export const ProjectDetailPage: React.FC = () => {
         if (isTeamRoute && clubSlugOrId) {
           try {
             const clubRes = await fetch(
-              `${apiBaseUrl}/api/v1/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/clubs/${clubSlugOrId}/`,
+              `${apiBaseUrl}/api/v1/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${clubSlugOrId}/`,
               {
                 headers: {
                   'Content-Type': 'application/json',
@@ -644,7 +644,7 @@ export const ProjectDetailPage: React.FC = () => {
 
         // Fetch project members
         // IMPORTANT: The working API shape elsewhere in the demo uses numeric project IDs.
-        // Slug-based /clubs/:slug/members/ can 500.
+        // Slug-based /projects/:slug/members/ can 500.
         try {
           if (!projectIdForApi) {
             setMembers([]);
@@ -1133,7 +1133,7 @@ export const ProjectDetailPage: React.FC = () => {
             breadcrumbs={[
               { label: 'Dashboard', onClick: () => navigate('/dashboard') },
               { label: 'Federations', onClick: () => navigate('/federations') },
-              { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/federations/${orgSlugOrId}`) },
+              { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
               { label: 'Clubs', onClick: () => navigate(clubsListPath) },
               { label: 'Details', current: true },
             ]}
@@ -1159,7 +1159,7 @@ export const ProjectDetailPage: React.FC = () => {
             breadcrumbs={[
               { label: 'Dashboard', onClick: () => navigate('/dashboard') },
               { label: 'Federations', onClick: () => navigate('/federations') },
-              { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/federations/${orgSlugOrId}`) },
+              { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
               { label: 'Clubs', onClick: () => navigate(clubsListPath) },
               { label: 'Details', current: true },
             ]}
@@ -1188,12 +1188,12 @@ export const ProjectDetailPage: React.FC = () => {
   }
 
   const teamOrProjectDetailPath = isTeamRoute
-    ? `/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${project.slug || project.id}`
-    : `/federations/${orgSlugOrId}/clubs/${project.slug || project.id}`;
+    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}`
+    : `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}`;
 
   const seasonsPath = isTeamRoute
-    ? `/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${project.slug || project.id}/seasons`
-    : `/federations/${orgSlugOrId}/clubs/${project.slug || project.id}/seasons`;
+    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons`
+    : `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/seasons`;
 
   // Tab order: hierarchy first (teams → seasons → competitions → matches), then users/people, then audit.
   const tabs = [
@@ -1207,7 +1207,7 @@ export const ProjectDetailPage: React.FC = () => {
   ];
 
   const backPath = isTeamRoute
-    ? `/federations/${orgSlugOrId}/clubs/${clubSlugOrId}`
+    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`
     : clubsListPath;
 
 
@@ -1219,17 +1219,17 @@ export const ProjectDetailPage: React.FC = () => {
         breadcrumbs={[
           { label: 'Dashboard', onClick: () => navigate('/dashboard') },
           { label: 'Federations', onClick: () => navigate('/federations') },
-          { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/federations/${orgSlugOrId}`) },
+          { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
           { label: 'Clubs', onClick: () => navigate(clubsListPath) },
           ...(isTeamRoute
             ? [
                 {
                    label: club?.name || 'Club',
-                   onClick: () => navigate(`/federations/${orgSlugOrId}/clubs/${clubSlugOrId}`)
+                   onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)
                 },
                 {
                    label: 'Teams',
-                   onClick: () => navigate(`/federations/${orgSlugOrId}/clubs/${clubSlugOrId}`)
+                   onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)
                 },
                 { label: project.name, current: true }
               ]
@@ -1283,7 +1283,7 @@ export const ProjectDetailPage: React.FC = () => {
             </button>
             {userCanEditProject && (
               <button
-                onClick={() => navigate(`/federations/${orgSlugOrId}/clubs/${project.slug || project.id}/edit`)}
+                onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/edit`)}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '4px',
@@ -1512,7 +1512,7 @@ export const ProjectDetailPage: React.FC = () => {
                         >
                           { !isLikelyTeam ? 'Manage Teams' : 'Manage Seasons' }
                         </Button>
-                      <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => navigate(`/federations/${resolvedOrg?.slug || resolvedOrg?.id}/clubs/${project.slug || project.id}/edit`)}>
+                      <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}/edit`)}>
                         Edit Project Settings
                       </Button>
                     </div>
@@ -1574,7 +1574,7 @@ export const ProjectDetailPage: React.FC = () => {
                     size="sm"
                     onClick={() =>
                       navigate(
-                        `/federations/${orgSlugOrId}/clubs/${project.slug || project.id}/clubs/create`
+                        `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/projects/create`
                       )
                     }
                   >
@@ -1604,7 +1604,7 @@ export const ProjectDetailPage: React.FC = () => {
                         <tr key={team.id}>
                           <td style={compactTextTdStyle}>
                             <Link
-                              to={`/federations/${orgSlugOrId}/clubs/${project.slug || project.id}/teams/${
+                              to={`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
                                 team.slug || team.id
                               }`}
                               className="font-medium text-blue-600 hover:underline"
@@ -1628,7 +1628,7 @@ export const ProjectDetailPage: React.FC = () => {
                               <button
                                 onClick={() =>
                                   navigate(
-                                    `/federations/${orgSlugOrId}/clubs/${project.slug || project.id}/teams/${
+                                    `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
                                       team.slug || team.id
                                     }`
                                   )
@@ -1641,7 +1641,7 @@ export const ProjectDetailPage: React.FC = () => {
                                 <button
                                   onClick={() =>
                                     navigate(
-                                      `/federations/${orgSlugOrId}/clubs/${project.slug || project.id}/teams/${
+                                      `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
                                         team.slug || team.id
                                       }/edit`
                                     )
@@ -1659,7 +1659,7 @@ export const ProjectDetailPage: React.FC = () => {
                                       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
                                       const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
                                       const res = await fetch(
-                                        `${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/clubs/${team.slug || team.id}/`,
+                                        `${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${team.slug || team.id}/`,
                                         {
                                           method: 'DELETE',
                                           headers: {
@@ -1731,8 +1731,8 @@ export const ProjectDetailPage: React.FC = () => {
                           isLikelyTeam ? project.slug || project.id : season.project?.slug || season.project_id || season.project?.id || ''
                         );
                         const seasonHref = isLikelyTeam
-                          ? `/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.slug || season.id}`
-                          : `/federations/${orgSlugOrId}/clubs/${clubSlug}/teams/${teamSlugOrId}/seasons/${season.slug || season.id}`;
+                          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.slug || season.id}`
+                          : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${season.slug || season.id}`;
 
                         return (
                           <tr key={season.id}>
@@ -1841,8 +1841,8 @@ export const ProjectDetailPage: React.FC = () => {
                           isLikelyTeam ? project.slug || project.id : comp.project?.slug || comp.project_id || comp.project?.id || ''
                         );
                         const compHref = isLikelyTeam
-                          ? `/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
-                          : `/federations/${orgSlugOrId}/clubs/${clubSlug}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
+                          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
+                          : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
 
                         return (
                           <tr key={comp.id}>
