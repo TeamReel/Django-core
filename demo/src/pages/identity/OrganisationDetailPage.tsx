@@ -95,6 +95,9 @@ export const OrganisationDetailPage: React.FC = () => {
   >('overview');
   const [memberSearch, setMemberSearch] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState<string>('');
+  const [userClubFilterId, setUserClubFilterId] = useState<string>('');
+  const [userTeamFilterId, setUserTeamFilterId] = useState<string>('');
+  const [userSeasonFilterId, setUserSeasonFilterId] = useState<string>('');
   const [usersPage, setUsersPage] = useState(1);
   const usersPageSize = 25;
 
@@ -113,6 +116,7 @@ export const OrganisationDetailPage: React.FC = () => {
   const [compClubFilterId, setCompClubFilterId] = useState<string>('');
   const [compTeamFilterId, setCompTeamFilterId] = useState<string>('');
   const [compSeasonFilterId, setCompSeasonFilterId] = useState<string>('');
+  const [compMatchesFilter, setCompMatchesFilter] = useState<'all' | 'with' | 'without'>('all');
 
   const [matchSearch, setMatchSearch] = useState('');
   const [matchClubFilterId, setMatchClubFilterId] = useState<string>('');
@@ -259,9 +263,9 @@ export const OrganisationDetailPage: React.FC = () => {
     return ['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type);
   };
 
-  const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%' };
-  const compactThStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.8rem' };
-  const compactTdStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.85rem', verticalAlign: 'middle' };
+  const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' };
+  const compactThStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.8rem', textAlign: 'left', borderBottom: '2px solid var(--app-border)' };
+  const compactTdStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.85rem', verticalAlign: 'middle', borderBottom: '1px solid #eee' };
   const compactTextTdStyle: React.CSSProperties = {
     ...compactTdStyle,
     overflow: 'hidden',
@@ -1332,6 +1336,56 @@ export const OrganisationDetailPage: React.FC = () => {
                   placeholder="Search users (name/email)"
                   style={{ width: '240px' }}
                 />
+                <select
+                  value={userClubFilterId}
+                  onChange={(e) => {
+                    setUserClubFilterId(e.target.value);
+                    setUserTeamFilterId('');
+                    setUserSeasonFilterId('');
+                  }}
+                  style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                >
+                  <option value="">Club: All</option>
+                  {allClubsForTeams.map((c: any) => (
+                    <option key={c.id} value={String(c.id)}>{c.name}</option>
+                  ))}
+                </select>
+                <select
+                  value={userTeamFilterId}
+                  onChange={(e) => {
+                    setUserTeamFilterId(e.target.value);
+                    setUserSeasonFilterId('');
+                  }}
+                  style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                >
+                  <option value="">Team: All</option>
+                  {(teams as any[])
+                    .filter((t: any) => {
+                      if (!userClubFilterId) return true;
+                      const parentId = String(t.parent_id ?? t.parent ?? t.parent_project ?? t.parent_project_id ?? '');
+                      return parentId === String(userClubFilterId);
+                    })
+                    .map((t: any) => (
+                      <option key={t.id} value={String(t.id)}>{t.name}</option>
+                    ))}
+                </select>
+                <select
+                  value={userSeasonFilterId}
+                  onChange={(e) => setUserSeasonFilterId(e.target.value)}
+                  style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                >
+                  <option value="">Season: All</option>
+                  {(orgPeriods as any[])
+                    .filter((p: any) => isSeasonPeriod(p))
+                    .filter((s: any) => {
+                      const teamId = String(s.project_id ?? s.project?.id ?? '');
+                      if (userTeamFilterId && teamId !== userTeamFilterId) return false;
+                      return true;
+                    })
+                    .map((s: any) => (
+                      <option key={s.id} value={String(s.id)}>{s.name}</option>
+                    ))}
+                </select>
                 <select
                   value={userRoleFilter}
                   onChange={(e) => setUserRoleFilter(e.target.value)}
@@ -2516,6 +2570,15 @@ export const OrganisationDetailPage: React.FC = () => {
                     return <option key={s.id} value={s.id}>{s.name}</option>;
                   })}
                 </select>
+                <select
+                  value={compMatchesFilter}
+                  onChange={(e) => setCompMatchesFilter(e.target.value as 'all' | 'with' | 'without')}
+                  style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                >
+                  <option value="all">Matches: All</option>
+                  <option value="with">With Matches</option>
+                  <option value="without">Without Matches</option>
+                </select>
               </div>
             </div>
 
@@ -2551,6 +2614,13 @@ export const OrganisationDetailPage: React.FC = () => {
                     ? String(team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? '')
                     : '';
                   if (compClubFilterId && clubId !== compClubFilterId) return false;
+
+                  // Matches filter
+                  if (compMatchesFilter !== 'all') {
+                    const matchesCount = getRecursiveMatchesCount(comp);
+                    if (compMatchesFilter === 'with' && matchesCount === 0) return false;
+                    if (compMatchesFilter === 'without' && matchesCount > 0) return false;
+                  }
 
                   if (!normalized) return true;
                   return String(comp.name || '').toLowerCase().includes(normalized);
@@ -2611,9 +2681,9 @@ export const OrganisationDetailPage: React.FC = () => {
                                 </Link>
                               </td>
                               <td style={compactTextTdStyle}>
-                                {season && seasonSlug ? (
+                                {season && seasonId ? (
                                   <Link
-                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
+                                    to={clubSlugOrId && teamSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {season.name}
