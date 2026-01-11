@@ -976,6 +976,8 @@ export const ProjectDetailPage: React.FC = () => {
     if (!project) return;
     if (activeTab === 'teams') {
       if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
+      // Also load seasons for count calculation in Teams tab
+      if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
     } else if (activeTab === 'seasons') {
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
     } else if (activeTab === 'competitions') {
@@ -1616,6 +1618,7 @@ export const ProjectDetailPage: React.FC = () => {
                             <Badge variant="info">{seasons.filter((s: any) => String(s.project_id) === String(team.id)).length}</Badge>
                           </td>
                           <td style={compactTdStyle}>
+                            {/* member_count from API may include duplicate users with multiple roles */}
                             <Badge variant="info">{team.member_count ?? 0}</Badge>
                           </td>
                           <td style={compactTdStyle}>
