@@ -20,6 +20,7 @@ import { useAuth } from '@django-core/auth-ui';
 import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
+import ProjectDetailModal from './ProjectDetailModal';
 
 const getPagedResults = (json: any): any[] => {
   // Supports both legacy DRF shapes and this app's envelope (BaseAPIPagination).
@@ -146,6 +147,10 @@ export const ProjectDetailPage: React.FC = () => {
 
   // Fetch organisation with user_role for permissions
   const [orgWithRole, setOrgWithRole] = useState<any>(null);
+
+  // Modal state for view/edit
+  const [detailProject, setDetailProject] = useState<any | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Tab Data State
   const [childProjects, setChildProjects] = useState<Project[]>([]);
@@ -1559,7 +1564,10 @@ export const ProjectDetailPage: React.FC = () => {
                                 <td style={compactTdStyle}>
                                   <button
                                     className="text-xs text-blue-600 hover:underline"
-                                    onClick={() => navigate(`/matches/${m.id}`)}
+                                    onClick={() => {
+                                      setDetailProject(m);
+                                      setIsDetailModalOpen(true);
+                                    }}
                                   >
                                     View
                                   </button>
@@ -1754,13 +1762,10 @@ export const ProjectDetailPage: React.FC = () => {
                                         <td style={compactTdStyle}>
                                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                             <button
-                                              onClick={() =>
-                                                navigate(
-                                                  `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${
-                                                    project.slug || project.id
-                                                  }/seasons/${season.slug || season.id}/competitions/${comp.slug || comp.id}`
-                                                )
-                                              }
+                                              onClick={() => {
+                                                setDetailProject(comp);
+                                                setIsDetailModalOpen(true);
+                                              }}
                                               style={actionButtonStyle('neutral')}
                                             >
                                               View
@@ -1896,13 +1901,10 @@ export const ProjectDetailPage: React.FC = () => {
                                         <td style={compactTdStyle}>
                                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                             <button
-                                              onClick={() =>
-                                                navigate(
-                                                  `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
-                                                    team.slug || team.id
-                                                  }/seasons/${season.slug || season.id}`
-                                                )
-                                              }
+                                              onClick={() => {
+                                                setDetailProject(season);
+                                                setIsDetailModalOpen(true);
+                                              }}
                                               style={actionButtonStyle('neutral')}
                                             >
                                               View
@@ -2060,7 +2062,10 @@ export const ProjectDetailPage: React.FC = () => {
                                   <td style={compactTdStyle}>
                                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                       <button
-                                        onClick={() => navigate(`/users/${userId}`)}
+                                        onClick={() => {
+                                          setDetailProject({ id: userId, name, email, role });
+                                          setIsDetailModalOpen(true);
+                                        }}
                                         style={actionButtonStyle('neutral')}
                                       >
                                         View
@@ -2216,13 +2221,10 @@ export const ProjectDetailPage: React.FC = () => {
                           <td style={compactTdStyle}>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                               <button
-                                onClick={() =>
-                                  navigate(
-                                    `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
-                                      team.slug || team.id
-                                    }`
-                                  )
-                                }
+                                onClick={() => {
+                                  setDetailProject(team);
+                                  setIsDetailModalOpen(true);
+                                }}
                                 style={actionButtonStyle('neutral')}
                               >
                                 View
@@ -2403,7 +2405,10 @@ export const ProjectDetailPage: React.FC = () => {
                             <td style={compactTdStyle}>
                               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                 <button
-                                  onClick={() => navigate(seasonHref)}
+                                  onClick={() => {
+                                    setDetailProject(season);
+                                    setIsDetailModalOpen(true);
+                                  }}
                                   style={actionButtonStyle('neutral')}
                                 >
                                   View
@@ -2627,7 +2632,10 @@ export const ProjectDetailPage: React.FC = () => {
                             <td style={compactTdStyle}>
                               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                 <button
-                                  onClick={() => navigate(compHref)}
+                                  onClick={() => {
+                                    setDetailProject(comp);
+                                    setIsDetailModalOpen(true);
+                                  }}
                                   style={actionButtonStyle('neutral')}
                                 >
                                   View
@@ -2810,7 +2818,10 @@ export const ProjectDetailPage: React.FC = () => {
                              <td style={compactTdStyle}>
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                    <button
-                                     onClick={() => navigate(`/matches/${m.id}`)}
+                                     onClick={() => {
+                                       setDetailProject(m);
+                                       setIsDetailModalOpen(true);
+                                     }}
                                      style={actionButtonStyle('neutral')}
                                    >
                                      View
@@ -2903,6 +2914,12 @@ export const ProjectDetailPage: React.FC = () => {
             </Card>
           )}
       </PageContent>
+
+      <ProjectDetailModal
+        opened={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        project={detailProject}
+      />
       </div>
     </AppShell>
   );
