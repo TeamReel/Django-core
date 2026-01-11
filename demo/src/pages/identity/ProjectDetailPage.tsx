@@ -155,6 +155,7 @@ export const ProjectDetailPage: React.FC = () => {
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [competitionsLoading, setCompetitionsLoading] = useState(false);
   const [allMatches, setAllMatches] = useState<any[]>([]);
+  const [allMatchesLoading, setAllMatchesLoading] = useState(false);
 
   // Period helper functions (matching OrganisationDetailPage pattern)
   const getPeriodType = (p: any): string => {
@@ -196,8 +197,6 @@ export const ProjectDetailPage: React.FC = () => {
     // Allow explicit typing when present
     return ['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type);
   };
-
-  const [allMatchesLoading, setAllMatchesLoading] = useState(false);
 
   // Dashboard Data
   const [scheduledMatches, setScheduledMatches] = useState<any[]>([]);
@@ -555,6 +554,25 @@ export const ProjectDetailPage: React.FC = () => {
     fetchOrgProjects();
   }, [resolvedOrg?.id, resolvedOrg?.slug, project?.organisation_id, organisations]);
 
+  // Reset tab state when project changes (via context switcher)
+  useEffect(() => {
+    // Reset to overview tab
+    setActiveTab('overview');
+
+    // Clear all tab data
+    setChildProjects([]);
+    setSeasons([]);
+    setCompetitions([]);
+    setAllMatches([]);
+    setMembers([]);
+
+    // Reset loading states
+    setChildProjectsLoading(false);
+    setSeasonsLoading(false);
+    setCompetitionsLoading(false);
+    setAllMatchesLoading(false);
+  }, [currentProjectSlug, clubSlugOrId]); // Trigger when project or club changes
+
   useEffect(() => {
     const fetchProjectDetails = async () => {
       // Wait for context to load before attempting fetch if we have a potential slug
@@ -706,6 +724,7 @@ export const ProjectDetailPage: React.FC = () => {
                 );
 
                 setMembers(Array.isArray(filtered) ? filtered : []);
+                console.log(`[ProjectDetailPage] Club members loaded: ${(filtered || []).length} members with project_memberships`);
               }
             } else {
               console.error(
@@ -743,6 +762,7 @@ export const ProjectDetailPage: React.FC = () => {
                   );
 
                   setMembers(Array.isArray(orgMembersList) ? orgMembersList : []);
+                  console.log(`[ProjectDetailPage] Fallback members: ${orgMembersList.length} members with project_memberships to project ${projectIdForApi}`);
                 } else {
                   console.error(
                     `[ProjectDetailPage] Org members fallback failed with status ${orgMembersResponse.status} for ${orgMembersEndpoint}`
@@ -980,6 +1000,7 @@ export const ProjectDetailPage: React.FC = () => {
 
         const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
         const results = await fetchAllPages<any>(url, { credentials: 'include' });
+        console.log(`[fetchAllMatches] Team view: Fetched ${results.length} matches for project ${project.id}`);
         setAllMatches(Array.isArray(results) ? results : []);
       } else {
         // Clubs: avoid per-team fan-out (can overload API and trigger 500s).
@@ -1005,12 +1026,15 @@ export const ProjectDetailPage: React.FC = () => {
 
         const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
         if (!res.ok) {
+          console.log(`[fetchAllMatches] Club view: API failed with status ${res.status}`);
           setAllMatches([]);
           return;
         }
         const json = await res.json();
         const results = getPagedResults(json);
+        console.log(`[fetchAllMatches] Club view: Fetched ${results.length} matches from org ${orgIdValue}`);
         const filtered = filterActivitiesToClubTeams(results, teamIdsUnderClub);
+        console.log(`[fetchAllMatches] Club view: ${filtered.length} matches after filtering to club teams`);
         const sorted = sortByStartTimeDesc(mergeUniqueById(filtered));
         setAllMatches(sorted.slice(0, 250));
       }
