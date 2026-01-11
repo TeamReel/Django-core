@@ -391,7 +391,12 @@ export const ProjectDetailPage: React.FC = () => {
 
   const clubsListPath = orgSlugOrId ? `/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}` : '/clubs';
 
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || Boolean((user as any)?.is_staff) || (user as any)?.role === 'Superadmin';
+  // Check superadmin status - match the logic in useFeatureFlag
+  const userRole = String((user as any)?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) ||
+                       Boolean((user as any)?.is_staff) ||
+                       userRole === 'superadmin' ||
+                       userRole === 'super admin';
 
   // Use orgWithRole (fetched with user_role) if available, otherwise fallback to project.organisation or resolvedOrg
   const orgForPermissions = orgWithRole || (project as any)?.organisation || resolvedOrg;
@@ -1970,7 +1975,14 @@ export const ProjectDetailPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {childProjects.map((team: any) => (
+                      {childProjects.map((team: any) => {
+                        const teamId = String(team.id);
+                        const teamSeasonCount = seasons.filter((s: any) => {
+                          const sProjId = String(s.project_id || s.project?.id || '');
+                          return sProjId === teamId;
+                        }).length;
+                        console.log(`[Teams tab] Team ${team.name} (${teamId}): ${teamSeasonCount} seasons`);
+                        return (
                         <tr key={team.id}>
                           <td style={compactTextTdStyle}>
                             <Link
@@ -1983,7 +1995,7 @@ export const ProjectDetailPage: React.FC = () => {
                             </Link>
                           </td>
                           <td style={compactTdStyle}>
-                            <Badge variant="info">{seasons.filter((s: any) => String(s.project_id) === String(team.id)).length}</Badge>
+                            <Badge variant="info">{teamSeasonCount}</Badge>
                           </td>
                           <td style={compactTdStyle}>
                             {/* member_count from API may include duplicate users with multiple roles */}
@@ -2059,7 +2071,7 @@ export const ProjectDetailPage: React.FC = () => {
                             </div>
                           </td>
                         </tr>
-                      ))}
+                      );})}
                     </tbody>
                   </Table>
                 )}
@@ -2105,6 +2117,17 @@ export const ProjectDetailPage: React.FC = () => {
                           ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.slug || season.id}`
                           : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${season.slug || season.id}`;
 
+                        const seasonId = String(season.id);
+                        const seasonComps = competitions.filter((c: any) => {
+                          const cParentId = String(c.parent_period_id || c.parent_period?.id || '');
+                          return cParentId === seasonId;
+                        });
+                        const seasonMatches = allMatches.filter((m: any) => {
+                          const mPeriodId = String(m.period_id || m.period?.id || '');
+                          return seasonComps.some((c: any) => String(c.id) === mPeriodId);
+                        });
+                        console.log(`[Seasons tab] Season ${season.name} (${seasonId}): ${seasonComps.length} comps, ${seasonMatches.length} matches`);
+
                         return (
                           <tr key={season.id}>
                             <td style={compactTextTdStyle}>
@@ -2117,10 +2140,10 @@ export const ProjectDetailPage: React.FC = () => {
                               {season.start_date || '?'} — {season.end_date || '?'}
                             </td>
                             <td style={compactTdStyle}>
-                              <Badge variant="info">{competitions.filter((c: any) => String(c.parent_period_id) === String(season.id)).length}</Badge>
+                              <Badge variant="info">{seasonComps.length}</Badge>
                             </td>
                             <td style={compactTdStyle}>
-                              <Badge variant="info">{allMatches.filter((m: any) => competitions.some((c: any) => String(c.id) === String(m.period_id || m.period?.id))).filter((m: any) => competitions.filter((c: any) => String(c.parent_period_id) === String(season.id)).some((c: any) => String(c.id) === String(m.period_id || m.period?.id))).length}</Badge>
+                              <Badge variant="info">{seasonMatches.length}</Badge>
                             </td>
                             <td style={compactTdStyle}>
                               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
@@ -2215,6 +2238,13 @@ export const ProjectDetailPage: React.FC = () => {
                           ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
                           : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
 
+                        const compId = String(comp.id);
+                        const compMatches = allMatches.filter((m: any) => {
+                          const mPeriodId = String(m.period_id || m.period?.id || '');
+                          return mPeriodId === compId;
+                        });
+                        console.log(`[Competitions tab] Competition ${comp.name} (${compId}): ${compMatches.length} matches`);
+
                         return (
                           <tr key={comp.id}>
                             <td style={compactTextTdStyle}>
@@ -2225,7 +2255,7 @@ export const ProjectDetailPage: React.FC = () => {
                             <td style={compactTextTdStyle}>{comp.parent_period?.name || '-'}</td>
                             {!isLikelyTeam && <td style={compactTextTdStyle}>{comp.project?.name || '-'}</td>}
                             <td style={compactTdStyle}>
-                              <Badge variant="info">{allMatches.filter((m: any) => String(m.period_id || m.period?.id) === String(comp.id)).length}</Badge>
+                              <Badge variant="info">{compMatches.length}</Badge>
                             </td>
                             <td style={compactTdStyle}>
                               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
