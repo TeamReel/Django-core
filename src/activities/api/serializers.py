@@ -23,6 +23,7 @@ class PeriodSerializer(serializers.ModelSerializer):
     # Annotated counts (populated by ViewSet queryset annotation)
     children_count = serializers.IntegerField(read_only=True, required=False)
     activities_count = serializers.IntegerField(read_only=True, required=False)
+    matches_count = serializers.IntegerField(read_only=True, required=False)
 
     # NOTE: We cannot declare a serializer field named "data" because DRF
     # reserves `.data` for the serialized representation property.
@@ -54,6 +55,7 @@ class PeriodSerializer(serializers.ModelSerializer):
             "created_by",
             "children_count",
             "activities_count",
+            "matches_count",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 

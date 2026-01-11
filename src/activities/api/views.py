@@ -130,7 +130,13 @@ class PeriodViewSet(viewsets.ModelViewSet):
 
     queryset = (
         Period.objects.select_related("organisation", "project", "parent_period", "created_by")
-        .annotate(children_count=Count("children"), activities_count=Count("activities"))
+        .annotate(
+            children_count=Count("children", distinct=True),
+            activities_count=Count("activities", distinct=True),
+            matches_count=Count(
+                "activities", filter=Q(activities__activity_type="match"), distinct=True
+            ),
+        )
         .order_by("start_date", "name")
     )
     serializer_class = PeriodSerializer
@@ -160,8 +166,6 @@ class PeriodViewSet(viewsets.ModelViewSet):
         # Filter by project (slug or numeric ID)
         project = self.request.query_params.get("project")
         if project and project not in {"undefined", "null"}:
-            from projects.models import Project
-
             if project.isdigit():
                 queryset = queryset.filter(project_id=int(project))
             else:
