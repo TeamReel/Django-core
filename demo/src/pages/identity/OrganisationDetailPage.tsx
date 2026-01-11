@@ -80,14 +80,15 @@ export const OrganisationDetailPage: React.FC = () => {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<
     'overview'
-    | 'clubs'
     | 'hierarchy'
+    | 'clubs'
+    | 'teams'
     | 'seasons'
     | 'competitions'
     | 'matches'
     | 'users'
-    | 'governance'
     | 'audit'
+    | 'governance'
     | 'operations'
   >('overview');
   const [memberSearch, setMemberSearch] = useState('');
@@ -195,14 +196,15 @@ export const OrganisationDetailPage: React.FC = () => {
   const tabs = useMemo(
     () => [
       { id: 'overview' as const, label: 'Overview' },
-      { id: 'clubs' as const, label: 'Clubs' },
       { id: 'hierarchy' as const, label: 'Hierarchy' },
+      { id: 'clubs' as const, label: 'Clubs' },
+      { id: 'teams' as const, label: 'Teams' },
       { id: 'seasons' as const, label: 'Seasons' },
       { id: 'competitions' as const, label: 'Competitions' },
       { id: 'matches' as const, label: 'Matches' },
       { id: 'users' as const, label: 'Users' },
-      { id: 'governance' as const, label: 'Governance' },
       { id: 'audit' as const, label: 'Audit' },
+      { id: 'governance' as const, label: 'Governance' },
       { id: 'operations' as const, label: 'Operations (Admin)' },
     ],
     []
@@ -891,7 +893,7 @@ export const OrganisationDetailPage: React.FC = () => {
     if (activeTab === 'clubs') {
       fetchClubsPage(clubsPage);
     }
-    if (activeTab === 'hierarchy' || activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'matches' || activeTab === 'clubs') {
+    if (activeTab === 'hierarchy' || activeTab === 'teams' || activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'matches' || activeTab === 'clubs') {
       fetchTeamsForOrg();
     }
 
@@ -917,7 +919,7 @@ export const OrganisationDetailPage: React.FC = () => {
   useEffect(() => {
     // When teams are loaded, ensure periods are loaded for tabs that need them.
     // This allows lazy loading of periods only when needed (or when teams are finally available).
-    if (activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'clubs' || activeTab === 'hierarchy') {
+    if (activeTab === 'teams' || activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'clubs' || activeTab === 'hierarchy') {
        if (teams.length > 0) {
            ensureOrgPeriodsLoaded();
        }
@@ -1760,6 +1762,209 @@ export const OrganisationDetailPage: React.FC = () => {
                 </>
               );
             })()}
+          </Card>
+        )}
+
+        {/* Teams (flat list) */}
+        {activeTab === 'teams' && (
+          <Card className="mb-6">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
+              <h3 className="text-lg font-semibold">Teams</h3>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+              <Input value={teamSearch} onChange={(e) => setTeamSearch(e.target.value)} placeholder="Search teams" />
+              <select
+                value={teamClubFilterId}
+                onChange={(e) => setTeamClubFilterId(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid var(--app-border)',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  backgroundColor: 'var(--app-surface)',
+                }}
+              >
+                <option value="">Club: All</option>
+                {allClubsForTeams.map((c: any) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={teamStatusFilter}
+                onChange={(e) => setTeamStatusFilter(e.target.value as any)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid var(--app-border)',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  backgroundColor: 'var(--app-surface)',
+                }}
+              >
+                <option value="all">Status: All</option>
+                <option value="active">Status: Active</option>
+                <option value="inactive">Status: Inactive</option>
+              </select>
+            </div>
+
+            {teamsLoading ? (
+              <Alert variant="info">Loading teams…</Alert>
+            ) : teams.length === 0 ? (
+              <Alert variant="info">No teams found in this federation.</Alert>
+            ) : (
+              (() => {
+                const clubNameById = new Map<string, string>();
+                const clubSlugById = new Map<string, string>();
+                for (const c of allClubsForTeams as any[]) {
+                  clubNameById.set(String(c.id), c.name);
+                  clubSlugById.set(String(c.id), (c as any).slug || String(c.id));
+                }
+
+                const normalized = teamSearch.trim().toLowerCase();
+                const filteredTeams = (teams as any[]).filter((t: any) => {
+                  const parentId = String(t.parent_id ?? t.parent ?? t.parent_project ?? t.parent_project_id ?? '');
+                  if (teamClubFilterId && parentId !== String(teamClubFilterId)) return false;
+
+                  const isActive = t.is_active !== false;
+                  if (teamStatusFilter === 'active' && !isActive) return false;
+                  if (teamStatusFilter === 'inactive' && isActive) return false;
+
+                  if (!normalized) return true;
+                  return String(t.name || '').toLowerCase().includes(normalized);
+                });
+
+                if (filteredTeams.length === 0) {
+                  return <Alert variant="info">No teams match your search.</Alert>;
+                }
+
+                return (
+                  <Card>
+                    <div className="overflow-x-auto">
+                      <Table style={compactTableStyle}>
+                        <colgroup>
+                          <col />
+                          <col style={{ width: '200px' }} />
+                          <col style={{ width: '90px' }} />
+                          <col style={{ width: '95px' }} />
+                          <col style={{ width: '120px' }} />
+                          <col style={{ width: '120px' }} />
+                          <col style={{ width: '330px' }} />
+                        </colgroup>
+                        <thead>
+                          <tr>
+                            <th style={compactThStyle}>Team</th>
+                            <th style={compactThStyle}>Club</th>
+                            <th style={compactThStyle}>Players</th>
+                            <th style={compactThStyle}>Seasons</th>
+                            <th style={compactThStyle}>Competitions</th>
+                            <th style={compactThStyle}>Status</th>
+                            <th style={compactThStyle}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredTeams.map((team: any) => {
+                            const teamSlugOrId = team.slug || team.id;
+                            const clubId = String(team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? '');
+                            const clubSlugOrId = clubSlugById.get(clubId) || clubId;
+                            const teamIdKey = String(team.id);
+                            const playersCount = team.member_count ?? team.players_count ?? 0;
+                            const seasonsCount = teamSeasonsCountById[teamIdKey] ?? 0;
+                            const competitionsCount = teamCompetitionsCountById[teamIdKey] ?? 0;
+
+                            return (
+                              <tr key={team.id}>
+                                <td style={compactTextTdStyle}>{team.name}</td>
+                                <td style={compactTextTdStyle}>{clubNameById.get(clubId) || '-'}</td>
+                                <td style={compactTdStyle}>
+                                  <Badge variant="default">{playersCount}</Badge>
+                                </td>
+                                <td style={compactTdStyle}>
+                                  <Badge variant="default">{seasonsCount}</Badge>
+                                </td>
+                                <td style={compactTdStyle}>
+                                  <Badge variant="default">{competitionsCount}</Badge>
+                                </td>
+                                <td style={compactTdStyle}>
+                                  <Badge variant={team.is_active ? 'success' : 'warning'}>
+                                    {team.is_active ? 'Active' : 'Inactive'}
+                                  </Badge>
+                                </td>
+                                <td style={compactTdStyle}>
+                                  <div style={compactActionsStyle}>
+                                    <button
+                                      onClick={() => {
+                                        setSelectedClub(team);
+                                        setIsClubModalOpen(true);
+                                      }}
+                                      style={actionButtonStyle('neutral')}
+                                    >
+                                      View
+                                    </button>
+                                    <button
+                                      onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`)}
+                                      style={actionButtonStyle('primary')}
+                                    >
+                                      Open
+                                    </button>
+                                    {userCanEditProject && (
+                                      <button
+                                        onClick={() => {
+                                          setSelectedEditProject(team);
+                                          setIsEditModalOpen(true);
+                                        }}
+                                        style={actionButtonStyle('neutral')}
+                                      >
+                                        Edit
+                                      </button>
+                                    )}
+                                    {userCanDeleteProject && (
+                                      <button
+                                        onClick={async () => {
+                                          if (!window.confirm(`Are you sure you want to delete project ${team.name}?`)) return;
+                                          try {
+                                            const apiV1BaseUrl = getApiV1BaseUrl();
+                                            const res = await fetch(
+                                              `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${team.slug || team.id}/`,
+                                              {
+                                                method: 'DELETE',
+                                                headers: {
+                                                  'Content-Type': 'application/json',
+                                                  'X-CSRFToken': getCsrfToken(),
+                                                },
+                                                credentials: 'include',
+                                              }
+                                            );
+                                            if (res.ok) {
+                                              setTeams((prev) => prev.filter((p: any) => String(p.id) !== String(team.id)));
+                                            } else {
+                                              alert('Error deleting team');
+                                            }
+                                          } catch (e) {
+                                            console.error(e);
+                                            alert('Error deleting team');
+                                          }
+                                        }}
+                                        style={actionButtonStyle('danger')}
+                                      >
+                                        Delete
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </Table>
+                    </div>
+                  </Card>
+                );
+              })()
+            )}
           </Card>
         )}
 
