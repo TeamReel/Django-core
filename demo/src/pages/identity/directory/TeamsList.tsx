@@ -402,7 +402,22 @@ export const TeamsList: React.FC = () => {
                                     {team.name}
                                 </a>
                             </td>
-                            <td style={compactTextTdStyle}>{clubName}</td>
+                            <td style={compactTextTdStyle}>
+                                {clubSlugOrId ? (
+                                    <a
+                                        href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
+                                        className="text-blue-600 hover:underline"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`);
+                                        }}
+                                    >
+                                        {clubName}
+                                    </a>
+                                ) : (
+                                    clubName
+                                )}
+                            </td>
                             <td style={compactTextTdStyle}>
                                 {orgSlugOrId ? (
                                     <a

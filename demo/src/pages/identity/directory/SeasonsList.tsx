@@ -147,6 +147,8 @@ export const SeasonsList: React.FC = () => {
           const params = new URLSearchParams();
           params.set('page_size', '250');
           params.set('parent_period__isnull', 'true');
+
+          // Always fetch based on selection, or all if nothing selected
           if (selectedTeamId) {
             params.set('project_id', String(selectedTeamId));
           } else if (selectedClubId) {
@@ -160,8 +162,11 @@ export const SeasonsList: React.FC = () => {
               const teamIds = clubTeams.map(t => String(t.id)).join(',');
               params.set('project_id__in', teamIds);
             }
+          } else if (selectedOrgId) {
+            // If only org selected, fetch all seasons for that org
+            params.set('organisation_id', selectedOrgId);
           }
-          if (selectedOrgId && !selectedClubId) params.set('organisation_id', selectedOrgId);
+          // If nothing selected at all, fetch all seasons (for superadmin)
 
           const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
           if (!res.ok) throw new Error(`API error: ${res.status}`);
