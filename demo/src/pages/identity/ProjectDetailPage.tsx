@@ -1958,8 +1958,9 @@ export const ProjectDetailPage: React.FC = () => {
                   <>
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold mb-3">People</h3>
-                      <div className="flex flex-col md:flex-row gap-2 items-end">
+                      <div className="flex flex-col md:flex-row gap-4 items-end">
                         <div className="w-full md:w-48">
+                          <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                           <select
                             value={selectedTeamFilter}
                             onChange={(e) => setSelectedTeamFilter(e.target.value)}
@@ -1977,6 +1978,7 @@ export const ProjectDetailPage: React.FC = () => {
                           </select>
                         </div>
                         <div className="w-full md:w-32">
+                          <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                           <select
                             value={selectedStatusFilter}
                             onChange={(e) => setSelectedStatusFilter(e.target.value)}
@@ -2126,8 +2128,9 @@ export const ProjectDetailPage: React.FC = () => {
                       Add Team
                     </Button>
                   </div>
-                  <div className="flex flex-col md:flex-row gap-2 items-end">
+                  <div className="flex flex-col md:flex-row gap-4 items-end">
                     <div className="w-full md:w-32">
+                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                       <select
                         value={selectedStatusFilter}
                         onChange={(e) => setSelectedStatusFilter(e.target.value)}
@@ -2281,9 +2284,10 @@ export const ProjectDetailPage: React.FC = () => {
                       </Button>
                     )}
                   </div>
-                  <div className="flex flex-col md:flex-row gap-2 items-end">
+                  <div className="flex flex-col md:flex-row gap-4 items-end">
                     {!isLikelyTeam && (
                       <div className="w-full md:w-48">
+                        <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                         <select
                           value={selectedTeamFilter}
                           onChange={(e) => setSelectedTeamFilter(e.target.value)}
@@ -2302,6 +2306,7 @@ export const ProjectDetailPage: React.FC = () => {
                       </div>
                     )}
                     <div className="w-full md:w-32">
+                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                       <select
                         value={selectedStatusFilter}
                         onChange={(e) => setSelectedStatusFilter(e.target.value)}
@@ -2450,9 +2455,10 @@ export const ProjectDetailPage: React.FC = () => {
               <Card>
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold mb-3">Competitions</h3>
-                  <div className="flex flex-col md:flex-row gap-2 items-end">
+                  <div className="flex flex-col md:flex-row gap-4 items-end">
                     {!isLikelyTeam && (
                       <div className="w-full md:w-48">
+                        <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                         <select
                           value={selectedTeamFilter}
                           onChange={(e) => setSelectedTeamFilter(e.target.value)}
@@ -2471,6 +2477,7 @@ export const ProjectDetailPage: React.FC = () => {
                       </div>
                     )}
                     <div className="w-full md:w-48">
+                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Season</label>
                       <select
                         value={selectedSeasonFilter}
                         onChange={(e) => setSelectedSeasonFilter(e.target.value)}
@@ -2488,6 +2495,7 @@ export const ProjectDetailPage: React.FC = () => {
                       </select>
                     </div>
                     <div className="w-full md:w-40">
+                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Match Count</label>
                       <select
                         value={competitionFilter}
                         onChange={(e) => setCompetitionFilter(e.target.value as any)}
@@ -2499,6 +2507,7 @@ export const ProjectDetailPage: React.FC = () => {
                       </select>
                     </div>
                     <div className="w-full md:w-32">
+                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                       <select
                         value={selectedStatusFilter}
                         onChange={(e) => setSelectedStatusFilter(e.target.value)}
@@ -2676,9 +2685,10 @@ export const ProjectDetailPage: React.FC = () => {
             <Card>
                <div className="mb-4">
                  <h3 className="text-lg font-semibold mb-3">Matches</h3>
-                 <div className="flex flex-col md:flex-row gap-2 items-end">
+                 <div className="flex flex-col md:flex-row gap-4 items-end">
                    {!isLikelyTeam && (
                      <div className="w-full md:w-48">
+                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                        <select
                          value={selectedTeamFilter}
                          onChange={(e) => setSelectedTeamFilter(e.target.value)}
@@ -2697,6 +2707,7 @@ export const ProjectDetailPage: React.FC = () => {
                      </div>
                    )}
                    <div className="w-full md:w-48">
+                     <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Season</label>
                      <select
                        value={selectedSeasonFilter}
                        onChange={(e) => setSelectedSeasonFilter(e.target.value)}
@@ -2714,6 +2725,7 @@ export const ProjectDetailPage: React.FC = () => {
                      </select>
                    </div>
                    <div className="w-full md:w-48">
+                     <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Competition</label>
                      <select
                        value={selectedCompetitionFilter}
                        onChange={(e) => setSelectedCompetitionFilter(e.target.value)}
