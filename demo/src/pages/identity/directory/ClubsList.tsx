@@ -51,6 +51,8 @@ const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
     cursor: 'pointer',
     fontSize: '12px',
     lineHeight: 1.2,
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
   };
   if (tone === 'primary') {
     return { ...base, border: '1px solid #007bff', color: '#007bff' };

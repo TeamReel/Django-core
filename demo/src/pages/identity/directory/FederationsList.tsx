@@ -55,6 +55,8 @@ const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
     cursor: 'pointer',
     fontSize: '12px',
     lineHeight: 1.2,
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
   };
   if (tone === 'primary') {
     return { ...base, border: '1px solid #007bff', color: '#007bff' };
@@ -113,6 +115,7 @@ export const FederationsList: React.FC = () => {
         const params = new URLSearchParams();
         params.append('sort', sort);
         params.append('order', order);
+        params.append('page_size', '500');
         if (search) {
           params.append('search', search);
         }
