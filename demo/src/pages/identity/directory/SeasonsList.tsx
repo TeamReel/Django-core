@@ -168,12 +168,32 @@ export const SeasonsList: React.FC = () => {
           }
           // If nothing selected at all, fetch all seasons (for superadmin)
 
-          const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+          console.log('[SeasonsList] Fetching from:', url);
+          const res = await fetch(url, { credentials: 'include' });
           if (!res.ok) throw new Error(`API error: ${res.status}`);
 
           const data = await res.json();
+          console.log('[SeasonsList] API response:', data);
           const results = data.data?.results || data.results || data.data || [];
-          setSeasons(Array.isArray(results) ? results : []);
+          console.log('[SeasonsList] Raw results count:', results.length);
+          console.log('[SeasonsList] First 3 results:', results.slice(0, 3));
+
+          // Filter to only actual seasons (exclude competitions/cups)
+          const filteredSeasons = results.filter((p: any) => {
+            const name = String(p?.name || '').toLowerCase();
+            const type = p?.data?.type || '';
+            const isSeasonName = name.includes('season') || name.includes('seizoen');
+            const isNotCompetition = type !== 'league' && type !== 'cup' && type !== 'tournament';
+
+            console.log('[SeasonsList] Period:', p.name, 'type:', type, 'isSeasonName:', isSeasonName, 'isNotCompetition:', isNotCompetition);
+
+            // Accept if name looks like a season AND it's not explicitly a competition type
+            return isSeasonName && (isNotCompetition || !type);
+          });
+
+          console.log('[SeasonsList] Filtered seasons count:', filteredSeasons.length);
+          setSeasons(Array.isArray(filteredSeasons) ? filteredSeasons : []);
         } catch (e) {
           setError(e instanceof Error ? e.message : 'Failed to load seasons');
         } finally {
