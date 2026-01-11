@@ -234,14 +234,20 @@ class ActivitySerializer(serializers.ModelSerializer):
         return None
 
     def get_period(self, obj):
-        """Return nested period representation"""
+        """Return nested period representation. Includes parent_period for season context."""
         if obj.period:
-            return {
+            data = {
                 "id": str(obj.period.id),
                 "name": obj.period.name,
                 "start_date": obj.period.start_date,
                 "end_date": obj.period.end_date,
             }
+            if obj.period.parent_period:
+                data["parent_period"] = {
+                    "id": str(obj.period.parent_period.id),
+                    "name": obj.period.parent_period.name,
+                }
+            return data
         return None
 
     def get_created_by(self, obj):

@@ -15,7 +15,12 @@ type Activity = {
   start_time?: string;
   end_time?: string;
   project?: { id: string; name: string } | null;
-  period?: { id: string; name: string } | null;
+  period?: {
+    id: string;
+    name: string;
+    parent_period?: { id: string; name: string; slug?: string; };
+    slug?: string;
+  } | null;
   data?: Record<string, any>;
 };
 
@@ -41,6 +46,11 @@ const compactTextTdStyle: React.CSSProperties = {
   ...compactTdStyle,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+};
+const compactActionsStyle: React.CSSProperties = {
+  ...compactTdStyle,
+  textAlign: 'right',
   whiteSpace: 'nowrap'
 };
 
@@ -273,37 +283,149 @@ export const MatchesList: React.FC = () => {
           <Card>
             <div className="overflow-x-auto">
               <Table style={compactTableStyle}>
-                <colgroup>
-                  <col />
-                  <col style={{ width: '180px' }} />
-                  <col style={{ width: '160px' }} />
-                </colgroup>
                 <thead>
                   <tr>
-                    <th style={compactThStyle}>Match</th>
-                    <th style={compactThStyle}>Competition</th>
-                    <th style={compactThStyle}>Start</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
+                    <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Match</th>
+                    <th style={{ ...compactThStyle, width: '80px' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {matches.map((m) => (
-                    <tr key={m.id}>
-                      <td style={compactTextTdStyle}>
-                        <a
-                          href={`/matches/${m.id}`}
-                          className="text-blue-600 hover:underline"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            navigate(`/matches/${m.id}`);
-                          }}
-                        >
-                          {m.title}
-                        </a>
-                      </td>
-                      <td style={compactTextTdStyle}>{m.period?.name || '-'}</td>
-                      <td style={compactTdStyle}>{m.start_time || '-'}</td>
-                    </tr>
-                  ))}
+                  {matches.map((m) => {
+                    const project = m.project;
+                    const teamId = project?.id;
+                    const teamName = project?.name || '-';
+                    // Find team in loaded teams to get parent (Club)
+                    const teamObj = teams.find((t) => String(t.id) === String(teamId));
+                    const clubId = (teamObj as any)?.parent_id || (teamObj as any)?.parent || (typeof project === 'object' && (project as any)?.parent_id);
+                    const club = clubs.find((c) => String(c.id) === String(clubId));
+                    const clubName = club?.name || '-';
+
+                    // Organisation
+                    const orgId = selectedOrgId || (club as any)?.organisation || (teamObj as any)?.organisation;
+                    const org = organisations.find((o) => String(o.id) === String(orgId));
+                    const orgName = org?.name || '-';
+                    const orgSlug = (org as any)?.slug;
+
+                    const competition = m.period;
+                    const compName = competition?.name || '-';
+                    const season = competition?.parent_period;
+                    const seasonName = season?.name || '-';
+
+                    // Link Targets
+                    const orgTarget = orgSlug || orgId;
+                    const clubTarget = (club as any)?.slug || clubId;
+                    const teamTarget = (teamObj as any)?.slug || teamId;
+                    const seasonTarget = season?.slug || season?.id;
+                    const compTarget = competition?.slug || competition?.id;
+
+                    return (
+                        <tr key={m.id}>
+                        <td style={compactTextTdStyle}>
+                          {orgId ? (
+                            <a
+                              href={`/organisations/${orgTarget}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgTarget}`);
+                              }}
+                            >
+                              {orgName}
+                            </a>
+                          ) : orgName}
+                        </td>
+                        <td style={compactTextTdStyle}>
+                            {clubId ? (
+                                <a
+                                href={`/organisations/${orgTarget}/clubs/${clubTarget}`}
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(`/organisations/${orgTarget}/clubs/${clubTarget}`);
+                                }}
+                                >
+                                {clubName}
+                                </a>
+                            ) : clubName}
+                        </td>
+                         <td style={compactTextTdStyle}>
+                            {teamId ? (
+                                <a
+                                href={`/organisations/${orgTarget}/teams/${teamTarget}`}
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(`/organisations/${orgTarget}/teams/${teamTarget}`);
+                                }}
+                                >
+                                {teamName}
+                                </a>
+                            ) : teamName}
+                         </td>
+                        <td style={compactTextTdStyle}>
+                            {competition ? (
+                                <a
+                                href={`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}/competitions/${compTarget}`}
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if(seasonTarget && compTarget) {
+                                        navigate(`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}/competitions/${compTarget}`);
+                                    }
+                                }}
+                                >
+                                {compName}
+                                </a>
+                            ) : compName}
+                        </td>
+                        <td style={compactTextTdStyle}>
+                             {season ? (
+                                <a
+                                href={`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}`}
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if(seasonTarget) {
+                                        navigate(`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}`);
+                                    }
+                                }}
+                                >
+                                {seasonName}
+                                </a>
+                             ) : seasonName}
+                        </td>
+                        <td style={compactTextTdStyle}>
+                            <a
+                              href={`/matches/${m.id}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/matches/${m.id}`);
+                              }}
+                            >
+                              {m.title}
+                            </a>
+                        </td>
+                         <td style={compactActionsStyle}>
+                            <a
+                                href={`/matches/${m.id}`}
+                                className="text-blue-600 hover:underline text-xs"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(`/matches/${m.id}`);
+                                }}
+                            >
+                                View
+                            </a>
+                         </td>
+                        </tr>
+                    );
+                  })}
                 </tbody>
               </Table>
             </div>
