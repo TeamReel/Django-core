@@ -1027,14 +1027,14 @@ export const ProjectDetailPage: React.FC = () => {
         const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
         if (!res.ok) {
           console.log(`[fetchAllMatches] Club view: API failed with status ${res.status}`);
-          setAllMatches([]);
-          return;
-        }
         const json = await res.json();
         const results = getPagedResults(json);
         console.log(`[fetchAllMatches] Club view: Fetched ${results.length} matches from org ${orgIdValue}`);
         const filtered = filterActivitiesToClubTeams(results, teamIdsUnderClub);
         console.log(`[fetchAllMatches] Club view: ${filtered.length} matches after filtering to club teams`);
+        // Debug: Check which period_ids these matches have
+        const periodIds = new Set(filtered.map((m: any) => String(m.period_id || m.period?.id || 'NULL')));
+        console.log(`[fetchAllMatches] Club view: Match period_ids:`, Array.from(periodIds));
         const sorted = sortByStartTimeDesc(mergeUniqueById(filtered));
         setAllMatches(sorted.slice(0, 250));
       }
@@ -2277,7 +2277,13 @@ export const ProjectDetailPage: React.FC = () => {
                           const mPeriodId = String(m.period_id || m.period?.id || '');
                           return mPeriodId === compId;
                         });
-                        console.log(`[Competitions tab] Competition ${comp.name} (${compId}): ${compMatches.length} matches`);
+                        // Debug: Show first match's period_id if no matches found
+                        if (compMatches.length === 0 && allMatches.length > 0) {
+                          const sampleMatch = allMatches[0];
+                          console.log(`[Competitions tab] Competition ${comp.name} (${compId}): 0 matches. Sample match period_id: ${sampleMatch.period_id || sampleMatch.period?.id || 'NULL'}`);
+                        } else {
+                          console.log(`[Competitions tab] Competition ${comp.name} (${compId}): ${compMatches.length} matches`);
+                        }
 
                         return (
                           <tr key={comp.id}>
