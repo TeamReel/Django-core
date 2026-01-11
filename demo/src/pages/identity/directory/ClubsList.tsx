@@ -38,7 +38,7 @@ const compactActionsStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
   gap: '8px',
-  flexWrap: 'wrap'
+  flexWrap: 'nowrap'
 };
 
 // Button styling function
@@ -299,7 +299,7 @@ export const ClubsList: React.FC = () => {
                 <col style={{ width: '80px' }} />
                 <col style={{ width: '80px' }} />
                 <col style={{ width: '100px' }} />
-                <col style={{ width: '280px' }} />
+                <col style={{ width: '340px' }} />
               </colgroup>
               <thead>
                 <tr>
