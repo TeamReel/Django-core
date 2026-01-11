@@ -872,7 +872,12 @@ export const ProjectDetailPage: React.FC = () => {
         const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
         const results = await fetchAllPages<any>(url, { credentials: 'include' });
         const filteredSeasons = (results || []).filter(isSeasonPeriod);
-        setSeasons(filteredSeasons);
+        // Remove duplicates by ID
+        const uniqueSeasons = Array.from(
+          new Map(filteredSeasons.map((s: any) => [String(s.id), s])).values()
+        );
+        console.log(`[fetchSeasons] Team view: ${filteredSeasons.length} seasons fetched, ${uniqueSeasons.length} unique`);
+        setSeasons(uniqueSeasons);
       } else {
         // Clubs: enforce hierarchy strictly.
         // 1) Resolve direct child teams for this club (required dependency)
@@ -901,7 +906,12 @@ export const ProjectDetailPage: React.FC = () => {
             return isSeasonPeriod(p);
           });
 
-        setSeasons(filteredSeasons);
+        // Remove duplicates by ID
+        const uniqueSeasons = Array.from(
+          new Map(filteredSeasons.map((s: any) => [String(s.id), s])).values()
+        );
+        console.log(`[fetchSeasons] Club view: ${filteredSeasons.length} seasons fetched, ${uniqueSeasons.length} unique`);
+        setSeasons(uniqueSeasons);
       }
     } catch (e) {
       console.error('Failed to fetch seasons', e);
