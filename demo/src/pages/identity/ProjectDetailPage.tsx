@@ -690,10 +690,10 @@ export const ProjectDetailPage: React.FC = () => {
               const membersData = await membersByIdResponse.json();
               const membersList = getPagedResults(membersData);
               const normalized = Array.isArray(membersList) ? membersList : [];
-              setMembers(normalized);
 
-              // Clubs often don't have direct memberships; show people via child teams if needed.
-              if (!isTeamRoute && normalized.length === 0) {
+              // For clubs: always fetch team members to show complete roster
+              // (club may have direct memberships for admins, but teams have players)
+              if (!isTeamRoute) {
                 const teams = await ensureChildTeamsLoaded();
                 const teamIds = Array.from(teams.map((t: any) => String(t.id)));
 
@@ -701,6 +701,15 @@ export const ProjectDetailPage: React.FC = () => {
                 // (org-wide fetch with page_size=250 only returns subset of members)
                 const allMembersMap = new Map<string, any>();
 
+                // Include club's direct members first (usually admins/staff)
+                for (const member of normalized) {
+                  const userId = member.user?.id || member.id;
+                  if (userId) {
+                    allMembersMap.set(String(userId), member);
+                  }
+                }
+
+                // Then fetch members from all child teams
                 for (const teamId of teamIds) {
                   const teamMembersEndpoint = `${apiBaseUrl}/api/v1/projects/${teamId}/members/`;
                   try {
@@ -731,7 +740,9 @@ export const ProjectDetailPage: React.FC = () => {
 
                 const clubMembers = Array.from(allMembersMap.values());
                 setMembers(clubMembers);
-                console.log(`[ProjectDetailPage] Club members loaded: ${clubMembers.length} unique members from ${teamIds.length} teams`);
+                console.log(`[ProjectDetailPage] Club members loaded: ${clubMembers.length} unique members (${normalized.length} direct + ${clubMembers.length - normalized.length} from teams)`);
+              } else {
+                setMembers(normalized);
               }
             } else {
               console.error(
