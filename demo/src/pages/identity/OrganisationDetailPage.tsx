@@ -94,6 +94,7 @@ export const OrganisationDetailPage: React.FC = () => {
     | 'operations'
   >('overview');
   const [memberSearch, setMemberSearch] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState<string>('');
   const [usersPage, setUsersPage] = useState(1);
   const usersPageSize = 25;
 
@@ -1328,6 +1329,15 @@ export const OrganisationDetailPage: React.FC = () => {
                   placeholder="Search users (name/email)"
                   style={{ width: '240px' }}
                 />
+                <select
+                  value={userRoleFilter}
+                  onChange={(e) => setUserRoleFilter(e.target.value)}
+                  style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                >
+                  <option value="">Role: All</option>
+                  <option value="admin">Admin</option>
+                  <option value="member">Member</option>
+                </select>
               </div>
             </div>
 
@@ -1346,6 +1356,12 @@ export const OrganisationDetailPage: React.FC = () => {
 
                   const filteredMembers = orgOnlyMembers.filter((item: any) => {
                     const u = item.user || item;
+                    const role = item.role || 'member';
+
+                    // Role filter
+                    if (userRoleFilter && role !== userRoleFilter) return false;
+
+                    // Search filter
                     const haystack = `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase();
                     return !normalizedQuery || haystack.includes(normalizedQuery);
                   });
@@ -1448,7 +1464,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                         <button
                                           onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
-                                          style={actionButtonStyle('neutral')}
+                                          style={actionButtonStyle('primary')}
                                         >
                                           Open
                                         </button>
@@ -2357,7 +2373,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <div style={compactActionsStyle}>
                                   <button
                                     onClick={() => navigate(openHref)}
-                                    style={actionButtonStyle('neutral')}
+                                    style={actionButtonStyle('primary')}
                                   >
                                     Open
                                   </button>
@@ -2621,7 +2637,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <div style={compactActionsStyle}>
                                   <button
                                     onClick={() => navigate(openHref)}
-                                    style={actionButtonStyle('neutral')}
+                                    style={actionButtonStyle('primary')}
                                   >
                                     Open
                                   </button>
@@ -2954,7 +2970,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <div style={compactActionsStyle}>
                                   <button
                                     onClick={() => navigate(`/matches/${m.id}`)}
-                                    style={actionButtonStyle('neutral')}
+                                    style={actionButtonStyle('primary')}
                                   >
                                     Open
                                   </button>
