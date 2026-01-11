@@ -1003,14 +1003,8 @@ export const ProjectDetailPage: React.FC = () => {
         console.log(`[fetchAllMatches] Team view: Fetched ${results.length} matches for project ${project.id}`);
         setAllMatches(Array.isArray(results) ? results : []);
       } else {
-        // Clubs: avoid per-team fan-out (can overload API and trigger 500s).
-        // Fetch org-wide matches and filter down to teams under this club.
-        const orgIdValue = String(resolvedOrg?.id || (project as any)?.organisation_id || '').trim();
-        if (!orgIdValue) {
-          setAllMatches([]);
-          return;
-        }
-
+        // Clubs: fetch matches for all teams under this club
+        // Note: We fetch per-team to ensure we get ALL matches, not just org-wide top N
         const teams = await fetchOrgTeamsForPeriodFiltering();
         const teamIdsUnderClub = getDescendantTeamIdsUnderClub(teams, String(project.id));
         if (!teamIdsUnderClub.size) {
@@ -1018,22 +1012,21 @@ export const ProjectDetailPage: React.FC = () => {
           return;
         }
 
-        const params = new URLSearchParams();
-        params.set('organisation_id', orgIdValue);
-        params.set('activity_type', 'match');
-        params.set('page_size', '250');
-        params.set('ordering', '-start_time');
+        // Fetch matches for each team and combine
+        const allTeamMatches: any[] = [];
+        for (const teamId of Array.from(teamIdsUnderClub)) {
+          const params = new URLSearchParams();
+          params.set('project_id', teamId);
+          params.set('activity_type', 'match');
+          params.set('page_size', '250');
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
-        if (!res.ok) {
-          setAllMatches([]);
-          return;
+          const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
+          const teamMatches = await fetchAllPages<any>(url, { credentials: 'include' });
+          allTeamMatches.push(...teamMatches);
         }
-        const json = await res.json();
-        const results = getPagedResults(json);
-        const filtered = filterActivitiesToClubTeams(results, teamIdsUnderClub);
-        const sorted = sortByStartTimeDesc(mergeUniqueById(filtered));
-        setAllMatches(sorted.slice(0, 250));
+
+        const sorted = sortByStartTimeDesc(mergeUniqueById(allTeamMatches));
+        setAllMatches(sorted);
       }
     } catch (e) {
       console.error('Failed to fetch matches', e);
