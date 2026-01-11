@@ -1,5 +1,6 @@
 """DRF serializers for Projects & Workspaces."""
 
+from django.db.models import Q
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -91,6 +92,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     organisation = OrganisationNestedSerializer(read_only=True)
     member_count = serializers.SerializerMethodField()
     seasons_count = serializers.SerializerMethodField()
+    competitions_count = serializers.SerializerMethodField()
     matches_count = serializers.SerializerMethodField()
     parent_id = serializers.UUIDField(source="parent_project.id", allow_null=True, read_only=True)
     parent_name = serializers.CharField(
@@ -112,6 +114,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "archived_at",
             "member_count",
             "seasons_count",
+            "competitions_count",
             "matches_count",
             "parent_id",
             "parent_name",
@@ -119,13 +122,31 @@ class ProjectListSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "slug", "is_active", "created_at", "updated_at", "archived_at"]
 
     def get_member_count(self, obj):
-        return obj.memberships.count()
+        # Aggregated count for Clubs (parent projects)
+        return (
+            ProjectMembership.objects.filter(Q(project=obj) | Q(project__parent_project=obj))
+            .values("user")
+            .distinct()
+            .count()
+        )
 
     def get_seasons_count(self, obj):
-        return Period.objects.filter(project=obj, parent_period=None).count()
+        # Seasons are periods without a parent
+        return Period.objects.filter(
+            Q(project=obj) | Q(project__parent_project=obj), parent_period=None
+        ).count()
+
+    def get_competitions_count(self, obj):
+        # Competitions are periods with a parent (Season)
+        return Period.objects.filter(
+            Q(project=obj) | Q(project__parent_project=obj), parent_period__isnull=False
+        ).count()
 
     def get_matches_count(self, obj):
-        return Activity.objects.filter(project=obj, activity_type="match").count()
+        # Matches are activities of type 'match'
+        return Activity.objects.filter(
+            Q(project=obj) | Q(project__parent_project=obj), activity_type="match"
+        ).count()
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
