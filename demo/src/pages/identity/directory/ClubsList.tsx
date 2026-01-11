@@ -289,19 +289,6 @@ export const ClubsList: React.FC = () => {
         <Card>
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
-              <colgroup>
-                <col />
-                <col style={{ width: '150px' }} />
-                <col style={{ width: '80px' }} />
-                <col style={{ width: '80px' }} />
-                <col style={{ width: '80px' }} />
-                <col style={{ width: '80px' }} />
-                <col style={{ width: '80px' }} />
-                <col style={{ width: '80px' }} />
-                <col style={{ width: '100px' }} />
-                <col style={{ width: '90px' }} />
-                <col style={{ width: '340px' }} />
-              </colgroup>
               <thead>
                 <tr>
                   <th style={compactThStyle}>Club</th>

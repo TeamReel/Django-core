@@ -261,20 +261,6 @@ export const FederationsList: React.FC = () => {
           <Card>
             <div className="overflow-x-auto">
               <Table style={compactTableStyle}>
-                <colgroup>
-                  <col />
-                  <col style={{ width: '90px' }} />
-                  <col style={{ width: '90px' }} />
-                  <col style={{ width: '90px' }} />
-                  <col style={{ width: '90px' }} />
-                  <col style={{ width: '90px' }} />
-                  <col style={{ width: '90px' }} />
-                  <col style={{ width: '90px' }} />
-                  <col style={{ width: '90px' }} />
-                  <col style={{ width: '100px' }} />
-                  <col style={{ width: '90px' }} />
-                  <col style={{ width: '340px' }} />
-                </colgroup>
                 <thead>
                   <tr>
                     <th onClick={() => handleSort('name')} style={{ ...compactThStyle, cursor: 'pointer' }}>

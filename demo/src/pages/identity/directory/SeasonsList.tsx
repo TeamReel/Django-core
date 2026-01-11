@@ -387,9 +387,13 @@ export const SeasonsList: React.FC = () => {
                     const orgName = typeof org === 'string' ? org : org?.name || '-';
                     const teamName = typeof project === 'string' ? project : project?.name || '-';
                     const teamId = typeof project === 'string' ? project : project?.id;
-                    const clubData = typeof project === 'object' ? (project as any)?.parent : null;
-                    const clubName = clubData?.name || '-';
-                    const clubId = clubData?.id;
+
+                    // Find the team in teams list to get parent club info
+                    const teamObj = teams.find(t => String(t.id) === String(teamId));
+                    const clubId = teamObj?.parent_id || (teamObj as any)?.parent_project_id;
+                    const clubObj = clubs.find(c => String(c.id) === String(clubId));
+                    const clubName = clubObj?.name || '-';
+
                     const orgId = typeof org === 'string' ? org : org?.id;
 
                     return (
