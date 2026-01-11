@@ -345,6 +345,10 @@ export const ProjectDetailPage: React.FC = () => {
 
     const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
     const results = await fetchAllPages<any>(url, { credentials: 'include' });
+    console.log(`[fetchOrgPeriodsForFiltering] Fetched ${results.length} periods from API`);
+    // Check if the mystery period is in the results
+    const hasMysteryPeriod = results.some((p: any) => String(p.id) === '973f8b1e-b8cf-4ee9-96b4-80983c5ca0cf');
+    console.log(`[fetchOrgPeriodsForFiltering] Contains mystery period 973f8b1e-b8cf-4ee9-96b4-80983c5ca0cf: ${hasMysteryPeriod}`);
     return Array.isArray(results) ? results : [];
   };
 
@@ -977,6 +981,8 @@ export const ProjectDetailPage: React.FC = () => {
             return teamIdsUnderClub.has(teamId);
           });
 
+        console.log(`[fetchCompetitions] Club view: ${filteredCompetitions.length} competitions found`);
+        console.log(`[fetchCompetitions] Club view: Competition IDs:`, filteredCompetitions.slice(0, 5).map((c: any) => c.id));
         setCompetitions(filteredCompetitions);
       }
     } catch (e) {
