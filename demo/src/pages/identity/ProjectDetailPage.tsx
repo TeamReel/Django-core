@@ -722,7 +722,12 @@ export const ProjectDetailPage: React.FC = () => {
                 for (const member of normalized) {
                   const userId = member.user?.id || member.id;
                   if (userId) {
-                    allMembersMap.set(String(userId), member);
+                    // Ensure project_id is set for club direct members
+                    const memberWithProject = {
+                      ...member,
+                      project_id: member.project_id || projectIdForApi,
+                    };
+                    allMembersMap.set(String(userId), memberWithProject);
                   }
                 }
 
@@ -744,7 +749,12 @@ export const ProjectDetailPage: React.FC = () => {
                     for (const member of teamMembersList) {
                       const userId = member.user?.id || member.id;
                       if (userId && !allMembersMap.has(String(userId))) {
-                        allMembersMap.set(String(userId), member);
+                        // Ensure project_id is explicitly set to the team ID
+                        const memberWithProject = {
+                          ...member,
+                          project_id: member.project_id || teamId,
+                        };
+                        allMembersMap.set(String(userId), memberWithProject);
                       }
                     }
                   } catch (err) {
@@ -785,7 +795,12 @@ export const ProjectDetailPage: React.FC = () => {
                     for (const member of teamMembersList) {
                       const userId = member.user?.id || member.id;
                       if (userId && !allMembersMap.has(String(userId))) {
-                        allMembersMap.set(String(userId), member);
+                        // Ensure project_id is explicitly set to the team ID
+                        const memberWithProject = {
+                          ...member,
+                          project_id: member.project_id || teamId,
+                        };
+                        allMembersMap.set(String(userId), memberWithProject);
                       }
                     }
                   } catch (err) {
@@ -1958,8 +1973,8 @@ export const ProjectDetailPage: React.FC = () => {
                   <>
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold mb-3">People</h3>
-                      <div className="flex flex-col md:flex-row gap-4 items-end">
-                        <div className="w-full md:w-48">
+                      <div className="flex flex-row gap-4 items-end flex-wrap">
+                        <div className="min-w-[200px] flex-1 max-w-[250px]">
                           <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                           <select
                             value={selectedTeamFilter}
@@ -1977,7 +1992,7 @@ export const ProjectDetailPage: React.FC = () => {
                             })}
                           </select>
                         </div>
-                        <div className="w-full md:w-32">
+                        <div className="min-w-[150px]">
                           <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                           <select
                             value={selectedStatusFilter}
@@ -2128,8 +2143,8 @@ export const ProjectDetailPage: React.FC = () => {
                       Add Team
                     </Button>
                   </div>
-                  <div className="flex flex-col md:flex-row gap-4 items-end">
-                    <div className="w-full md:w-32">
+                  <div className="flex flex-row gap-4 items-end flex-wrap">
+                    <div className="min-w-[150px]">
                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                       <select
                         value={selectedStatusFilter}
@@ -2284,9 +2299,9 @@ export const ProjectDetailPage: React.FC = () => {
                       </Button>
                     )}
                   </div>
-                  <div className="flex flex-col md:flex-row gap-4 items-end">
+                  <div className="flex flex-row gap-4 items-end flex-wrap">
                     {!isLikelyTeam && (
-                      <div className="w-full md:w-48">
+                      <div className="min-w-[200px] flex-1 max-w-[250px]">
                         <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                         <select
                           value={selectedTeamFilter}
@@ -2305,7 +2320,7 @@ export const ProjectDetailPage: React.FC = () => {
                         </select>
                       </div>
                     )}
-                    <div className="w-full md:w-32">
+                    <div className="min-w-[150px]">
                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                       <select
                         value={selectedStatusFilter}
@@ -2455,9 +2470,9 @@ export const ProjectDetailPage: React.FC = () => {
               <Card>
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold mb-3">Competitions</h3>
-                  <div className="flex flex-col md:flex-row gap-4 items-end">
+                  <div className="flex flex-row gap-4 items-end flex-wrap">
                     {!isLikelyTeam && (
-                      <div className="w-full md:w-48">
+                      <div className="min-w-[200px] flex-1 max-w-[250px]">
                         <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                         <select
                           value={selectedTeamFilter}
@@ -2476,7 +2491,7 @@ export const ProjectDetailPage: React.FC = () => {
                         </select>
                       </div>
                     )}
-                    <div className="w-full md:w-48">
+                    <div className="min-w-[200px] flex-1 max-w-[250px]">
                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Season</label>
                       <select
                         value={selectedSeasonFilter}
@@ -2494,7 +2509,7 @@ export const ProjectDetailPage: React.FC = () => {
                         })}
                       </select>
                     </div>
-                    <div className="w-full md:w-40">
+                    <div className="min-w-[180px]">
                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Match Count</label>
                       <select
                         value={competitionFilter}
@@ -2506,7 +2521,7 @@ export const ProjectDetailPage: React.FC = () => {
                         <option value="without-matches">Without Matches</option>
                       </select>
                     </div>
-                    <div className="w-full md:w-32">
+                    <div className="min-w-[150px]">
                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                       <select
                         value={selectedStatusFilter}
@@ -2685,9 +2700,9 @@ export const ProjectDetailPage: React.FC = () => {
             <Card>
                <div className="mb-4">
                  <h3 className="text-lg font-semibold mb-3">Matches</h3>
-                 <div className="flex flex-col md:flex-row gap-4 items-end">
+                 <div className="flex flex-row gap-4 items-end flex-wrap">
                    {!isLikelyTeam && (
-                     <div className="w-full md:w-48">
+                     <div className="min-w-[200px] flex-1 max-w-[250px]">
                        <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                        <select
                          value={selectedTeamFilter}
@@ -2706,7 +2721,7 @@ export const ProjectDetailPage: React.FC = () => {
                        </select>
                      </div>
                    )}
-                   <div className="w-full md:w-48">
+                   <div className="min-w-[200px] flex-1 max-w-[250px]">
                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Season</label>
                      <select
                        value={selectedSeasonFilter}
@@ -2724,7 +2739,7 @@ export const ProjectDetailPage: React.FC = () => {
                        })}
                      </select>
                    </div>
-                   <div className="w-full md:w-48">
+                   <div className="min-w-[200px] flex-1 max-w-[250px]">
                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Competition</label>
                      <select
                        value={selectedCompetitionFilter}
