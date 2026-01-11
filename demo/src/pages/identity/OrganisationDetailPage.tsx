@@ -1430,47 +1430,6 @@ export const OrganisationDetailPage: React.FC = () => {
                   const start = (safePage - 1) * usersPageSize;
                   const pageItems = filteredMembers.slice(start, start + usersPageSize);
 
-                  // Define action button helpers
-                  const actionButtonStyle = (variant: 'neutral' | 'primary' | 'warning' | 'danger') => {
-                    const baseStyle = {
-                      padding: '6px 12px',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      transition: 'all 0.2s',
-                    };
-                    if (variant === 'neutral') {
-                      return {
-                        ...baseStyle,
-                        border: '1px solid var(--app-border)',
-                        backgroundColor: 'var(--app-surface-2)',
-                        color: 'var(--app-text)',
-                      };
-                    } else if (variant === 'primary') {
-                      return {
-                        ...baseStyle,
-                        border: '1px solid #0056b3',
-                        backgroundColor: '#007bff',
-                        color: '#fff',
-                      };
-                    } else if (variant === 'warning') {
-                      return {
-                        ...baseStyle,
-                        border: '1px solid #fd7e14',
-                        backgroundColor: '#fd7e14',
-                        color: '#fff',
-                      };
-                    } else {
-                      return {
-                        ...baseStyle,
-                        border: '1px solid #dc3545',
-                        backgroundColor: 'var(--app-surface)',
-                        color: '#dc3545',
-                      };
-                    }
-                  };
-
                   return (
                     <>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
@@ -1487,19 +1446,19 @@ export const OrganisationDetailPage: React.FC = () => {
                         </div>
                       </div>
                       <Card>
-                        <Table>
+                        <Table style={compactTableStyle}>
                           <colgroup>
                             <col style={{ width: '200px' }} />
                             <col style={{ width: '220px' }} />
                             <col style={{ width: '120px' }} />
-                            <col style={{ width: '220px' }} />
+                            <col style={{ width: '330px' }} />
                           </colgroup>
                           <thead>
                             <tr>
-                              <th>Name</th>
-                              <th>Email</th>
-                              <th>Role</th>
-                              <th>Actions</th>
+                              <th style={compactThStyle}>Name</th>
+                              <th style={compactThStyle}>Email</th>
+                              <th style={compactThStyle}>Role</th>
+                              <th style={compactThStyle}>Actions</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1510,27 +1469,32 @@ export const OrganisationDetailPage: React.FC = () => {
 
                               return (
                                 <tr key={user.id}>
-                                  <td>
+                                  <td style={compactTextTdStyle}>
                                     <Link
                                       to={`/organisations/${currentOrgSlug}/users/${user.id}`}
                                       className="text-blue-600 hover:underline"
-                                      style={{ fontSize: '0.85rem' }}
                                     >
                                       {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
                                     </Link>
                                   </td>
-                                  <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
-                                  <td>
+                                  <td style={compactTextTdStyle}>{user.email}</td>
+                                  <td style={compactTdStyle}>
                                     <Badge variant="default">{role}</Badge>
                                   </td>
-                                  <td>
+                                  <td style={compactTdStyle}>
                                     {userCanManageMembers ? (
-                                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                      <div style={compactActionsStyle}>
                                         <button
                                           onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
                                           style={actionButtonStyle('primary')}
                                         >
                                           Open
+                                        </button>
+                                        <button
+                                          onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
+                                          style={actionButtonStyle('neutral')}
+                                        >
+                                          View
                                         </button>
                                         <button
                                           onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
