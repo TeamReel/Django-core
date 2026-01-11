@@ -154,6 +154,7 @@ export const ProjectDetailPage: React.FC = () => {
   const [seasonsLoading, setSeasonsLoading] = useState(false);
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [competitionsLoading, setCompetitionsLoading] = useState(false);
+  const [competitionFilter, setCompetitionFilter] = useState<'all' | 'with-matches' | 'without-matches'>('all');
   const [allMatches, setAllMatches] = useState<any[]>([]);
   const [allMatchesLoading, setAllMatchesLoading] = useState(false);
 
@@ -2239,26 +2240,80 @@ export const ProjectDetailPage: React.FC = () => {
 
             {activeTab === 'competitions' && (
               <Card>
-                <h3 className="text-lg font-semibold mb-4">Competitions</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Competitions</h3>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCompetitionFilter('all')}
+                      className={`px-3 py-1 text-sm rounded ${
+                        competitionFilter === 'all'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setCompetitionFilter('with-matches')}
+                      className={`px-3 py-1 text-sm rounded ${
+                        competitionFilter === 'with-matches'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      With Matches
+                    </button>
+                    <button
+                      onClick={() => setCompetitionFilter('without-matches')}
+                      className={`px-3 py-1 text-sm rounded ${
+                        competitionFilter === 'without-matches'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      Without Matches
+                    </button>
+                  </div>
+                </div>
                 {competitionsLoading ? (
                   <div className="text-center py-4 text-gray-500">Loading competitions...</div>
                 ) : competitions.length === 0 ? (
                   <Alert variant="info">No competitions found.</Alert>
                 ) : (
-                  <Table style={compactTableStyle}>
-                    <thead>
-                      <tr>
-                        <th style={compactThStyle}>Competition</th>
-                        <th style={compactThStyle}>Season</th>
-                        {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
-                        <th style={compactThStyle}>Matches</th>
-                        <th style={compactThStyle} className="text-right">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {competitions.map((comp: any) => {
+                  (() => {
+                    // Apply filter
+                    const filteredCompetitions = competitions.filter((comp: any) => {
+                      const compId = String(comp.id);
+                      const compMatches = allMatches.filter((m: any) => {
+                        const mPeriodId = String(m.period_id || m.period?.id || '');
+                        return mPeriodId === compId;
+                      });
+                      const hasMatches = compMatches.length > 0;
+
+                      if (competitionFilter === 'with-matches') return hasMatches;
+                      if (competitionFilter === 'without-matches') return !hasMatches;
+                      return true; // 'all'
+                    });
+
+                    if (filteredCompetitions.length === 0) {
+                      return <Alert variant="info">No competitions match the selected filter.</Alert>;
+                    }
+
+                    return (
+                      <Table style={compactTableStyle}>
+                        <thead>
+                          <tr>
+                            <th style={compactThStyle}>Competition</th>
+                            <th style={compactThStyle}>Season</th>
+                            {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
+                            <th style={compactThStyle}>Matches</th>
+                            <th style={compactThStyle} className="text-right">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredCompetitions.map((comp: any) => {
                         const seasonId = String(comp.parent_period_id || comp.parent_period?.id || '');
                         const seasonSlug = String(comp.parent_period?.slug || '');
                         const clubSlug = String(project.slug || project.id);
@@ -2344,6 +2399,8 @@ export const ProjectDetailPage: React.FC = () => {
                       })}
                     </tbody>
                   </Table>
+                    );
+                  })()
                 )}
               </Card>
             )}
