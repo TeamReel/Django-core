@@ -1332,7 +1332,7 @@ export const OrganisationDetailPage: React.FC = () => {
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => navigate(`/organisations/${currentOrgSlug}/members/invite`)}
-                  style={actionButtonStyle('primary')}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                 >
                   Add User
                 </button>
@@ -1620,7 +1620,7 @@ export const OrganisationDetailPage: React.FC = () => {
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <button
                         onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/create?type=club`)}
-                        style={actionButtonStyle('primary')}
+                        style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                       >
                         Add Club
                       </button>
@@ -1822,7 +1822,7 @@ export const OrganisationDetailPage: React.FC = () => {
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/create?type=team`)}
-                  style={actionButtonStyle('primary')}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                 >
                   Add Team
                 </button>
@@ -2044,7 +2044,7 @@ export const OrganisationDetailPage: React.FC = () => {
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/create?type=team`)}
-                  style={actionButtonStyle('primary')}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                 >
                   Add Team
                 </button>
@@ -2257,7 +2257,7 @@ export const OrganisationDetailPage: React.FC = () => {
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => navigate(`/organisations/${currentOrgSlug}/periods/create?type=season`)}
-                  style={actionButtonStyle('primary')}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                 >
                   Add Season
                 </button>
@@ -2511,7 +2511,7 @@ export const OrganisationDetailPage: React.FC = () => {
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => navigate(`/organisations/${currentOrgSlug}/periods/create?type=competition`)}
-                  style={actionButtonStyle('primary')}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: '500' }}
                 >
                   Add Competition
                 </button>
@@ -2797,7 +2797,7 @@ export const OrganisationDetailPage: React.FC = () => {
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => navigate(`/organisations/${currentOrgSlug}/matches/create`)}
-                  style={actionButtonStyle('primary')}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                 >
                   Add Match
                 </button>
