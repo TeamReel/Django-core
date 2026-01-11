@@ -276,7 +276,7 @@ export const OrganisationDetailPage: React.FC = () => {
     flexWrap: 'wrap',
   };
 
-  type ActionTone = 'neutral' | 'primary' | 'danger';
+  type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
   const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
     const base: React.CSSProperties = {
       padding: '4px 8px',
@@ -288,6 +288,9 @@ export const OrganisationDetailPage: React.FC = () => {
     };
     if (tone === 'primary') {
       return { ...base, border: '1px solid #007bff', color: '#007bff' };
+    }
+    if (tone === 'warning') {
+      return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
     }
     if (tone === 'danger') {
       return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
@@ -1374,7 +1377,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   const pageItems = filteredMembers.slice(start, start + usersPageSize);
 
                   // Define action button helpers
-                  const actionButtonStyle = (variant: 'neutral' | 'primary' | 'danger') => {
+                  const actionButtonStyle = (variant: 'neutral' | 'primary' | 'warning' | 'danger') => {
                     const baseStyle = {
                       padding: '6px 12px',
                       borderRadius: '4px',
@@ -1395,6 +1398,13 @@ export const OrganisationDetailPage: React.FC = () => {
                         ...baseStyle,
                         border: '1px solid #0056b3',
                         backgroundColor: '#007bff',
+                        color: '#fff',
+                      };
+                    } else if (variant === 'warning') {
+                      return {
+                        ...baseStyle,
+                        border: '1px solid #fd7e14',
+                        backgroundColor: '#fd7e14',
                         color: '#fff',
                       };
                     } else {
@@ -1470,7 +1480,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         </button>
                                         <button
                                           onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
-                                          style={actionButtonStyle('primary')}
+                                          style={actionButtonStyle('warning')}
                                         >
                                           Edit
                                         </button>
@@ -2394,7 +2404,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         setSelectedEditProject(seasonProject as any);
                                         setIsEditModalOpen(true);
                                       }}
-                                      style={actionButtonStyle('primary')}
+                                      style={actionButtonStyle('warning')}
                                     >
                                       Edit
                                     </button>
@@ -2658,7 +2668,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         setSelectedEditProject(compProject as any);
                                         setIsEditModalOpen(true);
                                       }}
-                                      style={actionButtonStyle('primary')}
+                                      style={actionButtonStyle('warning')}
                                     >
                                       Edit
                                     </button>
@@ -2991,7 +3001,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         setSelectedEditProject(matchProject as any);
                                         setIsEditModalOpen(true);
                                       }}
-                                      style={actionButtonStyle('primary')}
+                                      style={actionButtonStyle('warning')}
                                     >
                                       Edit
                                     </button>
