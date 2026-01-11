@@ -692,83 +692,90 @@ export const ProjectDetailPage: React.FC = () => {
               setMembers(normalized);
 
               // Clubs often don't have direct memberships; show people via child teams if needed.
-              if (!isTeamRoute && normalized.length === 0 && resolvedOrg?.slug) {
+              if (!isTeamRoute && normalized.length === 0) {
                 const teams = await ensureChildTeamsLoaded();
-                const teamIds = new Set(teams.map((t: any) => String(t.id)));
+                const teamIds = Array.from(teams.map((t: any) => String(t.id)));
 
-                const params = new URLSearchParams();
-                params.set('page_size', '250');
-                params.set('include_project_memberships', 'true');
-                params.set('include_role_assignments', 'true');
-                const orgMembersEndpoint = `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/members/?${params.toString()}`;
+                // Fetch members per team to avoid pagination issues
+                // (org-wide fetch with page_size=250 only returns subset of members)
+                const allMembersMap = new Map<string, any>();
 
-                const orgMembers = await fetchAllPages<any>(orgMembersEndpoint, {
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                  },
-                  credentials: 'include',
-                });
+                for (const teamId of teamIds) {
+                  const teamMembersEndpoint = `${apiBaseUrl}/api/v1/projects/${teamId}/members/`;
+                  try {
+                    const teamMembersResponse = await fetch(teamMembersEndpoint, {
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                      },
+                      credentials: 'include',
+                    });
 
-                const clubId = String(projectIdForApi);
-                const filtered = (orgMembers || []).filter((u: any) =>
-                  u.project_memberships?.some((m: any) => {
-                    const pid = String(m.project_id || m.project?.id || '');
-                    if (pid === clubId) return true;
-                    if (teamIds.has(pid)) return true;
-                    const parentId = String(
-                      m.project?.parent_project_id || m.project?.parent_id || m.project?.parent_project?.id || ''
-                    );
-                    return parentId === clubId;
-                  })
-                );
+                    if (teamMembersResponse.ok) {
+                      const teamMembersData = await teamMembersResponse.json();
+                      const teamMembersList = getPagedResults(teamMembersData);
 
-                setMembers(Array.isArray(filtered) ? filtered : []);
-                console.log(`[ProjectDetailPage] Club members loaded: ${(filtered || []).length} members with project_memberships`);
+                      // Add to map to deduplicate (users can be in multiple teams)
+                      for (const member of teamMembersList) {
+                        const userId = member.user?.id || member.id;
+                        if (userId && !allMembersMap.has(String(userId))) {
+                          allMembersMap.set(String(userId), member);
+                        }
+                      }
+                    }
+                  } catch (err) {
+                    console.warn(`[ProjectDetailPage] Failed to fetch members for team ${teamId}:`, err);
+                  }
+                }
+
+                const clubMembers = Array.from(allMembersMap.values());
+                setMembers(clubMembers);
+                console.log(`[ProjectDetailPage] Club members loaded: ${clubMembers.length} unique members from ${teamIds.length} teams`);
               }
             } else {
               console.error(
                 `[ProjectDetailPage] Project members endpoint failed with status ${membersByIdResponse.status} for ${membersByIdEndpoint}`
               );
 
-              // Fallback: fetch org members with memberships included, then filter client-side.
-              // This avoids showing ALL org members by only selecting those linked to this project.
-              const orgSlugForMembers = resolvedOrg?.slug;
-              if (!orgSlugForMembers) {
-                setMembers([]);
-              } else {
-                const params = new URLSearchParams();
-                params.set('page_size', '250');
-                params.set('include_project_memberships', 'true');
-                params.set('include_role_assignments', 'true');
-                const orgMembersEndpoint = `${apiBaseUrl}/api/v1/organisations/${orgSlugForMembers}/members/?${params.toString()}`;
+              // Fallback: For clubs, fetch members per team instead of org-wide filtering
+              if (!isTeamRoute) {
+                const teams = await ensureChildTeamsLoaded();
+                const teamIds = Array.from(teams.map((t: any) => String(t.id)));
 
-                const orgMembersResponse = await fetch(orgMembersEndpoint, {
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                  },
-                  credentials: 'include',
-                });
+                const allMembersMap = new Map<string, any>();
 
-                if (orgMembersResponse.ok) {
-                  const orgMembersData = await orgMembersResponse.json();
-                  let orgMembersList = getPagedResults(orgMembersData);
+                for (const teamId of teamIds) {
+                  const teamMembersEndpoint = `${apiBaseUrl}/api/v1/projects/${teamId}/members/`;
+                  try {
+                    const teamMembersResponse = await fetch(teamMembersEndpoint, {
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                      },
+                      credentials: 'include',
+                    });
 
-                  orgMembersList = orgMembersList.filter((u: any) =>
-                    u.project_memberships?.some(
-                      (m: any) => String(m.project_id || m.project?.id) === String(projectIdForApi)
-                    )
-                  );
+                    if (teamMembersResponse.ok) {
+                      const teamMembersData = await teamMembersResponse.json();
+                      const teamMembersList = getPagedResults(teamMembersData);
 
-                  setMembers(Array.isArray(orgMembersList) ? orgMembersList : []);
-                  console.log(`[ProjectDetailPage] Fallback members: ${orgMembersList.length} members with project_memberships to project ${projectIdForApi}`);
-                } else {
-                  console.error(
-                    `[ProjectDetailPage] Org members fallback failed with status ${orgMembersResponse.status} for ${orgMembersEndpoint}`
-                  );
-                  setMembers([]);
+                      for (const member of teamMembersList) {
+                        const userId = member.user?.id || member.id;
+                        if (userId && !allMembersMap.has(String(userId))) {
+                          allMembersMap.set(String(userId), member);
+                        }
+                      }
+                    }
+                  } catch (err) {
+                    console.warn(`[ProjectDetailPage] Fallback: Failed to fetch members for team ${teamId}:`, err);
+                  }
                 }
+
+                const clubMembers = Array.from(allMembersMap.values());
+                setMembers(clubMembers);
+                console.log(`[ProjectDetailPage] Fallback: Loaded ${clubMembers.length} unique club members from ${teamIds.length} teams`);
+              } else {
+                setMembers([]);
               }
             }
           }
