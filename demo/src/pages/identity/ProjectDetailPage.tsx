@@ -158,6 +158,12 @@ export const ProjectDetailPage: React.FC = () => {
   const [allMatches, setAllMatches] = useState<any[]>([]);
   const [allMatchesLoading, setAllMatchesLoading] = useState(false);
 
+  // People tab filters
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>('all');
+  const [selectedSeasonFilter, setSelectedSeasonFilter] = useState<string>('all');
+  const [selectedCompetitionFilter, setSelectedCompetitionFilter] = useState<string>('all');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
+
   // Period helper functions (matching OrganisationDetailPage pattern)
   const getPeriodType = (p: any): string => {
     const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
@@ -1950,7 +1956,56 @@ export const ProjectDetailPage: React.FC = () => {
                   <MemberList projectId={String(project.id)} initialMembers={members as any} />
                 ) : (
                   <>
-                    <h3 className="text-lg font-semibold mb-4">People</h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold">People</h3>
+                      <div className="flex gap-2">
+                        <select
+                          value={selectedTeamFilter}
+                          onChange={(e) => setSelectedTeamFilter(e.target.value)}
+                          className="px-3 py-1 border border-gray-300 rounded text-sm"
+                        >
+                          <option value="all">All Teams</option>
+                          {childProjects.map((team) => (
+                            <option key={team.id} value={String(team.id)}>
+                              {team.name}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={selectedSeasonFilter}
+                          onChange={(e) => setSelectedSeasonFilter(e.target.value)}
+                          className="px-3 py-1 border border-gray-300 rounded text-sm"
+                        >
+                          <option value="all">All Seasons</option>
+                          {seasons.map((season) => (
+                            <option key={season.id} value={String(season.id)}>
+                              {season.name}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={selectedCompetitionFilter}
+                          onChange={(e) => setSelectedCompetitionFilter(e.target.value)}
+                          className="px-3 py-1 border border-gray-300 rounded text-sm"
+                        >
+                          <option value="all">All Competitions</option>
+                          {competitions.map((comp) => (
+                            <option key={comp.id} value={String(comp.id)}>
+                              {comp.name}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={selectedStatusFilter}
+                          onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                          className="px-3 py-1 border border-gray-300 rounded text-sm"
+                        >
+                          <option value="all">All Status</option>
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                      </div>
+                    </div>
                     {members.length === 0 ? (
                       <Alert variant="info">No people found for this club.</Alert>
                     ) : (
@@ -1959,26 +2014,110 @@ export const ProjectDetailPage: React.FC = () => {
                           <tr>
                             <th style={compactThStyle}>Name</th>
                             <th style={compactThStyle}>Email</th>
+                            <th style={compactThStyle}>Team</th>
                             <th style={compactThStyle}>Role</th>
+                            <th style={compactThStyle} className="text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {members.map((item: any) => {
-                            const user = item.user || item;
-                            const name =
-                              user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || '-';
-                            const email = user.email || '-';
-                            const role = item.role || user.role || 'member';
-                            return (
-                              <tr key={String(user.id || item.id)}>
-                                <td style={compactTextTdStyle}>{name}</td>
-                                <td style={compactTextTdStyle}>{email}</td>
-                                <td style={compactTextTdStyle}>
-                                  <Badge variant="default">{String(role)}</Badge>
-                                </td>
-                              </tr>
-                            );
-                          })}
+                          {(() => {
+                            // Apply filters
+                            let filteredMembers = members;
+
+                            // Filter by team
+                            if (selectedTeamFilter !== 'all') {
+                              filteredMembers = filteredMembers.filter((item: any) => {
+                                const projectId = String(item.project_id || item.project?.id || '');
+                                return projectId === selectedTeamFilter;
+                              });
+                            }
+
+                            // Filter by status
+                            if (selectedStatusFilter !== 'all') {
+                              filteredMembers = filteredMembers.filter((item: any) => {
+                                const isActive = item.is_active !== undefined ? item.is_active : true;
+                                return selectedStatusFilter === 'active' ? isActive : !isActive;
+                              });
+                            }
+
+                            return filteredMembers.map((item: any) => {
+                              const user = item.user || item;
+                              const userId = String(user.id || item.id);
+                              const membershipId = String(item.membership_id || item.id);
+                              const name =
+                                user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || '-';
+                              const email = user.email || '-';
+                              const role = item.role || user.role || 'member';
+                              const projectId = String(item.project_id || item.project?.id || '');
+                              const teamName = childProjects.find(t => String(t.id) === projectId)?.name || '-';
+
+                              return (
+                                <tr key={`${userId}-${membershipId}`}>
+                                  <td style={compactTextTdStyle}>{name}</td>
+                                  <td style={compactTextTdStyle}>{email}</td>
+                                  <td style={compactTextTdStyle}>{teamName}</td>
+                                  <td style={compactTextTdStyle}>
+                                    <Badge variant="default">{String(role)}</Badge>
+                                  </td>
+                                  <td style={compactTdStyle}>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                      <button
+                                        onClick={() => navigate(`/users/${userId}`)}
+                                        style={actionButtonStyle('neutral')}
+                                      >
+                                        View
+                                      </button>
+                                      {userCanEditProject && (
+                                        <button
+                                          onClick={() => navigate(`/users/${userId}/edit`)}
+                                          style={actionButtonStyle('primary')}
+                                        >
+                                          Edit
+                                        </button>
+                                      )}
+                                      {userCanDeleteProject && (
+                                        <button
+                                          onClick={async () => {
+                                            if (!window.confirm(`Are you sure you want to remove ${name} from this club?`)) return;
+                                            try {
+                                              const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                              const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                                              const res = await fetch(
+                                                `${apiBaseUrl}/api/v1/projects/${projectId}/members/${userId}/`,
+                                                {
+                                                  method: 'DELETE',
+                                                  headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRFToken': csrfToken || '',
+                                                  },
+                                                  credentials: 'include',
+                                                }
+                                              );
+
+                                              if (res.ok) {
+                                                setMembers((prev) => prev.filter((m) =>
+                                                  String(m.user?.id || m.id) !== userId ||
+                                                  String(m.project_id || m.project?.id) !== projectId
+                                                ));
+                                              } else {
+                                                alert('Error removing member');
+                                              }
+                                            } catch (e) {
+                                              console.error(e);
+                                              alert('Error removing member');
+                                            }
+                                          }}
+                                          style={actionButtonStyle('danger')}
+                                        >
+                                          Delete
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            });
+                          })()}
                         </tbody>
                       </Table>
                     )}
