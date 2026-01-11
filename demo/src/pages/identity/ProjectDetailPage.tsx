@@ -1027,6 +1027,9 @@ export const ProjectDetailPage: React.FC = () => {
         const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, { credentials: 'include' });
         if (!res.ok) {
           console.log(`[fetchAllMatches] Club view: API failed with status ${res.status}`);
+          setAllMatches([]);
+          return;
+        }
         const json = await res.json();
         const results = getPagedResults(json);
         console.log(`[fetchAllMatches] Club view: Fetched ${results.length} matches from org ${orgIdValue}`);
