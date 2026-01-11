@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { Alert, Card, Button } from '@django-core/design-system';
+import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
@@ -345,17 +345,23 @@ export const TeamsList: React.FC = () => {
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
               <colgroup>
-                <col style={{ width: '180px' }} />
-                <col style={{ width: '180px' }} />
-                <col style={{ width: '200px' }} />
-                <col style={{ width: '120px' }} />
-                <col style={{ width: '330px' }} />
+                <col style={{ width: '150px' }} />
+                <col style={{ width: '150px' }} />
+                <col style={{ width: '150px' }} />
+                <col style={{ width: '80px' }} />
+                <col style={{ width: '80px' }} />
+                <col style={{ width: '80px' }} />
+                <col style={{ width: '100px' }} />
+                <col style={{ width: '280px' }} />
               </colgroup>
               <thead>
                 <tr>
                     <th style={compactThStyle}>Team</th>
                     <th style={compactThStyle}>Club</th>
                     <th style={compactThStyle}>Federation</th>
+                    <th style={compactThStyle}>Seasons</th>
+                    <th style={compactThStyle}>Comps</th>
+                    <th style={compactThStyle}>Users</th>
                     <th style={compactThStyle}>Status</th>
                     <th style={compactThStyle}>Actions</th>
                 </tr>
@@ -433,6 +439,21 @@ export const TeamsList: React.FC = () => {
                                 ) : (
                                     team.organisation?.name || '-'
                                 )}
+                            </td>
+                            <td style={compactTdStyle}>
+                              <Badge variant="default">
+                                {(team as any).seasons_count || 0}
+                              </Badge>
+                            </td>
+                            <td style={compactTdStyle}>
+                              <Badge variant="default">
+                                {(team as any).competitions_count || 0}
+                              </Badge>
+                            </td>
+                            <td style={compactTdStyle}>
+                              <Badge variant="default">
+                                {(team as any).member_count || 0}
+                              </Badge>
                             </td>
                             <td style={compactTdStyle}>{team.is_active === false ? 'Inactive' : 'Active'}</td>
                             <td style={compactTdStyle}>

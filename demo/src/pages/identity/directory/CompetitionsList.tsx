@@ -164,7 +164,7 @@ export const CompetitionsList: React.FC = () => {
         if (!res.ok) throw new Error(`API error: ${res.status}`);
 
         const data = await res.json();
-        const results = data.data?.results || data.results || data.data || [];
+        const results = data.data?.data || data.data?.results || data.results || data.data || [];
         setCompetitions(Array.isArray(results) ? results : []);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load competitions');

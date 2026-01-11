@@ -261,22 +261,29 @@ export const FederationsList: React.FC = () => {
               <Table style={compactTableStyle}>
                 <colgroup>
                   <col />
+                  <col style={{ width: '90px' }} />
+                  <col style={{ width: '90px' }} />
+                  <col style={{ width: '90px' }} />
+                  <col style={{ width: '90px' }} />
+                  <col style={{ width: '90px' }} />
+                  <col style={{ width: '90px' }} />
+                  <col style={{ width: '90px' }} />
                   <col style={{ width: '100px' }} />
-                  <col style={{ width: '100px' }} />
-                  <col style={{ width: '100px' }} />
-                  <col style={{ width: '120px' }} />
-                  <col style={{ width: '330px' }} />
+                  <col style={{ width: '280px' }} />
                 </colgroup>
                 <thead>
                   <tr>
                     <th onClick={() => handleSort('name')} style={{ ...compactThStyle, cursor: 'pointer' }}>
                       Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th onClick={() => handleSort('member_count')} style={{ ...compactThStyle, cursor: 'pointer' }}>
-                      Members {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
-                    </th>
                     <th onClick={() => handleSort('project_count')} style={{ ...compactThStyle, cursor: 'pointer' }}>
-                      Projects {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
+                      Clubs {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th style={compactThStyle}>Teams</th>
+                    <th style={compactThStyle}>Seasons</th>
+                    <th style={compactThStyle}>Comps</th>
+                    <th onClick={() => handleSort('member_count')} style={{ ...compactThStyle, cursor: 'pointer' }}>
+                      Users {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
                     <th onClick={() => handleSort('credit_balance')} style={{ ...compactThStyle, cursor: 'pointer' }}>
                       Credits {sort === 'credit_balance' && (order === 'asc' ? '↑' : '↓')}
@@ -311,12 +318,27 @@ export const FederationsList: React.FC = () => {
                         </td>
                         <td style={compactTdStyle}>
                           <Badge variant="default">
-                            {org.member_count || 0}
+                            {org.project_count || 0}
                           </Badge>
                         </td>
                         <td style={compactTdStyle}>
                           <Badge variant="default">
-                            {org.project_count || 0}
+                            {(org as any).teams_count || 0}
+                          </Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">
+                            {(org as any).seasons_count || 0}
+                          </Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">
+                            {(org as any).competitions_count || 0}
+                          </Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">
+                            {org.member_count || 0}
                           </Badge>
                         </td>
                         <td style={compactTdStyle}>
