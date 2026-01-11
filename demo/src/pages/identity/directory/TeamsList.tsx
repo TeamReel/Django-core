@@ -152,25 +152,19 @@ export const TeamsList: React.FC = () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
       try {
-        const [clubsRes, teamsRes] = await Promise.all([
-            fetch(`${apiBaseUrl}/api/v1/projects/?page_size=300&parent_project__isnull=true`, { credentials: 'include' }),
-            fetch(`${apiBaseUrl}/api/v1/projects/?page_size=300&parent_project__isnull=false`, { credentials: 'include' })
+        // Use fetchAllPages to get ALL teams across all pages
+        const [clubsData, teamsData] = await Promise.all([
+            fetchAllPages<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`),
+            fetchAllPages<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`)
         ]);
 
-        if (clubsRes.ok) {
-            const data = await clubsRes.json();
-            const clubsData = data.results || data.data?.results || [];
-            console.log('📦 Clubs loaded:', clubsData.length, clubsData.slice(0, 2));
-            setClubs(clubsData);
-        }
-        if (teamsRes.ok) {
-            const data = await teamsRes.json();
-            const teamsData = data.results || data.data?.results || [];
-            console.log('⚽ Teams loaded:', teamsData.length, 'teams');
-            console.log('First team sample:', teamsData[0]);
-            console.log('Ajax teams:', teamsData.filter((t: any) => t.name?.toLowerCase().includes('ajax')));
-            setTeams(teamsData);
-        }
+        console.log('📦 Clubs loaded:', clubsData.length, clubsData.slice(0, 2));
+        setClubs(clubsData);
+
+        console.log('⚽ Teams loaded:', teamsData.length, 'teams');
+        console.log('First team sample:', teamsData[0]);
+        console.log('Ajax teams:', teamsData.filter((t: any) => t.name?.toLowerCase().includes('ajax')));
+        setTeams(teamsData);
 
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load teams');
