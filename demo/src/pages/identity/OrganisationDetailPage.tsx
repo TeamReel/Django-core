@@ -1316,15 +1316,13 @@ export const OrganisationDetailPage: React.FC = () => {
           <Card className="mb-6">
             <div className="flex justify-between items-center mb-4" style={{ gap: '12px', flexWrap: 'wrap' }}>
               <h3 className="text-lg font-semibold">Users</h3>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ width: '280px', maxWidth: '100%' }}>
-                  <Input
-                    value={memberSearch}
-                    onChange={(e) => setMemberSearch(e.target.value)}
-                    placeholder="Search users (name/email)"
-                  />
-                </div>
-              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+              <Input
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder="Search users (name/email)"
+              />
             </div>
 
             {membersLoading ? (
@@ -1570,34 +1568,36 @@ export const OrganisationDetailPage: React.FC = () => {
                     }}
                   >
                     <h3 className="text-lg font-semibold">Clubs</h3>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <div style={{ width: '240px', maxWidth: '100%' }}>
-                        <Input value={clubSearch} onChange={(e) => setClubSearch(e.target.value)} placeholder="Search clubs" />
-                      </div>
-                      <select
-                        value={clubStatusFilter}
-                        onChange={(e) => setClubStatusFilter(e.target.value as any)}
-                        style={{
-                          padding: '8px',
-                          borderRadius: '4px',
-                          border: '1px solid var(--app-border)',
-                          backgroundColor: 'var(--app-input-bg)',
-                          color: 'var(--app-text)',
-                        }}
-                      >
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
-                      <Button variant="secondary" size="sm" onClick={() => navigate(`/clubs?org_id=${encodeURIComponent(orgSlugOrId)}`)}>
-                        Open Clubs List
-                      </Button>
-                      {allClubsForTeams.length === 0 && (
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>
-                            Page {clubsPage} of {Math.max(1, Math.ceil((clubsCount || 0) / clubsPageSize))} ({clubsCount || 0} clubs)
-                          </div>
-                          <Button
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                    <Input value={clubSearch} onChange={(e) => setClubSearch(e.target.value)} placeholder="Search clubs" />
+                    <select
+                      value={clubStatusFilter}
+                      onChange={(e) => setClubStatusFilter(e.target.value as any)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        backgroundColor: 'var(--app-surface)',
+                      }}
+                    >
+                      <option value="all">Status: All</option>
+                      <option value="active">Status: Active</option>
+                      <option value="inactive">Status: Inactive</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(`/clubs?org_id=${encodeURIComponent(orgSlugOrId)}`)}>
+                      Open Clubs List
+                    </Button>
+                    {allClubsForTeams.length === 0 && (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>
+                          Page {clubsPage} of {Math.max(1, Math.ceil((clubsCount || 0) / clubsPageSize))} ({clubsCount || 0} clubs)
+                        </div>
+                        <Button
                             variant="secondary"
                             size="sm"
                             disabled={clubsPage <= 1 || clubsLoading}
@@ -1615,10 +1615,9 @@ export const OrganisationDetailPage: React.FC = () => {
                           </Button>
                         </div>
                       )}
-                      <div style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>
-                        Showing {filteredClubs.length} of {totalCount || 0}
-                        {orgPeriodsLoading ? ' • Loading periods…' : ''}
-                      </div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>
+                      Showing {filteredClubs.length} of {totalCount || 0}
+                      {orgPeriodsLoading ? ' • Loading periods…' : ''}
                     </div>
                   </div>
 
@@ -1987,10 +1986,8 @@ export const OrganisationDetailPage: React.FC = () => {
               </Button>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
-              <div style={{ width: '240px', maxWidth: '100%' }}>
-                <Input value={seasonSearch} onChange={(e) => setSeasonSearch(e.target.value)} placeholder="Search seasons" />
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+              <Input value={seasonSearch} onChange={(e) => setSeasonSearch(e.target.value)} placeholder="Search seasons" />
               <select
                 value={seasonClubFilterId}
                 onChange={(e) => {
@@ -1998,15 +1995,15 @@ export const OrganisationDetailPage: React.FC = () => {
                   setSeasonTeamFilterId('');
                 }}
                 style={{
-                  padding: '8px',
-                  borderRadius: '4px',
+                  width: '100%',
+                  padding: '8px 12px',
                   border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)',
-                  minWidth: '200px',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  backgroundColor: 'var(--app-surface)',
                 }}
               >
-                <option value="">All clubs</option>
+                <option value="">Club: All</option>
                 {allClubsForTeams.map((c: any) => (
                   <option key={c.id} value={String(c.id)}>
                     {c.name}
@@ -2017,15 +2014,15 @@ export const OrganisationDetailPage: React.FC = () => {
                 value={seasonTeamFilterId}
                 onChange={(e) => setSeasonTeamFilterId(e.target.value)}
                 style={{
-                  padding: '8px',
-                  borderRadius: '4px',
+                  width: '100%',
+                  padding: '8px 12px',
                   border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)',
-                  minWidth: '220px',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  backgroundColor: 'var(--app-surface)',
                 }}
               >
-                <option value="">All teams</option>
+                <option value="">Team: All</option>
                 {(teams as any[])
                   .filter((t: any) => {
                     if (!seasonClubFilterId) return true;
@@ -2164,10 +2161,8 @@ export const OrganisationDetailPage: React.FC = () => {
               </Button>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
-              <div style={{ width: '240px', maxWidth: '100%' }}>
-                <Input value={competitionSearch} onChange={(e) => setCompetitionSearch(e.target.value)} placeholder="Search competitions" />
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+              <Input value={competitionSearch} onChange={(e) => setCompetitionSearch(e.target.value)} placeholder="Search competitions" />
               <select
                 value={compClubFilterId}
                 onChange={(e) => {
@@ -2175,9 +2170,9 @@ export const OrganisationDetailPage: React.FC = () => {
                   setCompTeamFilterId('');
                   setCompSeasonFilterId('');
                 }}
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
               >
-                <option value="">All clubs</option>
+                <option value="">Club: All</option>
                 {allClubsForTeams.map((c: any) => (
                   <option key={c.id} value={String(c.id)}>{c.name}</option>
                 ))}
@@ -2188,9 +2183,9 @@ export const OrganisationDetailPage: React.FC = () => {
                   setCompTeamFilterId(e.target.value);
                   setCompSeasonFilterId('');
                 }}
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
               >
-                <option value="">All teams</option>
+                <option value="">Team: All</option>
                 {(teams as any[])
                   .filter((t: any) => {
                     if (!compClubFilterId) return true;
@@ -2204,9 +2199,9 @@ export const OrganisationDetailPage: React.FC = () => {
               <select
                 value={compSeasonFilterId}
                 onChange={(e) => setCompSeasonFilterId(e.target.value)}
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
               >
-                <option value="">All seasons</option>
+                <option value="">Season: All</option>
                 {(orgPeriods as any[])
                   .filter((p: any) => isSeasonPeriod(p))
                   .filter((s: any) => {
@@ -2342,10 +2337,8 @@ export const OrganisationDetailPage: React.FC = () => {
               </Button>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
-              <div style={{ width: '240px', maxWidth: '100%' }}>
-                <Input value={matchSearch} onChange={(e) => setMatchSearch(e.target.value)} placeholder="Search matches" />
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+              <Input value={matchSearch} onChange={(e) => setMatchSearch(e.target.value)} placeholder="Search matches" />
               <select
                 value={matchClubFilterId}
                 onChange={(e) => {
@@ -2353,9 +2346,9 @@ export const OrganisationDetailPage: React.FC = () => {
                   setMatchTeamFilterId('');
                   setMatchCompFilterId('');
                 }}
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
               >
-                <option value="">All clubs</option>
+                <option value="">Club: All</option>
                 {allClubsForTeams.map((c: any) => (
                   <option key={c.id} value={String(c.id)}>{c.name}</option>
                 ))}
@@ -2366,9 +2359,9 @@ export const OrganisationDetailPage: React.FC = () => {
                   setMatchTeamFilterId(e.target.value);
                   setMatchCompFilterId('');
                 }}
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
               >
-                <option value="">All teams</option>
+                <option value="">Team: All</option>
                 {(teams as any[])
                   .filter((t: any) => {
                     if (!matchClubFilterId) return true;
@@ -2382,9 +2375,9 @@ export const OrganisationDetailPage: React.FC = () => {
               <select
                 value={matchCompFilterId}
                 onChange={(e) => setMatchCompFilterId(e.target.value)}
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-input-bg)', color: 'var(--app-text)', minWidth: '180px' }}
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
               >
-                <option value="">All competitions</option>
+                <option value="">Competition: All</option>
                 {(orgPeriods as any[])
                   .filter((p: any) => isCompetitionPeriod(p))
                   .filter((c: any) => {
