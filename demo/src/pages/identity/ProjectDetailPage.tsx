@@ -144,6 +144,9 @@ export const ProjectDetailPage: React.FC = () => {
   const [club, setClub] = useState<Project | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Fetch organisation with user_role for permissions
+  const [orgWithRole, setOrgWithRole] = useState<any>(null);
+
   // Tab Data State
   const [childProjects, setChildProjects] = useState<Project[]>([]);
   const [childProjectsLoading, setChildProjectsLoading] = useState(false);
@@ -390,15 +393,16 @@ export const ProjectDetailPage: React.FC = () => {
 
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || Boolean((user as any)?.is_staff) || (user as any)?.role === 'Superadmin';
 
-  // Use fetched project.organisation if available (has user_role), fallback to resolvedOrg from context
-  const orgForPermissions = (project as any)?.organisation || resolvedOrg;
+  // Use orgWithRole (fetched with user_role) if available, otherwise fallback to project.organisation or resolvedOrg
+  const orgForPermissions = orgWithRole || (project as any)?.organisation || resolvedOrg;
 
   // Debug: Log permission context
   console.log('[ProjectDetailPage] Permission Debug:', {
     isSuperAdmin,
     orgForPermissions: orgForPermissions,
     user_role: (orgForPermissions as any)?.user_role,
-    projectOrg: (project as any)?.organisation,
+    orgWithRole: orgWithRole,
+    projectOrgFromData: (project as any)?.organisation,
     resolvedOrg: resolvedOrg
   });
 
@@ -778,6 +782,46 @@ export const ProjectDetailPage: React.FC = () => {
 
     fetchProjectDetails();
   }, [currentProjectSlug, resolvedOrg, context.isLoading, isTeamRoute, clubSlugOrId, orgSlugOrId, resolvedProject?.id]);
+
+  // Fetch organisation with user_role for permissions
+  useEffect(() => {
+    const fetchOrgWithUserRole = async () => {
+      if (!project) return;
+
+      // If project.organisation already has user_role, use it
+      if ((project as any)?.organisation?.user_role) {
+        setOrgWithRole((project as any).organisation);
+        return;
+      }
+
+      // Otherwise fetch the organisation explicitly
+      const orgIdOrSlug = (project as any)?.organisation_id || (project as any)?.organisation?.id || resolvedOrg?.id || resolvedOrg?.slug;
+      if (!orgIdOrSlug) return;
+
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const orgSlug = resolvedOrg?.slug || orgIdOrSlug;
+        const orgResponse = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'include',
+        });
+
+        if (orgResponse.ok) {
+          const rawOrgData = await orgResponse.json();
+          const orgData = rawOrgData.data || rawOrgData;
+          setOrgWithRole(orgData);
+          console.log('[ProjectDetailPage] Org with user_role fetched:', orgData);
+        }
+      } catch (err) {
+        console.error('[ProjectDetailPage] Failed to fetch org with user_role:', err);
+      }
+    };
+
+    fetchOrgWithUserRole();
+  }, [project?.id, resolvedOrg?.id, resolvedOrg?.slug]);
 
   // Fetch Tab Data Handlers
   const fetchChildTeams = async () => {
