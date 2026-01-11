@@ -247,13 +247,12 @@ export const ProjectDetailPage: React.FC = () => {
     const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
     console.log(`[ensureChildTeamsLoaded] After parent filter (parent=${parentId}): ${filteredByParent.length} projects`);
     // For displaying in Teams tab, use direct children only
-    // But for period queries (seasons/competitions), we need ALL nested teams
-    const directChildren = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
+    const directChildren = filteredByParent.length > 0 ? filteredByParent : [];
 
     setChildProjects(directChildren as Project[]);
-    // Return ALL teams (including grandchildren) for period fetching
-    console.log(`[ensureChildTeamsLoaded] Returning ${filteredByOrg.length} teams for period fetching`);
-    return filteredByOrg as Project[];
+    // Return direct children only (for members, matches, etc.)
+    console.log(`[ensureChildTeamsLoaded] Returning ${directChildren.length} direct child teams`);
+    return directChildren as Project[];
   };
 
   const fetchOrgTeamsForPeriodFiltering = async (): Promise<any[]> => {
