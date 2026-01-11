@@ -49,6 +49,35 @@ const compactTextTdStyle: React.CSSProperties = {
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
 };
+const compactActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: '8px',
+  flexWrap: 'nowrap'
+};
+
+// Button styling function
+type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
+const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
+  const base: React.CSSProperties = {
+    padding: '4px 8px',
+    borderRadius: '4px',
+    backgroundColor: 'var(--app-surface)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    lineHeight: 1.2,
+  };
+  if (tone === 'primary') {
+    return { ...base, border: '1px solid #007bff', color: '#007bff' };
+  }
+  if (tone === 'warning') {
+    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
+  }
+  if (tone === 'danger') {
+    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+  }
+  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
+};
 
 export const CompetitionsList: React.FC = () => {
   const navigate = useNavigate();
