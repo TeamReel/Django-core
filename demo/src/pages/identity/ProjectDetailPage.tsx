@@ -165,14 +165,16 @@ export const ProjectDetailPage: React.FC = () => {
   };
 
   const isSeasonPeriod = (p: any): boolean => {
+    // A season must be a root period (no parent)
+    const parentId = getPeriodParentId(p);
+    if (parentId) return false;
+
+    // Check if explicitly typed as season
     const type = getPeriodType(p);
     if (type === 'season') return true;
 
     // Fallback for older/legacy seeders that didn't set metadata.type.
     // Treat a root period named like "Season ..." / "Seizoen ..." as a season.
-    const parentId = getPeriodParentId(p);
-    if (parentId) return false;
-
     const name = String(p?.name || '').toLowerCase();
     if (name.startsWith('season') || name.startsWith('seizoen')) return true;
 
