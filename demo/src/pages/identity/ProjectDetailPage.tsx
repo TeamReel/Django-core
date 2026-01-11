@@ -939,7 +939,9 @@ export const ProjectDetailPage: React.FC = () => {
         params.set('page_size', '250');
 
         const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+        console.log('[fetchSeasons] Team view: fetching from', url);
         const results = await fetchAllPages<any>(url, { credentials: 'include' });
+        console.log('[fetchSeasons] Team view: raw results:', results.length);
         const filteredSeasons = (results || []).filter(isSeasonPeriod);
         // Remove duplicates by ID
         const uniqueSeasons = Array.from(
@@ -953,26 +955,39 @@ export const ProjectDetailPage: React.FC = () => {
         // 2) Fetch org periods using the same org-wide query as OrganisationDetail
         // 3) Filter to root season periods for those teamIds
         const clubIdValue = String(project.id);
+        console.log('[fetchSeasons] Club view: fetching teams for club', clubIdValue);
         const teams = await fetchClubTeamsForPeriodScope();
+        console.log('[fetchSeasons] Club view: teams found:', teams.length, teams.map(t => ({ id: t.id, name: t.name })));
         const teamIds = new Set(
           (teams || []).map((t: any) => String(t?.id || '')).filter(Boolean)
         );
 
         if (teamIds.size === 0) {
+          console.log('[fetchSeasons] Club view: No teams found, returning empty');
           setSeasons([]);
           return;
         }
 
         // Fetch root periods only, then filter down to season periods.
         // This avoids relying on pagination/order across all period types.
+        console.log('[fetchSeasons] Club view: fetching periods for teamIds:', Array.from(teamIds));
         const orgPeriods = await fetchOrgPeriodsForFiltering({ parentId: 'null' });
+        console.log('[fetchSeasons] Club view: org periods fetched:', orgPeriods.length);
         const filteredSeasons = (orgPeriods || [])
           .filter((p: any) => {
             const teamId = String(p?.project_id ?? p?.project?.id ?? '');
-            if (!teamId || !teamIds.has(teamId)) return false;
+            if (!teamId || !teamIds.has(teamId)) {
+              return false;
+            }
             const parentId = getPeriodParentId(p);
-            if (parentId) return false;
-            return isSeasonPeriod(p);
+            if (parentId) {
+              return false;
+            }
+            const isSeason = isSeasonPeriod(p);
+            if (isSeason) {
+              console.log('[fetchSeasons] Club view: Found season:', p.name, 'for team', teamId);
+            }
+            return isSeason;
           });
 
         // Remove duplicates by ID
