@@ -25,6 +25,31 @@ type Period = {
   data?: Record<string, any>;
 };
 
+// Table styling constants
+const compactTableStyle: React.CSSProperties = {
+  tableLayout: 'fixed',
+  width: '100%',
+  borderCollapse: 'collapse'
+};
+const compactThStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.8rem',
+  textAlign: 'left',
+  borderBottom: '2px solid var(--app-border)'
+};
+const compactTdStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.85rem',
+  verticalAlign: 'middle',
+  borderBottom: '1px solid #eee'
+};
+const compactTextTdStyle: React.CSSProperties = {
+  ...compactTdStyle,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+};
+
 export const CompetitionsList: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -203,13 +228,19 @@ export const CompetitionsList: React.FC = () => {
       {!isLoading && !error && !competitionsLoading && competitions.length > 0 && (
         <Card>
           <div className="overflow-x-auto">
-            <Table>
+            <Table style={compactTableStyle}>
+              <colgroup>
+                <col />
+                <col style={{ width: '180px' }} />
+                <col style={{ width: '100px' }} />
+                <col style={{ width: '120px' }} />
+              </colgroup>
               <thead>
                 <tr>
-                    <th>Competition</th>
-                    <th>Season</th>
-                    <th>Children</th>
-                    <th>Activities</th>
+                    <th style={compactThStyle}>Competition</th>
+                    <th style={compactThStyle}>Season</th>
+                    <th style={compactThStyle}>Children</th>
+                    <th style={compactThStyle}>Activities</th>
                 </tr>
               </thead>
               <tbody>
@@ -218,7 +249,7 @@ export const CompetitionsList: React.FC = () => {
                     const seasonSlug = comp.parent_period?.slug;
                     return (
                         <tr key={comp.id}>
-                        <td>
+                        <td style={compactTextTdStyle}>
                             <a
                             href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
                             className="text-blue-600 hover:underline"
@@ -232,9 +263,9 @@ export const CompetitionsList: React.FC = () => {
                             {comp.name}
                             </a>
                         </td>
-                        <td>{comp.parent_period?.name || '-'}</td>
-                        <td>{comp.children_count ?? '-'}</td>
-                        <td>{comp.activities_count ?? '-'}</td>
+                        <td style={compactTextTdStyle}>{comp.parent_period?.name || '-'}</td>
+                        <td style={compactTdStyle}>{comp.children_count ?? '-'}</td>
+                        <td style={compactTdStyle}>{comp.activities_count ?? '-'}</td>
                         </tr>
                     );
                 })}

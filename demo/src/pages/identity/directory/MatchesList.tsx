@@ -19,6 +19,31 @@ type Activity = {
   data?: Record<string, any>;
 };
 
+// Table styling constants
+const compactTableStyle: React.CSSProperties = {
+  tableLayout: 'fixed',
+  width: '100%',
+  borderCollapse: 'collapse'
+};
+const compactThStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.8rem',
+  textAlign: 'left',
+  borderBottom: '2px solid var(--app-border)'
+};
+const compactTdStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.85rem',
+  verticalAlign: 'middle',
+  borderBottom: '1px solid #eee'
+};
+const compactTextTdStyle: React.CSSProperties = {
+  ...compactTdStyle,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+};
+
 export const MatchesList: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -187,18 +212,23 @@ export const MatchesList: React.FC = () => {
         {!isLoading && !error && !matchesLoading && matches.length > 0 && (
           <Card>
             <div className="overflow-x-auto">
-              <Table>
+              <Table style={compactTableStyle}>
+                <colgroup>
+                  <col />
+                  <col style={{ width: '180px' }} />
+                  <col style={{ width: '160px' }} />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th>Match</th>
-                    <th>Competition</th>
-                    <th>Start</th>
+                    <th style={compactThStyle}>Match</th>
+                    <th style={compactThStyle}>Competition</th>
+                    <th style={compactThStyle}>Start</th>
                   </tr>
                 </thead>
                 <tbody>
                   {matches.map((m) => (
                     <tr key={m.id}>
-                      <td>
+                      <td style={compactTextTdStyle}>
                         <a
                           href={`/matches/${m.id}`}
                           className="text-blue-600 hover:underline"
@@ -210,8 +240,8 @@ export const MatchesList: React.FC = () => {
                           {m.title}
                         </a>
                       </td>
-                      <td>{m.period?.name || '-'}</td>
-                      <td>{m.start_time || '-'}</td>
+                      <td style={compactTextTdStyle}>{m.period?.name || '-'}</td>
+                      <td style={compactTdStyle}>{m.start_time || '-'}</td>
                     </tr>
                   ))}
                 </tbody>

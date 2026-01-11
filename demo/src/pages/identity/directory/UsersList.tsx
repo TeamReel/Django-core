@@ -38,6 +38,60 @@ type ProjectOption = {
     parent_project?: any;
 };
 
+// Table styling constants
+const compactTableStyle: React.CSSProperties = {
+  tableLayout: 'fixed',
+  width: '100%',
+  borderCollapse: 'collapse'
+};
+const compactThStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.8rem',
+  textAlign: 'left',
+  borderBottom: '2px solid var(--app-border)'
+};
+const compactTdStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.85rem',
+  verticalAlign: 'middle',
+  borderBottom: '1px solid #eee'
+};
+const compactTextTdStyle: React.CSSProperties = {
+  ...compactTdStyle,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+};
+const compactActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: '8px',
+  flexWrap: 'wrap'
+};
+
+// Button styling function
+type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
+const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
+  const base: React.CSSProperties = {
+    padding: '4px 8px',
+    borderRadius: '4px',
+    backgroundColor: 'var(--app-surface)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    lineHeight: 1.2,
+  };
+  if (tone === 'primary') {
+    return { ...base, border: '1px solid #007bff', color: '#007bff' };
+  }
+  if (tone === 'warning') {
+    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
+  }
+  if (tone === 'danger') {
+    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+  }
+  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
+};
+
 export const UsersList: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -328,44 +382,52 @@ export const UsersList: React.FC = () => {
             {!isLoading && !error && users.length > 0 && (
                 <Card>
                     <div className="overflow-x-auto">
-                        <Table>
+                        <Table style={compactTableStyle}>
+                            <colgroup>
+                                <col style={{ width: '200px' }} />
+                                <col style={{ width: '220px' }} />
+                                <col style={{ width: '120px' }} />
+                                <col style={{ width: '120px' }} />
+                                <col style={{ width: '100px' }} />
+                            </colgroup>
                             <thead>
                                 <tr>
-                                    <th>User</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th style={{ textAlign: 'right' }}>Actions</th>
+                                    <th style={compactThStyle}>User</th>
+                                    <th style={compactThStyle}>Email</th>
+                                    <th style={compactThStyle}>Role</th>
+                                    <th style={compactThStyle}>Status</th>
+                                    <th style={compactThStyle}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {users.map(u => (
                                     <tr key={u.id}>
-                                        <td className="font-medium">
+                                        <td style={compactTextTdStyle} className="font-medium">
                                             {u.first_name} {u.last_name}
                                         </td>
-                                        <td>{u.email}</td>
-                                        <td>
+                                        <td style={compactTextTdStyle}>{u.email}</td>
+                                        <td style={compactTdStyle}>
                                             <Badge variant="default">
                                                 {getUserRoleDisplay(u)}
                                             </Badge>
                                         </td>
-                                        <td>
+                                        <td style={compactTdStyle}>
                                             <Badge variant={u.is_active ? 'success' : 'warning'}>
                                                 {u.is_active ? 'Active' : 'Inactive'}
                                             </Badge>
                                         </td>
-                                        <td style={{ textAlign: 'right' }}>
-                                            <Button
-                                                size="sm"
-                                                variant="secondary"
-                                                onClick={() => {
-                                                    setDetailUser(u);
-                                                    setIsDetailModalOpen(true);
-                                                }}
-                                            >
-                                                View
-                                            </Button>
+                                        <td style={compactTdStyle}>
+                                            <div style={compactActionsStyle}>
+                                                <button
+                                                    onClick={() => {
+                                                        setDetailUser(u);
+                                                        setIsDetailModalOpen(true);
+                                                    }}
+                                                    style={actionButtonStyle('neutral')}
+                                                >
+                                                    View
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
