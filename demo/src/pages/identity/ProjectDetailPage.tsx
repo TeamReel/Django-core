@@ -697,6 +697,8 @@ export const ProjectDetailPage: React.FC = () => {
                 const teams = await ensureChildTeamsLoaded();
                 const teamIds = Array.from(teams.map((t: any) => String(t.id)));
 
+                console.log(`[ProjectDetailPage] Fetching members for ${teamIds.length} teams:`, teamIds);
+
                 // Fetch members per team to avoid pagination issues
                 // (org-wide fetch with page_size=250 only returns subset of members)
                 const allMembersMap = new Map<string, any>();
@@ -724,6 +726,7 @@ export const ProjectDetailPage: React.FC = () => {
                     if (teamMembersResponse.ok) {
                       const teamMembersData = await teamMembersResponse.json();
                       const teamMembersList = getPagedResults(teamMembersData);
+                      console.log(`[ProjectDetailPage] Team ${teamId} returned ${teamMembersList.length} members`);
 
                       // Add to map to deduplicate (users can be in multiple teams)
                       for (const member of teamMembersList) {
@@ -732,6 +735,8 @@ export const ProjectDetailPage: React.FC = () => {
                           allMembersMap.set(String(userId), member);
                         }
                       }
+                    } else {
+                      console.warn(`[ProjectDetailPage] Team ${teamId} members endpoint returned ${teamMembersResponse.status}`);
                     }
                   } catch (err) {
                     console.warn(`[ProjectDetailPage] Failed to fetch members for team ${teamId}:`, err);
