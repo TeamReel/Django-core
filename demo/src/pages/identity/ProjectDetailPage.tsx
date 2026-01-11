@@ -1973,13 +1973,12 @@ export const ProjectDetailPage: React.FC = () => {
                   <>
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold mb-3">People</h3>
-                      <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
-                        <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
-                          <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                        <div>
                           <select
                             value={selectedTeamFilter}
                             onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                            className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                            style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                           >
                             <option value="all">All Teams</option>
                             {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
@@ -1992,12 +1991,11 @@ export const ProjectDetailPage: React.FC = () => {
                             })}
                           </select>
                         </div>
-                        <div style={{ minWidth: '150px' }}>
-                          <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
+                        <div>
                           <select
                             value={selectedStatusFilter}
                             onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                            className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                            style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                           >
                             <option value="all">All Status</option>
                             <option value="active">Active</option>
@@ -2143,13 +2141,12 @@ export const ProjectDetailPage: React.FC = () => {
                       Add Team
                     </Button>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
-                    <div style={{ minWidth: '150px' }}>
-                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                    <div>
                       <select
                         value={selectedStatusFilter}
                         onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                       >
                         <option value="all">All Status</option>
                         <option value="active">Active</option>
@@ -2299,14 +2296,13 @@ export const ProjectDetailPage: React.FC = () => {
                       </Button>
                     )}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
                     {!isLikelyTeam && (
-                      <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
-                        <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
+                      <div>
                         <select
                           value={selectedTeamFilter}
                           onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                          className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                          style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                         >
                           <option value="all">All Teams</option>
                           {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
@@ -2320,12 +2316,11 @@ export const ProjectDetailPage: React.FC = () => {
                         </select>
                       </div>
                     )}
-                    <div style={{ minWidth: '150px' }}>
-                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
+                    <div>
                       <select
                         value={selectedStatusFilter}
                         onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                       >
                         <option value="all">All Status</option>
                         <option value="active">Active</option>
@@ -2470,14 +2465,13 @@ export const ProjectDetailPage: React.FC = () => {
               <Card>
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold mb-3">Competitions</h3>
-                  <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
                     {!isLikelyTeam && (
-                      <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
-                        <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
+                      <div>
                         <select
                           value={selectedTeamFilter}
                           onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                          className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                          style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                         >
                           <option value="all">All Teams</option>
                           {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
@@ -2491,12 +2485,11 @@ export const ProjectDetailPage: React.FC = () => {
                         </select>
                       </div>
                     )}
-                    <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
-                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Season</label>
+                    <div>
                       <select
                         value={selectedSeasonFilter}
                         onChange={(e) => setSelectedSeasonFilter(e.target.value)}
-                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                       >
                         <option value="all">All Seasons</option>
                         {Array.from(new Set(seasons.map(s => String(s.id)))).map((id) => {
@@ -2509,24 +2502,22 @@ export const ProjectDetailPage: React.FC = () => {
                         })}
                       </select>
                     </div>
-                    <div style={{ minWidth: '180px' }}>
-                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Match Count</label>
+                    <div>
                       <select
                         value={competitionFilter}
                         onChange={(e) => setCompetitionFilter(e.target.value as any)}
-                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                       >
                         <option value="all">All</option>
                         <option value="with-matches">With Matches</option>
                         <option value="without-matches">Without Matches</option>
                       </select>
                     </div>
-                    <div style={{ minWidth: '150px' }}>
-                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
+                    <div>
                       <select
                         value={selectedStatusFilter}
                         onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                       >
                         <option value="all">All Status</option>
                         <option value="active">Active</option>
@@ -2700,14 +2691,13 @@ export const ProjectDetailPage: React.FC = () => {
             <Card>
                <div className="mb-4">
                  <h3 className="text-lg font-semibold mb-3">Matches</h3>
-                 <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
+                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
                    {!isLikelyTeam && (
-                     <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
-                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
+                     <div>
                        <select
                          value={selectedTeamFilter}
                          onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                         className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                         style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                        >
                          <option value="all">All Teams</option>
                          {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
@@ -2721,12 +2711,11 @@ export const ProjectDetailPage: React.FC = () => {
                        </select>
                      </div>
                    )}
-                   <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
-                     <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Season</label>
+                   <div>
                      <select
                        value={selectedSeasonFilter}
                        onChange={(e) => setSelectedSeasonFilter(e.target.value)}
-                       className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                       style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                      >
                        <option value="all">All Seasons</option>
                        {Array.from(new Set(seasons.map(s => String(s.id)))).map((id) => {
@@ -2739,12 +2728,11 @@ export const ProjectDetailPage: React.FC = () => {
                        })}
                      </select>
                    </div>
-                   <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
-                     <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Competition</label>
+                   <div>
                      <select
                        value={selectedCompetitionFilter}
                        onChange={(e) => setSelectedCompetitionFilter(e.target.value)}
-                       className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                       style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
                      >
                        <option value="all">All Competitions</option>
                        {Array.from(new Set(competitions.map(c => String(c.id)))).map((id) => {
