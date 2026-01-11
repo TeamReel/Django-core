@@ -927,7 +927,11 @@ export const ProjectDetailPage: React.FC = () => {
   };
 
   const fetchSeasons = async () => {
-    if (!project?.id) return;
+    console.log('[fetchSeasons] START - project:', project?.id, 'isLikelyTeam:', isLikelyTeam);
+    if (!project?.id) {
+      console.log('[fetchSeasons] ABORT - no project.id');
+      return;
+    }
     setSeasonsLoading(true);
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     try {
@@ -942,7 +946,16 @@ export const ProjectDetailPage: React.FC = () => {
         console.log('[fetchSeasons] Team view: fetching from', url);
         const results = await fetchAllPages<any>(url, { credentials: 'include' });
         console.log('[fetchSeasons] Team view: raw results:', results.length);
-        const filteredSeasons = (results || []).filter(isSeasonPeriod);
+        console.log('[fetchSeasons] Team view: first 3 periods:', results.slice(0, 3));
+        const filteredSeasons = (results || []).filter((p) => {
+          const isSeason = isSeasonPeriod(p);
+          if (!isSeason) {
+            console.log('[fetchSeasons] Team view: REJECTED period:', p.name, 'parent:', p.parent_period?.id || 'null', 'type:', p.data?.type);
+          } else {
+            console.log('[fetchSeasons] Team view: ACCEPTED season:', p.name);
+          }
+          return isSeason;
+        });
         // Remove duplicates by ID
         const uniqueSeasons = Array.from(
           new Map(filteredSeasons.map((s: any) => [String(s.id), s])).values()
