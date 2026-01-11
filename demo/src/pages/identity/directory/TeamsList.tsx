@@ -351,6 +351,7 @@ export const TeamsList: React.FC = () => {
                 <col style={{ width: '80px' }} />
                 <col style={{ width: '80px' }} />
                 <col style={{ width: '80px' }} />
+                <col style={{ width: '80px' }} />
                 <col style={{ width: '100px' }} />
                 <col style={{ width: '280px' }} />
               </colgroup>
@@ -361,6 +362,7 @@ export const TeamsList: React.FC = () => {
                     <th style={compactThStyle}>Federation</th>
                     <th style={compactThStyle}>Seasons</th>
                     <th style={compactThStyle}>Comps</th>
+                    <th style={compactThStyle}>Matches</th>
                     <th style={compactThStyle}>Users</th>
                     <th style={compactThStyle}>Status</th>
                     <th style={compactThStyle}>Actions</th>
@@ -451,8 +453,11 @@ export const TeamsList: React.FC = () => {
                               </Badge>
                             </td>
                             <td style={compactTdStyle}>
-                              <Badge variant="default">
-                                {(team as any).member_count || 0}
+                              <Badge variant="default">                                    {(team as any).matches_count || 0}
+                                </Badge>
+                            </td>
+                            <td style={compactTdStyle}>
+                                <Badge variant="default">                                {(team as any).member_count || 0}
                               </Badge>
                             </td>
                             <td style={compactTdStyle}>{team.is_active === false ? 'Inactive' : 'Active'}</td>

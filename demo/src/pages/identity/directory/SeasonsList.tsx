@@ -51,25 +51,32 @@ const compactTextTdStyle: React.CSSProperties = {
 };
 const compactActionsStyle: React.CSSProperties = {
   display: 'flex',
-  gap: '4px',
-  justifyContent: 'flex-start',
-  alignItems: 'center'
+  justifyContent: 'flex-end',
+  gap: '8px',
+  flexWrap: 'wrap'
 };
-const actionButtonStyle = (tone: 'primary' | 'neutral' | 'warning' | 'danger'): React.CSSProperties => {
-  const baseStyle: React.CSSProperties = {
-    fontSize: '0.8rem',
+
+// Button styling function
+type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
+const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
+  const base: React.CSSProperties = {
     padding: '4px 8px',
-    border: 'none',
     borderRadius: '4px',
+    backgroundColor: 'var(--app-surface)',
     cursor: 'pointer',
-    fontWeight: 500,
-    transition: 'background-color 0.2s'
+    fontSize: '12px',
+    lineHeight: 1.2,
   };
-  if (tone === 'primary') return { ...baseStyle, backgroundColor: '#007bff', color: '#fff' };
-  if (tone === 'neutral') return { ...baseStyle, backgroundColor: '#6c757d', color: '#fff' };
-  if (tone === 'warning') return { ...baseStyle, backgroundColor: '#fd7e14', color: '#fff' };
-  if (tone === 'danger') return { ...baseStyle, backgroundColor: '#dc3545', color: '#fff' };
-  return baseStyle;
+  if (tone === 'primary') {
+    return { ...base, border: '1px solid #007bff', color: '#007bff' };
+  }
+  if (tone === 'warning') {
+    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
+  }
+  if (tone === 'danger') {
+    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+  }
+  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
 };
 
 export const SeasonsList: React.FC = () => {
@@ -358,6 +365,7 @@ export const SeasonsList: React.FC = () => {
                 <col />
                 <col style={{ width: '90px' }} />
                 <col style={{ width: '90px' }} />
+                <col style={{ width: '90px' }} />
                 <col style={{ width: '280px' }} />
               </colgroup>
               <thead>
@@ -367,6 +375,7 @@ export const SeasonsList: React.FC = () => {
                     <th style={compactThStyle}>Team</th>
                     <th style={compactThStyle}>Season</th>
                     <th style={compactThStyle}>Competitions</th>
+                    <th style={compactThStyle}>Matches</th>
                     <th style={compactThStyle}>Activities</th>
                     <th style={compactThStyle}>Actions</th>
                 </tr>
@@ -446,6 +455,7 @@ export const SeasonsList: React.FC = () => {
                         </a>
                         </td>
                         <td style={compactTdStyle}>{season.children_count ?? '-'}</td>
+                        <td style={compactTdStyle}>{(season as any).matches_count ?? '-'}</td>
                         <td style={compactTdStyle}>{season.activities_count ?? '-'}</td>
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>

@@ -268,6 +268,7 @@ export const FederationsList: React.FC = () => {
                   <col style={{ width: '90px' }} />
                   <col style={{ width: '90px' }} />
                   <col style={{ width: '90px' }} />
+                  <col style={{ width: '90px' }} />
                   <col style={{ width: '100px' }} />
                   <col style={{ width: '280px' }} />
                 </colgroup>
@@ -282,6 +283,7 @@ export const FederationsList: React.FC = () => {
                     <th style={compactThStyle}>Teams</th>
                     <th style={compactThStyle}>Seasons</th>
                     <th style={compactThStyle}>Comps</th>
+                    <th style={compactThStyle}>Matches</th>
                     <th onClick={() => handleSort('member_count')} style={{ ...compactThStyle, cursor: 'pointer' }}>
                       Users {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
@@ -334,6 +336,11 @@ export const FederationsList: React.FC = () => {
                         <td style={compactTdStyle}>
                           <Badge variant="default">
                             {(org as any).competitions_count || 0}
+                          </Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">
+                            {(org as any).matches_count || 0}
                           </Badge>
                         </td>
                         <td style={compactTdStyle}>

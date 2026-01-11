@@ -310,6 +310,7 @@ export const CompetitionsList: React.FC = () => {
                 <col style={{ width: '150px' }} />
                 <col style={{ width: '90px' }} />
                 <col style={{ width: '90px' }} />
+                <col style={{ width: '90px' }} />
               </colgroup>
               <thead>
                 <tr>
@@ -319,6 +320,7 @@ export const CompetitionsList: React.FC = () => {
                     <th style={compactThStyle}>Competition</th>
                     <th style={compactThStyle}>Season</th>
                     <th style={compactThStyle}>Children</th>
+                    <th style={compactThStyle}>Matches</th>
                     <th style={compactThStyle}>Activities</th>
                 </tr>
               </thead>
@@ -328,14 +330,63 @@ export const CompetitionsList: React.FC = () => {
                     const seasonSlug = comp.parent_period?.slug;
                     const org = comp.organisation;
                     const project = comp.project;
+                    const orgId = typeof org === 'object' ? org?.id : org;
+                    const orgSlug = typeof org === 'object' ? (org as any)?.slug : undefined;
                     const orgName = typeof org === 'string' ? org : org?.name || '-';
+                    const teamId = typeof project === 'object' ? project?.id : project;
+                    const teamSlug = typeof project === 'object' ? (project as any)?.slug : undefined;
                     const teamName = typeof project === 'string' ? project : project?.name || '-';
-                    const clubName = (typeof project === 'object' && (project as any)?.parent?.name) || '-';
+
+                    // Get club by finding team's parent in clubs array
+                    const teamObj = teams.find(t => String(t.id) === String(teamId));
+                    const clubId = teamObj?.parent_id || teamObj?.parent || (typeof project === 'object' && (project as any)?.parent_id);
+                    const club = clubs.find(c => String(c.id) === String(clubId));
+                    const clubName = club?.name || '-';
+
                     return (
                         <tr key={comp.id}>
-                        <td style={compactTextTdStyle}>{orgName}</td>
-                        <td style={compactTextTdStyle}>{clubName}</td>
-                        <td style={compactTextTdStyle}>{teamName}</td>
+                        <td style={compactTextTdStyle}>
+                          {orgId ? (
+                            <a
+                              href={`/organisations/${orgSlug || orgId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgSlug || orgId}`);
+                              }}
+                            >
+                              {orgName}
+                            </a>
+                          ) : orgName}
+                        </td>
+                        <td style={compactTextTdStyle}>
+                          {clubId ? (
+                            <a
+                              href={`/organisations/${orgSlug || orgId}/clubs/${club?.slug || clubId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgSlug || orgId}/clubs/${club?.slug || clubId}`);
+                              }}
+                            >
+                              {clubName}
+                            </a>
+                          ) : clubName}
+                        </td>
+                        <td style={compactTextTdStyle}>
+                          {teamId ? (
+                            <a
+                              href={`/organisations/${orgSlug || orgId}/teams/${teamSlug || teamId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgSlug || orgId}/teams/${teamSlug || teamId}`);
+                              }}
+                            >
+                              {teamName}
+                            </a>
+                          ) : teamName}
+                        </td>
                         <td style={compactTextTdStyle}>
                             <a
                             href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
@@ -352,6 +403,7 @@ export const CompetitionsList: React.FC = () => {
                         </td>
                         <td style={compactTextTdStyle}>{comp.parent_period?.name || '-'}</td>
                         <td style={compactTdStyle}>{comp.children_count ?? '-'}</td>
+                        <td style={compactTdStyle}>{(comp as any).matches_count ?? '-'}</td>
                         <td style={compactTdStyle}>{comp.activities_count ?? '-'}</td>
                         </tr>
                     );
