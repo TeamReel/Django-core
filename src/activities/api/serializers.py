@@ -188,6 +188,7 @@ class ActivitySerializer(serializers.ModelSerializer):
     """
 
     # Nested read-only representations
+    organisation = serializers.SerializerMethodField()
     project = serializers.SerializerMethodField()
     period = serializers.SerializerMethodField()
     created_by = serializers.SerializerMethodField()
@@ -202,6 +203,7 @@ class ActivitySerializer(serializers.ModelSerializer):
         model = Activity
         fields = [
             "id",
+            "organisation",
             "project",
             "project_id",
             "period",
@@ -220,6 +222,19 @@ class ActivitySerializer(serializers.ModelSerializer):
             "created_by",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def get_organisation(self, obj):
+        """Return nested organisation representation"""
+        # Try to get org from project first, then period
+        org = None
+        if obj.project:
+            org = obj.project.organisation
+        elif obj.period:
+            org = obj.period.organisation
+
+        if org:
+            return {"id": str(org.id), "name": org.name, "slug": org.slug}
+        return None
 
     def get_project(self, obj):
         """Return nested project representation"""

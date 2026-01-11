@@ -218,6 +218,13 @@ export const UsersList: React.FC = () => {
 
                 // Use the organisations/:slug/members/ endpoint
                 const orgSlug = selectedOrg?.slug || (organisations[0]?.slug || '');
+
+                if (!orgSlug) {
+                    setUsers([]);
+                    setIsLoading(false);
+                    return;
+                }
+
                 const url = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/?${params.toString()}`;
 
                 const res = await fetch(url, { credentials: 'include' });

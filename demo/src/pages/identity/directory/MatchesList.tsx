@@ -21,6 +21,7 @@ type Activity = {
     parent_period?: { id: string; name: string; slug?: string; };
     slug?: string;
   } | null;
+  organisation?: { id: string; name: string; slug: string } | null;
   data?: Record<string, any>;
 };
 
@@ -306,10 +307,10 @@ export const MatchesList: React.FC = () => {
                     const clubName = club?.name || '-';
 
                     // Organisation
-                    const orgId = selectedOrgId || (club as any)?.organisation || (teamObj as any)?.organisation;
+                    const orgId = selectedOrgId || m.organisation?.id || (club as any)?.organisation || (teamObj as any)?.organisation;
                     const org = organisations.find((o) => String(o.id) === String(orgId));
-                    const orgName = org?.name || '-';
-                    const orgSlug = (org as any)?.slug;
+                    const orgName = m.organisation?.name || org?.name || '-';
+                    const orgSlug = m.organisation?.slug || (org as any)?.slug;
 
                     const competition = m.period;
                     const compName = competition?.name || '-';
@@ -412,16 +413,18 @@ export const MatchesList: React.FC = () => {
                             </a>
                         </td>
                          <td style={compactActionsStyle}>
-                            <a
-                                href={`/matches/${m.id}`}
-                                className="text-blue-600 hover:underline text-xs"
+                          <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                            <Button
+                                variant="secondary"
+                                size="sm"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     navigate(`/matches/${m.id}`);
                                 }}
                             >
                                 View
-                            </a>
+                            </Button>
+                          </div>
                          </td>
                         </tr>
                     );
