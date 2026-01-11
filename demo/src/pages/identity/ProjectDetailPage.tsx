@@ -225,7 +225,9 @@ export const ProjectDetailPage: React.FC = () => {
 
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${project.id}&page_size=250`;
+    console.log(`[ensureChildTeamsLoaded] Fetching teams for parent project ID: ${project.id} from ${url}`);
     const results = await fetchAllPages<Project>(url, { credentials: 'include' });
+    console.log(`[ensureChildTeamsLoaded] Raw results: ${results.length} projects`);
 
     const parentId = String(project.id);
     const orgId = String(
@@ -235,14 +237,17 @@ export const ProjectDetailPage: React.FC = () => {
     const filteredByOrg = orgId
       ? (results as any[]).filter((p: any) => String(getOrganisationId(p) || '') === orgId)
       : (results as any[]);
+    console.log(`[ensureChildTeamsLoaded] After org filter (org=${orgId}): ${filteredByOrg.length} projects`);
 
     const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
+    console.log(`[ensureChildTeamsLoaded] After parent filter (parent=${parentId}): ${filteredByParent.length} projects`);
     // For displaying in Teams tab, use direct children only
     // But for period queries (seasons/competitions), we need ALL nested teams
     const directChildren = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
 
     setChildProjects(directChildren as Project[]);
     // Return ALL teams (including grandchildren) for period fetching
+    console.log(`[ensureChildTeamsLoaded] Returning ${filteredByOrg.length} teams for period fetching`);
     return filteredByOrg as Project[];
   };
 
