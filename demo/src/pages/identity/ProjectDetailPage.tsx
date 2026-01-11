@@ -1973,8 +1973,8 @@ export const ProjectDetailPage: React.FC = () => {
                   <>
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold mb-3">People</h3>
-                      <div className="flex flex-row gap-4 items-end flex-wrap">
-                        <div className="min-w-[200px] flex-1 max-w-[250px]">
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
+                        <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
                           <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                           <select
                             value={selectedTeamFilter}
@@ -1992,7 +1992,7 @@ export const ProjectDetailPage: React.FC = () => {
                             })}
                           </select>
                         </div>
-                        <div className="min-w-[150px]">
+                        <div style={{ minWidth: '150px' }}>
                           <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                           <select
                             value={selectedStatusFilter}
@@ -2143,8 +2143,8 @@ export const ProjectDetailPage: React.FC = () => {
                       Add Team
                     </Button>
                   </div>
-                  <div className="flex flex-row gap-4 items-end flex-wrap">
-                    <div className="min-w-[150px]">
+                  <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
+                    <div style={{ minWidth: '150px' }}>
                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                       <select
                         value={selectedStatusFilter}
@@ -2299,9 +2299,9 @@ export const ProjectDetailPage: React.FC = () => {
                       </Button>
                     )}
                   </div>
-                  <div className="flex flex-row gap-4 items-end flex-wrap">
+                  <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
                     {!isLikelyTeam && (
-                      <div className="min-w-[200px] flex-1 max-w-[250px]">
+                      <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
                         <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                         <select
                           value={selectedTeamFilter}
@@ -2320,7 +2320,7 @@ export const ProjectDetailPage: React.FC = () => {
                         </select>
                       </div>
                     )}
-                    <div className="min-w-[150px]">
+                    <div style={{ minWidth: '150px' }}>
                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                       <select
                         value={selectedStatusFilter}
@@ -2470,9 +2470,9 @@ export const ProjectDetailPage: React.FC = () => {
               <Card>
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold mb-3">Competitions</h3>
-                  <div className="flex flex-row gap-4 items-end flex-wrap">
+                  <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
                     {!isLikelyTeam && (
-                      <div className="min-w-[200px] flex-1 max-w-[250px]">
+                      <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
                         <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                         <select
                           value={selectedTeamFilter}
@@ -2491,7 +2491,7 @@ export const ProjectDetailPage: React.FC = () => {
                         </select>
                       </div>
                     )}
-                    <div className="min-w-[200px] flex-1 max-w-[250px]">
+                    <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Season</label>
                       <select
                         value={selectedSeasonFilter}
@@ -2509,7 +2509,7 @@ export const ProjectDetailPage: React.FC = () => {
                         })}
                       </select>
                     </div>
-                    <div className="min-w-[180px]">
+                    <div style={{ minWidth: '180px' }}>
                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Match Count</label>
                       <select
                         value={competitionFilter}
@@ -2521,7 +2521,7 @@ export const ProjectDetailPage: React.FC = () => {
                         <option value="without-matches">Without Matches</option>
                       </select>
                     </div>
-                    <div className="min-w-[150px]">
+                    <div style={{ minWidth: '150px' }}>
                       <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Status</label>
                       <select
                         value={selectedStatusFilter}
@@ -2700,9 +2700,9 @@ export const ProjectDetailPage: React.FC = () => {
             <Card>
                <div className="mb-4">
                  <h3 className="text-lg font-semibold mb-3">Matches</h3>
-                 <div className="flex flex-row gap-4 items-end flex-wrap">
+                 <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
                    {!isLikelyTeam && (
-                     <div className="min-w-[200px] flex-1 max-w-[250px]">
+                     <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
                        <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Team</label>
                        <select
                          value={selectedTeamFilter}
@@ -2721,7 +2721,7 @@ export const ProjectDetailPage: React.FC = () => {
                        </select>
                      </div>
                    )}
-                   <div className="min-w-[200px] flex-1 max-w-[250px]">
+                   <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Season</label>
                      <select
                        value={selectedSeasonFilter}
@@ -2739,7 +2739,7 @@ export const ProjectDetailPage: React.FC = () => {
                        })}
                      </select>
                    </div>
-                   <div className="min-w-[200px] flex-1 max-w-[250px]">
+                   <div style={{ minWidth: '200px', flex: '1', maxWidth: '250px' }}>
                      <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Competition</label>
                      <select
                        value={selectedCompetitionFilter}
