@@ -1330,6 +1330,12 @@ export const OrganisationDetailPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
               <h3 className="text-lg font-semibold">Users</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => navigate(`/organisations/${currentOrgSlug}/members/invite`)}
+                  style={actionButtonStyle('primary')}
+                >
+                  Add User
+                </button>
                 <Input
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
@@ -1612,6 +1618,12 @@ export const OrganisationDetailPage: React.FC = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
                     <h3 className="text-lg font-semibold">Clubs</h3>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/create?type=club`)}
+                        style={actionButtonStyle('primary')}
+                      >
+                        Add Club
+                      </button>
                       <Input value={clubSearch} onChange={(e) => setClubSearch(e.target.value)} placeholder="Search clubs" style={{ width: '240px' }} />
                       <select
                         value={clubStatusFilter}
@@ -1725,6 +1737,12 @@ export const OrganisationDetailPage: React.FC = () => {
                                   <td style={compactTdStyle}>
                                     <div style={compactActionsStyle}>
                                       <button
+                                        onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`)}
+                                        style={actionButtonStyle('primary')}
+                                      >
+                                        Open
+                                      </button>
+                                      <button
                                         onClick={() => {
                                           setSelectedClub(club);
                                           setIsClubModalOpen(true);
@@ -1733,19 +1751,13 @@ export const OrganisationDetailPage: React.FC = () => {
                                       >
                                         View
                                       </button>
-                                      <button
-                                        onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`)}
-                                        style={actionButtonStyle('primary')}
-                                      >
-                                        Open
-                                      </button>
                                       {userCanEditProject && (
                                         <button
                                           onClick={() => {
                                             setSelectedEditProject(club);
                                             setIsEditModalOpen(true);
                                           }}
-                                          style={actionButtonStyle('neutral')}
+                                          style={actionButtonStyle('warning')}
                                         >
                                           Edit
                                         </button>
@@ -1808,6 +1820,12 @@ export const OrganisationDetailPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
               <h3 className="text-lg font-semibold">Teams</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/create?type=team`)}
+                  style={actionButtonStyle('primary')}
+                >
+                  Add Team
+                </button>
                 <Input value={teamSearch} onChange={(e) => setTeamSearch(e.target.value)} placeholder="Search teams" style={{ width: '240px' }} />
                 <select
                   value={teamClubFilterId}
@@ -1946,6 +1964,12 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <td style={compactTdStyle}>
                                   <div style={compactActionsStyle}>
                                     <button
+                                      onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`)}
+                                      style={actionButtonStyle('primary')}
+                                    >
+                                      Open
+                                    </button>
+                                    <button
                                       onClick={() => {
                                         setSelectedClub(team);
                                         setIsClubModalOpen(true);
@@ -1954,19 +1978,13 @@ export const OrganisationDetailPage: React.FC = () => {
                                     >
                                       View
                                     </button>
-                                    <button
-                                      onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`)}
-                                      style={actionButtonStyle('primary')}
-                                    >
-                                      Open
-                                    </button>
                                     {userCanEditProject && (
                                       <button
                                         onClick={() => {
                                           setSelectedEditProject(team);
                                           setIsEditModalOpen(true);
                                         }}
-                                        style={actionButtonStyle('neutral')}
+                                        style={actionButtonStyle('warning')}
                                       >
                                         Edit
                                       </button>
@@ -2024,6 +2042,12 @@ export const OrganisationDetailPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
               <h3 className="text-lg font-semibold">Teams (grouped by club)</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/create?type=team`)}
+                  style={actionButtonStyle('primary')}
+                >
+                  Add Team
+                </button>
                 <Input value={teamSearch} onChange={(e) => setTeamSearch(e.target.value)} placeholder="Search teams" style={{ width: '240px' }} />
                 <select
                   value={teamClubFilterId}
@@ -2151,6 +2175,12 @@ export const OrganisationDetailPage: React.FC = () => {
                                   <td style={compactTdStyle}>
                                     <div style={compactActionsStyle}>
                                       <button
+                                        onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`)}
+                                        style={actionButtonStyle('primary')}
+                                      >
+                                        Open
+                                      </button>
+                                      <button
                                         onClick={() => {
                                           setSelectedClub(team);
                                           setIsClubModalOpen(true);
@@ -2159,19 +2189,13 @@ export const OrganisationDetailPage: React.FC = () => {
                                       >
                                         View
                                       </button>
-                                      <button
-                                        onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`)}
-                                        style={actionButtonStyle('primary')}
-                                      >
-                                        Open
-                                      </button>
                                       {userCanEditProject && (
                                         <button
                                           onClick={() => {
                                             setSelectedEditProject(team);
                                             setIsEditModalOpen(true);
                                           }}
-                                          style={actionButtonStyle('neutral')}
+                                          style={actionButtonStyle('warning')}
                                         >
                                           Edit
                                         </button>
@@ -2231,6 +2255,12 @@ export const OrganisationDetailPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
               <h3 className="text-lg font-semibold">Seasons</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => navigate(`/organisations/${currentOrgSlug}/periods/create?type=season`)}
+                  style={actionButtonStyle('primary')}
+                >
+                  Add Season
+                </button>
                 <Input value={seasonSearch} onChange={(e) => setSeasonSearch(e.target.value)} placeholder="Search seasons" style={{ width: '240px' }} />
                 <select
                   value={seasonClubFilterId}
@@ -2479,6 +2509,12 @@ export const OrganisationDetailPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
               <h3 className="text-lg font-semibold">Competitions</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => navigate(`/organisations/${currentOrgSlug}/periods/create?type=competition`)}
+                  style={actionButtonStyle('primary')}
+                >
+                  Add Competition
+                </button>
                 <Input value={competitionSearch} onChange={(e) => setCompetitionSearch(e.target.value)} placeholder="Search competitions" style={{ width: '240px' }} />
                 <select
                   value={compClubFilterId}
@@ -2759,6 +2795,12 @@ export const OrganisationDetailPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
               <h3 className="text-lg font-semibold">Matches</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => navigate(`/organisations/${currentOrgSlug}/matches/create`)}
+                  style={actionButtonStyle('primary')}
+                >
+                  Add Match
+                </button>
                 <Input value={matchSearch} onChange={(e) => setMatchSearch(e.target.value)} placeholder="Search matches" style={{ width: '240px' }} />
                 <select
                   value={matchClubFilterId}
