@@ -49,6 +49,28 @@ const compactTextTdStyle: React.CSSProperties = {
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
 };
+const compactActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  gap: '4px',
+  justifyContent: 'flex-start',
+  alignItems: 'center'
+};
+const actionButtonStyle = (tone: 'primary' | 'neutral' | 'warning' | 'danger'): React.CSSProperties => {
+  const baseStyle: React.CSSProperties = {
+    fontSize: '0.8rem',
+    padding: '4px 8px',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontWeight: 500,
+    transition: 'background-color 0.2s'
+  };
+  if (tone === 'primary') return { ...baseStyle, backgroundColor: '#007bff', color: '#fff' };
+  if (tone === 'neutral') return { ...baseStyle, backgroundColor: '#6c757d', color: '#fff' };
+  if (tone === 'warning') return { ...baseStyle, backgroundColor: '#fd7e14', color: '#fff' };
+  if (tone === 'danger') return { ...baseStyle, backgroundColor: '#dc3545', color: '#fff' };
+  return baseStyle;
+};
 
 export const SeasonsList: React.FC = () => {
   const navigate = useNavigate();
@@ -330,14 +352,13 @@ export const SeasonsList: React.FC = () => {
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
               <colgroup>
-                <col style={{ width: '150px' }} />
-                <col style={{ width: '150px' }} />
-                <col style={{ width: '150px' }} />
+                <col style={{ width: '140px' }} />
+                <col style={{ width: '140px' }} />
+                <col style={{ width: '140px' }} />
                 <col />
-                <col style={{ width: '100px' }} />
-                <col style={{ width: '100px' }} />
-                <col style={{ width: '100px' }} />
-                <col style={{ width: '100px' }} />
+                <col style={{ width: '90px' }} />
+                <col style={{ width: '90px' }} />
+                <col style={{ width: '280px' }} />
               </colgroup>
               <thead>
                 <tr>
@@ -345,10 +366,9 @@ export const SeasonsList: React.FC = () => {
                     <th style={compactThStyle}>Club</th>
                     <th style={compactThStyle}>Team</th>
                     <th style={compactThStyle}>Season</th>
-                    <th style={compactThStyle}>Start</th>
-                    <th style={compactThStyle}>End</th>
                     <th style={compactThStyle}>Competitions</th>
                     <th style={compactThStyle}>Activities</th>
+                    <th style={compactThStyle}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -357,28 +377,92 @@ export const SeasonsList: React.FC = () => {
                     const project = season.project;
                     const orgName = typeof org === 'string' ? org : org?.name || '-';
                     const teamName = typeof project === 'string' ? project : project?.name || '-';
-                    const clubName = (typeof project === 'object' && (project as any)?.parent?.name) || '-';
+                    const teamId = typeof project === 'string' ? project : project?.id;
+                    const clubData = typeof project === 'object' ? (project as any)?.parent : null;
+                    const clubName = clubData?.name || '-';
+                    const clubId = clubData?.id;
+                    const orgId = typeof org === 'string' ? org : org?.id;
+
                     return (
                     <tr key={season.id}>
-                        <td style={compactTextTdStyle}>{orgName}</td>
-                        <td style={compactTextTdStyle}>{clubName}</td>
-                        <td style={compactTextTdStyle}>{teamName}</td>
+                        <td style={compactTextTdStyle}>
+                          {orgId ? (
+                            <a
+                              href={`/organisations/${orgId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgId}`);
+                              }}
+                            >
+                              {orgName}
+                            </a>
+                          ) : (
+                            orgName
+                          )}
+                        </td>
+                        <td style={compactTextTdStyle}>
+                          {clubId && orgId ? (
+                            <a
+                              href={`/organisations/${orgId}/projects/${clubId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgId}/projects/${clubId}`);
+                              }}
+                            >
+                              {clubName}
+                            </a>
+                          ) : (
+                            clubName
+                          )}
+                        </td>
+                        <td style={compactTextTdStyle}>
+                          {teamId && orgId ? (
+                            <a
+                              href={`/organisations/${orgId}/projects/${teamId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgId}/projects/${teamId}`);
+                              }}
+                            >
+                              {teamName}
+                            </a>
+                          ) : (
+                            teamName
+                          )}
+                        </td>
                         <td style={compactTextTdStyle}>
                         <a
-                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.slug || season.id}`}
+                            href={`/organisations/${orgId}/projects/${teamId}/seasons/${season.slug || season.id}`}
                             className="text-blue-600 hover:underline"
                             onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.slug || season.id}`);
+                                navigate(`/organisations/${orgId}/projects/${teamId}/seasons/${season.slug || season.id}`);
                             }}
                         >
                             {season.name}
                         </a>
                         </td>
-                        <td style={compactTdStyle}>{season.start_date || '-'}</td>
-                        <td style={compactTdStyle}>{season.end_date || '-'}</td>
                         <td style={compactTdStyle}>{season.children_count ?? '-'}</td>
                         <td style={compactTdStyle}>{season.activities_count ?? '-'}</td>
+                        <td style={compactTdStyle}>
+                          <div style={compactActionsStyle}>
+                            <button
+                              onClick={() => navigate(`/organisations/${orgId}/projects/${teamId}/seasons/${season.slug || season.id}`)}
+                              style={actionButtonStyle('primary')}
+                            >
+                              Open
+                            </button>
+                            <button
+                              onClick={() => navigate(`/organisations/${orgId}/projects/${teamId}/seasons/${season.slug || season.id}/edit`)}
+                              style={actionButtonStyle('warning')}
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </td>
                     </tr>
                     );
                 })}
