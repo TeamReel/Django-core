@@ -256,27 +256,26 @@ export const ClubsList: React.FC = () => {
           <option value="active">Status: Active</option>
           <option value="inactive">Status: Inactive</option>
         </select>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() => {
-              setStatusFilter('all');
-              setSelectedClubId('');
-              if (isSuperAdmin) setSelectedOrgId('');
-            }}
-          >
-            Clear
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={() => {
+            setStatusFilter('all');
+            setSelectedClubId('');
+            if (isSuperAdmin) setSelectedOrgId('');
+          }}
+          style={{ marginLeft: 'auto' }}
+        >
+          Clear
+        </Button>
+        {userCanEditProject && selectedOrgId && (
+          <Button variant="primary" size="md" onClick={() => {
+            const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
+            navigate(`/organisations/${orgSlug}/projects/create`);
+          }}>
+            Create Club
           </Button>
-          {userCanEditProject && selectedOrgId && (
-            <Button variant="primary" size="md" onClick={() => {
-              const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-              navigate(`/organisations/${orgSlug}/projects/create`);
-            }}>
-              Create Club
-            </Button>
-          )}
-        </div>
+        )}
       </div>
 
       {isLoading && <LoadingState message="Loading clubs..." />}

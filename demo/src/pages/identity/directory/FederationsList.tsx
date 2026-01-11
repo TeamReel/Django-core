@@ -214,20 +214,19 @@ export const FederationsList: React.FC = () => {
           <option value="active">Status: Active</option>
           <option value="inactive">Status: Inactive</option>
         </select>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() => setStatusFilter('all')}
-          >
-            Clear
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={() => setStatusFilter('all')}
+          style={{ marginLeft: 'auto' }}
+        >
+          Clear
+        </Button>
+        {isSuperAdmin && (
+          <Button variant="primary" size="md" onClick={() => navigate('/organisations/create')}>
+            Create Organisation
           </Button>
-          {isSuperAdmin && (
-            <Button variant="primary" size="md" onClick={() => navigate('/organisations/create')}>
-              Create Organisation
-            </Button>
-          )}
-        </div>
+        )}
       </div>
 
       {error && (

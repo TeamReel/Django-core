@@ -159,11 +159,17 @@ export const TeamsList: React.FC = () => {
 
         if (clubsRes.ok) {
             const data = await clubsRes.json();
-            setClubs(data.results || data.data?.results || []);
+            const clubsData = data.results || data.data?.results || [];
+            console.log('📦 Clubs loaded:', clubsData.length, clubsData.slice(0, 2));
+            setClubs(clubsData);
         }
         if (teamsRes.ok) {
             const data = await teamsRes.json();
-            setTeams(data.results || data.data?.results || []);
+            const teamsData = data.results || data.data?.results || [];
+            console.log('⚽ Teams loaded:', teamsData.length, 'teams');
+            console.log('First team sample:', teamsData[0]);
+            console.log('Ajax teams:', teamsData.filter((t: any) => t.name?.toLowerCase().includes('ajax')));
+            setTeams(teamsData);
         }
 
       } catch (e) {
@@ -178,6 +184,7 @@ export const TeamsList: React.FC = () => {
 
   const filteredTeams = useMemo(() => {
       let list = [...teams];
+      console.log('🔍 Filtering teams. Total:', list.length, 'Selected Club ID:', selectedClubId);
 
       const selectedOrg = selectedOrgId
         ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
@@ -189,14 +196,19 @@ export const TeamsList: React.FC = () => {
               const teamOrg = typeof team.organisation === 'string' ? team.organisation : team.organisation?.id;
               return String(teamOrg) === String(selectedOrgIdResolved);
           });
+          console.log('After org filter:', list.length);
       }
 
       if (selectedClubId) {
+          console.log('Filtering by club:', selectedClubId);
+          const before = list.length;
           list = list.filter((team: any) => {
                const parent = team.parent_project || team.parent_id || team.parent_project_id;
                const parentId = typeof parent === 'object' ? parent.id : parent;
+               console.log(`Team ${team.name}: parent_id=${team.parent_id}, parent_project=${team.parent_project}, computed parentId=${parentId}`);
                return String(parentId) === String(selectedClubId);
           });
+          console.log(`After club filter: ${before} → ${list.length} teams`);
       }
 
       if (selectedTeamId) {
