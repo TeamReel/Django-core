@@ -38,7 +38,7 @@ const compactActionsStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
   gap: '8px',
-  flexWrap: 'wrap'
+  flexWrap: 'nowrap'
 };
 
 // Button styling function
@@ -299,15 +299,15 @@ export const ClubsList: React.FC = () => {
             <Table style={compactTableStyle}>
               <thead>
                 <tr>
-                  <th style={compactThStyle}>Club</th>
-                  <th style={compactThStyle}>Federation</th>
-                  <th style={compactThStyle}>Teams</th>
-                  <th style={compactThStyle}>Seasons</th>
-                  <th style={compactThStyle}>Comps</th>
-                  <th style={compactThStyle}>Matches</th>
-                  <th style={compactThStyle}>Users</th>
-                  <th style={compactThStyle}>Status</th>
-                  <th style={compactThStyle}>Actions</th>
+                  <th style={{ ...compactThStyle, width: '20%' }}>Club</th>
+                  <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Teams</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Seasons</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Comps</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Matches</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
+                  <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
+                  <th style={{ ...compactThStyle, width: '15%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>

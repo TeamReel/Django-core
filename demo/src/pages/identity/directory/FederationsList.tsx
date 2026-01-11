@@ -42,7 +42,7 @@ const compactActionsStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
   gap: '8px',
-  flexWrap: 'wrap'
+  flexWrap: 'nowrap'
 };
 
 // Button styling function
@@ -263,24 +263,24 @@ export const FederationsList: React.FC = () => {
               <Table style={compactTableStyle}>
                 <thead>
                   <tr>
-                    <th onClick={() => handleSort('name')} style={{ ...compactThStyle, cursor: 'pointer' }}>
+                    <th onClick={() => handleSort('name')} style={{ ...compactThStyle, cursor: 'pointer', width: '20%' }}>
                       Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th onClick={() => handleSort('project_count')} style={{ ...compactThStyle, cursor: 'pointer' }}>
+                    <th onClick={() => handleSort('project_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '8%' }}>
                       Clubs {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th style={compactThStyle}>Teams</th>
-                    <th style={compactThStyle}>Seasons</th>
-                    <th style={compactThStyle}>Comps</th>
-                    <th style={compactThStyle}>Matches</th>
-                    <th onClick={() => handleSort('member_count')} style={{ ...compactThStyle, cursor: 'pointer' }}>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Teams</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Seasons</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Comps</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Matches</th>
+                    <th onClick={() => handleSort('member_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '8%' }}>
                       Users {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th onClick={() => handleSort('credit_balance')} style={{ ...compactThStyle, cursor: 'pointer' }}>
+                    <th onClick={() => handleSort('credit_balance')} style={{ ...compactThStyle, cursor: 'pointer', width: '10%' }}>
                       Credits {sort === 'credit_balance' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th style={compactThStyle}>Status</th>
-                    <th style={compactThStyle}>Actions</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
+                    <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>

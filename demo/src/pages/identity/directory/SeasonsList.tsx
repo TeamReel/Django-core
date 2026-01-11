@@ -53,7 +53,7 @@ const compactActionsStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
   gap: '8px',
-  flexWrap: 'wrap'
+  flexWrap: 'nowrap'
 };
 
 // Button styling function
@@ -243,6 +243,37 @@ export const SeasonsList: React.FC = () => {
   const selectedTeam = selectedTeamId ? teams.find((t) => String(t.id) === String(selectedTeamId)) : null;
   const teamSlugOrId = (selectedTeam as any)?.slug || (selectedTeam as any)?.id || selectedTeamId;
 
+  const getCsrfToken = () =>
+    document.cookie
+      .split('; ')
+      .find(row => row.startsWith('csrftoken='))
+      ?.split('=')[1];
+
+  const handleDelete = async (orgId: string, seasonId: string | undefined, seasonName: string) => {
+    if (!seasonId || !window.confirm(`Are you sure you want to delete season "${seasonName}"?`)) {
+      return;
+    }
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    try {
+        const response = await fetch(`${apiBaseUrl}/api/v1/periods/${seasonId}/`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken() || '',
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to delete season');
+        }
+        // removing from local state
+        setSeasons(prev => prev.filter(s => s.id !== seasonId));
+    } catch (err) {
+        console.error('Delete error:', err);
+        alert('Failed to delete season');
+    }
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -358,26 +389,15 @@ export const SeasonsList: React.FC = () => {
         <Card>
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
-              <colgroup>
-                <col style={{ width: '140px' }} />
-                <col style={{ width: '140px' }} />
-                <col style={{ width: '140px' }} />
-                <col />
-                <col style={{ width: '90px' }} />
-                <col style={{ width: '90px' }} />
-                <col style={{ width: '90px' }} />
-                <col style={{ width: '280px' }} />
-              </colgroup>
               <thead>
                 <tr>
-                    <th style={compactThStyle}>Federation</th>
-                    <th style={compactThStyle}>Club</th>
-                    <th style={compactThStyle}>Team</th>
-                    <th style={compactThStyle}>Season</th>
-                    <th style={compactThStyle}>Competitions</th>
-                    <th style={compactThStyle}>Matches</th>
-                    <th style={compactThStyle}>Activities</th>
-                    <th style={compactThStyle}>Actions</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
+                    <th style={{ ...compactThStyle, width: 'auto' }}>Season</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Competitions</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Matches</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -395,6 +415,9 @@ export const SeasonsList: React.FC = () => {
                     const clubName = clubObj?.name || '-';
 
                     const orgId = typeof org === 'string' ? org : org?.id;
+
+                    // Use activities_count for matches if available, else 0
+                    const matchesCount = (season as any).matches_count ?? season.activities_count ?? 0;
 
                     return (
                     <tr key={season.id}>
@@ -459,8 +482,7 @@ export const SeasonsList: React.FC = () => {
                         </a>
                         </td>
                         <td style={compactTdStyle}>{season.children_count ?? '-'}</td>
-                        <td style={compactTdStyle}>{(season as any).matches_count ?? '-'}</td>
-                        <td style={compactTdStyle}>{season.activities_count ?? '-'}</td>
+                        <td style={compactTdStyle}>{matchesCount}</td>
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>
                             <button
@@ -470,10 +492,25 @@ export const SeasonsList: React.FC = () => {
                               Open
                             </button>
                             <button
+                                onClick={() => {
+                                    // Placeholder for View modal
+                                    alert(`View Season: ${season.name}\nID: ${season.id}\nStart: ${season.start_date}\nEnd: ${season.end_date}`);
+                                }}
+                                style={actionButtonStyle('neutral')}
+                            >
+                                View
+                            </button>
+                            <button
                               onClick={() => navigate(`/organisations/${orgId}/projects/${teamId}/seasons/${season.slug || season.id}/edit`)}
                               style={actionButtonStyle('warning')}
                             >
                               Edit
+                            </button>
+                            <button
+                                onClick={() => handleDelete(String(orgId), season.id, season.name)}
+                                style={actionButtonStyle('danger')}
+                            >
+                                Delete
                             </button>
                           </div>
                         </td>

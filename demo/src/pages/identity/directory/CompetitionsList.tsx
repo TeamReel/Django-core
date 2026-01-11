@@ -185,6 +185,37 @@ export const CompetitionsList: React.FC = () => {
   const selectedTeam = selectedTeamId ? teams.find((t) => String(t.id) === String(selectedTeamId)) : null;
   const teamSlugOrId = (selectedTeam as any)?.slug || (selectedTeam as any)?.id || selectedTeamId;
 
+  const getCsrfToken = () =>
+    document.cookie
+      .split('; ')
+      .find(row => row.startsWith('csrftoken='))
+      ?.split('=')[1];
+
+  const handleDelete = async (orgId: string, compId: string, compName: string) => {
+    if (!compId || !window.confirm(`Are you sure you want to delete competition "${compName}"?`)) {
+        return;
+    }
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    try {
+        const response = await fetch(`${apiBaseUrl}/api/v1/periods/${compId}/`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken() || '',
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to delete competition');
+        }
+        // removing from local state
+        setCompetitions(prev => prev.filter(c => c.id !== compId));
+    } catch (err) {
+        console.error('Delete error:', err);
+        alert('Failed to delete competition');
+    }
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -302,26 +333,15 @@ export const CompetitionsList: React.FC = () => {
         <Card>
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
-              <colgroup>
-                <col style={{ width: '140px' }} />
-                <col style={{ width: '140px' }} />
-                <col style={{ width: '140px' }} />
-                <col />
-                <col style={{ width: '150px' }} />
-                <col style={{ width: '90px' }} />
-                <col style={{ width: '90px' }} />
-                <col style={{ width: '90px' }} />
-              </colgroup>
               <thead>
                 <tr>
-                    <th style={compactThStyle}>Federation</th>
-                    <th style={compactThStyle}>Club</th>
-                    <th style={compactThStyle}>Team</th>
-                    <th style={compactThStyle}>Competition</th>
-                    <th style={compactThStyle}>Season</th>
-                    <th style={compactThStyle}>Children</th>
-                    <th style={compactThStyle}>Matches</th>
-                    <th style={compactThStyle}>Activities</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
+                    <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Matches</th>
+                    <th style={{ ...compactThStyle, width: '20%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -342,6 +362,9 @@ export const CompetitionsList: React.FC = () => {
                     const clubId = teamObj?.parent_id || teamObj?.parent || (typeof project === 'object' && (project as any)?.parent_id);
                     const club = clubs.find(c => String(c.id) === String(clubId));
                     const clubName = club?.name || '-';
+
+                    // Use activities_count for matches
+                    const matchesCount = comp.activities_count ?? (comp as any).matches_count ?? 0;
 
                     return (
                         <tr key={comp.id}>
@@ -401,10 +424,59 @@ export const CompetitionsList: React.FC = () => {
                             {comp.name}
                             </a>
                         </td>
-                        <td style={compactTextTdStyle}>{comp.parent_period?.name || '-'}</td>
-                        <td style={compactTdStyle}>{comp.children_count ?? '-'}</td>
-                        <td style={compactTdStyle}>{(comp as any).matches_count ?? '-'}</td>
-                        <td style={compactTdStyle}>{comp.activities_count ?? '-'}</td>
+                        <td style={compactTextTdStyle}>
+                            {seasonId ? (
+                                <a
+                                href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(
+                                        `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`
+                                    );
+                                }}
+                                >
+                                {comp.parent_period?.name || '-'}
+                                </a>
+                            ) : (
+                                comp.parent_period?.name || '-'
+                            )}
+                        </td>
+                        <td style={compactTdStyle}>{matchesCount}</td>
+                        <td style={compactTdStyle}>
+                            <div style={compactActionsStyle}>
+                                <button
+                                    onClick={() => navigate(
+                                        `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
+                                    )}
+                                    style={actionButtonStyle('primary')}
+                                >
+                                    Open
+                                </button>
+                                <button
+                                    onClick={() => {
+                                         alert(`View Competition: ${comp.name}\nID: ${comp.id}\nStart: ${comp.start_date}\nEnd: ${comp.end_date}`);
+                                    }}
+                                    style={actionButtonStyle('neutral')}
+                                >
+                                    View
+                                </button>
+                                <button
+                                    onClick={() => navigate(
+                                        `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}/edit`
+                                    )}
+                                    style={actionButtonStyle('warning')}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(String(orgId), comp.id, comp.name)}
+                                    style={actionButtonStyle('danger')}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
                         </tr>
                     );
                 })}
