@@ -175,7 +175,8 @@ export const SeasonsList: React.FC = () => {
 
           const data = await res.json();
           console.log('[SeasonsList] API response:', data);
-          const results = data.data?.results || data.results || data.data || [];
+          // Handle nested data structure: { status, data: { data: [...] } }
+          const results = data.data?.data || data.data?.results || data.results || data.data || [];
           console.log('[SeasonsList] Raw results count:', results.length);
           console.log('[SeasonsList] First 3 results:', results.slice(0, 3));
 
