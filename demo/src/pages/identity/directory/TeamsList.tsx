@@ -10,6 +10,60 @@ import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import ProjectDetailModal from '../ProjectDetailModal';
 import WorkFilterBar, { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 
+// Table styling constants
+const compactTableStyle: React.CSSProperties = {
+  tableLayout: 'fixed',
+  width: '100%',
+  borderCollapse: 'collapse'
+};
+const compactThStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.8rem',
+  textAlign: 'left',
+  borderBottom: '2px solid var(--app-border)'
+};
+const compactTdStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.85rem',
+  verticalAlign: 'middle',
+  borderBottom: '1px solid #eee'
+};
+const compactTextTdStyle: React.CSSProperties = {
+  ...compactTdStyle,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+};
+const compactActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: '8px',
+  flexWrap: 'wrap'
+};
+
+// Button styling function
+type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
+const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
+  const base: React.CSSProperties = {
+    padding: '4px 8px',
+    borderRadius: '4px',
+    backgroundColor: 'var(--app-surface)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    lineHeight: 1.2,
+  };
+  if (tone === 'primary') {
+    return { ...base, border: '1px solid #007bff', color: '#007bff' };
+  }
+  if (tone === 'warning') {
+    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
+  }
+  if (tone === 'danger') {
+    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+  }
+  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
+};
+
 export const TeamsList: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -241,14 +295,21 @@ export const TeamsList: React.FC = () => {
       {!isLoading && !error && filteredTeams.length > 0 && (
         <Card>
           <div className="overflow-x-auto">
-            <Table>
+            <Table style={compactTableStyle}>
+              <colgroup>
+                <col style={{ width: '180px' }} />
+                <col style={{ width: '180px' }} />
+                <col style={{ width: '200px' }} />
+                <col style={{ width: '120px' }} />
+                <col style={{ width: '330px' }} />
+              </colgroup>
               <thead>
                 <tr>
-                    <th>Team</th>
-                    <th>Club</th>
-                    <th>Federation</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: 'right', minWidth: '220px' }}>Actions</th>
+                    <th style={compactThStyle}>Team</th>
+                    <th style={compactThStyle}>Club</th>
+                    <th style={compactThStyle}>Federation</th>
+                    <th style={compactThStyle}>Status</th>
+                    <th style={compactThStyle}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -281,7 +342,7 @@ export const TeamsList: React.FC = () => {
 
                     return (
                         <tr key={team.id}>
-                            <td>
+                            <td style={compactTextTdStyle}>
                                 <a
                                     href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
@@ -293,12 +354,12 @@ export const TeamsList: React.FC = () => {
                                     {team.name}
                                 </a>
                             </td>
-                            <td>{clubName}</td>
-                            <td>
+                            <td style={compactTextTdStyle}>{clubName}</td>
+                            <td style={compactTextTdStyle}>
                                 {orgSlugOrId ? (
                                     <a
                                     href={`/organisations/${orgSlugOrId}`}
-                                    className="text-blue-600 hover:underline text-xs"
+                                    className="text-blue-600 hover:underline"
                                     onClick={(e) => {
                                         e.preventDefault();
                                         navigate(`/organisations/${orgSlugOrId}`);
@@ -310,38 +371,28 @@ export const TeamsList: React.FC = () => {
                                     team.organisation?.name || '-'
                                 )}
                             </td>
-                            <td>{team.is_active === false ? 'Inactive' : 'Active'}</td>
-                            <td style={{ textAlign: 'right' }}>
-                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                            <td style={compactTdStyle}>{team.is_active === false ? 'Inactive' : 'Active'}</td>
+                            <td style={compactTdStyle}>
+                                <div style={compactActionsStyle}>
+                                    <button
+                                        onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`)}
+                                        style={actionButtonStyle('primary')}
+                                    >
+                                        Open
+                                    </button>
                                     <button
                                         onClick={() => {
                                             setDetailProject(team);
                                             setIsDetailModalOpen(true);
                                         }}
-                                        style={{
-                                            padding: '4px 8px',
-                                            borderRadius: '4px',
-                                            border: '1px solid #6c757d',
-                                            backgroundColor: 'var(--app-surface)',
-                                            color: '#6c757d',
-                                            cursor: 'pointer',
-                                            fontSize: '12px'
-                                        }}
+                                        style={actionButtonStyle('neutral')}
                                     >
                                         View
                                     </button>
                                      {userCanEditProject && (
                                         <button
                                             onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/edit`)}
-                                            style={{
-                                                padding: '4px 8px',
-                                                borderRadius: '4px',
-                                                border: '1px solid #007bff',
-                                                backgroundColor: 'var(--app-surface)',
-                                                color: '#007bff',
-                                                cursor: 'pointer',
-                                                fontSize: '12px'
-                                            }}
+                                            style={actionButtonStyle('warning')}
                                         >
                                             Edit
                                         </button>
@@ -349,15 +400,7 @@ export const TeamsList: React.FC = () => {
                                     {userCanDeleteProject && (
                                         <button
                                             onClick={() => handleDeleteProject(String(orgSlugOrId), String(team.id), String(team.name))}
-                                            style={{
-                                                padding: '4px 8px',
-                                                borderRadius: '4px',
-                                                border: '1px solid #dc3545',
-                                                backgroundColor: 'var(--app-surface)',
-                                                color: '#dc3545',
-                                                cursor: 'pointer',
-                                                fontSize: '12px'
-                                            }}
+                                            style={actionButtonStyle('danger')}
                                         >
                                             Delete
                                         </button>

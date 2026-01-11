@@ -14,6 +14,60 @@ import { canPerformAction } from '../../../utils/permissions';
 import OrganisationDetailModal from '../OrganisationDetailModal';
 import OrganisationEditModal from '../OrganisationEditModal';
 
+// Table styling constants
+const compactTableStyle: React.CSSProperties = {
+  tableLayout: 'fixed',
+  width: '100%',
+  borderCollapse: 'collapse'
+};
+const compactThStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.8rem',
+  textAlign: 'left',
+  borderBottom: '2px solid var(--app-border)'
+};
+const compactTdStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.85rem',
+  verticalAlign: 'middle',
+  borderBottom: '1px solid #eee'
+};
+const compactTextTdStyle: React.CSSProperties = {
+  ...compactTdStyle,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+};
+const compactActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: '8px',
+  flexWrap: 'wrap'
+};
+
+// Button styling function
+type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
+const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
+  const base: React.CSSProperties = {
+    padding: '4px 8px',
+    borderRadius: '4px',
+    backgroundColor: 'var(--app-surface)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    lineHeight: 1.2,
+  };
+  if (tone === 'primary') {
+    return { ...base, border: '1px solid #007bff', color: '#007bff' };
+  }
+  if (tone === 'warning') {
+    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
+  }
+  if (tone === 'danger') {
+    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+  }
+  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
+};
+
 interface Organisation {
   id: string;
   name: string;
@@ -190,23 +244,31 @@ export const FederationsList: React.FC = () => {
         return (
           <Card>
             <div className="overflow-x-auto">
-              <Table>
+              <Table style={compactTableStyle}>
+                <colgroup>
+                  <col />
+                  <col style={{ width: '100px' }} />
+                  <col style={{ width: '100px' }} />
+                  <col style={{ width: '100px' }} />
+                  <col style={{ width: '120px' }} />
+                  <col style={{ width: '330px' }} />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th onClick={() => handleSort('name')} style={{ cursor: 'pointer', minWidth: '150px' }}>
+                    <th onClick={() => handleSort('name')} style={{ ...compactThStyle, cursor: 'pointer' }}>
                       Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th onClick={() => handleSort('member_count')} style={{ cursor: 'pointer', minWidth: '100px' }}>
+                    <th onClick={() => handleSort('member_count')} style={{ ...compactThStyle, cursor: 'pointer' }}>
                       Members {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th onClick={() => handleSort('project_count')} style={{ cursor: 'pointer', minWidth: '100px' }}>
+                    <th onClick={() => handleSort('project_count')} style={{ ...compactThStyle, cursor: 'pointer' }}>
                       Projects {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th onClick={() => handleSort('credit_balance')} style={{ cursor: 'pointer', minWidth: '100px' }}>
+                    <th onClick={() => handleSort('credit_balance')} style={{ ...compactThStyle, cursor: 'pointer' }}>
                       Credits {sort === 'credit_balance' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th style={{ minWidth: '100px' }}>Status</th>
-                    <th style={{ minWidth: '150px' }}>Actions</th>
+                    <th style={compactThStyle}>Status</th>
+                    <th style={compactThStyle}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -221,60 +283,56 @@ export const FederationsList: React.FC = () => {
 
                     return (
                       <tr key={org.id}>
-                        <td>
+                        <td style={compactTextTdStyle}>
                           <span
                             style={{
                               color: '#2563eb',
                               cursor: 'pointer',
                               textDecoration: 'underline',
-                              fontSize: '0.85rem'
                             }}
                             onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
                           >
                             {org.name}
                           </span>
                         </td>
-                        <td>
+                        <td style={compactTdStyle}>
                           <Badge variant="default">
                             {org.member_count || 0}
                           </Badge>
                         </td>
-                        <td>
+                        <td style={compactTdStyle}>
                           <Badge variant="default">
                             {org.project_count || 0}
                           </Badge>
                         </td>
-                        <td>
+                        <td style={compactTdStyle}>
                           <span
                             className={
                               (org.credit_balance || 0) < 100 ? 'text-red-600 font-semibold' : ''
                             }
-                            style={{ fontSize: '0.85rem' }}
                           >
                             {org.credit_balance || 0}
                           </span>
                         </td>
-                        <td>
+                        <td style={compactTdStyle}>
                           <Badge variant={org.is_active ? 'success' : 'warning'}>
                             {org.is_active ? 'Active' : 'Inactive'}
                           </Badge>
                         </td>
-                        <td>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                        <td style={compactTdStyle}>
+                          <div style={compactActionsStyle}>
+                            <button
+                              onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
+                              style={actionButtonStyle('primary')}
+                            >
+                              Open
+                            </button>
                             <button
                               onClick={() => {
                                 setDetailOrganisation(org);
                                 setIsDetailModalOpen(true);
                               }}
-                              style={{
-                                padding: '4px 8px',
-                                borderRadius: '4px',
-                                border: '1px solid #6c757d',
-                                backgroundColor: 'var(--app-surface)',
-                                color: '#6c757d',
-                                cursor: 'pointer',
-                                fontSize: '12px'
-                              }}
+                              style={actionButtonStyle('neutral')}
                             >
                               View
                             </button>
@@ -284,15 +342,7 @@ export const FederationsList: React.FC = () => {
                                   setEditOrganisation(org);
                                   setIsEditModalOpen(true);
                                 }}
-                                style={{
-                                  padding: '4px 8px',
-                                  borderRadius: '4px',
-                                  border: '1px solid #007bff',
-                                  backgroundColor: 'var(--app-surface)',
-                                  color: '#007bff',
-                                  cursor: 'pointer',
-                                  fontSize: '12px'
-                                }}
+                                style={actionButtonStyle('warning')}
                               >
                                 Edit
                               </button>
@@ -300,15 +350,7 @@ export const FederationsList: React.FC = () => {
                             {userCanDelete && (
                               <button
                                 onClick={() => handleDelete(org.slug || org.id)}
-                                style={{
-                                  padding: '4px 8px',
-                                  borderRadius: '4px',
-                                  border: '1px solid #dc3545',
-                                  backgroundColor: 'var(--app-surface)',
-                                  color: '#dc3545',
-                                  cursor: 'pointer',
-                                  fontSize: '12px'
-                                }}
+                                style={actionButtonStyle('danger')}
                               >
                                 Delete
                               </button>

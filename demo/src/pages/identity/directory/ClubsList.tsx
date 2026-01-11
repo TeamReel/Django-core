@@ -10,6 +10,60 @@ import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import ProjectDetailModal from '../ProjectDetailModal';
 import WorkFilterBar, { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 
+// Table styling constants
+const compactTableStyle: React.CSSProperties = {
+  tableLayout: 'fixed',
+  width: '100%',
+  borderCollapse: 'collapse'
+};
+const compactThStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.8rem',
+  textAlign: 'left',
+  borderBottom: '2px solid var(--app-border)'
+};
+const compactTdStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '0.85rem',
+  verticalAlign: 'middle',
+  borderBottom: '1px solid #eee'
+};
+const compactTextTdStyle: React.CSSProperties = {
+  ...compactTdStyle,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+};
+const compactActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: '8px',
+  flexWrap: 'wrap'
+};
+
+// Button styling function
+type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
+const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
+  const base: React.CSSProperties = {
+    padding: '4px 8px',
+    borderRadius: '4px',
+    backgroundColor: 'var(--app-surface)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    lineHeight: 1.2,
+  };
+  if (tone === 'primary') {
+    return { ...base, border: '1px solid #007bff', color: '#007bff' };
+  }
+  if (tone === 'warning') {
+    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
+  }
+  if (tone === 'danger') {
+    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+  }
+  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
+};
+
 export const ClubsList: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -210,13 +264,19 @@ export const ClubsList: React.FC = () => {
       {!isLoading && !error && filteredClubs.length > 0 && (
         <Card>
           <div className="overflow-x-auto">
-            <Table>
+            <Table style={compactTableStyle}>
+              <colgroup>
+                <col />
+                <col style={{ width: '200px' }} />
+                <col style={{ width: '120px' }} />
+                <col style={{ width: '330px' }} />
+              </colgroup>
               <thead>
                 <tr>
-                  <th>Club</th>
-                  <th>Federation</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right', minWidth: '220px' }}>Actions</th>
+                  <th style={compactThStyle}>Club</th>
+                  <th style={compactThStyle}>Federation</th>
+                  <th style={compactThStyle}>Status</th>
+                  <th style={compactThStyle}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -239,11 +299,10 @@ export const ClubsList: React.FC = () => {
                   const clubSlugOrId = club.slug || club.id;
                   return (
                     <tr key={club.id}>
-                      <td>
+                      <td style={compactTextTdStyle}>
                         <a
                           href={`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`}
                           className="text-blue-600 hover:underline"
-                          style={{ fontSize: '0.85rem' }}
                           onClick={(e) => {
                             e.preventDefault();
                             navigate(`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`);
@@ -252,7 +311,7 @@ export const ClubsList: React.FC = () => {
                           {club.name}
                         </a>
                       </td>
-                      <td style={{ fontSize: '0.85rem' }}>
+                      <td style={compactTextTdStyle}>
                         {orgSlugOrId ? (
                           <a
                             href={`/organisations/${orgSlugOrId}`}
@@ -268,56 +327,36 @@ export const ClubsList: React.FC = () => {
                           club.organisation?.name || '-'
                         )}
                       </td>
-                      <td>{club.is_active === false ? 'Inactive' : 'Active'}</td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                      <td style={compactTdStyle}>{club.is_active === false ? 'Inactive' : 'Active'}</td>
+                      <td style={compactTdStyle}>
+                        <div style={compactActionsStyle}>
+                          <button
+                            onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)}
+                            style={actionButtonStyle('primary')}
+                          >
+                            Open
+                          </button>
                           <button
                             onClick={() => {
                               setDetailProject(club);
                               setIsDetailModalOpen(true);
                             }}
-                            style={{
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              border: '1px solid #6c757d',
-                              backgroundColor: 'var(--app-surface)',
-                              color: '#6c757d',
-                              cursor: 'pointer',
-                              fontSize: '12px'
-                            }}
+                            style={actionButtonStyle('neutral')}
                           >
                             View
                           </button>
-
                           {userCanEditProject && (
                             <button
                               onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/edit`)}
-                              style={{
-                                padding: '4px 8px',
-                                borderRadius: '4px',
-                                border: '1px solid #007bff',
-                                backgroundColor: 'var(--app-surface)',
-                                color: '#007bff',
-                                cursor: 'pointer',
-                                fontSize: '12px'
-                              }}
+                              style={actionButtonStyle('warning')}
                             >
                               Edit
                             </button>
                           )}
-
                           {userCanDeleteProject && (
                             <button
                               onClick={() => handleDeleteProject(String(orgSlugOrId), String(clubSlugOrId), String(club.name))}
-                              style={{
-                                padding: '4px 8px',
-                                borderRadius: '4px',
-                                border: '1px solid #dc3545',
-                                backgroundColor: 'var(--app-surface)',
-                                color: '#dc3545',
-                                cursor: 'pointer',
-                                fontSize: '12px'
-                              }}
+                              style={actionButtonStyle('danger')}
                             >
                               Delete
                             </button>
