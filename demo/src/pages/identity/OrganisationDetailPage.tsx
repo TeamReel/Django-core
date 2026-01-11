@@ -70,6 +70,8 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const [selectedClub, setSelectedClub] = useState<Project | null>(null);
   const [isClubModalOpen, setIsClubModalOpen] = useState(false);
+  const [detailProject, setDetailProject] = useState<Project | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedEditProject, setSelectedEditProject] = useState<Project | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -1317,53 +1319,22 @@ export const OrganisationDetailPage: React.FC = () => {
         {/* Users */}
         {activeTab === 'users' && (
           <Card className="mb-6">
-            <div className="flex justify-between items-center mb-4" style={{ gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
               <h3 className="text-lg font-semibold">Users</h3>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-              <Input
-                value={memberSearch}
-                onChange={(e) => setMemberSearch(e.target.value)}
-                placeholder="Search users (name/email)"
-              />
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <Input
+                  value={memberSearch}
+                  onChange={(e) => setMemberSearch(e.target.value)}
+                  placeholder="Search users (name/email)"
+                  style={{ width: '240px' }}
+                />
+              </div>
             </div>
 
             {membersLoading ? (
               <Alert variant="info">Loading members...</Alert>
             ) : (
               <>
-                {userCanInvite && (
-                  <div className="mb-6 p-4 bg-gray-50 rounded-md">
-                    <h4 className="text-sm font-medium mb-2">Add user to federation</h4>
-                    <form onSubmit={handleInvite} className="flex gap-2 items-end" style={{ flexWrap: 'wrap' }}>
-                      <div style={{ flex: 1, minWidth: '240px' }}>
-                        <label className="block text-xs text-gray-500 mb-1">User Email</label>
-                        <Input
-                          value={inviteEmail}
-                          onChange={(e) => setInviteEmail(e.target.value)}
-                          placeholder="e.g. user@example.com"
-                          required
-                          type="email"
-                        />
-                      </div>
-                      <div style={{ width: '120px' }}>
-                        <label className="block text-xs text-gray-500 mb-1">Role</label>
-                        <select
-                          className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white"
-                          value={inviteRole}
-                          onChange={(e) => setInviteRole(e.target.value as 'admin' | 'member')}
-                        >
-                          <option value="member">Member</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </div>
-                      <Button type="submit" loading={inviteLoading}>
-                        Add
-                      </Button>
-                    </form>
-                  </div>
-                )}
-
                 {(() => {
                   const normalizedQuery = memberSearch.trim().toLowerCase();
                   // Only show real org members (exclude virtual/inherited members from project assignments)
@@ -1479,7 +1450,13 @@ export const OrganisationDetailPage: React.FC = () => {
                                           onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
                                           style={actionButtonStyle('neutral')}
                                         >
-                                          View
+                                          Open
+                                        </button>
+                                        <button
+                                          onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
+                                          style={actionButtonStyle('primary')}
+                                        >
+                                          Edit
                                         </button>
                                         <button
                                           onClick={async () => {
@@ -2382,14 +2359,30 @@ export const OrganisationDetailPage: React.FC = () => {
                                     onClick={() => navigate(openHref)}
                                     style={actionButtonStyle('neutral')}
                                   >
-                                    View
+                                    Open
                                   </button>
                                   <button
-                                    onClick={() => navigate(openHref)}
-                                    style={actionButtonStyle('primary')}
+                                    onClick={() => {
+                                      const seasonProject = { id: seasonId, slug: seasonSlug, name: season.name, project_type: 'period' };
+                                      setDetailProject(seasonProject as any);
+                                      setIsDetailModalOpen(true);
+                                    }}
+                                    style={actionButtonStyle('neutral')}
                                   >
-                                    Edit
+                                    View
                                   </button>
+                                  {userCanEditProject && (
+                                    <button
+                                      onClick={() => {
+                                        const seasonProject = { id: seasonId, slug: seasonSlug, name: season.name, project_type: 'period' };
+                                        setSelectedEditProject(seasonProject as any);
+                                        setIsEditModalOpen(true);
+                                      }}
+                                      style={actionButtonStyle('primary')}
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
                                   {userCanDeleteProject && (
                                     <button
                                       onClick={async () => {
@@ -2630,14 +2623,30 @@ export const OrganisationDetailPage: React.FC = () => {
                                     onClick={() => navigate(openHref)}
                                     style={actionButtonStyle('neutral')}
                                   >
-                                    View
+                                    Open
                                   </button>
                                   <button
-                                    onClick={() => navigate(openHref)}
-                                    style={actionButtonStyle('primary')}
+                                    onClick={() => {
+                                      const compProject = { id: comp.id, slug: comp.slug, name: comp.name, project_type: 'period' };
+                                      setDetailProject(compProject as any);
+                                      setIsDetailModalOpen(true);
+                                    }}
+                                    style={actionButtonStyle('neutral')}
                                   >
-                                    Edit
+                                    View
                                   </button>
+                                  {userCanEditProject && (
+                                    <button
+                                      onClick={() => {
+                                        const compProject = { id: comp.id, slug: comp.slug, name: comp.name, project_type: 'period' };
+                                        setSelectedEditProject(compProject as any);
+                                        setIsEditModalOpen(true);
+                                      }}
+                                      style={actionButtonStyle('primary')}
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
                                   {userCanDeleteProject && (
                                     <button
                                       onClick={async () => {
@@ -2779,12 +2788,24 @@ export const OrganisationDetailPage: React.FC = () => {
               <Alert variant="info">Loading matches…</Alert>
             ) : (() => {
               const clubNameById = new Map<string, string>();
+              const clubSlugById = new Map<string, string>();
               for (const c of allClubsForTeams as any[]) {
                 clubNameById.set(String(c.id), c.name);
+                clubSlugById.set(String(c.id), c.slug || String(c.id));
               }
 
               const teamById = new Map<string, any>();
               for (const t of teams as any[]) teamById.set(String(t.id), t);
+
+              // Map periods (competitions, seasons)
+              const periodById = new Map<string, any>();
+              const seasonById = new Map<string, any>();
+              for (const p of orgPeriods) {
+                periodById.set(String(p.id), p);
+                if (isSeasonPeriod(p)) {
+                  seasonById.set(String(p.id), p);
+                }
+              }
 
               // Map period ID -> Parent ID for hierarchy checks
               const periodParentIdMap = new Map<string, string>();
@@ -2845,16 +2866,20 @@ export const OrganisationDetailPage: React.FC = () => {
                     <Table style={compactTableStyle}>
                       <colgroup>
                         <col style={{ width: '200px' }} />
-                        <col style={{ width: '180px' }} />
-                        <col style={{ width: '180px' }} />
-                        <col style={{ width: '190px' }} />
-                        <col style={{ width: '330px' }} />
+                        <col style={{ width: '160px' }} />
+                        <col style={{ width: '160px' }} />
+                        <col style={{ width: '160px' }} />
+                        <col style={{ width: '160px' }} />
+                        <col style={{ width: '140px' }} />
+                        <col style={{ width: '390px' }} />
                       </colgroup>
                       <thead>
                         <tr>
                           <th style={compactThStyle}>Match</th>
+                          <th style={compactThStyle}>Season</th>
                           <th style={compactThStyle}>Competition</th>
                           <th style={compactThStyle}>Team</th>
+                          <th style={compactThStyle}>Club</th>
                           <th style={compactThStyle}>Start</th>
                           <th style={compactThStyle}>Actions</th>
                         </tr>
@@ -2863,9 +2888,19 @@ export const OrganisationDetailPage: React.FC = () => {
                         {matches.map((m: any) => {
                           const teamId = String(m.project?.id ?? m.project_id ?? '');
                           const team = teamId ? teamById.get(teamId) : null;
+                          const teamSlugOrId = team?.slug || team?.id || teamId;
                           const clubId = team
                             ? String(team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? '')
                             : '';
+                          const clubSlugOrId = clubId ? clubSlugById.get(clubId) || clubId : '';
+
+                          const periodId = String(m.period?.id ?? m.period_id ?? '');
+                          const competition = periodId ? periodById.get(periodId) : null;
+                          const compSeasonId = competition ? String(competition.parent_period_id ?? competition.parent_period?.id ?? '') : '';
+                          const season = compSeasonId ? seasonById.get(compSeasonId) : null;
+                          const seasonSlugOrId = season?.slug || season?.id || compSeasonId;
+
+                          const formattedStart = m.start_time ? new Date(m.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
 
                           return (
                             <tr key={m.id}>
@@ -2874,32 +2909,77 @@ export const OrganisationDetailPage: React.FC = () => {
                                   {m.title || m.name || m.id}
                                 </Link>
                               </td>
-                              <td style={compactTextTdStyle}>{m.period?.name || '-'}</td>
                               <td style={compactTextTdStyle}>
-                                {team && teamId ? (
+                                {season && seasonSlugOrId ? (
                                   <Link
-                                    to={clubId ? `/organisations/${currentOrgSlug}/projects/${clubId}/teams/${teamId}` : `/organisations/${currentOrgSlug}/projects/${teamId}`}
+                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {season.name}
+                                  </Link>
+                                ) : '-'}
+                              </td>
+                              <td style={compactTextTdStyle}>
+                                {competition ? (
+                                  <Link
+                                    to={clubSlugOrId && seasonSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}`}
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {competition.name || m.period?.name}
+                                  </Link>
+                                ) : (m.period?.name || '-')}
+                              </td>
+                              <td style={compactTextTdStyle}>
+                                {team && teamSlugOrId ? (
+                                  <Link
+                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {team.name}
                                   </Link>
                                 ) : (teamId || '-')}
                               </td>
-                              <td style={compactTextTdStyle}>{m.start_time || '-'}</td>
+                              <td style={compactTextTdStyle}>
+                                {clubId && clubSlugOrId ? (
+                                  <Link
+                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {clubNameById.get(clubId) || clubId}
+                                  </Link>
+                                ) : '-'}
+                              </td>
+                              <td style={compactTextTdStyle}>{formattedStart}</td>
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
                                   <button
                                     onClick={() => navigate(`/matches/${m.id}`)}
                                     style={actionButtonStyle('neutral')}
                                   >
-                                    View
+                                    Open
                                   </button>
                                   <button
-                                    onClick={() => navigate(`/matches/${m.id}/edit`)}
-                                    style={actionButtonStyle('primary')}
+                                    onClick={() => {
+                                      const matchProject = { id: m.id, name: m.title || m.name, project_type: 'activity' };
+                                      setDetailProject(matchProject as any);
+                                      setIsDetailModalOpen(true);
+                                    }}
+                                    style={actionButtonStyle('neutral')}
                                   >
-                                    Edit
+                                    View
                                   </button>
+                                  {userCanEditProject && (
+                                    <button
+                                      onClick={() => {
+                                        const matchProject = { id: m.id, name: m.title || m.name, project_type: 'activity' };
+                                        setSelectedEditProject(matchProject as any);
+                                        setIsEditModalOpen(true);
+                                      }}
+                                      style={actionButtonStyle('primary')}
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
                                   {userCanDeleteProject && (
                                     <button
                                       onClick={async () => {
@@ -2992,6 +3072,12 @@ export const OrganisationDetailPage: React.FC = () => {
         opened={isClubModalOpen}
         onClose={() => setIsClubModalOpen(false)}
         project={selectedClub}
+      />
+
+      <ProjectDetailModal
+        opened={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        project={detailProject}
       />
 
       <ProjectEditModal
