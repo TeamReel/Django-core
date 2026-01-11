@@ -8,7 +8,7 @@ import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import ProjectDetailModal from '../ProjectDetailModal';
-import WorkFilterBar, { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
+import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 
 // Table styling constants
 const compactTableStyle: React.CSSProperties = {
@@ -215,43 +215,66 @@ export const ClubsList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', marginBottom: '16px', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: '300px' }}>
-          <WorkFilterBar
-        showTeam={false}
-        organisations={organisations}
-        clubs={clubs}
-        teams={[]}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        selectedOrgId={selectedOrgId}
-        onOrganisationChange={(value) => {
-          setSelectedOrgId(value);
-          setSelectedClubId('');
-        }}
-        selectedClubId={selectedClubId}
-        onClubChange={(value) => {
-          setSelectedClubId(value);
-        }}
-        selectedTeamId=""
-        onTeamChange={() => {
-          // no-op
-        }}
-        onClear={() => {
-          setStatusFilter('all');
-          setSelectedClubId('');
-          if (isSuperAdmin) setSelectedOrgId('');
-        }}
-      />
-        </div>
-        {userCanEditProject && selectedOrgId && (
-          <Button variant="primary" size="md" onClick={() => {
-            const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-            navigate(`/organisations/${orgSlug}/projects/create`);
-          }}>
-            Create Club
-          </Button>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+        {isSuperAdmin && (
+          <select
+            value={selectedOrgId}
+            onChange={(e) => {
+              setSelectedOrgId(e.target.value);
+              setSelectedClubId('');
+            }}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid var(--app-border)',
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: 'var(--app-surface)',
+            }}
+          >
+            <option value="">Federation: All</option>
+            {organisations.map((org) => (
+              <option key={org.id} value={org.id}>
+                {org.name}
+              </option>
+            ))}
+          </select>
         )}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Status: All</option>
+          <option value="active">Status: Active</option>
+          <option value="inactive">Status: Inactive</option>
+        </select>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => {
+              setStatusFilter('all');
+              setSelectedClubId('');
+              if (isSuperAdmin) setSelectedOrgId('');
+            }}
+          >
+            Clear
+          </Button>
+          {userCanEditProject && selectedOrgId && (
+            <Button variant="primary" size="md" onClick={() => {
+              const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
+              navigate(`/organisations/${orgSlug}/projects/create`);
+            }}>
+              Create Club
+            </Button>
+          )}
+        </div>
       </div>
 
       {isLoading && <LoadingState message="Loading clubs..." />}

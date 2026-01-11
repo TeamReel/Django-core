@@ -6,7 +6,7 @@ import { Alert, Card, Button } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
-import WorkFilterBar, { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
+import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 
 type Period = {
   id: string;
@@ -144,8 +144,21 @@ export const CompetitionsList: React.FC = () => {
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('parent_period__isnull', 'false');
-        if (selectedTeamId) params.set('project_id', String(selectedTeamId));
-        if (selectedOrgId) params.set('organisation_id', selectedOrgId);
+        if (selectedTeamId) {
+          params.set('project_id', String(selectedTeamId));
+        } else if (selectedClubId) {
+          // If only club selected, get all competitions for teams in that club
+          const clubTeams = teams.filter((t) => {
+            const tParent = t.parent_id || t.parent;
+            return String(tParent) === String(selectedClubId);
+          });
+          if (clubTeams.length > 0) {
+            // Fetch for all teams in the club
+            const teamIds = clubTeams.map(t => String(t.id)).join(',');
+            params.set('project_id__in', teamIds);
+          }
+        }
+        if (selectedOrgId && !selectedClubId) params.set('organisation_id', selectedOrgId);
 
         const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
         if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -161,7 +174,7 @@ export const CompetitionsList: React.FC = () => {
     };
 
     loadCompetitions();
-  }, [selectedTeamId, selectedOrgId]);
+  }, [selectedTeamId, selectedClubId, selectedOrgId, teams]);
 
 
   const selectedOrg = selectedOrgId
@@ -174,44 +187,104 @@ export const CompetitionsList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', marginBottom: '16px', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: '300px' }}>
-          <WorkFilterBar
-        showStatus={false}
-        organisations={organisations}
-        clubs={clubs}
-        teams={teams}
-        statusFilter="all"
-        onStatusChange={() => {}}
-        selectedOrgId={selectedOrgId}
-        onOrganisationChange={(value) => {
-            setSelectedOrgId(value);
-            setSelectedClubId('');
-            setSelectedTeamId('');
-        }}
-        selectedClubId={selectedClubId}
-        onClubChange={(value) => {
-            setSelectedClubId(value);
-            setSelectedTeamId('');
-        }}
-        selectedTeamId={selectedTeamId}
-        onTeamChange={setSelectedTeamId}
-        onClear={() => {
-          setSelectedClubId('');
-          setSelectedTeamId('');
-          if (isSuperAdmin) setSelectedOrgId('');
-        }}
-      />
-        </div>
-        {selectedTeamId && (
-          <Button variant="primary" size="md" onClick={() => {
-            const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-            const teamSlug = teams.find(t => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
-            navigate(`/organisations/${orgSlug}/teams/${teamSlug}/competitions/create`);
-          }}>
-            Create Competition
-          </Button>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+        {isSuperAdmin && (
+          <select
+            value={selectedOrgId}
+            onChange={(e) => {
+              setSelectedOrgId(e.target.value);
+              setSelectedClubId('');
+              setSelectedTeamId('');
+            }}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid var(--app-border)',
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: 'var(--app-surface)',
+            }}
+          >
+            <option value="">Federation: All</option>
+            {organisations.map((org) => (
+              <option key={org.id} value={org.id}>
+                {org.name}
+              </option>
+            ))}
+          </select>
         )}
+        <select
+          value={selectedClubId}
+          onChange={(e) => {
+            setSelectedClubId(e.target.value);
+            setSelectedTeamId('');
+          }}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="">Club: All</option>
+          {clubs
+            .filter((c) => {
+              if (!selectedOrgId) return true;
+              const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
+              return String(cOrg) === String(selectedOrgId);
+            })
+            .map((c) => (
+              <option key={c.id} value={String(c.id)}>
+                {c.name}
+              </option>
+            ))}
+        </select>
+        <select
+          value={selectedTeamId}
+          onChange={(e) => setSelectedTeamId(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="">Team: All</option>
+          {teams
+            .filter((t) => {
+              if (!selectedClubId) return true;
+              const tParent = t.parent_id || t.parent;
+              return String(tParent) === String(selectedClubId);
+            })
+            .map((t) => (
+              <option key={t.id} value={String(t.id)}>
+                {t.name}
+              </option>
+            ))}
+        </select>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => {
+              setSelectedClubId('');
+              setSelectedTeamId('');
+              if (isSuperAdmin) setSelectedOrgId('');
+            }}
+          >
+            Clear
+          </Button>
+          {selectedTeamId && (
+            <Button variant="primary" size="md" onClick={() => {
+              const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
+              const teamSlug = teams.find(t => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
+              navigate(`/organisations/${orgSlug}/teams/${teamSlug}/competitions/create`);
+            }}>
+              Create Competition
+            </Button>
+          )}
+        </div>
       </div>
 
       {isLoading && <LoadingState message="Loading options..." />}

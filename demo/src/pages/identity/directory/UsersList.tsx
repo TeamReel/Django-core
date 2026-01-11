@@ -273,88 +273,98 @@ export const UsersList: React.FC = () => {
 
     return (
         <div>
-             <div className="flex flex-col md:flex-row gap-4 mb-4 items-end">
-                {/* Org Filter */}
+             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
                 {isSuperAdmin && (
-                     <div className="w-full md:w-48">
-                        <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Federation</label>
-                        <select
-                            className="w-full border rounded px-2 py-1 text-sm h-[34px]"
-                            value={selectedOrgId}
-                            onChange={(e) => {
-                                setSelectedOrgId(e.target.value);
-                                setSelectedClubId('');
-                                setSelectedTeamId('');
-                            }}
-                        >
-                            <option value="">All Federations</option>
-                            {organisations.map(o => (
-                                <option key={o.id} value={o.id}>{o.name}</option>
-                            ))}
-                        </select>
-                     </div>
-                )}
-
-                 {/* Club Filter */}
-                <div className="w-full md:w-48">
                     <select
-                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
-                        value={selectedClubId}
+                        value={selectedOrgId}
                         onChange={(e) => {
-                            setSelectedClubId(e.target.value);
+                            setSelectedOrgId(e.target.value);
+                            setSelectedClubId('');
                             setSelectedTeamId('');
                         }}
+                        style={{
+                            padding: '8px 12px',
+                            border: '1px solid var(--app-border)',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                            backgroundColor: 'var(--app-surface)',
+                        }}
                     >
-                        <option value="">All Clubs</option>
-                        {clubs
-                          .filter(c => !selectedOrgId ||
-                            (typeof c.organisation === 'string' ? c.organisation === selectedOrgId : String(c.organisation?.id) === selectedOrgId))
-                          .map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
+                        <option value="">Federation: All</option>
+                        {organisations.map(o => (
+                            <option key={o.id} value={o.id}>{o.name}</option>
                         ))}
                     </select>
-                </div>
+                )}
 
-                {/* Team Filter */}
-                <div className="w-full md:w-48">
-                    <select
-                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
-                        value={selectedTeamId}
-                        onChange={(e) => setSelectedTeamId(e.target.value)}
-                         disabled={!selectedClubId && users.length > 500} // Opt
-                    >
-                        <option value="">All Teams</option>
-                        {teams
-                            .filter(t => {
-                                // Filter by club parent
-                                if (selectedClubId) {
-                                     const parent = t.parent_id || (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
-                                     return String(parent) === String(selectedClubId);
-                                }
-                                return true;
-                            })
-                            .filter(t => !selectedOrgId ||
-                                (typeof t.organisation === 'string' ? t.organisation === selectedOrgId : String(t.organisation?.id) === selectedOrgId))
-                            .map(t => (
-                            <option key={t.id} value={t.id}>{t.name}</option>
-                        ))}
-                    </select>
-                </div>
+                <select
+                    value={selectedClubId}
+                    onChange={(e) => {
+                        setSelectedClubId(e.target.value);
+                        setSelectedTeamId('');
+                    }}
+                    style={{
+                        padding: '8px 12px',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        backgroundColor: 'var(--app-surface)',
+                    }}
+                >
+                    <option value="">Club: All</option>
+                    {clubs
+                      .filter(c => !selectedOrgId ||
+                        (typeof c.organisation === 'string' ? c.organisation === selectedOrgId : String(c.organisation?.id) === selectedOrgId))
+                      .map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                </select>
 
-                {/* Status Filter */}
-                <div className="w-full md:w-32">
-                    <select
-                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                        <option value="all">All</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                </div>
+                <select
+                    value={selectedTeamId}
+                    onChange={(e) => setSelectedTeamId(e.target.value)}
+                    disabled={!selectedClubId && users.length > 500}
+                    style={{
+                        padding: '8px 12px',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        backgroundColor: 'var(--app-surface)',
+                    }}
+                >
+                    <option value="">Team: All</option>
+                    {teams
+                        .filter(t => {
+                            if (selectedClubId) {
+                                 const parent = t.parent_id || (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
+                                 return String(parent) === String(selectedClubId);
+                            }
+                            return true;
+                        })
+                        .filter(t => !selectedOrgId ||
+                            (typeof t.organisation === 'string' ? t.organisation === selectedOrgId : String(t.organisation?.id) === selectedOrgId))
+                        .map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                </select>
 
-                 <Button variant="secondary" onClick={() => {
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    style={{
+                        padding: '8px 12px',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        backgroundColor: 'var(--app-surface)',
+                    }}
+                >
+                    <option value="all">Status: All</option>
+                    <option value="active">Status: Active</option>
+                    <option value="inactive">Status: Inactive</option>
+                </select>
+
+                 <Button variant="secondary" size="md" onClick={() => {
                      setSelectedClubId('');
                      setSelectedTeamId('');
                      setStatusFilter('active');

@@ -195,22 +195,36 @@ export const FederationsList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '16px', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
         >
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="all">All</option>
+          <option value="all">Status: All</option>
+          <option value="active">Status: Active</option>
+          <option value="inactive">Status: Inactive</option>
         </select>
-
-        {isSuperAdmin && (
-          <Button variant="primary" size="md" onClick={() => navigate('/organisations/create')}>
-            Create Organisation
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => setStatusFilter('all')}
+          >
+            Clear
           </Button>
-        )}
+          {isSuperAdmin && (
+            <Button variant="primary" size="md" onClick={() => navigate('/organisations/create')}>
+              Create Organisation
+            </Button>
+          )}
+        </div>
       </div>
 
       {error && (
