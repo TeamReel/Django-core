@@ -1591,6 +1591,8 @@ export const ProjectDetailPage: React.FC = () => {
                     <thead>
                       <tr>
                         <th style={compactThStyle}>Team</th>
+                        <th style={compactThStyle}>Seasons</th>
+                        <th style={compactThStyle}>Members</th>
                         <th style={compactThStyle}>Status</th>
                         <th style={compactThStyle} className="text-right">
                           Actions
@@ -1609,6 +1611,12 @@ export const ProjectDetailPage: React.FC = () => {
                             >
                               {team.name}
                             </Link>
+                          </td>
+                          <td style={compactTdStyle}>
+                            <Badge variant="info">{seasons.filter((s: any) => String(s.project_id) === String(team.id)).length}</Badge>
+                          </td>
+                          <td style={compactTdStyle}>
+                            <Badge variant="info">{team.member_count ?? 0}</Badge>
                           </td>
                           <td style={compactTdStyle}>
                             <Badge variant={team.is_active ? 'success' : 'warning'}>
@@ -1709,6 +1717,8 @@ export const ProjectDetailPage: React.FC = () => {
                         <th style={compactThStyle}>Season</th>
                         {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
                         <th style={compactThStyle}>Dates</th>
+                        <th style={compactThStyle}>Competitions</th>
+                        <th style={compactThStyle}>Matches</th>
                         <th style={compactThStyle} className="text-right">
                           Actions
                         </th>
@@ -1734,6 +1744,12 @@ export const ProjectDetailPage: React.FC = () => {
                             {!isLikelyTeam && <td style={compactTextTdStyle}>{season.project?.name || '-'}</td>}
                             <td style={compactTextTdStyle}>
                               {season.start_date || '?'} — {season.end_date || '?'}
+                            </td>
+                            <td style={compactTdStyle}>
+                              <Badge variant="info">{competitions.filter((c: any) => String(c.parent_period_id) === String(season.id)).length}</Badge>
+                            </td>
+                            <td style={compactTdStyle}>
+                              <Badge variant="info">{allMatches.filter((m: any) => competitions.some((c: any) => String(c.id) === String(m.period_id || m.period?.id))).filter((m: any) => competitions.filter((c: any) => String(c.parent_period_id) === String(season.id)).some((c: any) => String(c.id) === String(m.period_id || m.period?.id))).length}</Badge>
                             </td>
                             <td style={compactTdStyle}>
                               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
@@ -1810,6 +1826,7 @@ export const ProjectDetailPage: React.FC = () => {
                         <th style={compactThStyle}>Competition</th>
                         <th style={compactThStyle}>Season</th>
                         {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
+                        <th style={compactThStyle}>Matches</th>
                         <th style={compactThStyle} className="text-right">
                           Actions
                         </th>
@@ -1836,6 +1853,9 @@ export const ProjectDetailPage: React.FC = () => {
                             </td>
                             <td style={compactTextTdStyle}>{comp.parent_period?.name || '-'}</td>
                             {!isLikelyTeam && <td style={compactTextTdStyle}>{comp.project?.name || '-'}</td>}
+                            <td style={compactTdStyle}>
+                              <Badge variant="info">{allMatches.filter((m: any) => String(m.period_id || m.period?.id) === String(comp.id)).length}</Badge>
+                            </td>
                             <td style={compactTdStyle}>
                               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                 <button
