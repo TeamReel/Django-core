@@ -303,13 +303,19 @@ export const CompetitionsList: React.FC = () => {
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
               <colgroup>
+                <col style={{ width: '140px' }} />
+                <col style={{ width: '140px' }} />
+                <col style={{ width: '140px' }} />
                 <col />
-                <col style={{ width: '180px' }} />
-                <col style={{ width: '100px' }} />
-                <col style={{ width: '120px' }} />
+                <col style={{ width: '150px' }} />
+                <col style={{ width: '90px' }} />
+                <col style={{ width: '90px' }} />
               </colgroup>
               <thead>
                 <tr>
+                    <th style={compactThStyle}>Federation</th>
+                    <th style={compactThStyle}>Club</th>
+                    <th style={compactThStyle}>Team</th>
                     <th style={compactThStyle}>Competition</th>
                     <th style={compactThStyle}>Season</th>
                     <th style={compactThStyle}>Children</th>
@@ -320,8 +326,16 @@ export const CompetitionsList: React.FC = () => {
                 {competitions.map((comp) => {
                     const seasonId = (comp as any).parent_period_id || comp.parent_period?.id;
                     const seasonSlug = comp.parent_period?.slug;
+                    const org = comp.organisation;
+                    const project = comp.project;
+                    const orgName = typeof org === 'string' ? org : org?.name || '-';
+                    const teamName = typeof project === 'string' ? project : project?.name || '-';
+                    const clubName = (typeof project === 'object' && (project as any)?.parent?.name) || '-';
                     return (
                         <tr key={comp.id}>
+                        <td style={compactTextTdStyle}>{orgName}</td>
+                        <td style={compactTextTdStyle}>{clubName}</td>
+                        <td style={compactTextTdStyle}>{teamName}</td>
                         <td style={compactTextTdStyle}>
                             <a
                             href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}

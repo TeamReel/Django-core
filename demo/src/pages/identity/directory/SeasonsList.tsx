@@ -330,14 +330,20 @@ export const SeasonsList: React.FC = () => {
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
               <colgroup>
+                <col style={{ width: '150px' }} />
+                <col style={{ width: '150px' }} />
+                <col style={{ width: '150px' }} />
                 <col />
-                <col style={{ width: '120px' }} />
-                <col style={{ width: '120px' }} />
-                <col style={{ width: '120px' }} />
-                <col style={{ width: '120px' }} />
+                <col style={{ width: '100px' }} />
+                <col style={{ width: '100px' }} />
+                <col style={{ width: '100px' }} />
+                <col style={{ width: '100px' }} />
               </colgroup>
               <thead>
                 <tr>
+                    <th style={compactThStyle}>Federation</th>
+                    <th style={compactThStyle}>Club</th>
+                    <th style={compactThStyle}>Team</th>
                     <th style={compactThStyle}>Season</th>
                     <th style={compactThStyle}>Start</th>
                     <th style={compactThStyle}>End</th>
@@ -346,8 +352,17 @@ export const SeasonsList: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {seasons.map((season) => (
+                {seasons.map((season) => {
+                    const org = season.organisation;
+                    const project = season.project;
+                    const orgName = typeof org === 'string' ? org : org?.name || '-';
+                    const teamName = typeof project === 'string' ? project : project?.name || '-';
+                    const clubName = (typeof project === 'object' && (project as any)?.parent?.name) || '-';
+                    return (
                     <tr key={season.id}>
+                        <td style={compactTextTdStyle}>{orgName}</td>
+                        <td style={compactTextTdStyle}>{clubName}</td>
+                        <td style={compactTextTdStyle}>{teamName}</td>
                         <td style={compactTextTdStyle}>
                         <a
                             href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.slug || season.id}`}
@@ -365,7 +380,8 @@ export const SeasonsList: React.FC = () => {
                         <td style={compactTdStyle}>{season.children_count ?? '-'}</td>
                         <td style={compactTdStyle}>{season.activities_count ?? '-'}</td>
                     </tr>
-                ))}
+                    );
+                })}
               </tbody>
             </Table>
           </div>
