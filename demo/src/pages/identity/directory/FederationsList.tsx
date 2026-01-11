@@ -153,7 +153,7 @@ export const FederationsList: React.FC = () => {
         </select>
 
         {isSuperAdmin && (
-          <Button variant="primary" size="md" onClick={() => navigate('/organisations/create')}>
+          <Button variant="primary" size="md" onClick={() => navigate('/federations/create')}>
             Create Organisation
           </Button>
         )}
@@ -229,7 +229,7 @@ export const FederationsList: React.FC = () => {
                               textDecoration: 'underline',
                               fontSize: '0.85rem'
                             }}
-                            onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
+                            onClick={() => navigate(`/federations/${org.slug || org.id}`)}
                           >
                             {org.name}
                           </span>

@@ -112,18 +112,18 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const userCanDeleteProject = canDeleteProject(permissionContext);
 
   const projectDetailPath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}`
-    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
+    ? `/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${projectSlugOrId}`
+    : `/federations/${orgSlugOrId}/clubs/${projectSlugOrId}`;
 
   const seasonsBasePath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
-    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
+    ? `/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
+    : `/federations/${orgSlugOrId}/clubs/${projectSlugOrId}/seasons`;
 
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: 'Federations', onClick: () => navigate('/organisations') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+      { label: 'Federations', onClick: () => navigate('/federations') },
+      { label: org?.name || 'Federation', onClick: () => navigate(`/federations/${orgSlugOrId}`) },
       {
         label: 'Clubs',
         onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}`),
@@ -132,11 +132,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         ? [
             {
               label: club?.name || 'Club',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+              onClick: () => navigate(`/federations/${orgSlugOrId}/clubs/${clubSlugOrId}`),
             },
             {
               label: 'Teams',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+              onClick: () => navigate(`/federations/${orgSlugOrId}/clubs/${clubSlugOrId}`),
             },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
@@ -171,10 +171,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
         const [orgRes, projectRes, seasonRes, clubRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
+          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/clubs/${projectSlugOrId}/`, { credentials: 'include' }),
           fetch(`${apiBaseUrl}/api/v1/periods/${effectiveSeasonId}/`, { credentials: 'include' }),
           isTeamRoute
-            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
+            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/clubs/${clubSlugOrId}/`, {
                 credentials: 'include',
               })
             : Promise.resolve(null as any),

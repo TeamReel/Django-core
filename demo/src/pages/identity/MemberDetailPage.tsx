@@ -221,7 +221,7 @@ export const MemberDetailPage: React.FC = () => {
             title="Member Details"
             breadcrumbs={[
               { label: 'Home', onClick: () => navigate('/') },
-              { label: 'Organisations', onClick: () => navigate('/organisations') },
+              { label: 'Organisations', onClick: () => navigate('/federations') },
               { label: 'Loading...', current: true },
             ]}
           />
@@ -241,13 +241,13 @@ export const MemberDetailPage: React.FC = () => {
             title="Error"
             breadcrumbs={[
               { label: 'Home', onClick: () => navigate('/') },
-              { label: 'Organisations', onClick: () => navigate('/organisations') },
+              { label: 'Organisations', onClick: () => navigate('/federations') },
               { label: 'Error', current: true },
             ]}
           />
           <PageContent>
             <Alert variant="error">{error || 'Member not found'}</Alert>
-            <Button variant="secondary" onClick={() => navigate(`/organisations/${orgSlug}`)}>
+            <Button variant="secondary" onClick={() => navigate(`/federations/${orgSlug}`)}>
                 Back to Organisation
             </Button>
           </PageContent>
@@ -318,7 +318,7 @@ export const MemberDetailPage: React.FC = () => {
                 <select
                   value={member.id}
                   onChange={(e) => {
-                    navigate(`/organisations/${orgSlug}/members/${e.target.value}`);
+                    navigate(`/federations/${orgSlug}/members/${e.target.value}`);
                   }}
                   style={{
                     padding: '4px 8px',
@@ -341,7 +341,7 @@ export const MemberDetailPage: React.FC = () => {
           ]}
           actions={
             <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => navigate(`/organisations/${orgSlug}`)}>
+                <Button variant="secondary" onClick={() => navigate(`/federations/${orgSlug}`)}>
                     Back
                 </Button>
                 {!isEditing && (

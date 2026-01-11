@@ -50,18 +50,18 @@ export const ProjectSeasonsPage: React.FC = () => {
   const clubSlugOrId = clubId || '';
 
   const projectDetailPath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}`
-    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
+    ? `/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${projectSlugOrId}`
+    : `/federations/${orgSlugOrId}/clubs/${projectSlugOrId}`;
 
   const seasonsBasePath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
-    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
+    ? `/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
+    : `/federations/${orgSlugOrId}/clubs/${projectSlugOrId}/seasons`;
 
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: 'Federations', onClick: () => navigate('/organisations') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+      { label: 'Federations', onClick: () => navigate('/federations') },
+      { label: org?.name || 'Federation', onClick: () => navigate(`/federations/${orgSlugOrId}`) },
       {
         label: 'Clubs',
         onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}`),
@@ -70,7 +70,7 @@ export const ProjectSeasonsPage: React.FC = () => {
         ? [
             {
               label: club?.name || 'Club',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+              onClick: () => navigate(`/federations/${orgSlugOrId}/clubs/${clubSlugOrId}`),
             },
             {
               label: 'Teams',
@@ -96,9 +96,9 @@ export const ProjectSeasonsPage: React.FC = () => {
 
         const [orgRes, projectRes, clubRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
+          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/clubs/${projectSlugOrId}/`, { credentials: 'include' }),
           isTeamRoute
-            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
+            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/clubs/${clubSlugOrId}/`, {
                 credentials: 'include',
               })
             : Promise.resolve(null as any),

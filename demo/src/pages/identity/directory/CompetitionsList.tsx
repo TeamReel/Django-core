@@ -182,7 +182,7 @@ export const CompetitionsList: React.FC = () => {
           <Button variant="primary" size="md" onClick={() => {
             const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
             const teamSlug = teams.find(t => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
-            navigate(`/organisations/${orgSlug}/teams/${teamSlug}/competitions/create`);
+            navigate(`/federations/${orgSlug}/teams/${teamSlug}/competitions/create`);
           }}>
             Create Competition
           </Button>
@@ -220,12 +220,12 @@ export const CompetitionsList: React.FC = () => {
                         <tr key={comp.id}>
                         <td>
                             <a
-                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
+                            href={`/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
                             className="text-blue-600 hover:underline"
                             onClick={(e) => {
                                 e.preventDefault();
                                 navigate(
-                                `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
+                                `/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
                                 );
                             }}
                             >

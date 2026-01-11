@@ -189,7 +189,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
   // Custom handler to navigate to the selected organisation's detail page
   const handleOrganisationSwitch = (option: { id: string; label: string; slug?: string }) => {
-    navigate(`/organisations/${option.slug || option.id}`);
+    navigate(`/federations/${option.slug || option.id}`);
   };
 
   const tabs = useMemo(
@@ -397,7 +397,7 @@ export const OrganisationDetailPage: React.FC = () => {
     setClubsLoading(true);
     try {
       const apiV1BaseUrl = getApiV1BaseUrl();
-      const url = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`;
+      const url = `${apiV1BaseUrl}/federations/${currentOrgSlug}/clubs/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`;
       const res = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -432,8 +432,8 @@ export const OrganisationDetailPage: React.FC = () => {
     setTeamsLoading(true);
     try {
       const apiV1BaseUrl = getApiV1BaseUrl();
-      const clubsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=true`;
-      const teamsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=false`;
+      const clubsUrl = `${apiV1BaseUrl}/federations/${currentOrgSlug}/clubs/?page_size=250&parent_project__isnull=true`;
+      const teamsUrl = `${apiV1BaseUrl}/federations/${currentOrgSlug}/clubs/?page_size=250&parent_project__isnull=false`;
 
       console.log('[OrganisationDetailPage] Fetching teams from', teamsUrl);
 
@@ -575,7 +575,7 @@ export const OrganisationDetailPage: React.FC = () => {
       // Teams count (child projects)
       if (currentOrgSlug) {
         const teamsRes = await fetch(
-          `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=1&parent_project__isnull=false`,
+          `${apiV1BaseUrl}/federations/${currentOrgSlug}/clubs/?page_size=1&parent_project__isnull=false`,
           { credentials: 'include' }
         );
         if (teamsRes.ok) {
@@ -652,7 +652,7 @@ export const OrganisationDetailPage: React.FC = () => {
         .find(row => row.startsWith('csrftoken='))
         ?.split('=')[1];
 
-      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/`, {
+      const response = await fetch(`${apiV1BaseUrl}/federations/${currentOrgSlug}/members/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -676,7 +676,7 @@ export const OrganisationDetailPage: React.FC = () => {
         params.set('include_project_memberships', 'true');
         params.set('include_role_assignments', 'true');
         params.set('page_size', '250');
-        const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
+        const membersUrl = `${apiV1BaseUrl}/federations/${currentOrgSlug}/members/?${params.toString()}`;
         const allMembers = await fetchAllPages<any>(membersUrl, {
           headers: {
             'Content-Type': 'application/json',
@@ -715,7 +715,7 @@ export const OrganisationDetailPage: React.FC = () => {
         .find(row => row.startsWith('csrftoken='))
         ?.split('=')[1];
 
-      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
+      const response = await fetch(`${apiV1BaseUrl}/federations/${currentOrgSlug}/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -728,7 +728,7 @@ export const OrganisationDetailPage: React.FC = () => {
         throw new Error(`Failed to delete organisation (${response.status})`);
       }
 
-      navigate('/organisations');
+      navigate('/federations');
     } catch (err) {
       console.error('Delete error:', err);
       alert('Failed to delete organisation');
@@ -767,7 +767,7 @@ export const OrganisationDetailPage: React.FC = () => {
         .find(row => row.startsWith('csrftoken='))
         ?.split('=')[1];
 
-      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
+      const response = await fetch(`${apiV1BaseUrl}/federations/${currentOrgSlug}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -814,7 +814,7 @@ export const OrganisationDetailPage: React.FC = () => {
       params.set('include_role_assignments', 'true');
       params.set('page_size', '250');
 
-      const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
+      const membersUrl = `${apiV1BaseUrl}/federations/${currentOrgSlug}/members/?${params.toString()}`;
       const allMembers = await fetchAllPages<any>(membersUrl, {
         headers: {
           'Content-Type': 'application/json',
@@ -844,7 +844,7 @@ export const OrganisationDetailPage: React.FC = () => {
         const apiV1BaseUrl = getApiV1BaseUrl();
 
         // Fetch organisation details using slug
-        const orgResponse = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
+        const orgResponse = await fetch(`${apiV1BaseUrl}/federations/${currentOrgSlug}/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -938,7 +938,7 @@ export const OrganisationDetailPage: React.FC = () => {
     const apiV1BaseUrl = getApiV1BaseUrl();
     const projectSlugOrId = (project as any).slug || project.id;
 
-    const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${projectSlugOrId}/`, {
+    const res = await fetch(`${apiV1BaseUrl}/federations/${currentOrgSlug}/clubs/${projectSlugOrId}/`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -976,7 +976,7 @@ export const OrganisationDetailPage: React.FC = () => {
             title="Organisation Details"
             breadcrumbs={[
               { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-              { label: 'Federations', onClick: () => navigate('/organisations') },
+              { label: 'Federations', onClick: () => navigate('/federations') },
               { label: 'Loading...', current: true },
             ]}
           />
@@ -1000,7 +1000,7 @@ export const OrganisationDetailPage: React.FC = () => {
             title="Organisation Details"
             breadcrumbs={[
               { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-              { label: 'Federations', onClick: () => navigate('/organisations') },
+              { label: 'Federations', onClick: () => navigate('/federations') },
               { label: 'Error', current: true },
             ]}
           />
@@ -1008,7 +1008,7 @@ export const OrganisationDetailPage: React.FC = () => {
             <Alert variant="error" data-testid="org-detail-error">
               {error || 'Organisation not found'}
             </Alert>
-            <Button variant="secondary" onClick={() => navigate('/organisations')}>
+            <Button variant="secondary" onClick={() => navigate('/federations')}>
               Back to Organisations
             </Button>
           </PageContent>
@@ -1025,7 +1025,7 @@ export const OrganisationDetailPage: React.FC = () => {
         subtitle="Federation overview"
         breadcrumbs={[
           { label: 'Dashboard', onClick: () => navigate('/') },
-          { label: 'Federations', onClick: () => navigate('/organisations') },
+          { label: 'Federations', onClick: () => navigate('/federations') },
           {
             label: (
               <BreadcrumbContextSwitcher
@@ -1041,7 +1041,7 @@ export const OrganisationDetailPage: React.FC = () => {
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <Button variant="secondary" size="sm" onClick={() => navigate('/organisations')}>
+            <Button variant="secondary" size="sm" onClick={() => navigate('/federations')}>
               Back
             </Button>
             {userCanEditOrg && (
@@ -1414,7 +1414,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <tr key={user.id}>
                                   <td>
                                     <Link
-                                      to={`/organisations/${currentOrgSlug}/users/${user.id}`}
+                                      to={`/federations/${currentOrgSlug}/users/${user.id}`}
                                       className="text-blue-600 hover:underline"
                                       style={{ fontSize: '0.85rem' }}
                                     >
@@ -1429,7 +1429,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                     {userCanManageMembers && !isVirtualMember ? (
                                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                         <button
-                                          onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
+                                          onClick={() => navigate(`/federations/${currentOrgSlug}/members/${membershipId}`)}
                                           style={{
                                             padding: '6px 12px',
                                             borderRadius: '4px',
@@ -1449,7 +1449,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                             try {
                                               const apiV1BaseUrl = getApiV1BaseUrl();
                                               const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-                                              const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/${membershipId}/`, {
+                                              const res = await fetch(`${apiV1BaseUrl}/federations/${currentOrgSlug}/members/${membershipId}/`, {
                                                 method: 'DELETE',
                                                 headers: {
                                                   'Content-Type': 'application/json',
@@ -1660,7 +1660,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <tr key={club.id}>
                                   <td style={compactTextTdStyle}>
                                     <Link
-                                      to={`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`}
+                                      to={`/federations/${currentOrgSlug}/clubs/${club.slug || club.id}`}
                                       className="text-blue-600 hover:underline"
                                       style={{ ...compactTextTdStyle, display: 'inline-block', maxWidth: '100%' }}
                                     >
@@ -1696,7 +1696,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         View
                                       </button>
                                       <button
-                                        onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`)}
+                                        onClick={() => navigate(`/federations/${currentOrgSlug}/clubs/${club.slug || club.id}`)}
                                         style={actionButtonStyle('primary')}
                                       >
                                         Open
@@ -1719,7 +1719,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                             try {
                                               const apiV1BaseUrl = getApiV1BaseUrl();
                                               const res = await fetch(
-                                                `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${club.slug || club.id}/`,
+                                                `${apiV1BaseUrl}/federations/${currentOrgSlug}/clubs/${club.slug || club.id}/`,
                                                 {
                                                   method: 'DELETE',
                                                   headers: {
@@ -1912,7 +1912,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         View
                                       </button>
                                       <button
-                                        onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`)}
+                                        onClick={() => navigate(`/federations/${currentOrgSlug}/clubs/${clubSlugOrId}/teams/${teamSlugOrId}`)}
                                         style={actionButtonStyle('primary')}
                                       >
                                         Open
@@ -1935,7 +1935,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                             try {
                                               const apiV1BaseUrl = getApiV1BaseUrl();
                                               const res = await fetch(
-                                                `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${team.slug || team.id}/`,
+                                                `${apiV1BaseUrl}/federations/${currentOrgSlug}/clubs/${team.slug || team.id}/`,
                                                 {
                                                   method: 'DELETE',
                                                   headers: {
@@ -2121,8 +2121,8 @@ export const OrganisationDetailPage: React.FC = () => {
                           const matchesCount = getRecursiveMatchesCount(season);
 
                           const openHref = clubSlugOrId
-                            ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`
-                            : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`;
+                            ? `/federations/${currentOrgSlug}/clubs/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`
+                            : `/federations/${currentOrgSlug}/clubs/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`;
 
                           return (
                             <tr key={seasonId}>
@@ -2299,8 +2299,8 @@ export const OrganisationDetailPage: React.FC = () => {
 
                           const seasonSlug = season?.slug || comp.parent_period?.slug;
                           const openHref = clubSlugOrId
-                            ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
-                            : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
+                            ? `/federations/${currentOrgSlug}/clubs/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
+                            : `/federations/${currentOrgSlug}/clubs/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
 
                           const matchesCount = getRecursiveMatchesCount(comp);
 

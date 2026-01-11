@@ -44,7 +44,7 @@ export default function ProjectListPage() {
 
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-    fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/projects/`, {
+    fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/clubs/`, {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -73,10 +73,10 @@ export default function ProjectListPage() {
     <AppShell>
       <div>
         <nav style={{ marginBottom: '24px', fontSize: '14px', color: '#666' }}>
-          <Link to="/organisations">Organisations</Link>
+          <Link to="/federations">Organisations</Link>
           {orgId && orgName && (
             <>
-              {' '}/ <Link to={`/organisations/${orgId}`}>
+              {' '}/ <Link to={`/federations/${orgId}`}>
                 {orgName}
               </Link>
             </>
@@ -156,7 +156,7 @@ export default function ProjectListPage() {
                     </div>
                     <div>
                        <Link
-                        to={`/organisations/${orgId}/projects/${club.slug || club.id}`}
+                        to={`/federations/${orgId}/clubs/${club.slug || club.id}`}
                         style={{
                           padding: '8px 16px',
                           backgroundColor: 'var(--app-primary, #007bff)',
@@ -202,7 +202,7 @@ export default function ProjectListPage() {
                           >
                             <div>
                                <Link
-                                 to={`/organisations/${orgId}/projects/${team.slug || team.id}`}
+                                 to={`/federations/${orgId}/clubs/${team.slug || team.id}`}
                                  style={{ fontWeight: 600, color: 'var(--app-text)', textDecoration: 'none', display: 'block' }}
                                >
                                  {team.name}

@@ -159,7 +159,7 @@ export default function SeasonsPage() {
 
   const breadcrumbs = [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Federations', onClick: () => navigate('/organisations') },
+    { label: 'Federations', onClick: () => navigate('/federations') },
     { label: 'Seasons', current: true },
   ];
 
@@ -234,12 +234,12 @@ export default function SeasonsPage() {
                     <tr key={season.id}>
                       <td>
                         <a
-                          href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.id}`}
+                          href={`/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${season.id}`}
                           className="text-blue-600 hover:underline"
                           style={{ fontSize: '0.85rem' }}
                           onClick={(e) => {
                             e.preventDefault();
-                            navigate(`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.id}`);
+                            navigate(`/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${season.id}`);
                           }}
                         >
                           {season.name}

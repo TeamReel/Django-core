@@ -115,7 +115,7 @@ export default function DashboardPage() {
                    </div>
                    <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
                      <Link
-                       to={`/organisations/${context.organisation.slug}/projects`}
+                       to={`/federations/${context.organisation.slug}/projects`}
                        style={{
                          padding: '10px 20px',
                          backgroundColor: '#007bff',
@@ -128,7 +128,7 @@ export default function DashboardPage() {
                        View Projects
                      </Link>
                      <Link
-                       to={`/organisations/${context.organisation.slug}`}
+                       to={`/federations/${context.organisation.slug}`}
                        style={{
                          padding: '10px 20px',
                          backgroundColor: 'var(--app-surface-2)',
@@ -145,7 +145,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <p>
-                  No organisation selected. <Link to="/organisations">Browse organisations</Link> to get started.
+                  No organisation selected. <Link to="/federations">Browse organisations</Link> to get started.
                 </p>
               )}
             </div>

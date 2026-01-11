@@ -222,7 +222,7 @@ export const ProjectsPage: React.FC = () => {
       // Determine endpoint: Global vs Org-scoped
       const isGlobalRoute = !apiOrgSlug;
       const endpoint = apiOrgSlug
-          ? `${apiBaseUrl}/api/v1/organisations/${apiOrgSlug}/projects/?${params.toString()}`
+          ? `${apiBaseUrl}/api/v1/organisations/${apiOrgSlug}/clubs/?${params.toString()}`
           : `${apiBaseUrl}/api/v1/projects/?${params.toString()}`;
 
       console.log('[ProjectsPage] Fetch:', {
@@ -350,7 +350,7 @@ export const ProjectsPage: React.FC = () => {
 
       // Try org-nested endpoint first (expects slug)
       let response = await fetch(
-        `${apiBaseUrl}/api/v1/organisations/${projectOrgSlug}/projects/${projectSlug}/`,
+        `${apiBaseUrl}/api/v1/organisations/${projectOrgSlug}/clubs/${projectSlug}/`,
         {
           method: 'PATCH',
           headers: {
@@ -451,7 +451,7 @@ export const ProjectsPage: React.FC = () => {
 
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       // Always use nested route for delete (required for permissions)
-      const endpoint = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/${projectSlug}/`;
+      const endpoint = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/clubs/${projectSlug}/`;
 
       const response = await fetch(endpoint, {
         method: 'DELETE',
@@ -477,8 +477,8 @@ export const ProjectsPage: React.FC = () => {
   // Always show breadcrumbs with current org info
   const breadcrumbItems = currentOrgId ? [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Federations', onClick: () => navigate('/organisations') },
-    { label: orgName || 'Federation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}`) },
+    { label: 'Federations', onClick: () => navigate('/federations') },
+    { label: orgName || 'Federation', onClick: () => navigate(`/federations/${resolvedOrg?.slug || currentOrgId}`) },
     { label: 'Clubs & Teams', current: true },
   ] : [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
@@ -539,7 +539,7 @@ export const ProjectsPage: React.FC = () => {
             {currentOrgSlug && (
               <Button
                 variant="secondary"
-                onClick={() => navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}`)}
+                onClick={() => navigate(`/federations/${resolvedOrg?.slug || currentOrgId}`)}
               >
                 Back to Organisation
               </Button>
@@ -568,7 +568,7 @@ export const ProjectsPage: React.FC = () => {
 
                   const match = orgNavigationIndex.find((o) => String(o.id) === String(value));
                   if (match?.slug) {
-                    navigate(`/organisations/${match.slug}/projects`);
+                    navigate(`/federations/${match.slug}/projects`);
                   }
                 }
               }}
@@ -596,7 +596,7 @@ export const ProjectsPage: React.FC = () => {
                 size="md"
                 onClick={() => {
                   if (currentOrgSlug) {
-                    navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}/projects/create`);
+                    navigate(`/federations/${resolvedOrg?.slug || currentOrgId}/clubs/create`);
                   } else {
                     // No org context: show org selection modal
                     setIsOrgSelectionModalOpen(true);
@@ -723,13 +723,13 @@ export const ProjectsPage: React.FC = () => {
                   <tr key={project.id}>
                     <td>
                       <a
-                        href={`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`}
+                        href={`/federations/${projectOrgSlug}/clubs/${project.slug || project.id}`}
                         className="text-blue-600 hover:underline"
                         style={{ fontSize: '0.85rem' }}
                         data-testid={`project-name-${project.id}`}
                         onClick={(e) => {
                           e.preventDefault();
-                          navigate(`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`);
+                          navigate(`/federations/${projectOrgSlug}/clubs/${project.slug || project.id}`);
                         }}
                       >
                         {project.name}
@@ -879,7 +879,7 @@ export const ProjectsPage: React.FC = () => {
                   key={org.id}
                   onClick={() => {
                     setIsOrgSelectionModalOpen(false);
-                    navigate(`/organisations/${org.slug}/projects/create`);
+                    navigate(`/federations/${org.slug}/clubs/create`);
                   }}
                   style={{
                     padding: '12px 16px',

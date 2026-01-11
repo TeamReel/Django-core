@@ -72,7 +72,7 @@ export const ProjectEditPage: React.FC = () => {
 
         // Use nested route if we have org context
         const endpoint = resolvedOrg
-          ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/`
+          ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/clubs/${currentProjectSlug}/`
           : `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/`;
 
         const response = await fetch(endpoint, {
@@ -125,7 +125,7 @@ export const ProjectEditPage: React.FC = () => {
 
       // Use nested route if we have org context
       const endpoint = resolvedOrg
-        ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/`
+        ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/clubs/${currentProjectSlug}/`
         : `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/`;
 
       const response = await fetch(endpoint, {
@@ -153,7 +153,7 @@ export const ProjectEditPage: React.FC = () => {
       await response.json();
       // Navigate back to project detail page
       const nextSlug = slug || currentProjectSlug;
-      navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${nextSlug}`);
+      navigate(`/federations/${resolvedOrg?.slug || resolvedOrg?.id}/clubs/${nextSlug}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -168,8 +168,8 @@ export const ProjectEditPage: React.FC = () => {
           title="Edit Project"
           breadcrumbs={[
             { label: 'Home', onClick: () => navigate('/') },
-            { label: 'Organisations', onClick: () => navigate('/organisations') },
-            { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
+            { label: 'Organisations', onClick: () => navigate('/federations') },
+            { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/federations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
             { label: 'Clubs', onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(resolvedOrg?.slug || resolvedOrg?.id || ''))}`) },
             { label: 'Edit', current: true },
           ]}
@@ -189,7 +189,7 @@ export const ProjectEditPage: React.FC = () => {
         title={`Edit ${name}`}
         breadcrumbs={[
           { label: 'Home', onClick: () => navigate('/') },
-          { label: 'Organisations', onClick: () => navigate('/organisations') },
+          { label: 'Organisations', onClick: () => navigate('/federations') },
           {
             label: (
               <BreadcrumbContextSwitcher
@@ -212,7 +212,7 @@ export const ProjectEditPage: React.FC = () => {
                 onSelect={handleProjectSwitch}
               />
             ),
-            onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${projectId}`),
+            onClick: () => navigate(`/federations/${resolvedOrg?.slug || resolvedOrg?.id}/clubs/${projectId}`),
           },
           { label: 'Edit', current: true },
         ]}
@@ -292,7 +292,7 @@ export const ProjectEditPage: React.FC = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${projectId}`)}
+                onClick={() => navigate(`/federations/${resolvedOrg?.slug || resolvedOrg?.id}/clubs/${projectId}`)}
               >
                 Cancel
               </Button>

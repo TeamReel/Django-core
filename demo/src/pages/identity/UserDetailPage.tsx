@@ -65,7 +65,7 @@ export const UserDetailPage: React.FC = () => {
   // Custom handler for user navigation
   const handleUserSwitch = (option: BreadcrumbSwitcherOption) => {
     if (orgId) {
-      navigate(`/organisations/${orgId}/users/${option.slug || option.id}`);
+      navigate(`/federations/${orgId}/users/${option.slug || option.id}`);
     } else {
       navigate(`/users/${option.slug || option.id}`);
     }
@@ -284,7 +284,7 @@ export const UserDetailPage: React.FC = () => {
   if (!user) return <AppShell><div>User not found</div></AppShell>;
 
   // Determine back path based on whether we're in org context
-  const backPath = orgId ? `/organisations/${orgId}/users` : '/users';
+  const backPath = orgId ? `/federations/${orgId}/users` : '/users';
   const usersLabel = orgId ? 'Members' : 'Users';
 
   return (
@@ -294,7 +294,7 @@ export const UserDetailPage: React.FC = () => {
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           ...(orgId ? [{ label: 'Federations', href: '/organisations' }] : []),
-          ...(currentOrg ? [{ label: currentOrg.name, href: `/organisations/${orgId}` }] : []),
+          ...(currentOrg ? [{ label: currentOrg.name, href: `/federations/${orgId}` }] : []),
           { label: usersLabel, onClick: () => navigate(backPath) },
           ...(orgId && userOptions.length > 1 ? [{
             label: (

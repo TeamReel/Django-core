@@ -65,10 +65,10 @@ export const OrganisationCreatePage: React.FC = () => {
       const newOrg = await response.json();
       // Navigate to the new organisation's dashboard
       if (newOrg?.slug || newOrg?.id) {
-        navigate(`/organisations/${newOrg.slug || newOrg.id}`);
+        navigate(`/federations/${newOrg.slug || newOrg.id}`);
       } else {
         // Fallback if ID is missing
-        navigate('/organisations');
+        navigate('/federations');
       }
     } catch (err: any) {
       setError(err.message);
@@ -129,7 +129,7 @@ export const OrganisationCreatePage: React.FC = () => {
               <Button type="submit" variant="primary" disabled={loading}>
                 {loading ? 'Creating...' : 'Create Organisation'}
               </Button>
-              <Button type="button" variant="secondary" onClick={() => navigate('/organisations')} disabled={loading}>
+              <Button type="button" variant="secondary" onClick={() => navigate('/federations')} disabled={loading}>
                 Cancel
               </Button>
             </div>

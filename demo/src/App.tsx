@@ -191,7 +191,7 @@ export default function App() {
 
       {/* TeamReel hierarchy: Seasons/Competitions under a Project */}
       <Route
-        path="/organisations/:orgId/projects/:projectId/seasons"
+        path="/federations/:orgId/clubs/:projectId/seasons"
         element={
           <ProtectedRoute>
             <ProjectSeasonsPage />
@@ -199,7 +199,7 @@ export default function App() {
         }
       />
       <Route
-        path="/organisations/:orgId/projects/:clubId/teams/:projectId/seasons"
+        path="/federations/:orgId/clubs/:clubId/teams/:projectId/seasons"
         element={
           <ProtectedRoute>
             <ProjectSeasonsPage />
@@ -207,7 +207,7 @@ export default function App() {
         }
       />
       <Route
-        path="/organisations/:orgId/projects/:projectId/seasons/:seasonId"
+        path="/federations/:orgId/clubs/:projectId/seasons/:seasonId"
         element={
           <ProtectedRoute>
             <ProjectSeasonDetailPage />
@@ -215,7 +215,7 @@ export default function App() {
         }
       />
       <Route
-        path="/organisations/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId"
+        path="/federations/:orgId/clubs/:clubId/teams/:projectId/seasons/:seasonId"
         element={
           <ProtectedRoute>
             <ProjectSeasonDetailPage />
@@ -223,7 +223,7 @@ export default function App() {
         }
       />
       <Route
-        path="/organisations/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId"
+        path="/federations/:orgId/clubs/:projectId/seasons/:seasonId/competitions/:competitionId"
         element={
           <ProtectedRoute>
             <ProjectCompetitionDetailPage />
@@ -231,7 +231,7 @@ export default function App() {
         }
       />
       <Route
-        path="/organisations/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId"
+        path="/federations/:orgId/clubs/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId"
         element={
           <ProtectedRoute>
             <ProjectCompetitionDetailPage />
@@ -239,7 +239,7 @@ export default function App() {
         }
       />
       <Route
-        path="/organisations/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/matches"
+        path="/federations/:orgId/clubs/:projectId/seasons/:seasonId/competitions/:competitionId/matches"
         element={
           <ProtectedRoute>
             <ProjectCompetitionMatchesPage />
@@ -247,7 +247,7 @@ export default function App() {
         }
       />
       <Route
-        path="/organisations/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId/matches"
+        path="/federations/:orgId/clubs/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId/matches"
         element={
           <ProtectedRoute>
             <ProjectCompetitionMatchesPage />
@@ -255,7 +255,7 @@ export default function App() {
         }
       />
       <Route
-        path="/organisations/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/squad"
+        path="/federations/:orgId/clubs/:projectId/seasons/:seasonId/competitions/:competitionId/squad"
         element={
           <ProtectedRoute>
             <ProjectCompetitionSquadPage />
@@ -263,7 +263,7 @@ export default function App() {
         }
       />
       <Route
-        path="/organisations/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId/squad"
+        path="/federations/:orgId/clubs/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId/squad"
         element={
           <ProtectedRoute>
             <ProjectCompetitionSquadPage />
@@ -312,7 +312,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/create"
+        path="/federations/create"
         element={
           <ProtectedRoute>
             <OrganisationCreatePage />
@@ -321,7 +321,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:id"
+        path="/federations/:id"
         element={
           <ProtectedRoute>
             <OrganisationDetailPage />
@@ -330,7 +330,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:id/members/:memberId"
+        path="/federations/:id/members/:memberId"
         element={
           <ProtectedRoute>
             <MemberDetailPage />
@@ -339,7 +339,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:orgId/users"
+        path="/federations/:orgId/users"
         element={
           <ProtectedRoute>
             <UsersPage />
@@ -348,7 +348,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:orgId/users/:userId"
+        path="/federations/:orgId/users/:userId"
         element={
           <ProtectedRoute>
             <UserDetailPage />
@@ -357,7 +357,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:id/edit"
+        path="/federations/:id/edit"
         element={
           <ProtectedRoute>
             <OrganisationEditPage />
@@ -366,7 +366,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:orgId/projects"
+        path="/federations/:orgId/projects"
         element={
           <ProtectedRoute>
             <OrgProjectsRedirect />
@@ -375,7 +375,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:orgId/projects/create"
+        path="/federations/:orgId/clubs/create"
         element={
           <ProtectedRoute>
             <ProjectCreatePage />
@@ -384,7 +384,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:orgId/projects/:projectId"
+        path="/federations/:orgId/clubs/:projectId"
         element={
           <ProtectedRoute>
             <ProjectDetailPage />
@@ -394,7 +394,7 @@ export default function App() {
 
       {/* TeamReel hierarchy: Team (Project child) under a Club */}
       <Route
-        path="/organisations/:orgId/projects/:clubId/teams/:projectId"
+        path="/federations/:orgId/clubs/:clubId/teams/:projectId"
         element={
           <ProtectedRoute>
             <ProjectDetailPage />
@@ -403,7 +403,7 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:orgId/projects/:projectId/edit"
+        path="/federations/:orgId/clubs/:projectId/edit"
         element={
           <ProtectedRoute>
             <ProjectEditPage />

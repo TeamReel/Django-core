@@ -141,7 +141,7 @@ export default function ClubsPage() {
 
   const breadcrumbs = [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Federations', onClick: () => navigate('/organisations') },
+    { label: 'Federations', onClick: () => navigate('/federations') },
     { label: 'Clubs', current: true },
   ];
 
@@ -149,7 +149,7 @@ export default function ClubsPage() {
     if (!window.confirm(`Are you sure you want to delete ${projectName}?`)) return;
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, {
+      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/clubs/${projectSlugOrId}/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -249,12 +249,12 @@ export default function ClubsPage() {
                       <tr key={club.id}>
                         <td>
                           <a
-                            href={`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`}
+                            href={`/federations/${orgSlugOrId}/clubs/${club.slug || club.id}`}
                             className="text-blue-600 hover:underline"
                             style={{ fontSize: '0.85rem' }}
                             onClick={(e) => {
                               e.preventDefault();
-                              navigate(`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`);
+                              navigate(`/federations/${orgSlugOrId}/clubs/${club.slug || club.id}`);
                             }}
                           >
                             {club.name}
@@ -263,11 +263,11 @@ export default function ClubsPage() {
                         <td style={{ fontSize: '0.85rem' }}>
                           {orgSlugOrId ? (
                             <a
-                              href={`/organisations/${orgSlugOrId}`}
+                              href={`/federations/${orgSlugOrId}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgSlugOrId}`);
+                                navigate(`/federations/${orgSlugOrId}`);
                               }}
                             >
                               {club.organisation?.name || 'Federation'}
@@ -300,7 +300,7 @@ export default function ClubsPage() {
 
                             {userCanEditProject && (
                               <button
-                                onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/edit`)}
+                                onClick={() => navigate(`/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/edit`)}
                                 style={{
                                   padding: '6px 12px',
                                   borderRadius: '4px',

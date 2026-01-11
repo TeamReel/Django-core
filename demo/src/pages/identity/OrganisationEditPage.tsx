@@ -128,7 +128,7 @@ export const OrganisationEditPage: React.FC = () => {
 
       const updated = await response.json().catch(() => null);
       const slugOrId = updated?.slug || updated?.id || resolvedOrg?.slug || id;
-      navigate(`/organisations/${slugOrId}`);
+      navigate(`/federations/${slugOrId}`);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -142,7 +142,7 @@ export const OrganisationEditPage: React.FC = () => {
         <PageHeader
           title="Edit Organisation"
           breadcrumbs={[
-            { label: 'Organisations', onClick: () => navigate('/organisations') },
+            { label: 'Organisations', onClick: () => navigate('/federations') },
             { label: 'Edit' },
           ]}
         />
@@ -159,7 +159,7 @@ export const OrganisationEditPage: React.FC = () => {
         title={`Edit ${name}`}
         breadcrumbs={[
           { label: 'Home', onClick: () => navigate('/') },
-          { label: 'Organisations', onClick: () => navigate('/organisations') },
+          { label: 'Organisations', onClick: () => navigate('/federations') },
           {
             label: (
               <BreadcrumbContextSwitcher
@@ -169,7 +169,7 @@ export const OrganisationEditPage: React.FC = () => {
                 onSelect={handleOrganisationSwitch}
               />
             ),
-            onClick: () => navigate(`/organisations/${resolvedOrg?.slug || id}`),
+            onClick: () => navigate(`/federations/${resolvedOrg?.slug || id}`),
           },
           { label: 'Edit', current: true },
         ]}
@@ -230,7 +230,7 @@ export const OrganisationEditPage: React.FC = () => {
               <Button type="submit" variant="primary" disabled={saving}>
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>
-              <Button type="button" variant="secondary" onClick={() => navigate(`/organisations/${id}`)} disabled={saving}>
+              <Button type="button" variant="secondary" onClick={() => navigate(`/federations/${id}`)} disabled={saving}>
                 Cancel
               </Button>
             </div>

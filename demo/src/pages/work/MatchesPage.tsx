@@ -141,7 +141,7 @@ export default function MatchesPage() {
 
   const breadcrumbs = [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Federations', onClick: () => navigate('/organisations') },
+    { label: 'Federations', onClick: () => navigate('/federations') },
     { label: 'Matches', current: true },
   ];
 

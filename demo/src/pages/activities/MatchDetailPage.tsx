@@ -154,11 +154,11 @@ export const MatchDetailPage: React.FC = () => {
           title={match.title}
           breadcrumbs={([
             { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-            { label: 'Federations', onClick: () => navigate('/organisations') },
+            { label: 'Federations', onClick: () => navigate('/federations') },
             federationSlugOrId
               ? {
                   label: competitionPeriod.organisation?.name || 'Federation',
-                  onClick: () => navigate(`/organisations/${federationSlugOrId}`),
+                  onClick: () => navigate(`/federations/${federationSlugOrId}`),
                 }
               : { label: 'Federation' },
             federationSlugOrId
@@ -171,7 +171,7 @@ export const MatchDetailPage: React.FC = () => {
               ? {
                   label: match.project.name,
                   onClick: () =>
-                    navigate(`/organisations/${federationSlugOrId}/projects/${projectSlugOrId}`),
+                    navigate(`/federations/${federationSlugOrId}/clubs/${projectSlugOrId}`),
                 }
               : { label: match.project.name, onClick: () => navigate('/clubs') },
             seasonPeriod && federationSlugOrId
@@ -179,7 +179,7 @@ export const MatchDetailPage: React.FC = () => {
                   label: seasonPeriod.name,
                   onClick: () =>
                     navigate(
-                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonPeriod.slug || seasonPeriod.id}`
+                      `/federations/${federationSlugOrId}/clubs/${projectSlugOrId}/seasons/${seasonPeriod.slug || seasonPeriod.id}`
                     ),
                 }
               : seasonPeriod
@@ -190,7 +190,7 @@ export const MatchDetailPage: React.FC = () => {
                   label: competitionPeriod.name,
                   onClick: () =>
                     navigate(
-                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonPeriod.slug || seasonPeriod.id}/competitions/${competitionPeriod.slug || competitionPeriod.id}`
+                      `/federations/${federationSlugOrId}/clubs/${projectSlugOrId}/seasons/${seasonPeriod.slug || seasonPeriod.id}/competitions/${competitionPeriod.slug || competitionPeriod.id}`
                     ),
                 }
               : competitionPeriod
@@ -201,7 +201,7 @@ export const MatchDetailPage: React.FC = () => {
                   label: 'Matches',
                   onClick: () =>
                     navigate(
-                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonPeriod.slug || seasonPeriod.id}/competitions/${competitionPeriod.slug || competitionPeriod.id}/matches`
+                      `/federations/${federationSlugOrId}/clubs/${projectSlugOrId}/seasons/${seasonPeriod.slug || seasonPeriod.id}/competitions/${competitionPeriod.slug || competitionPeriod.id}/matches`
                     ),
                 }
               : { label: 'Matches', onClick: () => navigate(-1) },

@@ -161,9 +161,9 @@ export const TeamsList: React.FC = () => {
         if (!window.confirm(`Are you sure you want to delete ${teamName}?`)) return;
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         try {
-          // Note: Teams are projects but nested. The delete URL is same /organisations/:org/projects/:id/
+          // Note: Teams are projects but nested. The delete URL is same /federations/:org/clubs/:id/
           // Ensure we have correct org slug/id
-          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${teamId}/`, {
+          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/clubs/${teamId}/`, {
             method: 'DELETE',
             headers: {
               'Content-Type': 'application/json',
@@ -224,7 +224,7 @@ export const TeamsList: React.FC = () => {
           <Button variant="primary" size="md" onClick={() => {
             const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
             const clubSlug = clubs.find(c => String(c.id) === selectedClubId)?.slug || selectedClubId;
-            navigate(`/organisations/${orgSlug}/projects/${clubSlug}/teams/create`);
+            navigate(`/federations/${orgSlug}/clubs/${clubSlug}/teams/create`);
           }}>
             Create Team
           </Button>
@@ -283,11 +283,11 @@ export const TeamsList: React.FC = () => {
                         <tr key={team.id}>
                             <td>
                                 <a
-                                    href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
+                                    href={`/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`);
+                                        navigate(`/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${teamSlugOrId}`);
                                     }}
                                 >
                                     {team.name}
@@ -297,11 +297,11 @@ export const TeamsList: React.FC = () => {
                             <td>
                                 {orgSlugOrId ? (
                                     <a
-                                    href={`/organisations/${orgSlugOrId}`}
+                                    href={`/federations/${orgSlugOrId}`}
                                     className="text-blue-600 hover:underline text-xs"
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        navigate(`/organisations/${orgSlugOrId}`);
+                                        navigate(`/federations/${orgSlugOrId}`);
                                     }}
                                     >
                                     {team.organisation?.name || 'Federation'}
@@ -332,7 +332,7 @@ export const TeamsList: React.FC = () => {
                                     </button>
                                      {userCanEditProject && (
                                         <button
-                                            onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/edit`)}
+                                            onClick={() => navigate(`/federations/${orgSlugOrId}/clubs/${clubSlugOrId}/teams/${teamSlugOrId}/edit`)}
                                             style={{
                                                 padding: '4px 8px',
                                                 borderRadius: '4px',

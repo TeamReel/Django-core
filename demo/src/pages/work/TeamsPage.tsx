@@ -167,7 +167,7 @@ export default function TeamsPage() {
 
   const breadcrumbs = [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Federations', onClick: () => navigate('/organisations') },
+    { label: 'Federations', onClick: () => navigate('/federations') },
     { label: 'Teams', current: true },
   ];
 
@@ -175,7 +175,7 @@ export default function TeamsPage() {
     if (!window.confirm(`Are you sure you want to delete ${projectName}?`)) return;
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, {
+      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/clubs/${projectSlugOrId}/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -287,10 +287,10 @@ export default function TeamsPage() {
                     const teamSlugOrId = team.slug || team.id;
 
                     const teamDetailPath = parentClubSlugOrId
-                      ? `/organisations/${parentClubOrgSlugOrId}/projects/${parentClubSlugOrId}/teams/${teamSlugOrId}`
-                      : `/organisations/${parentClubOrgSlugOrId}/projects/${teamSlugOrId}`;
+                      ? `/federations/${parentClubOrgSlugOrId}/clubs/${parentClubSlugOrId}/teams/${teamSlugOrId}`
+                      : `/federations/${parentClubOrgSlugOrId}/clubs/${teamSlugOrId}`;
 
-                    const clubDetailPath = parentClubSlugOrId ? `/organisations/${parentClubOrgSlugOrId}/projects/${parentClubSlugOrId}` : '';
+                    const clubDetailPath = parentClubSlugOrId ? `/federations/${parentClubOrgSlugOrId}/clubs/${parentClubSlugOrId}` : '';
 
                     return (
                       <tr key={team.id}>
@@ -326,11 +326,11 @@ export default function TeamsPage() {
                         <td style={{ fontSize: '0.85rem' }}>
                           {parentClubOrgSlugOrId ? (
                             <a
-                              href={`/organisations/${parentClubOrgSlugOrId}`}
+                              href={`/federations/${parentClubOrgSlugOrId}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${parentClubOrgSlugOrId}`);
+                                navigate(`/federations/${parentClubOrgSlugOrId}`);
                               }}
                             >
                               {parentClubOrgName || 'Federation'}
@@ -363,7 +363,7 @@ export default function TeamsPage() {
 
                             {userCanEditProject && parentClubOrgSlugOrId && (
                               <button
-                                onClick={() => navigate(`/organisations/${parentClubOrgSlugOrId}/projects/${teamSlugOrId}/edit`)}
+                                onClick={() => navigate(`/federations/${parentClubOrgSlugOrId}/clubs/${teamSlugOrId}/edit`)}
                                 style={{
                                   padding: '6px 12px',
                                   borderRadius: '4px',

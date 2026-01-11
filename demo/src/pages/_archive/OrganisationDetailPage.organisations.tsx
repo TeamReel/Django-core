@@ -74,7 +74,7 @@ export default function OrganisationDetailPage() {
         await switchContext(data);
 
         // Fetch projects for this organisation
-        return fetch(`${apiBaseUrl}/api/v1/organisations/${data.slug}/projects/`, {
+        return fetch(`${apiBaseUrl}/api/v1/organisations/${data.slug}/clubs/`, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -110,7 +110,7 @@ export default function OrganisationDetailPage() {
         }}>
           {error || 'Organisation not found'}
         </div>
-        <Link to="/organisations" style={{ display: 'inline-block', marginTop: '16px' }}>
+        <Link to="/federations" style={{ display: 'inline-block', marginTop: '16px' }}>
           ← Back to Organisations
         </Link>
       </AppShell>
@@ -187,7 +187,7 @@ export default function OrganisationDetailPage() {
     <AppShell>
       <div>
         <nav style={{ marginBottom: '24px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
-          <Link to="/organisations">Federations</Link> / {organisation.name}
+          <Link to="/federations">Federations</Link> / {organisation.name}
         </nav>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -315,7 +315,7 @@ export default function OrganisationDetailPage() {
                 </dl>
 
                 <Link
-                  to={`/organisations/${organisation.slug}/projects`}
+                  to={`/federations/${organisation.slug}/projects`}
                   style={{
                     display: 'inline-block',
                     marginTop: '24px',
@@ -496,7 +496,7 @@ export default function OrganisationDetailPage() {
                 clubs.map(club => (
                   <Link
                     key={club.id}
-                    to={`/organisations/${organisation.slug}/projects/${club.slug}`}
+                    to={`/federations/${organisation.slug}/clubs/${club.slug}`}
                     style={{
                       display: 'block',
                       padding: '20px',
@@ -549,7 +549,7 @@ export default function OrganisationDetailPage() {
                   return (
                     <Link
                       key={team.id}
-                      to={`/organisations/${organisation.slug}/projects/${parentClubSlugOrId}/teams/${teamSlugOrId}`}
+                      to={`/federations/${organisation.slug}/clubs/${parentClubSlugOrId}/teams/${teamSlugOrId}`}
                       style={{
                         display: 'block',
                         padding: '16px',

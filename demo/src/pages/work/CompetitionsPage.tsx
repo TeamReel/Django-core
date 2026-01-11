@@ -157,7 +157,7 @@ export default function CompetitionsPage() {
 
   const breadcrumbs = [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Federations', onClick: () => navigate('/organisations') },
+    { label: 'Federations', onClick: () => navigate('/federations') },
     { label: 'Competitions', current: true },
   ];
 
@@ -236,13 +236,13 @@ export default function CompetitionsPage() {
                       <tr key={comp.id}>
                         <td>
                           <a
-                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
+                            href={`/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
                             className="text-blue-600 hover:underline"
                             style={{ fontSize: '0.85rem' }}
                             onClick={(e) => {
                               e.preventDefault();
                               navigate(
-                                `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
+                                `/federations/${orgSlugOrId}/clubs/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
                               );
                             }}
                           >
