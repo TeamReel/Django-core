@@ -724,28 +724,22 @@ export const ProjectDetailPage: React.FC = () => {
                 for (const teamId of teamIds) {
                   const teamMembersEndpoint = `${apiBaseUrl}/api/v1/projects/${teamId}/members/`;
                   try {
-                    const teamMembersResponse = await fetch(teamMembersEndpoint, {
+                    // Use fetchAllPages to get all members, not just first page (20 results)
+                    const teamMembersList = await fetchAllPages<any>(teamMembersEndpoint, {
                       headers: {
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
                       },
                       credentials: 'include',
                     });
+                    console.log(`[ProjectDetailPage] Team ${teamId} returned ${teamMembersList.length} members`);
 
-                    if (teamMembersResponse.ok) {
-                      const teamMembersData = await teamMembersResponse.json();
-                      const teamMembersList = getPagedResults(teamMembersData);
-                      console.log(`[ProjectDetailPage] Team ${teamId} returned ${teamMembersList.length} members`);
-
-                      // Add to map to deduplicate (users can be in multiple teams)
-                      for (const member of teamMembersList) {
-                        const userId = member.user?.id || member.id;
-                        if (userId && !allMembersMap.has(String(userId))) {
-                          allMembersMap.set(String(userId), member);
-                        }
+                    // Add to map to deduplicate (users can be in multiple teams)
+                    for (const member of teamMembersList) {
+                      const userId = member.user?.id || member.id;
+                      if (userId && !allMembersMap.has(String(userId))) {
+                        allMembersMap.set(String(userId), member);
                       }
-                    } else {
-                      console.warn(`[ProjectDetailPage] Team ${teamId} members endpoint returned ${teamMembersResponse.status}`);
                     }
                   } catch (err) {
                     console.warn(`[ProjectDetailPage] Failed to fetch members for team ${teamId}:`, err);
@@ -773,7 +767,8 @@ export const ProjectDetailPage: React.FC = () => {
                 for (const teamId of teamIds) {
                   const teamMembersEndpoint = `${apiBaseUrl}/api/v1/projects/${teamId}/members/`;
                   try {
-                    const teamMembersResponse = await fetch(teamMembersEndpoint, {
+                    // Use fetchAllPages to get all members, not just first page
+                    const teamMembersList = await fetchAllPages<any>(teamMembersEndpoint, {
                       headers: {
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
@@ -781,15 +776,10 @@ export const ProjectDetailPage: React.FC = () => {
                       credentials: 'include',
                     });
 
-                    if (teamMembersResponse.ok) {
-                      const teamMembersData = await teamMembersResponse.json();
-                      const teamMembersList = getPagedResults(teamMembersData);
-
-                      for (const member of teamMembersList) {
-                        const userId = member.user?.id || member.id;
-                        if (userId && !allMembersMap.has(String(userId))) {
-                          allMembersMap.set(String(userId), member);
-                        }
+                    for (const member of teamMembersList) {
+                      const userId = member.user?.id || member.id;
+                      if (userId && !allMembersMap.has(String(userId))) {
+                        allMembersMap.set(String(userId), member);
                       }
                     }
                   } catch (err) {
