@@ -218,9 +218,10 @@ export const ProjectDetailPage: React.FC = () => {
     return oid ? String(oid) : null;
   };
 
-  const ensureChildTeamsLoaded = async (): Promise<Project[]> => {
-    console.log(`[ensureChildTeamsLoaded] Called. project?.id = ${project?.id}, project =`, project);
-    if (!project?.id) {
+  const ensureChildTeamsLoaded = async (projectData?: any): Promise<Project[]> => {
+    const proj = projectData || project;
+    console.log(`[ensureChildTeamsLoaded] Called. proj?.id = ${proj?.id}, proj =`, proj);
+    if (!proj?.id) {
       console.log(`[ensureChildTeamsLoaded] No project.id, returning empty array`);
       return [];
     }
@@ -228,14 +229,14 @@ export const ProjectDetailPage: React.FC = () => {
     // (childProjects might be set with partial data from dashboard preview)
 
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-    const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${project.id}&page_size=250`;
-    console.log(`[ensureChildTeamsLoaded] Fetching teams for parent project ID: ${project.id} from ${url}`);
+    const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${proj.id}&page_size=250`;
+    console.log(`[ensureChildTeamsLoaded] Fetching teams for parent project ID: ${proj.id} from ${url}`);
     const results = await fetchAllPages<Project>(url, { credentials: 'include' });
     console.log(`[ensureChildTeamsLoaded] Raw results: ${results.length} projects`);
 
-    const parentId = String(project.id);
+    const parentId = String(proj.id);
     const orgId = String(
-      (project as any)?.organisation_id || (project as any)?.organisation?.id || resolvedOrg?.id || ''
+      (proj as any)?.organisation_id || (proj as any)?.organisation?.id || resolvedOrg?.id || ''
     );
 
     const filteredByOrg = orgId
@@ -703,7 +704,7 @@ export const ProjectDetailPage: React.FC = () => {
               // For clubs: always fetch team members to show complete roster
               // (club may have direct memberships for admins, but teams have players)
               if (!isTeamRoute) {
-                const teams = await ensureChildTeamsLoaded();
+                const teams = await ensureChildTeamsLoaded(projectData);
                 const teamIds = Array.from(teams.map((t: any) => String(t.id)));
 
                 console.log(`[ProjectDetailPage] Fetching members for ${teamIds.length} teams:`, teamIds);
@@ -765,7 +766,7 @@ export const ProjectDetailPage: React.FC = () => {
 
               // Fallback: For clubs, fetch members per team instead of org-wide filtering
               if (!isTeamRoute) {
-                const teams = await ensureChildTeamsLoaded();
+                const teams = await ensureChildTeamsLoaded(projectData);
                 const teamIds = Array.from(teams.map((t: any) => String(t.id)));
 
                 const allMembersMap = new Map<string, any>();
