@@ -1123,6 +1123,8 @@ export const ProjectDetailPage: React.FC = () => {
 
   // Trigger data fetch on tab change
   useEffect(() => {
+    console.log('[useEffect] activeTab:', activeTab, 'project:', project?.id, 'isLikelyTeam:', isLikelyTeam);
+    console.log('[useEffect] seasons.length:', seasons.length, 'seasonsLoading:', seasonsLoading);
     if (!project) return;
     if (activeTab === 'hierarchy') {
       // Load data needed for hierarchy view
@@ -1143,7 +1145,13 @@ export const ProjectDetailPage: React.FC = () => {
       // Also load seasons for count calculation in Teams tab
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
     } else if (activeTab === 'seasons') {
-      if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
+      console.log('[useEffect] On seasons tab, checking if should fetch...');
+      if (seasons.length === 0 && !seasonsLoading) {
+        console.log('[useEffect] Calling fetchSeasons()');
+        fetchSeasons();
+      } else {
+        console.log('[useEffect] NOT calling fetchSeasons - seasons.length:', seasons.length, 'seasonsLoading:', seasonsLoading);
+      }
     } else if (activeTab === 'competitions') {
       if (competitions.length === 0 && !competitionsLoading) fetchCompetitions();
     } else if (activeTab === 'matches') {
