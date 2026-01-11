@@ -175,17 +175,26 @@ export const CompetitionsList: React.FC = () => {
         params.set('parent_period__isnull', 'false');
         if (selectedTeamId) {
           params.set('project_id', String(selectedTeamId));
-        } else if (selectedClubId) {
+        } else if (selectedClubId && teams.length > 0) {
           // If only club selected, get all competitions for teams in that club
           const clubTeams = teams.filter((t) => {
             const tParent = t.parent_id || t.parent;
             return String(tParent) === String(selectedClubId);
           });
-          if (clubTeams.length > 0) {
-            // Fetch for all teams in the club
-            const teamIds = clubTeams.map(t => String(t.id)).join(',');
-            params.set('project_id__in', teamIds);
+
+          if (clubTeams.length === 0) {
+             setCompetitions([]);
+             setCompetitionsLoading(false);
+             return;
           }
+
+           // Fetch for all teams in the club
+           const teamIds = clubTeams.map(t => String(t.id)).join(',');
+           params.set('project_id__in', teamIds);
+        } else if (selectedClubId) {
+             setCompetitions([]);
+             setCompetitionsLoading(false);
+             return;
         }
         if (selectedOrgId && !selectedClubId) params.set('organisation_id', selectedOrgId);
 

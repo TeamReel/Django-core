@@ -197,6 +197,29 @@ export const SeasonsList: React.FC = () => {
           }
           // If nothing selected at all, fetch all seasons (for superadmin)
 
+          if (selectedClubId && teams.length > 0) {
+              const clubTeams = teams.filter((t) => {
+                  const tParent = t.parent_id || t.parent;
+                  return String(tParent) === String(selectedClubId);
+              });
+
+              if (clubTeams.length === 0) {
+                  // Club selected but no teams found -> force empty result
+                 setSeasons([]);
+                 setSeasonsLoading(false);
+                 return;
+              }
+
+             const teamIds = clubTeams.map(t => String(t.id)).join(',');
+             params.set('project_id__in', teamIds);
+          } else if (selectedClubId) {
+             // Club selected but teams input list empty/loading -> likely no teams or not loaded yet
+             // To be safe, force empty
+             setSeasons([]);
+             setSeasonsLoading(false);
+             return;
+          }
+
           const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
           console.log('[SeasonsList] Fetching from:', url);
           const res = await fetch(url, { credentials: 'include' });
