@@ -219,7 +219,11 @@ export const ProjectDetailPage: React.FC = () => {
   };
 
   const ensureChildTeamsLoaded = async (): Promise<Project[]> => {
-    if (!project?.id) return [];
+    console.log(`[ensureChildTeamsLoaded] Called. project?.id = ${project?.id}, project =`, project);
+    if (!project?.id) {
+      console.log(`[ensureChildTeamsLoaded] No project.id, returning empty array`);
+      return [];
+    }
     // Don't use cached childProjects - always fetch fresh to avoid stale data
     // (childProjects might be set with partial data from dashboard preview)
 
