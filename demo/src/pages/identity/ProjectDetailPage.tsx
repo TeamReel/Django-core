@@ -1956,54 +1956,37 @@ export const ProjectDetailPage: React.FC = () => {
                   <MemberList projectId={String(project.id)} initialMembers={members as any} />
                 ) : (
                   <>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-semibold">People</h3>
-                      <div className="flex gap-2">
-                        <select
-                          value={selectedTeamFilter}
-                          onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                          className="px-3 py-1 border border-gray-300 rounded text-sm"
-                        >
-                          <option value="all">All Teams</option>
-                          {childProjects.map((team) => (
-                            <option key={team.id} value={String(team.id)}>
-                              {team.name}
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={selectedSeasonFilter}
-                          onChange={(e) => setSelectedSeasonFilter(e.target.value)}
-                          className="px-3 py-1 border border-gray-300 rounded text-sm"
-                        >
-                          <option value="all">All Seasons</option>
-                          {seasons.map((season) => (
-                            <option key={season.id} value={String(season.id)}>
-                              {season.name}
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={selectedCompetitionFilter}
-                          onChange={(e) => setSelectedCompetitionFilter(e.target.value)}
-                          className="px-3 py-1 border border-gray-300 rounded text-sm"
-                        >
-                          <option value="all">All Competitions</option>
-                          {competitions.map((comp) => (
-                            <option key={comp.id} value={String(comp.id)}>
-                              {comp.name}
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={selectedStatusFilter}
-                          onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                          className="px-3 py-1 border border-gray-300 rounded text-sm"
-                        >
-                          <option value="all">All Status</option>
-                          <option value="active">Active</option>
-                          <option value="inactive">Inactive</option>
-                        </select>
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold mb-3">People</h3>
+                      <div className="flex flex-col md:flex-row gap-2 items-end">
+                        <div className="w-full md:w-48">
+                          <select
+                            value={selectedTeamFilter}
+                            onChange={(e) => setSelectedTeamFilter(e.target.value)}
+                            className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                          >
+                            <option value="all">All Teams</option>
+                            {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
+                              const team = childProjects.find(t => String(t.id) === id);
+                              return team ? (
+                                <option key={team.id} value={String(team.id)}>
+                                  {team.name}
+                                </option>
+                              ) : null;
+                            })}
+                          </select>
+                        </div>
+                        <div className="w-full md:w-32">
+                          <select
+                            value={selectedStatusFilter}
+                            onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                            className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                          >
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                     {members.length === 0 ? (
@@ -2128,19 +2111,34 @@ export const ProjectDetailPage: React.FC = () => {
 
             {activeTab === 'teams' && !isLikelyTeam && (
               <Card>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">Teams</h3>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() =>
-                      navigate(
-                        `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/projects/create`
-                      )
-                    }
-                  >
-                    Add Team
-                  </Button>
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-lg font-semibold">Teams</h3>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() =>
+                        navigate(
+                          `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/projects/create`
+                        )
+                      }
+                    >
+                      Add Team
+                    </Button>
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-2 items-end">
+                    <div className="w-full md:w-32">
+                      <select
+                        value={selectedStatusFilter}
+                        onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
 
                 {childProjectsLoading ? (
@@ -2161,7 +2159,15 @@ export const ProjectDetailPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {childProjects.map((team: any) => {
+                      {(() => {
+                        let filteredTeams = childProjects;
+                        if (selectedStatusFilter !== 'all') {
+                          filteredTeams = filteredTeams.filter((team: any) => {
+                            const isActive = team.is_active !== undefined ? team.is_active : true;
+                            return selectedStatusFilter === 'active' ? isActive : !isActive;
+                          });
+                        }
+                        return filteredTeams.map((team: any) => {
                         const teamId = String(team.id);
                         const teamSeasonCount = seasons.filter((s: any) => {
                           const sProjId = String(s.project_id || s.project?.id || '');
@@ -2257,7 +2263,7 @@ export const ProjectDetailPage: React.FC = () => {
                             </div>
                           </td>
                         </tr>
-                      );})}
+                      );})})()}
                     </tbody>
                   </Table>
                 )}
@@ -2266,13 +2272,47 @@ export const ProjectDetailPage: React.FC = () => {
 
             {activeTab === 'seasons' && (
               <Card>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">Seasons</h3>
-                  {isLikelyTeam && (
-                    <Button variant="secondary" size="sm" onClick={() => navigate(seasonsPath)}>
-                      Manage Seasons
-                    </Button>
-                  )}
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-lg font-semibold">Seasons</h3>
+                    {isLikelyTeam && (
+                      <Button variant="secondary" size="sm" onClick={() => navigate(seasonsPath)}>
+                        Manage Seasons
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-2 items-end">
+                    {!isLikelyTeam && (
+                      <div className="w-full md:w-48">
+                        <select
+                          value={selectedTeamFilter}
+                          onChange={(e) => setSelectedTeamFilter(e.target.value)}
+                          className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                        >
+                          <option value="all">All Teams</option>
+                          {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
+                            const team = childProjects.find(t => String(t.id) === id);
+                            return team ? (
+                              <option key={team.id} value={String(team.id)}>
+                                {team.name}
+                              </option>
+                            ) : null;
+                          })}
+                        </select>
+                      </div>
+                    )}
+                    <div className="w-full md:w-32">
+                      <select
+                        value={selectedStatusFilter}
+                        onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
 
                 {seasonsLoading ? (
@@ -2294,7 +2334,21 @@ export const ProjectDetailPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {seasons.map((season: any) => {
+                      {(() => {
+                        let filteredSeasons = seasons;
+                        if (!isLikelyTeam && selectedTeamFilter !== 'all') {
+                          filteredSeasons = filteredSeasons.filter((season: any) => {
+                            const seasonProjectId = String(season.project_id || season.project?.id || '');
+                            return seasonProjectId === selectedTeamFilter;
+                          });
+                        }
+                        if (selectedStatusFilter !== 'all') {
+                          filteredSeasons = filteredSeasons.filter((season: any) => {
+                            const isActive = season.is_active !== undefined ? season.is_active : true;
+                            return selectedStatusFilter === 'active' ? isActive : !isActive;
+                          });
+                        }
+                        return filteredSeasons.map((season: any) => {
                         const clubSlug = String(project.slug || project.id);
                         const teamSlugOrId = String(
                           isLikelyTeam ? project.slug || project.id : season.project?.slug || season.project_id || season.project?.id || ''
@@ -2385,7 +2439,7 @@ export const ProjectDetailPage: React.FC = () => {
                             </td>
                           </tr>
                         );
-                      })}
+                      })})()}
                     </tbody>
                   </Table>
                 )}
@@ -2394,49 +2448,108 @@ export const ProjectDetailPage: React.FC = () => {
 
             {activeTab === 'competitions' && (
               <Card>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">Competitions</h3>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setCompetitionFilter('all')}
-                      className={`px-3 py-1 text-sm rounded ${
-                        competitionFilter === 'all'
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      All
-                    </button>
-                    <button
-                      onClick={() => setCompetitionFilter('with-matches')}
-                      className={`px-3 py-1 text-sm rounded ${
-                        competitionFilter === 'with-matches'
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      With Matches
-                    </button>
-                    <button
-                      onClick={() => setCompetitionFilter('without-matches')}
-                      className={`px-3 py-1 text-sm rounded ${
-                        competitionFilter === 'without-matches'
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      Without Matches
-                    </button>
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold mb-3">Competitions</h3>
+                  <div className="flex flex-col md:flex-row gap-2 items-end">
+                    {!isLikelyTeam && (
+                      <div className="w-full md:w-48">
+                        <select
+                          value={selectedTeamFilter}
+                          onChange={(e) => setSelectedTeamFilter(e.target.value)}
+                          className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                        >
+                          <option value="all">All Teams</option>
+                          {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
+                            const team = childProjects.find(t => String(t.id) === id);
+                            return team ? (
+                              <option key={team.id} value={String(team.id)}>
+                                {team.name}
+                              </option>
+                            ) : null;
+                          })}
+                        </select>
+                      </div>
+                    )}
+                    <div className="w-full md:w-48">
+                      <select
+                        value={selectedSeasonFilter}
+                        onChange={(e) => setSelectedSeasonFilter(e.target.value)}
+                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                      >
+                        <option value="all">All Seasons</option>
+                        {Array.from(new Set(seasons.map(s => String(s.id)))).map((id) => {
+                          const season = seasons.find(s => String(s.id) === id);
+                          return season ? (
+                            <option key={season.id} value={String(season.id)}>
+                              {season.name}
+                            </option>
+                          ) : null;
+                        })}
+                      </select>
+                    </div>
+                    <div className="w-full md:w-40">
+                      <select
+                        value={competitionFilter}
+                        onChange={(e) => setCompetitionFilter(e.target.value as any)}
+                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                      >
+                        <option value="all">All</option>
+                        <option value="with-matches">With Matches</option>
+                        <option value="without-matches">Without Matches</option>
+                      </select>
+                    </div>
+                    <div className="w-full md:w-32">
+                      <select
+                        value={selectedStatusFilter}
+                        onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                        className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
+
                 {competitionsLoading ? (
                   <div className="text-center py-4 text-gray-500">Loading competitions...</div>
                 ) : competitions.length === 0 ? (
                   <Alert variant="info">No competitions found.</Alert>
                 ) : (
                   (() => {
-                    // Apply filter
-                    const filteredCompetitions = competitions.filter((comp: any) => {
+                    // Apply filters
+                    let filteredCompetitions = competitions;
+
+                    // Filter by team (for clubs)
+                    if (!isLikelyTeam && selectedTeamFilter !== 'all') {
+                      filteredCompetitions = filteredCompetitions.filter((comp: any) => {
+                        const compParentId = String(comp.parent_period_id || comp.parent_period?.id || '');
+                        const matchingSeason = seasons.find(s => String(s.id) === compParentId);
+                        if (!matchingSeason) return false;
+                        const seasonProjectId = String(matchingSeason.project_id || matchingSeason.project?.id || '');
+                        return seasonProjectId === selectedTeamFilter;
+                      });
+                    }
+
+                    // Filter by season
+                    if (selectedSeasonFilter !== 'all') {
+                      filteredCompetitions = filteredCompetitions.filter((comp: any) => {
+                        const compParentId = String(comp.parent_period_id || comp.parent_period?.id || '');
+                        return compParentId === selectedSeasonFilter;
+                      });
+                    }
+
+                    // Filter by status
+                    if (selectedStatusFilter !== 'all') {
+                      filteredCompetitions = filteredCompetitions.filter((comp: any) => {
+                        const isActive = comp.is_active !== undefined ? comp.is_active : true;
+                        return selectedStatusFilter === 'active' ? isActive : !isActive;
+                      });
+                    }
+
+                    // Filter by match count
+                    filteredCompetitions = filteredCompetitions.filter((comp: any) => {
                       const compId = String(comp.id);
                       const compMatches = allMatches.filter((m: any) => {
                         const mPeriodId = String(m.period_id || m.period?.id || '');
@@ -2561,7 +2674,64 @@ export const ProjectDetailPage: React.FC = () => {
 
           {activeTab === 'matches' && (
             <Card>
-               <h3 className="text-lg font-semibold mb-4">Matches</h3>
+               <div className="mb-4">
+                 <h3 className="text-lg font-semibold mb-3">Matches</h3>
+                 <div className="flex flex-col md:flex-row gap-2 items-end">
+                   {!isLikelyTeam && (
+                     <div className="w-full md:w-48">
+                       <select
+                         value={selectedTeamFilter}
+                         onChange={(e) => setSelectedTeamFilter(e.target.value)}
+                         className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                       >
+                         <option value="all">All Teams</option>
+                         {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
+                           const team = childProjects.find(t => String(t.id) === id);
+                           return team ? (
+                             <option key={team.id} value={String(team.id)}>
+                               {team.name}
+                             </option>
+                           ) : null;
+                         })}
+                       </select>
+                     </div>
+                   )}
+                   <div className="w-full md:w-48">
+                     <select
+                       value={selectedSeasonFilter}
+                       onChange={(e) => setSelectedSeasonFilter(e.target.value)}
+                       className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                     >
+                       <option value="all">All Seasons</option>
+                       {Array.from(new Set(seasons.map(s => String(s.id)))).map((id) => {
+                         const season = seasons.find(s => String(s.id) === id);
+                         return season ? (
+                           <option key={season.id} value={String(season.id)}>
+                             {season.name}
+                           </option>
+                         ) : null;
+                       })}
+                     </select>
+                   </div>
+                   <div className="w-full md:w-48">
+                     <select
+                       value={selectedCompetitionFilter}
+                       onChange={(e) => setSelectedCompetitionFilter(e.target.value)}
+                       className="w-full border rounded px-2 py-1 text-sm h-[34px]"
+                     >
+                       <option value="all">All Competitions</option>
+                       {Array.from(new Set(competitions.map(c => String(c.id)))).map((id) => {
+                         const comp = competitions.find(c => String(c.id) === id);
+                         return comp ? (
+                           <option key={comp.id} value={String(comp.id)}>
+                             {comp.name}
+                           </option>
+                         ) : null;
+                       })}
+                     </select>
+                   </div>
+                 </div>
+               </div>
                {allMatchesLoading ? (
                    <div className="text-center py-4 text-gray-500">Loading matches...</div>
                ) : allMatches.length === 0 ? (
@@ -2577,7 +2747,43 @@ export const ProjectDetailPage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {allMatches.map((m: any) => (
+                        {(() => {
+                          let filteredMatches = allMatches;
+
+                          // Filter by competition
+                          if (selectedCompetitionFilter !== 'all') {
+                            filteredMatches = filteredMatches.filter((m: any) => {
+                              const mPeriodId = String(m.period_id || m.period?.id || '');
+                              return mPeriodId === selectedCompetitionFilter;
+                            });
+                          }
+
+                          // Filter by season
+                          if (selectedSeasonFilter !== 'all') {
+                            filteredMatches = filteredMatches.filter((m: any) => {
+                              const mPeriodId = String(m.period_id || m.period?.id || '');
+                              const matchComp = competitions.find(c => String(c.id) === mPeriodId);
+                              if (!matchComp) return false;
+                              const compParentId = String(matchComp.parent_period_id || matchComp.parent_period?.id || '');
+                              return compParentId === selectedSeasonFilter;
+                            });
+                          }
+
+                          // Filter by team (for clubs)
+                          if (!isLikelyTeam && selectedTeamFilter !== 'all') {
+                            filteredMatches = filteredMatches.filter((m: any) => {
+                              const mPeriodId = String(m.period_id || m.period?.id || '');
+                              const matchComp = competitions.find(c => String(c.id) === mPeriodId);
+                              if (!matchComp) return false;
+                              const compParentId = String(matchComp.parent_period_id || matchComp.parent_period?.id || '');
+                              const matchingSeason = seasons.find(s => String(s.id) === compParentId);
+                              if (!matchingSeason) return false;
+                              const seasonProjectId = String(matchingSeason.project_id || matchingSeason.project?.id || '');
+                              return seasonProjectId === selectedTeamFilter;
+                            });
+                          }
+
+                          return filteredMatches.map((m: any) => (
                           <tr key={m.id}>
                              <td style={compactTextTdStyle}>
                                 <div className="font-medium">{m.title || m.name}</div>
@@ -2639,7 +2845,7 @@ export const ProjectDetailPage: React.FC = () => {
                                 </div>
                              </td>
                           </tr>
-                        ))}
+                        ));})()}
                       </tbody>
                    </Table>
                )}
