@@ -11,6 +11,16 @@ type FetchAllPagesCacheOptions = {
   ttlMs?: number;
   bypass?: boolean;
   cacheKey?: string;
+  /**
+   * Maximum number of pages to fetch before stopping.
+   * Useful for very large datasets where we only want the first page.
+   */
+  maxPages?: number;
+  /**
+   * Maximum number of items to return before stopping.
+   * Note: if the last fetched page would exceed this, results are truncated.
+   */
+  maxItems?: number;
 };
 
 type CacheEntry<T> = {
@@ -62,6 +72,7 @@ export async function fetchAllPages<T>(
   const run = (async () => {
   const all: T[] = [];
   let url: string | null = initialUrl;
+  let pagesFetched = 0;
 
   while (url) {
     const res = await fetch(url, init);
@@ -86,6 +97,16 @@ export async function fetchAllPages<T>(
 
     if (Array.isArray(results)) {
       all.push(...results);
+    }
+
+    pagesFetched += 1;
+    if (cacheOptions?.maxPages && pagesFetched >= cacheOptions.maxPages) {
+      break;
+    }
+
+    if (cacheOptions?.maxItems && all.length >= cacheOptions.maxItems) {
+      all.length = cacheOptions.maxItems;
+      break;
     }
 
     url = next;

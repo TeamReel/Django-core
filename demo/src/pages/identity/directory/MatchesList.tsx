@@ -367,7 +367,9 @@ export const MatchesList: React.FC = () => {
         const all = await fetchAllPages<Activity>(
           `${apiBaseUrl}/api/v1/activities/?${params.toString()}`,
           { credentials: 'include' },
-          { ttlMs: 20_000, bypass: refreshKey > 0 },
+          // Matches can be a very large dataset (hundreds+). For the directory view,
+          // avoid fetching every page on tab open.
+          { ttlMs: 20_000, bypass: refreshKey > 0, maxPages: 1 },
         );
 
         // If season selection maps to multiple season ids (duplicate season names across teams),
