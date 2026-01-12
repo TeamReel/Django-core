@@ -512,7 +512,7 @@ export const TeamsList: React.FC = () => {
             const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
             const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
             const projectSlugOrId = (editProject as any).slug || editProject.id;
-            const response = await fetch(`${baseUrl}/api/v1/projects/${projectSlugOrId}/`, {
+            const response = await fetch(`${baseUrl}/api/v1/projects/${projectSlugOrId}/?include_archived=true`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
