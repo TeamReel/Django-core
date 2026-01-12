@@ -200,7 +200,7 @@ export const MatchesList: React.FC = () => {
              params.set('project_id', selectedTeamId);
         } else if (selectedClubId && teams.length > 0) {
              const clubTeams = teams.filter(t => {
-                const parent = t.parent_id || (t as any).parent || (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
+                const parent = t.parent_id || (t as any).parent || (typeof (t as any).parent_project === 'object' ? (t as any).parent_project?.id : (t as any).parent_project);
                 return String(parent) === String(selectedClubId);
              });
              if (clubTeams.length > 0) {
