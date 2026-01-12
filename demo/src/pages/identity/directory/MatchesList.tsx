@@ -7,6 +7,14 @@ import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
+import {
+    compactTableStyle,
+    compactThStyle,
+    compactTdStyle,
+    compactTextTdStyle,
+    compactActionsStyle,
+    actionButtonStyle
+} from '../../../utils/directoryStyles';
 
 type Activity = {
   id: string;
@@ -48,51 +56,6 @@ const compactTextTdStyle: React.CSSProperties = {
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
-};
-const compactActionsStyle: React.CSSProperties = {
-  ...compactTdStyle,
-  textAlign: 'right',
-  whiteSpace: 'nowrap'
-};
-
-const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 'warning' | 'neutral') => {
-    let backgroundColor = '#f3f4f6';
-    let color = '#374151';
-    let border = '1px solid #d1d5db';
-
-    switch (variant) {
-        case 'primary':
-            backgroundColor = '#3b82f6';
-            color = 'white';
-            border = '1px solid #2563eb';
-            break;
-        case 'danger':
-            backgroundColor = '#ef4444';
-            color = 'white';
-            border = '1px solid #dc2626';
-            break;
-        case 'warning':
-            backgroundColor = '#f59e0b';
-            color = 'white';
-            border = '1px solid #d97706';
-            break;
-        case 'neutral':
-            backgroundColor = '#f3f4f6';
-            color = '#374151';
-            border = '1px solid #d1d5db';
-            break;
-    }
-
-    return {
-        padding: '4px 8px',
-        fontSize: '0.75rem',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        backgroundColor,
-        color,
-        border,
-        marginLeft: '4px',
-    };
 };
 
 export const MatchesList: React.FC = () => {
@@ -390,15 +353,13 @@ export const MatchesList: React.FC = () => {
         <select
             value={selectedCompetitionId}
             onChange={(e) => setSelectedCompetitionId(e.target.value)}
-            disabled={!selectedSeasonId}
             style={{
                 padding: '8px 12px',
                 border: '1px solid var(--app-border)',
                 borderRadius: '4px',
                 fontSize: '14px',
                 backgroundColor: 'var(--app-surface)',
-                maxWidth: '200px',
-                opacity: !selectedSeasonId ? 0.5 : 1
+                maxWidth: '200px'
             }}
         >
             <option value="">Competition: All</option>

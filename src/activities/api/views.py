@@ -136,6 +136,7 @@ class PeriodViewSet(viewsets.ModelViewSet):
             matches_count=Count(
                 "activities", filter=Q(activities__activity_type="match"), distinct=True
             ),
+            members_count=Count("project__memberships", distinct=True),
         )
         .order_by("start_date", "name")
     )
