@@ -440,7 +440,6 @@ export const SeasonsList: React.FC = () => {
           <Button
             variant="primary"
             size="md"
-            disabled={!selectedOrgId || !selectedTeamId}
             onClick={() => {
               if (!selectedOrgId) {
                 alert('Select a federation first to create a season.');

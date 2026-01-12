@@ -240,7 +240,6 @@ export const ClubsList: React.FC = () => {
           <Button
             variant="primary"
             size="md"
-            disabled={!selectedOrgId}
             onClick={() => {
               if (!selectedOrgId) {
                 alert('Select a federation first to create a club.');
