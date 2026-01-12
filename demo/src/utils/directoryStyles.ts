@@ -30,60 +30,41 @@ export const compactTextTdStyle: React.CSSProperties = {
 };
 
 export const compactActionsStyle: React.CSSProperties = {
-  ...compactTdStyle,
-  textAlign: 'right', // Align right
-  whiteSpace: 'nowrap',
-  display: 'flex',       // Ensure flex behavior for buttons
+  display: 'flex',
   justifyContent: 'flex-end',
-  gap: '4px'
+  gap: '8px',
+  flexWrap: 'nowrap',
+  alignItems: 'center'
 };
 
 // Use 'primary' | 'secondary' etc to match design system variants conceptually
 export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 'warning' | 'neutral'): React.CSSProperties => {
-    // Default to "Ghost/Outline" style to match existing tabs
-    let backgroundColor = 'transparent';
-    let color = '#374151';
-    let border = '1px solid #d1d5db';
+  const base: React.CSSProperties = {
+    padding: '4px 8px',
+    borderRadius: '4px',
+    backgroundColor: 'var(--app-surface)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    lineHeight: 1.2,
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 500,
+  };
 
-    switch (variant) {
-        case 'primary':
-            // "View" - Blue Outline to match "Other tabs" but blue text
-            backgroundColor = '#eff6ff'; // Light blue bg
-            color = '#2563eb';           // Blue text
-            border = '1px solid #bfdbfe'; // Blue border
-            break;
-        case 'danger':
-            // "Delete" - Red Outline
-            backgroundColor = '#fef2f2';
-            color = '#dc2626';
-            border = '1px solid #fecaca';
-            break;
-        case 'warning':
-            // "Edit" - Orange/Yellow Outline
-            backgroundColor = '#fffbeb';
-            color = '#d97706';
-            border = '1px solid #fde68a';
-            break;
-        case 'neutral':
-            // Default/Secondary
-            backgroundColor = '#f9fafb';
-            color = '#374151';
-            border = '1px solid #e5e7eb';
-            break;
-    }
+  // Match Federations tab button tones
+  if (variant === 'primary') {
+    return { ...base, border: '1px solid #007bff', color: '#007bff' };
+  }
+  if (variant === 'warning') {
+    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
+  }
+  if (variant === 'danger') {
+    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+  }
 
-    return {
-        padding: '4px 8px',
-        fontSize: '12px',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        backgroundColor,
-        color,
-        border,
-        marginLeft: '4px',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontWeight: 500
-    };
+  // secondary / neutral
+  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
 };
