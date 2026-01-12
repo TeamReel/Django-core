@@ -105,6 +105,7 @@ export const CompetitionsList: React.FC = () => {
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const [seasons, setSeasons] = useState<Period[]>([]);
   const [competitions, setCompetitions] = useState<Period[]>([]);
@@ -313,6 +314,25 @@ export const CompetitionsList: React.FC = () => {
     }
   };
 
+  const filteredCompetitions = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    if (statusFilter === 'active') {
+      return competitions.filter((c) => {
+        const start = c.start_date || '0000-00-00';
+        const end = c.end_date || '9999-99-99';
+        return today >= start && today <= end;
+      });
+    }
+    if (statusFilter === 'inactive') {
+      return competitions.filter((c) => {
+        const start = c.start_date || '0000-00-00';
+        const end = c.end_date || '9999-99-99';
+        return !(today >= start && today <= end);
+      });
+    }
+    return competitions;
+  }, [competitions, statusFilter]);
+
   const handleDelete = async (orgId: string, compId: string, compName: string) => {
     if (!compId || !window.confirm(`Are you sure you want to delete competition "${compName}"?`)) {
         return;
@@ -434,6 +454,21 @@ export const CompetitionsList: React.FC = () => {
             </option>
           ))}
         </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Status: All</option>
+          <option value="active">Status: Active</option>
+          <option value="inactive">Status: Inactive</option>
+        </select>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Button
             variant="secondary"
@@ -442,20 +477,36 @@ export const CompetitionsList: React.FC = () => {
               setSelectedClubId('');
               setSelectedTeamId('');
               setSelectedSeasonId('');
+              setStatusFilter('all');
               if (isSuperAdmin) setSelectedOrgId('');
             }}
           >
             Clear
           </Button>
-          {selectedTeamId && (
-            <Button variant="primary" size="md" onClick={() => {
-              const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-              const teamSlug = teams.find(t => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
+          <Button
+            variant="primary"
+            size="md"
+            disabled={!selectedOrgId || !selectedTeamId || !selectedSeasonId}
+            onClick={() => {
+              if (!selectedOrgId) {
+                alert('Select a federation first to create a competition.');
+                return;
+              }
+              if (!selectedTeamId) {
+                alert('Select a team first to create a competition.');
+                return;
+              }
+              if (!selectedSeasonId) {
+                alert('Select a season first to create a competition.');
+                return;
+              }
+              const orgSlug = organisations.find((o) => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
+              const teamSlug = teams.find((t) => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
               navigate(`/organisations/${orgSlug}/teams/${teamSlug}/competitions/create`);
-            }}>
-              Create Competition
-            </Button>
-          )}
+            }}
+          >
+            Create Competition
+          </Button>
         </div>
       </div>
 
@@ -466,11 +517,11 @@ export const CompetitionsList: React.FC = () => {
         <LoadingState message="Loading competitions..." />
       )}
 
-      {!isLoading && !error && !competitionsLoading && competitions.length === 0 && (
+      {!isLoading && !error && !competitionsLoading && filteredCompetitions.length === 0 && (
         <Alert variant="info">No competitions found. Use filters to narrow your search.</Alert>
       )}
 
-      {!isLoading && !error && !competitionsLoading && competitions.length > 0 && (
+      {!isLoading && !error && !competitionsLoading && filteredCompetitions.length > 0 && (
         <Card>
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
@@ -487,7 +538,7 @@ export const CompetitionsList: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {competitions.map((comp) => {
+                {filteredCompetitions.map((comp) => {
                     const seasonId = (comp as any).parent_period_id || comp.parent_period?.id;
                     const seasonSlug = comp.parent_period?.slug;
                     const org = comp.organisation;

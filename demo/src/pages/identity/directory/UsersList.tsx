@@ -112,7 +112,7 @@ export const UsersList: React.FC = () => {
     const [selectedOrgId, setSelectedOrgId] = useState<string>('');
     const [selectedClubId, setSelectedClubId] = useState<string>(''); // For filtering logic
     const [selectedTeamId, setSelectedTeamId] = useState<string>(''); // For filtering logic
-    const [statusFilter, setStatusFilter] = useState<string>('active');
+    const [statusFilter, setStatusFilter] = useState<string>('all');
     const [roleFilter, setRoleFilter] = useState<string>('');
 
     // Modals
@@ -389,19 +389,25 @@ export const UsersList: React.FC = () => {
                  <Button variant="secondary" size="md" onClick={() => {
                      setSelectedClubId('');
                      setSelectedTeamId('');
-                     setStatusFilter('active');
+                                         setStatusFilter('all');
                      if(isSuperAdmin) setSelectedOrgId('');
                  }}>
                      Clear
                  </Button>
-                 {selectedOrgId && (
-                   <Button variant="primary" onClick={() => {
-                     const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-                     navigate(`/organisations/${orgSlug}/members/invite`);
-                   }}>
-                     Invite User
-                   </Button>
-                 )}
+                                 <Button
+                                     variant="primary"
+                                     disabled={!selectedOrgId}
+                                     onClick={() => {
+                                         if (!selectedOrgId) {
+                                             alert('Select a federation first to create a user.');
+                                             return;
+                                         }
+                                         const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
+                                         navigate(`/organisations/${orgSlug}/members/invite`);
+                                     }}
+                                 >
+                                     Create User
+                                 </Button>
             </div>
 
             {isLoading && <LoadingState message="Loading users..." />}

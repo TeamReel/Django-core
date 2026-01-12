@@ -289,10 +289,23 @@ export const TeamsList: React.FC = () => {
           >
             Clear
           </Button>
-          {userCanEditProject && selectedOrgId && selectedClubId && (
-            <Button variant="primary" size="md" onClick={() => {
-              setIsCreateModalOpen(true);
-            }}>
+          {userCanEditProject && (
+            <Button
+              variant="primary"
+              size="md"
+              disabled={!selectedOrgId || !selectedClubId}
+              onClick={() => {
+                if (!selectedOrgId) {
+                  alert('Select a federation first to create a team.');
+                  return;
+                }
+                if (!selectedClubId) {
+                  alert('Select a club first to create a team.');
+                  return;
+                }
+                setIsCreateModalOpen(true);
+              }}
+            >
               Create Team
             </Button>
           )}

@@ -236,10 +236,19 @@ export const ClubsList: React.FC = () => {
         >
           Clear
         </Button>
-        {userCanEditProject && selectedOrgId && (
-          <Button variant="primary" size="md" onClick={() => {
-            setIsCreateModalOpen(true);
-          }}>
+        {userCanEditProject && (
+          <Button
+            variant="primary"
+            size="md"
+            disabled={!selectedOrgId}
+            onClick={() => {
+              if (!selectedOrgId) {
+                alert('Select a federation first to create a club.');
+                return;
+              }
+              setIsCreateModalOpen(true);
+            }}
+          >
             Create Club
           </Button>
         )}

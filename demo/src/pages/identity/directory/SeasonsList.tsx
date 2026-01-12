@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -59,6 +60,7 @@ export const SeasonsList: React.FC = () => {
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const [seasons, setSeasons] = useState<Period[]>([]);
   const [seasonsLoading, setSeasonsLoading] = useState(false);
@@ -277,6 +279,25 @@ export const SeasonsList: React.FC = () => {
     }
   };
 
+  const filteredSeasons = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    if (statusFilter === 'active') {
+      return seasons.filter((s) => {
+        const start = s.start_date || '0000-00-00';
+        const end = s.end_date || '9999-99-99';
+        return today >= start && today <= end;
+      });
+    }
+    if (statusFilter === 'inactive') {
+      return seasons.filter((s) => {
+        const start = s.start_date || '0000-00-00';
+        const end = s.end_date || '9999-99-99';
+        return !(today >= start && today <= end);
+      });
+    }
+    return seasons;
+  }, [seasons, statusFilter]);
+
   return (
     <div>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -355,6 +376,21 @@ export const SeasonsList: React.FC = () => {
               </option>
             ))}
         </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Status: All</option>
+          <option value="active">Status: Active</option>
+          <option value="inactive">Status: Inactive</option>
+        </select>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Button
             variant="secondary"
@@ -362,20 +398,32 @@ export const SeasonsList: React.FC = () => {
             onClick={() => {
               setSelectedClubId('');
               setSelectedTeamId('');
+              setStatusFilter('all');
               if (isSuperAdmin) setSelectedOrgId('');
             }}
           >
             Clear
           </Button>
-          {selectedTeamId && (
-            <Button variant="primary" size="md" onClick={() => {
-              const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-              const teamSlug = teams.find(t => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
+          <Button
+            variant="primary"
+            size="md"
+            disabled={!selectedOrgId || !selectedTeamId}
+            onClick={() => {
+              if (!selectedOrgId) {
+                alert('Select a federation first to create a season.');
+                return;
+              }
+              if (!selectedTeamId) {
+                alert('Select a team first to create a season.');
+                return;
+              }
+              const orgSlug = organisations.find((o) => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
+              const teamSlug = teams.find((t) => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
               navigate(`/organisations/${orgSlug}/teams/${teamSlug}/seasons/create`);
-            }}>
-              Create Season
-            </Button>
-          )}
+            }}
+          >
+            Create Season
+          </Button>
         </div>
       </div>
 
@@ -384,11 +432,11 @@ export const SeasonsList: React.FC = () => {
 
       {!isLoading && !error && seasonsLoading && <LoadingState message="Loading seasons..." />}
 
-      {!isLoading && !error && !seasonsLoading && seasons.length === 0 && (
+      {!isLoading && !error && !seasonsLoading && filteredSeasons.length === 0 && (
           <Alert variant="info">No seasons found. Use filters to narrow your search.</Alert>
       )}
 
-      {!isLoading && !error && !seasonsLoading && seasons.length > 0 && (
+      {!isLoading && !error && !seasonsLoading && filteredSeasons.length > 0 && (
         <Card>
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
@@ -406,7 +454,7 @@ export const SeasonsList: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {seasons.map((season) => {
+                {filteredSeasons.map((season) => {
                     const org = season.organisation;
                     const project = season.project;
                     const orgName = typeof org === 'string' ? org : org?.name || '-';

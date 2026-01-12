@@ -56,6 +56,7 @@ export const MatchesList: React.FC = () => {
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
   const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const [seasons, setSeasons] = useState<any[]>([]);
   const [competitions, setCompetitions] = useState<any[]>([]);
@@ -133,6 +134,22 @@ export const MatchesList: React.FC = () => {
 
     load();
   }, []);
+
+  const filteredMatches = useMemo(() => {
+    if (statusFilter === 'all') return matches;
+    const now = new Date();
+    const isUpcoming = (m: Activity) => {
+      if (!m.start_time) return false;
+      const dt = new Date(m.start_time);
+      return dt.getTime() >= now.getTime();
+    };
+    if (statusFilter === 'active') {
+      // Upcoming matches
+      return matches.filter(isUpcoming);
+    }
+    // Past matches
+    return matches.filter((m) => !isUpcoming(m));
+  }, [matches, statusFilter]);
 
   // Fetch Seasons
   useEffect(() => {
@@ -352,6 +369,23 @@ export const MatchesList: React.FC = () => {
             ))}
         </select>
 
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+            maxWidth: '200px',
+          }}
+        >
+          <option value="all">Status: All</option>
+          <option value="active">Status: Active</option>
+          <option value="inactive">Status: Inactive</option>
+        </select>
+
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Button
             variant="secondary"
@@ -361,20 +395,32 @@ export const MatchesList: React.FC = () => {
               setSelectedTeamId('');
               setSelectedSeasonId('');
               setSelectedCompetitionId('');
+              setStatusFilter('all');
               if (isSuperAdmin) setSelectedOrgId('');
             }}
           >
             Clear
           </Button>
-          {selectedTeamId && (
-            <Button variant="primary" size="md" onClick={() => {
-              const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-              const teamSlug = teams.find(t => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
+          <Button
+            variant="primary"
+            size="md"
+            disabled={!selectedOrgId || !selectedTeamId}
+            onClick={() => {
+              if (!selectedOrgId) {
+                alert('Select a federation first to create a match.');
+                return;
+              }
+              if (!selectedTeamId) {
+                alert('Select a team first to create a match.');
+                return;
+              }
+              const orgSlug = organisations.find((o) => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
+              const teamSlug = teams.find((t) => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
               navigate(`/organisations/${orgSlug}/teams/${teamSlug}/matches/create`);
-            }}>
-              Create Match
-            </Button>
-          )}
+            }}
+          >
+            Create Match
+          </Button>
         </div>
       </div>
 
@@ -385,11 +431,11 @@ export const MatchesList: React.FC = () => {
           <LoadingState message="Loading matches..." />
         )}
 
-        {!isLoading && !error && !matchesLoading && matches.length === 0 && (
+        {!isLoading && !error && !matchesLoading && filteredMatches.length === 0 && (
           <Alert variant="info">No matches found. Use filters to narrow your search.</Alert>
         )}
 
-        {!isLoading && !error && !matchesLoading && matches.length > 0 && (
+        {!isLoading && !error && !matchesLoading && filteredMatches.length > 0 && (
           <Card>
             <div className="overflow-x-auto">
               <Table style={compactTableStyle}>
@@ -405,7 +451,7 @@ export const MatchesList: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {matches.map((m) => {
+                  {filteredMatches.map((m) => {
                     const project = m.project;
                     const teamId = project?.id;
                     const teamName = project?.name || '-';
