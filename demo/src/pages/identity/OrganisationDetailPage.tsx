@@ -238,12 +238,15 @@ export const OrganisationDetailPage: React.FC = () => {
 
         const teamId = String(pm?.project_id ?? pm?.project?.id ?? '').trim();
         let clubId = String(
-          pm?.parent_project_id ??
+          pm?.club_id ??
+            pm?.club?.id ??
+            pm?.project?.parent_id ??
+            pm?.project?.parent?.id ??
+            pm?.project?.parent_project_id ??
+            pm?.parent_project_id ??
             (typeof pm?.parent_project === 'object' ? pm?.parent_project?.id : pm?.parent_project) ??
             pm?.parent_id ??
             (typeof pm?.parent === 'object' ? pm?.parent?.id : pm?.parent) ??
-            pm?.club_id ??
-            pm?.club?.id ??
             ''
         ).trim();
 
@@ -786,6 +789,7 @@ export const OrganisationDetailPage: React.FC = () => {
         const params = new URLSearchParams();
         params.set('include_project_memberships', 'true');
         params.set('include_role_assignments', 'true');
+        params.set('include_project_membership_details', 'true');
         params.set('page_size', '250');
         const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
         const allMembers = await fetchAllPages<any>(membersUrl, {
@@ -913,7 +917,16 @@ export const OrganisationDetailPage: React.FC = () => {
   // Lazy load members only when Users tab is active (performance optimization)
   const fetchMembers = async (force = false) => {
     if (membersLoading) return;
-    if (!force && members.length > 0) return;
+    const haveMembershipDetails = members.some((item: any) => {
+      const u = item?.user || item;
+      const details =
+        (item as any)?.project_membership_details ||
+        (u as any)?.project_membership_details ||
+        (item as any)?.project_memberships_details ||
+        (u as any)?.project_memberships_details;
+      return Array.isArray(details);
+    });
+    if (!force && members.length > 0 && haveMembershipDetails) return;
     if (!org?.id && !currentOrgId) return;
 
     setMembersLoading(true);
@@ -1008,7 +1021,7 @@ export const OrganisationDetailPage: React.FC = () => {
       fetchTeamsForOrg();
     }
 
-    if (activeTab === 'matches') {
+    if (activeTab === 'matches' || activeTab === 'clubs' || activeTab === 'teams') {
       const orgId = String(org?.id || currentOrgId || '');
       if (orgId) fetchFederationMatches(orgId);
     }
@@ -1021,8 +1034,8 @@ export const OrganisationDetailPage: React.FC = () => {
        }
     }
 
-    // Lazy load members only when Users tab is active
-    if (activeTab === 'users') {
+    // Members are used for Users tab and user-count badges on Clubs/Teams
+    if (activeTab === 'users' || activeTab === 'clubs' || activeTab === 'teams') {
       fetchMembers();
     }
   }, [activeTab, org?.id, currentOrgId]);
@@ -2001,25 +2014,25 @@ export const OrganisationDetailPage: React.FC = () => {
                                     <Link
                                       to={`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`}
                                       className="text-blue-600"
-                                      style={{ ...compactTextTdStyle, display: 'inline-block', maxWidth: '100%' }}
+                                      style={{ ...compactTextTdStyle, display: 'inline-block', maxWidth: '100%', textDecoration: 'none' }}
                                     >
                                       {club.name}
                                     </Link>
                                   </td>
                                   <td style={compactTdStyle}>
-                                    <Badge variant="info">{teamsN}</Badge>
+                                    <Badge variant="default">{teamsN}</Badge>
                                   </td>
                                   <td style={compactTdStyle}>
-                                    <Badge variant="info">{seasonsN}</Badge>
+                                    <Badge variant="default">{seasonsN}</Badge>
                                   </td>
                                   <td style={compactTdStyle}>
-                                    <Badge variant="info">{compsN}</Badge>
+                                    <Badge variant="default">{compsN}</Badge>
                                   </td>
                                   <td style={compactTdStyle}>
-                                    <Badge variant="info">{matchesN}</Badge>
+                                    <Badge variant="default">{matchesN}</Badge>
                                   </td>
                                   <td style={compactTdStyle}>
-                                    <Badge variant="info">{usersN}</Badge>
+                                    <Badge variant="default">{usersN}</Badge>
                                   </td>
                                   <td style={compactTdStyle}>
                                     <Badge variant={club.is_active ? 'success' : 'warning'}>
