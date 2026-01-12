@@ -21,6 +21,12 @@ from .permissions import ActivityPermission, ParticipationPermission, PeriodPerm
 from .serializers import ActivitySerializer, ParticipationSerializer, PeriodSerializer
 
 
+class PeriodPagination(BaseAPIPagination):
+    """Allow larger page sizes for periods to reduce multi-page fetches in the demo UI."""
+
+    max_page_size = 500
+
+
 def _user_is_system_admin(user) -> bool:
     return bool(getattr(user, "is_superuser", False) or getattr(user, "is_staff", False))
 
@@ -134,7 +140,7 @@ class PeriodViewSet(viewsets.ModelViewSet):
     ).order_by("start_date", "name")
     serializer_class = PeriodSerializer
     permission_classes = [PeriodPermission]
-    pagination_class = BaseAPIPagination
+    pagination_class = PeriodPagination
 
     def get_queryset(self):
         """Apply query param filters"""

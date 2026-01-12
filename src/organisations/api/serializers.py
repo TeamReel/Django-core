@@ -77,6 +77,7 @@ class OrganisationListSerializer(serializers.ModelSerializer):
     teams_count = serializers.SerializerMethodField()
     total_players_count = serializers.SerializerMethodField()
     seasons_count = serializers.SerializerMethodField()
+    competitions_count = serializers.SerializerMethodField()
     matches_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -94,6 +95,7 @@ class OrganisationListSerializer(serializers.ModelSerializer):
             "teams_count",
             "total_players_count",
             "seasons_count",
+            "competitions_count",
             "matches_count",
         ]
         read_only_fields = fields
@@ -135,6 +137,13 @@ class OrganisationListSerializer(serializers.ModelSerializer):
     def get_seasons_count(self, obj):
         """Return count of seasons."""
         return Period.objects.filter(project__organisation=obj, parent_period=None).count()
+
+    def get_competitions_count(self, obj):
+        """Return count of competitions (child periods under seasons)."""
+        return Period.objects.filter(
+            project__organisation=obj,
+            parent_period__isnull=False,
+        ).count()
 
     def get_matches_count(self, obj):
         """Return count of matches."""

@@ -35,6 +35,14 @@ class BaseAPIPagination(PageNumberPagination):
         Return paginated response with metadata.
         Envelope wrapping handled by EnvelopeJSONRenderer (WP03).
         """
+        # DRF does not mutate self.page_size when page_size_query_param is used.
+        # Report the effective page size instead of the default.
+        effective_page_size = (
+            self.get_page_size(getattr(self, "request", None))
+            or getattr(getattr(self, "page", None), "paginator", None).per_page
+            or self.page_size
+        )
+
         return Response(
             {
                 "data": data,
@@ -43,7 +51,7 @@ class BaseAPIPagination(PageNumberPagination):
                         "count": self.page.paginator.count,
                         "next": self.get_next_link(),
                         "previous": self.get_previous_link(),
-                        "page_size": self.page_size,
+                        "page_size": effective_page_size,
                     }
                 },
             }
