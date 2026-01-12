@@ -127,6 +127,22 @@ export const UsersList: React.FC = () => {
     const userRole = String((user as any)?.role || '').toLowerCase();
     const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
+    const getCsrfToken = () =>
+        document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('csrftoken='))
+            ?.split('=')[1] || '';
+
+    const getSelectedOrgSlug = () => {
+        const selectedOrg = selectedOrgId
+            ? organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
+            : null;
+        return selectedOrg?.slug || selectedOrgId;
+    };
+
+    const isUuid = (value: unknown) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+
     // Initial Filter Setup
     useEffect(() => {
         if (!isSuperAdmin && context.organisation?.id) {
@@ -651,6 +667,10 @@ export const UsersList: React.FC = () => {
                                     const orgName = getFederationNameForRow(u);
                                     const scoped = getClubAndTeamForRow(u);
 
+                                    const membershipId = u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null;
+                                    const source = String(u?.membership?.source ?? u?.source ?? '').toLowerCase();
+                                    const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
+
                                     const userLabel = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
 
                                     return (
@@ -681,6 +701,65 @@ export const UsersList: React.FC = () => {
                                                 >
                                                     View
                                                 </button>
+
+                                                {isDirectMembership && (
+                                                    <button
+                                                        onClick={() => {
+                                                            const orgSlug = getSelectedOrgSlug();
+                                                            if (!orgSlug) {
+                                                                alert('Select a federation first.');
+                                                                return;
+                                                            }
+                                                            navigate(`/organisations/${orgSlug}/members/${membershipId}?action=edit`);
+                                                        }}
+                                                        style={actionButtonStyle('warning')}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                )}
+
+                                                {isDirectMembership && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            const orgSlug = getSelectedOrgSlug();
+                                                            if (!orgSlug) {
+                                                                alert('Select a federation first.');
+                                                                return;
+                                                            }
+                                                            if (!window.confirm(`Remove ${userLabel} from ${orgName}?`)) return;
+
+                                                            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                                            const csrfToken = getCsrfToken();
+
+                                                            const res = await fetch(
+                                                                `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${membershipId}/`,
+                                                                {
+                                                                    method: 'DELETE',
+                                                                    headers: {
+                                                                        'X-CSRFToken': csrfToken,
+                                                                        'X-Requested-With': 'XMLHttpRequest',
+                                                                    },
+                                                                    credentials: 'include',
+                                                                }
+                                                            );
+
+                                                            if (!res.ok) {
+                                                                const text = await res.text().catch(() => '');
+                                                                alert(text || `Failed to delete member (${res.status})`);
+                                                                return;
+                                                            }
+
+                                                            // Update local table without full reload.
+                                                            setUsers((prev) => prev.filter((row: any) => {
+                                                                const rowMembershipId = row?.membership?.id ?? row?.membership_id ?? row?.member_id;
+                                                                return String(rowMembershipId) !== String(membershipId);
+                                                            }));
+                                                        }}
+                                                        style={actionButtonStyle('danger')}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
