@@ -7,6 +7,8 @@ import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
+import MatchDetailModal from '../MatchDetailModal';
+import MatchEditModal from '../MatchEditModal';
 import {
     compactTableStyle,
     compactThStyle,
@@ -61,6 +63,13 @@ export const MatchesList: React.FC = () => {
 
   const [matches, setMatches] = useState<Activity[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Modal state
+  const [detailMatch, setDetailMatch] = useState<Activity | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [editMatch, setEditMatch] = useState<Activity | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Initialize org filter
   useEffect(() => {
@@ -222,7 +231,7 @@ export const MatchesList: React.FC = () => {
     };
 
     loadMatches();
-  }, [selectedTeamId, selectedOrgId, selectedSeasonId, selectedCompetitionId]);
+  }, [selectedTeamId, selectedOrgId, selectedSeasonId, selectedCompetitionId, refreshKey]);
 
 
   return (
@@ -517,7 +526,8 @@ export const MatchesList: React.FC = () => {
                             <button
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    navigate(`/matches/${m.id}`);
+                              setDetailMatch(m);
+                              setIsDetailModalOpen(true);
                                 }}
                                 style={actionButtonStyle('primary')}
                             >
@@ -526,7 +536,8 @@ export const MatchesList: React.FC = () => {
                             <button
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    navigate(`/matches/${m.id}/edit`);
+                              setEditMatch(m);
+                              setIsEditModalOpen(true);
                                 }}
                                 style={actionButtonStyle('warning')}
                             >
@@ -554,6 +565,44 @@ export const MatchesList: React.FC = () => {
             </div>
           </Card>
         )}
+
+        <MatchDetailModal
+          opened={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          match={detailMatch}
+        />
+
+        <MatchEditModal
+          opened={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          match={editMatch}
+          onSave={async (payload) => {
+            if (!editMatch) return;
+
+            const csrfToken = document.cookie
+              .split('; ')
+              .find((row) => row.startsWith('csrftoken='))
+              ?.split('=')[1];
+
+            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const res = await fetch(`${apiBaseUrl}/api/v1/activities/${editMatch.id}/`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken || '',
+              },
+              credentials: 'include',
+              body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+              const detail = await res.text().catch(() => '');
+              throw new Error(detail || 'Failed to update match');
+            }
+
+            setRefreshKey((k) => k + 1);
+          }}
+        />
     </div>
   );
 };

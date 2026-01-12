@@ -370,15 +370,15 @@ export const SeasonsList: React.FC = () => {
             <Table style={compactTableStyle}>
               <thead>
                 <tr>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
-                    <th style={{ ...compactThStyle, width: 'auto' }}>Season</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Competitions</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Matches</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
-                    <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
+                    <th style={{ ...compactThStyle, width: '140px' }}>Federation</th>
+                    <th style={{ ...compactThStyle, width: '140px' }}>Club</th>
+                    <th style={{ ...compactThStyle, width: '140px' }}>Team</th>
+                    <th style={{ ...compactThStyle, width: '260px' }}>Season</th>
+                    <th style={{ ...compactThStyle, width: '110px' }}>Competitions</th>
+                    <th style={{ ...compactThStyle, width: '100px' }}>Matches</th>
+                    <th style={{ ...compactThStyle, width: '90px' }}>Users</th>
+                    <th style={{ ...compactThStyle, width: '100px' }}>Status</th>
+                    <th style={{ ...compactThStyle, width: '140px' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>

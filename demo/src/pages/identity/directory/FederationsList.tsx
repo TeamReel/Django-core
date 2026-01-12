@@ -13,6 +13,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { canPerformAction } from '../../../utils/permissions';
 import OrganisationDetailModal from '../OrganisationDetailModal';
 import OrganisationEditModal from '../OrganisationEditModal';
+import OrganisationCreateModal from '../OrganisationCreateModal';
 
 // Table styling constants
 const compactTableStyle: React.CSSProperties = {
@@ -98,6 +99,7 @@ export const FederationsList: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editOrganisation, setEditOrganisation] = useState<Organisation | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const userRole = String((user as any)?.role || '').toLowerCase();
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
@@ -223,7 +225,7 @@ export const FederationsList: React.FC = () => {
           Clear
         </Button>
         {isSuperAdmin && (
-          <Button variant="primary" size="md" onClick={() => navigate('/organisations/create')}>
+          <Button variant="primary" size="md" onClick={() => setIsCreateModalOpen(true)}>
             Create Organisation
           </Button>
         )}
@@ -418,6 +420,31 @@ export const FederationsList: React.FC = () => {
           });
           if (!response.ok) throw new Error('Failed to update organisation');
           setRefreshKey(prev => prev + 1);
+        }}
+      />
+
+      <OrganisationCreateModal
+        opened={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={async (orgData) => {
+          const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+          const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+          const response = await fetch(`${baseUrl}/api/v1/organisations/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify(orgData),
+          });
+
+          if (!response.ok) {
+            const detail = await response.text().catch(() => '');
+            throw new Error(detail || 'Failed to create organisation');
+          }
+
+          setRefreshKey((k) => k + 1);
         }}
       />
     </div>
