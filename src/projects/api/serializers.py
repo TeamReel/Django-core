@@ -278,7 +278,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "description"]
+        fields = ["name", "description", "is_active"]
 
     def validate_name(self, value):
         """Validate name length and format."""
@@ -326,6 +326,8 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         `is_private` as an input key. DRF will ignore unknown keys during
         validation, so we explicitly apply it here when present.
         """
+        desired_active = validated_data.pop("is_active", None)
+
         if "is_private" in getattr(self, "initial_data", {}):
             raw_value = self.initial_data.get("is_private")
             # Coerce typical representations; DRF already parsed JSON booleans.
@@ -333,7 +335,14 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 raw_value = raw_value.strip().lower() in {"1", "true", "yes", "on"}
             instance.is_private = bool(raw_value)
 
-        return super().update(instance, validated_data)
+        instance = super().update(instance, validated_data)
+
+        if desired_active is not None and bool(desired_active) != bool(instance.is_active):
+            if bool(desired_active):
+                instance.restore()
+            else:
+                instance.archive()
+        return instance
 
 
 class ProjectInviteSerializer(serializers.ModelSerializer):

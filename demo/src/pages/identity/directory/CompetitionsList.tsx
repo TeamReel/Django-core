@@ -120,6 +120,23 @@ export const CompetitionsList: React.FC = () => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const parseDateOnlyUtc = (value?: string | null): Date | null => {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+    const ymd = raw.slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return null;
+    const dt = new Date(`${ymd}T00:00:00.000Z`);
+    return Number.isNaN(dt.getTime()) ? null : dt;
+  };
+
+  const isPeriodActive = (p: Pick<Period, 'start_date' | 'end_date'>): boolean => {
+    const start = parseDateOnlyUtc(p.start_date);
+    const end = parseDateOnlyUtc(p.end_date);
+    if (!start || !end) return false;
+    const today = parseDateOnlyUtc(new Date().toISOString())!;
+    return today.getTime() >= start.getTime() && today.getTime() <= end.getTime();
+  };
+
   // Initialize org filter
   useEffect(() => {
     if (!isSuperAdmin && context.organisation?.id) {
@@ -435,20 +452,11 @@ export const CompetitionsList: React.FC = () => {
   };
 
   const filteredCompetitions = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
     if (statusFilter === 'active') {
-      return competitions.filter((c) => {
-        const start = c.start_date || '0000-00-00';
-        const end = c.end_date || '9999-99-99';
-        return today >= start && today <= end;
-      });
+      return competitions.filter(isPeriodActive);
     }
     if (statusFilter === 'inactive') {
-      return competitions.filter((c) => {
-        const start = c.start_date || '0000-00-00';
-        const end = c.end_date || '9999-99-99';
-        return !(today >= start && today <= end);
-      });
+      return competitions.filter((c) => !isPeriodActive(c));
     }
     return competitions;
   }, [competitions, statusFilter]);
@@ -813,10 +821,7 @@ export const CompetitionsList: React.FC = () => {
                         <td style={compactTdStyle}>-</td>
                          <td style={compactTdStyle}>
                            {(() => {
-                             const today = new Date().toISOString().split('T')[0];
-                             const start = comp.start_date || '0000-00-00';
-                             const end = comp.end_date || '9999-99-99';
-                             const isActive = today >= start && today <= end;
+                             const isActive = isPeriodActive(comp);
                              return (
                                <Badge variant={isActive ? 'success' : 'warning'}>
                                  {isActive ? 'Active' : 'Inactive'}
