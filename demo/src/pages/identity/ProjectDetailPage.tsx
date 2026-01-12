@@ -3768,6 +3768,45 @@ export const ProjectDetailPage: React.FC = () => {
         project={detailProject}
       />
 
+      <ProjectEditModal
+        opened={isProjectEditModalOpen}
+        onClose={() => {
+          setIsProjectEditModalOpen(false);
+          setSelectedEditProject(null);
+        }}
+        project={selectedEditProject}
+        onSave={async (projectData) => {
+          if (!selectedEditProject) return;
+          await saveProjectEdits(selectedEditProject, projectData);
+        }}
+      />
+
+      <PeriodEditModal
+        opened={isPeriodEditModalOpen}
+        onClose={() => {
+          setIsPeriodEditModalOpen(false);
+          setSelectedEditPeriod(null);
+        }}
+        period={selectedEditPeriod}
+        onSave={async (payload) => {
+          if (!selectedEditPeriod) return;
+          await savePeriodEdits(selectedEditPeriod, payload);
+        }}
+      />
+
+      <MatchEditModal
+        opened={isMatchEditModalOpen}
+        onClose={() => {
+          setIsMatchEditModalOpen(false);
+          setSelectedEditMatch(null);
+        }}
+        match={selectedEditMatch}
+        onSave={async (payload) => {
+          if (!selectedEditMatch) return;
+          await saveMatchEdits(selectedEditMatch, payload);
+        }}
+      />
+
       <ProjectCreateModal
         opened={isCreateTeamModalOpen}
         onClose={() => setIsCreateTeamModalOpen(false)}
