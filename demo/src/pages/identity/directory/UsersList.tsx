@@ -217,8 +217,23 @@ export const UsersList: React.FC = () => {
                 params.set('include_role_assignments', 'true');
 
                 // Use the organisations/:slug/members/ endpoint
-                const orgSlug = selectedOrg?.slug || (organisations[0]?.slug || '');
+                // Fallback: if no specific org selected, and user is superadmin, we might want to list all users relative to first org or just skip
+                let orgSlug = selectedOrg?.slug;
 
+                if (!orgSlug && organisations.length > 0) {
+                     // Default to first organisation if available, to avoid 404
+                     orgSlug = organisations[0].slug;
+                }
+
+                if (!orgSlug && !isSuperAdmin) {
+                     // Should have context check earlier, but safety first
+                     setUsers([]);
+                     setIsLoading(false);
+                     return;
+                }
+
+                // If superadmin has NO org selected, we can't use the org-scoped endpoint easily without a slug.
+                // We'll skip fetching if we can't determine an org context.
                 if (!orgSlug) {
                     setUsers([]);
                     setIsLoading(false);
@@ -440,7 +455,7 @@ export const UsersList: React.FC = () => {
                                                         setDetailUser(u);
                                                         setIsDetailModalOpen(true);
                                                     }}
-                                                    style={actionButtonStyle('neutral')}
+                                                    style={actionButtonStyle('primary')}
                                                 >
                                                     View
                                                 </button>

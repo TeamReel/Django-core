@@ -530,17 +530,11 @@ export const SeasonsList: React.FC = () => {
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>
                             <button
-                              onClick={() => navigate(`/organisations/${orgId}/projects/${teamId}/seasons/${season.slug || season.id}`)}
-                              style={actionButtonStyle('primary')}
-                            >
-                              Open
-                            </button>
-                            <button
                                 onClick={() => {
                                     // Placeholder for View modal
                                     alert(`View Season: ${season.name}\nID: ${season.id}\nStart: ${season.start_date}\nEnd: ${season.end_date}`);
                                 }}
-                                style={actionButtonStyle('neutral')}
+                                style={actionButtonStyle('primary')}
                             >
                                 View
                             </button>

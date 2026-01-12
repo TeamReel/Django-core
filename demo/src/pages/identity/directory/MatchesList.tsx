@@ -412,18 +412,38 @@ export const MatchesList: React.FC = () => {
                               {m.title}
                             </a>
                         </td>
-                         <td style={compactActionsStyle}>
-                          <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
-                            <Button
-                                variant="secondary"
-                                size="sm"
+                        <td style={compactTdStyle}>
+                          <div style={compactActionsStyle}>
+                            <button
                                 onClick={(e) => {
                                     e.preventDefault();
                                     navigate(`/matches/${m.id}`);
                                 }}
+                                style={actionButtonStyle('primary')}
                             >
                                 View
-                            </Button>
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(`/matches/${m.id}/edit`);
+                                }}
+                                style={actionButtonStyle('warning')}
+                            >
+                                Edit
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if(window.confirm('Are you sure you want to delete this match?')) {
+                                        // TODO: Implement delete match
+                                        alert('Delete functionality not yet implemented');
+                                    }
+                                }}
+                                style={actionButtonStyle('danger')}
+                            >
+                                Delete
+                            </button>
                           </div>
                          </td>
                         </tr>

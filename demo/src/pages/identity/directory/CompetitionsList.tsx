@@ -574,18 +574,10 @@ export const CompetitionsList: React.FC = () => {
                         <td style={compactTdStyle}>
                             <div style={compactActionsStyle}>
                                 <button
-                                    onClick={() => navigate(
-                                        `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
-                                    )}
-                                    style={actionButtonStyle('primary')}
-                                >
-                                    Open
-                                </button>
-                                <button
                                     onClick={() => {
                                          alert(`View Competition: ${comp.name}\nID: ${comp.id}\nStart: ${comp.start_date}\nEnd: ${comp.end_date}`);
                                     }}
-                                    style={actionButtonStyle('neutral')}
+                                    style={actionButtonStyle('primary')}
                                 >
                                     View
                                 </button>

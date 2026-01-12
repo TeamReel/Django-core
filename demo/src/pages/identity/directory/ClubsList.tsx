@@ -395,17 +395,11 @@ export const ClubsList: React.FC = () => {
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
                           <button
-                            onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)}
-                            style={actionButtonStyle('primary')}
-                          >
-                            Open
-                          </button>
-                          <button
                             onClick={() => {
                               setDetailProject(club);
                               setIsDetailModalOpen(true);
                             }}
-                            style={actionButtonStyle('neutral')}
+                            style={actionButtonStyle('primary')}
                           >
                             View
                           </button>
