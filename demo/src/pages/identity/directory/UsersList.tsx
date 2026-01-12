@@ -260,7 +260,51 @@ export const UsersList: React.FC = () => {
                 if (!res.ok) throw new Error('Failed to fetch users');
 
                 const data = await res.json();
-                let results = data.data?.results || data.results || [];
+                // organisations/:slug/members/ returns a slightly different envelope than DRF list.
+                // Observed shapes:
+                // - { data: { data: [...] }, meta: { pagination: ... } }
+                // - { data: { results: [...] } }
+                // - { results: [...] }
+                const rawList = data?.data?.data || data?.data?.results || data?.results || data?.data || [];
+
+                // Normalize into a user list (table expects flat user fields).
+                // Some items represent organisation membership rows and contain a nested `user`.
+                // Some items may represent project-membership-derived entries.
+                const byKey = new Map<string, any>();
+                for (const item of Array.isArray(rawList) ? rawList : []) {
+                    const nestedUser = item?.user;
+                    const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
+                    const key = String(u?.id ?? u?.email ?? item?.id ?? '');
+                    if (!key) continue;
+
+                    const normalized = {
+                        id: String(u?.id ?? item?.id ?? key),
+                        email: u?.email,
+                        first_name: u?.first_name,
+                        last_name: u?.last_name,
+                        organisations: u?.organisations,
+                        is_active: u?.is_active ?? item?.is_active ?? true,
+                        role: item?.role ?? u?.role ?? 'User',
+                    };
+
+                    // Prefer richer records when duplicates exist.
+                    const existing = byKey.get(key);
+                    if (!existing) {
+                        byKey.set(key, normalized);
+                        continue;
+                    }
+
+                    const score = (v: any) =>
+                        Number(Boolean(v?.email)) +
+                        Number(Boolean(v?.first_name)) +
+                        Number(Boolean(v?.last_name)) +
+                        Number(Array.isArray(v?.organisations) && v.organisations.length > 0);
+                    if (score(normalized) > score(existing)) {
+                        byKey.set(key, normalized);
+                    }
+                }
+
+                let results = Array.from(byKey.values());
 
                 // Client-side filtering for project membership
                 if (selectedTeamId) {
