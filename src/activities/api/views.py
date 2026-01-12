@@ -8,6 +8,7 @@ TeamReel (Option A) notes:
 """
 
 from api.pagination import BaseAPIPagination
+from django.db import connection
 from django.db.models import Count, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -128,18 +129,9 @@ class PeriodViewSet(viewsets.ModelViewSet):
     - parent_id: Filter by parent (use "null" for root periods)
     """
 
-    queryset = (
-        Period.objects.select_related("organisation", "project", "parent_period", "created_by")
-        .annotate(
-            children_count=Count("children", distinct=True),
-            activities_count=Count("activities", distinct=True),
-            matches_count=Count(
-                "activities", filter=Q(activities__activity_type="match"), distinct=True
-            ),
-            members_count=Count("project__memberships", distinct=True),
-        )
-        .order_by("start_date", "name")
-    )
+    queryset = Period.objects.select_related(
+        "organisation", "project", "parent_period", "created_by"
+    ).order_by("start_date", "name")
     serializer_class = PeriodSerializer
     permission_classes = [PeriodPermission]
     pagination_class = BaseAPIPagination
@@ -147,6 +139,40 @@ class PeriodViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Apply query param filters"""
         queryset = super().get_queryset()
+
+        # Guard: the Railway demo DB can drift from code during rollouts.
+        # If a related table is missing, annotations that JOIN it will 500.
+        try:
+            table_names = set(connection.introspection.table_names())
+        except Exception:
+            table_names = set()
+
+        annotations: dict[str, object] = {
+            "children_count": Count("children", distinct=True),
+        }
+
+        # Activities tables exist for the demo in normal cases.
+        if not table_names or "activities_activity" in table_names:
+            annotations.update(
+                {
+                    "activities_count": Count("activities", distinct=True),
+                    "matches_count": Count(
+                        "activities",
+                        filter=Q(activities__activity_type="match"),
+                        distinct=True,
+                    ),
+                }
+            )
+
+        # Project memberships table may be absent in some demo DBs.
+        if not table_names or "projects_membership" in table_names:
+            annotations["members_count"] = Count(
+                "project__memberships",
+                filter=Q(project__memberships__deleted_at__isnull=True),
+                distinct=True,
+            )
+
+        queryset = queryset.annotate(**annotations)
 
         # Option A: restrict periods to orgs/projects the user can see.
         visible_project_ids = _visible_project_ids_for_user(self.request.user)
