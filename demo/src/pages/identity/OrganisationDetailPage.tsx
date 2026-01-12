@@ -2013,8 +2013,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                   <td style={compactTextTdStyle}>
                                     <Link
                                       to={`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`}
-                                      className="text-blue-600"
-                                      style={{ ...compactTextTdStyle, display: 'inline-block', maxWidth: '100%', textDecoration: 'none' }}
+                                      style={{ ...compactTextTdStyle, display: 'inline-block', maxWidth: '100%', textDecoration: 'none', color: '#007bff' }}
                                     >
                                       {club.name}
                                     </Link>
