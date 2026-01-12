@@ -285,6 +285,20 @@ export const UsersList: React.FC = () => {
                         organisations: u?.organisations,
                         is_active: u?.is_active ?? item?.is_active ?? true,
                         role: item?.role ?? u?.role ?? 'User',
+                        // Preserve context for table columns + filters.
+                        membership: {
+                            id: item?.id,
+                            organisation: item?.organisation,
+                            role: item?.role,
+                            source: item?.source,
+                            joined_at: item?.joined_at,
+                            invited_by: item?.invited_by,
+                        },
+                        organisation: item?.organisation,
+                        source: item?.source,
+                        joined_at: item?.joined_at,
+                        invited_by: item?.invited_by,
+                        project_memberships: item?.project_memberships || u?.project_memberships || [],
                     };
 
                     // Prefer richer records when duplicates exist.
@@ -294,13 +308,20 @@ export const UsersList: React.FC = () => {
                         continue;
                     }
 
+                    // Merge project memberships when duplicates exist.
+                    const mergedMemberships = [
+                        ...(Array.isArray(existing?.project_memberships) ? existing.project_memberships : []),
+                        ...(Array.isArray(normalized?.project_memberships) ? normalized.project_memberships : []),
+                    ];
+                    const merged = { ...existing, ...normalized, project_memberships: mergedMemberships };
+
                     const score = (v: any) =>
                         Number(Boolean(v?.email)) +
                         Number(Boolean(v?.first_name)) +
                         Number(Boolean(v?.last_name)) +
                         Number(Array.isArray(v?.organisations) && v.organisations.length > 0);
-                    if (score(normalized) > score(existing)) {
-                        byKey.set(key, normalized);
+                    if (score(merged) > score(existing)) {
+                        byKey.set(key, merged);
                     }
                 }
 
@@ -369,6 +390,103 @@ export const UsersList: React.FC = () => {
         });
         return list;
     }, [users]);
+
+    const clubsById = useMemo(() => {
+        const map = new Map<string, ProjectOption>();
+        for (const c of clubs) map.set(String(c.id), c);
+        return map;
+    }, [clubs]);
+
+    const teamsById = useMemo(() => {
+        const map = new Map<string, ProjectOption>();
+        for (const t of teams) map.set(String(t.id), t);
+        return map;
+    }, [teams]);
+
+    const getFederationNameForRow = (u: any) => {
+        // Prefer per-row membership organisation (from /organisations/:slug/members/)
+        if (u?.membership?.organisation?.name) return String(u.membership.organisation.name);
+        if (u?.organisation?.name) return String(u.organisation.name);
+        // Fallback: user's orgs array
+        const org0 = Array.isArray(u?.organisations) ? u.organisations[0] : null;
+        if (org0?.name) return String(org0.name);
+        // Fallback: selected org
+        const selectedOrg = selectedOrgId
+            ? organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
+            : null;
+        return selectedOrg?.name || '-';
+    };
+
+    const summarizeNames = (names: string[]) => {
+        const cleaned = names.map(n => String(n || '').trim()).filter(Boolean);
+        if (cleaned.length === 0) return { label: '-', title: '' };
+        const unique = Array.from(new Set(cleaned));
+        if (unique.length === 1) return { label: unique[0], title: unique[0] };
+        return { label: `${unique[0]} +${unique.length - 1}`, title: unique.join(', ') };
+    };
+
+    const getClubAndTeamForRow = (u: any) => {
+        // If user is filtering by club/team, we can always show those.
+        if (selectedTeamId) {
+            const team = teamsById.get(String(selectedTeamId));
+            const clubId = String((team as any)?.parent_id ?? (team as any)?.parent_project?.id ?? '');
+            const club = clubId ? clubsById.get(clubId) : undefined;
+            return {
+                club: { label: club?.name || '-', title: club?.name || '' },
+                team: { label: team?.name || '-', title: team?.name || '' },
+            };
+        }
+
+        if (selectedClubId) {
+            const club = clubsById.get(String(selectedClubId));
+            // If we have memberships, try to pick a team under this club.
+            const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
+            const teamIds = memberships
+                .map((m: any) => String(m?.project_id ?? m?.project?.id ?? ''))
+                .filter(Boolean);
+            const teamUnderClub = teamIds
+                .map((id: string) => teamsById.get(id))
+                .find((t: ProjectOption | undefined) => {
+                    const parentId = String((t as any)?.parent_id ?? (t as any)?.parent_project?.id ?? '');
+                    return parentId && club && String(parentId) === String(club.id);
+                });
+
+            return {
+                club: { label: club?.name || '-', title: club?.name || '' },
+                team: { label: teamUnderClub?.name || '-', title: teamUnderClub?.name || '' },
+            };
+        }
+
+        // Otherwise, derive from memberships.
+        const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
+        const projectIds = memberships
+            .map((m: any) => String(m?.project_id ?? m?.project?.id ?? ''))
+            .filter(Boolean);
+
+        const teamNames: string[] = [];
+        const clubNames: string[] = [];
+
+        for (const id of projectIds) {
+            const team = teamsById.get(id);
+            if (team?.name) {
+                teamNames.push(String(team.name));
+                const clubId = String((team as any)?.parent_id ?? (team as any)?.parent_project?.id ?? '');
+                const club = clubId ? clubsById.get(clubId) : undefined;
+                if (club?.name) clubNames.push(String(club.name));
+                continue;
+            }
+
+            const club = clubsById.get(id);
+            if (club?.name) {
+                clubNames.push(String(club.name));
+            }
+        }
+
+        return {
+            club: summarizeNames(clubNames),
+            team: summarizeNames(teamNames),
+        };
+    };
 
     return (
         <div>
@@ -465,26 +583,32 @@ export const UsersList: React.FC = () => {
                     <option value="inactive">Status: Inactive</option>
                 </select>
 
-                 <Button variant="secondary" size="md" onClick={() => {
-                     setSelectedClubId('');
-                     setSelectedTeamId('');
-                                         setStatusFilter('all');
-                     if(isSuperAdmin) setSelectedOrgId('');
-                 }}>
-                     Clear
-                 </Button>
-                                 <Button
-                                     variant="primary"
-                                     onClick={() => {
-                                         if (!selectedOrgId) {
-                                             alert('Select a federation first to create a user.');
-                                             return;
-                                         }
-                                         setIsInviteModalOpen(true);
-                                     }}
-                                 >
-                                     Create User
-                                 </Button>
+                 <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                     <Button
+                         variant="secondary"
+                         size="md"
+                         onClick={() => {
+                             setSelectedClubId('');
+                             setSelectedTeamId('');
+                             setStatusFilter('all');
+                             if (isSuperAdmin) setSelectedOrgId('');
+                         }}
+                     >
+                         Clear
+                     </Button>
+                     <Button
+                         variant="primary"
+                         onClick={() => {
+                             if (!selectedOrgId) {
+                                 alert('Select a federation first to create a user.');
+                                 return;
+                             }
+                             setIsInviteModalOpen(true);
+                         }}
+                     >
+                         Create User
+                     </Button>
+                 </div>
             </div>
 
             <InviteMemberModal
@@ -520,31 +644,16 @@ export const UsersList: React.FC = () => {
                             </thead>
                             <tbody>
                                 {sortedUsers.map(u => {
-                                    const orgName = (() => {
-                                        if (!selectedOrgId) return '-';
-                                        const match = organisations.find(o => String(o.id) === String(selectedOrgId) || (o as any).slug === selectedOrgId);
-                                        return match?.name || '-';
-                                    })();
-
-                                    const clubName = (() => {
-                                        if (!selectedClubId) return '-';
-                                        const match = clubs.find(c => String(c.id) === String(selectedClubId));
-                                        return match?.name || '-';
-                                    })();
-
-                                    const teamName = (() => {
-                                        if (!selectedTeamId) return '-';
-                                        const match = teams.find(t => String(t.id) === String(selectedTeamId));
-                                        return match?.name || '-';
-                                    })();
+                                    const orgName = getFederationNameForRow(u);
+                                    const scoped = getClubAndTeamForRow(u);
 
                                     const userLabel = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
 
                                     return (
                                     <tr key={u.id}>
-                                        <td style={compactTextTdStyle}>{orgName}</td>
-                                        <td style={compactTextTdStyle}>{clubName}</td>
-                                        <td style={compactTextTdStyle}>{teamName}</td>
+                                        <td style={compactTextTdStyle} title={orgName}>{orgName}</td>
+                                        <td style={compactTextTdStyle} title={scoped.club.title}>{scoped.club.label}</td>
+                                        <td style={compactTextTdStyle} title={scoped.team.title}>{scoped.team.label}</td>
                                         <td style={compactTdStyle}>-</td>
                                         <td style={compactTdStyle}>-</td>
                                         <td style={compactTdStyle}>-</td>
