@@ -222,7 +222,7 @@ export const ClubsList: React.FC = () => {
             }}
           >
             <option value="">Federation: All</option>
-            {organisations.map((org) => (
+            {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
               <option key={org.id} value={org.id}>
                 {org.name}
               </option>

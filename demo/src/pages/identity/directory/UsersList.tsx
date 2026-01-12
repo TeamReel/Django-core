@@ -338,7 +338,7 @@ export const UsersList: React.FC = () => {
                         }}
                     >
                         <option value="">Federation: All</option>
-                        {organisations.map(o => (
+                        {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map(o => (
                             <option key={o.id} value={o.id}>{o.name}</option>
                         ))}
                     </select>
@@ -362,6 +362,7 @@ export const UsersList: React.FC = () => {
                     {clubs
                       .filter(c => !selectedOrgId ||
                         (typeof c.organisation === 'string' ? c.organisation === selectedOrgId : String(c.organisation?.id) === selectedOrgId))
+                                            .sort((a, b) => String(a.name).localeCompare(String(b.name)))
                       .map(c => (
                         <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
@@ -390,6 +391,7 @@ export const UsersList: React.FC = () => {
                         })
                         .filter(t => !selectedOrgId ||
                             (typeof t.organisation === 'string' ? t.organisation === selectedOrgId : String(t.organisation?.id) === selectedOrgId))
+                        .sort((a, b) => String(a.name).localeCompare(String(b.name)))
                         .map(t => (
                         <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
