@@ -21,6 +21,9 @@ import AppShell from '../../components/AppShell';
 import ProjectDetailModal from './ProjectDetailModal';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectCreateModal from './ProjectCreateModal';
+import PeriodCreateModal from './PeriodCreateModal';
+import MatchCreateModal from './MatchCreateModal';
+import InviteMemberModal from './InviteMemberModal';
 import {
   canEditOrganisation,
   canDeleteOrganisation,
@@ -31,7 +34,7 @@ import {
 } from '../../utils/permissions';
 import { AuditLogTable } from '../../components/AuditLog/AuditLogTable';
 import { PolicyList } from '../../components/Organisations/PolicyList';
-import { fetchAllPages } from '../../utils/fetchAllPages';
+import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 
 /**
  * T007 - Organisation Detail Page
@@ -77,6 +80,16 @@ export const OrganisationDetailPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateClubModalOpen, setIsCreateClubModalOpen] = useState(false);
   const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
+  const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
+  const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
+  const [isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen] = useState(false);
+  const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
+
+  const [isEditMemberRoleModalOpen, setIsEditMemberRoleModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<any | null>(null);
+  const [editingMemberRole, setEditingMemberRole] = useState<'admin' | 'member'>('member');
+  const [editMemberRoleSaving, setEditMemberRoleSaving] = useState(false);
+  const [editMemberRoleError, setEditMemberRoleError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -828,8 +841,9 @@ export const OrganisationDetailPage: React.FC = () => {
   };
 
   // Lazy load members only when Users tab is active (performance optimization)
-  const fetchMembers = async () => {
-    if (membersLoading || members.length > 0) return;
+  const fetchMembers = async (force = false) => {
+    if (membersLoading) return;
+    if (!force && members.length > 0) return;
     if (!org?.id && !currentOrgId) return;
 
     setMembersLoading(true);
@@ -840,6 +854,7 @@ export const OrganisationDetailPage: React.FC = () => {
       const params = new URLSearchParams();
       params.set('include_project_memberships', 'true');
       params.set('include_role_assignments', 'true');
+      params.set('include_project_membership_details', 'true');
       params.set('page_size', '250');
 
       const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
@@ -1343,17 +1358,14 @@ export const OrganisationDetailPage: React.FC = () => {
         {activeTab === 'users' && (
           <Card className="mb-6">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
-              <h3 className="text-lg font-semibold">Users</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => navigate(`/organisations/${currentOrgSlug}/members/invite`)}
-                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
-                >
-                  Add User
-                </button>
+                <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Users</h3>
                 <Input
                   value={memberSearch}
-                  onChange={(e) => setMemberSearch(e.target.value)}
+                  onChange={(e) => {
+                    setMemberSearch(e.target.value);
+                    setUsersPage(1);
+                  }}
                   placeholder="Search users (name/email)"
                   style={{ width: '240px' }}
                 />
@@ -1363,6 +1375,7 @@ export const OrganisationDetailPage: React.FC = () => {
                     setUserClubFilterId(e.target.value);
                     setUserTeamFilterId('');
                     setUserSeasonFilterId('');
+                    setUsersPage(1);
                   }}
                   style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                 >
@@ -1376,6 +1389,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   onChange={(e) => {
                     setUserTeamFilterId(e.target.value);
                     setUserSeasonFilterId('');
+                    setUsersPage(1);
                   }}
                   style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                 >
@@ -1392,7 +1406,10 @@ export const OrganisationDetailPage: React.FC = () => {
                 </select>
                 <select
                   value={userSeasonFilterId}
-                  onChange={(e) => setUserSeasonFilterId(e.target.value)}
+                  onChange={(e) => {
+                    setUserSeasonFilterId(e.target.value);
+                    setUsersPage(1);
+                  }}
                   style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                 >
                   <option value="">Season: All</option>
@@ -1409,13 +1426,39 @@ export const OrganisationDetailPage: React.FC = () => {
                 </select>
                 <select
                   value={userRoleFilter}
-                  onChange={(e) => setUserRoleFilter(e.target.value)}
+                  onChange={(e) => {
+                    setUserRoleFilter(e.target.value);
+                    setUsersPage(1);
+                  }}
                   style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                 >
                   <option value="">Role: All</option>
                   <option value="admin">Admin</option>
                   <option value="member">Member</option>
                 </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setMemberSearch('');
+                    setUserRoleFilter('');
+                    setUserClubFilterId('');
+                    setUserTeamFilterId('');
+                    setUserSeasonFilterId('');
+                    setUsersPage(1);
+                  }}
+                >
+                  Clear
+                </Button>
+                <button
+                  onClick={() => setIsInviteMemberModalOpen(true)}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                >
+                  Add User
+                </button>
               </div>
             </div>
 
@@ -1432,6 +1475,35 @@ export const OrganisationDetailPage: React.FC = () => {
                     return !isVirtualMember;
                   });
 
+                  const seasonTeamById = new Map<string, string>();
+                  for (const p of orgPeriods as any[]) {
+                    if (!isSeasonPeriod(p)) continue;
+                    const teamId = String(p.project_id ?? p.project?.id ?? '');
+                    if (teamId) seasonTeamById.set(String(p.id), teamId);
+                  }
+
+                  const getMemberProjectMemberships = (item: any): any[] => {
+                    const u = item?.user || item;
+                    const list =
+                      (item as any)?.project_memberships ||
+                      (u as any)?.project_memberships ||
+                      (item as any)?.project_membership_details ||
+                      (u as any)?.project_membership_details ||
+                      [];
+                    return Array.isArray(list) ? list : [];
+                  };
+
+                  const getPmTeamId = (pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '');
+                  const getPmClubId = (pm: any) =>
+                    String(
+                      pm?.club_id ??
+                        pm?.club?.id ??
+                        pm?.project?.parent_id ??
+                        pm?.project?.parent?.id ??
+                        pm?.project?.parent_project_id ??
+                        ''
+                    );
+
                   const filteredMembers = orgOnlyMembers.filter((item: any) => {
                     const u = item.user || item;
                     const role = item.role || 'member';
@@ -1441,7 +1513,27 @@ export const OrganisationDetailPage: React.FC = () => {
 
                     // Search filter
                     const haystack = `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase();
-                    return !normalizedQuery || haystack.includes(normalizedQuery);
+
+                    if (normalizedQuery && !haystack.includes(normalizedQuery)) return false;
+
+                    // Club/Team/Season filters (best-effort)
+                    const pms = getMemberProjectMemberships(item);
+                    const effectiveTeamId = userTeamFilterId || (userSeasonFilterId ? seasonTeamById.get(String(userSeasonFilterId)) || '' : '');
+                    const effectiveClubId = userClubFilterId;
+
+                    if (effectiveTeamId || effectiveClubId) {
+                      if (!pms || pms.length === 0) return false;
+                      if (effectiveTeamId) {
+                        const ok = pms.some((pm: any) => getPmTeamId(pm) === String(effectiveTeamId));
+                        if (!ok) return false;
+                      }
+                      if (effectiveClubId) {
+                        const ok = pms.some((pm: any) => getPmClubId(pm) === String(effectiveClubId));
+                        if (!ok) return false;
+                      }
+                    }
+
+                    return true;
                   });
 
                   if (filteredMembers.length === 0) return <Alert variant="info">No users match your search.</Alert>;
@@ -1469,6 +1561,9 @@ export const OrganisationDetailPage: React.FC = () => {
                       <Card>
                         <Table style={compactTableStyle}>
                           <colgroup>
+                            <col style={{ width: '180px' }} />
+                            <col style={{ width: '180px' }} />
+                            <col style={{ width: '180px' }} />
                             <col style={{ width: '200px' }} />
                             <col style={{ width: '220px' }} />
                             <col style={{ width: '120px' }} />
@@ -1476,7 +1571,10 @@ export const OrganisationDetailPage: React.FC = () => {
                           </colgroup>
                           <thead>
                             <tr>
-                              <th style={compactThStyle}>Name</th>
+                              <th style={compactThStyle}>Federation</th>
+                              <th style={compactThStyle}>Club</th>
+                              <th style={compactThStyle}>Team</th>
+                              <th style={compactThStyle}>User</th>
                               <th style={compactThStyle}>Email</th>
                               <th style={compactThStyle}>Role</th>
                               <th style={compactThStyle}>Actions</th>
@@ -1488,8 +1586,88 @@ export const OrganisationDetailPage: React.FC = () => {
                               const role = item.role || 'member';
                               const membershipId = item.id;
 
+                              const pms = ((): any[] => {
+                                const u = item?.user || item;
+                                const list =
+                                  (item as any)?.project_memberships ||
+                                  (u as any)?.project_memberships ||
+                                  (item as any)?.project_membership_details ||
+                                  (u as any)?.project_membership_details ||
+                                  [];
+                                return Array.isArray(list) ? list : [];
+                              })();
+
+                              const clubIds = Array.from(
+                                new Set(
+                                  pms
+                                    .map((pm: any) =>
+                                      String(
+                                        pm?.club_id ??
+                                          pm?.club?.id ??
+                                          pm?.project?.parent_id ??
+                                          pm?.project?.parent?.id ??
+                                          pm?.project?.parent_project_id ??
+                                          ''
+                                      )
+                                    )
+                                    .filter(Boolean)
+                                )
+                              );
+                              const teamIds = Array.from(new Set(pms.map((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '')).filter(Boolean)));
+
+                              const clubId = clubIds.length === 1 ? clubIds[0] : '';
+                              const teamId = teamIds.length === 1 ? teamIds[0] : '';
+
+                              const club = clubId ? (allClubsForTeams as any[]).find((c: any) => String(c.id) === String(clubId)) : null;
+                              const team = teamId ? (teams as any[]).find((t: any) => String(t.id) === String(teamId)) : null;
+
+                              const clubSlugOrId = club ? (club as any).slug || String((club as any).id) : (clubId ? clubId : '');
+                              const teamSlugOrId = team ? (team as any).slug || String((team as any).id) : teamId;
+
                               return (
                                 <tr key={user.id}>
+                                  <td style={compactTextTdStyle}>
+                                    <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                      {org?.name || resolvedOrg?.name || currentOrgSlug}
+                                    </Link>
+                                  </td>
+                                  <td style={compactTextTdStyle}>
+                                    {clubIds.length > 1 ? (
+                                      <span
+                                        title={clubIds
+                                          .map((id) => (allClubsForTeams as any[]).find((c: any) => String(c.id) === id)?.name || id)
+                                          .join(', ')}
+                                      >
+                                        Multiple
+                                      </span>
+                                    ) : clubSlugOrId ? (
+                                      <Link to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`} className="text-blue-600 hover:underline">
+                                        {club?.name || clubId}
+                                      </Link>
+                                    ) : (
+                                      '—'
+                                    )}
+                                  </td>
+                                  <td style={compactTextTdStyle}>
+                                    {teamIds.length > 1 ? (
+                                      <span
+                                        title={teamIds
+                                          .map((id) => (teams as any[]).find((t: any) => String(t.id) === id)?.name || id)
+                                          .join(', ')}
+                                      >
+                                        Multiple
+                                      </span>
+                                    ) : teamSlugOrId ? (
+                                      <Link
+                                        to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                        className="text-blue-600 hover:underline"
+                                      >
+                                        {team?.name || teamId}
+                                      </Link>
+                                    ) : (
+                                      '—'
+                                    )}
+                                  </td>
                                   <td style={compactTextTdStyle}>
                                     <Link
                                       to={`/organisations/${currentOrgSlug}/users/${user.id}`}
@@ -1512,7 +1690,12 @@ export const OrganisationDetailPage: React.FC = () => {
                                           View
                                         </button>
                                         <button
-                                          onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
+                                          onClick={() => {
+                                            setEditingMember(item);
+                                            setEditingMemberRole((item?.role || 'member') as any);
+                                            setEditMemberRoleError(null);
+                                            setIsEditMemberRoleModalOpen(true);
+                                          }}
                                           style={actionButtonStyle('warning')}
                                         >
                                           Edit
@@ -1625,14 +1808,8 @@ export const OrganisationDetailPage: React.FC = () => {
               return (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
-                    <h3 className="text-lg font-semibold">Clubs</h3>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <button
-                        onClick={() => setIsCreateClubModalOpen(true)}
-                        style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
-                      >
-                        Add Club
-                      </button>
+                      <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Clubs</h3>
                       <Input value={clubSearch} onChange={(e) => setClubSearch(e.target.value)} placeholder="Search clubs" style={{ width: '240px' }} />
                       <select
                         value={clubStatusFilter}
@@ -1649,6 +1826,25 @@ export const OrganisationDetailPage: React.FC = () => {
                         <option value="active">Status: Active</option>
                         <option value="inactive">Status: Inactive</option>
                       </select>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setClubSearch('');
+                          setClubStatusFilter('all');
+                        }}
+                      >
+                        Clear
+                      </Button>
+                      <button
+                        onClick={() => setIsCreateClubModalOpen(true)}
+                        style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                      >
+                        Add Club
+                      </button>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
@@ -1720,7 +1916,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                   <td style={compactTextTdStyle}>
                                     <Link
                                       to={`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`}
-                                      className="text-blue-600 hover:underline"
+                                      className="text-blue-600"
                                       style={{ ...compactTextTdStyle, display: 'inline-block', maxWidth: '100%' }}
                                     >
                                       {club.name}
@@ -1821,14 +2017,8 @@ export const OrganisationDetailPage: React.FC = () => {
         {activeTab === 'teams' && (
           <Card className="mb-6">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
-              <h3 className="text-lg font-semibold">Teams</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => setIsCreateTeamModalOpen(true)}
-                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
-                >
-                  Add Team
-                </button>
+                <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Teams</h3>
                 <Input value={teamSearch} onChange={(e) => setTeamSearch(e.target.value)} placeholder="Search teams" style={{ width: '240px' }} />
                 <select
                   value={teamClubFilterId}
@@ -1863,6 +2053,26 @@ export const OrganisationDetailPage: React.FC = () => {
                   <option value="active">Status: Active</option>
                   <option value="inactive">Status: Inactive</option>
                 </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setTeamSearch('');
+                    setTeamClubFilterId('');
+                    setTeamStatusFilter('all');
+                  }}
+                >
+                  Clear
+                </Button>
+                <button
+                  onClick={() => setIsCreateTeamModalOpen(true)}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                >
+                  Add Team
+                </button>
               </div>
             </div>
 
@@ -2262,14 +2472,8 @@ export const OrganisationDetailPage: React.FC = () => {
         {activeTab === 'seasons' && (
           <Card className="mb-6">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
-              <h3 className="text-lg font-semibold">Seasons</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => navigate(`/organisations/${currentOrgSlug}/periods/create?type=season`)}
-                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
-                >
-                  Add Season
-                </button>
+                <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Seasons</h3>
                 <Input value={seasonSearch} onChange={(e) => setSeasonSearch(e.target.value)} placeholder="Search seasons" style={{ width: '240px' }} />
                 <select
                   value={seasonClubFilterId}
@@ -2316,6 +2520,26 @@ export const OrganisationDetailPage: React.FC = () => {
                       </option>
                     ))}
                 </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setSeasonSearch('');
+                    setSeasonClubFilterId('');
+                    setSeasonTeamFilterId('');
+                  }}
+                >
+                  Clear
+                </Button>
+                <button
+                  onClick={() => setIsCreateSeasonModalOpen(true)}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                >
+                  Add Season
+                </button>
               </div>
             </div>
 
@@ -2370,15 +2594,17 @@ export const OrganisationDetailPage: React.FC = () => {
                         <col style={{ width: '180px' }} />
                         <col style={{ width: '180px' }} />
                         <col style={{ width: '180px' }} />
+                        <col style={{ width: '180px' }} />
                         <col style={{ width: '120px' }} />
                         <col style={{ width: '95px' }} />
                         <col style={{ width: '330px' }} />
                       </colgroup>
                       <thead>
                         <tr>
-                          <th style={compactThStyle}>Season</th>
-                          <th style={compactThStyle}>Team</th>
+                          <th style={compactThStyle}>Federation</th>
                           <th style={compactThStyle}>Club</th>
+                          <th style={compactThStyle}>Team</th>
+                          <th style={compactThStyle}>Season</th>
                           <th style={compactThStyle}>Competitions</th>
                           <th style={compactThStyle}>Matches</th>
                           <th style={compactThStyle}>Actions</th>
@@ -2406,9 +2632,19 @@ export const OrganisationDetailPage: React.FC = () => {
                           return (
                             <tr key={seasonId}>
                               <td style={compactTextTdStyle}>
-                                <Link to={openHref} className="text-blue-600 hover:underline">
-                                  {season.name}
+                                <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                  {String(org?.name || resolvedOrg?.name || currentOrgSlug || '—')}
                                 </Link>
+                              </td>
+                              <td style={compactTextTdStyle}>
+                                {clubId && clubSlugOrId ? (
+                                  <Link
+                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {clubNameById.get(clubId) || clubId}
+                                  </Link>
+                                ) : (clubId ? clubNameById.get(clubId) || clubId : '—')}
                               </td>
                               <td style={compactTextTdStyle}>
                                 {team && teamSlugOrId ? (
@@ -2421,14 +2657,9 @@ export const OrganisationDetailPage: React.FC = () => {
                                 ) : (teamId || '—')}
                               </td>
                               <td style={compactTextTdStyle}>
-                                {clubId && clubSlugOrId ? (
-                                  <Link
-                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
-                                    className="text-blue-600 hover:underline"
-                                  >
-                                    {clubNameById.get(clubId) || clubId}
-                                  </Link>
-                                ) : (clubId ? clubNameById.get(clubId) || clubId : '—')}
+                                <Link to={openHref} className="text-blue-600 hover:underline">
+                                  {season.name}
+                                </Link>
                               </td>
                               <td style={compactTdStyle}>
                                 <Badge variant="default">{competitionsCount}</Badge>
@@ -2510,14 +2741,8 @@ export const OrganisationDetailPage: React.FC = () => {
         {activeTab === 'competitions' && (
           <Card className="mb-6">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
-              <h3 className="text-lg font-semibold">Competitions</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => navigate(`/organisations/${currentOrgSlug}/periods/create?type=competition`)}
-                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: '500' }}
-                >
-                  Add Competition
-                </button>
+                <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Competitions</h3>
                 <Input value={competitionSearch} onChange={(e) => setCompetitionSearch(e.target.value)} placeholder="Search competitions" style={{ width: '240px' }} />
                 <select
                   value={compClubFilterId}
@@ -2583,6 +2808,28 @@ export const OrganisationDetailPage: React.FC = () => {
                   <option value="without">Without Matches</option>
                 </select>
               </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setCompetitionSearch('');
+                    setCompClubFilterId('');
+                    setCompTeamFilterId('');
+                    setCompSeasonFilterId('');
+                    setCompMatchesFilter('all');
+                  }}
+                >
+                  Clear
+                </Button>
+                <button
+                  onClick={() => setIsCreateCompetitionModalOpen(true)}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: '500' }}
+                >
+                  Add Competition
+                </button>
+              </div>
             </div>
 
             {(() => {
@@ -2638,19 +2885,21 @@ export const OrganisationDetailPage: React.FC = () => {
                   <div className="overflow-x-auto">
                     <Table style={compactTableStyle}>
                       <colgroup>
+                        <col style={{ width: '180px' }} />
+                        <col style={{ width: '180px' }} />
+                        <col style={{ width: '180px' }} />
+                        <col style={{ width: '180px' }} />
                         <col style={{ width: '200px' }} />
-                        <col style={{ width: '180px' }} />
-                        <col style={{ width: '180px' }} />
-                        <col style={{ width: '180px' }} />
                         <col style={{ width: '95px' }} />
                         <col style={{ width: '330px' }} />
                       </colgroup>
                       <thead>
                         <tr>
-                          <th style={compactThStyle}>Competition</th>
-                          <th style={compactThStyle}>Season</th>
-                          <th style={compactThStyle}>Team</th>
+                          <th style={compactThStyle}>Federation</th>
                           <th style={compactThStyle}>Club</th>
+                          <th style={compactThStyle}>Team</th>
+                          <th style={compactThStyle}>Season</th>
+                          <th style={compactThStyle}>Competition</th>
                           <th style={compactThStyle}>Matches</th>
                           <th style={compactThStyle}>Actions</th>
                         </tr>
@@ -2679,19 +2928,19 @@ export const OrganisationDetailPage: React.FC = () => {
                           return (
                             <tr key={comp.id}>
                               <td style={compactTextTdStyle}>
-                                <Link to={openHref} className="text-blue-600 hover:underline">
-                                  {comp.name}
+                                <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                  {String(org?.name || resolvedOrg?.name || currentOrgSlug || '—')}
                                 </Link>
                               </td>
                               <td style={compactTextTdStyle}>
-                                {season && seasonId ? (
+                                {clubId && clubSlugOrId ? (
                                   <Link
-                                    to={clubSlugOrId && teamSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
+                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
-                                    {season.name}
+                                    {clubNameById.get(clubId) || clubId}
                                   </Link>
-                                ) : (season?.name || comp.parent_period?.name || seasonId || '—')}
+                                ) : (clubId ? clubNameById.get(clubId) || clubId : '—')}
                               </td>
                               <td style={compactTextTdStyle}>
                                 {team && teamSlugOrId ? (
@@ -2704,14 +2953,19 @@ export const OrganisationDetailPage: React.FC = () => {
                                 ) : (teamId || '—')}
                               </td>
                               <td style={compactTextTdStyle}>
-                                {clubId && clubSlugOrId ? (
+                                {season && seasonId ? (
                                   <Link
-                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
+                                    to={clubSlugOrId && teamSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
                                     className="text-blue-600 hover:underline"
                                   >
-                                    {clubNameById.get(clubId) || clubId}
+                                    {season.name}
                                   </Link>
-                                ) : (clubId ? clubNameById.get(clubId) || clubId : '—')}
+                                ) : (season?.name || comp.parent_period?.name || seasonId || '—')}
+                              </td>
+                              <td style={compactTextTdStyle}>
+                                <Link to={openHref} className="text-blue-600 hover:underline">
+                                  {comp.name}
+                                </Link>
                               </td>
                               <td style={compactTdStyle}>
                                 <Badge variant="default">{matchesCount}</Badge>
@@ -2790,14 +3044,8 @@ export const OrganisationDetailPage: React.FC = () => {
         {activeTab === 'matches' && (
           <Card className="mb-6">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
-              <h3 className="text-lg font-semibold">Matches</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => navigate(`/organisations/${currentOrgSlug}/matches/create`)}
-                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
-                >
-                  Add Match
-                </button>
+                <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Matches</h3>
                 <Input value={matchSearch} onChange={(e) => setMatchSearch(e.target.value)} placeholder="Search matches" style={{ width: '240px' }} />
                 <select
                   value={matchClubFilterId}
@@ -2880,6 +3128,28 @@ export const OrganisationDetailPage: React.FC = () => {
                     return <option key={c.id} value={c.id}>{c.name}</option>;
                   })}
                 </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setMatchSearch('');
+                    setMatchClubFilterId('');
+                    setMatchTeamFilterId('');
+                    setMatchSeasonFilterId('');
+                    setMatchCompFilterId('');
+                  }}
+                >
+                  Clear
+                </Button>
+                <button
+                  onClick={() => setIsCreateMatchModalOpen(true)}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                >
+                  Add Match
+                </button>
               </div>
             </div>
 
@@ -2964,21 +3234,23 @@ export const OrganisationDetailPage: React.FC = () => {
                   <div className="overflow-x-auto">
                     <Table style={compactTableStyle}>
                       <colgroup>
-                        <col style={{ width: '200px' }} />
+                        <col style={{ width: '180px' }} />
                         <col style={{ width: '160px' }} />
                         <col style={{ width: '160px' }} />
                         <col style={{ width: '160px' }} />
                         <col style={{ width: '160px' }} />
+                        <col style={{ width: '220px' }} />
                         <col style={{ width: '140px' }} />
                         <col style={{ width: '390px' }} />
                       </colgroup>
                       <thead>
                         <tr>
-                          <th style={compactThStyle}>Match</th>
+                          <th style={compactThStyle}>Federation</th>
+                          <th style={compactThStyle}>Club</th>
+                          <th style={compactThStyle}>Team</th>
                           <th style={compactThStyle}>Season</th>
                           <th style={compactThStyle}>Competition</th>
-                          <th style={compactThStyle}>Team</th>
-                          <th style={compactThStyle}>Club</th>
+                          <th style={compactThStyle}>Match</th>
                           <th style={compactThStyle}>Start</th>
                           <th style={compactThStyle}>Actions</th>
                         </tr>
@@ -3004,9 +3276,29 @@ export const OrganisationDetailPage: React.FC = () => {
                           return (
                             <tr key={m.id}>
                               <td style={compactTextTdStyle}>
-                                <Link to={`/matches/${m.id}`} className="text-blue-600 hover:underline">
-                                  {m.title || m.name || m.id}
+                                <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                  {String(org?.name || resolvedOrg?.name || currentOrgSlug || '—')}
                                 </Link>
+                              </td>
+                              <td style={compactTextTdStyle}>
+                                {clubId && clubSlugOrId ? (
+                                  <Link
+                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {clubNameById.get(clubId) || clubId}
+                                  </Link>
+                                ) : '-'}
+                              </td>
+                              <td style={compactTextTdStyle}>
+                                {team && teamSlugOrId ? (
+                                  <Link
+                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {team.name}
+                                  </Link>
+                                ) : (teamId || '-')}
                               </td>
                               <td style={compactTextTdStyle}>
                                 {season && seasonSlugOrId ? (
@@ -3029,24 +3321,9 @@ export const OrganisationDetailPage: React.FC = () => {
                                 ) : (m.period?.name || '-')}
                               </td>
                               <td style={compactTextTdStyle}>
-                                {team && teamSlugOrId ? (
-                                  <Link
-                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
-                                    className="text-blue-600 hover:underline"
-                                  >
-                                    {team.name}
-                                  </Link>
-                                ) : (teamId || '-')}
-                              </td>
-                              <td style={compactTextTdStyle}>
-                                {clubId && clubSlugOrId ? (
-                                  <Link
-                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
-                                    className="text-blue-600 hover:underline"
-                                  >
-                                    {clubNameById.get(clubId) || clubId}
-                                  </Link>
-                                ) : '-'}
+                                <Link to={`/matches/${m.id}`} className="text-blue-600 hover:underline">
+                                  {m.title || m.name || m.id}
+                                </Link>
                               </td>
                               <td style={compactTextTdStyle}>{formattedStart}</td>
                               <td style={compactTdStyle}>
@@ -3254,6 +3531,298 @@ export const OrganisationDetailPage: React.FC = () => {
           await fetchTeamsForOrg();
         }}
       />
+
+      <InviteMemberModal
+        opened={isInviteMemberModalOpen}
+        onClose={() => setIsInviteMemberModalOpen(false)}
+        orgSlug={String(currentOrgSlug || '')}
+        onInviteSuccess={() => {
+          fetchMembers(true);
+        }}
+      />
+
+      <PeriodCreateModal
+        opened={isCreateSeasonModalOpen}
+        onClose={() => setIsCreateSeasonModalOpen(false)}
+        title="Create Season"
+        organisations={createModalOrganisations}
+        clubs={createModalClubs}
+        teams={teams as any}
+        requireOrganisation
+        requireClub
+        requireTeam
+        initialOrganisationId={createModalOrganisations[0]?.id || ''}
+        initialClubId={seasonClubFilterId || ''}
+        initialTeamId={seasonTeamFilterId || ''}
+        onCreate={async (payload) => {
+          const apiV1BaseUrl = getApiV1BaseUrl();
+          const orgId = String(payload.organisation_id || currentOrgId || org?.id || '').trim();
+          const teamId = String(payload.project_id || '').trim();
+          if (!orgId) throw new Error('Select a federation first');
+          if (!teamId) throw new Error('Select a team first');
+
+          const res = await fetch(`${apiV1BaseUrl}/periods/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken() || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              organisation_id: orgId,
+              project_id: teamId ? Number(teamId) : undefined,
+              parent_period_id: null,
+              name: payload.name,
+              description: payload.description,
+              start_date: payload.start_date,
+              end_date: payload.end_date,
+              metadata: { type: 'season' },
+            }),
+          });
+
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(detail || 'Failed to create season');
+          }
+
+          invalidateFetchAllPagesCache();
+          await fetchFederationCounts(orgId);
+        }}
+      />
+
+      <PeriodCreateModal
+        opened={isCreateCompetitionModalOpen}
+        onClose={() => setIsCreateCompetitionModalOpen(false)}
+        title="Create Competition"
+        organisations={createModalOrganisations}
+        clubs={createModalClubs}
+        teams={teams as any}
+        requireOrganisation
+        requireClub
+        requireTeam
+        requireSeason
+        initialOrganisationId={createModalOrganisations[0]?.id || ''}
+        initialClubId={compClubFilterId || ''}
+        initialTeamId={compTeamFilterId || ''}
+        onCreate={async (payload) => {
+          const apiV1BaseUrl = getApiV1BaseUrl();
+          const orgId = String(payload.organisation_id || currentOrgId || org?.id || '').trim();
+          const teamId = String(payload.project_id || '').trim();
+          const seasonId = String(payload.parent_period_id || '').trim();
+          if (!orgId) throw new Error('Select a federation first');
+          if (!teamId) throw new Error('Select a team first');
+          if (!seasonId) throw new Error('Select a season first');
+
+          const res = await fetch(`${apiV1BaseUrl}/periods/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken() || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              organisation_id: orgId,
+              project_id: teamId ? Number(teamId) : undefined,
+              parent_period_id: seasonId || null,
+              name: payload.name,
+              description: payload.description,
+              start_date: payload.start_date,
+              end_date: payload.end_date,
+              metadata: { type: 'competition' },
+            }),
+          });
+
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(detail || 'Failed to create competition');
+          }
+
+          invalidateFetchAllPagesCache();
+          await fetchFederationCounts(orgId);
+        }}
+      />
+
+      <MatchCreateModal
+        opened={isCreateMatchModalOpen}
+        onClose={() => setIsCreateMatchModalOpen(false)}
+        organisations={createModalOrganisations}
+        clubs={createModalClubs}
+        teams={teams as any}
+        initialOrganisationId={createModalOrganisations[0]?.id || ''}
+        initialClubId={matchClubFilterId || ''}
+        initialTeamId={matchTeamFilterId || ''}
+        onCreate={async (payload) => {
+          const apiV1BaseUrl = getApiV1BaseUrl();
+          const csrfToken = getCsrfToken();
+
+          const orgIdToRefresh = String(currentOrgId || org?.id || '').trim();
+          const teamId = String(payload.project_id || '').trim();
+          const competitionId = String(payload.period_id || '').trim();
+          if (!teamId) throw new Error('Select a team first');
+          if (!competitionId) throw new Error('Select a competition first');
+
+          const res = await fetch(`${apiV1BaseUrl}/activities/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              title: payload.title,
+              activity_type: 'match',
+              project_id: teamId ? Number(teamId) : undefined,
+              period_id: competitionId,
+              start_time: payload.start_time,
+              end_time: payload.end_time,
+              location: payload.location,
+              description: payload.description,
+            }),
+          });
+
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(detail || 'Failed to create match');
+          }
+
+          invalidateFetchAllPagesCache();
+          if (orgIdToRefresh) {
+            await fetchFederationMatches(orgIdToRefresh);
+            await fetchFederationCounts(orgIdToRefresh);
+          }
+        }}
+      />
+
+      {isEditMemberRoleModalOpen && editingMember ? (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--app-surface)',
+              padding: '24px',
+              borderRadius: '8px',
+              width: '520px',
+              maxWidth: '95%',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              color: 'var(--app-text)',
+              border: '1px solid var(--app-border)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+              <h2 style={{ margin: 0 }}>Edit Member</h2>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setIsEditMemberRoleModalOpen(false);
+                  setEditingMember(null);
+                }}
+                disabled={editMemberRoleSaving}
+              >
+                Close
+              </Button>
+            </div>
+
+            <div style={{ marginTop: '12px', fontSize: '14px', color: 'var(--app-text-muted)' }}>
+              {String(editingMember?.user?.email || editingMember?.email || '')}
+            </div>
+
+            {editMemberRoleError ? (
+              <div style={{ marginTop: '12px', padding: '10px 12px', borderRadius: '6px', backgroundColor: '#fee', color: '#c00' }}>
+                {editMemberRoleError}
+              </div>
+            ) : null}
+
+            <div style={{ marginTop: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Role</label>
+              <select
+                value={editingMemberRole}
+                onChange={(e) => setEditingMemberRole(e.target.value as any)}
+                disabled={editMemberRoleSaving}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                }}
+              >
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '18px' }}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsEditMemberRoleModalOpen(false);
+                  setEditingMember(null);
+                }}
+                disabled={editMemberRoleSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (!editingMember?.id) return;
+                  try {
+                    setEditMemberRoleSaving(true);
+                    setEditMemberRoleError(null);
+                    const apiV1BaseUrl = getApiV1BaseUrl();
+                    const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                    const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/${editingMember.id}/`, {
+                      method: 'PATCH',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken || '',
+                      },
+                      credentials: 'include',
+                      body: JSON.stringify({ role: editingMemberRole }),
+                    });
+
+                    if (!res.ok) {
+                      const detail = await res.text().catch(() => '');
+                      throw new Error(detail || 'Failed to update member');
+                    }
+
+                    const updated = await res.json().catch(() => null);
+                    setMembers((prev) =>
+                      (prev as any[]).map((m: any) => {
+                        if (String(m?.id) !== String(editingMember.id)) return m;
+                        return updated && updated.id ? updated : { ...m, role: editingMemberRole };
+                      })
+                    );
+
+                    setIsEditMemberRoleModalOpen(false);
+                    setEditingMember(null);
+                  } catch (e) {
+                    setEditMemberRoleError(e instanceof Error ? e.message : 'Failed to update member');
+                  } finally {
+                    setEditMemberRoleSaving(false);
+                  }
+                }}
+                loading={editMemberRoleSaving}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       </div>
     </AppShell>
   );
