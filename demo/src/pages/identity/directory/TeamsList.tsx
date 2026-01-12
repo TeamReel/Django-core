@@ -521,7 +521,8 @@ export const TeamsList: React.FC = () => {
             if (!editProject) return;
             const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
             const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-            const response = await fetch(`${baseUrl}/api/v1/projects/${editProject.id}/`, {
+            const projectSlugOrId = (editProject as any).slug || editProject.id;
+            const response = await fetch(`${baseUrl}/api/v1/projects/${projectSlugOrId}/`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -530,7 +531,18 @@ export const TeamsList: React.FC = () => {
                 credentials: 'include',
                 body: JSON.stringify(projectData),
             });
-            if (!response.ok) throw new Error('Failed to update team');
+
+            if (!response.ok) {
+              let message = 'Failed to update project';
+              try {
+                const json: any = await response.json();
+                message = json?.error?.message || json?.detail || json?.message || message;
+              } catch {
+                const text = await response.text().catch(() => '');
+                if (text) message = text;
+              }
+              throw new Error(message);
+            }
             setRefreshKey(prev => prev + 1);
         }}
       />

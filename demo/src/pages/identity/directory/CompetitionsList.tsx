@@ -712,7 +712,15 @@ export const CompetitionsList: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {sortedCompetitions.map((comp) => {
+                {sortedCompetitions
+                  // Defensive filter: ensures the UI always matches the dropdown,
+                  // even if a memo/cache issue ever causes stale lists.
+                  .filter((comp) => {
+                    if (statusFilter === 'active') return isPeriodActive(comp);
+                    if (statusFilter === 'inactive') return !isPeriodActive(comp);
+                    return true;
+                  })
+                  .map((comp) => {
                     const seasonId = (comp as any).parent_period_id || comp.parent_period?.id;
                     const seasonSlug = comp.parent_period?.slug;
                     const org = comp.organisation;

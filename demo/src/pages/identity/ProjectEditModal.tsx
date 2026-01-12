@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Alert } from '@django-core/design-system';
 
 interface Project {
   id: string;
+  slug?: string;
   name: string;
   description?: string;
   is_active: boolean;
@@ -17,6 +19,7 @@ interface ProjectEditModalProps {
 export default function ProjectEditModal({ opened, onClose, project, onSave }: ProjectEditModalProps) {
   const [formData, setFormData] = useState<Partial<Project>>({});
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (project) {
@@ -25,17 +28,20 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
         description: project.description,
         is_active: project.is_active,
       });
+      setError(null);
     }
   }, [project]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setError(null);
     try {
       await onSave(formData);
       onClose();
     } catch (error) {
-      console.error(error);
+      const message = error instanceof Error ? error.message : 'Failed to save changes';
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -67,6 +73,12 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
         border: '1px solid var(--app-border)'
       }}>
         <h2 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--app-text)' }}>Edit Project</h2>
+
+        {error && (
+          <div style={{ marginBottom: '16px' }}>
+            <Alert variant="error">{error}</Alert>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
