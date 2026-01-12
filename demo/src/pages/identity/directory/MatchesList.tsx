@@ -33,31 +33,6 @@ type Activity = {
   data?: Record<string, any>;
 };
 
-// Table styling constants
-const compactTableStyle: React.CSSProperties = {
-  tableLayout: 'fixed',
-  width: '100%',
-  borderCollapse: 'collapse'
-};
-const compactThStyle: React.CSSProperties = {
-  padding: '6px 8px',
-  fontSize: '0.8rem',
-  textAlign: 'left',
-  borderBottom: '2px solid var(--app-border)'
-};
-const compactTdStyle: React.CSSProperties = {
-  padding: '6px 8px',
-  fontSize: '0.85rem',
-  verticalAlign: 'middle',
-  borderBottom: '1px solid #eee'
-};
-const compactTextTdStyle: React.CSSProperties = {
-  ...compactTdStyle,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap'
-};
-
 export const MatchesList: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
