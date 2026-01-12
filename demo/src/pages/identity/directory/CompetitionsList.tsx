@@ -448,7 +448,7 @@ export const CompetitionsList: React.FC = () => {
                     <th style={{ ...compactThStyle, width: '20%' }}>Competition</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Matches</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
-                    <th style={{ ...compactThStyle, width: '16%' }}>Actions</th>
+                    <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>

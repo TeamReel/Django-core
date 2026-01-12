@@ -259,7 +259,7 @@ export const ClubsList: React.FC = () => {
                   <th style={{ ...compactThStyle, width: '8%' }}>Matches</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
                   <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
-                  <th style={{ ...compactThStyle, width: '15%' }}>Actions</th>
+                  <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>

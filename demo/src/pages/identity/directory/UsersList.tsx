@@ -415,20 +415,13 @@ export const UsersList: React.FC = () => {
                 <Card>
                     <div className="overflow-x-auto">
                         <Table style={compactTableStyle}>
-                            <colgroup>
-                                <col style={{ width: '200px' }} />
-                                <col style={{ width: '220px' }} />
-                                <col style={{ width: '120px' }} />
-                                <col style={{ width: '120px' }} />
-                                <col style={{ width: '100px' }} />
-                            </colgroup>
                             <thead>
                                 <tr>
-                                    <th style={compactThStyle}>User</th>
-                                    <th style={compactThStyle}>Email</th>
-                                    <th style={compactThStyle}>Role</th>
-                                    <th style={compactThStyle}>Status</th>
-                                    <th style={compactThStyle}>Actions</th>
+                                    <th style={{ ...compactThStyle, width: '28%' }}>User</th>
+                                    <th style={{ ...compactThStyle, width: '30%' }}>Email</th>
+                                    <th style={{ ...compactThStyle, width: '20%' }}>Role</th>
+                                    <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
+                                    <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -304,28 +304,17 @@ export const TeamsList: React.FC = () => {
         <Card>
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
-              <colgroup>
-                <col style={{ width: '150px' }} />
-                <col style={{ width: '150px' }} />
-                <col style={{ width: '150px' }} />
-                <col style={{ width: '80px' }} />
-                <col style={{ width: '80px' }} />
-                <col style={{ width: '80px' }} />
-                <col style={{ width: '80px' }} />
-                <col style={{ width: '100px' }} />
-                <col style={{ width: '280px' }} />
-              </colgroup>
               <thead>
                 <tr>
-                    <th style={compactThStyle}>Team</th>
-                    <th style={compactThStyle}>Club</th>
-                    <th style={compactThStyle}>Federation</th>
-                    <th style={compactThStyle}>Seasons</th>
-                    <th style={compactThStyle}>Comps</th>
-                    <th style={compactThStyle}>Matches</th>
-                    <th style={compactThStyle}>Users</th>
-                    <th style={compactThStyle}>Status</th>
-                    <th style={compactThStyle}>Actions</th>
+                    <th style={{ ...compactThStyle, width: '18%' }}>Team</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Seasons</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Comps</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Matches</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
+                    <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
