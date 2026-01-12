@@ -52,8 +52,8 @@ export default function MatchCreateModal({
   initialTeamId = '',
 }: MatchCreateModalProps) {
   const [title, setTitle] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [matchDate, setMatchDate] = useState('');
+  const [matchTime, setMatchTime] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -97,6 +97,13 @@ export default function MatchCreateModal({
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
   }, [clubs, selectedOrganisationId]);
 
+  const getClubOrganisationId = (clubId: string): string | null => {
+    const club = clubs.find((c) => String(c.id) === String(clubId));
+    if (!club) return null;
+    const org = typeof (club as any).organisation === 'string' ? (club as any).organisation : (club as any).organisation?.id;
+    return org ? String(org) : null;
+  };
+
   const getTeamParentId = (t: ProjectOption): string | null => {
     const parent =
       (t as any)?.parent_id ??
@@ -112,6 +119,48 @@ export default function MatchCreateModal({
     const list = clubId ? teams.filter((t) => getTeamParentId(t) === String(clubId)) : teams;
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
   }, [teams, selectedClubId]);
+
+  const applyClubSelection = (clubId: string) => {
+    setSelectedClubId(clubId);
+    setSelectedTeamId('');
+    setSelectedSeasonId('');
+    setSelectedCompetitionId('');
+
+    const orgId = clubId ? getClubOrganisationId(clubId) : null;
+    if (orgId) setSelectedOrganisationId(orgId);
+  };
+
+  const applyTeamSelection = (teamId: string) => {
+    setSelectedTeamId(teamId);
+    setSelectedSeasonId('');
+    setSelectedCompetitionId('');
+
+    const team = teams.find((t) => String(t.id) === String(teamId));
+    if (!team) return;
+
+    const clubId = getTeamParentId(team);
+    if (clubId) {
+      setSelectedClubId(String(clubId));
+      const orgId = getClubOrganisationId(String(clubId));
+      if (orgId) setSelectedOrganisationId(String(orgId));
+    }
+  };
+
+  const combineDateTime = (date: string, time: string): string | null => {
+    if (!date || !time) return null;
+    // Send as ISO-like string (no timezone). Backend will treat as a datetime.
+    return `${date}T${time}:00`;
+  };
+
+  const addHoursToIsoLike = (isoLike: string, hours: number): string => {
+    const parsed = new Date(isoLike);
+    if (Number.isNaN(parsed.getTime())) return isoLike;
+    parsed.setHours(parsed.getHours() + hours);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}T${pad(parsed.getHours())}:${pad(
+      parsed.getMinutes()
+    )}:${pad(parsed.getSeconds())}`;
+  };
 
   useEffect(() => {
     if (!opened) return;
@@ -209,10 +258,16 @@ export default function MatchCreateModal({
       if (!selectedSeasonId) throw new Error('Select a season first.');
       if (!selectedCompetitionId) throw new Error('Select a competition first.');
 
+      const start = combineDateTime(matchDate, matchTime);
+      if (!start) throw new Error('Select a match date and time.');
+
+      // Football match default duration: 2 hours (includes warm-up/overrun)
+      const end = addHoursToIsoLike(start, 2);
+
       await onCreate({
         title,
-        start_time: startTime || undefined,
-        end_time: endTime || undefined,
+        start_time: start,
+        end_time: end,
         location: location || undefined,
         description: description || undefined,
         organisation_id: selectedOrganisationId,
@@ -221,8 +276,8 @@ export default function MatchCreateModal({
         period_id: selectedCompetitionId,
       });
       setTitle('');
-      setStartTime('');
-      setEndTime('');
+      setMatchDate('');
+      setMatchTime('');
       setLocation('');
       setDescription('');
       onClose();
@@ -319,12 +374,7 @@ export default function MatchCreateModal({
             <select
               id="match-create-club"
               value={selectedClubId}
-              onChange={(e) => {
-                setSelectedClubId(e.target.value);
-                setSelectedTeamId('');
-                setSelectedSeasonId('');
-                setSelectedCompetitionId('');
-              }}
+              onChange={(e) => applyClubSelection(e.target.value)}
               disabled={isSaving}
               required
               style={{
@@ -349,11 +399,7 @@ export default function MatchCreateModal({
             <select
               id="match-create-team"
               value={selectedTeamId}
-              onChange={(e) => {
-                setSelectedTeamId(e.target.value);
-                setSelectedSeasonId('');
-                setSelectedCompetitionId('');
-              }}
+              onChange={(e) => applyTeamSelection(e.target.value)}
               disabled={isSaving}
               required
               style={{
@@ -443,15 +489,16 @@ export default function MatchCreateModal({
               }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-start">
-              Start
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-date">
+              Date
             </label>
             <input
-              id="match-create-start"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              placeholder="YYYY-MM-DDTHH:MM:SSZ"
+              id="match-create-date"
+              type="date"
+              value={matchDate}
+              onChange={(e) => setMatchDate(e.target.value)}
               disabled={isSaving}
+              required
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',
@@ -461,15 +508,16 @@ export default function MatchCreateModal({
               }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-end">
-              End
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-time">
+              Time
             </label>
             <input
-              id="match-create-end"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              placeholder="YYYY-MM-DDTHH:MM:SSZ"
+              id="match-create-time"
+              type="time"
+              value={matchTime}
+              onChange={(e) => setMatchTime(e.target.value)}
               disabled={isSaving}
+              required
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',

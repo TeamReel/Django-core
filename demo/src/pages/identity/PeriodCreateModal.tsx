@@ -103,6 +103,13 @@ export default function PeriodCreateModal({
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
   }, [clubs, selectedOrganisationId]);
 
+  const getClubOrganisationId = (clubId: string): string | null => {
+    const club = clubs.find((c) => String(c.id) === String(clubId));
+    if (!club) return null;
+    const org = typeof (club as any).organisation === 'string' ? (club as any).organisation : (club as any).organisation?.id;
+    return org ? String(org) : null;
+  };
+
   const getTeamParentId = (t: ProjectOption): string | null => {
     const parent =
       (t as any)?.parent_id ??
@@ -118,6 +125,30 @@ export default function PeriodCreateModal({
     const list = clubId ? teams.filter((t) => getTeamParentId(t) === String(clubId)) : teams;
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
   }, [teams, selectedClubId]);
+
+  const applyClubSelection = (clubId: string) => {
+    setSelectedClubId(clubId);
+    setSelectedTeamId('');
+    setSelectedSeasonId('');
+
+    const orgId = clubId ? getClubOrganisationId(clubId) : null;
+    if (orgId) setSelectedOrganisationId(orgId);
+  };
+
+  const applyTeamSelection = (teamId: string) => {
+    setSelectedTeamId(teamId);
+    setSelectedSeasonId('');
+
+    const team = teams.find((t) => String(t.id) === String(teamId));
+    if (!team) return;
+
+    const clubId = getTeamParentId(team);
+    if (clubId) {
+      setSelectedClubId(String(clubId));
+      const orgId = getClubOrganisationId(String(clubId));
+      if (orgId) setSelectedOrganisationId(String(orgId));
+    }
+  };
 
   useEffect(() => {
     if (!opened || !requireSeason) return;
@@ -299,11 +330,7 @@ export default function PeriodCreateModal({
                 <select
                   id="period-create-club"
                   value={selectedClubId}
-                  onChange={(e) => {
-                    setSelectedClubId(e.target.value);
-                    setSelectedTeamId('');
-                    setSelectedSeasonId('');
-                  }}
+                  onChange={(e) => applyClubSelection(e.target.value)}
                   disabled={saving}
                   required={requireClub}
                   style={{
@@ -332,10 +359,7 @@ export default function PeriodCreateModal({
                 <select
                   id="period-create-team"
                   value={selectedTeamId}
-                  onChange={(e) => {
-                    setSelectedTeamId(e.target.value);
-                    setSelectedSeasonId('');
-                  }}
+                  onChange={(e) => applyTeamSelection(e.target.value)}
                   disabled={saving}
                   required={requireTeam}
                   style={{
@@ -408,10 +432,11 @@ export default function PeriodCreateModal({
             </label>
             <input
               id="period-create-start"
+              type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              placeholder="YYYY-MM-DD"
               disabled={saving}
+              required
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',
@@ -426,10 +451,11 @@ export default function PeriodCreateModal({
             </label>
             <input
               id="period-create-end"
+              type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              placeholder="YYYY-MM-DD"
               disabled={saving}
+              required
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',

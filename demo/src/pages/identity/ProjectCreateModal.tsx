@@ -68,6 +68,13 @@ export default function ProjectCreateModal({
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
   }, [clubs, selectedOrganisationId]);
 
+  const getClubOrganisationId = (clubId: string): string | null => {
+    const club = clubs.find((c) => String(c.id) === String(clubId));
+    if (!club) return null;
+    const org = typeof club.organisation === 'string' ? club.organisation : club.organisation?.id;
+    return org ? String(org) : null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -205,7 +212,14 @@ export default function ProjectCreateModal({
                 <select
                   id="project-create-club"
                   value={selectedClubId}
-                  onChange={(e) => setSelectedClubId(e.target.value)}
+                  onChange={(e) => {
+                    const clubId = e.target.value;
+                    setSelectedClubId(clubId);
+
+                    // If user selects a club first, auto-fill federation.
+                    const orgId = clubId ? getClubOrganisationId(clubId) : null;
+                    if (orgId) setSelectedOrganisationId(orgId);
+                  }}
                   disabled={saving}
                   required={requireClub}
                   style={{

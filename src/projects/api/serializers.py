@@ -159,8 +159,12 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     organisation = OrganisationNestedSerializer(read_only=True)
     creator = UserNestedSerializer(read_only=True)
     current_user_access = serializers.SerializerMethodField()
-    parent_project_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
-    parent_id = serializers.UUIDField(source="parent_project.id", allow_null=True, read_only=True)
+    # Project uses the default Django AutoField (integer) primary key.
+    # This is TeamReel's Club 7 Team hierarchy link.
+    parent_project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    parent_id = serializers.IntegerField(
+        source="parent_project.id", allow_null=True, read_only=True
+    )
 
     class Meta:
         model = Project
