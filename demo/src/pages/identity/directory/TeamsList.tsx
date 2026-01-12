@@ -142,6 +142,27 @@ export const TeamsList: React.FC = () => {
       let list = [...teams];
       console.log('🔍 Filtering teams. Total:', list.length, 'Selected Club ID:', selectedClubId);
 
+      const sortKey = (value: unknown) => {
+        const s = String(value ?? '').trim();
+        return s ? s.toLocaleLowerCase() : '\uffff';
+      };
+
+      const getFederationName = (team: any) => {
+        const org = team?.organisation;
+        if (typeof org === 'object' && org?.name) return org.name;
+        const orgId = typeof org === 'string' ? org : org?.id;
+        const fromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
+        return fromList?.name || '';
+      };
+
+      const getClubName = (team: any) => {
+        const parent = team?.parent_project || team?.parent_id || team?.parent_project_id;
+        const parentId = typeof parent === 'object' ? parent?.id : parent;
+        const parentName = typeof parent === 'object' ? (parent?.name || parent?.slug) : '';
+        const clubObj = clubs.find((c) => String(c.id) === String(parentId));
+        return clubObj?.name || parentName || '';
+      };
+
       const selectedOrg = selectedOrgId
         ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
         : null;
@@ -176,6 +197,16 @@ export const TeamsList: React.FC = () => {
       } else if (statusFilter === 'inactive') {
         list = list.filter((c: any) => c.is_active === false);
       }
+
+      // Alphabetical: Federation, Club, Team
+      list.sort((a: any, b: any) => {
+        const byFederation = sortKey(getFederationName(a)).localeCompare(sortKey(getFederationName(b)));
+        if (byFederation !== 0) return byFederation;
+        const byClub = sortKey(getClubName(a)).localeCompare(sortKey(getClubName(b)));
+        if (byClub !== 0) return byClub;
+        return sortKey(a?.name).localeCompare(sortKey(b?.name));
+      });
+
       return list;
   }, [teams, selectedOrgId, selectedClubId, selectedTeamId, statusFilter, organisations]);
 

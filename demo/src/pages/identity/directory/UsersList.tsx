@@ -298,6 +298,26 @@ export const UsersList: React.FC = () => {
          return user.role || 'User';
     };
 
+    const sortedUsers = React.useMemo(() => {
+        const sortKey = (value: unknown) => {
+            const s = String(value ?? '').trim();
+            return s ? s.toLocaleLowerCase() : '\uffff';
+        };
+
+        const getUserLabel = (u: any) => {
+            const label = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+            return label || u.email || '';
+        };
+
+        const list = [...users];
+        list.sort((a: any, b: any) => {
+            const byLabel = sortKey(getUserLabel(a)).localeCompare(sortKey(getUserLabel(b)));
+            if (byLabel !== 0) return byLabel;
+            return sortKey(a?.email).localeCompare(sortKey(b?.email));
+        });
+        return list;
+    }, [users]);
+
     return (
         <div>
              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -445,7 +465,7 @@ export const UsersList: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.map(u => {
+                                {sortedUsers.map(u => {
                                     const orgName = (() => {
                                         if (!selectedOrgId) return '-';
                                         const match = organisations.find(o => String(o.id) === String(selectedOrgId) || (o as any).slug === selectedOrgId);

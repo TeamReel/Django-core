@@ -132,6 +132,19 @@ export const ClubsList: React.FC = () => {
   const filteredClubs = useMemo(() => {
     let list = [...clubs];
 
+    const sortKey = (value: unknown) => {
+      const s = String(value ?? '').trim();
+      return s ? s.toLocaleLowerCase() : '\uffff';
+    };
+
+    const getFederationName = (club: any) => {
+      const org = club?.organisation;
+      if (typeof org === 'object' && org?.name) return org.name;
+      const orgId = typeof org === 'string' ? org : org?.id;
+      const fromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
+      return fromList?.name || '';
+    };
+
     const selectedOrg = selectedOrgId
       ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
       : null;
@@ -154,8 +167,15 @@ export const ClubsList: React.FC = () => {
       list = list.filter((c) => String(c.id) === String(selectedClubId));
     }
 
+    // Alphabetical: Federation, then Club
+    list.sort((a: any, b: any) => {
+      const byFederation = sortKey(getFederationName(a)).localeCompare(sortKey(getFederationName(b)));
+      if (byFederation !== 0) return byFederation;
+      return sortKey(a?.name).localeCompare(sortKey(b?.name));
+    });
+
     return list;
-  }, [clubs, selectedOrgId, statusFilter, selectedClubId]);
+  }, [clubs, organisations, selectedOrgId, statusFilter, selectedClubId]);
 
   const handleDeleteProject = async (orgSlugOrId: string, projectSlugOrId: string, projectName: string) => {
     if (!window.confirm(`Are you sure you want to delete ${projectName}?`)) return;

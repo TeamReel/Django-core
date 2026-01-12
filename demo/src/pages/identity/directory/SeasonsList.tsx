@@ -331,6 +331,51 @@ export const SeasonsList: React.FC = () => {
     return seasons;
   }, [seasons, statusFilter]);
 
+  const sortedSeasons = useMemo(() => {
+    const sortKey = (value: unknown) => {
+      const s = String(value ?? '').trim();
+      return s ? s.toLocaleLowerCase() : '\uffff';
+    };
+
+    const getFederationName = (season: any) => {
+      const org = season?.organisation;
+      if (typeof org === 'object' && org?.name) return org.name;
+      const orgId = typeof org === 'string' ? org : org?.id;
+      const fromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
+      return fromList?.name || '';
+    };
+
+    const getTeamId = (season: any) => {
+      const project = season?.project;
+      return String(typeof project === 'object' ? project?.id : project || '');
+    };
+
+    const getTeamName = (season: any) => {
+      const project = season?.project;
+      return typeof project === 'object' ? project?.name : '';
+    };
+
+    const getClubName = (season: any) => {
+      const teamId = getTeamId(season);
+      const teamObj = teams.find((t) => String(t.id) === String(teamId));
+      const clubId = teamObj?.parent_id || (teamObj as any)?.parent_project_id;
+      const clubObj = clubs.find((c) => String(c.id) === String(clubId));
+      return clubObj?.name || '';
+    };
+
+    const list = [...filteredSeasons];
+    list.sort((a: any, b: any) => {
+      const byFederation = sortKey(getFederationName(a)).localeCompare(sortKey(getFederationName(b)));
+      if (byFederation !== 0) return byFederation;
+      const byClub = sortKey(getClubName(a)).localeCompare(sortKey(getClubName(b)));
+      if (byClub !== 0) return byClub;
+      const byTeam = sortKey(getTeamName(a)).localeCompare(sortKey(getTeamName(b)));
+      if (byTeam !== 0) return byTeam;
+      return sortKey(a?.name).localeCompare(sortKey(b?.name));
+    });
+    return list;
+  }, [filteredSeasons, organisations, clubs, teams]);
+
   return (
     <div>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -484,7 +529,7 @@ export const SeasonsList: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredSeasons.map((season) => {
+                {sortedSeasons.map((season) => {
                     const org = season.organisation;
                     const project = season.project;
                     const orgName = typeof org === 'string' ? org : org?.name || '-';

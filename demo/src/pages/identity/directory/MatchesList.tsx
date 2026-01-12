@@ -187,6 +187,54 @@ export const MatchesList: React.FC = () => {
     return matches.filter((m) => !isUpcoming(m));
   }, [matches, statusFilter]);
 
+  const sortedMatches = useMemo(() => {
+    const sortKey = (value: unknown) => {
+      const s = String(value ?? '').trim();
+      return s ? s.toLocaleLowerCase() : '\uffff';
+    };
+
+    const getFederationName = (m: Activity) => {
+      const orgId =
+        selectedOrgId ||
+        (m as any)?.organisation?.id ||
+        (m as any)?.organisation_id ||
+        undefined;
+      const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
+      return (m as any)?.organisation?.name || org?.name || '';
+    };
+
+    const getTeamId = (m: Activity) => String((m as any)?.project?.id || '');
+    const getTeamName = (m: Activity) => String((m as any)?.project?.name || '');
+
+    const getClubName = (m: Activity) => {
+      const teamId = getTeamId(m);
+      const teamObj = teams.find((t) => String(t.id) === String(teamId));
+      const clubId = (teamObj as any)?.parent_id || (teamObj as any)?.parent || (teamObj as any)?.parent_project_id;
+      const club = clubs.find((c) => String(c.id) === String(clubId));
+      return club?.name || '';
+    };
+
+    const getSeasonName = (m: Activity) => String((m as any)?.period?.parent_period?.name || '');
+    const getCompetitionName = (m: Activity) => String((m as any)?.period?.name || '');
+    const getMatchName = (m: Activity) => String((m as any)?.title || '');
+
+    const list = [...filteredMatches];
+    list.sort((a, b) => {
+      const byFederation = sortKey(getFederationName(a)).localeCompare(sortKey(getFederationName(b)));
+      if (byFederation !== 0) return byFederation;
+      const byClub = sortKey(getClubName(a)).localeCompare(sortKey(getClubName(b)));
+      if (byClub !== 0) return byClub;
+      const byTeam = sortKey(getTeamName(a)).localeCompare(sortKey(getTeamName(b)));
+      if (byTeam !== 0) return byTeam;
+      const bySeason = sortKey(getSeasonName(a)).localeCompare(sortKey(getSeasonName(b)));
+      if (bySeason !== 0) return bySeason;
+      const byCompetition = sortKey(getCompetitionName(a)).localeCompare(sortKey(getCompetitionName(b)));
+      if (byCompetition !== 0) return byCompetition;
+      return sortKey(getMatchName(a)).localeCompare(sortKey(getMatchName(b)));
+    });
+    return list;
+  }, [filteredMatches, organisations, clubs, teams, selectedOrgId]);
+
   // Fetch Seasons
   useEffect(() => {
     const loadSeasons = async () => {
@@ -527,11 +575,11 @@ export const MatchesList: React.FC = () => {
           <LoadingState message="Loading matches..." />
         )}
 
-        {!isLoading && !error && !matchesLoading && filteredMatches.length === 0 && (
+        {!isLoading && !error && !matchesLoading && sortedMatches.length === 0 && (
           <Alert variant="info">No matches found. Use filters to narrow your search.</Alert>
         )}
 
-        {!isLoading && !error && !matchesLoading && filteredMatches.length > 0 && (
+        {!isLoading && !error && !matchesLoading && sortedMatches.length > 0 && (
           <Card>
             <div className="overflow-x-auto">
               <Table style={compactTableStyle}>
@@ -549,7 +597,7 @@ export const MatchesList: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredMatches.map((m) => {
+                  {sortedMatches.map((m) => {
                     const project = m.project;
                     const teamId = project?.id;
                     const teamName = project?.name || '-';

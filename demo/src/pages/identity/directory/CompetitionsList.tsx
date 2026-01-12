@@ -366,6 +366,64 @@ export const CompetitionsList: React.FC = () => {
     return competitions;
   }, [competitions, statusFilter]);
 
+  const sortedCompetitions = useMemo(() => {
+    const sortKey = (value: unknown) => {
+      const s = String(value ?? '').trim();
+      return s ? s.toLocaleLowerCase() : '\uffff';
+    };
+
+    const getFederationName = (comp: any) => {
+      const org = comp?.organisation;
+      if (typeof org === 'object' && org?.name) return org.name;
+      const orgId = typeof org === 'string' ? org : org?.id;
+      const fromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
+      return fromList?.name || '';
+    };
+
+    const getTeamId = (comp: any) => {
+      const project = comp?.project;
+      return String(typeof project === 'object' ? project?.id : project || '');
+    };
+
+    const getTeamName = (comp: any) => {
+      const project = comp?.project;
+      if (typeof project === 'object' && project?.name) return project.name;
+      const teamId = getTeamId(comp);
+      const fromList = teamId ? teams.find((t) => String(t.id) === String(teamId)) : undefined;
+      return fromList?.name || '';
+    };
+
+    const getClubName = (comp: any) => {
+      const teamId = getTeamId(comp);
+      const teamObj = teams.find((t) => String(t.id) === String(teamId));
+      const clubId = teamObj?.parent_id || (teamObj as any)?.parent || (teamObj as any)?.parent_project_id;
+      const clubObj = clubs.find((c) => String(c.id) === String(clubId));
+      return clubObj?.name || '';
+    };
+
+    const getSeasonName = (comp: any) => {
+      const season = comp?.parent_period;
+      if (typeof season === 'object' && season?.name) return season.name;
+      const seasonId = (comp as any)?.parent_period_id || season?.id;
+      const fromList = seasonId ? seasons.find((s) => String(s.id) === String(seasonId)) : undefined;
+      return (fromList as any)?.name || '';
+    };
+
+    const list = [...filteredCompetitions];
+    list.sort((a: any, b: any) => {
+      const byFederation = sortKey(getFederationName(a)).localeCompare(sortKey(getFederationName(b)));
+      if (byFederation !== 0) return byFederation;
+      const byClub = sortKey(getClubName(a)).localeCompare(sortKey(getClubName(b)));
+      if (byClub !== 0) return byClub;
+      const byTeam = sortKey(getTeamName(a)).localeCompare(sortKey(getTeamName(b)));
+      if (byTeam !== 0) return byTeam;
+      const bySeason = sortKey(getSeasonName(a)).localeCompare(sortKey(getSeasonName(b)));
+      if (bySeason !== 0) return bySeason;
+      return sortKey(a?.name).localeCompare(sortKey(b?.name));
+    });
+    return list;
+  }, [filteredCompetitions, organisations, clubs, teams, seasons]);
+
   const handleDelete = async (orgId: string, compId: string, compName: string) => {
     if (!compId || !window.confirm(`Are you sure you want to delete competition "${compName}"?`)) {
         return;
@@ -547,11 +605,11 @@ export const CompetitionsList: React.FC = () => {
         <LoadingState message="Loading competitions..." />
       )}
 
-      {!isLoading && !error && !competitionsLoading && filteredCompetitions.length === 0 && (
+      {!isLoading && !error && !competitionsLoading && sortedCompetitions.length === 0 && (
         <Alert variant="info">No competitions found. Use filters to narrow your search.</Alert>
       )}
 
-      {!isLoading && !error && !competitionsLoading && filteredCompetitions.length > 0 && (
+      {!isLoading && !error && !competitionsLoading && sortedCompetitions.length > 0 && (
         <Card>
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
@@ -569,7 +627,7 @@ export const CompetitionsList: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredCompetitions.map((comp) => {
+                {sortedCompetitions.map((comp) => {
                     const seasonId = (comp as any).parent_period_id || comp.parent_period?.id;
                     const seasonSlug = comp.parent_period?.slug;
                     const org = comp.organisation;
