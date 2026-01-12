@@ -459,7 +459,20 @@ export const ClubsList: React.FC = () => {
               }
               throw new Error(message);
             }
-            setRefreshKey(prev => prev + 1);
+            // Avoid full refetch: update local state from the API response.
+            const payload: any = await response.json().catch(() => null);
+            const updated = payload?.data?.data || payload?.data || payload;
+
+            setClubs((prev) =>
+              prev.map((p: any) => {
+                const match = String(p?.slug || p?.id) === String(projectSlugOrId);
+                return match ? { ...p, ...(updated || projectData) } : p;
+              })
+            );
+            setEditProject((prev: any) => (prev ? { ...prev, ...(updated || projectData) } : prev));
+
+            // Ensure any later fetches don't serve stale cached lists.
+            invalidateFetchAllPagesCache();
         }}
       />
 
