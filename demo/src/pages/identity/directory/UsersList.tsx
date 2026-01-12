@@ -228,6 +228,7 @@ export const UsersList: React.FC = () => {
                 params.set('page_size', '250');
                 params.set('include_project_memberships', 'true');
                 params.set('include_role_assignments', 'true');
+                params.set('include_project_membership_details', 'true');
 
                 // Use the organisations/:slug/members/ endpoint
                 // Fallback: if no specific org selected, and user is superadmin, we might want to list all users relative to first org or just skip
@@ -331,13 +332,16 @@ export const UsersList: React.FC = () => {
                 if (selectedTeamId) {
                     results = results.filter((u: any) =>
                         u.project_memberships?.some((m: any) =>
-                            String(m.project_id || m.project?.id) === String(selectedTeamId)
+                            String(m.project_id ?? m.project?.id ?? m.project?.project_id ?? '') ===
+                                String(selectedTeamId)
                         )
                     );
                 } else if (selectedClubId) {
                     results = results.filter((u: any) =>
                         u.project_memberships?.some((m: any) =>
-                            String(m.project_id || m.project?.id) === String(selectedClubId)
+                            // Match either a direct club membership, or a team whose parent is the selected club.
+                            String(m.project_id ?? m.project?.id ?? '') === String(selectedClubId) ||
+                            String(m.project?.parent_id ?? m.project?.parent_project_id ?? '') === String(selectedClubId)
                         )
                     );
                 }

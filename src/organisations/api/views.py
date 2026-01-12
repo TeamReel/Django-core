@@ -206,6 +206,7 @@ class MembershipViewSet(viewsets.ModelViewSet):
         Optional query params:
         - include_role_assignments=true: include RoleAssignments as virtual entries
         - include_project_memberships=true: include ProjectMembership users as virtual entries
+        - include_project_membership_details=true: attach each user's ProjectMemberships in this organisation
         """
         org_slug = self.kwargs.get("organisation_pk")
         try:
@@ -256,8 +257,16 @@ class MembershipViewSet(viewsets.ModelViewSet):
         include_project_memberships = (
             request.query_params.get("include_project_memberships", "false").lower() == "true"
         )
+        include_project_membership_details = (
+            request.query_params.get("include_project_membership_details", "false").lower()
+            == "true"
+        )
 
-        if not (include_role_assignments or include_project_memberships):
+        if not (
+            include_role_assignments
+            or include_project_memberships
+            or include_project_membership_details
+        ):
             return response
 
         try:
@@ -358,6 +367,74 @@ class MembershipViewSet(viewsets.ModelViewSet):
             # Append to results
             if additional_members:
                 results.extend(additional_members)
+
+            # Optionally enrich each member entry with project membership details.
+            if include_project_membership_details:
+                user_ids_raw = []
+                for m in results:
+                    try:
+                        user_ids_raw.append(str(m.get("user", {}).get("id")))
+                    except Exception:
+                        continue
+
+                # Accounts.User uses integer PK; virtual entries also use numeric IDs as strings.
+                user_ids_int = []
+                for uid in user_ids_raw:
+                    if uid and uid.isdigit():
+                        user_ids_int.append(int(uid))
+
+                memberships_by_user = {}
+                if user_ids_int:
+                    project_memberships = (
+                        ProjectMembership.objects.filter(
+                            project__organisation=org,
+                            deleted_at__isnull=True,
+                            user_id__in=user_ids_int,
+                        )
+                        .select_related("project", "project__parent_project")
+                        .only(
+                            "id",
+                            "role",
+                            "period_id",
+                            "user_id",
+                            "project__id",
+                            "project__slug",
+                            "project__name",
+                            "project__parent_project__id",
+                            "project__parent_project__slug",
+                            "project__parent_project__name",
+                        )
+                    )
+
+                    for pm in project_memberships:
+                        uid = str(pm.user_id)
+                        memberships_by_user.setdefault(uid, []).append(
+                            {
+                                "id": str(pm.id),
+                                "role": pm.role,
+                                "period_id": str(pm.period_id) if pm.period_id else None,
+                                "project_id": pm.project_id,
+                                "project": {
+                                    "id": pm.project_id,
+                                    "slug": pm.project.slug,
+                                    "name": pm.project.name,
+                                    "parent_id": pm.project.parent_project_id,
+                                    "parent_slug": pm.project.parent_project.slug
+                                    if pm.project.parent_project
+                                    else None,
+                                    "parent_name": pm.project.parent_project.name
+                                    if pm.project.parent_project
+                                    else None,
+                                },
+                            }
+                        )
+
+                for m in results:
+                    try:
+                        uid = str(m.get("user", {}).get("id"))
+                        m["project_memberships"] = memberships_by_user.get(uid, [])
+                    except Exception:
+                        continue
 
             # Update response
             if isinstance(response.data, dict):
