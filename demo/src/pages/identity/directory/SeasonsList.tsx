@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { Alert, Card, Button } from '@django-core/design-system';
+import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
@@ -22,6 +22,7 @@ type Period = {
   parent_period_id?: string | null;
   children_count?: number;
   activities_count?: number;
+  matches_count?: number;
   data?: Record<string, any>;
 };
 
@@ -419,8 +420,7 @@ export const SeasonsList: React.FC = () => {
                     <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
                     <th style={{ ...compactThStyle, width: 'auto' }}>Season</th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Competitions</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Matches</th>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Actions</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Matches</th>                    <th style={{ ...compactThStyle, width: '10%' }}>Status</th>                    <th style={{ ...compactThStyle, width: '15%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -504,8 +504,29 @@ export const SeasonsList: React.FC = () => {
                             {season.name}
                         </a>
                         </td>
-                        <td style={compactTdStyle}>{season.children_count ?? '-'}</td>
-                        <td style={compactTdStyle}>{matchesCount}</td>
+                        <td style={compactTdStyle}>
+                            <Badge variant="default">
+                                {season.children_count || 0}
+                            </Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                            <Badge variant="default">
+                                {season.matches_count || 0}
+                            </Badge>
+                        </td>
+                         <td style={compactTdStyle}>
+                           {(() => {
+                             const today = new Date().toISOString().split('T')[0];
+                             const start = season.start_date || '0000-00-00';
+                             const end = season.end_date || '9999-99-99';
+                             const isActive = today >= start && today <= end;
+                             return (
+                               <Badge variant={isActive ? 'success' : 'warning'}>
+                                 {isActive ? 'Active' : 'Inactive'}
+                               </Badge>
+                             );
+                           })()}
+                         </td>
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>
                             <button

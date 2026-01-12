@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { Alert, Card, Button } from '@django-core/design-system';
+import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
@@ -22,6 +22,7 @@ type Period = {
   parent_period_id?: string | null;
   children_count?: number;
   activities_count?: number;
+  matches_count?: number;
   data?: Record<string, any>;
 };
 
@@ -98,7 +99,9 @@ export const CompetitionsList: React.FC = () => {
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
 
+  const [seasons, setSeasons] = useState<Period[]>([]);
   const [competitions, setCompetitions] = useState<Period[]>([]);
   const [competitionsLoading, setCompetitionsLoading] = useState(false);
 
@@ -113,10 +116,12 @@ export const CompetitionsList: React.FC = () => {
     const orgId = searchParams.get('org_id');
     const clubId = searchParams.get('club_id');
     const teamId = searchParams.get('team_id');
+    const seasonId = searchParams.get('season_id');
 
     if (orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
     if (clubId) setSelectedClubId(String(clubId));
     if (teamId) setSelectedTeamId(String(teamId));
+    if (seasonId) setSelectedSeasonId(String(seasonId));
   }, [isSuperAdmin, searchParams]);
 
   useEffect(() => {
@@ -164,6 +169,43 @@ export const CompetitionsList: React.FC = () => {
     load();
   }, []);
 
+  // Fetch Seasons for Filter
+  useEffect(() => {
+    const loadSeasons = async () => {
+       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+       try {
+           const params = new URLSearchParams();
+           params.set('page_size', '200');
+           params.set('parent_period__isnull', 'true');
+           // Filter seasons by selected context
+           if (selectedTeamId) {
+               params.set('project_id', String(selectedTeamId));
+           } else if (selectedClubId && teams.length > 0) {
+              const clubTeams = teams.filter(t => {
+                   const tParent = t.parent_id || t.parent;
+                   return String(tParent) === String(selectedClubId);
+              });
+              if (clubTeams.length > 0) {
+                   const teamIds = clubTeams.map(t => String(t.id)).join(',');
+                   params.set('project_id__in', teamIds);
+              }
+           } else if (selectedOrgId) {
+                params.set('organisation_id', selectedOrgId);
+           }
+
+           const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+           if(res.ok) {
+               const data = await res.json();
+               const results = data.data?.data || data.data?.results || data.results || data.data || [];
+               setSeasons(Array.isArray(results) ? results : []);
+           }
+       } catch {
+           // ignore
+       }
+    };
+    loadSeasons();
+  }, [selectedOrgId, selectedClubId, selectedTeamId, teams]);
+
   useEffect(() => {
     const loadCompetitions = async () => {
       setCompetitionsLoading(true);
@@ -173,6 +215,11 @@ export const CompetitionsList: React.FC = () => {
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('parent_period__isnull', 'false');
+
+        if (selectedSeasonId) {
+             params.set('parent_period_id', selectedSeasonId);
+        }
+
         if (selectedTeamId) {
           params.set('project_id', String(selectedTeamId));
         } else if (selectedClubId && teams.length > 0) {
@@ -183,12 +230,14 @@ export const CompetitionsList: React.FC = () => {
           });
 
           if (clubTeams.length === 0) {
+             // If club selected but no teams found (or loading), we might return empty or just wait
+             // But if we want to support 'Club' filter, we must use project_id__in
              setCompetitions([]);
              setCompetitionsLoading(false);
              return;
           }
 
-           // Fetch for all teams in the club
+           // Fetch for all teams in the club using backend support for project_id__in
            const teamIds = clubTeams.map(t => String(t.id)).join(',');
            params.set('project_id__in', teamIds);
         } else if (selectedClubId) {
@@ -196,7 +245,7 @@ export const CompetitionsList: React.FC = () => {
              setCompetitionsLoading(false);
              return;
         }
-        if (selectedOrgId && !selectedClubId) params.set('organisation_id', selectedOrgId);
+        if (selectedOrgId && !selectedClubId && !selectedTeamId) params.set('organisation_id', selectedOrgId);
 
         const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
         if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -212,7 +261,7 @@ export const CompetitionsList: React.FC = () => {
     };
 
     loadCompetitions();
-  }, [selectedTeamId, selectedClubId, selectedOrgId, teams]);
+  }, [selectedTeamId, selectedClubId, selectedOrgId, selectedSeasonId, teams]);
 
 
   const selectedOrg = selectedOrgId
@@ -332,6 +381,24 @@ export const CompetitionsList: React.FC = () => {
               </option>
             ))}
         </select>
+        <select
+          value={selectedSeasonId}
+          onChange={(e) => setSelectedSeasonId(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="">Season: All</option>
+          {seasons.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Button
             variant="secondary"
@@ -339,6 +406,7 @@ export const CompetitionsList: React.FC = () => {
             onClick={() => {
               setSelectedClubId('');
               setSelectedTeamId('');
+              setSelectedSeasonId('');
               if (isSuperAdmin) setSelectedOrgId('');
             }}
           >
@@ -376,9 +444,10 @@ export const CompetitionsList: React.FC = () => {
                     <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
-                    <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
+                    <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Matches</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
                     <th style={{ ...compactThStyle, width: '20%' }}>Actions</th>
                 </tr>
               </thead>
@@ -401,8 +470,12 @@ export const CompetitionsList: React.FC = () => {
                     const club = clubs.find(c => String(c.id) === String(clubId));
                     const clubName = club?.name || '-';
 
-                    // Use activities_count for matches
-                    const matchesCount = comp.activities_count ?? (comp as any).matches_count ?? 0;
+                    // Use matches_count
+                    const matchesCount = comp.matches_count || 0;
+
+                    // Link URL logic
+                    const orgSlugOrId = orgSlug || orgId;
+                    const teamSlugOrId = teamSlug || teamId;
 
                     return (
                         <tr key={comp.id}>
@@ -449,20 +522,6 @@ export const CompetitionsList: React.FC = () => {
                           ) : teamName}
                         </td>
                         <td style={compactTextTdStyle}>
-                            <a
-                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
-                            className="text-blue-600 hover:underline"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                navigate(
-                                `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
-                                );
-                            }}
-                            >
-                            {comp.name}
-                            </a>
-                        </td>
-                        <td style={compactTextTdStyle}>
                             {seasonId ? (
                                 <a
                                 href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
@@ -480,7 +539,38 @@ export const CompetitionsList: React.FC = () => {
                                 comp.parent_period?.name || '-'
                             )}
                         </td>
-                        <td style={compactTdStyle}>{matchesCount}</td>
+                        <td style={compactTextTdStyle}>
+                            <a
+                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
+                            className="text-blue-600 hover:underline"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigate(
+                                `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
+                                );
+                            }}
+                            >
+                            {comp.name}
+                            </a>
+                        </td>
+                        <td style={compactTdStyle}>
+                            <Badge variant="default">
+                                {matchesCount}
+                            </Badge>
+                        </td>
+                         <td style={compactTdStyle}>
+                           {(() => {
+                             const today = new Date().toISOString().split('T')[0];
+                             const start = comp.start_date || '0000-00-00';
+                             const end = comp.end_date || '9999-99-99';
+                             const isActive = today >= start && today <= end;
+                             return (
+                               <Badge variant={isActive ? 'success' : 'warning'}>
+                                 {isActive ? 'Active' : 'Inactive'}
+                               </Badge>
+                             );
+                           })()}
+                         </td>
                         <td style={compactTdStyle}>
                             <div style={compactActionsStyle}>
                                 <button
