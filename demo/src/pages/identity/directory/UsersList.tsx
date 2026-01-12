@@ -148,16 +148,16 @@ export const UsersList: React.FC = () => {
         const load = async () => {
             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
             try {
-                const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=100`, { credentials: 'include' });
-                if (res.ok) {
-                    const data = await res.json();
-                    const orgs = data.data?.results || data.results || [];
-                    setOrganisations(orgs.map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
-                }
+                const orgs = await fetchAllPages<any>(
+                    `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
+                    { credentials: 'include' },
+                    { ttlMs: 120_000, bypass: refreshKey > 0 },
+                );
+                setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
             } catch (e) { console.error(e); }
         };
         load();
-    }, [isSuperAdmin, myOrganisations]);
+    }, [isSuperAdmin, myOrganisations, refreshKey]);
 
     // Fetch Clubs/Teams options
     useEffect(() => {
@@ -165,8 +165,16 @@ export const UsersList: React.FC = () => {
             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
             try {
                 const [allClubs, allTeams] = await Promise.all([
-                    fetchAllPages<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`),
-                    fetchAllPages<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`),
+                    fetchAllPages<ProjectOption>(
+                        `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+                        { credentials: 'include' },
+                        { ttlMs: 120_000, bypass: refreshKey > 0 },
+                    ),
+                    fetchAllPages<ProjectOption>(
+                        `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+                        { credentials: 'include' },
+                        { ttlMs: 120_000, bypass: refreshKey > 0 },
+                    ),
                 ]);
                 setClubs(allClubs);
                 setTeams(allTeams);
@@ -175,7 +183,7 @@ export const UsersList: React.FC = () => {
             }
         };
         load();
-    }, []);
+    }, [refreshKey]);
 
     // Fetch Roles
     useEffect(() => {

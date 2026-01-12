@@ -5,7 +5,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
-import { fetchAllPages } from '../../../utils/fetchAllPages';
+import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import MatchDetailModal from '../MatchDetailModal';
 import MatchEditModal from '../MatchEditModal';
@@ -134,18 +134,19 @@ export const MatchesList: React.FC = () => {
     const load = async () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=100`, { credentials: 'include' });
-        if (!res.ok) return;
-        const data = await res.json();
-        const orgs = data.data?.results || data.results || [];
-        setOrganisations(orgs.map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
+        const orgs = await fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
+          { credentials: 'include' },
+          { ttlMs: 120_000, bypass: refreshKey > 0 },
+        );
+        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       } catch {
         // ignore
       }
     };
 
     load();
-  }, [isSuperAdmin, myOrganisations]);
+  }, [isSuperAdmin, myOrganisations, refreshKey]);
 
   // Fetch options
   useEffect(() => {
@@ -156,8 +157,16 @@ export const MatchesList: React.FC = () => {
 
       try {
         const [allClubs, allTeams] = await Promise.all([
-          fetchAllPages<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`),
-          fetchAllPages<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`),
+          fetchAllPages<ProjectOption>(
+            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+            { credentials: 'include' },
+            { ttlMs: 120_000, bypass: refreshKey > 0 },
+          ),
+          fetchAllPages<ProjectOption>(
+            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+            { credentials: 'include' },
+            { ttlMs: 120_000, bypass: refreshKey > 0 },
+          ),
         ]);
         setClubs(allClubs);
         setTeams(allTeams);
@@ -169,7 +178,7 @@ export const MatchesList: React.FC = () => {
     };
 
     load();
-  }, []);
+  }, [refreshKey]);
 
   const filteredMatches = useMemo(() => {
     if (statusFilter === 'all') return matches;
@@ -353,7 +362,11 @@ export const MatchesList: React.FC = () => {
           params.set('include_descendants', 'true');
         }
 
-        const all = await fetchAllPages<Activity>(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`);
+        const all = await fetchAllPages<Activity>(
+          `${apiBaseUrl}/api/v1/activities/?${params.toString()}`,
+          { credentials: 'include' },
+          { ttlMs: 20_000, bypass: refreshKey > 0 },
+        );
 
         // If season selection maps to multiple season ids (duplicate season names across teams),
         // apply the season filter client-side to keep dropdown unique by name.
@@ -845,6 +858,7 @@ export const MatchesList: React.FC = () => {
               throw new Error(detail || 'Failed to create match');
             }
 
+            invalidateFetchAllPagesCache();
             setRefreshKey((k) => k + 1);
           }}
         />

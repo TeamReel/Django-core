@@ -5,7 +5,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
-import { fetchAllPages } from '../../../utils/fetchAllPages';
+import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
@@ -88,11 +88,12 @@ export const ClubsList: React.FC = () => {
     const load = async () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=100`, { credentials: 'include' });
-        if (!res.ok) return;
-        const data = await res.json();
-        const orgs = data.data?.results || data.results || [];
-        setOrganisations(orgs.map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
+        const orgs = await fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
+          { credentials: 'include' },
+          { ttlMs: 120_000, bypass: refreshKey > 0 },
+        );
+        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       } catch {
         // ignore
       }
@@ -111,10 +112,12 @@ export const ClubsList: React.FC = () => {
           fetchAllPages<ProjectOption>(
             `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
             { credentials: 'include' },
+            { ttlMs: 120_000, bypass: refreshKey > 0 },
           ),
           fetchAllPages<ProjectOption>(
             `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
             { credentials: 'include' },
+            { ttlMs: 120_000, bypass: refreshKey > 0 },
           ),
         ]);
         setClubs(allClubs);
@@ -481,6 +484,7 @@ export const ClubsList: React.FC = () => {
             throw new Error(detail || 'Failed to create club');
           }
 
+          invalidateFetchAllPagesCache();
           setRefreshKey((k) => k + 1);
         }}
       />
