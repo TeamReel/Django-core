@@ -23,8 +23,11 @@ import AppShell from '../../components/AppShell';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import ProjectDetailModal from './ProjectDetailModal';
 import ProjectCreateModal from './ProjectCreateModal';
+import ProjectEditModal from './ProjectEditModal';
 import PeriodCreateModal from './PeriodCreateModal';
+import PeriodEditModal from './PeriodEditModal';
 import MatchCreateModal from './MatchCreateModal';
+import MatchEditModal from './MatchEditModal';
 import InviteMemberModal from './InviteMemberModal';
 
 const getPagedResults = (json: any): any[] => {
@@ -203,6 +206,17 @@ export const ProjectDetailPage: React.FC = () => {
   const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
   const [isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen] = useState(false);
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
+
+  // Edit modals (view/edit should be popups)
+  const [isProjectEditModalOpen, setIsProjectEditModalOpen] = useState(false);
+  const [selectedEditProject, setSelectedEditProject] = useState<any | null>(null);
+  const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
+  const [selectedEditPeriod, setSelectedEditPeriod] = useState<any | null>(null);
+  const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
+  const [selectedEditMatch, setSelectedEditMatch] = useState<any | null>(null);
+
+  // Hierarchy tab filters
+  const [hierarchySearch, setHierarchySearch] = useState('');
 
   // Edit member role (minimal port)
   const [isEditMemberRoleModalOpen, setIsEditMemberRoleModalOpen] = useState(false);
@@ -577,6 +591,93 @@ export const ProjectDetailPage: React.FC = () => {
     } catch (e) {
       setEditMemberRoleError(e instanceof Error ? e.message : 'Failed to update role');
     }
+  };
+
+  const saveProjectEdits = async (projectToEdit: any, patch: any) => {
+    const apiV1BaseUrl = getApiV1BaseUrl();
+    const projectSlugOrId = String(projectToEdit?.slug || projectToEdit?.id || '').trim();
+    if (!projectSlugOrId) throw new Error('Missing project id');
+
+    const endpoint = currentOrgSlug
+      ? `${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/projects/${encodeURIComponent(projectSlugOrId)}/`
+      : `${apiV1BaseUrl}/projects/${encodeURIComponent(projectSlugOrId)}/`;
+
+    const res = await fetch(endpoint, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCsrfToken() || '',
+      },
+      credentials: 'include',
+      body: JSON.stringify(patch),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(detail || 'Failed to save project');
+    }
+
+    const raw = await res.json().catch(() => null);
+    const updated = (raw as any)?.data || raw || { ...projectToEdit, ...patch };
+
+    setProject((prev) => (prev && String(prev.id) === String(updated.id) ? { ...(prev as any), ...(updated as any) } : prev));
+    setChildProjects((prev) => prev.map((p: any) => (String(p.id) === String(updated.id) ? { ...p, ...updated } : p)));
+  };
+
+  const savePeriodEdits = async (periodToEdit: any, patch: any) => {
+    const apiV1BaseUrl = getApiV1BaseUrl();
+    const periodId = String(periodToEdit?.id || '').trim();
+    if (!periodId) throw new Error('Missing period id');
+
+    const res = await fetch(`${apiV1BaseUrl}/periods/${encodeURIComponent(periodId)}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCsrfToken() || '',
+      },
+      credentials: 'include',
+      body: JSON.stringify(patch),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(detail || 'Failed to save period');
+    }
+
+    const raw = await res.json().catch(() => null);
+    const updated = (raw as any)?.data || raw || { ...periodToEdit, ...patch };
+
+    setSeasons((prev) => prev.map((p: any) => (String(p.id) === String(updated.id) ? { ...p, ...updated } : p)));
+    setCompetitions((prev) => prev.map((p: any) => (String(p.id) === String(updated.id) ? { ...p, ...updated } : p)));
+  };
+
+  const saveMatchEdits = async (matchToEdit: any, patch: any) => {
+    const apiV1BaseUrl = getApiV1BaseUrl();
+    const matchId = String(matchToEdit?.id || '').trim();
+    if (!matchId) throw new Error('Missing match id');
+
+    const res = await fetch(`${apiV1BaseUrl}/activities/${encodeURIComponent(matchId)}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCsrfToken() || '',
+      },
+      credentials: 'include',
+      body: JSON.stringify(patch),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(detail || 'Failed to save match');
+    }
+
+    const raw = await res.json().catch(() => null);
+    const updated = (raw as any)?.data || raw || { ...matchToEdit, ...patch };
+
+    setAllMatches((prev) => prev.map((m: any) => (String(m.id) === String(updated.id) ? { ...m, ...updated } : m)));
   };
 
   console.log('[ProjectDetailPage] Permission Results:', {
@@ -1592,7 +1693,10 @@ export const ProjectDetailPage: React.FC = () => {
               Back
             </button>
             <button
-              onClick={() => navigate(teamOrProjectDetailPath)}
+              onClick={() => {
+                setDetailProject(project);
+                setIsDetailModalOpen(true);
+              }}
               style={{
                 padding: '6px 12px',
                 borderRadius: '4px',
@@ -1608,7 +1712,10 @@ export const ProjectDetailPage: React.FC = () => {
             </button>
             {userCanEditProject && (
               <button
-                onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/edit`)}
+                onClick={() => {
+                  setSelectedEditProject(project);
+                  setIsProjectEditModalOpen(true);
+                }}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '4px',
@@ -1840,7 +1947,15 @@ export const ProjectDetailPage: React.FC = () => {
                         >
                           { !isLikelyTeam ? 'Manage Teams' : 'Manage Seasons' }
                         </Button>
-                      <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${project.slug || project.id}/edit`)}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        style={{ width: '100%', justifyContent: 'flex-start' }}
+                        onClick={() => {
+                          setSelectedEditProject(project);
+                          setIsProjectEditModalOpen(true);
+                        }}
+                      >
                         Edit Project Settings
                       </Button>
                     </div>
@@ -1853,6 +1968,29 @@ export const ProjectDetailPage: React.FC = () => {
           {/* Hierarchy Tab */}
           {activeTab === 'hierarchy' && (
             <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Input
+                    value={hierarchySearch}
+                    onChange={(e) => setHierarchySearch(e.target.value)}
+                    placeholder={isLikelyTeam ? 'Filter seasons/competitions' : 'Filter teams'}
+                    style={{ width: '240px' }}
+                  />
+                  <Button variant="secondary" size="sm" onClick={() => setHierarchySearch('')}>
+                    Clear
+                  </Button>
+                </div>
+
+                {!isLikelyTeam ? (
+                  <button
+                    onClick={() => setIsCreateTeamModalOpen(true)}
+                    style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: 500 }}
+                  >
+                    Add Team
+                  </button>
+                ) : null}
+              </div>
+
               {isLikelyTeam ? (
                 // Team View: Competitions/Matches grouped by Season
                 <>
@@ -1880,7 +2018,18 @@ export const ProjectDetailPage: React.FC = () => {
                         matchesByComp.set(compId, (matchesByComp.get(compId) || 0) + 1);
                       }
 
-                      return seasons.map((season: any) => {
+                      const normalized = hierarchySearch.trim().toLowerCase();
+                      const filteredSeasons = !normalized
+                        ? seasons
+                        : seasons.filter((s: any) => {
+                            const seasonName = String(s?.name || '').toLowerCase();
+                            if (seasonName.includes(normalized)) return true;
+                            const seasonId = String(s?.id || '');
+                            const comps = compsBySeason.get(seasonId) || [];
+                            return comps.some((c: any) => String(c?.name || '').toLowerCase().includes(normalized));
+                          });
+
+                      return filteredSeasons.map((season: any) => {
                         const seasonId = String(season.id);
                         const seasonComps = compsBySeason.get(seasonId) || [];
                         const totalMatches = seasonComps.reduce((sum, comp) => {
@@ -1946,16 +2095,56 @@ export const ProjectDetailPage: React.FC = () => {
                                           </Badge>
                                         </td>
                                         <td style={compactTdStyle}>
-                                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                          <div style={compactActionsStyle}>
                                             <button
                                               onClick={() => {
                                                 setDetailProject(comp);
                                                 setIsDetailModalOpen(true);
                                               }}
-                                              style={actionButtonStyle('neutral')}
+                                              style={actionButtonStyle('primary')}
                                             >
                                               View
                                             </button>
+                                            {userCanEditProject && (
+                                              <button
+                                                onClick={() => {
+                                                  setSelectedEditPeriod(comp);
+                                                  setIsPeriodEditModalOpen(true);
+                                                }}
+                                                style={actionButtonStyle('warning')}
+                                              >
+                                                Edit
+                                              </button>
+                                            )}
+                                            {userCanDeleteProject && (
+                                              <button
+                                                onClick={async () => {
+                                                  if (!window.confirm(`Are you sure you want to delete competition ${comp.name}?`)) return;
+                                                  try {
+                                                    const apiV1BaseUrl = getApiV1BaseUrl();
+                                                    const res = await fetch(`${apiV1BaseUrl}/periods/${comp.id}/`, {
+                                                      method: 'DELETE',
+                                                      headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'X-CSRFToken': getCsrfToken() || '',
+                                                      },
+                                                      credentials: 'include',
+                                                    });
+                                                    if (res.ok) {
+                                                      setCompetitions((prev) => prev.filter((p: any) => String(p.id) !== String(comp.id)));
+                                                    } else {
+                                                      alert('Error deleting competition');
+                                                    }
+                                                  } catch (e) {
+                                                    console.error(e);
+                                                    alert('Error deleting competition');
+                                                  }
+                                                }}
+                                                style={actionButtonStyle('danger')}
+                                              >
+                                                Delete
+                                              </button>
+                                            )}
                                           </div>
                                         </td>
                                       </tr>
@@ -2007,7 +2196,12 @@ export const ProjectDetailPage: React.FC = () => {
                         matchesByComp.set(compId, (matchesByComp.get(compId) || 0) + 1);
                       }
 
-                      return childProjects.map((team: any) => {
+                      const normalized = hierarchySearch.trim().toLowerCase();
+                      const filteredTeams = !normalized
+                        ? childProjects
+                        : childProjects.filter((t: any) => String(t?.name || '').toLowerCase().includes(normalized));
+
+                      return filteredTeams.map((team: any) => {
                         const teamId = String(team.id);
                         const teamSeasons = seasonsByTeam.get(teamId) || [];
 
@@ -2091,20 +2285,17 @@ export const ProjectDetailPage: React.FC = () => {
                                                 setDetailProject(season);
                                                 setIsDetailModalOpen(true);
                                               }}
-                                              style={actionButtonStyle('neutral')}
+                                              style={actionButtonStyle('primary')}
                                             >
                                               View
                                             </button>
                                             {userCanEditProject && (
                                               <button
-                                                onClick={() =>
-                                                  navigate(
-                                                    `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
-                                                      team.slug || team.id
-                                                    }/seasons/${season.slug || season.id}/edit`
-                                                  )
-                                                }
-                                                style={actionButtonStyle('primary')}
+                                                onClick={() => {
+                                                  setSelectedEditPeriod(season);
+                                                  setIsPeriodEditModalOpen(true);
+                                                }}
+                                                style={actionButtonStyle('warning')}
                                               >
                                                 Edit
                                               </button>
@@ -2491,22 +2682,6 @@ export const ProjectDetailPage: React.FC = () => {
                     <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Teams</h3>
                     <Input value={teamSearch} onChange={(e) => setTeamSearch(e.target.value)} placeholder="Search teams" style={{ width: '240px' }} />
                     <select
-                      value={String(project.id)}
-                      disabled
-                      style={{
-                        padding: '8px 12px',
-                        border: '1px solid var(--app-border)',
-                        borderRadius: '4px',
-                        fontSize: '14px',
-                        backgroundColor: 'var(--app-surface)',
-                        opacity: 0.85,
-                      }}
-                    >
-                      <option value={String(project.id)}>
-                        Club: {String(project?.name || project?.slug || project?.id || '—')}
-                      </option>
-                    </select>
-                    <select
                       value={teamStatusFilter}
                       onChange={(e) => setTeamStatusFilter(e.target.value as any)}
                       style={{
@@ -2677,13 +2852,10 @@ export const ProjectDetailPage: React.FC = () => {
                                         </button>
                                         {userCanEditProject && (
                                           <button
-                                            onClick={() =>
-                                              navigate(
-                                                `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
-                                                  team.slug || team.id
-                                                }/edit`
-                                              )
-                                            }
+                                            onClick={() => {
+                                              setSelectedEditProject(team);
+                                              setIsProjectEditModalOpen(true);
+                                            }}
                                             style={actionButtonStyle('warning')}
                                           >
                                             Edit
@@ -2905,7 +3077,10 @@ export const ProjectDetailPage: React.FC = () => {
                                       </button>
                                       {userCanEditProject && (
                                         <button
-                                          onClick={() => navigate(`${openHref}/edit`)}
+                                          onClick={() => {
+                                            setSelectedEditPeriod(season);
+                                            setIsPeriodEditModalOpen(true);
+                                          }}
                                           style={actionButtonStyle('warning')}
                                         >
                                           Edit
@@ -3177,7 +3352,10 @@ export const ProjectDetailPage: React.FC = () => {
                                       </button>
                                       {userCanEditProject && (
                                         <button
-                                          onClick={() => navigate(`${openHref}/edit`)}
+                                          onClick={() => {
+                                            setSelectedEditPeriod(comp);
+                                            setIsPeriodEditModalOpen(true);
+                                          }}
                                           style={actionButtonStyle('warning')}
                                         >
                                           Edit
@@ -3495,7 +3673,10 @@ export const ProjectDetailPage: React.FC = () => {
                                     </button>
                                     {userCanEditProject && (
                                       <button
-                                        onClick={() => navigate(`/matches/${m.id}/edit`)}
+                                        onClick={() => {
+                                          setSelectedEditMatch(m);
+                                          setIsMatchEditModalOpen(true);
+                                        }}
                                         style={actionButtonStyle('warning')}
                                       >
                                         Edit
