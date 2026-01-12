@@ -257,14 +257,11 @@ export const CompetitionsList: React.FC = () => {
           params.set('organisation_id', selectedOrgId);
         }
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
-        if (!res.ok) {
-          setSeasons([]);
-          return;
-        }
-
-        const data = await res.json();
-        const results = data.data?.data || data.data?.results || data.results || data.data || [];
+        const results = await fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+          { credentials: 'include' },
+          { ttlMs: 120_000 },
+        );
         const all = Array.isArray(results) ? results : [];
         const unique = [...new Map(all.map((p: any) => [String(p.id), p])).values()];
         setSeasons(unique);
@@ -324,13 +321,11 @@ export const CompetitionsList: React.FC = () => {
 
         if (selectedSeasonIds.length > 1) {
           const requests = selectedSeasonIds.map(async (sid) => {
-            const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${buildParams(sid).toString()}`, {
-              credentials: 'include',
-            });
-            if (!res.ok) return [];
-            const data = await res.json();
-            const results = data.data?.data || data.data?.results || data.results || data.data || [];
-            return Array.isArray(results) ? results : [];
+            return await fetchAllPages<any>(
+              `${apiBaseUrl}/api/v1/periods/?${buildParams(sid).toString()}`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            );
           });
 
           const all = (await Promise.all(requests)).flat();
@@ -340,13 +335,11 @@ export const CompetitionsList: React.FC = () => {
         }
 
         const seasonId = selectedSeasonIds.length === 1 ? selectedSeasonIds[0] : undefined;
-        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${buildParams(seasonId).toString()}`, {
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error(`API error: ${res.status}`);
-
-        const data = await res.json();
-        const results = data.data?.data || data.data?.results || data.results || data.data || [];
+        const results = await fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/periods/?${buildParams(seasonId).toString()}`,
+          { credentials: 'include' },
+          { ttlMs: 120_000, bypass: refreshKey > 0 },
+        );
         const all = Array.isArray(results) ? results : [];
         const filtered = seasonId
           ? all

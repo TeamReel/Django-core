@@ -164,7 +164,7 @@ export const SeasonsList: React.FC = () => {
           } else if (selectedClubId) {
             // If only club selected, get all seasons for teams in that club
             const clubTeams = teams.filter((t) => {
-              const tParent = t.parent_id || t.parent;
+              const tParent = (t as any).parent_id || (t as any).parent || (t as any).parent_project_id;
               return String(tParent) === String(selectedClubId);
             });
             if (clubTeams.length > 0) {
@@ -178,40 +178,18 @@ export const SeasonsList: React.FC = () => {
           }
           // If nothing selected at all, fetch all seasons (for superadmin)
 
-          if (selectedClubId && teams.length > 0) {
-              const clubTeams = teams.filter((t) => {
-                  const tParent = t.parent_id || t.parent;
-                  return String(tParent) === String(selectedClubId);
-              });
-
-              if (clubTeams.length === 0) {
-                  // Club selected but no teams found -> force empty result
-                 setSeasons([]);
-                 setSeasonsLoading(false);
-                 return;
-              }
-
-             const teamIds = clubTeams.map(t => String(t.id)).join(',');
-             params.set('project_id__in', teamIds);
-          } else if (selectedClubId) {
-             // Club selected but teams input list empty/loading -> likely no teams or not loaded yet
-             // To be safe, force empty
-             setSeasons([]);
-             setSeasonsLoading(false);
-             return;
+          if (selectedClubId && teams.length === 0) {
+            // Club selected but teams list not available yet -> avoid fetching all seasons.
+            setSeasons([]);
+            return;
           }
 
           const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
-          console.log('[SeasonsList] Fetching from:', url);
-          const res = await fetch(url, { credentials: 'include' });
-          if (!res.ok) throw new Error(`API error: ${res.status}`);
-
-          const data = await res.json();
-          console.log('[SeasonsList] API response:', data);
-          // Handle nested data structure: { status, data: { data: [...] } }
-          const results = data.data?.data || data.data?.results || data.results || data.data || [];
-          console.log('[SeasonsList] Raw results count:', results.length);
-          console.log('[SeasonsList] First 3 results:', results.slice(0, 3));
+          const results = await fetchAllPages<any>(
+            url,
+            { credentials: 'include' },
+            { ttlMs: 120_000, bypass: refreshKey > 0 },
+          );
 
           // Root periods represent seasons in the demo scenario.
           // If metadata.type exists, keep only explicit seasons.

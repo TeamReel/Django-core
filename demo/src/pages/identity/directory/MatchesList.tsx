@@ -267,15 +267,16 @@ export const MatchesList: React.FC = () => {
             params.set('organisation_id', selectedOrgId);
         }
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          const results = data.data?.data || data.data?.results || data.results || data.data || [];
-          const roots = (Array.isArray(results) ? results : []).filter(
-            (p: any) => p?.parent_period_id == null && !p?.parent_period
-          );
-          setSeasons(roots);
-        }
+        const results = await fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+          { credentials: 'include' },
+          { ttlMs: 120_000 },
+        );
+
+        const roots = (Array.isArray(results) ? results : []).filter(
+          (p: any) => p?.parent_period_id == null && !p?.parent_period
+        );
+        setSeasons(roots);
       } catch {
         setSeasons([]);
       }
@@ -314,10 +315,11 @@ export const MatchesList: React.FC = () => {
                }
 
                const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
-               if (!res.ok) return [];
-               const data = await res.json();
-               const results = data.data?.data || data.data?.results || data.results || data.data || [];
-               return Array.isArray(results) ? results : [];
+                return await fetchAllPages<any>(
+                  `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+                  { credentials: 'include' },
+                  { ttlMs: 120_000 },
+                );
              });
 
              const all = (await Promise.all(requests)).flat();
