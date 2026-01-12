@@ -60,8 +60,8 @@ export const DirectoryPage: React.FC = () => {
               <Tab value="teams">Teams</Tab>
               <Tab value="seasons">Seasons</Tab>
               <Tab value="competitions">Competitions</Tab>
-              <Tab value="users">Users</Tab>
               <Tab value="matches">Matches</Tab>
+              <Tab value="users">Users</Tab>
             </TabList>
 
             <TabPanel value="federations">
@@ -79,11 +79,11 @@ export const DirectoryPage: React.FC = () => {
             <TabPanel value="competitions">
               <CompetitionsList />
             </TabPanel>
-            <TabPanel value="users">
-              <UsersList />
-            </TabPanel>
             <TabPanel value="matches">
               <MatchesList />
+            </TabPanel>
+            <TabPanel value="users">
+              <UsersList />
             </TabPanel>
           </Tabs>
         </PageContent>

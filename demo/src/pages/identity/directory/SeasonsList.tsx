@@ -420,7 +420,10 @@ export const SeasonsList: React.FC = () => {
                     <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
                     <th style={{ ...compactThStyle, width: 'auto' }}>Season</th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Competitions</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Matches</th>                    <th style={{ ...compactThStyle, width: '10%' }}>Status</th>                    <th style={{ ...compactThStyle, width: '15%' }}>Actions</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Matches</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -512,6 +515,11 @@ export const SeasonsList: React.FC = () => {
                         <td style={compactTdStyle}>
                             <Badge variant="default">
                                 {season.matches_count || 0}
+                            </Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                            <Badge variant="default">
+                                {(season as any).members_count || 0}
                             </Badge>
                         </td>
                          <td style={compactTdStyle}>

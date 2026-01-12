@@ -55,6 +55,46 @@ const compactActionsStyle: React.CSSProperties = {
   whiteSpace: 'nowrap'
 };
 
+const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 'warning' | 'neutral') => {
+    let backgroundColor = '#f3f4f6';
+    let color = '#374151';
+    let border = '1px solid #d1d5db';
+
+    switch (variant) {
+        case 'primary':
+            backgroundColor = '#3b82f6';
+            color = 'white';
+            border = '1px solid #2563eb';
+            break;
+        case 'danger':
+            backgroundColor = '#ef4444';
+            color = 'white';
+            border = '1px solid #dc2626';
+            break;
+        case 'warning':
+            backgroundColor = '#f59e0b';
+            color = 'white';
+            border = '1px solid #d97706';
+            break;
+        case 'neutral':
+            backgroundColor = '#f3f4f6';
+            color = '#374151';
+            border = '1px solid #d1d5db';
+            break;
+    }
+
+    return {
+        padding: '4px 8px',
+        fontSize: '0.75rem',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        backgroundColor,
+        color,
+        border,
+        marginLeft: '4px',
+    };
+};
+
 export const MatchesList: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -74,6 +114,12 @@ export const MatchesList: React.FC = () => {
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
+
+  const [seasons, setSeasons] = useState<any[]>([]);
+  const [competitions, setCompetitions] = useState<any[]>([]);
+
 
   const [matches, setMatches] = useState<Activity[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
@@ -141,6 +187,72 @@ export const MatchesList: React.FC = () => {
     load();
   }, []);
 
+  // Fetch Seasons
+  useEffect(() => {
+    const loadSeasons = async () => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      try {
+        const params = new URLSearchParams();
+        params.set('page_size', '200');
+        params.set('parent_period__isnull', 'true'); // Top-level periods = Seasons
+
+        if (selectedTeamId) {
+             params.set('project_id', selectedTeamId);
+        } else if (selectedClubId && teams.length > 0) {
+             const clubTeams = teams.filter(t => {
+                const parent = t.parent_id || (t as any).parent || (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
+                return String(parent) === String(selectedClubId);
+             });
+             if (clubTeams.length > 0) {
+                 params.set('project_id__in', clubTeams.map(t => t.id).join(','));
+             } else {
+                 setSeasons([]);
+                 return;
+             }
+        } else if (selectedOrgId) {
+            params.set('organisation_id', selectedOrgId);
+        }
+
+        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+        if (res.ok) {
+            const data = await res.json();
+             const results = data.data?.data || data.data?.results || data.results || data.data || [];
+            // Filter to ensure they look like seasons if needed, but 'parent_period__isnull=true' is usually enough
+            setSeasons(Array.isArray(results) ? results : []);
+        }
+      } catch {
+        setSeasons([]);
+      }
+    };
+    loadSeasons();
+  }, [selectedTeamId, selectedClubId, selectedOrgId, teams]);
+
+  // Fetch Competitions
+  useEffect(() => {
+     if (!selectedSeasonId) {
+         setCompetitions([]);
+         return;
+     }
+     const loadCompetitions = async () => {
+         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+         try {
+             const params = new URLSearchParams();
+             params.set('page_size', '200');
+             params.set('parent_period_id', selectedSeasonId);
+
+             const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+             if (res.ok) {
+                 const data = await res.json();
+                 const results = data.data?.data || data.data?.results || data.results || data.data || [];
+                 setCompetitions(Array.isArray(results) ? results : []);
+             }
+         } catch {
+             setCompetitions([]);
+         }
+     };
+     loadCompetitions();
+  }, [selectedSeasonId]);
+
   // Fetch matches
   useEffect(() => {
     const loadMatches = async () => {
@@ -154,6 +266,14 @@ export const MatchesList: React.FC = () => {
         if (selectedTeamId) params.set('project_id', String(selectedTeamId));
         if (selectedOrgId) params.set('organisation_id', selectedOrgId);
 
+        // Filter by Season or Competition
+        if (selectedCompetitionId) {
+            params.set('period_id', selectedCompetitionId);
+        } else if (selectedSeasonId) {
+            // Filter matches where the parent period is the season
+            params.set('period__parent_period_id', selectedSeasonId);
+        }
+
         const all = await fetchAllPages<Activity>(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`);
         setMatches(all);
       } catch (e) {
@@ -164,7 +284,7 @@ export const MatchesList: React.FC = () => {
     };
 
     loadMatches();
-  }, [selectedTeamId, selectedOrgId]);
+  }, [selectedTeamId, selectedOrgId, selectedSeasonId, selectedCompetitionId]);
 
 
   return (
@@ -245,6 +365,48 @@ export const MatchesList: React.FC = () => {
               </option>
             ))}
         </select>
+
+        <select
+            value={selectedSeasonId}
+            onChange={(e) => {
+                setSelectedSeasonId(e.target.value);
+                setSelectedCompetitionId('');
+            }}
+            style={{
+                padding: '8px 12px',
+                border: '1px solid var(--app-border)',
+                borderRadius: '4px',
+                fontSize: '14px',
+                backgroundColor: 'var(--app-surface)',
+                maxWidth: '200px'
+            }}
+        >
+            <option value="">Season: All</option>
+            {seasons.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+        </select>
+
+        <select
+            value={selectedCompetitionId}
+            onChange={(e) => setSelectedCompetitionId(e.target.value)}
+            disabled={!selectedSeasonId}
+            style={{
+                padding: '8px 12px',
+                border: '1px solid var(--app-border)',
+                borderRadius: '4px',
+                fontSize: '14px',
+                backgroundColor: 'var(--app-surface)',
+                maxWidth: '200px',
+                opacity: !selectedSeasonId ? 0.5 : 1
+            }}
+        >
+            <option value="">Competition: All</option>
+            {competitions.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+        </select>
+
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Button
             variant="secondary"
@@ -252,6 +414,8 @@ export const MatchesList: React.FC = () => {
             onClick={() => {
               setSelectedClubId('');
               setSelectedTeamId('');
+              setSelectedSeasonId('');
+              setSelectedCompetitionId('');
               if (isSuperAdmin) setSelectedOrgId('');
             }}
           >

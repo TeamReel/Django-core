@@ -441,14 +441,14 @@ export const CompetitionsList: React.FC = () => {
             <Table style={compactTableStyle}>
               <thead>
                 <tr>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
-                    <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Matches</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
-                    <th style={{ ...compactThStyle, width: '20%' }}>Actions</th>
+                    <th style={{ ...compactThStyle, width: '12%' }}>Federation</th>
+                    <th style={{ ...compactThStyle, width: '12%' }}>Club</th>
+                    <th style={{ ...compactThStyle, width: '12%' }}>Team</th>
+                    <th style={{ ...compactThStyle, width: '12%' }}>Season</th>
+                    <th style={{ ...compactThStyle, width: '20%' }}>Competition</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Matches</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
+                    <th style={{ ...compactThStyle, width: '16%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
