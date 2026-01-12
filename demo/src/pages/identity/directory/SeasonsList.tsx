@@ -131,7 +131,7 @@ export const SeasonsList: React.FC = () => {
         try {
           const params = new URLSearchParams();
           params.set('page_size', '250');
-          params.set('parent_period__isnull', 'true');
+          params.set('parent_id', 'null');
 
           // Always fetch based on selection, or all if nothing selected
           if (selectedTeamId) {

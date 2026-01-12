@@ -8,6 +8,7 @@ import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import ProjectDetailModal from '../ProjectDetailModal';
+import ProjectEditModal from '../ProjectEditModal';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import {
     compactTableStyle,
@@ -36,6 +37,10 @@ export const TeamsList: React.FC = () => {
 
   const [detailProject, setDetailProject] = useState<any | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  const [editProject, setEditProject] = useState<any | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
@@ -96,7 +101,7 @@ export const TeamsList: React.FC = () => {
     };
 
     load();
-  }, [isSuperAdmin, myOrganisations]);
+  }, [isSuperAdmin, myOrganisations, refreshKey]);
 
   // Fetch clubs/teams options
   useEffect(() => {
@@ -128,7 +133,7 @@ export const TeamsList: React.FC = () => {
     };
 
     load();
-  }, []);
+  }, [refreshKey]);
 
   const filteredTeams = useMemo(() => {
       let list = [...teams];
@@ -427,7 +432,10 @@ export const TeamsList: React.FC = () => {
                                     </button>
                                      {userCanEditProject && (
                                         <button
-                                            onClick={() => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/edit`)}
+                                            onClick={() => {
+                                                setEditProject(team);
+                                                setIsEditModalOpen(true);
+                                            }}
                                             style={actionButtonStyle('warning')}
                                         >
                                             Edit
@@ -456,6 +464,28 @@ export const TeamsList: React.FC = () => {
         opened={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         project={detailProject}
+      />
+
+      <ProjectEditModal
+        opened={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        project={editProject}
+        onSave={async (projectData) => {
+            if (!editProject) return;
+            const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+            const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+            const response = await fetch(`${baseUrl}/api/v1/projects/${editProject.id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken || '',
+                },
+                credentials: 'include',
+                body: JSON.stringify(projectData),
+            });
+            if (!response.ok) throw new Error('Failed to update team');
+            setRefreshKey(prev => prev + 1);
+        }}
       />
     </div>
   );
