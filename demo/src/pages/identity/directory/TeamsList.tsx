@@ -325,14 +325,6 @@ export const TeamsList: React.FC = () => {
               variant="primary"
               size="md"
               onClick={() => {
-                if (!selectedOrgId) {
-                  alert('Select a federation first to create a team.');
-                  return;
-                }
-                if (!selectedClubId) {
-                  alert('Select a club first to create a team.');
-                  return;
-                }
                 setIsCreateModalOpen(true);
               }}
             >
@@ -537,11 +529,19 @@ export const TeamsList: React.FC = () => {
           opened={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
           title="Create Team"
+          organisations={organisations}
+          clubs={clubs}
+          requireOrganisation
+          requireClub
+          initialOrganisationId={selectedOrgId}
+          initialClubId={selectedClubId}
           onCreate={async (projectData) => {
-            if (!selectedOrgId) throw new Error('Select a federation first');
-            if (!selectedClubId) throw new Error('Select a club first');
+            const orgId = String(projectData.organisation_id || selectedOrgId || '');
+            const clubId = String(projectData.parent_project_id || selectedClubId || '');
+            if (!orgId) throw new Error('Select a federation first');
+            if (!clubId) throw new Error('Select a club first');
 
-            const orgSlug = organisations.find((o) => String(o.id) === String(selectedOrgId))?.slug || selectedOrgId;
+            const orgSlug = organisations.find((o) => String(o.id) === String(orgId))?.slug || orgId;
             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
             const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/`, {
@@ -555,7 +555,7 @@ export const TeamsList: React.FC = () => {
               body: JSON.stringify({
                 name: projectData.name,
                 description: projectData.description || '',
-                parent_project_id: selectedClubId,
+                parent_project_id: clubId,
               }),
             });
 

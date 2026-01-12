@@ -258,8 +258,20 @@ export const SeasonsList: React.FC = () => {
     }
   };
 
-  const createSeason = async (payload: { name: string; description?: string; start_date?: string; end_date?: string }) => {
+  const createSeason = async (payload: {
+    name: string;
+    description?: string;
+    start_date?: string;
+    end_date?: string;
+    organisation_id?: string;
+    project_id?: string;
+  }) => {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const orgId = String(payload.organisation_id || selectedOrgId || '');
+    const teamId = String(payload.project_id || selectedTeamId || '');
+    if (!orgId) throw new Error('Select a federation first');
+    if (!teamId) throw new Error('Select a team first');
+
     const response = await fetch(`${apiBaseUrl}/api/v1/periods/`, {
       method: 'POST',
       headers: {
@@ -268,8 +280,8 @@ export const SeasonsList: React.FC = () => {
       },
       credentials: 'include',
       body: JSON.stringify({
-        organisation_id: selectedOrgId,
-        project_id: selectedTeamId ? Number(selectedTeamId) : undefined,
+        organisation_id: orgId,
+        project_id: teamId ? Number(teamId) : undefined,
         parent_period_id: null,
         name: payload.name,
         description: payload.description,
@@ -486,14 +498,6 @@ export const SeasonsList: React.FC = () => {
             variant="primary"
             size="md"
             onClick={() => {
-              if (!selectedOrgId) {
-                alert('Select a federation first to create a season.');
-                return;
-              }
-              if (!selectedTeamId) {
-                alert('Select a team first to create a season.');
-                return;
-              }
               setIsCreateModalOpen(true);
             }}
           >
@@ -678,6 +682,15 @@ export const SeasonsList: React.FC = () => {
         opened={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         title="Create Season"
+        organisations={organisations}
+        clubs={clubs}
+        teams={teams}
+        requireOrganisation
+        requireClub
+        requireTeam
+        initialOrganisationId={selectedOrgId}
+        initialClubId={selectedClubId}
+        initialTeamId={selectedTeamId}
         onCreate={createSeason}
       />
 

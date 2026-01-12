@@ -105,7 +105,7 @@ export const CompetitionsList: React.FC = () => {
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
-  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
+  const [selectedSeasonName, setSelectedSeasonName] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const [seasons, setSeasons] = useState<Period[]>([]);
@@ -136,8 +136,40 @@ export const CompetitionsList: React.FC = () => {
     if (orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
     if (clubId) setSelectedClubId(String(clubId));
     if (teamId) setSelectedTeamId(String(teamId));
-    if (seasonId) setSelectedSeasonId(String(seasonId));
+    if (seasonId) {
+      // Best-effort: if URL provides an id, we'll set after seasons load.
+      setSelectedSeasonName(String(seasonId));
+    }
   }, [isSuperAdmin, searchParams]);
+
+  const seasonOptions = useMemo(() => {
+    const byName = new Map<string, { name: string; ids: string[] }>();
+    for (const s of seasons as any[]) {
+      const name = String((s as any)?.name || '').trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      const id = String((s as any)?.id);
+      const existing = byName.get(key);
+      if (!existing) {
+        byName.set(key, { name, ids: [id] });
+      } else if (!existing.ids.includes(id)) {
+        existing.ids.push(id);
+      }
+    }
+    return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [seasons]);
+
+  const selectedSeasonIds = useMemo(() => {
+    if (!selectedSeasonName) return [];
+    // If selectedSeasonName is an ID (from URL), try match by id first.
+    const byId = (seasons as any[]).find((s: any) => String(s.id) === String(selectedSeasonName));
+    if (byId?.name) {
+      const match = seasonOptions.find((o) => o.name === String(byId.name));
+      return match?.ids || [String(byId.id)];
+    }
+    const match = seasonOptions.find((o) => o.name === selectedSeasonName);
+    return match?.ids || [];
+  }, [selectedSeasonName, seasonOptions, seasons]);
 
   useEffect(() => {
     if (!isSuperAdmin) {
@@ -187,91 +219,127 @@ export const CompetitionsList: React.FC = () => {
   // Fetch Seasons for Filter
   useEffect(() => {
     const loadSeasons = async () => {
-       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-       try {
-           const params = new URLSearchParams();
-           params.set('page_size', '200');
-         params.set('parent_id', 'null');
-           // Filter seasons by selected context
-           if (selectedTeamId) {
-               params.set('project_id', String(selectedTeamId));
-           } else if (selectedClubId && teams.length > 0) {
-              const clubTeams = teams.filter(t => {
-                   const tParent = t.parent_id || t.parent;
-                   return String(tParent) === String(selectedClubId);
-              });
-              if (clubTeams.length > 0) {
-                   const teamIds = clubTeams.map(t => String(t.id)).join(',');
-                   params.set('project_id__in', teamIds);
-              }
-           } else if (selectedOrgId) {
-                params.set('organisation_id', selectedOrgId);
-           }
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      try {
+        const params = new URLSearchParams();
+        params.set('page_size', '200');
+        params.set('parent_id', 'null');
 
-           const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
-           if(res.ok) {
-               const data = await res.json();
-               const results = data.data?.data || data.data?.results || data.results || data.data || [];
-               const roots = (Array.isArray(results) ? results : []).filter(
-                 (p: any) => p?.parent_period_id == null && !p?.parent_period
-               );
-               const uniqueRoots = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
-               setSeasons(uniqueRoots as any);
-           }
-       } catch {
-           // ignore
-       }
+        if (selectedTeamId) {
+          params.set('project_id', String(selectedTeamId));
+        } else if (selectedClubId) {
+          if (teams.length === 0) {
+            setSeasons([]);
+            return;
+          }
+
+          const clubTeams = teams.filter((t) => {
+            const tParent = (t as any).parent_id || (t as any).parent;
+            return String(tParent) === String(selectedClubId);
+          });
+
+          if (clubTeams.length === 0) {
+            setSeasons([]);
+            return;
+          }
+
+          params.set('project_id__in', clubTeams.map((t) => String((t as any).id)).join(','));
+        } else if (selectedOrgId) {
+          params.set('organisation_id', selectedOrgId);
+        }
+
+        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+        if (!res.ok) {
+          setSeasons([]);
+          return;
+        }
+
+        const data = await res.json();
+        const results = data.data?.data || data.data?.results || data.results || data.data || [];
+        const all = Array.isArray(results) ? results : [];
+        const unique = [...new Map(all.map((p: any) => [String(p.id), p])).values()];
+        setSeasons(unique);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to load seasons');
+        setSeasons([]);
+      }
     };
-    loadSeasons();
-  }, [selectedOrgId, selectedClubId, selectedTeamId, teams, refreshKey]);
 
+    loadSeasons();
+  }, [selectedTeamId, selectedClubId, selectedOrgId, teams]);
+
+  // Fetch Competitions (child periods)
   useEffect(() => {
     const loadCompetitions = async () => {
       setCompetitionsLoading(true);
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
       try {
-        const params = new URLSearchParams();
-        params.set('page_size', '250');
-
-        if (selectedSeasonId) {
-          params.set('parent_id', selectedSeasonId);
-        }
-
-        if (selectedTeamId) {
-          params.set('project_id', String(selectedTeamId));
-        } else if (selectedClubId && teams.length > 0) {
-          // If only club selected, get all competitions for teams in that club
-          const clubTeams = teams.filter((t) => {
-            const tParent = t.parent_id || t.parent;
-            return String(tParent) === String(selectedClubId);
-          });
-
-          if (clubTeams.length === 0) {
-             // If club selected but no teams found (or loading), we might return empty or just wait
-             // But if we want to support 'Club' filter, we must use project_id__in
-             setCompetitions([]);
-             setCompetitionsLoading(false);
-             return;
+        let clubTeamIds: string[] | null = null;
+        if (!selectedTeamId && selectedClubId) {
+          if (teams.length === 0) {
+            setCompetitions([]);
+            return;
           }
 
-           // Fetch for all teams in the club using backend support for project_id__in
-           const teamIds = clubTeams.map(t => String(t.id)).join(',');
-           params.set('project_id__in', teamIds);
-        } else if (selectedClubId) {
-             setCompetitions([]);
-             setCompetitionsLoading(false);
-             return;
-        }
-        if (selectedOrgId && !selectedClubId && !selectedTeamId) params.set('organisation_id', selectedOrgId);
+          clubTeamIds = teams
+            .filter((t) => {
+              const tParent = (t as any).parent_id || (t as any).parent;
+              return String(tParent) === String(selectedClubId);
+            })
+            .map((t) => String((t as any).id));
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+          if (clubTeamIds.length === 0) {
+            setCompetitions([]);
+            return;
+          }
+        }
+
+        const buildParams = (seasonId?: string) => {
+          const params = new URLSearchParams();
+          params.set('page_size', '250');
+          if (seasonId) params.set('parent_id', seasonId);
+
+          if (selectedTeamId) {
+            params.set('project_id', String(selectedTeamId));
+          } else if (clubTeamIds && clubTeamIds.length > 0) {
+            params.set('project_id__in', clubTeamIds.join(','));
+          }
+
+          if (selectedOrgId && !selectedClubId && !selectedTeamId) {
+            params.set('organisation_id', selectedOrgId);
+          }
+
+          return params;
+        };
+
+        if (selectedSeasonIds.length > 1) {
+          const requests = selectedSeasonIds.map(async (sid) => {
+            const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${buildParams(sid).toString()}`, {
+              credentials: 'include',
+            });
+            if (!res.ok) return [];
+            const data = await res.json();
+            const results = data.data?.data || data.data?.results || data.results || data.data || [];
+            return Array.isArray(results) ? results : [];
+          });
+
+          const all = (await Promise.all(requests)).flat();
+          const unique = [...new Map(all.map((c: any) => [String(c.id), c])).values()];
+          setCompetitions(unique as any);
+          return;
+        }
+
+        const seasonId = selectedSeasonIds.length === 1 ? selectedSeasonIds[0] : undefined;
+        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${buildParams(seasonId).toString()}`, {
+          credentials: 'include',
+        });
         if (!res.ok) throw new Error(`API error: ${res.status}`);
 
         const data = await res.json();
         const results = data.data?.data || data.data?.results || data.results || data.data || [];
         const all = Array.isArray(results) ? results : [];
-        const filtered = selectedSeasonId
+        const filtered = seasonId
           ? all
           : all.filter((p: any) => p?.parent_period_id != null || p?.parent_period);
         setCompetitions(filtered);
@@ -283,7 +351,7 @@ export const CompetitionsList: React.FC = () => {
     };
 
     loadCompetitions();
-  }, [selectedTeamId, selectedClubId, selectedOrgId, selectedSeasonId, teams, refreshKey]);
+  }, [selectedTeamId, selectedClubId, selectedOrgId, selectedSeasonIds, teams, refreshKey]);
 
 
   const selectedOrg = selectedOrgId
@@ -318,8 +386,24 @@ export const CompetitionsList: React.FC = () => {
     }
   };
 
-  const createCompetition = async (payload: { name: string; description?: string; start_date?: string; end_date?: string }) => {
+  const createCompetition = async (payload: {
+    name: string;
+    description?: string;
+    start_date?: string;
+    end_date?: string;
+    organisation_id?: string;
+    project_id?: string;
+    parent_period_id?: string;
+  }) => {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+    const orgId = String(payload.organisation_id || selectedOrgId || '');
+    const teamId = String(payload.project_id || selectedTeamId || '');
+    const seasonId = String(payload.parent_period_id || selectedSeasonIds[0] || '');
+    if (!orgId) throw new Error('Select a federation first');
+    if (!teamId) throw new Error('Select a team first');
+    if (!seasonId) throw new Error('Select a season first');
+
     const response = await fetch(`${apiBaseUrl}/api/v1/periods/`, {
       method: 'POST',
       headers: {
@@ -328,9 +412,9 @@ export const CompetitionsList: React.FC = () => {
       },
       credentials: 'include',
       body: JSON.stringify({
-        organisation_id: selectedOrgId,
-        project_id: selectedTeamId ? Number(selectedTeamId) : undefined,
-        parent_period_id: selectedSeasonId || null,
+        organisation_id: orgId,
+        project_id: teamId ? Number(teamId) : undefined,
+        parent_period_id: seasonId || null,
         name: payload.name,
         description: payload.description,
         start_date: payload.start_date,
@@ -528,8 +612,8 @@ export const CompetitionsList: React.FC = () => {
             ))}
         </select>
         <select
-          value={selectedSeasonId}
-          onChange={(e) => setSelectedSeasonId(e.target.value)}
+          value={selectedSeasonName}
+          onChange={(e) => setSelectedSeasonName(e.target.value)}
           style={{
             padding: '8px 12px',
             border: '1px solid var(--app-border)',
@@ -539,8 +623,8 @@ export const CompetitionsList: React.FC = () => {
           }}
         >
           <option value="">Season: All</option>
-          {[...new Map(seasons.map((s) => [String(s.id), s])).values()].map((s: any) => (
-            <option key={s.id} value={s.id}>
+          {seasonOptions.map((s) => (
+            <option key={s.name} value={s.name}>
               {s.name}
             </option>
           ))}
@@ -567,7 +651,7 @@ export const CompetitionsList: React.FC = () => {
             onClick={() => {
               setSelectedClubId('');
               setSelectedTeamId('');
-              setSelectedSeasonId('');
+              setSelectedSeasonName('');
               setStatusFilter('all');
               if (isSuperAdmin) setSelectedOrgId('');
             }}
@@ -578,18 +662,6 @@ export const CompetitionsList: React.FC = () => {
             variant="primary"
             size="md"
             onClick={() => {
-              if (!selectedOrgId) {
-                alert('Select a federation first to create a competition.');
-                return;
-              }
-              if (!selectedTeamId) {
-                alert('Select a team first to create a competition.');
-                return;
-              }
-              if (!selectedSeasonId) {
-                alert('Select a season first to create a competition.');
-                return;
-              }
               setIsCreateModalOpen(true);
             }}
           >
@@ -788,6 +860,16 @@ export const CompetitionsList: React.FC = () => {
         opened={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         title="Create Competition"
+        organisations={organisations}
+        clubs={clubs}
+        teams={teams}
+        requireOrganisation
+        requireClub
+        requireTeam
+        requireSeason
+        initialOrganisationId={selectedOrgId}
+        initialClubId={selectedClubId}
+        initialTeamId={selectedTeamId}
         onCreate={createCompetition}
       />
 

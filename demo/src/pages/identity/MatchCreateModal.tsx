@@ -1,4 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+type OrgOption = { id: string; name: string; slug?: string };
+type ProjectOption = {
+  id: string | number;
+  name: string;
+  slug?: string;
+  organisation?: any;
+  parent_id?: any;
+  parent_project_id?: any;
+  parent_project?: any;
+};
+
+type PeriodOption = { id: string; name: string; slug?: string; parent_period?: any; parent_period_id?: any };
 
 export interface MatchCreatePayload {
   title: string;
@@ -6,15 +19,38 @@ export interface MatchCreatePayload {
   end_time?: string;
   location?: string;
   description?: string;
+
+  organisation_id?: string;
+  project_id?: string;
+  season_id?: string;
+  period_id?: string;
 }
 
 interface MatchCreateModalProps {
   opened: boolean;
   onClose: () => void;
   onCreate: (payload: MatchCreatePayload) => Promise<void>;
+
+  organisations?: OrgOption[];
+  clubs?: ProjectOption[];
+  teams?: ProjectOption[];
+
+  initialOrganisationId?: string;
+  initialClubId?: string;
+  initialTeamId?: string;
 }
 
-export default function MatchCreateModal({ opened, onClose, onCreate }: MatchCreateModalProps) {
+export default function MatchCreateModal({
+  opened,
+  onClose,
+  onCreate,
+  organisations = [],
+  clubs = [],
+  teams = [],
+  initialOrganisationId = '',
+  initialClubId = '',
+  initialTeamId = '',
+}: MatchCreateModalProps) {
   const [title, setTitle] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -23,10 +59,141 @@ export default function MatchCreateModal({ opened, onClose, onCreate }: MatchCre
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [selectedOrganisationId, setSelectedOrganisationId] = useState('');
+  const [selectedClubId, setSelectedClubId] = useState('');
+  const [selectedTeamId, setSelectedTeamId] = useState('');
+  const [selectedSeasonId, setSelectedSeasonId] = useState('');
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState('');
+
+  const [seasonOptions, setSeasonOptions] = useState<PeriodOption[]>([]);
+  const [competitionOptions, setCompetitionOptions] = useState<PeriodOption[]>([]);
+  const [loadingSeasons, setLoadingSeasons] = useState(false);
+  const [loadingCompetitions, setLoadingCompetitions] = useState(false);
+
   useEffect(() => {
     if (!opened) return;
     setError(null);
-  }, [opened]);
+    setSelectedOrganisationId(String(initialOrganisationId || ''));
+    setSelectedClubId(String(initialClubId || ''));
+    setSelectedTeamId(String(initialTeamId || ''));
+    setSelectedSeasonId('');
+    setSelectedCompetitionId('');
+    setSeasonOptions([]);
+    setCompetitionOptions([]);
+  }, [opened, initialOrganisationId, initialClubId, initialTeamId]);
+
+  const sortedOrganisations = useMemo(() => {
+    return [...organisations].sort((a, b) => a.name.localeCompare(b.name));
+  }, [organisations]);
+
+  const filteredClubs = useMemo(() => {
+    const orgId = selectedOrganisationId;
+    const list = orgId
+      ? clubs.filter((c) => {
+          const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
+          return String(cOrg) === String(orgId);
+        })
+      : clubs;
+    return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  }, [clubs, selectedOrganisationId]);
+
+  const getTeamParentId = (t: ProjectOption): string | null => {
+    const parent =
+      (t as any)?.parent_id ??
+      (t as any)?.parent ??
+      (t as any)?.parent_project_id ??
+      (typeof (t as any)?.parent_project === 'object' ? (t as any)?.parent_project?.id : (t as any)?.parent_project);
+    if (parent == null) return null;
+    return String(typeof parent === 'object' ? parent.id : parent);
+  };
+
+  const filteredTeams = useMemo(() => {
+    const clubId = selectedClubId;
+    const list = clubId ? teams.filter((t) => getTeamParentId(t) === String(clubId)) : teams;
+    return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  }, [teams, selectedClubId]);
+
+  useEffect(() => {
+    if (!opened) return;
+    if (!selectedOrganisationId || !selectedClubId || !selectedTeamId) {
+      setSeasonOptions([]);
+      setSelectedSeasonId('');
+      setCompetitionOptions([]);
+      setSelectedCompetitionId('');
+      return;
+    }
+
+    const load = async () => {
+      setLoadingSeasons(true);
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const params = new URLSearchParams();
+        params.set('page_size', '250');
+        params.set('parent_id', 'null');
+        params.set('organisation_id', String(selectedOrganisationId));
+        params.set('project_id', String(selectedTeamId));
+
+        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+        if (!res.ok) {
+          setSeasonOptions([]);
+          return;
+        }
+        const data = await res.json();
+        const results = data.data?.data || data.data?.results || data.results || data.data || [];
+        const roots = (Array.isArray(results) ? results : []).filter(
+          (p: any) => p?.parent_period_id == null && !p?.parent_period
+        );
+        const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
+        const sorted = unique.sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')));
+        setSeasonOptions(sorted as any);
+      } catch {
+        setSeasonOptions([]);
+      } finally {
+        setLoadingSeasons(false);
+      }
+    };
+
+    load();
+  }, [opened, selectedOrganisationId, selectedClubId, selectedTeamId]);
+
+  useEffect(() => {
+    if (!opened) return;
+    if (!selectedSeasonId || !selectedOrganisationId || !selectedTeamId) {
+      setCompetitionOptions([]);
+      setSelectedCompetitionId('');
+      return;
+    }
+
+    const load = async () => {
+      setLoadingCompetitions(true);
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const params = new URLSearchParams();
+        params.set('page_size', '250');
+        params.set('parent_id', String(selectedSeasonId));
+        params.set('organisation_id', String(selectedOrganisationId));
+        params.set('project_id', String(selectedTeamId));
+
+        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+        if (!res.ok) {
+          setCompetitionOptions([]);
+          return;
+        }
+        const data = await res.json();
+        const results = data.data?.data || data.data?.results || data.results || data.data || [];
+        const list = Array.isArray(results) ? results : [];
+        const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
+        const sorted = unique.sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')));
+        setCompetitionOptions(sorted as any);
+      } catch {
+        setCompetitionOptions([]);
+      } finally {
+        setLoadingCompetitions(false);
+      }
+    };
+
+    load();
+  }, [opened, selectedSeasonId, selectedOrganisationId, selectedTeamId]);
 
   if (!opened) return null;
 
@@ -36,12 +203,22 @@ export default function MatchCreateModal({ opened, onClose, onCreate }: MatchCre
     setError(null);
 
     try {
+      if (!selectedOrganisationId) throw new Error('Select a federation first.');
+      if (!selectedClubId) throw new Error('Select a club first.');
+      if (!selectedTeamId) throw new Error('Select a team first.');
+      if (!selectedSeasonId) throw new Error('Select a season first.');
+      if (!selectedCompetitionId) throw new Error('Select a competition first.');
+
       await onCreate({
         title,
         start_time: startTime || undefined,
         end_time: endTime || undefined,
         location: location || undefined,
         description: description || undefined,
+        organisation_id: selectedOrganisationId,
+        project_id: selectedTeamId,
+        season_id: selectedSeasonId,
+        period_id: selectedCompetitionId,
       });
       setTitle('');
       setStartTime('');
@@ -105,6 +282,149 @@ export default function MatchCreateModal({ opened, onClose, onCreate }: MatchCre
 
         <form onSubmit={handleCreate}>
           <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-org">
+              Federation
+            </label>
+            <select
+              id="match-create-org"
+              value={selectedOrganisationId}
+              onChange={(e) => {
+                setSelectedOrganisationId(e.target.value);
+                setSelectedClubId('');
+                setSelectedTeamId('');
+                setSelectedSeasonId('');
+                setSelectedCompetitionId('');
+              }}
+              disabled={isSaving}
+              required
+              style={{
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+              }}
+            >
+              <option value="">Select federation…</option>
+              {sortedOrganisations.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                </option>
+              ))}
+            </select>
+
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-club">
+              Club
+            </label>
+            <select
+              id="match-create-club"
+              value={selectedClubId}
+              onChange={(e) => {
+                setSelectedClubId(e.target.value);
+                setSelectedTeamId('');
+                setSelectedSeasonId('');
+                setSelectedCompetitionId('');
+              }}
+              disabled={isSaving}
+              required
+              style={{
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+              }}
+            >
+              <option value="">Select club…</option>
+              {filteredClubs.map((c) => (
+                <option key={String(c.id)} value={String(c.id)}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-team">
+              Team
+            </label>
+            <select
+              id="match-create-team"
+              value={selectedTeamId}
+              onChange={(e) => {
+                setSelectedTeamId(e.target.value);
+                setSelectedSeasonId('');
+                setSelectedCompetitionId('');
+              }}
+              disabled={isSaving}
+              required
+              style={{
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+              }}
+            >
+              <option value="">Select team…</option>
+              {filteredTeams.map((t) => (
+                <option key={String(t.id)} value={String(t.id)}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-season">
+              Season
+            </label>
+            <select
+              id="match-create-season"
+              value={selectedSeasonId}
+              onChange={(e) => {
+                setSelectedSeasonId(e.target.value);
+                setSelectedCompetitionId('');
+              }}
+              disabled={isSaving || loadingSeasons}
+              required
+              style={{
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+              }}
+            >
+              <option value="">{loadingSeasons ? 'Loading seasons…' : 'Select season…'}</option>
+              {seasonOptions.map((s) => (
+                <option key={String(s.id)} value={String(s.id)}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-competition">
+              Competition
+            </label>
+            <select
+              id="match-create-competition"
+              value={selectedCompetitionId}
+              onChange={(e) => setSelectedCompetitionId(e.target.value)}
+              disabled={isSaving || loadingCompetitions}
+              required
+              style={{
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+              }}
+            >
+              <option value="">{loadingCompetitions ? 'Loading competitions…' : 'Select competition…'}</option>
+              {competitionOptions.map((c) => (
+                <option key={String(c.id)} value={String(c.id)}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
             <label style={{ fontWeight: 600 }} htmlFor="match-create-title">
               Title
             </label>

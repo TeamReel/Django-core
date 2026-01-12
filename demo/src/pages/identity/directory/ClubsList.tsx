@@ -261,10 +261,6 @@ export const ClubsList: React.FC = () => {
             variant="primary"
             size="md"
             onClick={() => {
-              if (!selectedOrgId) {
-                alert('Select a federation first to create a club.');
-                return;
-              }
               setIsCreateModalOpen(true);
             }}
           >
@@ -456,10 +452,14 @@ export const ClubsList: React.FC = () => {
         opened={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         title="Create Club"
+        organisations={organisations}
+        requireOrganisation
+        initialOrganisationId={selectedOrgId}
         onCreate={async (projectData) => {
-          if (!selectedOrgId) throw new Error('Select a federation first');
+          const orgId = String(projectData.organisation_id || selectedOrgId || '');
+          if (!orgId) throw new Error('Select a federation first');
 
-          const orgSlug = organisations.find((o) => String(o.id) === String(selectedOrgId))?.slug || selectedOrgId;
+          const orgSlug = organisations.find((o) => String(o.id) === String(orgId))?.slug || orgId;
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
           const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/`, {

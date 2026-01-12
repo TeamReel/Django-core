@@ -405,7 +405,7 @@ export const MatchesList: React.FC = () => {
             }}
           >
             <option value="">Federation: All</option>
-            {organisations.map((org) => (
+            {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
               <option key={org.id} value={org.id}>
                 {org.name}
               </option>
@@ -435,6 +435,8 @@ export const MatchesList: React.FC = () => {
               const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
               return String(cOrg) === String(selectedOrgId);
             })
+            .slice()
+            .sort((a, b) => String(a.name).localeCompare(String(b.name)))
             .map((c) => (
               <option key={c.id} value={String(c.id)}>
                 {c.name}
@@ -462,6 +464,8 @@ export const MatchesList: React.FC = () => {
               if (!selectedClubId) return true;
               return getTeamParentId(t) === String(selectedClubId);
             })
+            .slice()
+            .sort((a, b) => String(a.name).localeCompare(String(b.name)))
             .map((t) => (
               <option key={t.id} value={String(t.id)}>
                 {t.name}
@@ -505,7 +509,10 @@ export const MatchesList: React.FC = () => {
             }}
         >
             <option value="">Competition: All</option>
-            {[...new Map(competitions.map((c) => [String(c.id), c])).values()].map((c: any) => (
+            {[...new Map(competitions.map((c) => [String(c.id), c])).values()]
+              .slice()
+              .sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')))
+              .map((c: any) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
@@ -548,18 +555,6 @@ export const MatchesList: React.FC = () => {
             variant="primary"
             size="md"
             onClick={() => {
-              if (!selectedOrgId) {
-                alert('Select a federation first to create a match.');
-                return;
-              }
-              if (!selectedTeamId) {
-                alert('Select a team first to create a match.');
-                return;
-              }
-              if (!selectedCompetitionId) {
-                alert('Select a competition first to create a match.');
-                return;
-              }
               setIsCreateModalOpen(true);
             }}
           >
@@ -811,9 +806,20 @@ export const MatchesList: React.FC = () => {
         <MatchCreateModal
           opened={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
+          organisations={organisations}
+          clubs={clubs}
+          teams={teams}
+          initialOrganisationId={selectedOrgId}
+          initialClubId={selectedClubId}
+          initialTeamId={selectedTeamId}
           onCreate={async (payload) => {
             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
             const csrfToken = getCsrfToken();
+
+            const teamId = String(payload.project_id || '');
+            const competitionId = String(payload.period_id || '');
+            if (!teamId) throw new Error('Select a team first');
+            if (!competitionId) throw new Error('Select a competition first');
 
             const res = await fetch(`${apiBaseUrl}/api/v1/activities/`, {
               method: 'POST',
@@ -825,8 +831,8 @@ export const MatchesList: React.FC = () => {
               body: JSON.stringify({
                 title: payload.title,
                 activity_type: 'match',
-                project_id: Number(selectedTeamId),
-                period_id: selectedCompetitionId,
+                project_id: Number(teamId),
+                period_id: competitionId,
                 start_time: payload.start_time,
                 end_time: payload.end_time,
                 location: payload.location,

@@ -1,10 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+type OrgOption = { id: string; name: string; slug?: string };
+type ProjectOption = {
+  id: string | number;
+  name: string;
+  slug?: string;
+  organisation?: any;
+  parent_id?: any;
+  parent_project_id?: any;
+  parent_project?: any;
+};
+
+type PeriodOption = { id: string; name: string; slug?: string; project?: any; parent_period?: any; parent_period_id?: any };
 
 export interface PeriodCreatePayload {
   name: string;
   description?: string;
   start_date?: string;
   end_date?: string;
+
+  organisation_id?: string;
+  project_id?: string;
+  parent_period_id?: string;
 }
 
 interface PeriodCreateModalProps {
@@ -12,9 +29,37 @@ interface PeriodCreateModalProps {
   onClose: () => void;
   title: string;
   onCreate: (payload: PeriodCreatePayload) => Promise<void>;
+
+  organisations?: OrgOption[];
+  clubs?: ProjectOption[];
+  teams?: ProjectOption[];
+
+  requireOrganisation?: boolean;
+  requireClub?: boolean;
+  requireTeam?: boolean;
+  requireSeason?: boolean;
+
+  initialOrganisationId?: string;
+  initialClubId?: string;
+  initialTeamId?: string;
 }
 
-export default function PeriodCreateModal({ opened, onClose, title, onCreate }: PeriodCreateModalProps) {
+export default function PeriodCreateModal({
+  opened,
+  onClose,
+  title,
+  onCreate,
+  organisations = [],
+  clubs = [],
+  teams = [],
+  requireOrganisation = false,
+  requireClub = false,
+  requireTeam = false,
+  requireSeason = false,
+  initialOrganisationId = '',
+  initialClubId = '',
+  initialTeamId = '',
+}: PeriodCreateModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -22,17 +67,132 @@ export default function PeriodCreateModal({ opened, onClose, title, onCreate }: 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [selectedOrganisationId, setSelectedOrganisationId] = useState('');
+  const [selectedClubId, setSelectedClubId] = useState('');
+  const [selectedTeamId, setSelectedTeamId] = useState('');
+  const [selectedSeasonId, setSelectedSeasonId] = useState('');
+
+  const [seasonOptions, setSeasonOptions] = useState<PeriodOption[]>([]);
+  const [seasonsLoading, setSeasonsLoading] = useState(false);
+
+  const hasOrgSelect = organisations.length > 0;
+  const hasClubSelect = clubs.length > 0;
+  const hasTeamSelect = teams.length > 0;
+
+  useEffect(() => {
+    if (!opened) return;
+    setError(null);
+    setSelectedOrganisationId(String(initialOrganisationId || ''));
+    setSelectedClubId(String(initialClubId || ''));
+    setSelectedTeamId(String(initialTeamId || ''));
+    setSelectedSeasonId('');
+  }, [opened, initialOrganisationId, initialClubId, initialTeamId]);
+
+  const sortedOrganisations = useMemo(() => {
+    return [...organisations].sort((a, b) => a.name.localeCompare(b.name));
+  }, [organisations]);
+
+  const filteredClubs = useMemo(() => {
+    const orgId = selectedOrganisationId;
+    const list = orgId
+      ? clubs.filter((c) => {
+          const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
+          return String(cOrg) === String(orgId);
+        })
+      : clubs;
+    return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  }, [clubs, selectedOrganisationId]);
+
+  const getTeamParentId = (t: ProjectOption): string | null => {
+    const parent =
+      (t as any)?.parent_id ??
+      (t as any)?.parent ??
+      (t as any)?.parent_project_id ??
+      (typeof (t as any)?.parent_project === 'object' ? (t as any)?.parent_project?.id : (t as any)?.parent_project);
+    if (parent == null) return null;
+    return String(typeof parent === 'object' ? parent.id : parent);
+  };
+
+  const filteredTeams = useMemo(() => {
+    const clubId = selectedClubId;
+    const list = clubId ? teams.filter((t) => getTeamParentId(t) === String(clubId)) : teams;
+    return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  }, [teams, selectedClubId]);
+
+  useEffect(() => {
+    if (!opened || !requireSeason) return;
+
+    const load = async () => {
+      setSeasonsLoading(true);
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const params = new URLSearchParams();
+        params.set('page_size', '250');
+        params.set('parent_id', 'null');
+
+        if (selectedTeamId) {
+          params.set('project_id', String(selectedTeamId));
+        } else if (selectedClubId && teams.length > 0) {
+          const clubTeams = teams.filter((t) => getTeamParentId(t) === String(selectedClubId));
+          if (clubTeams.length === 0) {
+            setSeasonOptions([]);
+            return;
+          }
+          params.set('project_id__in', clubTeams.map((t) => String(t.id)).join(','));
+        } else if (selectedOrganisationId) {
+          params.set('organisation_id', String(selectedOrganisationId));
+        }
+
+        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+        if (!res.ok) {
+          setSeasonOptions([]);
+          return;
+        }
+        const data = await res.json();
+        const results = data.data?.data || data.data?.results || data.results || data.data || [];
+        const roots = (Array.isArray(results) ? results : []).filter(
+          (p: any) => p?.parent_period_id == null && !p?.parent_period
+        );
+        const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
+        const sorted = unique.sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')));
+        setSeasonOptions(sorted as any);
+      } catch {
+        setSeasonOptions([]);
+      } finally {
+        setSeasonsLoading(false);
+      }
+    };
+
+    load();
+  }, [opened, requireSeason, selectedOrganisationId, selectedClubId, selectedTeamId, teams]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
 
     try {
+      if (requireOrganisation && !selectedOrganisationId) {
+        throw new Error('Select a federation first.');
+      }
+      if (requireClub && !selectedClubId) {
+        throw new Error('Select a club first.');
+      }
+      if (requireTeam && !selectedTeamId) {
+        throw new Error('Select a team first.');
+      }
+      if (requireSeason && !selectedSeasonId) {
+        throw new Error('Select a season first.');
+      }
+
       await onCreate({
         name,
         description: description || undefined,
         start_date: startDate || undefined,
         end_date: endDate || undefined,
+        organisation_id: selectedOrganisationId || undefined,
+        project_id: selectedTeamId || undefined,
+        parent_period_id: selectedSeasonId || undefined,
       });
       setName('');
       setDescription('');
@@ -97,6 +257,134 @@ export default function PeriodCreateModal({ opened, onClose, title, onCreate }: 
 
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
+            {hasOrgSelect && (
+              <>
+                <label style={{ fontWeight: 600 }} htmlFor="period-create-org">
+                  Federation
+                </label>
+                <select
+                  id="period-create-org"
+                  value={selectedOrganisationId}
+                  onChange={(e) => {
+                    setSelectedOrganisationId(e.target.value);
+                    setSelectedClubId('');
+                    setSelectedTeamId('');
+                    setSelectedSeasonId('');
+                  }}
+                  disabled={saving}
+                  required={requireOrganisation}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface-2)',
+                    color: 'var(--app-text)',
+                  }}
+                >
+                  <option value="">Select federation…</option>
+                  {sortedOrganisations.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.name}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            {hasClubSelect && (
+              <>
+                <label style={{ fontWeight: 600 }} htmlFor="period-create-club">
+                  Club
+                </label>
+                <select
+                  id="period-create-club"
+                  value={selectedClubId}
+                  onChange={(e) => {
+                    setSelectedClubId(e.target.value);
+                    setSelectedTeamId('');
+                    setSelectedSeasonId('');
+                  }}
+                  disabled={saving}
+                  required={requireClub}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface-2)',
+                    color: 'var(--app-text)',
+                  }}
+                >
+                  <option value="">Select club…</option>
+                  {filteredClubs.map((c) => (
+                    <option key={String(c.id)} value={String(c.id)}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            {hasTeamSelect && (
+              <>
+                <label style={{ fontWeight: 600 }} htmlFor="period-create-team">
+                  Team
+                </label>
+                <select
+                  id="period-create-team"
+                  value={selectedTeamId}
+                  onChange={(e) => {
+                    setSelectedTeamId(e.target.value);
+                    setSelectedSeasonId('');
+                  }}
+                  disabled={saving}
+                  required={requireTeam}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface-2)',
+                    color: 'var(--app-text)',
+                  }}
+                >
+                  <option value="">Select team…</option>
+                  {filteredTeams.map((t) => (
+                    <option key={String(t.id)} value={String(t.id)}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            {requireSeason && (
+              <>
+                <label style={{ fontWeight: 600 }} htmlFor="period-create-season">
+                  Season
+                </label>
+                <select
+                  id="period-create-season"
+                  value={selectedSeasonId}
+                  onChange={(e) => setSelectedSeasonId(e.target.value)}
+                  disabled={saving || seasonsLoading}
+                  required
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface-2)',
+                    color: 'var(--app-text)',
+                  }}
+                >
+                  <option value="">{seasonsLoading ? 'Loading seasons…' : 'Select season…'}</option>
+                  {seasonOptions.map((s) => (
+                    <option key={String(s.id)} value={String(s.id)}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
             <label style={{ fontWeight: 600 }} htmlFor="period-create-name">
               Name
             </label>
