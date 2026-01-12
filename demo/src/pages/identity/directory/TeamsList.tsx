@@ -9,6 +9,7 @@ import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
+import ProjectCreateModal from '../ProjectCreateModal';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import {
     compactTableStyle,
@@ -41,6 +42,8 @@ export const TeamsList: React.FC = () => {
   const [editProject, setEditProject] = useState<any | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
@@ -288,9 +291,7 @@ export const TeamsList: React.FC = () => {
           </Button>
           {userCanEditProject && selectedOrgId && selectedClubId && (
             <Button variant="primary" size="md" onClick={() => {
-              const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-              const clubSlug = clubs.find(c => String(c.id) === selectedClubId)?.slug || selectedClubId;
-              navigate(`/organisations/${orgSlug}/projects/${clubSlug}/teams/create`);
+              setIsCreateModalOpen(true);
             }}>
               Create Team
             </Button>
@@ -487,6 +488,41 @@ export const TeamsList: React.FC = () => {
             setRefreshKey(prev => prev + 1);
         }}
       />
+
+        <ProjectCreateModal
+          opened={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          title="Create Team"
+          onCreate={async (projectData) => {
+            if (!selectedOrgId) throw new Error('Select a federation first');
+            if (!selectedClubId) throw new Error('Select a club first');
+
+            const orgSlug = organisations.find((o) => String(o.id) === String(selectedOrgId))?.slug || selectedOrgId;
+            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+            const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCsrfToken(),
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                name: projectData.name,
+                description: projectData.description || '',
+                parent_project_id: selectedClubId,
+              }),
+            });
+
+            if (!res.ok) {
+              const detail = await res.text().catch(() => '');
+              throw new Error(detail || 'Failed to create team');
+            }
+
+            setRefreshKey((k) => k + 1);
+          }}
+        />
     </div>
   );
 };

@@ -9,6 +9,7 @@ import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
+import ProjectCreateModal from '../ProjectCreateModal';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import {
     compactTableStyle,
@@ -41,6 +42,8 @@ export const ClubsList: React.FC = () => {
   const [editProject, setEditProject] = useState<any | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -235,8 +238,7 @@ export const ClubsList: React.FC = () => {
         </Button>
         {userCanEditProject && selectedOrgId && (
           <Button variant="primary" size="md" onClick={() => {
-            const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-            navigate(`/organisations/${orgSlug}/projects/create`);
+            setIsCreateModalOpen(true);
           }}>
             Create Club
           </Button>
@@ -419,6 +421,39 @@ export const ClubsList: React.FC = () => {
             });
             if (!response.ok) throw new Error('Failed to update project');
             setRefreshKey(prev => prev + 1);
+        }}
+      />
+
+      <ProjectCreateModal
+        opened={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Create Club"
+        onCreate={async (projectData) => {
+          if (!selectedOrgId) throw new Error('Select a federation first');
+
+          const orgSlug = organisations.find((o) => String(o.id) === String(selectedOrgId))?.slug || selectedOrgId;
+          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              name: projectData.name,
+              description: projectData.description || '',
+            }),
+          });
+
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(detail || 'Failed to create club');
+          }
+
+          setRefreshKey((k) => k + 1);
         }}
       />
     </div>

@@ -161,6 +161,15 @@ class PeriodViewSet(viewsets.ModelViewSet):
                         filter=Q(activities__activity_type="match"),
                         distinct=True,
                     ),
+                    # Aggregate counts across direct children (e.g. Season -> Competitions).
+                    # This enables root periods (seasons) to show totals when matches live on
+                    # child periods.
+                    "children_activities_count": Count("children__activities", distinct=True),
+                    "children_matches_count": Count(
+                        "children__activities",
+                        filter=Q(children__activities__activity_type="match"),
+                        distinct=True,
+                    ),
                 }
             )
 

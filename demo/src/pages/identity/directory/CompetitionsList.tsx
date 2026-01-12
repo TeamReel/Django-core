@@ -7,6 +7,8 @@ import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
+import PeriodDetailModal from '../PeriodDetailModal';
+import PeriodEditModal from '../PeriodEditModal';
 
 type Period = {
   id: string;
@@ -14,6 +16,7 @@ type Period = {
   slug?: string;
   start_date?: string;
   end_date?: string;
+  description?: string;
   project?: { id: string; name: string } | null;
   project_id?: string | null;
   organisation?: { id: string; name: string } | null;
@@ -23,6 +26,8 @@ type Period = {
   children_count?: number;
   activities_count?: number;
   matches_count?: number;
+  children_matches_count?: number;
+  matches_total_count?: number;
   data?: Record<string, any>;
 };
 
@@ -104,6 +109,12 @@ export const CompetitionsList: React.FC = () => {
   const [seasons, setSeasons] = useState<Period[]>([]);
   const [competitions, setCompetitions] = useState<Period[]>([]);
   const [competitionsLoading, setCompetitionsLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const [detailCompetition, setDetailCompetition] = useState<Period | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [editCompetition, setEditCompetition] = useState<Period | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Initialize org filter
   useEffect(() => {
@@ -176,7 +187,7 @@ export const CompetitionsList: React.FC = () => {
        try {
            const params = new URLSearchParams();
            params.set('page_size', '200');
-           params.set('parent_period__isnull', 'true');
+         params.set('parent_id', 'null');
            // Filter seasons by selected context
            if (selectedTeamId) {
                params.set('project_id', String(selectedTeamId));
@@ -197,14 +208,17 @@ export const CompetitionsList: React.FC = () => {
            if(res.ok) {
                const data = await res.json();
                const results = data.data?.data || data.data?.results || data.results || data.data || [];
-               setSeasons(Array.isArray(results) ? results : []);
+               const roots = (Array.isArray(results) ? results : []).filter(
+                 (p: any) => p?.parent_period_id == null && !p?.parent_period
+               );
+               setSeasons(roots);
            }
        } catch {
            // ignore
        }
     };
     loadSeasons();
-  }, [selectedOrgId, selectedClubId, selectedTeamId, teams]);
+  }, [selectedOrgId, selectedClubId, selectedTeamId, teams, refreshKey]);
 
   useEffect(() => {
     const loadCompetitions = async () => {
@@ -214,10 +228,9 @@ export const CompetitionsList: React.FC = () => {
       try {
         const params = new URLSearchParams();
         params.set('page_size', '250');
-        params.set('parent_period__isnull', 'false');
 
         if (selectedSeasonId) {
-             params.set('parent_period_id', selectedSeasonId);
+          params.set('parent_id', selectedSeasonId);
         }
 
         if (selectedTeamId) {
@@ -252,7 +265,11 @@ export const CompetitionsList: React.FC = () => {
 
         const data = await res.json();
         const results = data.data?.data || data.data?.results || data.results || data.data || [];
-        setCompetitions(Array.isArray(results) ? results : []);
+        const all = Array.isArray(results) ? results : [];
+        const filtered = selectedSeasonId
+          ? all
+          : all.filter((p: any) => p?.parent_period_id != null || p?.parent_period);
+        setCompetitions(filtered);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load competitions');
       } finally {
@@ -261,7 +278,7 @@ export const CompetitionsList: React.FC = () => {
     };
 
     loadCompetitions();
-  }, [selectedTeamId, selectedClubId, selectedOrgId, selectedSeasonId, teams]);
+  }, [selectedTeamId, selectedClubId, selectedOrgId, selectedSeasonId, teams, refreshKey]);
 
 
   const selectedOrg = selectedOrgId
@@ -277,6 +294,24 @@ export const CompetitionsList: React.FC = () => {
       .split('; ')
       .find(row => row.startsWith('csrftoken='))
       ?.split('=')[1];
+
+  const savePeriodEdits = async (periodId: string, payload: any) => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const response = await fetch(`${apiBaseUrl}/api/v1/periods/${periodId}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken() || '',
+      },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new Error(detail || 'Failed to update competition');
+    }
+  };
 
   const handleDelete = async (orgId: string, compId: string, compName: string) => {
     if (!compId || !window.confirm(`Are you sure you want to delete competition "${compName}"?`)) {
@@ -575,16 +610,18 @@ export const CompetitionsList: React.FC = () => {
                             <div style={compactActionsStyle}>
                                 <button
                                     onClick={() => {
-                                         alert(`View Competition: ${comp.name}\nID: ${comp.id}\nStart: ${comp.start_date}\nEnd: ${comp.end_date}`);
+                                 setDetailCompetition(comp);
+                                 setIsDetailModalOpen(true);
                                     }}
                                     style={actionButtonStyle('primary')}
                                 >
                                     View
                                 </button>
                                 <button
-                                    onClick={() => navigate(
-                                        `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}/edit`
-                                    )}
+                              onClick={() => {
+                                setEditCompetition(comp);
+                                setIsEditModalOpen(true);
+                              }}
                                     style={actionButtonStyle('warning')}
                                 >
                                     Edit
@@ -605,6 +642,23 @@ export const CompetitionsList: React.FC = () => {
           </div>
         </Card>
       )}
+
+      <PeriodDetailModal
+        opened={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        period={detailCompetition as any}
+      />
+
+      <PeriodEditModal
+        opened={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        period={editCompetition as any}
+        onSave={async (payload) => {
+          if (!editCompetition) return;
+          await savePeriodEdits(editCompetition.id, payload);
+          setRefreshKey((k) => k + 1);
+        }}
+      />
     </div>
   );
 };

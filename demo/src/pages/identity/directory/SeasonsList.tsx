@@ -7,6 +7,8 @@ import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
+import PeriodDetailModal from '../PeriodDetailModal';
+import PeriodEditModal from '../PeriodEditModal';
 import {
     compactTableStyle,
     compactThStyle,
@@ -22,6 +24,7 @@ type Period = {
   slug?: string;
   start_date?: string;
   end_date?: string;
+  description?: string;
   project?: { id: string; name: string } | null;
   project_id?: string | null;
   organisation?: { id: string; name: string } | null;
@@ -31,6 +34,8 @@ type Period = {
   children_count?: number;
   activities_count?: number;
   matches_count?: number;
+  children_matches_count?: number;
+  matches_total_count?: number;
   members_count?: number;
   data?: Record<string, any>;
 };
@@ -57,6 +62,12 @@ export const SeasonsList: React.FC = () => {
 
   const [seasons, setSeasons] = useState<Period[]>([]);
   const [seasonsLoading, setSeasonsLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const [detailSeason, setDetailSeason] = useState<Period | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [editSeason, setEditSeason] = useState<Period | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Initialize org filter
   useEffect(() => {
@@ -188,20 +199,15 @@ export const SeasonsList: React.FC = () => {
           console.log('[SeasonsList] Raw results count:', results.length);
           console.log('[SeasonsList] First 3 results:', results.slice(0, 3));
 
-          // Filter to only actual seasons (exclude competitions/cups)
-          const filteredSeasons = results.filter((p: any) => {
-            const name = String(p?.name || '').toLowerCase();
-            const type = p?.data?.type || '';
-            const isSeasonName = name.includes('season') || name.includes('seizoen');
-            const isNotCompetition = type !== 'league' && type !== 'cup' && type !== 'tournament';
+          // Root periods represent seasons in the demo scenario.
+          // If metadata.type exists, keep only explicit seasons.
+          const filteredSeasons = results
+            .filter((p: any) => (p?.parent_period_id == null && !p?.parent_period))
+            .filter((p: any) => {
+              const type = String(p?.data?.type ?? '').toLowerCase();
+              return !type || type === 'season';
+            });
 
-            console.log('[SeasonsList] Period:', p.name, 'type:', type, 'isSeasonName:', isSeasonName, 'isNotCompetition:', isNotCompetition);
-
-            // Accept if name looks like a season AND it's not explicitly a competition type
-            return isSeasonName && (isNotCompetition || !type);
-          });
-
-          console.log('[SeasonsList] Filtered seasons count:', filteredSeasons.length);
           setSeasons(Array.isArray(filteredSeasons) ? filteredSeasons : []);
         } catch (e) {
           setError(e instanceof Error ? e.message : 'Failed to load seasons');
@@ -211,7 +217,7 @@ export const SeasonsList: React.FC = () => {
       };
 
       loadSeasons();
-  }, [selectedTeamId, selectedClubId, selectedOrgId, teams]);
+  }, [selectedTeamId, selectedClubId, selectedOrgId, teams, refreshKey]);
 
 
   const selectedOrg = selectedOrgId
@@ -227,6 +233,24 @@ export const SeasonsList: React.FC = () => {
       .split('; ')
       .find(row => row.startsWith('csrftoken='))
       ?.split('=')[1];
+
+  const savePeriodEdits = async (periodId: string, payload: any) => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const response = await fetch(`${apiBaseUrl}/api/v1/periods/${periodId}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken() || '',
+      },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new Error(detail || 'Failed to update season');
+    }
+  };
 
   const handleDelete = async (orgId: string, seasonId: string | undefined, seasonName: string) => {
     if (!seasonId || !window.confirm(`Are you sure you want to delete season "${seasonName}"?`)) {
@@ -469,7 +493,7 @@ export const SeasonsList: React.FC = () => {
                         </td>
                         <td style={compactTdStyle}>
                             <Badge variant="default">
-                                {season.matches_count || 0}
+                            {(season as any).matches_total_count ?? season.matches_count ?? 0}
                             </Badge>
                         </td>
                         <td style={compactTdStyle}>
@@ -494,15 +518,18 @@ export const SeasonsList: React.FC = () => {
                           <div style={compactActionsStyle}>
                             <button
                                 onClick={() => {
-                                    // Placeholder for View modal
-                                    alert(`View Season: ${season.name}\nID: ${season.id}\nStart: ${season.start_date}\nEnd: ${season.end_date}`);
+                                    setDetailSeason(season);
+                                    setIsDetailModalOpen(true);
                                 }}
                                 style={actionButtonStyle('primary')}
                             >
                                 View
                             </button>
                             <button
-                              onClick={() => navigate(`/organisations/${orgId}/projects/${teamId}/seasons/${season.slug || season.id}/edit`)}
+                              onClick={() => {
+                                setEditSeason(season);
+                                setIsEditModalOpen(true);
+                              }}
                               style={actionButtonStyle('warning')}
                             >
                               Edit
@@ -523,6 +550,23 @@ export const SeasonsList: React.FC = () => {
           </div>
         </Card>
       )}
+
+      <PeriodDetailModal
+        opened={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        period={detailSeason as any}
+      />
+
+      <PeriodEditModal
+        opened={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        period={editSeason as any}
+        onSave={async (payload) => {
+          if (!editSeason) return;
+          await savePeriodEdits(editSeason.id, payload);
+          setRefreshKey((k) => k + 1);
+        }}
+      />
     </div>
   );
 };

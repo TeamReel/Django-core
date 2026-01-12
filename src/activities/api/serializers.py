@@ -25,6 +25,9 @@ class PeriodSerializer(serializers.ModelSerializer):
     children_count = serializers.SerializerMethodField()
     activities_count = serializers.SerializerMethodField()
     matches_count = serializers.SerializerMethodField()
+    children_activities_count = serializers.SerializerMethodField()
+    children_matches_count = serializers.SerializerMethodField()
+    matches_total_count = serializers.SerializerMethodField()
     members_count = serializers.SerializerMethodField()
 
     # NOTE: We cannot declare a serializer field named "data" because DRF
@@ -58,6 +61,9 @@ class PeriodSerializer(serializers.ModelSerializer):
             "children_count",
             "activities_count",
             "matches_count",
+            "children_activities_count",
+            "children_matches_count",
+            "matches_total_count",
             "members_count",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
@@ -70,6 +76,17 @@ class PeriodSerializer(serializers.ModelSerializer):
 
     def get_matches_count(self, obj):
         return int(getattr(obj, "matches_count", 0) or 0)
+
+    def get_children_activities_count(self, obj):
+        return int(getattr(obj, "children_activities_count", 0) or 0)
+
+    def get_children_matches_count(self, obj):
+        return int(getattr(obj, "children_matches_count", 0) or 0)
+
+    def get_matches_total_count(self, obj):
+        direct = int(getattr(obj, "matches_count", 0) or 0)
+        children = int(getattr(obj, "children_matches_count", 0) or 0)
+        return direct + children
 
     def get_members_count(self, obj):
         return int(getattr(obj, "members_count", 0) or 0)

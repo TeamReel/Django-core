@@ -159,6 +159,8 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     organisation = OrganisationNestedSerializer(read_only=True)
     creator = UserNestedSerializer(read_only=True)
     current_user_access = serializers.SerializerMethodField()
+    parent_project_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    parent_id = serializers.UUIDField(source="parent_project.id", allow_null=True, read_only=True)
 
     class Meta:
         model = Project
@@ -175,6 +177,8 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "updated_at",
             "archived_at",
             "current_user_access",
+            "parent_project_id",
+            "parent_id",
         ]
         read_only_fields = [
             "id",
@@ -233,12 +237,30 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
                 {"name": f"A project with this name already exists in {organisation.name}."}
             )
 
+        parent_project_id = attrs.get("parent_project_id")
+        if parent_project_id:
+            organisation = self.context.get("organisation")
+            if organisation:
+                parent = Project.all_objects.filter(
+                    organisation=organisation,
+                    id=parent_project_id,
+                ).first()
+                if not parent:
+                    raise serializers.ValidationError(
+                        {"parent_project_id": "Parent project not found in this organisation."}
+                    )
+
         return attrs
 
     def create(self, validated_data):
         """Create project with organisation and creator from context."""
+        parent_project_id = validated_data.pop("parent_project_id", None)
         validated_data["organisation"] = self.context["organisation"]
         validated_data["creator"] = self.context["request"].user
+
+        if parent_project_id:
+            validated_data["parent_project_id"] = parent_project_id
+
         return super().create(validated_data)
 
 
