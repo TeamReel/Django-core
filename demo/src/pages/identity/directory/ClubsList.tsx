@@ -110,12 +110,12 @@ export const ClubsList: React.FC = () => {
       try {
         const [allClubs, allTeams] = await Promise.all([
           fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+            `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=true`,
             { credentials: 'include' },
             { ttlMs: 120_000, bypass: refreshKey > 0 },
           ),
           fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+            `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=false`,
             { credentials: 'include' },
             { ttlMs: 120_000, bypass: refreshKey > 0 },
           ),

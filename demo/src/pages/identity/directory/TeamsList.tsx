@@ -118,23 +118,18 @@ export const TeamsList: React.FC = () => {
         // Use fetchAllPages to get ALL teams across all pages
         const [clubsData, teamsData] = await Promise.all([
             fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+              `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=true`,
               { credentials: 'include' },
               { ttlMs: 120_000, bypass: refreshKey > 0 },
             ),
             fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+              `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=false`,
               { credentials: 'include' },
               { ttlMs: 120_000, bypass: refreshKey > 0 },
             )
         ]);
 
-        console.log('📦 Clubs loaded:', clubsData.length, clubsData.slice(0, 2));
         setClubs(clubsData);
-
-        console.log('⚽ Teams loaded:', teamsData.length, 'teams');
-        console.log('First team sample:', teamsData[0]);
-        console.log('Ajax teams:', teamsData.filter((t: any) => t.name?.toLowerCase().includes('ajax')));
         setTeams(teamsData);
 
       } catch (e) {
@@ -149,7 +144,6 @@ export const TeamsList: React.FC = () => {
 
   const filteredTeams = useMemo(() => {
       let list = [...teams];
-      console.log('🔍 Filtering teams. Total:', list.length, 'Selected Club ID:', selectedClubId);
 
       const sortKey = (value: unknown) => {
         const s = String(value ?? '').trim();
@@ -182,19 +176,15 @@ export const TeamsList: React.FC = () => {
               const teamOrg = typeof team.organisation === 'string' ? team.organisation : team.organisation?.id;
               return String(teamOrg) === String(selectedOrgIdResolved);
           });
-          console.log('After org filter:', list.length);
       }
 
       if (selectedClubId) {
-          console.log('Filtering by club:', selectedClubId);
           const before = list.length;
           list = list.filter((team: any) => {
                const parent = team.parent_project || team.parent_id || team.parent_project_id;
                const parentId = typeof parent === 'object' ? parent.id : parent;
-               console.log(`Team ${team.name}: parent_id=${team.parent_id}, parent_project=${team.parent_project}, computed parentId=${parentId}`);
                return String(parentId) === String(selectedClubId);
           });
-          console.log(`After club filter: ${before} → ${list.length} teams`);
       }
 
       if (selectedTeamId) {
