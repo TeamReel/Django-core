@@ -1,5 +1,7 @@
 """DRF views for Projects & Workspaces."""
 
+import logging
+
 from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -24,6 +26,9 @@ from .serializers import (
     ProjectMembershipSerializer,
     ProjectUpdateSerializer,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectCursorPagination(CursorPagination):
@@ -364,14 +369,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         response = super().create(request, *args, **kwargs)
 
-        # Trigger notification on successful creation
+        # Trigger notification on successful creation (best-effort; never fail create)
         if response.status_code == status.HTTP_201_CREATED:
-            from notifications.services import notify_project_created
+            try:
+                from notifications.services import notify_project_created
+                from projects.models import Project
 
-            from projects.models import Project
-
-            project = Project.objects.get(id=response.data["id"])
-            notify_project_created(project=project, creator=request.user)
+                project_id = getattr(response, "data", {}).get("id")
+                if project_id:
+                    project = Project.objects.get(id=project_id)
+                    notify_project_created(project=project, creator=request.user)
+            except Exception:
+                logger.exception("notify_project_created failed")
 
         return response
 
