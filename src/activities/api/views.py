@@ -231,6 +231,16 @@ class PeriodViewSet(viewsets.ModelViewSet):
             except (TypeError, ValueError):
                 pass
 
+        # Filter by project_id__in (comma separated list)
+        project_id_in = self.request.query_params.get("project_id__in")
+        if project_id_in:
+            try:
+                ids = [int(i.strip()) for i in project_id_in.split(",") if i.strip().isdigit()]
+                if ids:
+                    queryset = queryset.filter(project_id__in=ids)
+            except (TypeError, ValueError):
+                pass
+
         # Filter by parent_id (supports parent_id=null for roots)
         parent_id = self.request.query_params.get("parent_id")
         if parent_id == "null":

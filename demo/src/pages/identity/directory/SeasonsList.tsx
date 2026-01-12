@@ -10,6 +10,7 @@ import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
+import PeriodCreateModal from '../PeriodCreateModal';
 import {
     compactTableStyle,
     compactThStyle,
@@ -70,6 +71,8 @@ export const SeasonsList: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editSeason, setEditSeason] = useState<Period | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Initialize org filter
   useEffect(() => {
@@ -210,7 +213,8 @@ export const SeasonsList: React.FC = () => {
               return !type || type === 'season';
             });
 
-          setSeasons(Array.isArray(filteredSeasons) ? filteredSeasons : []);
+          const unique = [...new Map((Array.isArray(filteredSeasons) ? filteredSeasons : []).map((p: any) => [String(p.id), p])).values()];
+          setSeasons(unique as any);
         } catch (e) {
           setError(e instanceof Error ? e.message : 'Failed to load seasons');
         } finally {
@@ -252,6 +256,35 @@ export const SeasonsList: React.FC = () => {
       const detail = await response.text().catch(() => '');
       throw new Error(detail || 'Failed to update season');
     }
+  };
+
+  const createSeason = async (payload: { name: string; description?: string; start_date?: string; end_date?: string }) => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const response = await fetch(`${apiBaseUrl}/api/v1/periods/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken() || '',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        organisation_id: selectedOrgId,
+        project_id: selectedTeamId ? Number(selectedTeamId) : undefined,
+        parent_period_id: null,
+        name: payload.name,
+        description: payload.description,
+        start_date: payload.start_date,
+        end_date: payload.end_date,
+        metadata: { type: 'season' },
+      }),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new Error(detail || 'Failed to create season');
+    }
+
+    setRefreshKey((k) => k + 1);
   };
 
   const handleDelete = async (orgId: string, seasonId: string | undefined, seasonName: string) => {
@@ -417,9 +450,7 @@ export const SeasonsList: React.FC = () => {
                 alert('Select a team first to create a season.');
                 return;
               }
-              const orgSlug = organisations.find((o) => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-              const teamSlug = teams.find((t) => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
-              navigate(`/organisations/${orgSlug}/teams/${teamSlug}/seasons/create`);
+              setIsCreateModalOpen(true);
             }}
           >
             Create Season
@@ -598,6 +629,13 @@ export const SeasonsList: React.FC = () => {
           </div>
         </Card>
       )}
+
+      <PeriodCreateModal
+        opened={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Create Season"
+        onCreate={createSeason}
+      />
 
       <PeriodDetailModal
         opened={isDetailModalOpen}

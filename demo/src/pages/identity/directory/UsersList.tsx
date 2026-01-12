@@ -7,6 +7,7 @@ import { Table } from '@/shims/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
 import UserDetailModal from '../UserDetailModal';
+import InviteMemberModal from '../InviteMemberModal';
 
 // Reusing existing modals from parent folder
 // Note: We might need to adjust imports if they are not exported or move them
@@ -115,9 +116,13 @@ export const UsersList: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [roleFilter, setRoleFilter] = useState<string>('');
 
+    const [refreshKey, setRefreshKey] = useState(0);
+
     // Modals
     const [detailUser, setDetailUser] = useState<User | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
     const userRole = String((user as any)?.role || '').toLowerCase();
     const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
@@ -281,7 +286,7 @@ export const UsersList: React.FC = () => {
         };
 
         loadUsers();
-    }, [selectedOrgId, selectedTeamId, selectedClubId, statusFilter]);
+    }, [selectedOrgId, selectedTeamId, selectedClubId, statusFilter, organisations, isSuperAdmin, refreshKey]);
 
     // Helper for role display logic
     const getUserRoleDisplay = (user: any) => {
@@ -402,13 +407,19 @@ export const UsersList: React.FC = () => {
                                              alert('Select a federation first to create a user.');
                                              return;
                                          }
-                                         const orgSlug = organisations.find(o => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-                                         navigate(`/organisations/${orgSlug}/members/invite`);
+                                         setIsInviteModalOpen(true);
                                      }}
                                  >
                                      Create User
                                  </Button>
             </div>
+
+            <InviteMemberModal
+              opened={isInviteModalOpen}
+              onClose={() => setIsInviteModalOpen(false)}
+              orgSlug={organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)?.slug || selectedOrgId}
+              onInviteSuccess={() => setRefreshKey((k) => k + 1)}
+            />
 
             {isLoading && <LoadingState message="Loading users..." />}
             {error && <Alert variant="error">{error}</Alert>}

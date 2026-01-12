@@ -9,6 +9,7 @@ import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
+import PeriodCreateModal from '../PeriodCreateModal';
 
 type Period = {
   id: string;
@@ -117,6 +118,8 @@ export const CompetitionsList: React.FC = () => {
   const [editCompetition, setEditCompetition] = useState<Period | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   // Initialize org filter
   useEffect(() => {
     if (!isSuperAdmin && context.organisation?.id) {
@@ -212,7 +215,8 @@ export const CompetitionsList: React.FC = () => {
                const roots = (Array.isArray(results) ? results : []).filter(
                  (p: any) => p?.parent_period_id == null && !p?.parent_period
                );
-               setSeasons(roots);
+               const uniqueRoots = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
+               setSeasons(uniqueRoots as any);
            }
        } catch {
            // ignore
@@ -312,6 +316,35 @@ export const CompetitionsList: React.FC = () => {
       const detail = await response.text().catch(() => '');
       throw new Error(detail || 'Failed to update competition');
     }
+  };
+
+  const createCompetition = async (payload: { name: string; description?: string; start_date?: string; end_date?: string }) => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const response = await fetch(`${apiBaseUrl}/api/v1/periods/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken() || '',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        organisation_id: selectedOrgId,
+        project_id: selectedTeamId ? Number(selectedTeamId) : undefined,
+        parent_period_id: selectedSeasonId || null,
+        name: payload.name,
+        description: payload.description,
+        start_date: payload.start_date,
+        end_date: payload.end_date,
+        metadata: { type: 'competition' },
+      }),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new Error(detail || 'Failed to create competition');
+    }
+
+    setRefreshKey((k) => k + 1);
   };
 
   const filteredCompetitions = useMemo(() => {
@@ -448,7 +481,7 @@ export const CompetitionsList: React.FC = () => {
           }}
         >
           <option value="">Season: All</option>
-          {seasons.map((s) => (
+          {[...new Map(seasons.map((s) => [String(s.id), s])).values()].map((s: any) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
@@ -500,9 +533,7 @@ export const CompetitionsList: React.FC = () => {
                 alert('Select a season first to create a competition.');
                 return;
               }
-              const orgSlug = organisations.find((o) => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-              const teamSlug = teams.find((t) => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
-              navigate(`/organisations/${orgSlug}/teams/${teamSlug}/competitions/create`);
+              setIsCreateModalOpen(true);
             }}
           >
             Create Competition
@@ -693,6 +724,13 @@ export const CompetitionsList: React.FC = () => {
           </div>
         </Card>
       )}
+
+      <PeriodCreateModal
+        opened={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Create Competition"
+        onCreate={createCompetition}
+      />
 
       <PeriodDetailModal
         opened={isDetailModalOpen}

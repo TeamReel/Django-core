@@ -9,6 +9,7 @@ import { fetchAllPages } from '../../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import MatchDetailModal from '../MatchDetailModal';
 import MatchEditModal from '../MatchEditModal';
+import MatchCreateModal from '../MatchCreateModal';
 import {
     compactTableStyle,
     compactThStyle,
@@ -71,6 +72,8 @@ export const MatchesList: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editMatch, setEditMatch] = useState<Activity | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Initialize org filter
   useEffect(() => {
@@ -158,7 +161,7 @@ export const MatchesList: React.FC = () => {
       try {
         const params = new URLSearchParams();
         params.set('page_size', '200');
-        params.set('parent_period__isnull', 'true'); // Top-level periods = Seasons
+        params.set('parent_id', 'null'); // Top-level periods = Seasons
 
         if (selectedTeamId) {
              params.set('project_id', selectedTeamId);
@@ -181,7 +184,6 @@ export const MatchesList: React.FC = () => {
         if (res.ok) {
             const data = await res.json();
              const results = data.data?.data || data.data?.results || data.results || data.data || [];
-            // Filter to ensure they look like seasons if needed, but 'parent_period__isnull=true' is usually enough
             setSeasons(Array.isArray(results) ? results : []);
         }
       } catch {
@@ -202,7 +204,7 @@ export const MatchesList: React.FC = () => {
          try {
              const params = new URLSearchParams();
              params.set('page_size', '200');
-             params.set('parent_period_id', selectedSeasonId);
+         params.set('parent_id', selectedSeasonId);
 
              const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
              if (res.ok) {
@@ -227,15 +229,29 @@ export const MatchesList: React.FC = () => {
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('activity_type', 'match');
-        if (selectedTeamId) params.set('project_id', String(selectedTeamId));
+        if (selectedTeamId) {
+          params.set('project_id', String(selectedTeamId));
+        } else if (selectedClubId && teams.length > 0) {
+          const clubTeams = teams.filter((t) => {
+            const parent = t.parent_id || (t as any).parent;
+            return String(parent) === String(selectedClubId);
+          });
+          if (clubTeams.length === 0) {
+            setMatches([]);
+            return;
+          }
+          params.set('project_id__in', clubTeams.map((t) => String(t.id)).join(','));
+        }
+
         if (selectedOrgId) params.set('organisation_id', selectedOrgId);
 
         // Filter by Season or Competition
         if (selectedCompetitionId) {
             params.set('period_id', selectedCompetitionId);
         } else if (selectedSeasonId) {
-            // Filter matches where the parent period is the season
-            params.set('period__parent_period_id', selectedSeasonId);
+          // Matches live under competition periods; include descendants to capture all comps in this season.
+          params.set('period_id', selectedSeasonId);
+          params.set('include_descendants', 'true');
         }
 
         const all = await fetchAllPages<Activity>(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`);
@@ -248,7 +264,13 @@ export const MatchesList: React.FC = () => {
     };
 
     loadMatches();
-  }, [selectedTeamId, selectedOrgId, selectedSeasonId, selectedCompetitionId, refreshKey]);
+  }, [selectedTeamId, selectedClubId, selectedOrgId, selectedSeasonId, selectedCompetitionId, teams, refreshKey]);
+
+  const getCsrfToken = () =>
+    document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('csrftoken='))
+      ?.split('=')[1];
 
 
   return (
@@ -261,6 +283,8 @@ export const MatchesList: React.FC = () => {
               setSelectedOrgId(e.target.value);
               setSelectedClubId('');
               setSelectedTeamId('');
+              setSelectedSeasonId('');
+              setSelectedCompetitionId('');
             }}
             style={{
               padding: '8px 12px',
@@ -283,6 +307,8 @@ export const MatchesList: React.FC = () => {
           onChange={(e) => {
             setSelectedClubId(e.target.value);
             setSelectedTeamId('');
+            setSelectedSeasonId('');
+            setSelectedCompetitionId('');
           }}
           style={{
             padding: '8px 12px',
@@ -307,7 +333,11 @@ export const MatchesList: React.FC = () => {
         </select>
         <select
           value={selectedTeamId}
-          onChange={(e) => setSelectedTeamId(e.target.value)}
+          onChange={(e) => {
+            setSelectedTeamId(e.target.value);
+            setSelectedSeasonId('');
+            setSelectedCompetitionId('');
+          }}
           style={{
             padding: '8px 12px',
             border: '1px solid var(--app-border)',
@@ -346,8 +376,10 @@ export const MatchesList: React.FC = () => {
             }}
         >
             <option value="">Season: All</option>
-            {seasons.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+            {[...new Map(seasons.map((s) => [String(s.id), s])).values()].map((s: any) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
             ))}
         </select>
 
@@ -364,8 +396,10 @@ export const MatchesList: React.FC = () => {
             }}
         >
             <option value="">Competition: All</option>
-            {competitions.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+            {[...new Map(competitions.map((c) => [String(c.id), c])).values()].map((c: any) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
         </select>
 
@@ -404,7 +438,7 @@ export const MatchesList: React.FC = () => {
           <Button
             variant="primary"
             size="md"
-            disabled={!selectedOrgId || !selectedTeamId}
+            disabled={!selectedOrgId || !selectedTeamId || !selectedCompetitionId}
             onClick={() => {
               if (!selectedOrgId) {
                 alert('Select a federation first to create a match.');
@@ -414,9 +448,11 @@ export const MatchesList: React.FC = () => {
                 alert('Select a team first to create a match.');
                 return;
               }
-              const orgSlug = organisations.find((o) => String(o.id) === selectedOrgId)?.slug || selectedOrgId;
-              const teamSlug = teams.find((t) => String(t.id) === selectedTeamId)?.slug || selectedTeamId;
-              navigate(`/organisations/${orgSlug}/teams/${teamSlug}/matches/create`);
+              if (!selectedCompetitionId) {
+                alert('Select a competition first to create a match.');
+                return;
+              }
+              setIsCreateModalOpen(true);
             }}
           >
             Create Match
@@ -644,6 +680,41 @@ export const MatchesList: React.FC = () => {
             if (!res.ok) {
               const detail = await res.text().catch(() => '');
               throw new Error(detail || 'Failed to update match');
+            }
+
+            setRefreshKey((k) => k + 1);
+          }}
+        />
+
+        <MatchCreateModal
+          opened={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreate={async (payload) => {
+            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const csrfToken = getCsrfToken();
+
+            const res = await fetch(`${apiBaseUrl}/api/v1/activities/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken || '',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                title: payload.title,
+                activity_type: 'match',
+                project_id: Number(selectedTeamId),
+                period_id: selectedCompetitionId,
+                start_time: payload.start_time,
+                end_time: payload.end_time,
+                location: payload.location,
+                description: payload.description,
+              }),
+            });
+
+            if (!res.ok) {
+              const detail = await res.text().catch(() => '');
+              throw new Error(detail || 'Failed to create match');
             }
 
             setRefreshKey((k) => k + 1);
