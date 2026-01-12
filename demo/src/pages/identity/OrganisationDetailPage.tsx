@@ -199,6 +199,76 @@ export const OrganisationDetailPage: React.FC = () => {
     return (list || []) as any[];
   }, [allClubsForTeams, clubs]);
 
+  const membershipUserCounts = useMemo(() => {
+    const clubUserIdsByClubId = new Map<string, Set<string>>();
+    const teamUserIdsByTeamId = new Map<string, Set<string>>();
+
+    const teamToClubId = new Map<string, string>();
+    for (const t of teams as any[]) {
+      const teamId = String(t?.id ?? '').trim();
+      if (!teamId) continue;
+      const clubId = String(t?.parent_id ?? t?.parent ?? t?.parent_project ?? t?.parent_project_id ?? '').trim();
+      if (clubId) teamToClubId.set(teamId, clubId);
+    }
+
+    const getOrCreateSet = (map: Map<string, Set<string>>, key: string) => {
+      const existing = map.get(key);
+      if (existing) return existing;
+      const next = new Set<string>();
+      map.set(key, next);
+      return next;
+    };
+
+    for (const item of members as any[]) {
+      const user = item?.user ?? item;
+      const userId = String(user?.id ?? '').trim();
+      if (!userId) continue;
+
+      const raw =
+        item?.project_memberships ??
+        item?.project_membership_details ??
+        item?.project_memberships_details ??
+        [];
+      const pms = Array.isArray(raw) ? raw : [];
+
+      for (const pm of pms) {
+        if (!pm) continue;
+        const pmId = String(pm?.id ?? '');
+        if (pmId.startsWith('pm:')) continue;
+
+        const teamId = String(pm?.project_id ?? pm?.project?.id ?? '').trim();
+        let clubId = String(
+          pm?.parent_project_id ??
+            (typeof pm?.parent_project === 'object' ? pm?.parent_project?.id : pm?.parent_project) ??
+            pm?.parent_id ??
+            (typeof pm?.parent === 'object' ? pm?.parent?.id : pm?.parent) ??
+            pm?.club_id ??
+            pm?.club?.id ??
+            ''
+        ).trim();
+
+        if (!clubId && teamId) {
+          clubId = String(teamToClubId.get(teamId) || '').trim();
+        }
+
+        if (clubId) getOrCreateSet(clubUserIdsByClubId, clubId).add(userId);
+        if (teamId) getOrCreateSet(teamUserIdsByTeamId, teamId).add(userId);
+      }
+    }
+
+    const clubUsersCountById: Record<string, number> = {};
+    for (const [clubId, userIds] of clubUserIdsByClubId.entries()) {
+      clubUsersCountById[String(clubId)] = userIds.size;
+    }
+
+    const teamUsersCountById: Record<string, number> = {};
+    for (const [teamId, userIds] of teamUserIdsByTeamId.entries()) {
+      teamUsersCountById[String(teamId)] = userIds.size;
+    }
+
+    return { clubUsersCountById, teamUsersCountById };
+  }, [members, teams]);
+
   // Permission checks using centralized helper
   const userRole = String((user as any)?.role || '').toLowerCase();
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
@@ -1641,7 +1711,11 @@ export const OrganisationDetailPage: React.FC = () => {
                                         Multiple
                                       </span>
                                     ) : clubSlugOrId ? (
-                                      <Link to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`} className="text-blue-600 hover:underline">
+                                      <Link
+                                        to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
+                                        className="text-blue-600"
+                                        style={{ textDecoration: 'none' }}
+                                      >
                                         {club?.name || clubId}
                                       </Link>
                                     ) : (
@@ -1884,21 +1958,25 @@ export const OrganisationDetailPage: React.FC = () => {
                       <div className="overflow-x-auto">
                         <Table style={compactTableStyle}>
                           <colgroup>
+                            <col style={{ width: '180px' }} />
                             <col />
                             <col style={{ width: '90px' }} />
                             <col style={{ width: '95px' }} />
                             <col style={{ width: '120px' }} />
                             <col style={{ width: '95px' }} />
+                            <col style={{ width: '90px' }} />
                             <col style={{ width: '120px' }} />
                             <col style={{ width: '310px' }} />
                           </colgroup>
                           <thead>
                             <tr>
+                              <th style={compactThStyle}>Federation</th>
                               <th style={compactThStyle}>Club</th>
                               <th style={compactThStyle}>Teams</th>
                               <th style={compactThStyle}>Seasons</th>
                               <th style={compactThStyle}>Competitions</th>
                               <th style={compactThStyle}>Matches</th>
+                              <th style={compactThStyle}>Users</th>
                               <th style={compactThStyle}>Status</th>
                               <th style={compactThStyle}>Actions</th>
                             </tr>
@@ -1910,9 +1988,15 @@ export const OrganisationDetailPage: React.FC = () => {
                               const seasonsN = clubSeasonsCount[key] || 0;
                               const compsN = clubCompetitionsCount[key] || 0;
                               const matchesN = clubMatchesCount[key] || 0;
+                              const usersN = membershipUserCounts.clubUsersCountById[key] || 0;
 
                               return (
                                 <tr key={club.id}>
+                                  <td style={compactTextTdStyle}>
+                                    <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                      {String(org?.name || resolvedOrg?.name || currentOrgSlug || '—')}
+                                    </Link>
+                                  </td>
                                   <td style={compactTextTdStyle}>
                                     <Link
                                       to={`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`}
@@ -1933,6 +2017,9 @@ export const OrganisationDetailPage: React.FC = () => {
                                   </td>
                                   <td style={compactTdStyle}>
                                     <Badge variant="info">{matchesN}</Badge>
+                                  </td>
+                                  <td style={compactTdStyle}>
+                                    <Badge variant="info">{usersN}</Badge>
                                   </td>
                                   <td style={compactTdStyle}>
                                     <Badge variant={club.is_active ? 'success' : 'warning'}>
@@ -2089,6 +2176,13 @@ export const OrganisationDetailPage: React.FC = () => {
                   clubSlugById.set(String(c.id), (c as any).slug || String(c.id));
                 }
 
+                const teamMatchesCount: Record<string, number> = {};
+                for (const m of federationMatches as any[]) {
+                  const teamId = String(m?.project_id ?? m?.project?.id ?? '').trim();
+                  if (!teamId) continue;
+                  teamMatchesCount[teamId] = (teamMatchesCount[teamId] || 0) + 1;
+                }
+
                 const normalized = teamSearch.trim().toLowerCase();
                 const filteredTeams = (teams as any[]).filter((t: any) => {
                   const parentId = String(t.parent_id ?? t.parent ?? t.parent_project ?? t.parent_project_id ?? '');
@@ -2113,19 +2207,23 @@ export const OrganisationDetailPage: React.FC = () => {
                         <colgroup>
                           <col style={{ width: '180px' }} />
                           <col style={{ width: '180px' }} />
-                          <col style={{ width: '90px' }} />
+                          <col style={{ width: '180px' }} />
                           <col style={{ width: '95px' }} />
                           <col style={{ width: '120px' }} />
+                          <col style={{ width: '95px' }} />
+                          <col style={{ width: '90px' }} />
                           <col style={{ width: '120px' }} />
                           <col style={{ width: '330px' }} />
                         </colgroup>
                         <thead>
                           <tr>
-                            <th style={compactThStyle}>Team</th>
+                            <th style={compactThStyle}>Federation</th>
                             <th style={compactThStyle}>Club</th>
-                            <th style={compactThStyle}>Players</th>
+                            <th style={compactThStyle}>Team</th>
                             <th style={compactThStyle}>Seasons</th>
                             <th style={compactThStyle}>Competitions</th>
+                            <th style={compactThStyle}>Matches</th>
+                            <th style={compactThStyle}>Users</th>
                             <th style={compactThStyle}>Status</th>
                             <th style={compactThStyle}>Actions</th>
                           </tr>
@@ -2136,18 +2234,16 @@ export const OrganisationDetailPage: React.FC = () => {
                             const clubId = String(team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? '');
                             const clubSlugOrId = clubSlugById.get(clubId) || clubId;
                             const teamIdKey = String(team.id);
-                            const playersCount = team.member_count ?? team.players_count ?? 0;
                             const seasonsCount = teamSeasonsCountById[teamIdKey] ?? 0;
                             const competitionsCount = teamCompetitionsCountById[teamIdKey] ?? 0;
+                            const matchesCount = teamMatchesCount[teamIdKey] ?? 0;
+                            const usersCount = membershipUserCounts.teamUsersCountById[teamIdKey] ?? 0;
 
                             return (
                               <tr key={team.id}>
                                 <td style={compactTextTdStyle}>
-                                  <Link
-                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
-                                    className="text-blue-600 hover:underline"
-                                  >
-                                    {team.name}
+                                  <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                    {String(org?.name || resolvedOrg?.name || currentOrgSlug || '—')}
                                   </Link>
                                 </td>
                                 <td style={compactTextTdStyle}>
@@ -2160,14 +2256,25 @@ export const OrganisationDetailPage: React.FC = () => {
                                     </Link>
                                   ) : '-'}
                                 </td>
-                                <td style={compactTdStyle}>
-                                  <Badge variant="default">{playersCount}</Badge>
+                                <td style={compactTextTdStyle}>
+                                  <Link
+                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {team.name}
+                                  </Link>
                                 </td>
                                 <td style={compactTdStyle}>
                                   <Badge variant="default">{seasonsCount}</Badge>
                                 </td>
                                 <td style={compactTdStyle}>
                                   <Badge variant="default">{competitionsCount}</Badge>
+                                </td>
+                                <td style={compactTdStyle}>
+                                  <Badge variant="default">{matchesCount}</Badge>
+                                </td>
+                                <td style={compactTdStyle}>
+                                  <Badge variant="default">{usersCount}</Badge>
                                 </td>
                                 <td style={compactTdStyle}>
                                   <Badge variant={team.is_active ? 'success' : 'warning'}>
