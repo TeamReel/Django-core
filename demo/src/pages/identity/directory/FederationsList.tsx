@@ -266,20 +266,17 @@ export const FederationsList: React.FC = () => {
                 <thead>
                   <tr>
                     <th onClick={() => handleSort('name')} style={{ ...compactThStyle, cursor: 'pointer', width: '20%' }}>
-                      Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
+                      Federation {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                     </th>
                     <th onClick={() => handleSort('project_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '8%' }}>
-                      Clubs {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
+                      Club {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Teams</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Seasons</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Comps</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Matches</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Team</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
                     <th onClick={() => handleSort('member_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '8%' }}>
                       Users {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
-                    </th>
-                    <th onClick={() => handleSort('credit_balance')} style={{ ...compactThStyle, cursor: 'pointer', width: '10%' }}>
-                      Credits {sort === 'credit_balance' && (order === 'asc' ? '↑' : '↓')}
                     </th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
                     <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
@@ -338,15 +335,6 @@ export const FederationsList: React.FC = () => {
                           <Badge variant="default">
                             {org.member_count || 0}
                           </Badge>
-                        </td>
-                        <td style={compactTdStyle}>
-                          <span
-                            className={
-                              (org.credit_balance || 0) < 100 ? 'text-red-600 font-semibold' : ''
-                            }
-                          >
-                            {org.credit_balance || 0}
-                          </span>
                         </td>
                         <td style={compactTdStyle}>
                           <Badge variant={org.is_active ? 'success' : 'warning'}>

@@ -434,24 +434,50 @@ export const UsersList: React.FC = () => {
                         <Table style={compactTableStyle}>
                             <thead>
                                 <tr>
-                                    <th style={{ ...compactThStyle, width: '28%' }}>User</th>
-                                    <th style={{ ...compactThStyle, width: '30%' }}>Email</th>
-                                    <th style={{ ...compactThStyle, width: '20%' }}>Role</th>
+                                    <th style={{ ...compactThStyle, width: '14%' }}>Federation</th>
+                                    <th style={{ ...compactThStyle, width: '14%' }}>Club</th>
+                                    <th style={{ ...compactThStyle, width: '14%' }}>Team</th>
+                                    <th style={{ ...compactThStyle, width: '10%' }}>Season</th>
+                                    <th style={{ ...compactThStyle, width: '10%' }}>Competition</th>
+                                    <th style={{ ...compactThStyle, width: '10%' }}>Match</th>
+                                    <th style={{ ...compactThStyle, width: '18%' }}>Users</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
                                     <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.map(u => (
+                                {users.map(u => {
+                                    const orgName = (() => {
+                                        if (!selectedOrgId) return '-';
+                                        const match = organisations.find(o => String(o.id) === String(selectedOrgId) || (o as any).slug === selectedOrgId);
+                                        return match?.name || '-';
+                                    })();
+
+                                    const clubName = (() => {
+                                        if (!selectedClubId) return '-';
+                                        const match = clubs.find(c => String(c.id) === String(selectedClubId));
+                                        return match?.name || '-';
+                                    })();
+
+                                    const teamName = (() => {
+                                        if (!selectedTeamId) return '-';
+                                        const match = teams.find(t => String(t.id) === String(selectedTeamId));
+                                        return match?.name || '-';
+                                    })();
+
+                                    const userLabel = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
+
+                                    return (
                                     <tr key={u.id}>
+                                        <td style={compactTextTdStyle}>{orgName}</td>
+                                        <td style={compactTextTdStyle}>{clubName}</td>
+                                        <td style={compactTextTdStyle}>{teamName}</td>
+                                        <td style={compactTdStyle}>-</td>
+                                        <td style={compactTdStyle}>-</td>
+                                        <td style={compactTdStyle}>-</td>
                                         <td style={compactTextTdStyle} className="font-medium">
-                                            {u.first_name} {u.last_name}
-                                        </td>
-                                        <td style={compactTextTdStyle}>{u.email}</td>
-                                        <td style={compactTdStyle}>
-                                            <Badge variant="default">
-                                                {getUserRoleDisplay(u)}
-                                            </Badge>
+                                            {userLabel}
+                                            <div className="text-xs text-gray-500">{u.email}</div>
                                         </td>
                                         <td style={compactTdStyle}>
                                             <Badge variant={u.is_active ? 'success' : 'warning'}>
@@ -472,7 +498,8 @@ export const UsersList: React.FC = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
+                                  );
+                                })}
                             </tbody>
                         </Table>
                     </div>

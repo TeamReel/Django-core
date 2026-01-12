@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { Alert, Card, Button } from '@django-core/design-system';
+import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
@@ -480,9 +480,11 @@ export const MatchesList: React.FC = () => {
                     <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
-                    <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
+                    <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Match</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
                     <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                   </tr>
                 </thead>
@@ -507,6 +509,12 @@ export const MatchesList: React.FC = () => {
                     const compName = competition?.name || '-';
                     const season = competition?.parent_period;
                     const seasonName = season?.name || '-';
+
+                    const isActive = (() => {
+                      if (!m.start_time) return false;
+                      const start = new Date(m.start_time);
+                      return start.getTime() >= Date.now();
+                    })();
 
                     // Link Targets
                     const orgTarget = orgSlug || orgId;
@@ -560,22 +568,6 @@ export const MatchesList: React.FC = () => {
                             ) : teamName}
                          </td>
                         <td style={compactTextTdStyle}>
-                            {competition ? (
-                                <a
-                                href={`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}/competitions/${compTarget}`}
-                                className="text-blue-600 hover:underline"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    if(seasonTarget && compTarget) {
-                                        navigate(`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}/competitions/${compTarget}`);
-                                    }
-                                }}
-                                >
-                                {compName}
-                                </a>
-                            ) : compName}
-                        </td>
-                        <td style={compactTextTdStyle}>
                              {season ? (
                                 <a
                                 href={`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}`}
@@ -591,6 +583,22 @@ export const MatchesList: React.FC = () => {
                                 </a>
                              ) : seasonName}
                         </td>
+                            <td style={compactTextTdStyle}>
+                              {competition ? (
+                                <a
+                                href={`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}/competitions/${compTarget}`}
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if(seasonTarget && compTarget) {
+                                    navigate(`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}/competitions/${compTarget}`);
+                                  }
+                                }}
+                                >
+                                {compName}
+                                </a>
+                              ) : compName}
+                            </td>
                         <td style={compactTextTdStyle}>
                             <a
                               href={`/matches/${m.id}`}
@@ -602,6 +610,12 @@ export const MatchesList: React.FC = () => {
                             >
                               {m.title}
                             </a>
+                        </td>
+                        <td style={compactTdStyle}>-</td>
+                        <td style={compactTdStyle}>
+                          <Badge variant={isActive ? 'success' : 'warning'}>
+                            {isActive ? 'Active' : 'Inactive'}
+                          </Badge>
                         </td>
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>

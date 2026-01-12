@@ -267,12 +267,12 @@ export const ClubsList: React.FC = () => {
             <Table style={compactTableStyle}>
               <thead>
                 <tr>
-                  <th style={{ ...compactThStyle, width: '20%' }}>Club</th>
                   <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Teams</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Seasons</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Comps</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Matches</th>
+                  <th style={{ ...compactThStyle, width: '20%' }}>Club</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Team</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
                   <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
                   <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
@@ -307,18 +307,6 @@ export const ClubsList: React.FC = () => {
                   return (
                     <tr key={club.id}>
                       <td style={compactTextTdStyle}>
-                        <a
-                          href={`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`}
-                          className="text-blue-600 hover:underline"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            navigate(`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`);
-                          }}
-                        >
-                          {club.name}
-                        </a>
-                      </td>
-                      <td style={compactTextTdStyle}>
                         {orgSlugOrId ? (
                           <a
                             href={`/organisations/${orgSlugOrId}`}
@@ -333,6 +321,18 @@ export const ClubsList: React.FC = () => {
                         ) : (
                           club.organisation?.name || '-'
                         )}
+                      </td>
+                      <td style={compactTextTdStyle}>
+                        <a
+                          href={`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`}
+                          className="text-blue-600 hover:underline"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            navigate(`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`);
+                          }}
+                        >
+                          {club.name}
+                        </a>
                       </td>
                       <td style={compactTdStyle}>
                         <Badge variant="default">

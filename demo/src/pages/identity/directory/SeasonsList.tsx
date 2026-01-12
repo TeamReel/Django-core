@@ -477,8 +477,8 @@ export const SeasonsList: React.FC = () => {
                     <th style={{ ...compactThStyle, width: '140px' }}>Club</th>
                     <th style={{ ...compactThStyle, width: '140px' }}>Team</th>
                     <th style={{ ...compactThStyle, width: '260px' }}>Season</th>
-                    <th style={{ ...compactThStyle, width: '110px' }}>Competitions</th>
-                    <th style={{ ...compactThStyle, width: '100px' }}>Matches</th>
+                  <th style={{ ...compactThStyle, width: '110px' }}>Competition</th>
+                  <th style={{ ...compactThStyle, width: '100px' }}>Match</th>
                     <th style={{ ...compactThStyle, width: '90px' }}>Users</th>
                     <th style={{ ...compactThStyle, width: '100px' }}>Status</th>
                     <th style={{ ...compactThStyle, width: '140px' }}>Actions</th>

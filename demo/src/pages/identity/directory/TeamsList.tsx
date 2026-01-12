@@ -325,12 +325,12 @@ export const TeamsList: React.FC = () => {
             <Table style={compactTableStyle}>
               <thead>
                 <tr>
-                    <th style={{ ...compactThStyle, width: '18%' }}>Team</th>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Seasons</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Comps</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Matches</th>
+                      <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                      <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
+                      <th style={{ ...compactThStyle, width: '18%' }}>Team</th>
+                      <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
+                      <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
+                      <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
                     <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
@@ -365,107 +365,108 @@ export const TeamsList: React.FC = () => {
                     const teamSlugOrId = team.slug || team.id;
 
                     return (
-                        <tr key={team.id}>
-                            <td style={compactTextTdStyle}>
-                                <a
-                                    href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
-                                    className="text-blue-600 hover:underline"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`);
-                                    }}
-                                >
-                                    {team.name}
-                                </a>
-                            </td>
-                            <td style={compactTextTdStyle}>
-                                {clubSlugOrId ? (
-                                    <a
-                                        href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
-                                        className="text-blue-600 hover:underline"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`);
-                                        }}
-                                    >
-                                        {clubName}
-                                    </a>
-                                ) : (
-                                    clubName
-                                )}
-                            </td>
-                            <td style={compactTextTdStyle}>
-                                {orgSlugOrId ? (
-                                    <a
-                                    href={`/organisations/${orgSlugOrId}`}
-                                    className="text-blue-600 hover:underline"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        navigate(`/organisations/${orgSlugOrId}`);
-                                    }}
-                                    >
-                                    {team.organisation?.name || 'Federation'}
-                                    </a>
-                                ) : (
-                                    team.organisation?.name || '-'
-                                )}
-                            </td>
-                            <td style={compactTdStyle}>
-                              <Badge variant="default">
-                                {(team as any).seasons_count || 0}
-                              </Badge>
-                            </td>
-                            <td style={compactTdStyle}>
-                              <Badge variant="default">
-                                {(team as any).competitions_count || 0}
-                              </Badge>
-                            </td>
-                            <td style={compactTdStyle}>
-                              <Badge variant="default">                                    {(team as any).matches_count || 0}
-                                </Badge>
-                            </td>
-                            <td style={compactTdStyle}>
-                                <Badge variant="default">                                {(team as any).member_count || 0}
-                              </Badge>
-                            </td>
-                            <td style={compactTdStyle}>
-                                <Badge variant={team.is_active === false ? 'warning' : 'success'}>
-                                    {team.is_active === false ? 'Inactive' : 'Active'}
-                                </Badge>
-                            </td>
-                            <td style={compactTdStyle}>
-                                <div style={compactActionsStyle}>
-                                    <button
-                                        onClick={() => {
-                                            setDetailProject(team);
-                                            setIsDetailModalOpen(true);
-                                        }}
-                                        style={actionButtonStyle('primary')}
-                                    >
-                                        View
-                                    </button>
-                                     {userCanEditProject && (
-                                        <button
-                                            onClick={() => {
-                                                setEditProject(team);
-                                                setIsEditModalOpen(true);
-                                            }}
-                                            style={actionButtonStyle('warning')}
-                                        >
-                                            Edit
-                                        </button>
-                                    )}
-                                    {userCanDeleteProject && (
-                                        <button
-                                            onClick={() => handleDeleteProject(String(orgSlugOrId), String(team.id), String(team.name))}
-                                            style={actionButtonStyle('danger')}
-                                        >
-                                            Delete
-                                        </button>
-                                    )}
-                                </div>
-                            </td>
-                        </tr>
+                      <tr key={team.id}>
+                        <td style={compactTextTdStyle}>
+                          {orgSlugOrId ? (
+                            <a
+                              href={`/organisations/${orgSlugOrId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgSlugOrId}`);
+                              }}
+                            >
+                              {team.organisation?.name || '-'}
+                            </a>
+                          ) : (
+                            team.organisation?.name || '-'
+                          )}
+                        </td>
+
+                        <td style={compactTextTdStyle}>
+                          {orgSlugOrId && clubSlugOrId ? (
+                            <a
+                              href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`);
+                              }}
+                            >
+                              {clubName}
+                            </a>
+                          ) : (
+                            clubName
+                          )}
+                        </td>
+
+                        <td style={compactTextTdStyle}>
+                          {orgSlugOrId && clubSlugOrId ? (
+                            <a
+                              href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`);
+                              }}
+                            >
+                              {team.name}
+                            </a>
+                          ) : (
+                            team.name
+                          )}
+                        </td>
+
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">{(team as any).seasons_count || 0}</Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">{(team as any).competitions_count || 0}</Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">{(team as any).matches_count || 0}</Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">{(team as any).member_count || 0}</Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                          <Badge variant={team.is_active === false ? 'warning' : 'success'}>
+                            {team.is_active === false ? 'Inactive' : 'Active'}
+                          </Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                          <div style={compactActionsStyle}>
+                            <button
+                              onClick={() => {
+                                setDetailProject(team);
+                                setIsDetailModalOpen(true);
+                              }}
+                              style={actionButtonStyle('primary')}
+                            >
+                              View
+                            </button>
+                            {userCanEditProject && (
+                              <button
+                                onClick={() => {
+                                  setEditProject(team);
+                                  setIsEditModalOpen(true);
+                                }}
+                                style={actionButtonStyle('warning')}
+                              >
+                                Edit
+                              </button>
+                            )}
+                            {userCanDeleteProject && (
+                              <button
+                                onClick={() => handleDeleteProject(String(orgSlugOrId), String(team.id), String(team.name))}
+                                style={actionButtonStyle('danger')}
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
                     );
                 })}
               </tbody>
