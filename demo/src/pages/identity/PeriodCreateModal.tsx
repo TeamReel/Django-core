@@ -150,6 +150,21 @@ export default function PeriodCreateModal({
     }
   };
 
+  const autoFillFromTeamId = (teamId: string) => {
+    if (!teamId) return;
+    setSelectedTeamId(String(teamId));
+
+    const team = teams.find((t) => String(t.id) === String(teamId));
+    if (!team) return;
+
+    const clubId = getTeamParentId(team);
+    if (clubId) {
+      setSelectedClubId(String(clubId));
+      const orgId = getClubOrganisationId(String(clubId));
+      if (orgId) setSelectedOrganisationId(String(orgId));
+    }
+  };
+
   useEffect(() => {
     if (!opened || !requireSeason) return;
 
@@ -388,7 +403,17 @@ export default function PeriodCreateModal({
                 <select
                   id="period-create-season"
                   value={selectedSeasonId}
-                  onChange={(e) => setSelectedSeasonId(e.target.value)}
+                  onChange={(e) => {
+                    const seasonId = e.target.value;
+                    setSelectedSeasonId(seasonId);
+
+                    // If user picks a season before picking a team, infer team/club/federation.
+                    if (!selectedTeamId && seasonId) {
+                      const season = seasonOptions.find((s: any) => String(s?.id) === String(seasonId)) as any;
+                      const inferredTeamId = season?.project?.id ?? season?.project_id;
+                      if (inferredTeamId != null) autoFillFromTeamId(String(inferredTeamId));
+                    }
+                  }}
                   disabled={saving || seasonsLoading}
                   required
                   style={{
