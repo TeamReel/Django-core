@@ -70,6 +70,18 @@ const compactActionsStyle: React.CSSProperties = {
   flexWrap: 'wrap'
 };
 
+const linkButtonStyle: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    margin: 0,
+    color: 'var(--app-link, #0b5ed7)',
+    cursor: 'pointer',
+    textAlign: 'left',
+    font: 'inherit',
+    textDecoration: 'underline',
+};
+
 // Button styling function
 type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
 const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
@@ -445,6 +457,76 @@ export const UsersList: React.FC = () => {
         return { label: `${unique[0]} +${unique.length - 1}`, title: unique.join(', ') };
     };
 
+    const getOrganisationLinkForRow = (u: any) => {
+        const fromMembership = u?.membership?.organisation;
+        const fromRow = u?.organisation;
+        const slugOrId =
+            fromMembership?.slug ??
+            fromMembership?.id ??
+            fromRow?.slug ??
+            fromRow?.id ??
+            getSelectedOrgSlug();
+        if (!slugOrId) return null;
+        return `/organisations/${slugOrId}`;
+    };
+
+    const getClubAndTeamLinksForRow = (u: any) => {
+        const orgSlug = getSelectedOrgSlug();
+        if (!orgSlug) return { clubHref: null as string | null, teamHref: null as string | null };
+
+        const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
+
+        const clubIds: string[] = [];
+        const teamTuples: Array<{ teamId: string; clubId?: string }> = [];
+
+        // Respect active filters (makes link targets predictable).
+        if (selectedTeamId) {
+            const team = teamsById.get(String(selectedTeamId));
+            const clubId = String((team as any)?.parent_id ?? (team as any)?.parent_project?.id ?? '') || undefined;
+            teamTuples.push({ teamId: String(selectedTeamId), clubId });
+        }
+
+        if (selectedClubId) {
+            clubIds.push(String(selectedClubId));
+        }
+
+        // Otherwise derive from enriched membership details.
+        if (!selectedClubId || !selectedTeamId) {
+            for (const m of memberships) {
+                const projectId = String(m?.project_id ?? m?.project?.id ?? '').trim();
+                if (!projectId) continue;
+
+                const parentIdRaw = m?.project?.parent_id ?? m?.project?.parent_project_id;
+                const parentId = parentIdRaw === null || parentIdRaw === undefined ? '' : String(parentIdRaw).trim();
+
+                if (parentId) {
+                    // Team membership with a parent club.
+                    teamTuples.push({ teamId: projectId, clubId: parentId });
+                    clubIds.push(parentId);
+                    continue;
+                }
+
+                // Might be a direct club membership.
+                if (clubsById.has(projectId)) {
+                    clubIds.push(projectId);
+                }
+            }
+        }
+
+        const clubId = clubIds.find(Boolean) || null;
+        const teamTuple = teamTuples.find(t => Boolean(t?.teamId)) || null;
+
+        const clubHref = clubId ? `/organisations/${orgSlug}/projects/${clubId}` : null;
+
+        const teamHref = teamTuple?.teamId
+            ? (teamTuple?.clubId
+                ? `/organisations/${orgSlug}/projects/${teamTuple.clubId}/teams/${teamTuple.teamId}`
+                : `/organisations/${orgSlug}/projects/${teamTuple.teamId}`)
+            : null;
+
+        return { clubHref, teamHref };
+    };
+
     const getClubAndTeamForRow = (u: any) => {
         // If user is filtering by club/team, we can always show those.
         if (selectedTeamId) {
@@ -667,6 +749,9 @@ export const UsersList: React.FC = () => {
                                     const orgName = getFederationNameForRow(u);
                                     const scoped = getClubAndTeamForRow(u);
 
+                                    const orgHref = getOrganisationLinkForRow(u);
+                                    const { clubHref, teamHref } = getClubAndTeamLinksForRow(u);
+
                                     const membershipId = u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null;
                                     const source = String(u?.membership?.source ?? u?.source ?? '').toLowerCase();
                                     const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
@@ -675,14 +760,48 @@ export const UsersList: React.FC = () => {
 
                                     return (
                                     <tr key={u.id}>
-                                        <td style={compactTextTdStyle} title={orgName}>{orgName}</td>
-                                        <td style={compactTextTdStyle} title={scoped.club.title}>{scoped.club.label}</td>
-                                        <td style={compactTextTdStyle} title={scoped.team.title}>{scoped.team.label}</td>
+                                        <td style={compactTextTdStyle} title={orgName}>
+                                            {orgHref && orgName !== '-' ? (
+                                                <button style={linkButtonStyle} onClick={() => navigate(orgHref)}>
+                                                    {orgName}
+                                                </button>
+                                            ) : (
+                                                orgName
+                                            )}
+                                        </td>
+                                        <td style={compactTextTdStyle} title={scoped.club.title}>
+                                            {clubHref && scoped.club.label !== '-' ? (
+                                                <button style={linkButtonStyle} onClick={() => navigate(clubHref)}>
+                                                    {scoped.club.label}
+                                                </button>
+                                            ) : (
+                                                scoped.club.label
+                                            )}
+                                        </td>
+                                        <td style={compactTextTdStyle} title={scoped.team.title}>
+                                            {teamHref && scoped.team.label !== '-' ? (
+                                                <button style={linkButtonStyle} onClick={() => navigate(teamHref)}>
+                                                    {scoped.team.label}
+                                                </button>
+                                            ) : (
+                                                scoped.team.label
+                                            )}
+                                        </td>
                                         <td style={compactTdStyle}>-</td>
                                         <td style={compactTdStyle}>-</td>
                                         <td style={compactTdStyle}>-</td>
                                         <td style={compactTextTdStyle} className="font-medium">
-                                            {userLabel}
+                                            {u?.id ? (
+                                                <button
+                                                    style={linkButtonStyle}
+                                                    onClick={() => navigate(`/users/${u.id}`)}
+                                                    title="Open user"
+                                                >
+                                                    {userLabel}
+                                                </button>
+                                            ) : (
+                                                userLabel
+                                            )}
                                             <div className="text-xs text-gray-500">{u.email}</div>
                                         </td>
                                         <td style={compactTdStyle}>

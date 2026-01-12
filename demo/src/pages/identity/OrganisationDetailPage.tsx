@@ -20,6 +20,7 @@ import { Organisation, User, Project } from '../../types';
 import AppShell from '../../components/AppShell';
 import ProjectDetailModal from './ProjectDetailModal';
 import ProjectEditModal from './ProjectEditModal';
+import ProjectCreateModal from './ProjectCreateModal';
 import {
   canEditOrganisation,
   canDeleteOrganisation,
@@ -74,6 +75,8 @@ export const OrganisationDetailPage: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedEditProject, setSelectedEditProject] = useState<Project | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateClubModalOpen, setIsCreateClubModalOpen] = useState(false);
+  const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -170,6 +173,18 @@ export const OrganisationDetailPage: React.FC = () => {
   );
   const currentOrgSlug = resolvedOrg?.slug || id?.toLowerCase(); // Use slug for API calls
   const currentOrgId = resolvedOrg?.id; // Keep ID for headers if needed
+
+  const createModalOrganisations = useMemo(() => {
+    const orgIdStr = String(currentOrgId || org?.id || '').trim();
+    const orgName = String(org?.name || resolvedOrg?.name || '').trim();
+    if (!orgIdStr || !orgName) return [];
+    return [{ id: orgIdStr, name: orgName, slug: currentOrgSlug }];
+  }, [currentOrgId, org?.id, org?.name, resolvedOrg?.name, currentOrgSlug]);
+
+  const createModalClubs = useMemo(() => {
+    const list = allClubsForTeams.length > 0 ? allClubsForTeams : clubs;
+    return (list || []) as any[];
+  }, [allClubsForTeams, clubs]);
 
   // Permission checks using centralized helper
   const userRole = String((user as any)?.role || '').toLowerCase();
@@ -1494,12 +1509,6 @@ export const OrganisationDetailPage: React.FC = () => {
                                           onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
                                           style={actionButtonStyle('primary')}
                                         >
-                                          Open
-                                        </button>
-                                        <button
-                                          onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
-                                          style={actionButtonStyle('neutral')}
-                                        >
                                           View
                                         </button>
                                         <button
@@ -1619,7 +1628,7 @@ export const OrganisationDetailPage: React.FC = () => {
                     <h3 className="text-lg font-semibold">Clubs</h3>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <button
-                        onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/create?type=club`)}
+                        onClick={() => setIsCreateClubModalOpen(true)}
                         style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                       >
                         Add Club
@@ -1737,17 +1746,11 @@ export const OrganisationDetailPage: React.FC = () => {
                                   <td style={compactTdStyle}>
                                     <div style={compactActionsStyle}>
                                       <button
-                                        onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`)}
-                                        style={actionButtonStyle('primary')}
-                                      >
-                                        Open
-                                      </button>
-                                      <button
                                         onClick={() => {
                                           setSelectedClub(club);
                                           setIsClubModalOpen(true);
                                         }}
-                                        style={actionButtonStyle('neutral')}
+                                        style={actionButtonStyle('primary')}
                                       >
                                         View
                                       </button>
@@ -1821,7 +1824,7 @@ export const OrganisationDetailPage: React.FC = () => {
               <h3 className="text-lg font-semibold">Teams</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
-                  onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/create?type=team`)}
+                  onClick={() => setIsCreateTeamModalOpen(true)}
                   style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                 >
                   Add Team
@@ -1964,17 +1967,11 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <td style={compactTdStyle}>
                                   <div style={compactActionsStyle}>
                                     <button
-                                      onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`)}
-                                      style={actionButtonStyle('primary')}
-                                    >
-                                      Open
-                                    </button>
-                                    <button
                                       onClick={() => {
                                         setSelectedClub(team);
                                         setIsClubModalOpen(true);
                                       }}
-                                      style={actionButtonStyle('neutral')}
+                                      style={actionButtonStyle('primary')}
                                     >
                                       View
                                     </button>
@@ -2043,7 +2040,13 @@ export const OrganisationDetailPage: React.FC = () => {
               <h3 className="text-lg font-semibold">Teams (grouped by club)</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
-                  onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/create?type=team`)}
+                  onClick={() => setIsCreateClubModalOpen(true)}
+                  style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                >
+                  Add Club
+                </button>
+                <button
+                  onClick={() => setIsCreateTeamModalOpen(true)}
                   style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                 >
                   Add Team
@@ -2125,7 +2128,12 @@ export const OrganisationDetailPage: React.FC = () => {
                     {Array.from(byClubId.entries()).map(([clubId, clubTeams]) => (
                       <Card key={clubId}>
                         <div className="text-sm font-semibold" style={{ marginBottom: '10px' }}>
-                          {clubNameById.get(clubId) || `Club ${clubId}`}
+                          <Link
+                            to={`/organisations/${currentOrgSlug}/projects/${clubSlugById.get(clubId) || clubId}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {clubNameById.get(clubId) || `Club ${clubId}`}
+                          </Link>
                         </div>
                         <div className="overflow-x-auto">
                           <Table style={compactTableStyle}>
@@ -2157,7 +2165,14 @@ export const OrganisationDetailPage: React.FC = () => {
                               const competitionsCount = teamCompetitionsCountById[teamIdKey] ?? 0;
                               return (
                                 <tr key={team.id}>
-                                  <td style={compactTextTdStyle}>{team.name}</td>
+                                  <td style={compactTextTdStyle}>
+                                    <Link
+                                      to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
+                                      className="text-blue-600 hover:underline"
+                                    >
+                                      {team.name}
+                                    </Link>
+                                  </td>
                                   <td style={compactTdStyle}>
                                     <Badge variant="default">{playersCount}</Badge>
                                   </td>
@@ -2175,17 +2190,11 @@ export const OrganisationDetailPage: React.FC = () => {
                                   <td style={compactTdStyle}>
                                     <div style={compactActionsStyle}>
                                       <button
-                                        onClick={() => navigate(`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`)}
-                                        style={actionButtonStyle('primary')}
-                                      >
-                                        Open
-                                      </button>
-                                      <button
                                         onClick={() => {
                                           setSelectedClub(team);
                                           setIsClubModalOpen(true);
                                         }}
-                                        style={actionButtonStyle('neutral')}
+                                        style={actionButtonStyle('primary')}
                                       >
                                         View
                                       </button>
@@ -2430,18 +2439,12 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
                                   <button
-                                    onClick={() => navigate(openHref)}
-                                    style={actionButtonStyle('primary')}
-                                  >
-                                    Open
-                                  </button>
-                                  <button
                                     onClick={() => {
                                       const seasonProject = { id: seasonId, slug: seasonSlug, name: season.name, project_type: 'period' };
                                       setDetailProject(seasonProject as any);
                                       setIsDetailModalOpen(true);
                                     }}
-                                    style={actionButtonStyle('neutral')}
+                                    style={actionButtonStyle('primary')}
                                   >
                                     View
                                   </button>
@@ -2716,18 +2719,12 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
                                   <button
-                                    onClick={() => navigate(openHref)}
-                                    style={actionButtonStyle('primary')}
-                                  >
-                                    Open
-                                  </button>
-                                  <button
                                     onClick={() => {
                                       const compProject = { id: comp.id, slug: comp.slug, name: comp.name, project_type: 'period' };
                                       setDetailProject(compProject as any);
                                       setIsDetailModalOpen(true);
                                     }}
-                                    style={actionButtonStyle('neutral')}
+                                    style={actionButtonStyle('primary')}
                                   >
                                     View
                                   </button>
@@ -3055,18 +3052,12 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
                                   <button
-                                    onClick={() => navigate(`/matches/${m.id}`)}
-                                    style={actionButtonStyle('primary')}
-                                  >
-                                    Open
-                                  </button>
-                                  <button
                                     onClick={() => {
                                       const matchProject = { id: m.id, name: m.title || m.name, project_type: 'activity' };
                                       setDetailProject(matchProject as any);
                                       setIsDetailModalOpen(true);
                                     }}
-                                    style={actionButtonStyle('neutral')}
+                                    style={actionButtonStyle('primary')}
                                   >
                                     View
                                   </button>
@@ -3189,6 +3180,78 @@ export const OrganisationDetailPage: React.FC = () => {
         onSave={(patch) => {
           if (!selectedEditProject) return Promise.resolve();
           return saveProjectEdits(selectedEditProject, patch as any);
+        }}
+      />
+
+      <ProjectCreateModal
+        opened={isCreateClubModalOpen}
+        onClose={() => setIsCreateClubModalOpen(false)}
+        title="Create Club"
+        organisations={createModalOrganisations}
+        requireOrganisation={createModalOrganisations.length > 0}
+        initialOrganisationId={createModalOrganisations[0]?.id || ''}
+        onCreate={async (projectData) => {
+          const apiV1BaseUrl = getApiV1BaseUrl();
+          const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              name: projectData.name,
+              description: projectData.description || '',
+            }),
+          });
+
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(detail || 'Failed to create club');
+          }
+
+          await fetchClubsPage(1);
+          await fetchTeamsForOrg();
+        }}
+      />
+
+      <ProjectCreateModal
+        opened={isCreateTeamModalOpen}
+        onClose={() => setIsCreateTeamModalOpen(false)}
+        title="Create Team"
+        organisations={createModalOrganisations}
+        clubs={createModalClubs}
+        requireOrganisation={createModalOrganisations.length > 0}
+        requireClub
+        initialOrganisationId={createModalOrganisations[0]?.id || ''}
+        initialClubId={teamClubFilterId || ''}
+        onCreate={async (projectData) => {
+          const clubId = String(projectData.parent_project_id || '').trim();
+          if (!clubId) throw new Error('Select a club first.');
+
+          const apiV1BaseUrl = getApiV1BaseUrl();
+          const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              name: projectData.name,
+              description: projectData.description || '',
+              parent_project_id: clubId,
+            }),
+          });
+
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(detail || 'Failed to create team');
+          }
+
+          await fetchTeamsForOrg();
         }}
       />
       </div>
