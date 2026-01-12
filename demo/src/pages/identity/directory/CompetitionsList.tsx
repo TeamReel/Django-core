@@ -129,12 +129,28 @@ export const CompetitionsList: React.FC = () => {
     return Number.isNaN(dt.getTime()) ? null : dt;
   };
 
-  const isPeriodActive = (p: Pick<Period, 'start_date' | 'end_date'>): boolean => {
-    const start = parseDateOnlyUtc(p.start_date);
-    const end = parseDateOnlyUtc(p.end_date);
-    if (!start || !end) return false;
+  const getEffectiveRange = (
+    p: Pick<Period, 'start_date' | 'end_date'> & { parent_period?: any },
+  ): { start: Date | null; end: Date | null } => {
+    // Prefer the period's own range when present; otherwise fall back to its parent (Season).
+    const ownStart = parseDateOnlyUtc(p.start_date);
+    const ownEnd = parseDateOnlyUtc(p.end_date);
+    if (ownStart || ownEnd) return { start: ownStart, end: ownEnd };
+
+    const parentStart = parseDateOnlyUtc(p.parent_period?.start_date);
+    const parentEnd = parseDateOnlyUtc(p.parent_period?.end_date);
+    return { start: parentStart, end: parentEnd };
+  };
+
+  const isPeriodActive = (p: Pick<Period, 'start_date' | 'end_date'> & { parent_period?: any }): boolean => {
+    const { start, end } = getEffectiveRange(p);
+    // Open-ended ranges: missing start means "always started"; missing end means "never ends".
+    if (!start && !end) return false;
+
     const today = parseDateOnlyUtc(new Date().toISOString())!;
-    return today.getTime() >= start.getTime() && today.getTime() <= end.getTime();
+    const afterStart = !start || today.getTime() >= start.getTime();
+    const beforeEnd = !end || today.getTime() <= end.getTime();
+    return afterStart && beforeEnd;
   };
 
   // Initialize org filter
