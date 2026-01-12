@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Button,
   Card,
   Badge,
   Alert,
+  Input,
 } from '@django-core/design-system';
 import { MemberList } from '../projects/components/MemberList';
 import { Table } from '../../shims/design-system';
@@ -21,6 +22,10 @@ import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import ProjectDetailModal from './ProjectDetailModal';
+import ProjectCreateModal from './ProjectCreateModal';
+import PeriodCreateModal from './PeriodCreateModal';
+import MatchCreateModal from './MatchCreateModal';
+import InviteMemberModal from './InviteMemberModal';
 
 const getPagedResults = (json: any): any[] => {
   // Supports both legacy DRF shapes and this app's envelope (BaseAPIPagination).
@@ -86,30 +91,25 @@ const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promis
  * - Shows recent audit events filtered by project_id
  */
 
-const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%' };
-const compactThStyle: React.CSSProperties = {
-  textAlign: 'left',
-  padding: '8px 12px',
-  fontSize: '12px',
-  fontWeight: 600,
-  color: 'var(--app-muted-text)',
-  borderBottom: '1px solid var(--app-border)',
-  whiteSpace: 'nowrap',
-};
-const compactTdStyle: React.CSSProperties = {
-  padding: '6px 12px',
-  borderBottom: '1px solid var(--app-border)',
-  verticalAlign: 'middle',
-  height: '40px',
-};
+// Match OrganisationDetailPage (table layout, typography, action buttons)
+const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' };
+const compactThStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.8rem', textAlign: 'left', borderBottom: '2px solid var(--app-border)' };
+const compactTdStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.85rem', verticalAlign: 'middle', borderBottom: '1px solid #eee' };
 const compactTextTdStyle: React.CSSProperties = {
   ...compactTdStyle,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
+  maxWidth: 0,
+};
+const compactActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: '8px',
+  flexWrap: 'wrap',
 };
 
-type ActionTone = 'neutral' | 'primary' | 'danger';
+type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
 const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
   const base: React.CSSProperties = {
     padding: '4px 8px',
@@ -121,6 +121,9 @@ const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
   };
   if (tone === 'primary') {
     return { ...base, border: '1px solid #007bff', color: '#007bff' };
+  }
+  if (tone === 'warning') {
+    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
   }
   if (tone === 'danger') {
     return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
@@ -159,15 +162,54 @@ export const ProjectDetailPage: React.FC = () => {
   const [seasonsLoading, setSeasonsLoading] = useState(false);
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [competitionsLoading, setCompetitionsLoading] = useState(false);
-  const [competitionFilter, setCompetitionFilter] = useState<'all' | 'with-matches' | 'without-matches'>('all');
+  const [compMatchesFilter, setCompMatchesFilter] = useState<'all' | 'with' | 'without'>('all');
   const [allMatches, setAllMatches] = useState<any[]>([]);
   const [allMatchesLoading, setAllMatchesLoading] = useState(false);
 
-  // People tab filters
-  const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>('all');
-  const [selectedSeasonFilter, setSelectedSeasonFilter] = useState<string>('all');
-  const [selectedCompetitionFilter, setSelectedCompetitionFilter] = useState<string>('all');
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
+  // Organisation members (Users tab; mirrors OrganisationDetailPage)
+  const [orgMembers, setOrgMembers] = useState<any[]>([]);
+  const [orgMembersLoading, setOrgMembersLoading] = useState(false);
+
+  // Users tab filters + paging
+  const [memberSearch, setMemberSearch] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('');
+  const [userTeamFilterId, setUserTeamFilterId] = useState<string>('');
+  const [userSeasonFilterId, setUserSeasonFilterId] = useState<string>('');
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersPageSize] = useState(25);
+
+  // Teams tab filters
+  const [teamSearch, setTeamSearch] = useState('');
+  const [teamStatusFilter, setTeamStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+
+  // Seasons tab filters
+  const [seasonSearch, setSeasonSearch] = useState('');
+  const [seasonTeamFilterId, setSeasonTeamFilterId] = useState<string>('');
+
+  // Competitions tab filters
+  const [competitionSearch, setCompetitionSearch] = useState('');
+  const [compTeamFilterId, setCompTeamFilterId] = useState<string>('');
+  const [compSeasonFilterId, setCompSeasonFilterId] = useState<string>('');
+
+  // Matches tab filters
+  const [matchSearch, setMatchSearch] = useState('');
+  const [matchTeamFilterId, setMatchTeamFilterId] = useState<string>('');
+  const [matchSeasonFilterId, setMatchSeasonFilterId] = useState<string>('');
+  const [matchCompetitionFilterId, setMatchCompetitionFilterId] = useState<string>('');
+
+  // Create / Invite modals (match OrganisationDetailPage patterns)
+  const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
+  const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
+  const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
+  const [isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen] = useState(false);
+  const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
+
+  // Edit member role (minimal port)
+  const [isEditMemberRoleModalOpen, setIsEditMemberRoleModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<any | null>(null);
+  const [editingMemberRole, setEditingMemberRole] = useState<'admin' | 'member'>('member');
+  const [editMemberRoleError, setEditMemberRoleError] = useState<string | null>(null);
+  const [editMemberRoleSaving, setEditMemberRoleSaving] = useState(false);
 
   // Period helper functions (matching OrganisationDetailPage pattern)
   const getPeriodType = (p: any): string => {
@@ -409,6 +451,31 @@ export const ProjectDetailPage: React.FC = () => {
 
   const orgSlugOrId = resolvedOrg?.slug || resolvedOrg?.id;
 
+  const currentOrgSlug = String(resolvedOrg?.slug || orgId || orgSlugOrId || '').trim();
+  const currentClubId = String((clubId ? club?.id : project?.id) || '').trim();
+  const currentClubSlugOrId = String((clubId ? (club as any)?.slug || club?.id : (project as any)?.slug || project?.id) || '').trim();
+
+  const getApiV1BaseUrl = () => {
+    const raw = String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    return raw.endsWith('/api/v1') ? raw : `${raw}/api/v1`;
+  };
+
+  const getCsrfToken = () =>
+    document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('csrftoken='))
+      ?.split('=')[1] || '';
+
+  const createModalOrganisations = useMemo(() => {
+    const o = resolvedOrg?.id ? [{ id: String(resolvedOrg.id), name: resolvedOrg.name, slug: (resolvedOrg as any).slug }] : [];
+    return o as any[];
+  }, [resolvedOrg?.id, resolvedOrg?.name, (resolvedOrg as any)?.slug]);
+
+  const createModalClubs = useMemo(() => {
+    const c = !clubId && project?.id ? [project] : club?.id ? [club] : [];
+    return c as any[];
+  }, [clubId, project, club]);
+
   const clubsListPath = orgSlugOrId ? `/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}` : '/clubs';
 
   // Check superadmin status - match the logic in useFeatureFlag
@@ -437,6 +504,80 @@ export const ProjectDetailPage: React.FC = () => {
   };
   const userCanEditProject = canEditProject(permissionContext);
   const userCanDeleteProject = canDeleteProject(permissionContext);
+
+  const userCanManageMembers = userCanEditProject;
+
+  const fetchOrgMembers = async (force = false) => {
+    if (orgMembersLoading) return;
+    const haveMembershipDetails = orgMembers.some((item: any) => {
+      const u = item?.user || item;
+      const details =
+        (item as any)?.project_membership_details ||
+        (u as any)?.project_membership_details ||
+        (item as any)?.project_memberships_details ||
+        (u as any)?.project_memberships_details;
+      return Array.isArray(details);
+    });
+    if (!force && orgMembers.length > 0 && haveMembershipDetails) return;
+    if (!currentOrgSlug) return;
+
+    setOrgMembersLoading(true);
+    try {
+      const apiV1BaseUrl = getApiV1BaseUrl();
+      const params = new URLSearchParams();
+      params.set('include_project_memberships', 'true');
+      params.set('include_role_assignments', 'true');
+      params.set('include_project_membership_details', 'true');
+      params.set('page_size', '250');
+
+      const membersUrl = `${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/members/?${params.toString()}`;
+      const allMembers = await fetchAllPages<any>(membersUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Organisation-ID': String(resolvedOrg?.id || (project as any)?.organisation_id || ''),
+        },
+        credentials: 'include',
+      });
+      setOrgMembers(allMembers);
+    } catch (e) {
+      console.error('[ProjectDetailPage] Org members fetch failed:', e);
+      setOrgMembers([]);
+    } finally {
+      setOrgMembersLoading(false);
+    }
+  };
+
+  const saveMemberRole = async () => {
+    if (!editingMember) return;
+    const membershipId = String(editingMember?.id || '').trim();
+    if (!membershipId) return;
+
+    setEditMemberRoleError(null);
+    try {
+      const apiV1BaseUrl = getApiV1BaseUrl();
+      const res = await fetch(`${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/members/${membershipId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify({ role: editingMemberRole }),
+      });
+
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '');
+        throw new Error(detail || 'Failed to update role');
+      }
+
+      setOrgMembers((prev) => prev.map((m: any) => (String(m.id) === String(membershipId) ? { ...m, role: editingMemberRole } : m)));
+      setIsEditMemberRoleModalOpen(false);
+      setEditingMember(null);
+    } catch (e) {
+      setEditMemberRoleError(e instanceof Error ? e.message : 'Failed to update role');
+    }
+  };
 
   console.log('[ProjectDetailPage] Permission Results:', {
     userCanEditProject,
@@ -1145,17 +1286,26 @@ export const ProjectDetailPage: React.FC = () => {
       // Also load seasons for count calculation in Teams tab
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
     } else if (activeTab === 'seasons') {
-      console.log('[useEffect] On seasons tab, checking if should fetch...');
-      if (seasons.length === 0 && !seasonsLoading) {
-        console.log('[useEffect] Calling fetchSeasons()');
-        fetchSeasons();
-      } else {
-        console.log('[useEffect] NOT calling fetchSeasons - seasons.length:', seasons.length, 'seasonsLoading:', seasonsLoading);
-      }
-    } else if (activeTab === 'competitions') {
+      if (!isLikelyTeam && childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
+      if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
       if (competitions.length === 0 && !competitionsLoading) fetchCompetitions();
-    } else if (activeTab === 'matches') {
       if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
+    } else if (activeTab === 'competitions') {
+      if (!isLikelyTeam && childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
+      if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
+      if (competitions.length === 0 && !competitionsLoading) fetchCompetitions();
+      if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
+    } else if (activeTab === 'matches') {
+      if (!isLikelyTeam && childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
+      if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
+      if (competitions.length === 0 && !competitionsLoading) fetchCompetitions();
+      if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
+    } else if (activeTab === 'people') {
+      if (!isLikelyTeam) {
+        if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
+        if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
+      }
+      fetchOrgMembers(false);
     }
   }, [activeTab, project?.id, isLikelyTeam]);
 
@@ -2004,112 +2154,759 @@ export const ProjectDetailPage: React.FC = () => {
           )}
 
           {activeTab === 'people' && (
-            <Card>
-                {isLikelyTeam ? (
-                  <MemberList projectId={String(project.id)} initialMembers={members as any} />
-                ) : (
-                  <>
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold mb-3">People</h3>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-                        <div>
-                          <select
-                            value={selectedTeamFilter}
-                            onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                            style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                          >
-                            <option value="all">All Teams</option>
-                            {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
-                              const team = childProjects.find(t => String(t.id) === id);
-                              return team ? (
-                                <option key={team.id} value={String(team.id)}>
-                                  {team.name}
-                                </option>
-                              ) : null;
-                            })}
-                          </select>
-                        </div>
-                        <div>
-                          <select
-                            value={selectedStatusFilter}
-                            onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                            style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                          >
-                            <option value="all">All Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                          </select>
-                        </div>
-                      </div>
+            <Card className="mb-6">
+              {isLikelyTeam ? (
+                <MemberList projectId={String(project.id)} initialMembers={members as any} />
+              ) : (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Users</h3>
+                      <Input value={memberSearch} onChange={(e) => setMemberSearch(e.target.value)} placeholder="Search users" style={{ width: '240px' }} />
+                      <select
+                        value={userTeamFilterId}
+                        onChange={(e) => {
+                          setUserTeamFilterId(e.target.value);
+                          setUserSeasonFilterId('');
+                          setUsersPage(1);
+                        }}
+                        style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                      >
+                        <option value="">Team: All</option>
+                        {(childProjects as any[]).map((t: any) => (
+                          <option key={t.id} value={String(t.id)}>
+                            {t.name}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={userSeasonFilterId}
+                        onChange={(e) => {
+                          setUserSeasonFilterId(e.target.value);
+                          setUsersPage(1);
+                        }}
+                        style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                      >
+                        <option value="">Season: All</option>
+                        {(seasons as any[])
+                          .filter((p: any) => isSeasonPeriod(p))
+                          .filter((p: any) => {
+                            if (!userTeamFilterId) return true;
+                            const teamId = String(p.project_id ?? p.project?.id ?? '');
+                            return teamId === String(userTeamFilterId);
+                          })
+                          .map((p: any) => (
+                            <option key={p.id} value={String(p.id)}>
+                              {p.name}
+                            </option>
+                          ))}
+                      </select>
+                      <select
+                        value={userRoleFilter}
+                        onChange={(e) => {
+                          setUserRoleFilter(e.target.value);
+                          setUsersPage(1);
+                        }}
+                        style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                      >
+                        <option value="">Role: All</option>
+                        <option value="admin">Admin</option>
+                        <option value="member">Member</option>
+                      </select>
                     </div>
-                    {members.length === 0 ? (
-                      <Alert variant="info">No people found for this club.</Alert>
-                    ) : (
-                      <Table style={compactTableStyle}>
-                        <thead>
-                          <tr>
-                            <th style={compactThStyle}>Name</th>
-                            <th style={compactThStyle}>Email</th>
-                            <th style={compactThStyle}>Team</th>
-                            <th style={compactThStyle}>Role</th>
-                            <th style={compactThStyle} className="text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(() => {
-                            // Apply filters
-                            let filteredMembers = members;
 
-                            // Filter by team
-                            if (selectedTeamFilter !== 'all') {
-                              filteredMembers = filteredMembers.filter((item: any) => {
-                                const projectId = String(item.project_id || item.project?.id || '');
-                                return projectId === selectedTeamFilter;
-                              });
-                            }
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setMemberSearch('');
+                          setUserRoleFilter('');
+                          setUserTeamFilterId('');
+                          setUserSeasonFilterId('');
+                          setUsersPage(1);
+                        }}
+                      >
+                        Clear
+                      </Button>
+                      <button
+                        onClick={() => setIsInviteMemberModalOpen(true)}
+                        style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                      >
+                        Add User
+                      </button>
+                    </div>
+                  </div>
 
-                            // Filter by status
-                            if (selectedStatusFilter !== 'all') {
-                              filteredMembers = filteredMembers.filter((item: any) => {
-                                const isActive = item.is_active !== undefined ? item.is_active : true;
-                                return selectedStatusFilter === 'active' ? isActive : !isActive;
-                              });
-                            }
+                  {orgMembersLoading ? (
+                    <Alert variant="info">Loading members...</Alert>
+                  ) : (
+                    <>
+                      {(() => {
+                        const normalizedQuery = memberSearch.trim().toLowerCase();
 
-                            return filteredMembers.map((item: any) => {
-                              const user = item.user || item;
-                              const userId = String(user.id || item.id);
-                              const membershipId = String(item.membership_id || item.id);
-                              const name =
-                                user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || '-';
-                              const email = user.email || '-';
-                              const role = item.role || user.role || 'member';
-                              const projectId = String(item.project_id || item.project?.id || '');
-                              const teamName = childProjects.find(t => String(t.id) === projectId)?.name || '-';
+                        // Only show real org members (exclude virtual/inherited members from project assignments)
+                        const orgOnlyMembers = orgMembers.filter((item: any) => {
+                          const membershipId = item.id;
+                          const isVirtualMember = item.source === 'assignment' || item.source === 'project_membership' || String(membershipId).startsWith('pm:');
+                          return !isVirtualMember;
+                        });
+
+                        const seasonTeamById = new Map<string, string>();
+                        for (const p of seasons as any[]) {
+                          if (!isSeasonPeriod(p)) continue;
+                          const teamId = String(p.project_id ?? p.project?.id ?? '');
+                          if (teamId) seasonTeamById.set(String(p.id), teamId);
+                        }
+
+                        const getMemberProjectMemberships = (item: any): any[] => {
+                          const u = item?.user || item;
+                          const list =
+                            (item as any)?.project_memberships ||
+                            (u as any)?.project_memberships ||
+                            (item as any)?.project_membership_details ||
+                            (u as any)?.project_membership_details ||
+                            [];
+                          return Array.isArray(list) ? list : [];
+                        };
+
+                        const getPmTeamId = (pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '');
+                        const getPmClubId = (pm: any) =>
+                          String(
+                            pm?.club_id ??
+                              pm?.club?.id ??
+                              pm?.project?.parent_id ??
+                              pm?.project?.parent?.id ??
+                              pm?.project?.parent_project_id ??
+                              ''
+                          );
+
+                        const filteredMembers = orgOnlyMembers.filter((item: any) => {
+                          const u = item.user || item;
+                          const role = item.role || 'member';
+
+                          // Role filter
+                          if (userRoleFilter && role !== userRoleFilter) return false;
+
+                          // Search filter
+                          const haystack = `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase();
+                          if (normalizedQuery && !haystack.includes(normalizedQuery)) return false;
+
+                          // Club scope: ONLY this club
+                          const effectiveClubId = currentClubId;
+                          const effectiveTeamId = userTeamFilterId || (userSeasonFilterId ? seasonTeamById.get(String(userSeasonFilterId)) || '' : '');
+
+                          const pms = getMemberProjectMemberships(item);
+                          if ((effectiveClubId || effectiveTeamId) && (!pms || pms.length === 0)) return false;
+                          if (effectiveClubId) {
+                            const ok = pms.some((pm: any) => getPmClubId(pm) === String(effectiveClubId));
+                            if (!ok) return false;
+                          }
+                          if (effectiveTeamId) {
+                            const ok = pms.some((pm: any) => getPmTeamId(pm) === String(effectiveTeamId));
+                            if (!ok) return false;
+                          }
+
+                          return true;
+                        });
+
+                        if (filteredMembers.length === 0) return <Alert variant="info">No users match your search.</Alert>;
+
+                        const totalPages = Math.max(1, Math.ceil(filteredMembers.length / usersPageSize));
+                        const safePage = Math.min(usersPage, totalPages);
+                        const start = (safePage - 1) * usersPageSize;
+                        const pageItems = filteredMembers.slice(start, start + usersPageSize);
+
+                        const teamById = new Map<string, any>();
+                        for (const t of childProjects as any[]) teamById.set(String(t.id), t);
+
+                        return (
+                          <>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                              <div style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>
+                                Page {safePage} of {totalPages} ({filteredMembers.length} users)
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <Button variant="secondary" size="sm" disabled={safePage <= 1} onClick={() => setUsersPage((p) => Math.max(1, p - 1))}>
+                                  Previous
+                                </Button>
+                                <Button variant="secondary" size="sm" disabled={safePage >= totalPages} onClick={() => setUsersPage((p) => Math.min(totalPages, p + 1))}>
+                                  Next
+                                </Button>
+                              </div>
+                            </div>
+                            <Card>
+                              <Table style={compactTableStyle}>
+                                <colgroup>
+                                  <col style={{ width: '180px' }} />
+                                  <col style={{ width: '180px' }} />
+                                  <col style={{ width: '180px' }} />
+                                  <col style={{ width: '200px' }} />
+                                  <col style={{ width: '220px' }} />
+                                  <col style={{ width: '120px' }} />
+                                  <col style={{ width: '330px' }} />
+                                </colgroup>
+                                <thead>
+                                  <tr>
+                                    <th style={compactThStyle}>Federation</th>
+                                    <th style={compactThStyle}>Club</th>
+                                    <th style={compactThStyle}>Team</th>
+                                    <th style={compactThStyle}>User</th>
+                                    <th style={compactThStyle}>Email</th>
+                                    <th style={compactThStyle}>Role</th>
+                                    <th style={compactThStyle}>Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {pageItems.map((item: any) => {
+                                    const userObj = item.user || item;
+                                    const role = item.role || 'member';
+                                    const membershipId = item.id;
+
+                                    const pms = (() => {
+                                      const u = item?.user || item;
+                                      const list =
+                                        (item as any)?.project_memberships ||
+                                        (u as any)?.project_memberships ||
+                                        (item as any)?.project_membership_details ||
+                                        (u as any)?.project_membership_details ||
+                                        [];
+                                      return Array.isArray(list) ? list : [];
+                                    })();
+
+                                    const teamIds = Array.from(new Set(pms.map((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '')).filter(Boolean)));
+                                    const teamId = teamIds.length === 1 ? teamIds[0] : '';
+                                    const team = teamId ? teamById.get(String(teamId)) : null;
+                                    const teamSlugOrId = team ? (team as any).slug || String((team as any).id) : teamId;
+
+                                    return (
+                                      <tr key={String(userObj.id)}>
+                                        <td style={compactTextTdStyle}>
+                                          <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                            {String(resolvedOrg?.name || currentOrgSlug || '—')}
+                                          </Link>
+                                        </td>
+                                        <td style={compactTextTdStyle}>
+                                          {currentClubSlugOrId ? (
+                                            <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600" style={{ textDecoration: 'none' }}>
+                                              {String((clubId ? club?.name : project?.name) || currentClubSlugOrId)}
+                                            </Link>
+                                          ) : (
+                                            '—'
+                                          )}
+                                        </td>
+                                        <td style={compactTextTdStyle}>
+                                          {teamIds.length > 1 ? (
+                                            <span title={teamIds.map((id) => teamById.get(String(id))?.name || id).join(', ')}>Multiple</span>
+                                          ) : teamSlugOrId ? (
+                                            <Link
+                                              to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}`}
+                                              className="text-blue-600 hover:underline"
+                                            >
+                                              {team?.name || teamId}
+                                            </Link>
+                                          ) : (
+                                            '—'
+                                          )}
+                                        </td>
+                                        <td style={compactTextTdStyle}>
+                                          <Link to={`/organisations/${currentOrgSlug}/users/${userObj.id}`} className="text-blue-600 hover:underline">
+                                            {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
+                                          </Link>
+                                        </td>
+                                        <td style={compactTextTdStyle}>{userObj.email}</td>
+                                        <td style={compactTdStyle}>
+                                          <Badge variant="default">{role}</Badge>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                          {userCanManageMembers ? (
+                                            <div style={compactActionsStyle}>
+                                              <button
+                                                onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
+                                                style={actionButtonStyle('primary')}
+                                              >
+                                                View
+                                              </button>
+                                              <button
+                                                onClick={() => {
+                                                  setEditingMember(item);
+                                                  setEditingMemberRole((item?.role || 'member') as any);
+                                                  setEditMemberRoleError(null);
+                                                  setIsEditMemberRoleModalOpen(true);
+                                                }}
+                                                style={actionButtonStyle('warning')}
+                                              >
+                                                Edit
+                                              </button>
+                                              <button
+                                                onClick={async () => {
+                                                  if (!window.confirm(`Remove ${userObj.email} from federation?`)) return;
+                                                  try {
+                                                    const apiV1BaseUrl = getApiV1BaseUrl();
+                                                    const res = await fetch(`${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/members/${membershipId}/`, {
+                                                      method: 'DELETE',
+                                                      headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'X-CSRFToken': getCsrfToken() || '',
+                                                      },
+                                                      credentials: 'include',
+                                                    });
+                                                    if (!res.ok) {
+                                                      alert('Failed to remove user');
+                                                      return;
+                                                    }
+                                                    setOrgMembers((prev) => prev.filter((m: any) => String(m.id) !== String(membershipId)));
+                                                  } catch (e) {
+                                                    console.error(e);
+                                                    alert('Error removing user');
+                                                  }
+                                                }}
+                                                style={actionButtonStyle('danger')}
+                                              >
+                                                Remove
+                                              </button>
+                                            </div>
+                                          ) : null}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </Table>
+                            </Card>
+                          </>
+                        );
+                      })()}
+                    </>
+                  )}
+                </>
+              )}
+            </Card>
+          )}
+
+            {activeTab === 'teams' && !isLikelyTeam && (
+              <Card className="mb-6">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Teams</h3>
+                    <Input value={teamSearch} onChange={(e) => setTeamSearch(e.target.value)} placeholder="Search teams" style={{ width: '240px' }} />
+                    <select
+                      value={String(project.id)}
+                      disabled
+                      style={{
+                        padding: '8px 12px',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        backgroundColor: 'var(--app-surface)',
+                        opacity: 0.85,
+                      }}
+                    >
+                      <option value={String(project.id)}>
+                        Club: {String(project?.name || project?.slug || project?.id || '—')}
+                      </option>
+                    </select>
+                    <select
+                      value={teamStatusFilter}
+                      onChange={(e) => setTeamStatusFilter(e.target.value as any)}
+                      style={{
+                        padding: '8px 12px',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        backgroundColor: 'var(--app-surface)',
+                      }}
+                    >
+                      <option value="all">Status: All</option>
+                      <option value="active">Status: Active</option>
+                      <option value="inactive">Status: Inactive</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setTeamSearch('');
+                        setTeamStatusFilter('all');
+                      }}
+                    >
+                      Clear
+                    </Button>
+                    <button
+                      onClick={() => setIsCreateTeamModalOpen(true)}
+                      style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                    >
+                      Add Team
+                    </button>
+                  </div>
+                </div>
+
+                {childProjectsLoading ? (
+                  <Alert variant="info">Loading teams…</Alert>
+                ) : childProjects.length === 0 ? (
+                  <Alert variant="info">No teams found in this club.</Alert>
+                ) : (
+                  (() => {
+                    const teamMatchesCount: Record<string, number> = {};
+                    for (const m of allMatches as any[]) {
+                      const teamId = String(m?.project_id ?? m?.project?.id ?? '').trim();
+                      if (!teamId) continue;
+                      teamMatchesCount[teamId] = (teamMatchesCount[teamId] || 0) + 1;
+                    }
+
+                    const teamSeasonsCountById: Record<string, number> = {};
+                    for (const s of seasons as any[]) {
+                      if (!isSeasonPeriod(s)) continue;
+                      const teamId = String(s?.project_id ?? s?.project?.id ?? '').trim();
+                      if (!teamId) continue;
+                      teamSeasonsCountById[teamId] = (teamSeasonsCountById[teamId] || 0) + 1;
+                    }
+
+                    const teamCompetitionsCountById: Record<string, number> = {};
+                    for (const c of competitions as any[]) {
+                      if (!isCompetitionPeriod(c)) continue;
+                      const teamId = String(c?.project_id ?? c?.project?.id ?? '').trim();
+                      if (!teamId) continue;
+                      teamCompetitionsCountById[teamId] = (teamCompetitionsCountById[teamId] || 0) + 1;
+                    }
+
+                    const normalized = teamSearch.trim().toLowerCase();
+                    const filteredTeams = (childProjects as any[]).filter((t: any) => {
+                      const isActive = t.is_active !== false;
+                      if (teamStatusFilter === 'active' && !isActive) return false;
+                      if (teamStatusFilter === 'inactive' && isActive) return false;
+                      if (!normalized) return true;
+                      return String(t.name || '').toLowerCase().includes(normalized);
+                    });
+
+                    if (filteredTeams.length === 0) {
+                      return <Alert variant="info">No teams match your search.</Alert>;
+                    }
+
+                    const clubSlugOrId = project.slug || project.id;
+
+                    return (
+                      <Card>
+                        <div className="overflow-x-auto">
+                          <Table style={compactTableStyle}>
+                            <colgroup>
+                              <col style={{ width: '180px' }} />
+                              <col style={{ width: '180px' }} />
+                              <col style={{ width: '180px' }} />
+                              <col style={{ width: '95px' }} />
+                              <col style={{ width: '120px' }} />
+                              <col style={{ width: '95px' }} />
+                              <col style={{ width: '90px' }} />
+                              <col style={{ width: '120px' }} />
+                              <col style={{ width: '330px' }} />
+                            </colgroup>
+                            <thead>
+                              <tr>
+                                <th style={compactThStyle}>Federation</th>
+                                <th style={compactThStyle}>Club</th>
+                                <th style={compactThStyle}>Team</th>
+                                <th style={compactThStyle}>Seasons</th>
+                                <th style={compactThStyle}>Competitions</th>
+                                <th style={compactThStyle}>Matches</th>
+                                <th style={compactThStyle}>Users</th>
+                                <th style={compactThStyle}>Status</th>
+                                <th style={compactThStyle}>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredTeams.map((team: any) => {
+                                const teamSlugOrId = team.slug || team.id;
+                                const teamIdKey = String(team.id);
+                                const seasonsCount = teamSeasonsCountById[teamIdKey] ?? 0;
+                                const competitionsCount = teamCompetitionsCountById[teamIdKey] ?? 0;
+                                const matchesCount = teamMatchesCount[teamIdKey] ?? 0;
+                                const usersCount = team.member_count ?? 0;
+
+                                return (
+                                  <tr key={team.id}>
+                                    <td style={compactTextTdStyle}>
+                                      <Link to={`/organisations/${orgSlugOrId}`} className="text-blue-600 hover:underline">
+                                        {String(orgWithRole?.name || resolvedOrg?.name || currentOrgSlug || '—')}
+                                      </Link>
+                                    </td>
+                                    <td style={compactTextTdStyle}>
+                                      <Link
+                                        to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
+                                        className="text-blue-600 hover:underline"
+                                      >
+                                        {String(project?.name || project?.slug || project?.id || '—')}
+                                      </Link>
+                                    </td>
+                                    <td style={compactTextTdStyle}>
+                                      <Link
+                                        to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
+                                        className="text-blue-600 hover:underline"
+                                      >
+                                        {team.name}
+                                      </Link>
+                                    </td>
+                                    <td style={compactTdStyle}>
+                                      <Badge variant="default">{seasonsCount}</Badge>
+                                    </td>
+                                    <td style={compactTdStyle}>
+                                      <Badge variant="default">{competitionsCount}</Badge>
+                                    </td>
+                                    <td style={compactTdStyle}>
+                                      <Badge variant="default">{matchesCount}</Badge>
+                                    </td>
+                                    <td style={compactTdStyle}>
+                                      <Badge variant="default">{usersCount}</Badge>
+                                    </td>
+                                    <td style={compactTdStyle}>
+                                      <Badge variant={team.is_active ? 'success' : 'warning'}>
+                                        {team.is_active ? 'Active' : 'Inactive'}
+                                      </Badge>
+                                    </td>
+                                    <td style={compactTdStyle}>
+                                      <div style={compactActionsStyle}>
+                                        <button
+                                          onClick={() => {
+                                            setDetailProject(team);
+                                            setIsDetailModalOpen(true);
+                                          }}
+                                          style={actionButtonStyle('primary')}
+                                        >
+                                          View
+                                        </button>
+                                        {userCanEditProject && (
+                                          <button
+                                            onClick={() =>
+                                              navigate(
+                                                `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
+                                                  team.slug || team.id
+                                                }/edit`
+                                              )
+                                            }
+                                            style={actionButtonStyle('warning')}
+                                          >
+                                            Edit
+                                          </button>
+                                        )}
+                                        {userCanDeleteProject && (
+                                          <button
+                                            onClick={async () => {
+                                              if (!window.confirm(`Are you sure you want to delete project ${team.name}?`)) return;
+                                              try {
+                                                const apiV1BaseUrl = getApiV1BaseUrl();
+                                                const res = await fetch(
+                                                  `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${team.slug || team.id}/`,
+                                                  {
+                                                    method: 'DELETE',
+                                                    headers: {
+                                                      'Content-Type': 'application/json',
+                                                      'X-CSRFToken': getCsrfToken() || '',
+                                                    },
+                                                    credentials: 'include',
+                                                  }
+                                                );
+                                                if (res.ok) {
+                                                  setChildProjects((prev) => prev.filter((p) => String(p.id) !== String(team.id)));
+                                                } else {
+                                                  alert('Error deleting team');
+                                                }
+                                              } catch (e) {
+                                                console.error(e);
+                                                alert('Error deleting team');
+                                              }
+                                            }}
+                                            style={actionButtonStyle('danger')}
+                                          >
+                                            Delete
+                                          </button>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </Table>
+                        </div>
+                      </Card>
+                    );
+                  })()
+                )}
+              </Card>
+            )}
+
+            {activeTab === 'seasons' && (
+              <Card className="mb-6">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Seasons</h3>
+                    <Input value={seasonSearch} onChange={(e) => setSeasonSearch(e.target.value)} placeholder="Search seasons" style={{ width: '240px' }} />
+                    <select
+                      value={seasonTeamFilterId}
+                      onChange={(e) => setSeasonTeamFilterId(e.target.value)}
+                      disabled={isLikelyTeam}
+                      style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)', opacity: isLikelyTeam ? 0.85 : 1 }}
+                    >
+                      <option value="">Team: All</option>
+                      {(isLikelyTeam ? [project] : (childProjects as any[]))
+                        .filter(Boolean)
+                        .map((t: any) => (
+                          <option key={t.id} value={String(t.id)}>
+                            {t.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setSeasonSearch('');
+                        setSeasonTeamFilterId('');
+                      }}
+                    >
+                      Clear
+                    </Button>
+                    <button
+                      onClick={() => setIsCreateSeasonModalOpen(true)}
+                      style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                    >
+                      Add Season
+                    </button>
+                  </div>
+                </div>
+
+                {seasonsLoading ? (
+                  <Alert variant="info">Loading seasons…</Alert>
+                ) : (() => {
+                  const normalized = seasonSearch.trim().toLowerCase();
+
+                  const teamById = new Map<string, any>();
+                  for (const t of (isLikelyTeam ? [project] : (childProjects as any[])) as any[]) {
+                    if (!t) continue;
+                    teamById.set(String((t as any).id), t);
+                  }
+
+                  const filteredSeasons = (seasons as any[])
+                    .filter((p: any) => isSeasonPeriod(p))
+                    .filter((s: any) => {
+                      const teamId = String(s?.project_id ?? s?.project?.id ?? '').trim();
+                      if (seasonTeamFilterId && teamId !== String(seasonTeamFilterId)) return false;
+                      if (!normalized) return true;
+                      return String(s?.name || '').toLowerCase().includes(normalized);
+                    });
+
+                  if (filteredSeasons.length === 0) {
+                    return <Alert variant="info">No seasons found for this club (or current filters).</Alert>;
+                  }
+
+                  const competitionsBySeasonId: Record<string, number> = {};
+                  for (const c of competitions as any[]) {
+                    const parentId = String(c?.parent_period_id ?? c?.parent_period?.id ?? '').trim();
+                    if (!parentId) continue;
+                    competitionsBySeasonId[parentId] = (competitionsBySeasonId[parentId] || 0) + 1;
+                  }
+
+                  const matchCountByCompetitionId: Record<string, number> = {};
+                  for (const m of allMatches as any[]) {
+                    const compId = String(m?.period_id ?? m?.period?.id ?? '').trim();
+                    if (!compId) continue;
+                    matchCountByCompetitionId[compId] = (matchCountByCompetitionId[compId] || 0) + 1;
+                  }
+
+                  return (
+                    <Card>
+                      <div className="overflow-x-auto">
+                        <Table style={compactTableStyle}>
+                          <colgroup>
+                            <col style={{ width: '180px' }} />
+                            <col style={{ width: '180px' }} />
+                            <col style={{ width: '180px' }} />
+                            <col style={{ width: '180px' }} />
+                            <col style={{ width: '120px' }} />
+                            <col style={{ width: '95px' }} />
+                            <col style={{ width: '330px' }} />
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th style={compactThStyle}>Federation</th>
+                              <th style={compactThStyle}>Club</th>
+                              <th style={compactThStyle}>Team</th>
+                              <th style={compactThStyle}>Season</th>
+                              <th style={compactThStyle}>Competitions</th>
+                              <th style={compactThStyle}>Matches</th>
+                              <th style={compactThStyle}>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredSeasons.map((season: any) => {
+                              const seasonId = String(season.id);
+                              const seasonSlugOrId = season.slug || season.id;
+                              const teamId = String(season?.project_id ?? season?.project?.id ?? (isLikelyTeam ? (project as any)?.id : '')).trim();
+                              const team = teamId ? teamById.get(teamId) : null;
+                              const teamSlugOrId = team?.slug || team?.id || teamId;
+                              const competitionsCount = competitionsBySeasonId[seasonId] || 0;
+
+                              const compsForSeason = (competitions as any[]).filter((c: any) => String(c?.parent_period_id ?? c?.parent_period?.id ?? '') === seasonId);
+                              const matchesCount = compsForSeason.reduce((sum: number, c: any) => sum + (matchCountByCompetitionId[String(c.id)] || 0), 0);
+
+                              const openHref = currentClubSlugOrId && teamSlugOrId
+                                ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+                                : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`;
 
                               return (
-                                <tr key={`${userId}-${membershipId}`}>
-                                  <td style={compactTextTdStyle}>{name}</td>
-                                  <td style={compactTextTdStyle}>{email}</td>
-                                  <td style={compactTextTdStyle}>{teamName}</td>
+                                <tr key={seasonId}>
                                   <td style={compactTextTdStyle}>
-                                    <Badge variant="default">{String(role)}</Badge>
+                                    <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                      {String(orgWithRole?.name || resolvedOrg?.name || currentOrgSlug || '—')}
+                                    </Link>
+                                  </td>
+                                  <td style={compactTextTdStyle}>
+                                    {currentClubSlugOrId ? (
+                                      <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600 hover:underline">
+                                        {String((clubId ? club?.name : project?.name) || currentClubSlugOrId)}
+                                      </Link>
+                                    ) : '—'}
+                                  </td>
+                                  <td style={compactTextTdStyle}>
+                                    {teamSlugOrId ? (
+                                      <Link
+                                        to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                        className="text-blue-600 hover:underline"
+                                      >
+                                        {team?.name || teamId || '—'}
+                                      </Link>
+                                    ) : (team?.name || teamId || '—')}
+                                  </td>
+                                  <td style={compactTextTdStyle}>
+                                    <Link to={openHref} className="text-blue-600 hover:underline">
+                                      {season.name}
+                                    </Link>
                                   </td>
                                   <td style={compactTdStyle}>
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                    <Badge variant="default">{competitionsCount}</Badge>
+                                  </td>
+                                  <td style={compactTdStyle}>
+                                    <Badge variant="default">{matchesCount}</Badge>
+                                  </td>
+                                  <td style={compactTdStyle}>
+                                    <div style={compactActionsStyle}>
                                       <button
                                         onClick={() => {
-                                          setDetailProject({ id: userId, name, email, role });
+                                          setDetailProject({ id: season.id, slug: season.slug, name: season.name, project_type: 'period' } as any);
                                           setIsDetailModalOpen(true);
                                         }}
-                                        style={actionButtonStyle('neutral')}
+                                        style={actionButtonStyle('primary')}
                                       >
                                         View
                                       </button>
                                       {userCanEditProject && (
                                         <button
-                                          onClick={() => navigate(`/users/${userId}/edit`)}
-                                          style={actionButtonStyle('primary')}
+                                          onClick={() => navigate(`${openHref}/edit`)}
+                                          style={actionButtonStyle('warning')}
                                         >
                                           Edit
                                         </button>
@@ -2117,33 +2914,25 @@ export const ProjectDetailPage: React.FC = () => {
                                       {userCanDeleteProject && (
                                         <button
                                           onClick={async () => {
-                                            if (!window.confirm(`Are you sure you want to remove ${name} from this club?`)) return;
+                                            if (!window.confirm(`Are you sure you want to delete season ${season.name}?`)) return;
                                             try {
-                                              const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                              const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-                                              const res = await fetch(
-                                                `${apiBaseUrl}/api/v1/projects/${projectId}/members/${userId}/`,
-                                                {
-                                                  method: 'DELETE',
-                                                  headers: {
-                                                    'Content-Type': 'application/json',
-                                                    'X-CSRFToken': csrfToken || '',
-                                                  },
-                                                  credentials: 'include',
-                                                }
-                                              );
-
+                                              const apiV1BaseUrl = getApiV1BaseUrl();
+                                              const res = await fetch(`${apiV1BaseUrl}/periods/${season.id}/`, {
+                                                method: 'DELETE',
+                                                headers: {
+                                                  'Content-Type': 'application/json',
+                                                  'X-CSRFToken': getCsrfToken() || '',
+                                                },
+                                                credentials: 'include',
+                                              });
                                               if (res.ok) {
-                                                setMembers((prev) => prev.filter((m) =>
-                                                  String(m.user?.id || m.id) !== userId ||
-                                                  String(m.project_id || m.project?.id) !== projectId
-                                                ));
+                                                setSeasons((prev) => prev.filter((p: any) => String(p.id) !== String(season.id)));
                                               } else {
-                                                alert('Error removing member');
+                                                alert('Error deleting season');
                                               }
                                             } catch (e) {
                                               console.error(e);
-                                              alert('Error removing member');
+                                              alert('Error deleting season');
                                             }
                                           }}
                                           style={actionButtonStyle('danger')}
@@ -2155,762 +2944,603 @@ export const ProjectDetailPage: React.FC = () => {
                                   </td>
                                 </tr>
                               );
-                            });
-                          })()}
-                        </tbody>
-                      </Table>
-                    )}
-                  </>
-                )}
-            </Card>
-          )}
-
-            {activeTab === 'teams' && !isLikelyTeam && (
-              <Card>
-                <div className="mb-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-lg font-semibold">Teams</h3>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() =>
-                        navigate(
-                          `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/projects/create`
-                        )
-                      }
-                    >
-                      Add Team
-                    </Button>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-                    <div>
-                      <select
-                        value={selectedStatusFilter}
-                        onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                      >
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {childProjectsLoading ? (
-                  <div className="text-center py-4 text-gray-500">Loading teams...</div>
-                ) : childProjects.length === 0 ? (
-                  <Alert variant="info">No teams found in this club.</Alert>
-                ) : (
-                  <Table style={compactTableStyle}>
-                    <thead>
-                      <tr>
-                        <th style={compactThStyle}>Team</th>
-                        <th style={compactThStyle}>Seasons</th>
-                        <th style={compactThStyle}>Members</th>
-                        <th style={compactThStyle}>Status</th>
-                        <th style={compactThStyle} className="text-right">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(() => {
-                        let filteredTeams = childProjects;
-                        if (selectedStatusFilter !== 'all') {
-                          filteredTeams = filteredTeams.filter((team: any) => {
-                            const isActive = team.is_active !== undefined ? team.is_active : true;
-                            return selectedStatusFilter === 'active' ? isActive : !isActive;
-                          });
-                        }
-                        return filteredTeams.map((team: any) => {
-                        const teamId = String(team.id);
-                        const teamSeasonCount = seasons.filter((s: any) => {
-                          const sProjId = String(s.project_id || s.project?.id || '');
-                          return sProjId === teamId;
-                        }).length;
-                        console.log(`[Teams tab] Team ${team.name} (${teamId}): ${teamSeasonCount} seasons`);
-                        return (
-                        <tr key={team.id}>
-                          <td style={compactTextTdStyle}>
-                            <Link
-                              to={`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
-                                team.slug || team.id
-                              }`}
-                              className="font-medium text-blue-600 hover:underline"
-                            >
-                              {team.name}
-                            </Link>
-                          </td>
-                          <td style={compactTdStyle}>
-                            <Badge variant="info">{teamSeasonCount}</Badge>
-                          </td>
-                          <td style={compactTdStyle}>
-                            {/* member_count from API may include duplicate users with multiple roles */}
-                            <Badge variant="info">{team.member_count ?? 0}</Badge>
-                          </td>
-                          <td style={compactTdStyle}>
-                            <Badge variant={team.is_active ? 'success' : 'warning'}>
-                              {team.is_active ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </td>
-                          <td style={compactTdStyle}>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                              <button
-                                onClick={() => {
-                                  setDetailProject(team);
-                                  setIsDetailModalOpen(true);
-                                }}
-                                style={actionButtonStyle('neutral')}
-                              >
-                                View
-                              </button>
-                              {userCanEditProject && (
-                                <button
-                                  onClick={() =>
-                                    navigate(
-                                      `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
-                                        team.slug || team.id
-                                      }/edit`
-                                    )
-                                  }
-                                  style={actionButtonStyle('primary')}
-                                >
-                                  Edit
-                                </button>
-                              )}
-                              {userCanDeleteProject && (
-                                <button
-                                  onClick={async () => {
-                                    if (!window.confirm(`Are you sure you want to delete team ${team.name}?`)) return;
-                                    try {
-                                      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-                                      const res = await fetch(
-                                        `${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${team.slug || team.id}/`,
-                                        {
-                                          method: 'DELETE',
-                                          headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRFToken': csrfToken || '',
-                                          },
-                                          credentials: 'include',
-                                        }
-                                      );
-
-                                      if (res.ok) {
-                                        setChildProjects((prev) => prev.filter((p) => String(p.id) !== String(team.id)));
-                                      } else {
-                                        alert('Error deleting team');
-                                      }
-                                    } catch (e) {
-                                      console.error(e);
-                                      alert('Error deleting team');
-                                    }
-                                  }}
-                                  style={actionButtonStyle('danger')}
-                                >
-                                  Delete
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );})})()}
-                    </tbody>
-                  </Table>
-                )}
-              </Card>
-            )}
-
-            {activeTab === 'seasons' && (
-              <Card>
-                <div className="mb-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-lg font-semibold">Seasons</h3>
-                    {isLikelyTeam && (
-                      <Button variant="secondary" size="sm" onClick={() => navigate(seasonsPath)}>
-                        Manage Seasons
-                      </Button>
-                    )}
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-                    {!isLikelyTeam && (
-                      <div>
-                        <select
-                          value={selectedTeamFilter}
-                          onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                          style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                        >
-                          <option value="all">All Teams</option>
-                          {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
-                            const team = childProjects.find(t => String(t.id) === id);
-                            return team ? (
-                              <option key={team.id} value={String(team.id)}>
-                                {team.name}
-                              </option>
-                            ) : null;
-                          })}
-                        </select>
+                            })}
+                          </tbody>
+                        </Table>
                       </div>
-                    )}
-                    <div>
-                      <select
-                        value={selectedStatusFilter}
-                        onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                      >
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {seasonsLoading ? (
-                  <div className="text-center py-4 text-gray-500">Loading seasons...</div>
-                ) : seasons.length === 0 ? (
-                  <Alert variant="info">No seasons found.</Alert>
-                ) : (
-                  <Table style={compactTableStyle}>
-                    <thead>
-                      <tr>
-                        <th style={compactThStyle}>Season</th>
-                        {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
-                        <th style={compactThStyle}>Dates</th>
-                        <th style={compactThStyle}>Competitions</th>
-                        <th style={compactThStyle}>Matches</th>
-                        <th style={compactThStyle} className="text-right">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(() => {
-                        let filteredSeasons = seasons;
-                        if (!isLikelyTeam && selectedTeamFilter !== 'all') {
-                          filteredSeasons = filteredSeasons.filter((season: any) => {
-                            const seasonProjectId = String(season.project_id || season.project?.id || '');
-                            return seasonProjectId === selectedTeamFilter;
-                          });
-                        }
-                        if (selectedStatusFilter !== 'all') {
-                          filteredSeasons = filteredSeasons.filter((season: any) => {
-                            const isActive = season.is_active !== undefined ? season.is_active : true;
-                            return selectedStatusFilter === 'active' ? isActive : !isActive;
-                          });
-                        }
-                        return filteredSeasons.map((season: any) => {
-                        const clubSlug = String(project.slug || project.id);
-                        const teamSlugOrId = String(
-                          isLikelyTeam ? project.slug || project.id : season.project?.slug || season.project_id || season.project?.id || ''
-                        );
-                        const seasonHref = isLikelyTeam
-                          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${season.slug || season.id}`
-                          : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${season.slug || season.id}`;
-
-                        const seasonId = String(season.id);
-                        const seasonComps = competitions.filter((c: any) => {
-                          const cParentId = String(c.parent_period_id || c.parent_period?.id || '');
-                          return cParentId === seasonId;
-                        });
-                        const seasonMatches = allMatches.filter((m: any) => {
-                          const mPeriodId = String(m.period_id || m.period?.id || '');
-                          return seasonComps.some((c: any) => String(c.id) === mPeriodId);
-                        });
-                        console.log(`[Seasons tab] Season ${season.name} (${seasonId}): ${seasonComps.length} comps, ${seasonMatches.length} matches`);
-
-                        return (
-                          <tr key={season.id}>
-                            <td style={compactTextTdStyle}>
-                              <Link to={seasonHref} className="font-medium text-blue-600 hover:underline">
-                                {season.name}
-                              </Link>
-                            </td>
-                            {!isLikelyTeam && <td style={compactTextTdStyle}>{season.project?.name || '-'}</td>}
-                            <td style={compactTextTdStyle}>
-                              {season.start_date || '?'} — {season.end_date || '?'}
-                            </td>
-                            <td style={compactTdStyle}>
-                              <Badge variant="info">{seasonComps.length}</Badge>
-                            </td>
-                            <td style={compactTdStyle}>
-                              <Badge variant="info">{seasonMatches.length}</Badge>
-                            </td>
-                            <td style={compactTdStyle}>
-                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                <button
-                                  onClick={() => {
-                                    setDetailProject(season);
-                                    setIsDetailModalOpen(true);
-                                  }}
-                                  style={actionButtonStyle('neutral')}
-                                >
-                                  View
-                                </button>
-                                {userCanEditProject && (
-                                  <button
-                                    onClick={() => navigate(`${seasonHref}/edit`)}
-                                    style={actionButtonStyle('primary')}
-                                  >
-                                    Edit
-                                  </button>
-                                )}
-                                {userCanDeleteProject && (
-                                  <button
-                                    onClick={async () => {
-                                      if (!window.confirm(`Are you sure you want to delete season ${season.name}?`)) return;
-                                      try {
-                                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                        const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-                                        const res = await fetch(
-                                          `${apiBaseUrl}/api/v1/periods/${season.id}/`,
-                                          {
-                                            method: 'DELETE',
-                                            headers: {
-                                              'Content-Type': 'application/json',
-                                              'X-CSRFToken': csrfToken || '',
-                                            },
-                                            credentials: 'include',
-                                          }
-                                        );
-
-                                        if (res.ok) {
-                                          setSeasons((prev) => prev.filter((p) => String(p.id) !== String(season.id)));
-                                        } else {
-                                          alert('Error deleting season');
-                                        }
-                                      } catch (e) {
-                                        console.error(e);
-                                        alert('Error deleting season');
-                                      }
-                                    }}
-                                    style={actionButtonStyle('danger')}
-                                  >
-                                    Delete
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })})()}
-                    </tbody>
-                  </Table>
-                )}
+                    </Card>
+                  );
+                })()}
               </Card>
             )}
 
             {activeTab === 'competitions' && (
-              <Card>
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold mb-3">Competitions</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-                    {!isLikelyTeam && (
-                      <div>
-                        <select
-                          value={selectedTeamFilter}
-                          onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                          style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                        >
-                          <option value="all">All Teams</option>
-                          {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
-                            const team = childProjects.find(t => String(t.id) === id);
-                            return team ? (
-                              <option key={team.id} value={String(team.id)}>
-                                {team.name}
-                              </option>
-                            ) : null;
-                          })}
-                        </select>
-                      </div>
-                    )}
-                    <div>
-                      <select
-                        value={selectedSeasonFilter}
-                        onChange={(e) => setSelectedSeasonFilter(e.target.value)}
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                      >
-                        <option value="all">All Seasons</option>
-                        {Array.from(new Set(seasons.map(s => String(s.id)))).map((id) => {
-                          const season = seasons.find(s => String(s.id) === id);
-                          return season ? (
-                            <option key={season.id} value={String(season.id)}>
-                              {season.name}
-                            </option>
-                          ) : null;
-                        })}
-                      </select>
-                    </div>
-                    <div>
-                      <select
-                        value={competitionFilter}
-                        onChange={(e) => setCompetitionFilter(e.target.value as any)}
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                      >
-                        <option value="all">All</option>
-                        <option value="with-matches">With Matches</option>
-                        <option value="without-matches">Without Matches</option>
-                      </select>
-                    </div>
-                    <div>
-                      <select
-                        value={selectedStatusFilter}
-                        onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                      >
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
-                    </div>
+              <Card className="mb-6">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Competitions</h3>
+                    <Input value={competitionSearch} onChange={(e) => setCompetitionSearch(e.target.value)} placeholder="Search competitions" style={{ width: '240px' }} />
+                    <select
+                      value={compTeamFilterId}
+                      onChange={(e) => {
+                        setCompTeamFilterId(e.target.value);
+                        setCompSeasonFilterId('');
+                      }}
+                      disabled={isLikelyTeam}
+                      style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)', opacity: isLikelyTeam ? 0.85 : 1 }}
+                    >
+                      <option value="">Team: All</option>
+                      {(isLikelyTeam ? [project] : (childProjects as any[]))
+                        .filter(Boolean)
+                        .map((t: any) => (
+                          <option key={t.id} value={String(t.id)}>
+                            {t.name}
+                          </option>
+                        ))}
+                    </select>
+                    <select
+                      value={compSeasonFilterId}
+                      onChange={(e) => setCompSeasonFilterId(e.target.value)}
+                      style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                    >
+                      <option value="">Season: All</option>
+                      {Array.from(
+                        new Set(
+                          (seasons as any[])
+                            .filter((p: any) => isSeasonPeriod(p))
+                            .filter((s: any) => {
+                              const teamId = String(s.project_id ?? s.project?.id ?? '').trim();
+                              if (compTeamFilterId && teamId !== String(compTeamFilterId)) return false;
+                              return true;
+                            })
+                            .map((s: any) => JSON.stringify({ id: String(s.id), name: s.name }))
+                        )
+                      ).map((jsonStr) => {
+                        const s = JSON.parse(jsonStr);
+                        return (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <select
+                      value={compMatchesFilter}
+                      onChange={(e) => setCompMatchesFilter(e.target.value as any)}
+                      style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                    >
+                      <option value="all">Matches: All</option>
+                      <option value="with">With Matches</option>
+                      <option value="without">Without Matches</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setCompetitionSearch('');
+                        setCompTeamFilterId('');
+                        setCompSeasonFilterId('');
+                        setCompMatchesFilter('all');
+                      }}
+                    >
+                      Clear
+                    </Button>
+                    <button
+                      onClick={() => setIsCreateCompetitionModalOpen(true)}
+                      style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: '500' }}
+                    >
+                      Add Competition
+                    </button>
                   </div>
                 </div>
 
                 {competitionsLoading ? (
-                  <div className="text-center py-4 text-gray-500">Loading competitions...</div>
-                ) : competitions.length === 0 ? (
-                  <Alert variant="info">No competitions found.</Alert>
-                ) : (
-                  (() => {
-                    // Apply filters
-                    let filteredCompetitions = competitions;
+                  <Alert variant="info">Loading competitions…</Alert>
+                ) : (() => {
+                  const normalized = competitionSearch.trim().toLowerCase();
 
-                    // Filter by team (for clubs)
-                    if (!isLikelyTeam && selectedTeamFilter !== 'all') {
-                      filteredCompetitions = filteredCompetitions.filter((comp: any) => {
-                        const compParentId = String(comp.parent_period_id || comp.parent_period?.id || '');
-                        const matchingSeason = seasons.find(s => String(s.id) === compParentId);
-                        if (!matchingSeason) return false;
-                        const seasonProjectId = String(matchingSeason.project_id || matchingSeason.project?.id || '');
-                        return seasonProjectId === selectedTeamFilter;
-                      });
-                    }
+                  const teamById = new Map<string, any>();
+                  for (const t of (isLikelyTeam ? [project] : (childProjects as any[])) as any[]) {
+                    if (!t) continue;
+                    teamById.set(String((t as any).id), t);
+                  }
 
-                    // Filter by season
-                    if (selectedSeasonFilter !== 'all') {
-                      filteredCompetitions = filteredCompetitions.filter((comp: any) => {
-                        const compParentId = String(comp.parent_period_id || comp.parent_period?.id || '');
-                        return compParentId === selectedSeasonFilter;
-                      });
-                    }
+                  const seasonById = new Map<string, any>();
+                  for (const s of seasons as any[]) {
+                    if (!isSeasonPeriod(s)) continue;
+                    seasonById.set(String(s.id), s);
+                  }
 
-                    // Filter by status
-                    if (selectedStatusFilter !== 'all') {
-                      filteredCompetitions = filteredCompetitions.filter((comp: any) => {
-                        const isActive = comp.is_active !== undefined ? comp.is_active : true;
-                        return selectedStatusFilter === 'active' ? isActive : !isActive;
-                      });
-                    }
+                  const matchCountByCompetitionId: Record<string, number> = {};
+                  for (const m of allMatches as any[]) {
+                    const compId = String(m?.period_id ?? m?.period?.id ?? '').trim();
+                    if (!compId) continue;
+                    matchCountByCompetitionId[compId] = (matchCountByCompetitionId[compId] || 0) + 1;
+                  }
 
-                    // Filter by match count
-                    filteredCompetitions = filteredCompetitions.filter((comp: any) => {
-                      const compId = String(comp.id);
-                      const compMatches = allMatches.filter((m: any) => {
-                        const mPeriodId = String(m.period_id || m.period?.id || '');
-                        return mPeriodId === compId;
-                      });
-                      const hasMatches = compMatches.length > 0;
+                  const filteredCompetitions = (competitions as any[])
+                    .filter((p: any) => isCompetitionPeriod(p))
+                    .filter((comp: any) => {
+                      const teamId = String(comp.project_id ?? comp.project?.id ?? '').trim();
+                      if (compTeamFilterId && teamId !== String(compTeamFilterId)) return false;
 
-                      if (competitionFilter === 'with-matches') return hasMatches;
-                      if (competitionFilter === 'without-matches') return !hasMatches;
-                      return true; // 'all'
+                      const seasonId = String(comp.parent_period_id ?? comp.parent_period?.id ?? '').trim();
+                      if (compSeasonFilterId && seasonId !== String(compSeasonFilterId)) return false;
+
+                      const matchesCount = matchCountByCompetitionId[String(comp.id)] || 0;
+                      if (compMatchesFilter === 'with' && matchesCount === 0) return false;
+                      if (compMatchesFilter === 'without' && matchesCount > 0) return false;
+
+                      if (!normalized) return true;
+                      return String(comp.name || '').toLowerCase().includes(normalized);
                     });
 
-                    if (filteredCompetitions.length === 0) {
-                      return <Alert variant="info">No competitions match the selected filter.</Alert>;
-                    }
+                  if (filteredCompetitions.length === 0) {
+                    return <Alert variant="info">No competitions found for this club (or current filters).</Alert>;
+                  }
 
-                    return (
-                      <Table style={compactTableStyle}>
-                        <thead>
-                          <tr>
-                            <th style={compactThStyle}>Competition</th>
-                            <th style={compactThStyle}>Season</th>
-                            {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
-                            <th style={compactThStyle}>Matches</th>
-                            <th style={compactThStyle} className="text-right">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredCompetitions.map((comp: any) => {
-                        const seasonId = String(comp.parent_period_id || comp.parent_period?.id || '');
-                        const seasonSlug = String(comp.parent_period?.slug || '');
-                        const clubSlug = String(project.slug || project.id);
-                        const teamSlugOrId = String(
-                          isLikelyTeam ? project.slug || project.id : comp.project?.slug || comp.project_id || comp.project?.id || ''
-                        );
-                        const compHref = isLikelyTeam
-                          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
-                          : `/organisations/${orgSlugOrId}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
+                  return (
+                    <Card>
+                      <div className="overflow-x-auto">
+                        <Table style={compactTableStyle}>
+                          <colgroup>
+                            <col style={{ width: '180px' }} />
+                            <col style={{ width: '180px' }} />
+                            <col style={{ width: '180px' }} />
+                            <col style={{ width: '180px' }} />
+                            <col style={{ width: '200px' }} />
+                            <col style={{ width: '95px' }} />
+                            <col style={{ width: '330px' }} />
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th style={compactThStyle}>Federation</th>
+                              <th style={compactThStyle}>Club</th>
+                              <th style={compactThStyle}>Team</th>
+                              <th style={compactThStyle}>Season</th>
+                              <th style={compactThStyle}>Competition</th>
+                              <th style={compactThStyle}>Matches</th>
+                              <th style={compactThStyle}>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredCompetitions.map((comp: any) => {
+                              const teamId = String(comp.project_id ?? comp.project?.id ?? '').trim();
+                              const team = teamId ? teamById.get(teamId) : null;
+                              const teamSlugOrId = team?.slug || team?.id || teamId;
 
-                        const compId = String(comp.id);
-                        const compMatches = allMatches.filter((m: any) => {
-                          const mPeriodId = String(m.period_id || m.period?.id || '');
-                          return mPeriodId === compId;
-                        });
+                              const seasonId = String(comp.parent_period_id ?? comp.parent_period?.id ?? '').trim();
+                              const season = seasonId ? seasonById.get(seasonId) : null;
+                              const seasonSlugOrId = season?.slug || season?.id || seasonId;
 
-                        return (
-                          <tr key={comp.id}>
-                            <td style={compactTextTdStyle}>
-                              <Link to={compHref} className="font-medium text-blue-600 hover:underline">
-                                {comp.name}
-                              </Link>
-                            </td>
-                            <td style={compactTextTdStyle}>{comp.parent_period?.name || '-'}</td>
-                            {!isLikelyTeam && <td style={compactTextTdStyle}>{comp.project?.name || '-'}</td>}
-                            <td style={compactTdStyle}>
-                              <Badge variant="info">{compMatches.length}</Badge>
-                            </td>
-                            <td style={compactTdStyle}>
-                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                <button
-                                  onClick={() => {
-                                    setDetailProject(comp);
-                                    setIsDetailModalOpen(true);
-                                  }}
-                                  style={actionButtonStyle('neutral')}
-                                >
-                                  View
-                                </button>
-                                {userCanEditProject && (
-                                  <button
-                                    onClick={() => navigate(`${compHref}/edit`)}
-                                    style={actionButtonStyle('primary')}
-                                  >
-                                    Edit
-                                  </button>
-                                )}
-                                {userCanDeleteProject && (
-                                  <button
-                                    onClick={async () => {
-                                      if (!window.confirm(`Are you sure you want to delete competition ${comp.name}?`)) return;
-                                      try {
-                                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                        const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-                                        const res = await fetch(
-                                          `${apiBaseUrl}/api/v1/periods/${comp.id}/`,
-                                          {
-                                            method: 'DELETE',
-                                            headers: {
-                                              'Content-Type': 'application/json',
-                                              'X-CSRFToken': csrfToken || '',
-                                            },
-                                            credentials: 'include',
-                                          }
-                                        );
+                              const openHref = currentClubSlugOrId && teamSlugOrId && seasonSlugOrId
+                                ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${comp.slug || comp.id}`
+                                : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${comp.slug || comp.id}`;
 
-                                        if (res.ok) {
-                                          setCompetitions((prev) => prev.filter((p) => String(p.id) !== String(comp.id)));
-                                        } else {
-                                          alert('Error deleting competition');
-                                        }
-                                      } catch (e) {
-                                        console.error(e);
-                                        alert('Error deleting competition');
-                                      }
-                                    }}
-                                    style={actionButtonStyle('danger')}
-                                  >
-                                    Delete
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </Table>
-                    );
-                  })()
-                )}
+                              const matchesCount = matchCountByCompetitionId[String(comp.id)] || 0;
+
+                              return (
+                                <tr key={comp.id}>
+                                  <td style={compactTextTdStyle}>
+                                    <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                      {String(orgWithRole?.name || resolvedOrg?.name || currentOrgSlug || '—')}
+                                    </Link>
+                                  </td>
+                                  <td style={compactTextTdStyle}>
+                                    {currentClubSlugOrId ? (
+                                      <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600 hover:underline">
+                                        {String((clubId ? club?.name : project?.name) || currentClubSlugOrId)}
+                                      </Link>
+                                    ) : '—'}
+                                  </td>
+                                  <td style={compactTextTdStyle}>
+                                    {teamSlugOrId ? (
+                                      <Link
+                                        to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                        className="text-blue-600 hover:underline"
+                                      >
+                                        {team?.name || teamId || '—'}
+                                      </Link>
+                                    ) : (team?.name || teamId || '—')}
+                                  </td>
+                                  <td style={compactTextTdStyle}>
+                                    {seasonSlugOrId && teamSlugOrId ? (
+                                      <Link
+                                        to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
+                                        className="text-blue-600 hover:underline"
+                                      >
+                                        {season?.name || comp.parent_period?.name || seasonId || '—'}
+                                      </Link>
+                                    ) : (season?.name || comp.parent_period?.name || seasonId || '—')}
+                                  </td>
+                                  <td style={compactTextTdStyle}>
+                                    <Link to={openHref} className="text-blue-600 hover:underline">
+                                      {comp.name}
+                                    </Link>
+                                  </td>
+                                  <td style={compactTdStyle}>
+                                    <Badge variant="default">{matchesCount}</Badge>
+                                  </td>
+                                  <td style={compactTdStyle}>
+                                    <div style={compactActionsStyle}>
+                                      <button
+                                        onClick={() => {
+                                          setDetailProject({ id: comp.id, slug: comp.slug, name: comp.name, project_type: 'period' } as any);
+                                          setIsDetailModalOpen(true);
+                                        }}
+                                        style={actionButtonStyle('primary')}
+                                      >
+                                        View
+                                      </button>
+                                      {userCanEditProject && (
+                                        <button
+                                          onClick={() => navigate(`${openHref}/edit`)}
+                                          style={actionButtonStyle('warning')}
+                                        >
+                                          Edit
+                                        </button>
+                                      )}
+                                      {userCanDeleteProject && (
+                                        <button
+                                          onClick={async () => {
+                                            if (!window.confirm(`Are you sure you want to delete competition ${comp.name}?`)) return;
+                                            try {
+                                              const apiV1BaseUrl = getApiV1BaseUrl();
+                                              const res = await fetch(`${apiV1BaseUrl}/periods/${comp.id}/`, {
+                                                method: 'DELETE',
+                                                headers: {
+                                                  'Content-Type': 'application/json',
+                                                  'X-CSRFToken': getCsrfToken() || '',
+                                                },
+                                                credentials: 'include',
+                                              });
+                                              if (res.ok) {
+                                                setCompetitions((prev) => prev.filter((p: any) => String(p.id) !== String(comp.id)));
+                                              } else {
+                                                alert('Error deleting competition');
+                                              }
+                                            } catch (e) {
+                                              console.error(e);
+                                              alert('Error deleting competition');
+                                            }
+                                          }}
+                                          style={actionButtonStyle('danger')}
+                                        >
+                                          Delete
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </Table>
+                      </div>
+                    </Card>
+                  );
+                })()}
               </Card>
             )}
 
           {activeTab === 'matches' && (
-            <Card>
-               <div className="mb-4">
-                 <h3 className="text-lg font-semibold mb-3">Matches</h3>
-                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-                   {!isLikelyTeam && (
-                     <div>
-                       <select
-                         value={selectedTeamFilter}
-                         onChange={(e) => setSelectedTeamFilter(e.target.value)}
-                         style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                       >
-                         <option value="all">All Teams</option>
-                         {Array.from(new Set(childProjects.map(t => String(t.id)))).map((id) => {
-                           const team = childProjects.find(t => String(t.id) === id);
-                           return team ? (
-                             <option key={team.id} value={String(team.id)}>
-                               {team.name}
-                             </option>
-                           ) : null;
-                         })}
-                       </select>
-                     </div>
-                   )}
-                   <div>
-                     <select
-                       value={selectedSeasonFilter}
-                       onChange={(e) => setSelectedSeasonFilter(e.target.value)}
-                       style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                     >
-                       <option value="all">All Seasons</option>
-                       {Array.from(new Set(seasons.map(s => String(s.id)))).map((id) => {
-                         const season = seasons.find(s => String(s.id) === id);
-                         return season ? (
-                           <option key={season.id} value={String(season.id)}>
-                             {season.name}
-                           </option>
-                         ) : null;
-                       })}
-                     </select>
-                   </div>
-                   <div>
-                     <select
-                       value={selectedCompetitionFilter}
-                       onChange={(e) => setSelectedCompetitionFilter(e.target.value)}
-                       style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px' }}
-                     >
-                       <option value="all">All Competitions</option>
-                       {Array.from(new Set(competitions.map(c => String(c.id)))).map((id) => {
-                         const comp = competitions.find(c => String(c.id) === id);
-                         return comp ? (
-                           <option key={comp.id} value={String(comp.id)}>
-                             {comp.name}
-                           </option>
-                         ) : null;
-                       })}
-                     </select>
-                   </div>
-                 </div>
-               </div>
-               {allMatchesLoading ? (
-                   <div className="text-center py-4 text-gray-500">Loading matches...</div>
-               ) : allMatches.length === 0 ? (
-                   <Alert variant="info">No matches found.</Alert>
-               ) : (
-                   <Table style={compactTableStyle}>
-                      <thead>
-                        <tr>
-                          <th style={compactThStyle}>Match</th>
-                          <th style={compactThStyle}>Competition</th>
-                          <th style={compactThStyle}>Date</th>
-                          <th style={compactThStyle} className="text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(() => {
-                          let filteredMatches = allMatches;
+            <Card className="mb-6">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Matches</h3>
+                  <Input value={matchSearch} onChange={(e) => setMatchSearch(e.target.value)} placeholder="Search matches" style={{ width: '240px' }} />
+                  <select
+                    value={matchTeamFilterId}
+                    onChange={(e) => {
+                      setMatchTeamFilterId(e.target.value);
+                      setMatchSeasonFilterId('');
+                      setMatchCompetitionFilterId('');
+                    }}
+                    disabled={isLikelyTeam}
+                    style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)', opacity: isLikelyTeam ? 0.85 : 1 }}
+                  >
+                    <option value="">Team: All</option>
+                    {(isLikelyTeam ? [project] : (childProjects as any[]))
+                      .filter(Boolean)
+                      .map((t: any) => (
+                        <option key={t.id} value={String(t.id)}>
+                          {t.name}
+                        </option>
+                      ))}
+                  </select>
+                  <select
+                    value={matchSeasonFilterId}
+                    onChange={(e) => {
+                      setMatchSeasonFilterId(e.target.value);
+                      setMatchCompetitionFilterId('');
+                    }}
+                    style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                  >
+                    <option value="">Season: All</option>
+                    {Array.from(
+                      new Set(
+                        (seasons as any[])
+                          .filter((p: any) => isSeasonPeriod(p))
+                          .filter((s: any) => {
+                            const teamId = String(s.project_id ?? s.project?.id ?? '').trim();
+                            if (matchTeamFilterId && teamId !== String(matchTeamFilterId)) return false;
+                            return true;
+                          })
+                          .map((s: any) => JSON.stringify({ id: String(s.id), name: s.name }))
+                      )
+                    ).map((jsonStr) => {
+                      const s = JSON.parse(jsonStr);
+                      return (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <select
+                    value={matchCompetitionFilterId}
+                    onChange={(e) => setMatchCompetitionFilterId(e.target.value)}
+                    style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                  >
+                    <option value="">Competition: All</option>
+                    {Array.from(
+                      new Set(
+                        (competitions as any[])
+                          .filter((p: any) => isCompetitionPeriod(p))
+                          .filter((c: any) => {
+                            const teamId = String(c.project_id ?? c.project?.id ?? '').trim();
+                            if (matchTeamFilterId && teamId !== String(matchTeamFilterId)) return false;
+                            const seasonId = String(c.parent_period_id ?? c.parent_period?.id ?? '').trim();
+                            if (matchSeasonFilterId && seasonId !== String(matchSeasonFilterId)) return false;
+                            return true;
+                          })
+                          .map((c: any) => JSON.stringify({ id: String(c.id), name: c.name }))
+                      )
+                    ).map((jsonStr) => {
+                      const c = JSON.parse(jsonStr);
+                      return (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
 
-                          // Filter by competition
-                          if (selectedCompetitionFilter !== 'all') {
-                            filteredMatches = filteredMatches.filter((m: any) => {
-                              const mPeriodId = String(m.period_id || m.period?.id || '');
-                              return mPeriodId === selectedCompetitionFilter;
-                            });
-                          }
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setMatchSearch('');
+                      setMatchTeamFilterId('');
+                      setMatchSeasonFilterId('');
+                      setMatchCompetitionFilterId('');
+                    }}
+                  >
+                    Clear
+                  </Button>
+                  <button
+                    onClick={() => setIsCreateMatchModalOpen(true)}
+                    style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                  >
+                    Add Match
+                  </button>
+                </div>
+              </div>
 
-                          // Filter by season
-                          if (selectedSeasonFilter !== 'all') {
-                            filteredMatches = filteredMatches.filter((m: any) => {
-                              const mPeriodId = String(m.period_id || m.period?.id || '');
-                              const matchComp = competitions.find(c => String(c.id) === mPeriodId);
-                              if (!matchComp) return false;
-                              const compParentId = String(matchComp.parent_period_id || matchComp.parent_period?.id || '');
-                              return compParentId === selectedSeasonFilter;
-                            });
-                          }
+              {allMatchesLoading ? (
+                <Alert variant="info">Loading matches…</Alert>
+              ) : (() => {
+                const teamById = new Map<string, any>();
+                for (const t of (isLikelyTeam ? [project] : (childProjects as any[])) as any[]) {
+                  if (!t) continue;
+                  teamById.set(String((t as any).id), t);
+                }
 
-                          // Filter by team (for clubs)
-                          if (!isLikelyTeam && selectedTeamFilter !== 'all') {
-                            filteredMatches = filteredMatches.filter((m: any) => {
-                              const mPeriodId = String(m.period_id || m.period?.id || '');
-                              const matchComp = competitions.find(c => String(c.id) === mPeriodId);
-                              if (!matchComp) return false;
-                              const compParentId = String(matchComp.parent_period_id || matchComp.parent_period?.id || '');
-                              const matchingSeason = seasons.find(s => String(s.id) === compParentId);
-                              if (!matchingSeason) return false;
-                              const seasonProjectId = String(matchingSeason.project_id || matchingSeason.project?.id || '');
-                              return seasonProjectId === selectedTeamFilter;
-                            });
-                          }
+                const periodById = new Map<string, any>();
+                for (const p of competitions as any[]) {
+                  periodById.set(String(p.id), p);
+                }
 
-                          return filteredMatches.map((m: any) => (
-                          <tr key={m.id}>
-                             <td style={compactTextTdStyle}>
-                                <div className="font-medium">{m.title || m.name}</div>
-                             </td>
-                             <td style={compactTextTdStyle}>{m.period?.name || '-'}</td>
-                             <td style={compactTextTdStyle}>
-                                {m.start_time ? new Date(m.start_time).toLocaleString() : '-'}
-                             </td>
-                             <td style={compactTdStyle}>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                   <button
-                                     onClick={() => {
-                                       setDetailProject(m);
-                                       setIsDetailModalOpen(true);
-                                     }}
-                                     style={actionButtonStyle('neutral')}
-                                   >
-                                     View
-                                   </button>
-                                   {userCanEditProject && (
-                                     <button
-                                       onClick={() => navigate(`/matches/${m.id}/edit`)}
-                                       style={actionButtonStyle('primary')}
-                                     >
-                                       Edit
-                                     </button>
-                                   )}
-                                   {userCanDeleteProject && (
-                                     <button
-                                       onClick={async () => {
-                                         if (!window.confirm(`Are you sure you want to delete match ${m.title || m.name}?`)) return;
-                                         try {
-                                           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                           const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-                                           const res = await fetch(
-                                             `${apiBaseUrl}/api/v1/activities/${m.id}/`,
-                                             {
-                                               method: 'DELETE',
-                                               headers: {
-                                                 'Content-Type': 'application/json',
-                                                 'X-CSRFToken': csrfToken || '',
-                                               },
-                                               credentials: 'include',
-                                             }
-                                           );
+                const seasonById = new Map<string, any>();
+                for (const s of seasons as any[]) {
+                  if (!isSeasonPeriod(s)) continue;
+                  seasonById.set(String(s.id), s);
+                }
 
-                                           if (res.ok) {
-                                             setAllMatches((prev) => prev.filter((p) => String(p.id) !== String(m.id)));
-                                           } else {
-                                             alert('Error deleting match');
-                                           }
-                                         } catch (e) {
-                                           console.error(e);
-                                           alert('Error deleting match');
-                                         }
-                                       }}
-                                       style={actionButtonStyle('danger')}
-                                     >
-                                       Delete
-                                     </button>
-                                   )}
-                                </div>
-                             </td>
+                const periodParentIdMap = new Map<string, string>();
+                for (const p of competitions as any[]) {
+                  const parentId = p.parent_period_id ?? p.parent_period?.id ?? '';
+                  if (parentId) periodParentIdMap.set(String(p.id), String(parentId));
+                }
+
+                const normalized = matchSearch.trim().toLowerCase();
+                const matches = (allMatches as any[]).filter((m: any) => {
+                  const teamId = String(m.project?.id ?? m.project_id ?? '').trim();
+                  if (matchTeamFilterId && teamId !== String(matchTeamFilterId)) return false;
+
+                  const periodId = String(m.period?.id ?? m.period_id ?? '').trim();
+
+                  if (matchSeasonFilterId) {
+                    let seasonId = periodParentIdMap.get(periodId) || '';
+                    if (seasonId && periodParentIdMap.get(seasonId)) {
+                      seasonId = periodParentIdMap.get(seasonId) || seasonId;
+                    }
+                    if (seasonId !== String(matchSeasonFilterId)) return false;
+                  }
+
+                  if (matchCompetitionFilterId) {
+                    if (periodId === String(matchCompetitionFilterId)) {
+                      // ok
+                    } else {
+                      const parentId = periodParentIdMap.get(periodId);
+                      if (String(parentId || '') !== String(matchCompetitionFilterId)) return false;
+                    }
+                  }
+
+                  if (!normalized) return true;
+                  return String(m.title || m.name || m.id).toLowerCase().includes(normalized);
+                });
+
+                if (matches.length === 0) {
+                  return <Alert variant="info">No matches found for this club (or current filters).</Alert>;
+                }
+
+                return (
+                  <Card>
+                    <div className="overflow-x-auto">
+                      <Table style={compactTableStyle}>
+                        <colgroup>
+                          <col style={{ width: '180px' }} />
+                          <col style={{ width: '160px' }} />
+                          <col style={{ width: '160px' }} />
+                          <col style={{ width: '160px' }} />
+                          <col style={{ width: '160px' }} />
+                          <col style={{ width: '220px' }} />
+                          <col style={{ width: '140px' }} />
+                          <col style={{ width: '390px' }} />
+                        </colgroup>
+                        <thead>
+                          <tr>
+                            <th style={compactThStyle}>Federation</th>
+                            <th style={compactThStyle}>Club</th>
+                            <th style={compactThStyle}>Team</th>
+                            <th style={compactThStyle}>Season</th>
+                            <th style={compactThStyle}>Competition</th>
+                            <th style={compactThStyle}>Match</th>
+                            <th style={compactThStyle}>Start</th>
+                            <th style={compactThStyle}>Actions</th>
                           </tr>
-                        ));})()}
-                      </tbody>
-                   </Table>
-               )}
+                        </thead>
+                        <tbody>
+                          {matches.map((m: any) => {
+                            const teamId = String(m.project?.id ?? m.project_id ?? '').trim();
+                            const team = teamId ? teamById.get(teamId) : null;
+                            const teamSlugOrId = team?.slug || team?.id || teamId;
+
+                            const periodId = String(m.period?.id ?? m.period_id ?? '').trim();
+                            const competition = periodId ? periodById.get(periodId) : null;
+                            const compSeasonId = competition ? String(competition.parent_period_id ?? competition.parent_period?.id ?? '') : '';
+                            const season = compSeasonId ? seasonById.get(compSeasonId) : null;
+                            const seasonSlugOrId = season?.slug || season?.id || compSeasonId;
+
+                            const formattedStart = m.start_time
+                              ? new Date(m.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                              : '-';
+
+                            return (
+                              <tr key={m.id}>
+                                <td style={compactTextTdStyle}>
+                                  <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                    {String(orgWithRole?.name || resolvedOrg?.name || currentOrgSlug || '—')}
+                                  </Link>
+                                </td>
+                                <td style={compactTextTdStyle}>
+                                  {currentClubSlugOrId ? (
+                                    <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600 hover:underline">
+                                      {String((clubId ? club?.name : project?.name) || currentClubSlugOrId)}
+                                    </Link>
+                                  ) : '-'}
+                                </td>
+                                <td style={compactTextTdStyle}>
+                                  {teamSlugOrId ? (
+                                    <Link
+                                      to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                      className="text-blue-600 hover:underline"
+                                    >
+                                      {team?.name || teamId || '-'}
+                                    </Link>
+                                  ) : (team?.name || teamId || '-')}
+                                </td>
+                                <td style={compactTextTdStyle}>
+                                  {season && seasonSlugOrId && teamSlugOrId ? (
+                                    <Link
+                                      to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
+                                      className="text-blue-600 hover:underline"
+                                    >
+                                      {season.name}
+                                    </Link>
+                                  ) : '-'}
+                                </td>
+                                <td style={compactTextTdStyle}>
+                                  {competition && seasonSlugOrId && teamSlugOrId ? (
+                                    <Link
+                                      to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}`}
+                                      className="text-blue-600 hover:underline"
+                                    >
+                                      {competition.name || m.period?.name}
+                                    </Link>
+                                  ) : (m.period?.name || '-')}
+                                </td>
+                                <td style={compactTextTdStyle}>
+                                  <Link to={`/matches/${m.id}`} className="text-blue-600 hover:underline">
+                                    {m.title || m.name || m.id}
+                                  </Link>
+                                </td>
+                                <td style={compactTextTdStyle}>{formattedStart}</td>
+                                <td style={compactTdStyle}>
+                                  <div style={compactActionsStyle}>
+                                    <button
+                                      onClick={() => {
+                                        setDetailProject({ id: m.id, name: m.title || m.name, project_type: 'activity' } as any);
+                                        setIsDetailModalOpen(true);
+                                      }}
+                                      style={actionButtonStyle('primary')}
+                                    >
+                                      View
+                                    </button>
+                                    {userCanEditProject && (
+                                      <button
+                                        onClick={() => navigate(`/matches/${m.id}/edit`)}
+                                        style={actionButtonStyle('warning')}
+                                      >
+                                        Edit
+                                      </button>
+                                    )}
+                                    {userCanDeleteProject && (
+                                      <button
+                                        onClick={async () => {
+                                          if (!window.confirm(`Are you sure you want to delete match "${m.title || m.name}"?`)) return;
+                                          try {
+                                            const apiV1BaseUrl = getApiV1BaseUrl();
+                                            const res = await fetch(`${apiV1BaseUrl}/activities/${m.id}/`, {
+                                              method: 'DELETE',
+                                              headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRFToken': getCsrfToken() || '',
+                                              },
+                                              credentials: 'include',
+                                            });
+                                            if (res.ok) {
+                                              setAllMatches((prev) => prev.filter((match: any) => String(match.id) !== String(m.id)));
+                                            } else {
+                                              alert('Error deleting match');
+                                            }
+                                          } catch (e) {
+                                            console.error(e);
+                                            alert('Error deleting match');
+                                          }
+                                        }}
+                                        style={actionButtonStyle('danger')}
+                                      >
+                                        Delete
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </Table>
+                    </div>
+                  </Card>
+                );
+              })()}
             </Card>
           )}
 
@@ -2956,6 +3586,301 @@ export const ProjectDetailPage: React.FC = () => {
         onClose={() => setIsDetailModalOpen(false)}
         project={detailProject}
       />
+
+      <ProjectCreateModal
+        opened={isCreateTeamModalOpen}
+        onClose={() => setIsCreateTeamModalOpen(false)}
+        title="Create Team"
+        organisations={createModalOrganisations}
+        clubs={createModalClubs}
+        requireOrganisation={createModalOrganisations.length > 0}
+        requireClub
+        initialOrganisationId={createModalOrganisations[0]?.id || ''}
+        initialClubId={currentClubId || ''}
+        onCreate={async (projectData) => {
+          const clubIdValue = String(projectData.parent_project_id || currentClubId || '').trim();
+          if (!clubIdValue) throw new Error('Select a club first.');
+
+          const apiV1BaseUrl = getApiV1BaseUrl();
+          const res = await fetch(`${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/projects/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': getCsrfToken() || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              name: projectData.name,
+              description: projectData.description || '',
+              parent_project_id: clubIdValue,
+            }),
+          });
+
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(detail || 'Failed to create team');
+          }
+
+          await fetchChildTeams();
+        }}
+      />
+
+      <InviteMemberModal
+        opened={isInviteMemberModalOpen}
+        onClose={() => setIsInviteMemberModalOpen(false)}
+        orgSlug={String(currentOrgSlug || '')}
+        onInviteSuccess={() => {
+          fetchOrgMembers(true);
+        }}
+      />
+
+      <PeriodCreateModal
+        opened={isCreateSeasonModalOpen}
+        onClose={() => setIsCreateSeasonModalOpen(false)}
+        title="Create Season"
+        organisations={createModalOrganisations}
+        clubs={createModalClubs}
+        teams={(isLikelyTeam ? [project] : childProjects) as any}
+        requireOrganisation
+        requireClub
+        requireTeam
+        initialOrganisationId={createModalOrganisations[0]?.id || ''}
+        initialClubId={currentClubId || ''}
+        initialTeamId={seasonTeamFilterId || (isLikelyTeam ? String(project?.id || '') : '')}
+        onCreate={async (payload) => {
+          const apiV1BaseUrl = getApiV1BaseUrl();
+          const orgIdValue = String(payload.organisation_id || resolvedOrg?.id || '').trim();
+          const teamIdValue = String(payload.project_id || '').trim();
+          if (!orgIdValue) throw new Error('Select a federation first');
+          if (!teamIdValue) throw new Error('Select a team first');
+
+          const res = await fetch(`${apiV1BaseUrl}/periods/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken() || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              organisation_id: orgIdValue,
+              project_id: teamIdValue ? Number(teamIdValue) : undefined,
+              parent_period_id: null,
+              name: payload.name,
+              description: payload.description,
+              start_date: payload.start_date,
+              end_date: payload.end_date,
+              metadata: { type: 'season' },
+            }),
+          });
+
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(detail || 'Failed to create season');
+          }
+
+          await fetchSeasons();
+          await fetchCompetitions();
+          await fetchAllMatches();
+        }}
+      />
+
+      <PeriodCreateModal
+        opened={isCreateCompetitionModalOpen}
+        onClose={() => setIsCreateCompetitionModalOpen(false)}
+        title="Create Competition"
+        organisations={createModalOrganisations}
+        clubs={createModalClubs}
+        teams={(isLikelyTeam ? [project] : childProjects) as any}
+        requireOrganisation
+        requireClub
+        requireTeam
+        requireSeason
+        initialOrganisationId={createModalOrganisations[0]?.id || ''}
+        initialClubId={currentClubId || ''}
+        initialTeamId={compTeamFilterId || (isLikelyTeam ? String(project?.id || '') : '')}
+        onCreate={async (payload) => {
+          const apiV1BaseUrl = getApiV1BaseUrl();
+          const orgIdValue = String(payload.organisation_id || resolvedOrg?.id || '').trim();
+          const teamIdValue = String(payload.project_id || '').trim();
+          const seasonIdValue = String(payload.parent_period_id || '').trim();
+          if (!orgIdValue) throw new Error('Select a federation first');
+          if (!teamIdValue) throw new Error('Select a team first');
+          if (!seasonIdValue) throw new Error('Select a season first');
+
+          const res = await fetch(`${apiV1BaseUrl}/periods/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken() || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              organisation_id: orgIdValue,
+              project_id: teamIdValue ? Number(teamIdValue) : undefined,
+              parent_period_id: seasonIdValue || null,
+              name: payload.name,
+              description: payload.description,
+              start_date: payload.start_date,
+              end_date: payload.end_date,
+              metadata: { type: 'competition' },
+            }),
+          });
+
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(detail || 'Failed to create competition');
+          }
+
+          await fetchCompetitions();
+          await fetchAllMatches();
+        }}
+      />
+
+      <MatchCreateModal
+        opened={isCreateMatchModalOpen}
+        onClose={() => setIsCreateMatchModalOpen(false)}
+        organisations={createModalOrganisations}
+        clubs={createModalClubs}
+        teams={(isLikelyTeam ? [project] : childProjects) as any}
+        initialOrganisationId={createModalOrganisations[0]?.id || ''}
+        initialClubId={currentClubId || ''}
+        initialTeamId={matchTeamFilterId || (isLikelyTeam ? String(project?.id || '') : '')}
+        onCreate={async (payload) => {
+          const apiV1BaseUrl = getApiV1BaseUrl();
+          const teamIdValue = String(payload.project_id || '').trim();
+          const competitionIdValue = String(payload.period_id || '').trim();
+          if (!teamIdValue) throw new Error('Select a team first');
+          if (!competitionIdValue) throw new Error('Select a competition first');
+
+          const res = await fetch(`${apiV1BaseUrl}/activities/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken() || '',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              title: payload.title,
+              activity_type: 'match',
+              project_id: teamIdValue ? Number(teamIdValue) : undefined,
+              period_id: competitionIdValue,
+              start_time: payload.start_time,
+              end_time: payload.end_time,
+              location: payload.location,
+              description: payload.description,
+            }),
+          });
+
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(detail || 'Failed to create match');
+          }
+
+          await fetchAllMatches();
+        }}
+      />
+
+      {isEditMemberRoleModalOpen && editingMember ? (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--app-surface)',
+              padding: '24px',
+              borderRadius: '8px',
+              width: '520px',
+              maxWidth: '95%',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              color: 'var(--app-text)',
+              border: '1px solid var(--app-border)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+              <h2 style={{ margin: 0 }}>Edit Member</h2>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setIsEditMemberRoleModalOpen(false);
+                  setEditingMember(null);
+                }}
+                disabled={editMemberRoleSaving}
+              >
+                Close
+              </Button>
+            </div>
+
+            <div style={{ marginTop: '12px', fontSize: '14px', color: 'var(--app-text-muted)' }}>
+              {String(editingMember?.user?.email || editingMember?.email || '')}
+            </div>
+
+            {editMemberRoleError ? (
+              <div style={{ marginTop: '12px', padding: '10px 12px', borderRadius: '6px', backgroundColor: '#fee', color: '#c00' }}>
+                {editMemberRoleError}
+              </div>
+            ) : null}
+
+            <div style={{ marginTop: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Role</label>
+              <select
+                value={editingMemberRole}
+                onChange={(e) => setEditingMemberRole(e.target.value as any)}
+                disabled={editMemberRoleSaving}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                }}
+              >
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '18px' }}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsEditMemberRoleModalOpen(false);
+                  setEditingMember(null);
+                }}
+                disabled={editMemberRoleSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    setEditMemberRoleSaving(true);
+                    await saveMemberRole();
+                  } finally {
+                    setEditMemberRoleSaving(false);
+                  }
+                }}
+                loading={editMemberRoleSaving}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       </div>
     </AppShell>
   );
