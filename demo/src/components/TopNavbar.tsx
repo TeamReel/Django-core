@@ -159,6 +159,8 @@ export default function TopNavbar() {
     teamIdForApi: string | null;
     seasonSlugOrId: string | null;
     seasonIdForApi: string | null;
+    competitionSlugOrId: string | null;
+    competitionIdForApi: string | null;
     matchId: string | null;
   };
 
@@ -169,6 +171,8 @@ export default function TopNavbar() {
     teamIdForApi: null,
     seasonSlugOrId: null,
     seasonIdForApi: null,
+    competitionSlugOrId: null,
+    competitionIdForApi: null,
     matchId: null,
   });
 
@@ -185,6 +189,7 @@ export default function TopNavbar() {
         clubSlugOrId?: string;
         teamSlugOrId?: string;
         seasonSlugOrId?: string;
+        competitionSlugOrId?: string;
         matchId?: string;
         ts?: number;
       };
@@ -198,6 +203,7 @@ export default function TopNavbar() {
     clubSlugOrId?: string;
     teamSlugOrId?: string;
     seasonSlugOrId?: string;
+    competitionSlugOrId?: string;
     matchId?: string;
   }) => {
     try {
@@ -225,12 +231,20 @@ export default function TopNavbar() {
     );
     const legacyMatch = path.match(/^\/matches\/([^/]+)/);
 
+    const competitionTeamMatch = path.match(
+      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)/
+    );
+    const competitionMatch = path.match(
+      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)/
+    );
+
     if (hierarchyMatchTeam) {
       writeLastAppContext({
         orgSlug: hierarchyMatchTeam[1],
         clubSlugOrId: hierarchyMatchTeam[2],
         teamSlugOrId: hierarchyMatchTeam[3],
         seasonSlugOrId: hierarchyMatchTeam[4],
+        competitionSlugOrId: hierarchyMatchTeam[5],
         matchId: hierarchyMatchTeam[6],
       });
       return;
@@ -241,7 +255,29 @@ export default function TopNavbar() {
         orgSlug: hierarchyMatch[1],
         teamSlugOrId: hierarchyMatch[2],
         seasonSlugOrId: hierarchyMatch[3],
+        competitionSlugOrId: hierarchyMatch[4],
         matchId: hierarchyMatch[5],
+      });
+      return;
+    }
+
+    if (competitionTeamMatch) {
+      writeLastAppContext({
+        orgSlug: competitionTeamMatch[1],
+        clubSlugOrId: competitionTeamMatch[2],
+        teamSlugOrId: competitionTeamMatch[3],
+        seasonSlugOrId: competitionTeamMatch[4],
+        competitionSlugOrId: competitionTeamMatch[5],
+      });
+      return;
+    }
+
+    if (competitionMatch) {
+      writeLastAppContext({
+        orgSlug: competitionMatch[1],
+        teamSlugOrId: competitionMatch[2],
+        seasonSlugOrId: competitionMatch[3],
+        competitionSlugOrId: competitionMatch[4],
       });
       return;
     }
@@ -254,6 +290,7 @@ export default function TopNavbar() {
           clubSlugOrId: last.clubSlugOrId,
           teamSlugOrId: last.teamSlugOrId,
           seasonSlugOrId: last.seasonSlugOrId,
+          competitionSlugOrId: last.competitionSlugOrId,
           matchId: legacyMatch[1],
         });
       }
@@ -373,6 +410,8 @@ export default function TopNavbar() {
           teamIdForApi: null,
           seasonSlugOrId: seasonTeamMatch[4],
           seasonIdForApi: null,
+          competitionSlugOrId: null,
+          competitionIdForApi: null,
           matchId: null,
         });
         return;
@@ -385,6 +424,8 @@ export default function TopNavbar() {
           teamIdForApi: null,
           seasonSlugOrId: null,
           seasonIdForApi: null,
+          competitionSlugOrId: null,
+          competitionIdForApi: null,
           matchId: null,
         });
         return;
@@ -397,6 +438,8 @@ export default function TopNavbar() {
           teamIdForApi: null,
           seasonSlugOrId: null,
           seasonIdForApi: null,
+          competitionSlugOrId: null,
+          competitionIdForApi: null,
           matchId: null,
         });
         // continue resolving best team/season below (club-only path is not enough)
@@ -491,6 +534,12 @@ export default function TopNavbar() {
         selectedMatchId = String(last.matchId);
       }
 
+      // Resolve a best match for selected competition.
+      let selectedCompetitionSlugOrId: string | null = null;
+      if (last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.competitionSlugOrId) {
+        selectedCompetitionSlugOrId = String(last.competitionSlugOrId);
+      }
+
       if (!selectedMatchId && selectedTeam?.id && selectedSeasonId) {
         try {
           const matches = await fetchAllPages<any>(
@@ -500,6 +549,10 @@ export default function TopNavbar() {
           );
           const bestMatch = (matches || [])[0];
           if (bestMatch?.id) selectedMatchId = String(bestMatch.id);
+          if (!selectedCompetitionSlugOrId) {
+            const compId = String(bestMatch?.period_id || bestMatch?.period?.id || bestMatch?.period || '').trim();
+            if (compId) selectedCompetitionSlugOrId = compId;
+          }
         } catch {
           // ignore
         }
@@ -512,6 +565,8 @@ export default function TopNavbar() {
         teamIdForApi: selectedTeam ? String(selectedTeam.id) : null,
         seasonSlugOrId: selectedSeasonKey,
         seasonIdForApi: selectedSeasonId,
+        competitionSlugOrId: selectedCompetitionSlugOrId,
+        competitionIdForApi: selectedCompetitionSlugOrId,
         matchId: selectedMatchId,
       });
     };
@@ -526,6 +581,7 @@ export default function TopNavbar() {
     const clubSlugOrId = appSelection.clubSlugOrId;
     const teamSlugOrId = appSelection.teamSlugOrId;
     const seasonSlugOrId = appSelection.seasonSlugOrId;
+    const competitionSlugOrId = appSelection.competitionSlugOrId;
     const matchId = appSelection.matchId;
 
     const federationPath = orgSlug ? `/organisations/${orgSlug}` : '/directory?tab=federations';
@@ -552,7 +608,21 @@ export default function TopNavbar() {
           ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons`
           : '/directory?tab=seasons'));
 
-    const matchPath = matchId ? `/matches/${matchId}` : '/directory?tab=matches';
+    const competitionPath = orgSlug && seasonSlugOrId && competitionSlugOrId
+      ? (clubSlugOrId && teamSlugOrId
+        ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`
+        : (teamSlugOrId
+          ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`
+          : '/directory?tab=competitions'))
+      : '/directory?tab=competitions';
+
+    const matchPath = matchId && orgSlug && seasonSlugOrId && competitionSlugOrId
+      ? (clubSlugOrId && teamSlugOrId
+        ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`
+        : (teamSlugOrId
+          ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`
+          : `/matches/${matchId}`))
+      : (matchId ? `/matches/${matchId}` : '/directory?tab=matches');
 
     return {
       id: 'app',
@@ -562,6 +632,7 @@ export default function TopNavbar() {
         { path: clubPath, label: 'Club', description: 'Your club (best match)', icon: '🏟️' },
         { path: teamPath, label: 'Team', description: 'Your team (best match)', icon: '⚽' },
         { path: seasonPath, label: 'Season', description: 'Your season (best match)', icon: '🗓️' },
+        { path: competitionPath, label: 'Competition', description: 'Your competition (best match)', icon: '🏆' },
         { path: matchPath, label: 'Match', description: 'Your match (best match)', icon: '🎯' },
       ],
     };

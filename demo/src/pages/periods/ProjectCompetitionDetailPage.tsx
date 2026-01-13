@@ -1218,8 +1218,10 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   };
 
   const matchDetailPath = (matchId: string) => {
-    if (!seasonKeyOrId || !competitionKeyOrId) return `/matches/${matchId}`;
-    return `${seasonsBasePath}/${seasonKeyOrId}/competitions/${competitionKeyOrId}/matches/${matchId}`;
+    const seasonForLink = String(resolvedSeasonId || seasonKeyOrId || '').trim();
+    const competitionForLink = String(resolvedCompetitionId || competitionKeyOrId || '').trim();
+    if (!seasonForLink || !competitionForLink) return `/matches/${matchId}`;
+    return `${seasonsBasePath}/${seasonForLink}/competitions/${competitionForLink}/matches/${matchId}`;
   };
 
   const renderMatchesTable = (rows: any[]) => {

@@ -1265,7 +1265,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             <tr key={match.id}>
                               <td style={compactTextTdStyle}>
                                 {(() => {
-                                  const compId = String((match as any).period_id || match.period?.id || '').trim();
+                                  const compId = String(
+                                    (match as any).period_id || match.period?.id || (match as any).period || ''
+                                  ).trim();
                                   const matchPath = compId
                                     ? `${seasonsBasePath}/${seasonPathKey}/competitions/${compId}/matches/${match.id}`
                                     : `/matches/${match.id}`;
@@ -1300,7 +1302,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 <div style={compactActionsStyle}>
                                   <button
                                     onClick={() => {
-                                      const compId = String((match as any).period_id || match.period?.id || '').trim();
+                                      const compId = String(
+                                        (match as any).period_id || match.period?.id || (match as any).period || ''
+                                      ).trim();
                                       if (compId) {
                                         navigate(
                                           `${seasonsBasePath}/${seasonPathKey}/competitions/${compId}/matches/${match.id}`
