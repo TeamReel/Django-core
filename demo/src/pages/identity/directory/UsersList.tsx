@@ -24,6 +24,17 @@ interface User {
   organisations?: { id: string; name: string; slug: string; role: string }[];
 }
 
+const ROLE_RANK: Record<string, number> = {
+    superadmin: 100,
+    'land admin': 90,
+    'club admin': 80,
+    'team admin': 70,
+    'team member': 60,
+    supporter: 50,
+    user: 10,
+    member: 10,
+};
+
 interface Organisation {
     id: string;
     name: string;
@@ -312,8 +323,11 @@ export const UsersList: React.FC = () => {
                         first_name: u?.first_name,
                         last_name: u?.last_name,
                         organisations: u?.organisations,
+                        is_superuser: Boolean((u as any)?.is_superuser),
                         is_active: u?.is_active ?? item?.is_active ?? true,
                         role: item?.role ?? u?.role ?? 'User',
+                        role_label: (u as any)?.role_label ?? (item as any)?.role_label,
+                        role_assignments: (item as any)?.role_assignments || (u as any)?.role_assignments || [],
                         // Preserve context for table columns + filters.
                         membership: {
                             id: item?.id,
@@ -381,6 +395,15 @@ export const UsersList: React.FC = () => {
                      results = results.filter((u: any) => u.is_active === false);
                 }
 
+                // Client-side filtering for RBAC role (label)
+                if (roleFilter) {
+                    const wanted = String(roleFilter).trim().toLowerCase();
+                    results = results.filter((u: any) => {
+                        const { label } = getUserRoleDisplay(u);
+                        return String(label).toLowerCase() === wanted;
+                    });
+                }
+
                 setUsers(results);
 
             } catch (e) {
@@ -391,16 +414,39 @@ export const UsersList: React.FC = () => {
         };
 
         loadUsers();
-    }, [selectedOrgId, selectedTeamId, selectedClubId, statusFilter, organisations, isSuperAdmin, refreshKey]);
+    }, [selectedOrgId, selectedTeamId, selectedClubId, statusFilter, roleFilter, organisations, isSuperAdmin, refreshKey]);
 
     // Helper for role display logic
-    const getUserRoleDisplay = (user: any) => {
-        // Simple heuristic for now
-        if (user.is_superuser) return 'Superadmin';
-        // Try to find context role
-        // This is complex without the full membership data structure logic from UsersPage
-        // reusing 'role' field if present or falling back
-         return user.role || 'User';
+    const getUserRoleDisplay = (user: any): { label: string; title: string } => {
+        if (!user) return { label: 'User', title: '' };
+
+        const isSuper = Boolean(user?.is_superuser) || String(user?.role || '').toLowerCase() === 'superadmin';
+        if (isSuper) return { label: 'Superadmin', title: 'Superadmin' };
+
+        const directLabel = String(user?.role_label || '').trim();
+        if (directLabel) return { label: directLabel, title: directLabel };
+
+        const rawAssignments = user?.role_assignments;
+        const assignments = Array.isArray(rawAssignments) ? rawAssignments : [];
+        const roleNames = assignments
+            .map((ra: any) => String(ra?.role?.name ?? ra?.role_name ?? ra?.role ?? '').trim())
+            .filter(Boolean);
+
+        const unique = Array.from(new Set(roleNames));
+        if (unique.length > 0) {
+            const best = unique
+                .map((name) => ({ name, key: name.toLowerCase() }))
+                .sort((a, b) => (ROLE_RANK[b.key] ?? 0) - (ROLE_RANK[a.key] ?? 0))[0];
+
+            if (best) {
+                const title = unique.sort((a, b) => a.localeCompare(b)).join(', ');
+                const label = unique.length === 1 ? best.name : `${best.name} +${unique.length - 1}`;
+                return { label, title };
+            }
+        }
+
+        const fallback = String(user?.role || '').trim() || 'User';
+        return { label: fallback, title: fallback };
     };
 
     const sortedUsers = React.useMemo(() => {
@@ -685,6 +731,25 @@ export const UsersList: React.FC = () => {
                     <option value="inactive">Status: Inactive</option>
                 </select>
 
+                <select
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                    style={{
+                        padding: '8px 12px',
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        backgroundColor: 'var(--app-surface)',
+                    }}
+                >
+                    <option value="">Role: All</option>
+                    {availableRoles.map((r) => (
+                        <option key={r} value={r}>
+                            {r}
+                        </option>
+                    ))}
+                </select>
+
                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
                      <Button
                          variant="secondary"
@@ -693,6 +758,7 @@ export const UsersList: React.FC = () => {
                              setSelectedClubId('');
                              setSelectedTeamId('');
                              setStatusFilter('all');
+                             setRoleFilter('');
                              if (isSuperAdmin) setSelectedOrgId('');
                          }}
                      >
@@ -739,7 +805,8 @@ export const UsersList: React.FC = () => {
                                     <th style={{ ...compactThStyle, width: '10%' }}>Season</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Competition</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Match</th>
-                                    <th style={{ ...compactThStyle, width: '18%' }}>Users</th>
+                                    <th style={{ ...compactThStyle, width: '16%' }}>Users</th>
+                                    <th style={{ ...compactThStyle, width: '8%' }}>Role</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
                                     <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                                 </tr>
@@ -757,6 +824,7 @@ export const UsersList: React.FC = () => {
                                     const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
 
                                     const userLabel = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
+                                    const roleDisplay = getUserRoleDisplay(u);
 
                                     return (
                                     <tr key={u.id}>
@@ -803,6 +871,9 @@ export const UsersList: React.FC = () => {
                                                 userLabel
                                             )}
                                             <div className="text-xs text-gray-500">{u.email}</div>
+                                        </td>
+                                        <td style={compactTdStyle} title={roleDisplay.title}>
+                                            <Badge variant="default">{roleDisplay.label}</Badge>
                                         </td>
                                         <td style={compactTdStyle}>
                                             <Badge variant={u.is_active ? 'success' : 'warning'}>
