@@ -227,6 +227,9 @@ class ActivitySerializer(serializers.ModelSerializer):
     created_by = serializers.SerializerMethodField()
     opponent_project = serializers.SerializerMethodField()
 
+    # Annotated fields
+    participations_count = serializers.IntegerField(read_only=True)
+
     # Write fields (use _id suffix for FK assignment)
     project_id = serializers.IntegerField(write_only=True)
     period_id = serializers.UUIDField(write_only=True)
@@ -253,6 +256,7 @@ class ActivitySerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "created_by",
+            "participations_count",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 

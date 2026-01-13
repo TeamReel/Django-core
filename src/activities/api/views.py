@@ -371,6 +371,9 @@ class ActivityViewSet(viewsets.ModelViewSet):
         """Apply query param filters"""
         queryset = super().get_queryset()
 
+        # Add participant count for tables
+        queryset = queryset.annotate(participations_count=Count("participations", distinct=True))
+
         # Optimize for detail view
         if self.action == "retrieve":
             queryset = queryset.prefetch_related(

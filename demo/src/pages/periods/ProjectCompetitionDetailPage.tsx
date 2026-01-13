@@ -1240,6 +1240,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
               <th style={compactThStyle}>Match</th>
               <th style={compactThStyle}>Date</th>
               <th style={compactThStyle}>Location</th>
+              <th style={compactThStyle}>Participants</th>
               <th style={compactThStyle} className="text-right"></th>
             </tr>
           </thead>
@@ -1257,6 +1258,13 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 </td>
                 <td style={compactTdStyle}>{m.start_time ? new Date(m.start_time).toLocaleString() : '—'}</td>
                 <td style={compactTdStyle}>{m.location || '—'}</td>
+                <td style={compactTdStyle}>
+                  {m.participations_count !== undefined ? (
+                    <Badge variant="default">{m.participations_count}</Badge>
+                  ) : (
+                    '—'
+                  )}
+                </td>
                 <td style={compactTdStyle}>
                   <div style={compactActionsStyle}>
                     <button
