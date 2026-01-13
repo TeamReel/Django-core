@@ -4,6 +4,7 @@ import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
+import { periodPathKey } from '../../utils/periodPath';
 
 type Period = {
   id: string;
@@ -196,7 +197,7 @@ export const ProjectSeasonsPage: React.FC = () => {
                           variant="secondary"
                           onClick={() =>
                             navigate(
-                              `${seasonsBasePath}/${season.id}`
+                              `${seasonsBasePath}/${periodPathKey(season) || season.id}`
                             )
                           }
                         >

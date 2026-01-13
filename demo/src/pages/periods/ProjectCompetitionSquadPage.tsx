@@ -4,6 +4,7 @@ import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
+import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -59,6 +60,8 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
 
+  const seasonPathKey = periodPathKey(season) || effectiveSeasonId;
+
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
@@ -85,11 +88,11 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
           ]
         : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),
       { label: 'Seasons', onClick: () => navigate(seasonsBasePath) },
-      { label: season?.name || 'Season', onClick: () => navigate(`${seasonsBasePath}/${effectiveSeasonId}`) },
+      { label: season?.name || 'Season', onClick: () => navigate(`${seasonsBasePath}/${seasonPathKey}`) },
       {
         label: competition?.name || 'Competition',
         onClick: () =>
-          navigate(`${seasonsBasePath}/${effectiveSeasonId}/competitions/${effectiveCompetitionId}`),
+          navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${effectiveCompetitionId}`),
       },
       { label: 'Squad', current: true },
     ],
@@ -103,7 +106,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
       orgSlugOrId,
       seasonsBasePath,
       projectDetailPath,
-      effectiveSeasonId,
+      seasonPathKey,
       effectiveCompetitionId,
       isTeamRoute,
       clubSlugOrId,
@@ -117,10 +120,9 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [orgRes, projectRes, seasonRes, competitionRes, participationRes, clubRes] = await Promise.all([
+        const [orgRes, projectRes, competitionRes, participationRes, clubRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
           fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/periods/${effectiveSeasonId}/`, { credentials: 'include' }),
           fetch(`${apiBaseUrl}/api/v1/periods/${effectiveCompetitionId}/`, { credentials: 'include' }),
           fetch(`${apiBaseUrl}/api/v1/participations/?period_id=${encodeURIComponent(effectiveCompetitionId)}&page_size=250`, {
             credentials: 'include',
@@ -134,17 +136,41 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
 
         if (!orgRes.ok) throw new Error('Failed to load organisation');
         if (!projectRes.ok) throw new Error('Failed to load project');
-        if (!seasonRes.ok) throw new Error('Failed to load season');
         if (!competitionRes.ok) throw new Error('Failed to load competition');
         if (!participationRes.ok) throw new Error('Failed to load squad');
 
         const rawOrg: any = await orgRes.json();
         const rawProject: any = await projectRes.json();
-        const rawSeason: any = await seasonRes.json();
         const rawCompetition: any = await competitionRes.json();
 
+        const projectJson: Project = rawProject?.data || rawProject;
+
+        // Resolve season UUID from URL param (UUID or slugified name)
+        const periodsRes = await fetch(
+          `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&page_size=250`,
+          { credentials: 'include' }
+        );
+        if (!periodsRes.ok) throw new Error('Failed to load seasons');
+        const rawPeriods: any = await periodsRes.json();
+        const periodsData = rawPeriods?.data || rawPeriods;
+        const allPeriods: Period[] = Array.isArray(periodsData)
+          ? periodsData
+          : periodsData?.results || periodsData?.data?.results || periodsData?.data || [];
+
+        const seasonOptions = allPeriods.filter((p: any) => !p.parent_period);
+        const isUuidParam = looksLikeUuid(effectiveSeasonId);
+        const resolvedSeason = isUuidParam
+          ? seasonOptions.find((p: any) => String(p.id) === String(effectiveSeasonId))
+          : seasonOptions.find((p: any) => periodPathKey(p) === String(effectiveSeasonId));
+        const seasonUuid = String(resolvedSeason?.id || (isUuidParam ? effectiveSeasonId : '')).trim();
+        if (!seasonUuid) throw new Error('Season not found');
+
+        const seasonRes = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, { credentials: 'include' });
+        if (!seasonRes.ok) throw new Error('Failed to load season');
+        const rawSeason: any = await seasonRes.json();
+
         setOrg(rawOrg?.data || rawOrg);
-        setProject(rawProject?.data || rawProject);
+        setProject(projectJson);
         setSeason(rawSeason?.data || rawSeason);
         setCompetition(rawCompetition?.data || rawCompetition);
 
@@ -183,7 +209,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
               variant="secondary"
               onClick={() =>
                 navigate(
-                  `${seasonsBasePath}/${effectiveSeasonId}/competitions/${effectiveCompetitionId}`
+                  `${seasonsBasePath}/${seasonPathKey}/competitions/${effectiveCompetitionId}`
                 )
               }
             >

@@ -12,6 +12,8 @@ import { Table } from '../../shims/design-system';
 import { useAuth } from '@django-core/auth-ui';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import PeriodEditModal from '../identity/PeriodEditModal';
+import MatchEditModal from '../identity/MatchEditModal';
+import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -98,6 +100,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [club, setClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
+  const [resolvedSeasonId, setResolvedSeasonId] = useState<string>('');
   const [seasonsForSwitcher, setSeasonsForSwitcher] = useState<Period[]>([]);
   const [competitions, setCompetitions] = useState<Period[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
@@ -110,6 +113,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   // Edit modal (match TeamDetail page patterns: edit in-place, no /edit route)
   const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
   const [selectedEditPeriod, setSelectedEditPeriod] = useState<any | null>(null);
+
+  const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
+  const [selectedEditMatch, setSelectedEditMatch] = useState<any | null>(null);
 
   const orgSlugOrId = orgId || '';
   const projectSlugOrId = projectId || '';
@@ -139,6 +145,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     navigate(`${seasonsBasePath}/${option.slug || option.id}`);
   };
 
+  const seasonPathKey = periodPathKey(season) || effectiveSeasonId;
+
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
@@ -165,11 +173,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       {
         label: (
           <BreadcrumbContextSwitcher
-            currentId={String((season as any)?.slug || effectiveSeasonId)}
+            currentId={String(resolvedSeasonId || (season as any)?.id || '')}
             options={seasonsForSwitcher.map((s) => ({
               id: String(s.id),
               label: String(s.name || s.slug || s.id),
-              slug: s.slug ? String(s.slug) : undefined,
+              slug: periodPathKey(s) || String(s.id),
             }))}
             onSelect={handleSeasonSwitch}
             hasDropdown={seasonsForSwitcher.length > 1}
@@ -202,9 +210,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     { id: 'people', label: 'Users' },
   ];
 
-  const saveSeasonEdits = async (periodToEdit: any, patch: any) => {
+  const savePeriodEdits = async (periodToEdit: any, patch: any) => {
     const periodId = String(periodToEdit?.id || '').trim();
-    if (!periodId) throw new Error('Missing season id');
+    if (!periodId) throw new Error('Missing period id');
 
     const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(periodId)}/`, {
       method: 'PATCH',
@@ -219,12 +227,40 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
     if (!res.ok) {
       const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to save season');
+      throw new Error(detail || 'Failed to save period');
     }
 
     const raw = await res.json().catch(() => null);
     const updated = (raw as any)?.data || raw || { ...periodToEdit, ...patch };
-    setSeason((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
+    if (String(updated?.id) === String(season?.id)) {
+      setSeason((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
+    }
+    setCompetitions((prev) => prev.map((p: any) => (String(p.id) === String(updated?.id) ? { ...p, ...updated } : p)));
+  };
+
+  const saveMatchEdits = async (matchToEdit: any, patch: any) => {
+    const matchId = String(matchToEdit?.id || '').trim();
+    if (!matchId) throw new Error('Missing match id');
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(matchId)}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'include',
+      body: JSON.stringify(patch),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(detail || 'Failed to save match');
+    }
+
+    const raw = await res.json().catch(() => null);
+    const updated = (raw as any)?.data || raw || { ...matchToEdit, ...patch };
+    setMatches((prev) => prev.map((m: any) => (String(m.id) === String(updated?.id) ? { ...m, ...updated } : m)));
   };
 
   // Helper to count matches per competition
@@ -242,10 +278,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [orgRes, projectRes, seasonRes, clubRes] = await Promise.all([
+        const [orgRes, projectRes, clubRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
           fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/periods/${effectiveSeasonId}/`, { credentials: 'include' }),
           isTeamRoute
             ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
                 credentials: 'include',
@@ -255,19 +290,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
         if (!orgRes.ok) throw new Error('Failed to load organisation');
         if (!projectRes.ok) throw new Error('Failed to load project');
-        if (!seasonRes.ok) throw new Error('Failed to load season');
 
         const rawOrg: any = await orgRes.json();
         const rawProject: any = await projectRes.json();
-        const rawSeason: any = await seasonRes.json();
 
         const orgJson: Organisation = rawOrg?.data || rawOrg;
         const projectJson: Project = rawProject?.data || rawProject;
-        const seasonJson: Period = rawSeason?.data || rawSeason;
 
         setOrg(orgJson);
         setProject(projectJson);
-        setSeason(seasonJson);
 
         if (isTeamRoute && clubRes && (clubRes as any).ok) {
           try {
@@ -277,53 +308,62 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           }
         }
 
-        const competitionsRes = await fetch(
+        const periodsRes = await fetch(
           `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&page_size=250`,
           { credentials: 'include' }
         );
-        if (!competitionsRes.ok) throw new Error('Failed to load competitions');
-        const rawCompetitions: any = await competitionsRes.json();
-        console.log('[SeasonDetail] Raw competitions response:', rawCompetitions);
+        if (!periodsRes.ok) throw new Error('Failed to load periods');
+        const rawPeriods: any = await periodsRes.json();
 
         // Handle multiple envelope formats
         let allPeriods: Period[] = [];
-        if (Array.isArray(rawCompetitions)) {
-          allPeriods = rawCompetitions;
-        } else if (Array.isArray(rawCompetitions?.data)) {
-          allPeriods = rawCompetitions.data;
-        } else if (Array.isArray(rawCompetitions?.data?.data)) {
-          allPeriods = rawCompetitions.data.data;
-        } else if (Array.isArray(rawCompetitions?.data?.results)) {
-          allPeriods = rawCompetitions.data.results;
-        } else if (Array.isArray(rawCompetitions?.results)) {
-          allPeriods = rawCompetitions.results;
+        if (Array.isArray(rawPeriods)) {
+          allPeriods = rawPeriods;
+        } else if (Array.isArray(rawPeriods?.data)) {
+          allPeriods = rawPeriods.data;
+        } else if (Array.isArray(rawPeriods?.data?.data)) {
+          allPeriods = rawPeriods.data.data;
+        } else if (Array.isArray(rawPeriods?.data?.results)) {
+          allPeriods = rawPeriods.data.results;
+        } else if (Array.isArray(rawPeriods?.results)) {
+          allPeriods = rawPeriods.results;
         }
 
         // Seasons switcher options: root seasons within the same team/project
         const seasonOptions = allPeriods.filter(isSeasonPeriod);
-        // Ensure current season is included even if API returns partial list
-        if (seasonJson && !seasonOptions.some((p) => String(p.id) === String(seasonJson.id))) {
-          seasonOptions.push(seasonJson);
-        }
         setSeasonsForSwitcher(seasonOptions);
 
-        console.log('[SeasonDetail] All periods:', allPeriods.length);
-        console.log('[SeasonDetail] Looking for parent_period:', effectiveSeasonId);
+        // Resolve season UUID from URL param (UUID or slugified name)
+        const isUuidParam = looksLikeUuid(effectiveSeasonId);
+        const seasonFromList = isUuidParam
+          ? seasonOptions.find((p) => String(p.id) === String(effectiveSeasonId))
+          : seasonOptions.find((p) => periodPathKey(p) === String(effectiveSeasonId));
+
+        const seasonUuid = String(seasonFromList?.id || (isUuidParam ? effectiveSeasonId : '')).trim();
+        if (!seasonUuid) throw new Error('Season not found');
+        setResolvedSeasonId(seasonUuid);
+
+        const seasonRes = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, { credentials: 'include' });
+        if (!seasonRes.ok) throw new Error('Failed to load season');
+        const rawSeason: any = await seasonRes.json();
+        const seasonJson: Period = rawSeason?.data || rawSeason;
+        setSeason(seasonJson);
+
+        const desiredKey = periodPathKey(seasonJson);
+        if (desiredKey && desiredKey !== String(effectiveSeasonId)) {
+          navigate(`${seasonsBasePath}/${desiredKey}`, { replace: true });
+        }
+
         // Filter client-side for competitions (children of this season)
         const competitionResults = allPeriods.filter((p: Period) => {
           const parentId = p.parent_period?.id || String(p.parent_period || '');
-          const matches = parentId === effectiveSeasonId || String(parentId) === String(effectiveSeasonId);
-          if (matches) {
-            console.log('[SeasonDetail] Competition match:', p.name, 'parent:', parentId);
-          }
+          const matches = parentId === seasonUuid || String(parentId) === String(seasonUuid);
           return p.parent_period && matches;
         });
-        console.log('[SeasonDetail] Filtered competitions:', competitionResults.length, competitionResults);
         setCompetitions(competitionResults);
 
         // Fetch matches for competitions in this season
         const competitionIds = competitionResults.map((c: Period) => c.id);
-        console.log('[SeasonDetail] Competition IDs:', competitionIds);
         if (competitionIds.length > 0) {
           try {
             const matchesRes = await fetch(
@@ -332,7 +372,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             );
             if (matchesRes.ok) {
               const rawMatches: any = await matchesRes.json();
-              console.log('[SeasonDetail] Raw matches response:', rawMatches);
 
               // Handle multiple envelope formats
               let allMatches: any[] = [];
@@ -348,16 +387,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 allMatches = rawMatches.results;
               }
 
-              console.log('[SeasonDetail] All matches:', allMatches.length);
               const seasonMatches = allMatches.filter((m: any) => {
                 const periodId = String(m.period_id || m.period?.id || '');
-                const matches = competitionIds.includes(periodId);
-                if (matches) {
-                  console.log('[SeasonDetail] Match in season:', m.title || m.name, 'period:', periodId);
-                }
-                return matches;
+                return competitionIds.includes(periodId);
               });
-              console.log('[SeasonDetail] Filtered matches:', seasonMatches.length, seasonMatches);
               setMatches(seasonMatches);
             }
           } catch (e) {
@@ -452,7 +485,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     if (!window.confirm(`Are you sure you want to delete season ${season?.name}?`)) return;
                     try {
                       const res = await fetch(
-                        `${apiBaseUrl}/api/v1/periods/${effectiveSeasonId}/`,
+                        `${apiBaseUrl}/api/v1/periods/${encodeURIComponent(resolvedSeasonId || effectiveSeasonId)}/`,
                         {
                           method: 'DELETE',
                           headers: {
@@ -579,7 +612,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <tbody>
                                 {competitions.slice(0, 5).map((competition) => (
                                   <tr key={competition.id}>
-                                    <td style={compactTextTdStyle}>{competition.name}</td>
+                                    <td style={compactTextTdStyle}>
+                                      <button
+                                        type="button"
+                                        className="text-blue-600 hover:underline"
+                                        style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                                        onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)}
+                                      >
+                                        {competition.name}
+                                      </button>
+                                    </td>
                                     <td style={compactTdStyle}>
                                       <Badge variant="default">{getMatchCountForCompetition(competition.id)}</Badge>
                                     </td>
@@ -588,13 +630,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         <button
                                           onClick={() =>
                                             navigate(
-                                              `${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}`
+                                              `${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`
                                             )
                                           }
                                           style={actionButtonStyle('neutral')}
                                         >
                                           View
                                         </button>
+                                        {userCanEditProject && (
+                                          <button
+                                            onClick={() => {
+                                              setSelectedEditPeriod(competition);
+                                              setIsPeriodEditModalOpen(true);
+                                            }}
+                                            style={actionButtonStyle('primary')}
+                                          >
+                                            Edit
+                                          </button>
+                                        )}
                                       </div>
                                     </td>
                                   </tr>
@@ -720,7 +773,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <Badge variant="info">{getMatchCountForCompetition(compId)} matches</Badge>
                               <button
                                 onClick={() =>
-                                  navigate(`${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}`)
+                                  navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)
                                 }
                                 style={actionButtonStyle('neutral')}
                               >
@@ -729,7 +782,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <button
                                 onClick={() =>
                                   navigate(
-                                    `${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}/matches`
+                                    `${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}/matches`
                                   )
                                 }
                                 style={actionButtonStyle('primary')}
@@ -753,13 +806,33 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   <tbody>
                                     {compMatches.map((match: any) => (
                                       <tr key={match.id}>
-                                        <td style={compactTextTdStyle}>{match.title || match.name || 'Match'}</td>
+                                        <td style={compactTextTdStyle}>
+                                          <button
+                                            type="button"
+                                            className="text-blue-600 hover:underline"
+                                            style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                                            onClick={() => navigate(`/matches/${match.id}`)}
+                                          >
+                                            {match.title || match.name || 'Match'}
+                                          </button>
+                                        </td>
                                         <td style={compactTextTdStyle}>{match.start_time ? new Date(match.start_time).toLocaleString() : '—'}</td>
                                         <td style={compactTdStyle}>
                                           <div style={compactActionsStyle}>
                                             <button onClick={() => navigate(`/matches/${match.id}`)} style={actionButtonStyle('neutral')}>
                                               View
                                             </button>
+                                            {userCanEditProject && (
+                                              <button
+                                                onClick={() => {
+                                                  setSelectedEditMatch(match);
+                                                  setIsMatchEditModalOpen(true);
+                                                }}
+                                                style={actionButtonStyle('primary')}
+                                              >
+                                                Edit
+                                              </button>
+                                            )}
                                           </div>
                                         </td>
                                       </tr>
@@ -795,7 +868,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         <tbody>
                           {competitions.map((competition) => (
                             <tr key={competition.id}>
-                              <td style={compactTextTdStyle}>{competition.name}</td>
+                              <td style={compactTextTdStyle}>
+                                <button
+                                  type="button"
+                                  className="text-blue-600 hover:underline"
+                                  style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                                  onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)}
+                                >
+                                  {competition.name}
+                                </button>
+                              </td>
                               <td style={compactTextTdStyle}>
                                 {new Date(competition.start_date).toLocaleDateString()} –{' '}
                                 {new Date(competition.end_date).toLocaleDateString()}
@@ -806,11 +888,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
                                   <button
-                                    onClick={() => navigate(`${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}`)}
+                                    onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)}
                                     style={actionButtonStyle('neutral')}
                                   >
                                     View
                                   </button>
+                                  {userCanEditProject && (
+                                    <button
+                                      onClick={() => {
+                                        setSelectedEditPeriod(competition);
+                                        setIsPeriodEditModalOpen(true);
+                                      }}
+                                      style={actionButtonStyle('primary')}
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
                                   {userCanDeleteProject && (
                                     <button
                                       onClick={async () => {
@@ -873,7 +966,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         <tbody>
                           {matches.map((match) => (
                             <tr key={match.id}>
-                              <td style={compactTextTdStyle}>{match.title || match.name}</td>
+                              <td style={compactTextTdStyle}>
+                                <button
+                                  type="button"
+                                  className="text-blue-600 hover:underline"
+                                  style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                                  onClick={() => navigate(`/matches/${match.id}`)}
+                                >
+                                  {match.title || match.name}
+                                </button>
+                              </td>
                               <td style={compactTextTdStyle}>{match.period?.name || '—'}</td>
                               <td style={compactTextTdStyle}>
                                 {match.start_time ? new Date(match.start_time).toLocaleString() : '—'}
@@ -886,6 +988,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   >
                                     View
                                   </button>
+                                  {userCanEditProject && (
+                                    <button
+                                      onClick={() => {
+                                        setSelectedEditMatch(match);
+                                        setIsMatchEditModalOpen(true);
+                                      }}
+                                      style={actionButtonStyle('primary')}
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
                                   {userCanDeleteProject && (
                                     <button
                                       onClick={async () => {
@@ -980,7 +1093,20 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           period={selectedEditPeriod}
           onSave={async (payload) => {
             if (!selectedEditPeriod) return;
-            await saveSeasonEdits(selectedEditPeriod, payload);
+            await savePeriodEdits(selectedEditPeriod, payload);
+          }}
+        />
+
+        <MatchEditModal
+          opened={isMatchEditModalOpen}
+          onClose={() => {
+            setIsMatchEditModalOpen(false);
+            setSelectedEditMatch(null);
+          }}
+          match={selectedEditMatch}
+          onSave={async (payload) => {
+            if (!selectedEditMatch) return;
+            await saveMatchEdits(selectedEditMatch, payload);
           }}
         />
       </div>
