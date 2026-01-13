@@ -785,7 +785,12 @@ export const CompetitionsList: React.FC = () => {
 
                     // Link URL logic
                     const orgSlugOrId = orgSlug || orgId;
+                    const clubSlugOrId = (club as any)?.slug || clubId;
                     const teamSlugOrId = teamSlug || teamId;
+                    const seasonSlugOrId = seasonSlug || seasonId;
+                    const teamBasePath = clubSlugOrId
+                      ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`
+                      : `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}`;
 
                     return (
                         <tr key={comp.id}>
@@ -806,11 +811,11 @@ export const CompetitionsList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                           {clubId ? (
                             <a
-                              href={`/organisations/${orgSlug || orgId}/clubs/${club?.slug || clubId}`}
+                              href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgSlug || orgId}/clubs/${club?.slug || clubId}`);
+                                navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`);
                               }}
                             >
                               {clubName}
@@ -820,11 +825,11 @@ export const CompetitionsList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                           {teamId ? (
                             <a
-                              href={`/organisations/${orgSlug || orgId}/teams/${teamSlug || teamId}`}
+                              href={teamBasePath}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgSlug || orgId}/teams/${teamSlug || teamId}`);
+                                navigate(teamBasePath);
                               }}
                             >
                               {teamName}
@@ -834,12 +839,12 @@ export const CompetitionsList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                             {seasonId ? (
                                 <a
-                                href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
+                                href={`${teamBasePath}/seasons/${seasonSlugOrId}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     navigate(
-                                        `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`
+                                        `${teamBasePath}/seasons/${seasonSlugOrId}`
                                     );
                                 }}
                                 >
@@ -851,12 +856,12 @@ export const CompetitionsList: React.FC = () => {
                         </td>
                         <td style={compactTextTdStyle}>
                             <a
-                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
+                            href={`${teamBasePath}/seasons/${seasonSlugOrId}/competitions/${comp.slug || comp.id}`}
                             className="text-blue-600 hover:underline"
                             onClick={(e) => {
                                 e.preventDefault();
                                 navigate(
-                                `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
+                                `${teamBasePath}/seasons/${seasonSlugOrId}/competitions/${comp.slug || comp.id}`,
                                 );
                             }}
                             >

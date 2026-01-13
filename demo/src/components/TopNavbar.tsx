@@ -137,6 +137,10 @@ export default function TopNavbar() {
   const appNavGroup = useMemo<NavGroup>(() => {
     const path = location.pathname;
 
+    const isUuid = (value: unknown) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+    const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
+
     const seasonTeamMatch = path.match(
       /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)/
     );
@@ -151,24 +155,34 @@ export default function TopNavbar() {
     );
 
     const orgFromPath = seasonTeamMatch?.[1] || seasonMatch?.[1] || teamMatch?.[1] || clubMatch?.[1] || null;
-    const orgId = String(orgFromPath || (context as any)?.organisation?.slug || (context as any)?.organisation?.id || '');
+    const contextOrgSlug = String((context as any)?.organisation?.slug || '');
+    const contextOrgId = String((context as any)?.organisation?.id || '');
 
-    const clubId = String(
+    // Prefer slug for detail-page routing (canonical URLs), but keep whatever is in-path
+    // when it already looks like a slug.
+    const orgFromPathStr = String(orgFromPath || '');
+    const orgSlugOrId =
+      (orgFromPathStr && !isNumericId(orgFromPathStr) && !isUuid(orgFromPathStr))
+        ? orgFromPathStr
+        : (contextOrgSlug || orgFromPathStr || contextOrgId || '');
+
+    const clubIdFromPath = String(
       seasonTeamMatch?.[2] || teamMatch?.[2] || (clubMatch ? clubMatch[2] : '') || ''
     );
+    const clubId = clubIdFromPath || String((context as any)?.project?.slug || (context as any)?.project?.id || '');
     const teamId = String(seasonTeamMatch?.[3] || teamMatch?.[3] || '');
     const seasonId = String(seasonTeamMatch?.[4] || seasonMatch?.[3] || '');
     const projectIdForSeason = String(seasonMatch?.[2] || teamId || clubId || '');
 
-    const federationPath = orgId ? `/organisations/${orgId}` : '/directory?tab=federations';
-    const clubPath = orgId && clubId ? `/organisations/${orgId}/projects/${clubId}` : '/directory?tab=clubs';
-    const teamPath = orgId && clubId && teamId
-      ? `/organisations/${orgId}/projects/${clubId}/teams/${teamId}`
+    const federationPath = orgSlugOrId ? `/organisations/${orgSlugOrId}` : '/directory?tab=federations';
+    const clubPath = orgSlugOrId && clubId ? `/organisations/${orgSlugOrId}/projects/${clubId}` : '/directory?tab=clubs';
+    const teamPath = orgSlugOrId && clubId && teamId
+      ? `/organisations/${orgSlugOrId}/projects/${clubId}/teams/${teamId}`
       : '/directory?tab=teams';
-    const seasonPath = orgId && seasonId
+    const seasonPath = orgSlugOrId && seasonId
       ? (clubId && teamId
-        ? `/organisations/${orgId}/projects/${clubId}/teams/${teamId}/seasons/${seasonId}`
-        : `/organisations/${orgId}/projects/${projectIdForSeason}/seasons/${seasonId}`)
+        ? `/organisations/${orgSlugOrId}/projects/${clubId}/teams/${teamId}/seasons/${seasonId}`
+        : `/organisations/${orgSlugOrId}/projects/${projectIdForSeason}/seasons/${seasonId}`)
       : '/directory?tab=seasons';
 
     return {

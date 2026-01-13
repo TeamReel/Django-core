@@ -565,6 +565,24 @@ export const SeasonsList: React.FC = () => {
                     const clubName = clubObj?.name || '-';
 
                     const orgId = typeof org === 'string' ? org : org?.id;
+                    const orgFromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
+                    const orgSlugOrId = orgFromList?.slug || (org as any)?.slug || orgId;
+
+                    const clubSlugOrId = (clubObj as any)?.slug || clubId;
+                    const teamSlugOrId = (teamObj as any)?.slug || teamId;
+                    const seasonSlugOrId = periodPathKey(season) || season.slug || season.id;
+
+                    const teamDetailPath = (orgSlugOrId && clubSlugOrId && teamSlugOrId)
+                      ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`
+                      : (orgSlugOrId && teamSlugOrId)
+                        ? `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}`
+                        : null;
+
+                    const seasonDetailPath = (orgSlugOrId && clubSlugOrId && teamSlugOrId && seasonSlugOrId)
+                      ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+                      : (orgSlugOrId && teamSlugOrId && seasonSlugOrId)
+                        ? `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+                        : null;
 
                     // Use activities_count for matches if available, else 0
                     const matchesCount = (season as any).matches_count ?? season.activities_count ?? 0;
@@ -572,13 +590,13 @@ export const SeasonsList: React.FC = () => {
                     return (
                     <tr key={season.id}>
                         <td style={compactTextTdStyle}>
-                          {orgId ? (
+                          {orgSlugOrId ? (
                             <a
-                              href={`/organisations/${orgId}`}
+                              href={`/organisations/${orgSlugOrId}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgId}`);
+                                navigate(`/organisations/${orgSlugOrId}`);
                               }}
                             >
                               {orgName}
@@ -588,13 +606,13 @@ export const SeasonsList: React.FC = () => {
                           )}
                         </td>
                         <td style={compactTextTdStyle}>
-                          {clubId && orgId ? (
+                          {clubSlugOrId && orgSlugOrId ? (
                             <a
-                              href={`/organisations/${orgId}/projects/${clubId}`}
+                              href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgId}/projects/${clubId}`);
+                                navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`);
                               }}
                             >
                               {clubName}
@@ -604,13 +622,13 @@ export const SeasonsList: React.FC = () => {
                           )}
                         </td>
                         <td style={compactTextTdStyle}>
-                          {teamId && orgId ? (
+                          {teamDetailPath ? (
                             <a
-                              href={`/organisations/${orgId}/projects/${teamId}`}
+                              href={teamDetailPath}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgId}/projects/${teamId}`);
+                                navigate(teamDetailPath);
                               }}
                             >
                               {teamName}
@@ -620,16 +638,20 @@ export const SeasonsList: React.FC = () => {
                           )}
                         </td>
                         <td style={compactTextTdStyle}>
-                          <a
-                            href={`/organisations/${orgId}/projects/${teamId}/seasons/${periodPathKey(season) || season.slug || season.id}`}
-                            className="text-blue-600 hover:underline"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              navigate(`/organisations/${orgId}/projects/${teamId}/seasons/${periodPathKey(season) || season.slug || season.id}`);
-                            }}
-                          >
-                            {season.name}
-                          </a>
+                          {seasonDetailPath ? (
+                            <a
+                              href={seasonDetailPath}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(seasonDetailPath);
+                              }}
+                            >
+                              {season.name}
+                            </a>
+                          ) : (
+                            season.name
+                          )}
                         </td>
                         <td style={compactTdStyle}>
                             <Badge variant="default">

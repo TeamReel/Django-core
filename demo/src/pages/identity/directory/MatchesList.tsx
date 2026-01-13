@@ -675,6 +675,10 @@ export const MatchesList: React.FC = () => {
                     const seasonTarget = season?.slug || season?.id;
                     const compTarget = competition?.slug || competition?.id;
 
+                    const teamBasePath = clubTarget
+                      ? `/organisations/${orgTarget}/projects/${clubTarget}/teams/${teamTarget}`
+                      : `/organisations/${orgTarget}/projects/${teamTarget}`;
+
                     return (
                         <tr key={m.id}>
                         <td style={compactTextTdStyle}>
@@ -694,11 +698,11 @@ export const MatchesList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                             {clubId ? (
                                 <a
-                                href={`/organisations/${orgTarget}/clubs/${clubTarget}`}
+                            href={`/organisations/${orgTarget}/projects/${clubTarget}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    navigate(`/organisations/${orgTarget}/clubs/${clubTarget}`);
+                              navigate(`/organisations/${orgTarget}/projects/${clubTarget}`);
                                 }}
                                 >
                                 {clubName}
@@ -708,11 +712,11 @@ export const MatchesList: React.FC = () => {
                          <td style={compactTextTdStyle}>
                             {teamId ? (
                                 <a
-                                href={`/organisations/${orgTarget}/teams/${teamTarget}`}
+                            href={teamBasePath}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    navigate(`/organisations/${orgTarget}/teams/${teamTarget}`);
+                              navigate(teamBasePath);
                                 }}
                                 >
                                 {teamName}
@@ -722,12 +726,12 @@ export const MatchesList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                              {season ? (
                                 <a
-                                href={`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}`}
+                            href={`${teamBasePath}/seasons/${seasonTarget}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     if(seasonTarget) {
-                                        navigate(`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}`);
+                                navigate(`${teamBasePath}/seasons/${seasonTarget}`);
                                     }
                                 }}
                                 >
@@ -738,12 +742,12 @@ export const MatchesList: React.FC = () => {
                             <td style={compactTextTdStyle}>
                               {competition ? (
                                 <a
-                                href={`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}/competitions/${compTarget}`}
+                            href={`${teamBasePath}/seasons/${seasonTarget}/competitions/${compTarget}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
                                   if(seasonTarget && compTarget) {
-                                    navigate(`/organisations/${orgTarget}/projects/${teamTarget}/seasons/${seasonTarget}/competitions/${compTarget}`);
+                              navigate(`${teamBasePath}/seasons/${seasonTarget}/competitions/${compTarget}`);
                                   }
                                 }}
                                 >
