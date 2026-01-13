@@ -456,6 +456,25 @@ export default function HierarchyMatchDetailPage() {
     });
   };
 
+  const refreshMatch = async () => {
+    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(match.id))}/`, {
+      credentials: 'include',
+    });
+    if (!res.ok) return;
+    const raw = await res.json().catch(() => null);
+    setMatch(getEnvelopeData(raw));
+  };
+
+  const getApiErrorMessage = async (res: Response, fallback: string) => {
+    const raw = await res.json().catch(() => null);
+    return (
+      raw?.error?.message ||
+      raw?.detail ||
+      (typeof raw === 'string' ? raw : null) ||
+      fallback
+    );
+  };
+
   const createParticipation = async (memberId: string, side: 'home' | 'away') => {
     if (!memberId) return;
     const teamId = side === 'home' ? String(match.project.id) : String(match.opponent_project?.id || '');
@@ -482,11 +501,11 @@ export default function HierarchyMatchDetailPage() {
       body: JSON.stringify(body),
     });
     if (!res.ok) {
-      const raw = await res.json().catch(() => null);
-      throw new Error(raw?.detail || 'Failed to add participant');
+      throw new Error(await getApiErrorMessage(res, 'Failed to add participant'));
     }
     const created = await res.json().catch(() => null);
     upsertParticipationInState(getEnvelopeData(created));
+    await refreshMatch();
   };
 
   const updateParticipation = async (p: Participation, patch: any) => {
@@ -500,11 +519,11 @@ export default function HierarchyMatchDetailPage() {
       body: JSON.stringify(patch),
     });
     if (!res.ok) {
-      const raw = await res.json().catch(() => null);
-      throw new Error(raw?.detail || 'Failed to update participant');
+      throw new Error(await getApiErrorMessage(res, 'Failed to update participant'));
     }
     const updated = await res.json().catch(() => null);
     upsertParticipationInState(getEnvelopeData(updated));
+    await refreshMatch();
   };
 
   const deleteParticipation = async (p: Participation) => {
@@ -516,20 +535,20 @@ export default function HierarchyMatchDetailPage() {
       credentials: 'include',
     });
     if (!res.ok) {
-      const raw = await res.json().catch(() => null);
-      throw new Error(raw?.detail || 'Failed to remove participant');
+      throw new Error(await getApiErrorMessage(res, 'Failed to remove participant'));
     }
     removeParticipationFromState(String(p.id));
+    await refreshMatch();
   };
 
   const renderLineupEditor = (side: 'home' | 'away') => {
     const isHome = side === 'home';
     const title = isHome ? homeTeamName : awayTeamName;
     const selected = (isHome ? homeParticipations : awayParticipations) || [];
-    const selectedMemberIds = new Set(selected.map((p) => String(p.member?.id || '')));
+    const allSelectedMemberIds = new Set((match.participations || []).map((p) => String(p.member?.id || '')));
 
-    // Available: eligible members that aren't already in this side.
-    const available = eligibleMembers.filter((m) => !selectedMemberIds.has(String(m.id)));
+    // Available: eligible members that aren't already in the match (any side)
+    const available = eligibleMembers.filter((m) => !allSelectedMemberIds.has(String(m.id)));
     const currentAddId = isHome ? addHomeMemberId : addAwayMemberId;
     const setCurrentAddId = isHome ? setAddHomeMemberId : setAddAwayMemberId;
 
