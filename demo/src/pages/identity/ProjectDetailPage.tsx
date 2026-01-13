@@ -1533,7 +1533,19 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
               { label: 'Federations', onClick: () => navigate('/federations') },
               { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
               { label: 'Clubs', onClick: () => navigate(clubsListPath) },
-              { label: 'Details', current: true },
+              ...(isTeamRoute
+                ? [
+                    {
+                      label: clubSlugOrId || 'Club',
+                      onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+                    },
+                    {
+                      label: 'Teams',
+                      onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+                    },
+                    { label: projectId || 'Team', current: true },
+                  ]
+                : [{ label: 'Details', current: true }]),
             ]}
           />
           <PageContent>
@@ -1559,7 +1571,19 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
               { label: 'Federations', onClick: () => navigate('/federations') },
               { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
               { label: 'Clubs', onClick: () => navigate(clubsListPath) },
-              { label: 'Details', current: true },
+              ...(isTeamRoute
+                ? [
+                    {
+                      label: clubSlugOrId || 'Club',
+                      onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+                    },
+                    {
+                      label: 'Teams',
+                      onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+                    },
+                    { label: projectId || 'Team', current: true },
+                  ]
+                : [{ label: 'Details', current: true }]),
             ]}
           />
           <PageContent>
