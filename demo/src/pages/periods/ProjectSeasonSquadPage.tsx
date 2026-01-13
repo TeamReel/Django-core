@@ -67,11 +67,158 @@ function unwrapList(payload: any): any[] {
   return [];
 }
 
+function MembershipEditModal({
+  opened,
+  onClose,
+  membership,
+  onSave,
+}: {
+  opened: boolean;
+  onClose: () => void;
+  membership: any | null;
+  onSave: (payload: { role: string }) => Promise<void>;
+}) {
+  const [role, setRole] = useState('viewer');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!opened || !membership) return;
+    setRole(String(membership?.role || 'viewer'));
+    setError(null);
+  }, [opened, membership]);
+
+  if (!opened || !membership) return null;
+
+  const user = membership.user || {};
+  const displayName =
+    user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'Member';
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: 'var(--app-surface)',
+          padding: '20px',
+          borderRadius: '8px',
+          width: '520px',
+          maxWidth: '95%',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          color: 'var(--app-text)',
+          border: '1px solid var(--app-border)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Edit member</h2>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '18px',
+              cursor: 'pointer',
+              color: 'var(--app-text)',
+            }}
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+
+        <div style={{ marginTop: '10px', color: 'var(--app-muted-text)', fontSize: '13px' }}>{displayName}</div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontWeight: 600 }} htmlFor="membership-role">
+              Role
+            </label>
+            <select
+              id="membership-role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              style={{
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+              }}
+            >
+              <option value="viewer">viewer</option>
+              <option value="editor">editor</option>
+              <option value="admin">admin</option>
+            </select>
+          </div>
+
+          {error && <div style={{ color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+            <button
+              onClick={onClose}
+              disabled={saving}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: saving ? 'not-allowed' : 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                setSaving(true);
+                setError(null);
+                try {
+                  await onSave({ role });
+                  onClose();
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : 'Failed to save');
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              disabled={saving}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-primary, #1976d2)',
+                color: '#fff',
+                cursor: saving ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProjectSeasonSquadPage() {
   const navigate = useNavigate();
   const params = useParams();
   const { user } = useAuth();
-  const { context } = useContextSwitcher();
+  const { context, organisations: myOrganisations } = useContextSwitcher();
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -104,6 +251,9 @@ export default function ProjectSeasonSquadPage() {
   const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
   const [selectedEditPeriod, setSelectedEditPeriod] = useState<any | null>(null);
 
+  const [isMembershipEditModalOpen, setIsMembershipEditModalOpen] = useState(false);
+  const [selectedMembership, setSelectedMembership] = useState<any | null>(null);
+
   const getCsrfToken = () =>
     document.cookie
       .split('; ')
@@ -119,10 +269,31 @@ export default function ProjectSeasonSquadPage() {
 
   const orgForPermissions = useMemo(() => {
     const contextOrg = context?.organisation as any;
-    if (contextOrg?.user_role) return contextOrg;
+    const route = String(orgSlugOrId || '').trim();
+    const orgIdMatches = (candidate: any) => {
+      if (!candidate) return false;
+      const cid = String(candidate.id || '').trim();
+      const cslug = String(candidate.slug || '').trim();
+      const oid = String((organisation as any)?.id || '').trim();
+      const oslug = String((organisation as any)?.slug || '').trim();
+      return (
+        (cid && oid && cid === oid) ||
+        (cslug && oslug && cslug === oslug) ||
+        (cid && route && cid === route) ||
+        (cslug && route && cslug === route)
+      );
+    };
+
+    const fromList = (myOrganisations as any[])?.find((o: any) => orgIdMatches(o));
+    if (fromList?.user_role) return fromList;
+    if (orgIdMatches(contextOrg) && contextOrg?.user_role) return contextOrg;
+    const projectOrg = (project as any)?.organisation;
+    if (projectOrg?.user_role) return projectOrg;
     if ((organisation as any)?.user_role) return organisation as any;
-    return organisation || contextOrg || null;
-  }, [context?.organisation, organisation]);
+    if (fromList) return fromList;
+    if (orgIdMatches(contextOrg)) return contextOrg;
+    return projectOrg || organisation || fromList || contextOrg || null;
+  }, [context?.organisation, myOrganisations, orgSlugOrId, organisation, project]);
 
   const permissionContext = useMemo(
     () => ({ currentOrganisation: orgForPermissions as any, isSuperAdmin }),
@@ -282,8 +453,8 @@ export default function ProjectSeasonSquadPage() {
             hasDropdown={seasonsForSwitcher.length > 1}
           />
         ) as any,
+        current: true,
       },
-      { label: 'Squad', current: true },
     ];
   }, [
     clubProject,
@@ -344,6 +515,42 @@ export default function ProjectSeasonSquadPage() {
     } catch (e) {
       console.error(e);
       alert('Error deleting season');
+    }
+  };
+
+  const deleteMembership = async (membership: any) => {
+    const membershipId = String(membership?.id || '').trim();
+    const projectId = String(project?.id || '').trim();
+    if (!membershipId || !projectId) return;
+
+    const user = membership.user || {};
+    const displayName =
+      user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'this member';
+
+    if (!window.confirm(`Remove ${displayName} from this team?`)) return;
+
+    try {
+      const res = await fetch(
+        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          credentials: 'include',
+        }
+      );
+
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '');
+        throw new Error(detail || 'Failed to remove member');
+      }
+
+      setMembers((prev) => prev.filter((m: any) => String(m.id) !== membershipId));
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : 'Error removing member');
     }
   };
 
@@ -490,13 +697,14 @@ export default function ProjectSeasonSquadPage() {
                       const position = m.metadata?.position || '—';
                       const shirtNumber = m.metadata?.shirt_number ?? '';
                       const membershipId = m.id;
+                      const userId = user?.id;
 
                       return (
                         <tr key={String(membershipId || user.id)}>
                           <td style={compactTextTdStyle}>
-                            {orgSlugOrId && membershipId ? (
+                            {orgSlugOrId && userId ? (
                               <Link
-                                to={`/organisations/${orgSlugOrId}/members/${membershipId}`}
+                                to={`/organisations/${orgSlugOrId}/users/${userId}`}
                                 className="text-blue-600 hover:underline"
                                 style={{ textDecoration: 'none' }}
                               >
@@ -516,15 +724,35 @@ export default function ProjectSeasonSquadPage() {
                           <td style={compactTdStyle}>{shirtNumber || '—'}</td>
                           <td style={compactTdStyle}>
                             <div style={compactActionsStyle}>
-                              {orgSlugOrId && membershipId ? (
+                              {orgSlugOrId && userId ? (
                                 <button
-                                  onClick={() => navigate(`/organisations/${orgSlugOrId}/members/${membershipId}`)}
+                                  onClick={() => navigate(`/organisations/${orgSlugOrId}/users/${userId}`)}
                                   style={actionButtonStyle('primary')}
                                 >
                                   View
                                 </button>
                               ) : (
                                 <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                              )}
+
+                              {userCanEditProject && (
+                                <button
+                                  onClick={() => {
+                                    setSelectedMembership(m);
+                                    setIsMembershipEditModalOpen(true);
+                                  }}
+                                  style={actionButtonStyle('warning')}
+                                >
+                                  Edit
+                                </button>
+                              )}
+                              {userCanDeleteProject && (
+                                <button
+                                  onClick={() => deleteMembership(m)}
+                                  style={actionButtonStyle('danger')}
+                                >
+                                  Delete
+                                </button>
                               )}
                             </div>
                           </td>
@@ -579,6 +807,43 @@ export default function ProjectSeasonSquadPage() {
             const raw = await res.json().catch(() => null);
             const updated = (raw as any)?.data || raw || { ...selectedEditPeriod, ...payload };
             setSeason((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
+          }}
+        />
+
+        <MembershipEditModal
+          opened={isMembershipEditModalOpen}
+          membership={selectedMembership}
+          onClose={() => {
+            setIsMembershipEditModalOpen(false);
+            setSelectedMembership(null);
+          }}
+          onSave={async ({ role }) => {
+            const membershipId = String(selectedMembership?.id || '').trim();
+            const projectId = String(project?.id || '').trim();
+            if (!membershipId || !projectId) return;
+
+            const res = await fetch(
+              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
+              {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest',
+                  'X-CSRFToken': getCsrfToken(),
+                },
+                credentials: 'include',
+                body: JSON.stringify({ role }),
+              }
+            );
+
+            if (!res.ok) {
+              const detail = await res.text().catch(() => '');
+              throw new Error(detail || 'Failed to save member');
+            }
+
+            setMembers((prev) =>
+              prev.map((m: any) => (String(m.id) === membershipId ? { ...m, role } : m))
+            );
           }}
         />
       </div>

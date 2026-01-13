@@ -506,16 +506,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 onClick={() => navigate(seasonsBasePath)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                }}
+                style={actionButtonStyle('neutral')}
               >
                 Back
               </button>
@@ -524,16 +515,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   setSelectedDetailPeriod(season);
                   setIsPeriodDetailModalOpen(true);
                 }}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                }}
+                style={actionButtonStyle('primary')}
               >
                 View
               </button>
@@ -543,16 +525,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     setSelectedEditPeriod(season);
                     setIsPeriodEditModalOpen(true);
                   }}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    border: '1px solid #fd7e14',
-                    backgroundColor: 'var(--app-surface)',
-                    color: '#fd7e14',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                  }}
+                  style={actionButtonStyle('warning')}
                 >
                   Edit
                 </button>
@@ -584,16 +557,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       alert('Error deleting season');
                     }
                   }}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    border: '1px solid #dc3545',
-                    backgroundColor: 'var(--app-surface)',
-                    color: '#dc3545',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                  }}
+                  style={actionButtonStyle('danger')}
                 >
                   Delete
                 </button>
@@ -709,7 +673,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             setSelectedDetailPeriod(competition);
                                             setIsPeriodDetailModalOpen(true);
                                           }}
-                                          style={actionButtonStyle('neutral')}
+                                          style={actionButtonStyle('primary')}
                                         >
                                           View
                                         </button>
@@ -719,7 +683,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                               setSelectedEditPeriod(competition);
                                               setIsPeriodEditModalOpen(true);
                                             }}
-                                            style={actionButtonStyle('primary')}
+                                            style={actionButtonStyle('warning')}
                                           >
                                             Edit
                                           </button>
@@ -893,7 +857,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 onClick={() =>
                                   navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)
                                 }
-                                style={actionButtonStyle('neutral')}
+                                style={actionButtonStyle('primary')}
                               >
                                 View
                               </button>
@@ -976,7 +940,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         <td style={compactTextTdStyle}>{match.start_time ? new Date(match.start_time).toLocaleString() : '—'}</td>
                                         <td style={compactTdStyle}>
                                           <div style={compactActionsStyle}>
-                                            <button onClick={() => navigate(`/matches/${match.id}`)} style={actionButtonStyle('neutral')}>
+                                            <button onClick={() => navigate(`/matches/${match.id}`)} style={actionButtonStyle('primary')}>
                                               View
                                             </button>
                                             {userCanEditProject && (
@@ -988,6 +952,38 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                                 style={actionButtonStyle('warning')}
                                               >
                                                 Edit
+                                              </button>
+                                            )}
+                                            {userCanDeleteProject && (
+                                              <button
+                                                onClick={async () => {
+                                                  if (!window.confirm(`Are you sure you want to delete match ${match.title || match.name}?`)) return;
+                                                  try {
+                                                    const res = await fetch(
+                                                      `${apiBaseUrl}/api/v1/activities/${match.id}/`,
+                                                      {
+                                                        method: 'DELETE',
+                                                        headers: {
+                                                          'Content-Type': 'application/json',
+                                                          'X-CSRFToken': getCsrfToken(),
+                                                        },
+                                                        credentials: 'include',
+                                                      }
+                                                    );
+
+                                                    if (res.ok) {
+                                                      setMatches((prev) => prev.filter((m) => String(m.id) !== String(match.id)));
+                                                    } else {
+                                                      alert('Error deleting match');
+                                                    }
+                                                  } catch (e) {
+                                                    console.error(e);
+                                                    alert('Error deleting match');
+                                                  }
+                                                }}
+                                                style={actionButtonStyle('danger')}
+                                              >
+                                                Delete
                                               </button>
                                             )}
                                           </div>
@@ -1045,7 +1041,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 <div style={compactActionsStyle}>
                                   <button
                                     onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)}
-                                    style={actionButtonStyle('neutral')}
+                                    style={actionButtonStyle('primary')}
                                   >
                                     View
                                   </button>
@@ -1151,7 +1147,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 <div style={compactActionsStyle}>
                                   <button
                                     onClick={() => navigate(`/matches/${match.id}`)}
-                                    style={actionButtonStyle('neutral')}
+                                    style={actionButtonStyle('primary')}
                                   >
                                     View
                                   </button>
