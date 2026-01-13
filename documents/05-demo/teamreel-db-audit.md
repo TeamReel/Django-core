@@ -24,6 +24,15 @@ $env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17
 python manage.py audit_production_db > documents/05-demo/teamreel-db-audit-temp.md
 ```
 
+### One-command Markdown Update (Recommended)
+
+This will run the audit and update this file’s counts in-place:
+
+```powershell
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
+python scripts/update_teamreel_db_audit.py
+```
+
 **Command:** `python manage.py audit_production_db`
 **Source:** `src/organisations/management/commands/audit_production_db.py`
 **Output:** Console output (redirect to file)
@@ -93,6 +102,34 @@ This section reflects the **current audit counts** (not historical claims). Deta
 | **activities.Activity** | `activities_activity` | 852 | ✅ READY | Matches/events present |
 | **projects.ProjectMembership** | `projects_membership` | 2,353 | ✅ READY | Player/staff memberships present |
 | **activities.Participation** | `activities_participation` | 0 | 🔜 NEXT | Match participation (lineups, subs, goals) |
+
+#### What Should `activities.Participation` Contain?
+
+`Participation` links an **organisation membership** (`organisations.Membership`, not `accounts.User`) to **exactly one** of:
+
+- a **Period** (e.g. season squad / competition squad) via `period_id`, or
+- an **Activity** (e.g. a match lineup) via `activity_id`
+
+For TeamReel matches, the most valuable starting data is **activity-level participation** (lineups):
+
+- 11× `role=starter` per match
+- 3–7× `role=substitute` per match
+- Optional staff: `role=coach`, `role=assistant_coach`, `role=physio`, etc.
+
+Suggested fields to populate:
+
+- `status`: usually `confirmed`
+- `data`: lightweight, role-specific metadata like:
+  - `jersey_number`
+  - `position` (e.g. GK/CB/CM/ST)
+  - `minute_in` / `minute_out` (for substitutes)
+  - `is_captain` (boolean)
+
+API-wise this maps to:
+
+- `POST /api/v1/participations/` with `{ member_id, activity_id, role, status, data }`
+
+Note: match results (score/goals) are currently best stored on `activities.Activity.data`. Participation is primarily about **who took part**.
 
 ### 🔐 RBAC & Permissions
 
