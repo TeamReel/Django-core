@@ -20,6 +20,7 @@ interface Participation {
     position?: string;
     is_captain?: boolean;
     team_name?: string;
+    team_id?: string;
   };
 }
 
@@ -74,7 +75,7 @@ interface MatchDetail {
 }
 
 export const MatchDetailPage: React.FC = () => {
-  const { matchId } = useParams<{ matchId: string }>();
+  const { matchId, federationSlugOrId, projectSlugOrId } = useParams<{ matchId: string; federationSlugOrId?: string; projectSlugOrId?: string }>();
   const navigate = useNavigate();
   const [match, setMatch] = useState<MatchDetail | null>(null);
   const [competitionPeriod, setCompetitionPeriod] = useState<any | null>(null);
@@ -167,6 +168,12 @@ export const MatchDetailPage: React.FC = () => {
       </AppShell>
     );
   }
+
+  const homeTeamName = match.project.name;
+  const awayTeamName = match.opponent_project?.name || 'Opponent';
+  const scoreDisplay = `${match.metadata?.home_score ?? 0} - ${match.metadata?.away_score ?? 0}`;
+  const status = match.metadata?.status || 'scheduled';
+  const date = new Date(match.start_time);
 
   const homeParticipations = match.participations?.filter(p => p.data?.side === 'home' || String(p.data?.team_id) === String(match.project.id));
   const awayParticipations = match.participations?.filter(p => p.data?.side === 'away' || (match.opponent_project && String(p.data?.team_id) === String(match.opponent_project.id)));
