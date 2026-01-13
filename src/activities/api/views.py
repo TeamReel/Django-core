@@ -15,10 +15,21 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
-from activities.models import Activity, Participation, Period
+from activities.models import Activity, ActivityEvent, Participation, Period
 
-from .permissions import ActivityPermission, ParticipationPermission, PeriodPermission
-from .serializers import ActivitySerializer, ParticipationSerializer, PeriodSerializer
+from .permissions import (
+    ActivityEventPermission,
+    ActivityPermission,
+    ParticipationPermission,
+    PeriodPermission,
+)
+from .serializers import (
+    ActivityDetailSerializer,
+    ActivityEventSerializer,
+    ActivitySerializer,
+    ParticipationSerializer,
+    PeriodSerializer,
+)
 
 
 class PeriodPagination(BaseAPIPagination):
@@ -350,9 +361,27 @@ class ActivityViewSet(viewsets.ModelViewSet):
     permission_classes = [ActivityPermission]
     pagination_class = BaseAPIPagination
 
+    def get_serializer_class(self):
+        """Return detail serializer for single lookups"""
+        if self.action == "retrieve":
+            return ActivityDetailSerializer
+        return super().get_serializer_class()
+
     def get_queryset(self):
         """Apply query param filters"""
         queryset = super().get_queryset()
+
+        # Optimize for detail view
+        if self.action == "retrieve":
+            queryset = queryset.prefetch_related(
+                "participations",
+                "participations__member__user",
+                "events",
+                "events__member",
+                "events__member__user",
+                "events__related_member",
+                "events__related_member__user",
+            )
 
         # Option A: restrict activities to projects the user can see.
         visible_project_ids = _visible_project_ids_for_user(self.request.user)
@@ -462,10 +491,119 @@ class ActivityViewSet(viewsets.ModelViewSet):
             .select_related("member__user", "member__organisation")
             .order_by("-created_at")
         )
-        from .serializers import ParticipationSerializer
-
         serializer = ParticipationSerializer(participations, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=["get"])
+    def events(self, request, pk=None):
+        """Get all events for an activity."""
+        activity = self.get_object()
+        events = (
+            ActivityEvent.objects.filter(activity=activity)
+            .select_related(
+                "member__user",
+                "related_member__user",
+                "team_project",
+            )
+            .order_by("minute", "created_at")
+        )
+        serializer = ActivityEventSerializer(events, many=True)
+        return Response(serializer.data)
+
+
+class ActivityEventViewSet(viewsets.ModelViewSet):
+    """CRUD + filtering for ActivityEvent.
+
+    Endpoints:
+    - GET /api/v1/activity-events/
+    - POST /api/v1/activity-events/
+    - GET /api/v1/activity-events/{id}/
+    - PUT/PATCH/DELETE /api/v1/activity-events/{id}/
+
+    Query parameters:
+    - activity_id
+    - event_type
+    - member_id
+    - related_member_id
+    """
+
+    queryset = ActivityEvent.objects.select_related(
+        "activity",
+        "activity__project",
+        "member__user",
+        "related_member__user",
+        "team_project",
+        "created_by",
+    ).order_by("-created_at")
+    serializer_class = ActivityEventSerializer
+    permission_classes = [ActivityEventPermission]
+    pagination_class = BaseAPIPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Restrict to visible projects (prevents UUID guessing).
+        visible_project_ids = _visible_project_ids_for_user(self.request.user)
+        if visible_project_ids is not None:
+            queryset = queryset.filter(activity__project_id__in=visible_project_ids)
+
+        activity_id = self.request.query_params.get("activity_id")
+        if activity_id:
+            queryset = queryset.filter(activity_id=activity_id)
+
+        event_type = self.request.query_params.get("event_type")
+        if event_type:
+            queryset = queryset.filter(event_type=event_type)
+
+        member_id = self.request.query_params.get("member_id")
+        if member_id:
+            queryset = queryset.filter(member_id=member_id)
+
+        related_member_id = self.request.query_params.get("related_member_id")
+        if related_member_id:
+            queryset = queryset.filter(related_member_id=related_member_id)
+
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        """Enforce TeamReel match permissions for match-event creation."""
+        if _user_is_system_admin(request.user):
+            return super().create(request, *args, **kwargs)
+
+        activity_id = (request.data or {}).get("activity_id")
+        if not activity_id:
+            raise PermissionDenied("activity_id is required")
+
+        try:
+            activity = Activity.objects.select_related("project").get(id=activity_id)
+        except Activity.DoesNotExist as e:
+            raise PermissionDenied("Invalid activity") from e
+
+        if getattr(activity, "activity_type", None) != "match":
+            raise PermissionDenied("Only match events are writable in TeamReel mode")
+
+        from permissions.evaluator import check_permission
+
+        # Direct team permission
+        if check_permission(
+            request.user.id,
+            "match.edit_own_team",
+            resource_type="project",
+            resource_id=activity.project_id,
+        ):
+            return super().create(request, *args, **kwargs)
+
+        # Club admin acting on child team
+        parent_project_id = getattr(activity.project, "parent_project_id", None)
+        if parent_project_id and check_permission(
+            request.user.id,
+            "match.edit_own_team",
+            resource_type="project",
+            resource_id=parent_project_id,
+        ):
+            return super().create(request, *args, **kwargs)
+
+        raise PermissionDenied("You do not have permission to edit this match")
 
 
 class ParticipationViewSet(viewsets.ModelViewSet):

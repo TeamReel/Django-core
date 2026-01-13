@@ -285,3 +285,103 @@ class Participation(models.Model):
 
     def is_period_participation(self) -> bool:
         return self.period_id is not None
+
+
+class ActivityEvent(models.Model):
+    """Generic event attached to an Activity.
+
+    This is intentionally product-agnostic (B30): an event has a type and optional
+    members/projects + flexible JSON data.
+
+    TeamReel examples:
+    - goal (member=scorer, related_member=assist)
+    - injury (member=injured)
+    - substitution (member=player_out, related_member=player_in)
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    activity = models.ForeignKey(
+        Activity,
+        on_delete=models.CASCADE,
+        related_name="events",
+    )
+    event_type = models.CharField(
+        max_length=64,
+        help_text="Event type (goal, assist, card_yellow, injury, substitution, etc.)",
+    )
+    minute = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text="Match minute (TeamReel). Leave empty for non-timed events.",
+    )
+    occurred_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Absolute timestamp for the event (optional).",
+    )
+    member = models.ForeignKey(
+        "organisations.Membership",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="activity_events",
+        help_text="Primary actor (scorer, injured player, etc).",
+    )
+    related_member = models.ForeignKey(
+        "organisations.Membership",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="related_activity_events",
+        help_text="Secondary actor (assist, player_in, etc).",
+    )
+    team_project = models.ForeignKey(
+        "projects.Project",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="activity_events",
+        help_text="Optional project/team context for the event.",
+    )
+    data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Event-specific metadata",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_activity_events",
+    )
+
+    class Meta:
+        db_table = "activities_activityevent"
+        ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=["activity", "event_type"], name="activities__activit_55ce00_idx"),
+            models.Index(fields=["event_type"], name="activities__event_t_ea0bb9_idx"),
+            models.Index(fields=["activity", "minute"], name="activities__activit_878eca_idx"),
+        ]
+
+    def __str__(self) -> str:
+        suffix = f" @ {self.minute}'" if self.minute is not None else ""
+        return f"{self.activity_id} {self.event_type}{suffix}"
+
+    def clean(self):
+        super().clean()
+
+        if self.minute is not None and self.minute > 300:
+            raise ValidationError("minute seems invalid")
+
+        activity_org_id = getattr(getattr(self.activity, "project", None), "organisation_id", None)
+        if activity_org_id:
+            if self.member and self.member.organisation_id != activity_org_id:
+                raise ValidationError("Member must belong to same organisation as activity")
+            if self.related_member and self.related_member.organisation_id != activity_org_id:
+                raise ValidationError("Related member must belong to same organisation as activity")
+            if self.team_project and self.team_project.organisation_id != activity_org_id:
+                raise ValidationError("team_project must belong to same organisation as activity")

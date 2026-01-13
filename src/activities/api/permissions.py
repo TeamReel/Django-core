@@ -195,3 +195,55 @@ class ParticipationPermission(permissions.BasePermission):
                 "Falling back to is_staff check for participation write access."
             )
             return user.is_staff
+
+
+class ActivityEventPermission(permissions.BasePermission):
+    """Permissions for ActivityEvent operations.
+
+    For TeamReel matches, we gate writes using match.* permissions (similar to ActivityPermission).
+    Reads remain available to authenticated users (querysets are additionally restricted).
+    """
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+        return request.user and request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        user = request.user
+        if user.is_superuser or user.is_staff:
+            return True
+
+        activity = getattr(obj, "activity", None)
+        if getattr(activity, "activity_type", None) != "match":
+            return False
+
+        from permissions.evaluator import check_permission
+
+        required = "match.edit_own_team"
+        if request.method == "DELETE":
+            required = "match.delete"
+
+        # Direct team scope
+        if check_permission(
+            user.id,
+            required,
+            resource_type="project",
+            resource_id=activity.project_id,
+        ):
+            return True
+
+        # Club Admin acting on a child team
+        parent_project_id = getattr(activity.project, "parent_project_id", None)
+        if parent_project_id and check_permission(
+            user.id,
+            required,
+            resource_type="project",
+            resource_id=parent_project_id,
+        ):
+            return True
+
+        return False

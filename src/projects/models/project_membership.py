@@ -93,9 +93,9 @@ class ProjectMembership(models.Model):
         ordering = ["-created_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=["project", "user"],
+                fields=["project", "user", "period", "role"],
                 condition=models.Q(deleted_at__isnull=True),
-                name="unique_active_project_membership",
+                name="unique_project_user_period_role",
             )
         ]
         indexes = [

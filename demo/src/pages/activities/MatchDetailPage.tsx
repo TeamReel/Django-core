@@ -6,6 +6,42 @@ import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
 
+interface Participation {
+  id: string;
+  member: {
+    id: string;
+    user_name: string;
+  };
+  role: string;
+  status: string;
+  data: {
+    side?: 'home' | 'away';
+    jersey_number?: number;
+    position?: string;
+    is_captain?: boolean;
+    team_name?: string;
+  };
+}
+
+interface ActivityEvent {
+  id: string;
+  event_type: string; // goal, card_yellow, substitution, etc.
+  minute?: number;
+  team_project?: {
+    id: string;
+    name: string;
+  };
+  member?: {
+    id: string;
+    user_name: string;
+  };
+  related_member?: {
+    id: string;
+    user_name: string;
+  };
+  data?: any;
+}
+
 interface MatchDetail {
   id: string;
   title: string;
@@ -33,6 +69,8 @@ interface MatchDetail {
     status?: 'scheduled' | 'live' | 'finished' | 'cancelled';
     [key: string]: any;
   };
+  participations?: Participation[];
+  events?: ActivityEvent[];
 }
 
 export const MatchDetailPage: React.FC = () => {
@@ -130,23 +168,76 @@ export const MatchDetailPage: React.FC = () => {
     );
   }
 
-  const date = new Date(match.start_time);
-  const status = match.metadata.status || 'scheduled';
+  const homeParticipations = match.participations?.filter(p => p.data?.side === 'home' || String(p.data?.team_id) === String(match.project.id));
+  const awayParticipations = match.participations?.filter(p => p.data?.side === 'away' || (match.opponent_project && String(p.data?.team_id) === String(match.opponent_project.id)));
 
-  // Logic to determine Home vs Away if not explicit in metadata
-  // Ideally metadata should have 'is_home' or 'home_team_name' etc.
-  // For now, assume Project is Home, Opponent is Away, unless metadata says otherwise.
-  const homeTeamName = match.project.name;
-  const awayTeamName = match.opponent_project?.name || 'Unknown Opponent';
-  const scoreDisplay = status === 'finished'
-    ? `${match.metadata.home_score ?? 0} - ${match.metadata.away_score ?? 0}`
-    : 'vs';
+  const sortLineup = (a: Participation, b: Participation) => {
+    // Starters first
+    const isStarterA = a.role === 'starter';
+    const isStarterB = b.role === 'starter';
+    if (isStarterA && !isStarterB) return -1;
+    if (!isStarterA && isStarterB) return 1;
 
-  const federationSlugOrId =
-    (competitionPeriod as any)?.organisation?.slug ||
-    (competitionPeriod as any)?.organisation?.id;
+    // GK first among starters
+    if (isStarterA) {
+      if (a.data?.position === 'GK') return -1;
+      if (b.data?.position === 'GK') return 1;
+    }
 
-  const projectSlugOrId = (match.project as any)?.slug || match.project.id;
+    return (a.data?.jersey_number || 99) - (b.data?.jersey_number || 99);
+  };
+
+  homeParticipations?.sort(sortLineup);
+  awayParticipations?.sort(sortLineup);
+
+  const matchEvents = match.events || [];
+  matchEvents.sort((a, b) => (a.minute || 0) - (b.minute || 0));
+
+  const renderLineup = (participations: Participation[] = []) => (
+    <Table>
+      <thead>
+        <tr>
+          <th className="w-12">#</th>
+          <th>Name</th>
+          <th className="w-16">Pos</th>
+        </tr>
+      </thead>
+      <tbody>
+        {participations.length === 0 ? (
+          <tr>
+            <td colSpan={3} className="text-gray-500 text-center py-4">
+              No lineup available
+            </td>
+          </tr>
+        ) : (
+          participations.map((p) => (
+            <tr key={p.id} className={p.role !== 'starter' ? 'bg-gray-50' : ''}>
+              <td className="font-mono text-sm">{p.data?.jersey_number || '-'}</td>
+              <td>
+                <div className="font-medium">
+                  {p.member?.user_name || 'Unknown Player'}
+                  {p.data?.is_captain && <span className="ml-2 text-yellow-500" title="Captain">©</span>}
+                </div>
+                {p.role !== 'starter' && <div className="text-xs text-gray-500 capitalize">{p.role.replace('_', ' ')}</div>}
+              </td>
+              <td className="text-xs font-bold text-gray-400">{p.data?.position}</td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </Table>
+  );
+
+  const renderEventIcon = (type: string) => {
+    switch(type) {
+      case 'goal': return '⚽';
+      case 'card_yellow': return '🟨';
+      case 'card_red': return '🟥';
+      case 'substitution': return 'cS'; // 🔄 glyph issue sometimes
+      case 'injury': return '🚑';
+      default: return '•';
+    }
+  };
 
   return (
     <AppShell>
@@ -251,16 +342,46 @@ export const MatchDetailPage: React.FC = () => {
             </div>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             {/* Match Events / Stats Placeholder */}
-             <Card title="Match Events">
-                <Alert variant="info">Match events (goals, cards, subs) coming soon.</Alert>
-             </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+             {/* Match Events */}
+             <div className="md:col-span-1">
+               <Card title="Match Events">
+                  {matchEvents.length === 0 ? (
+                    <div className="text-gray-500 text-sm italic">No events recorded.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {matchEvents.map(evt => {
+                         const isHome = String(evt.team_project?.id) === String(match.project.id);
+                         return (
+                           <div key={evt.id} className="flex items-center text-sm">
+                             <div className="font-mono font-bold w-8 text-right mr-3 text-gray-400">{evt.minute}'</div>
+                             <div className={`flex-1 flex items-center ${isHome ? 'flex-row' : 'flex-row-reverse text-right'}`}>
+                                <span className="text-xl mx-2" title={evt.event_type}>{renderEventIcon(evt.event_type)}</span>
+                                <div>
+                                   <div className="font-medium">{evt.member?.user_name || 'Unknown'}</div>
+                                   {evt.related_member && <div className="text-xs text-gray-500">({evt.related_member.user_name})</div>}
+                                   {evt.event_type === 'substitution' && evt.related_member && (
+                                      <div className="text-xs text-green-600">IN: {evt.related_member.user_name}</div>
+                                   )}
+                                </div>
+                             </div>
+                           </div>
+                         );
+                      })}
+                    </div>
+                  )}
+               </Card>
+             </div>
 
-             {/* Lineups Placeholder */}
-             <Card title="Lineups">
-                <Alert variant="info">Lineup management coming in Phase 2.</Alert>
-             </Card>
+             {/* Lineups */}
+             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card title={`Lineup: ${homeTeamName}`}>
+                   {renderLineup(homeParticipations)}
+                </Card>
+                <Card title={`Lineup: ${awayTeamName}`}>
+                   {renderLineup(awayParticipations)}
+                </Card>
+             </div>
           </div>
 
         </PageContent>

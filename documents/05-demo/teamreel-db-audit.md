@@ -102,6 +102,7 @@ This section reflects the **current audit counts** (not historical claims). Deta
 | **activities.Activity** | `activities_activity` | 852 | ✅ READY | Matches/events present |
 | **projects.ProjectMembership** | `projects_membership` | 2,353 | ✅ READY | Player/staff memberships present |
 | **activities.Participation** | `activities_participation` | 0 | 🔜 NEXT | Match participation (lineups, subs, goals) |
+| **activities.ActivityEvent** | `activities_activityevent` | 0 | 🔜 NEXT | Match events (goals, assists, injuries, subs) |
 
 #### What Should `activities.Participation` Contain?
 
@@ -129,7 +130,41 @@ API-wise this maps to:
 
 - `POST /api/v1/participations/` with `{ member_id, activity_id, role, status, data }`
 
-Note: match results (score/goals) are currently best stored on `activities.Activity.data`. Participation is primarily about **who took part**.
+#### Seeder (Recommended)
+
+To bulk-create realistic lineups for existing matches, use the idempotent seeder:
+
+```powershell
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
+python manage.py seed_match_participations --organisation knvb --season "Season 2024/2025"
+```
+
+Useful flags:
+
+- `--dry-run` (preview)
+- `--limit-matches 50` (test on a subset)
+- `--starters 11 --subs 5` (tune roster size)
+- `--seed 123` (deterministic selection)
+
+#### Match Events (Goals/Assists/Injuries/Subs)
+
+For timeline-style match events, use `activities.ActivityEvent` (product-agnostic event rows).
+
+Seeder:
+
+```powershell
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
+python manage.py seed_match_activity_events --organisation knvb --season "Season 2024/2025"
+```
+
+Useful flags:
+
+- `--dry-run` (preview)
+- `--limit-matches 50` (test on a subset)
+- `--force` (replace existing events for a match)
+- `--seed 123` (deterministic selection)
+
+Note: match results (score/goals) are currently best stored on `activities.Activity.metadata` (summary) and/or as `activities.ActivityEvent` rows (detailed timeline). Participation is primarily about **who took part**.
 
 ### 🔐 RBAC & Permissions
 

@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import Activity, Participation, Period
+from .models import Activity, ActivityEvent, Participation, Period
 
 
 class ChildPeriodInline(admin.TabularInline):
@@ -52,6 +52,16 @@ class ParticipationInline(admin.TabularInline):
     autocomplete_fields = ["member"]
 
 
+class ActivityEventInline(admin.TabularInline):
+    """Inline admin for activity events."""
+
+    model = ActivityEvent
+    fk_name = "activity"
+    extra = 0
+    fields = ["event_type", "minute", "member", "related_member", "team_project"]
+    autocomplete_fields = ["member", "related_member", "team_project"]
+
+
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
     """Admin interface for Activity model."""
@@ -67,7 +77,7 @@ class ActivityAdmin(admin.ModelAdmin):
     list_filter = ["project", "activity_type", "start_time"]
     search_fields = ["title", "description", "location"]
     date_hierarchy = "start_time"
-    inlines = [ParticipationInline]
+    inlines = [ParticipationInline, ActivityEventInline]
     readonly_fields = ["created_at", "updated_at", "created_by"]
     autocomplete_fields = ["project", "period"]
 
@@ -86,3 +96,27 @@ class ParticipationAdmin(admin.ModelAdmin):
         """Optimize queryset with select_related to avoid N+1 queries."""
         qs = super().get_queryset(request)
         return qs.select_related("member", "activity", "period")
+
+
+@admin.register(ActivityEvent)
+class ActivityEventAdmin(admin.ModelAdmin):
+    """Admin interface for ActivityEvent model."""
+
+    list_display = [
+        "event_type",
+        "activity",
+        "minute",
+        "member",
+        "related_member",
+        "team_project",
+        "created_at",
+    ]
+    list_filter = ["event_type", "created_at"]
+    search_fields = [
+        "event_type",
+        "activity__title",
+        "member__user__email",
+        "related_member__user__email",
+    ]
+    readonly_fields = ["created_at", "updated_at", "created_by"]
+    autocomplete_fields = ["activity", "member", "related_member", "team_project"]
