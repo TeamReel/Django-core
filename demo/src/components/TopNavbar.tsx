@@ -54,17 +54,17 @@ interface NotificationResponse {
 
 const navGroups: NavGroup[] = [
   {
-    id: 'work',
-    label: 'Work',
+    id: 'directory',
+    label: 'Directory',
     items: [
       { path: '/directory', label: 'Directory', description: 'Central directory of all entities', icon: '📂' },
-      { path: '/organisations', label: 'Federations', description: 'Land/federation organisations (e.g., KNVB)', icon: '🏢' },
-      { path: '/clubs', label: 'Clubs', description: 'Root projects (parent_project = null)', icon: '🏟️' },
-      { path: '/teams', label: 'Teams', description: 'Child projects (parent_project != null)', icon: '⚽' },
-      { path: '/seasons', label: 'Seasons', description: 'Team-scoped periods (parent_period = null)', icon: '🗓️' },
-      { path: '/competitions', label: 'Competitions', description: 'Child periods under seasons', icon: '🏆' },
-      { path: '/matches', label: 'Matches', description: 'Match activities (filter by team)', icon: '🎯' },
-      { path: '/users', label: 'Users', description: 'Players, staff, and members', icon: '👥' },
+      { path: '/directory?tab=federations', label: 'Federations', description: 'Land/federation organisations (e.g., KNVB)', icon: '🏢' },
+      { path: '/directory?tab=clubs', label: 'Clubs', description: 'Root projects (parent_project = null)', icon: '🏟️' },
+      { path: '/directory?tab=teams', label: 'Teams', description: 'Child projects (parent_project != null)', icon: '⚽' },
+      { path: '/directory?tab=seasons', label: 'Seasons', description: 'Team-scoped periods (parent_period = null)', icon: '🗓️' },
+      { path: '/directory?tab=competitions', label: 'Competitions', description: 'Child periods under seasons', icon: '🏆' },
+      { path: '/directory?tab=matches', label: 'Matches', description: 'Match activities (filter by team)', icon: '🎯' },
+      { path: '/directory?tab=users', label: 'Users', description: 'Directory of members/players/staff', icon: '👥' },
     ],
   },
   {
