@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -100,9 +100,22 @@ import MatchesPage from './pages/work/MatchesPage';
 export default function App() {
   const { user } = useAuth();
 
+  const LegacyDirectoryRedirect = ({ tab }: { tab: string }) => {
+    const location = useLocation();
+    const nextSearchParams = new URLSearchParams(location.search);
+    nextSearchParams.set('tab', tab);
+    const nextSearch = nextSearchParams.toString();
+    return <Navigate to={`/directory${nextSearch ? `?${nextSearch}` : ''}`} replace />;
+  };
+
   const OrgProjectsRedirect = () => {
     const { orgId } = useParams<{ orgId: string }>();
-    return <Navigate to={`/clubs?org_id=${encodeURIComponent(String(orgId || ''))}`} replace />;
+    return (
+      <Navigate
+        to={`/directory?tab=clubs&org_id=${encodeURIComponent(String(orgId || ''))}`}
+        replace
+      />
+    );
   };
 
   return (
@@ -141,7 +154,7 @@ export default function App() {
         path="/matches"
         element={
           <ProtectedRoute>
-            <MatchesPage />
+            <LegacyDirectoryRedirect tab="matches" />
           </ProtectedRoute>
         }
       />
@@ -160,7 +173,7 @@ export default function App() {
         path="/clubs"
         element={
           <ProtectedRoute>
-            <ClubsPage />
+            <LegacyDirectoryRedirect tab="clubs" />
           </ProtectedRoute>
         }
       />
@@ -169,7 +182,7 @@ export default function App() {
         path="/teams"
         element={
           <ProtectedRoute>
-            <TeamsPage />
+            <LegacyDirectoryRedirect tab="teams" />
           </ProtectedRoute>
         }
       />
@@ -178,7 +191,7 @@ export default function App() {
         path="/seasons"
         element={
           <ProtectedRoute>
-            <SeasonsPage />
+            <LegacyDirectoryRedirect tab="seasons" />
           </ProtectedRoute>
         }
       />
@@ -187,7 +200,7 @@ export default function App() {
         path="/competitions"
         element={
           <ProtectedRoute>
-            <CompetitionsPage />
+            <LegacyDirectoryRedirect tab="competitions" />
           </ProtectedRoute>
         }
       />
@@ -326,7 +339,7 @@ export default function App() {
         path="/organisations"
         element={
           <ProtectedRoute>
-            <OrganisationsPage />
+            <LegacyDirectoryRedirect tab="federations" />
           </ProtectedRoute>
         }
       />
@@ -435,7 +448,7 @@ export default function App() {
         path="/projects"
         element={
           <ProtectedRoute>
-            <Navigate to="/clubs" replace />
+            <Navigate to="/directory?tab=clubs" replace />
           </ProtectedRoute>
         }
       />
