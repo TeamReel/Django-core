@@ -6,6 +6,7 @@ export { ProjectsPage } from './ProjectsPage';
 export { ProjectCreatePage } from './ProjectCreatePage';
 export { ProjectEditPage } from './ProjectEditPage';
 export { ProjectDetailPage } from './ProjectDetailPage';
+export { default as TeamDetailPage } from './TeamDetailPage';
 export { PermissionsPage } from './PermissionsPage';
 export { ProfilePage } from './ProfilePage';
 export { default as UsersPage } from './UsersPage';
