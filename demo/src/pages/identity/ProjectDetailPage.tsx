@@ -29,6 +29,15 @@ import PeriodEditModal from './PeriodEditModal';
 import MatchCreateModal from './MatchCreateModal';
 import MatchEditModal from './MatchEditModal';
 import InviteMemberModal from './InviteMemberModal';
+import UsersTable from './detail/UsersTable';
+import {
+  actionButtonStyle,
+  compactActionsStyle,
+  compactTableStyle,
+  compactTdStyle,
+  compactTextTdStyle,
+  compactThStyle,
+} from './detail/detailStyles';
 
 const getPagedResults = (json: any): any[] => {
   // Supports both legacy DRF shapes and this app's envelope (BaseAPIPagination).
@@ -95,44 +104,6 @@ const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promis
  */
 
 // Match OrganisationDetailPage (table layout, typography, action buttons)
-const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' };
-const compactThStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.8rem', textAlign: 'left', borderBottom: '2px solid var(--app-border)' };
-const compactTdStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.85rem', verticalAlign: 'middle', borderBottom: '1px solid #eee' };
-const compactTextTdStyle: React.CSSProperties = {
-  ...compactTdStyle,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-  maxWidth: 0,
-};
-const compactActionsStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'flex-end',
-  gap: '8px',
-  flexWrap: 'wrap',
-};
-
-type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
-const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
-  const base: React.CSSProperties = {
-    padding: '4px 8px',
-    borderRadius: '4px',
-    backgroundColor: 'var(--app-surface)',
-    cursor: 'pointer',
-    fontSize: '12px',
-    lineHeight: 1.2,
-  };
-  if (tone === 'primary') {
-    return { ...base, border: '1px solid #007bff', color: '#007bff' };
-  }
-  if (tone === 'warning') {
-    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
-  }
-  if (tone === 'danger') {
-    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
-  }
-  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
-};
 
 type DetailMode = 'club' | 'team';
 
@@ -2534,162 +2505,41 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 </Button>
                               </div>
                             </div>
-                            <Card>
-                              <Table style={compactTableStyle}>
-                                <colgroup>
-                                  {isTeamRoute ? (
-                                    <>
-                                      <col style={{ width: '260px' }} />
-                                      <col style={{ width: '260px' }} />
-                                      <col style={{ width: '140px' }} />
-                                      <col style={{ width: '330px' }} />
-                                    </>
-                                  ) : (
-                                    <>
-                                      <col style={{ width: '180px' }} />
-                                      <col style={{ width: '180px' }} />
-                                      <col style={{ width: '180px' }} />
-                                      <col style={{ width: '200px' }} />
-                                      <col style={{ width: '220px' }} />
-                                      <col style={{ width: '120px' }} />
-                                      <col style={{ width: '330px' }} />
-                                    </>
-                                  )}
-                                </colgroup>
-                                <thead>
-                                  <tr>
-                                    {!isTeamRoute && <th style={compactThStyle}>Federation</th>}
-                                    {!isTeamRoute && <th style={compactThStyle}>Club</th>}
-                                    {!isTeamRoute && <th style={compactThStyle}>Team</th>}
-                                    <th style={compactThStyle}>User</th>
-                                    <th style={compactThStyle}>Email</th>
-                                    <th style={compactThStyle}>Role</th>
-                                    <th style={compactThStyle}>Actions</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {pageItems.map((item: any) => {
-                                    const userObj = item.user || item;
-                                    const role = item.role || 'member';
-                                    const membershipId = item.id;
-
-                                    const pms = (() => {
-                                      const u = item?.user || item;
-                                      const list =
-                                        (item as any)?.project_memberships ||
-                                        (u as any)?.project_memberships ||
-                                        (item as any)?.project_membership_details ||
-                                        (u as any)?.project_membership_details ||
-                                        [];
-                                      return Array.isArray(list) ? list : [];
-                                    })();
-
-                                    const teamIds = Array.from(new Set(pms.map((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '')).filter(Boolean)));
-                                    const teamId = teamIds.length === 1 ? teamIds[0] : '';
-                                    const team = teamId ? teamById.get(String(teamId)) : null;
-                                    const teamSlugOrId = team ? (team as any).slug || String((team as any).id) : teamId;
-
-                                    return (
-                                      <tr key={String(userObj.id)}>
-                                        {!isTeamRoute && (
-                                          <td style={compactTextTdStyle}>
-                                            <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                              {String(resolvedOrg?.name || currentOrgSlug || '—')}
-                                            </Link>
-                                          </td>
-                                        )}
-                                        {!isTeamRoute && (
-                                          <td style={compactTextTdStyle}>
-                                            {currentClubSlugOrId ? (
-                                              <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600" style={{ textDecoration: 'none' }}>
-                                                {String((clubId ? club?.name : project?.name) || currentClubSlugOrId)}
-                                              </Link>
-                                            ) : (
-                                              '—'
-                                            )}
-                                          </td>
-                                        )}
-                                        {!isTeamRoute && (
-                                          <td style={compactTextTdStyle}>
-                                            {teamIds.length > 1 ? (
-                                              <span title={teamIds.map((id) => teamById.get(String(id))?.name || id).join(', ')}>Multiple</span>
-                                            ) : teamSlugOrId ? (
-                                              <Link
-                                                to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}`}
-                                                className="text-blue-600 hover:underline"
-                                              >
-                                                {team?.name || teamId}
-                                              </Link>
-                                            ) : (
-                                              '—'
-                                            )}
-                                          </td>
-                                        )}
-                                        <td style={compactTextTdStyle}>
-                                          <Link to={`/organisations/${currentOrgSlug}/users/${userObj.id}`} className="text-blue-600 hover:underline">
-                                            {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
-                                          </Link>
-                                        </td>
-                                        <td style={compactTextTdStyle}>{userObj.email}</td>
-                                        <td style={compactTdStyle}>
-                                          <Badge variant="default">{role}</Badge>
-                                        </td>
-                                        <td style={compactTdStyle}>
-                                          {userCanManageMembers ? (
-                                            <div style={compactActionsStyle}>
-                                              <button
-                                                onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
-                                                style={actionButtonStyle('primary')}
-                                              >
-                                                View
-                                              </button>
-                                              <button
-                                                onClick={() => {
-                                                  setEditingMember(item);
-                                                  setEditingMemberRole((item?.role || 'member') as any);
-                                                  setEditMemberRoleError(null);
-                                                  setIsEditMemberRoleModalOpen(true);
-                                                }}
-                                                style={actionButtonStyle('warning')}
-                                              >
-                                                Edit
-                                              </button>
-                                              <button
-                                                onClick={async () => {
-                                                  if (!window.confirm(`Remove ${userObj.email} from federation?`)) return;
-                                                  try {
-                                                    const apiV1BaseUrl = getApiV1BaseUrl();
-                                                    const res = await fetch(`${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/members/${membershipId}/`, {
-                                                      method: 'DELETE',
-                                                      headers: {
-                                                        'Content-Type': 'application/json',
-                                                        'X-CSRFToken': getCsrfToken() || '',
-                                                      },
-                                                      credentials: 'include',
-                                                    });
-                                                    if (!res.ok) {
-                                                      alert('Failed to remove user');
-                                                      return;
-                                                    }
-                                                    setOrgMembers((prev) => prev.filter((m: any) => String(m.id) !== String(membershipId)));
-                                                  } catch (e) {
-                                                    console.error(e);
-                                                    alert('Error removing user');
-                                                  }
-                                                }}
-                                                style={actionButtonStyle('danger')}
-                                              >
-                                                Remove
-                                              </button>
-                                            </div>
-                                          ) : null}
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </Table>
-                            </Card>
+                            <UsersTable
+                              isTeamRoute={isTeamRoute}
+                              pageItems={pageItems}
+                              currentOrgSlug={String(currentOrgSlug || '')}
+                              resolvedOrgName={String(resolvedOrg?.name || currentOrgSlug || '—')}
+                              currentClubSlugOrId={String(currentClubSlugOrId || '')}
+                              clubLabel={String((clubId ? club?.name : project?.name) || currentClubSlugOrId || '—')}
+                              teamById={teamById}
+                              userCanManageMembers={Boolean(userCanManageMembers)}
+                              onViewMembership={(membershipId) => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
+                              onEditMembership={(item) => {
+                                setEditingMember(item);
+                                setEditingMemberRole((item?.role || 'member') as any);
+                                setEditMemberRoleError(null);
+                                setIsEditMemberRoleModalOpen(true);
+                              }}
+                              onRemoveMembership={async (membershipId) => {
+                                const apiV1BaseUrl = getApiV1BaseUrl();
+                                const res = await fetch(
+                                  `${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/members/${membershipId}/`,
+                                  {
+                                    method: 'DELETE',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'X-CSRFToken': getCsrfToken() || '',
+                                    },
+                                    credentials: 'include',
+                                  }
+                                );
+                                if (!res.ok) {
+                                  throw new Error('Failed to remove user');
+                                }
+                                setOrgMembers((prev) => prev.filter((m: any) => String(m.id) !== String(membershipId)));
+                              }}
+                            />
                           </>
                         );
                       })()}
