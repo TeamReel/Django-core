@@ -33,6 +33,17 @@ type ActivityEvent = {
   data?: any;
 };
 
+type OrgMember = {
+  id: string; // organisation membership id (uuid)
+  user?: {
+    id: string | number;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    full_name?: string;
+  };
+};
+
 type MatchDetail = {
   id: string;
   title: string;
@@ -81,6 +92,12 @@ export default function HierarchyMatchDetailPage() {
   const [match, setMatch] = useState<MatchDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [eligibleMembers, setEligibleMembers] = useState<OrgMember[]>([]);
+  const [rosterLoading, setRosterLoading] = useState(false);
+  const [rosterError, setRosterError] = useState<string | null>(null);
+  const [addHomeMemberId, setAddHomeMemberId] = useState<string>('');
+  const [addAwayMemberId, setAddAwayMemberId] = useState<string>('');
 
   const isTeamRoute = Boolean(clubId);
   const orgSlugOrId = String(orgId || '').trim();
@@ -170,6 +187,52 @@ export default function HierarchyMatchDetailPage() {
     effectiveCompetitionId,
     effectiveMatchId,
   ]);
+
+  useEffect(() => {
+    const run = async () => {
+      if (!match?.project?.id || !orgSlugOrId) return;
+      try {
+        setRosterLoading(true);
+        setRosterError(null);
+
+        // 1) Project members (user ids)
+        const projectMembersRes = await fetch(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(match.project.id))}/members/?page_size=500`,
+          { credentials: 'include' }
+        );
+        if (!projectMembersRes.ok) throw new Error('Failed to load team members');
+        const projectMembersRaw = await projectMembersRes.json().catch(() => null);
+        const projectMembers = (projectMembersRaw?.results ?? projectMembersRaw?.data ?? projectMembersRaw ?? []) as any[];
+        const projectUserIds = new Set(projectMembers.map((m: any) => String(m?.user?.id ?? m?.user_id ?? '')).filter(Boolean));
+
+        // 2) Organisation memberships (membership ids + user)
+        const orgMembersRes = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(String(orgSlugOrId))}/members/?page_size=1000`,
+          { credentials: 'include' }
+        );
+        if (!orgMembersRes.ok) throw new Error('Failed to load organisation members');
+        const orgMembersRaw = await orgMembersRes.json().catch(() => null);
+        const orgMembers = (orgMembersRaw?.results ?? orgMembersRaw?.data ?? orgMembersRaw ?? []) as OrgMember[];
+
+        // Intersection: project members must exist as org membership.
+        const eligible = orgMembers
+          .filter((m: any) => m?.id && projectUserIds.has(String(m?.user?.id ?? '')))
+          .sort((a: any, b: any) => {
+            const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
+            const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
+            return an.localeCompare(bn);
+          });
+
+        setEligibleMembers(eligible);
+      } catch (e) {
+        setRosterError(e instanceof Error ? e.message : 'Failed to load roster');
+      } finally {
+        setRosterLoading(false);
+      }
+    };
+
+    run();
+  }, [apiBaseUrl, match?.project?.id, orgSlugOrId]);
 
   const breadcrumbs = useMemo(() => {
     const projectDetailPath = isTeamRoute
@@ -345,6 +408,213 @@ export default function HierarchyMatchDetailPage() {
       default:
         return '•';
     }
+  };
+
+  const displayMemberName = (m: OrgMember) => {
+    const u: any = (m as any)?.user;
+    const full = String(u?.full_name || `${u?.first_name || ''} ${u?.last_name || ''}`.trim()).trim();
+    return full || String(u?.email || '—');
+  };
+
+  const upsertParticipationInState = (p: Participation) => {
+    setMatch((prev) => {
+      if (!prev) return prev;
+      const prevParts = prev.participations || [];
+      const next = [...prevParts.filter((x) => String(x.id) !== String(p.id)), p];
+      return { ...prev, participations: next };
+    });
+  };
+
+  const removeParticipationFromState = (participationId: string) => {
+    setMatch((prev) => {
+      if (!prev) return prev;
+      return { ...prev, participations: (prev.participations || []).filter((p) => String(p.id) !== String(participationId)) };
+    });
+  };
+
+  const createParticipation = async (memberId: string, side: 'home' | 'away') => {
+    if (!memberId) return;
+    const teamId = side === 'home' ? String(match.project.id) : String(match.opponent_project?.id || '');
+    const teamName = side === 'home' ? homeTeamName : awayTeamName;
+    const body: any = {
+      member_id: memberId,
+      activity_id: String(match.id),
+      role: 'starter',
+      status: 'confirmed',
+      data: {
+        side,
+        team_id: teamId || undefined,
+        team_name: teamName,
+      },
+    };
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/participations/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const raw = await res.json().catch(() => null);
+      throw new Error(raw?.detail || 'Failed to add participant');
+    }
+    const created = await res.json().catch(() => null);
+    upsertParticipationInState(getEnvelopeData(created));
+  };
+
+  const updateParticipation = async (p: Participation, patch: any) => {
+    const res = await fetch(`${apiBaseUrl}/api/v1/participations/${encodeURIComponent(String(p.id))}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) {
+      const raw = await res.json().catch(() => null);
+      throw new Error(raw?.detail || 'Failed to update participant');
+    }
+    const updated = await res.json().catch(() => null);
+    upsertParticipationInState(getEnvelopeData(updated));
+  };
+
+  const deleteParticipation = async (p: Participation) => {
+    const res = await fetch(`${apiBaseUrl}/api/v1/participations/${encodeURIComponent(String(p.id))}/`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const raw = await res.json().catch(() => null);
+      throw new Error(raw?.detail || 'Failed to remove participant');
+    }
+    removeParticipationFromState(String(p.id));
+  };
+
+  const renderLineupEditor = (side: 'home' | 'away') => {
+    const isHome = side === 'home';
+    const title = isHome ? homeTeamName : awayTeamName;
+    const selected = (isHome ? homeParticipations : awayParticipations) || [];
+    const selectedMemberIds = new Set(selected.map((p) => String(p.member?.id || '')));
+
+    // Available: eligible members that aren't already in this side.
+    const available = eligibleMembers.filter((m) => !selectedMemberIds.has(String(m.id)));
+    const currentAddId = isHome ? addHomeMemberId : addAwayMemberId;
+    const setCurrentAddId = isHome ? setAddHomeMemberId : setAddAwayMemberId;
+
+    return (
+      <Card title={`Lineup: ${title}`}>
+        {rosterError && <Alert variant="error">{rosterError}</Alert>}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
+          <label className="text-sm" style={{ color: 'var(--app-text-secondary)' }}>
+            Add player
+          </label>
+          <select
+            value={currentAddId}
+            onChange={(e) => setCurrentAddId(e.target.value)}
+            disabled={rosterLoading || available.length === 0}
+            style={{
+              minWidth: '240px',
+              padding: '8px',
+              borderRadius: '6px',
+              border: '1px solid var(--app-border)',
+              background: 'var(--app-surface)',
+              color: 'var(--app-text)',
+            }}
+          >
+            <option value="">{rosterLoading ? 'Loading roster…' : available.length ? 'Select player…' : 'No players available'}</option>
+            {available.map((m) => (
+              <option key={String(m.id)} value={String(m.id)}>
+                {displayMemberName(m)}
+              </option>
+            ))}
+          </select>
+          <Button
+            variant="secondary"
+            disabled={!currentAddId}
+            onClick={async () => {
+              try {
+                await createParticipation(currentAddId, side);
+                setCurrentAddId('');
+              } catch (e) {
+                alert(e instanceof Error ? e.message : 'Failed to add player');
+              }
+            }}
+          >
+            Add to lineup
+          </Button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <Table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th style={{ width: '140px' }}>Role</th>
+                <th style={{ width: '90px' }} className="text-right"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {selected.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="text-gray-500 text-center py-4">
+                    No lineup selected
+                  </td>
+                </tr>
+              ) : (
+                selected.map((p) => (
+                  <tr key={String(p.id)}>
+                    <td>
+                      <div className="font-medium">{p.member?.user_name || 'Unknown Player'}</div>
+                      {p.data?.jersey_number ? (
+                        <div className="text-xs text-gray-500">#{p.data.jersey_number}</div>
+                      ) : null}
+                    </td>
+                    <td>
+                      <select
+                        value={String(p.role || 'starter')}
+                        onChange={async (e) => {
+                          const nextRole = e.target.value;
+                          try {
+                            await updateParticipation(p, { role: nextRole });
+                          } catch (err) {
+                            alert(err instanceof Error ? err.message : 'Failed to update role');
+                          }
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--app-border)',
+                          background: 'var(--app-surface)',
+                          color: 'var(--app-text)',
+                        }}
+                      >
+                        <option value="starter">Starter</option>
+                        <option value="substitute">Substitute</option>
+                      </select>
+                    </td>
+                    <td className="text-right">
+                      <Button
+                        variant="secondary"
+                        onClick={async () => {
+                          if (!window.confirm('Remove this player from the lineup?')) return;
+                          try {
+                            await deleteParticipation(p);
+                          } catch (err) {
+                            alert(err instanceof Error ? err.message : 'Failed to remove player');
+                          }
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </div>
+      </Card>
+    );
   };
 
   const tabs = [
@@ -595,8 +865,14 @@ export default function HierarchyMatchDetailPage() {
             <Card>
               <div style={{ padding: '16px' }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card title={`Lineup: ${homeTeamName}`}>{renderLineup(homeParticipations)}</Card>
-                  <Card title={`Lineup: ${awayTeamName}`}>{renderLineup(awayParticipations)}</Card>
+                  {renderLineupEditor('home')}
+                  {match.opponent_project ? (
+                    renderLineupEditor('away')
+                  ) : (
+                    <Card title="Lineup: Opponent">
+                      <Alert variant="info">No opponent team configured for this match.</Alert>
+                    </Card>
+                  )}
                 </div>
               </div>
             </Card>
