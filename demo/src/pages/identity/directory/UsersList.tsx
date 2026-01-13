@@ -32,7 +32,6 @@ const ROLE_RANK: Record<string, number> = {
     'team member': 60,
     supporter: 50,
     user: 10,
-    member: 10,
 };
 
 interface Organisation {
@@ -325,9 +324,16 @@ export const UsersList: React.FC = () => {
                         organisations: u?.organisations,
                         is_superuser: Boolean((u as any)?.is_superuser),
                         is_active: u?.is_active ?? item?.is_active ?? true,
-                        role: item?.role ?? u?.role ?? 'User',
+                        // IMPORTANT: item.role is typically the *membership role* (member/viewer/admin),
+                        // not the TeamReel RBAC role (Club Admin/Team Admin/etc). Don't use it as the user role.
+                        role: (u as any)?.role ?? 'User',
                         role_label: (u as any)?.role_label ?? (item as any)?.role_label,
-                        role_assignments: (item as any)?.role_assignments || (u as any)?.role_assignments || [],
+                        role_assignments:
+                            (u as any)?.role_assignments ||
+                            (item as any)?.role_assignments ||
+                            (u as any)?.rbac_role_assignments ||
+                            (item as any)?.rbac_role_assignments ||
+                            [],
                         // Preserve context for table columns + filters.
                         membership: {
                             id: item?.id,
@@ -370,6 +376,57 @@ export const UsersList: React.FC = () => {
 
                 let results = Array.from(byKey.values());
 
+                // RBAC enrichment: if the org members endpoint didn't include role info, merge it from /api/v1/admin/users.
+                // This prevents showing "member" in the Role column.
+                const looksLikeMembershipRole = (value: unknown) => {
+                    const lc = String(value ?? '').trim().toLowerCase();
+                    return ['member', 'viewer', 'admin', 'owner'].includes(lc);
+                };
+
+                const likelyMissingRbac = results.some((u: any) => {
+                    const hasAssignments = Array.isArray(u?.role_assignments) && u.role_assignments.length > 0;
+                    const hasLabel = Boolean(String(u?.role_label || '').trim());
+                    const membershipRole = (u as any)?.membership?.role;
+                    return !hasAssignments && !hasLabel && (looksLikeMembershipRole(membershipRole) || looksLikeMembershipRole(u?.role));
+                });
+
+                if (likelyMissingRbac) {
+                    try {
+                        const adminParams = new URLSearchParams();
+                        adminParams.set('page_size', '500');
+                        adminParams.set('organisation_id', String((selectedOrg as any)?.id ?? selectedOrgId ?? orgSlug));
+                        adminParams.set('include_role_assignments', 'true');
+                        const adminUrl = `${apiBaseUrl}/api/v1/admin/users/?${adminParams.toString()}`;
+                        const adminUsers = await fetchAllPages<any>(
+                            adminUrl,
+                            { credentials: 'include' },
+                            { ttlMs: 120_000, bypass: refreshKey > 0 },
+                        );
+                        const adminById = new Map<string, any>();
+                        for (const au of Array.isArray(adminUsers) ? adminUsers : []) {
+                            const uid = String(au?.id ?? '');
+                            if (uid) adminById.set(uid, au);
+                        }
+
+                        results = results.map((u: any) => {
+                            const au = adminById.get(String(u?.id));
+                            if (!au) return u;
+                            return {
+                                ...u,
+                                role: looksLikeMembershipRole(u?.role) ? (au?.role ?? u?.role) : u?.role,
+                                role_label: u?.role_label || au?.role_label,
+                                role_assignments:
+                                    (Array.isArray(u?.role_assignments) && u.role_assignments.length > 0)
+                                        ? u.role_assignments
+                                        : (au?.role_assignments || au?.rbac_role_assignments || []),
+                                is_superuser: Boolean(u?.is_superuser) || Boolean(au?.is_superuser),
+                            };
+                        });
+                    } catch {
+                        // ignore
+                    }
+                }
+
                 // Client-side filtering for project membership
                 if (selectedTeamId) {
                     results = results.filter((u: any) =>
@@ -397,10 +454,10 @@ export const UsersList: React.FC = () => {
 
                 // Client-side filtering for RBAC role (label)
                 if (roleFilter) {
-                    const wanted = String(roleFilter).trim().toLowerCase();
+                    const wanted = normalizeRoleName(roleFilter);
                     results = results.filter((u: any) => {
-                        const { label } = getUserRoleDisplay(u);
-                        return String(label).toLowerCase() === wanted;
+                        const roleNames = getUserRoleNames(u);
+                        return roleNames.some((r) => normalizeRoleName(r) === wanted);
                     });
                 }
 
@@ -415,6 +472,34 @@ export const UsersList: React.FC = () => {
 
         loadUsers();
     }, [selectedOrgId, selectedTeamId, selectedClubId, statusFilter, roleFilter, organisations, isSuperAdmin, refreshKey]);
+
+    const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
+    const isMembershipRoleName = (value: unknown) => {
+        const lc = normalizeRoleName(value);
+        return ['member', 'viewer', 'admin', 'owner'].includes(lc);
+    };
+
+    const getUserRoleNames = (user: any): string[] => {
+        if (!user) return ['user'];
+
+        const isSuper = Boolean(user?.is_superuser) || normalizeRoleName(user?.role) === 'superadmin';
+        if (isSuper) return ['superadmin'];
+
+        const directLabel = String(user?.role_label || '').trim();
+        if (directLabel) return [normalizeRoleName(directLabel)];
+
+        const rawAssignments = user?.role_assignments;
+        const assignments = Array.isArray(rawAssignments) ? rawAssignments : [];
+        const roleNames = assignments
+            .map((ra: any) => String(ra?.role?.name ?? ra?.role_name ?? ra?.role ?? '').trim())
+            .filter(Boolean);
+
+        const unique = Array.from(new Set(roleNames.map((n) => normalizeRoleName(n)))).filter(Boolean);
+        if (unique.length > 0) return unique;
+
+        const fallback = normalizeRoleName(user?.role) || 'user';
+        return isMembershipRoleName(fallback) ? ['user'] : [fallback];
+    };
 
     // Helper for role display logic
     const getUserRoleDisplay = (user: any): { label: string; title: string } => {
@@ -445,8 +530,9 @@ export const UsersList: React.FC = () => {
             }
         }
 
-        const fallback = String(user?.role || '').trim() || 'User';
-        return { label: fallback, title: fallback };
+        const rawFallback = String(user?.role || '').trim();
+        const safeFallback = rawFallback && !isMembershipRoleName(rawFallback) ? rawFallback : 'User';
+        return { label: safeFallback, title: safeFallback };
     };
 
     const sortedUsers = React.useMemo(() => {

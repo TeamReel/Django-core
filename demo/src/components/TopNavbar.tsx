@@ -21,7 +21,7 @@
  * - Only one mega panel visible at a time
  * - Hover disabled on touch devices
  */
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, useSignOut } from '@django-core/auth-ui';
 import { useTheme } from '@django-core/theme-system';
@@ -133,6 +133,55 @@ export default function TopNavbar() {
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const appNavGroup = useMemo<NavGroup>(() => {
+    const path = location.pathname;
+
+    const seasonTeamMatch = path.match(
+      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)/
+    );
+    const seasonMatch = path.match(
+      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)/
+    );
+    const teamMatch = path.match(
+      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)/
+    );
+    const clubMatch = path.match(
+      /^\/organisations\/([^/]+)\/projects\/([^/]+)/
+    );
+
+    const orgFromPath = seasonTeamMatch?.[1] || seasonMatch?.[1] || teamMatch?.[1] || clubMatch?.[1] || null;
+    const orgId = String(orgFromPath || (context as any)?.organisation?.slug || (context as any)?.organisation?.id || '');
+
+    const clubId = String(
+      seasonTeamMatch?.[2] || teamMatch?.[2] || (clubMatch ? clubMatch[2] : '') || ''
+    );
+    const teamId = String(seasonTeamMatch?.[3] || teamMatch?.[3] || '');
+    const seasonId = String(seasonTeamMatch?.[4] || seasonMatch?.[3] || '');
+    const projectIdForSeason = String(seasonMatch?.[2] || teamId || clubId || '');
+
+    const federationPath = orgId ? `/organisations/${orgId}` : '/directory?tab=federations';
+    const clubPath = orgId && clubId ? `/organisations/${orgId}/projects/${clubId}` : '/directory?tab=clubs';
+    const teamPath = orgId && clubId && teamId
+      ? `/organisations/${orgId}/projects/${clubId}/teams/${teamId}`
+      : '/directory?tab=teams';
+    const seasonPath = orgId && seasonId
+      ? (clubId && teamId
+        ? `/organisations/${orgId}/projects/${clubId}/teams/${teamId}/seasons/${seasonId}`
+        : `/organisations/${orgId}/projects/${projectIdForSeason}/seasons/${seasonId}`)
+      : '/directory?tab=seasons';
+
+    return {
+      id: 'app',
+      label: 'App',
+      items: [
+        { path: federationPath, label: 'Federation', description: 'Current federation (organisation)', icon: '🏢' },
+        { path: clubPath, label: 'Club', description: 'Current club', icon: '🏟️' },
+        { path: teamPath, label: 'Team', description: 'Current team', icon: '⚽' },
+        { path: seasonPath, label: 'Season', description: 'Current season', icon: '🗓️' },
+      ],
+    };
+  }, [context, location.pathname]);
 
   // Docker-style hover timers
   const hoverTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
@@ -344,7 +393,9 @@ export default function TopNavbar() {
 
   // Filter based on permissions (keep Admin grouped; only show what the user can access)
   const isAdmin = isSystemAdmin || isLandAdmin;
-  const filteredNavGroups = navGroups.map(group => {
+  const navGroupsWithApp = useMemo(() => [appNavGroup, ...navGroups], [appNavGroup]);
+
+  const filteredNavGroups = navGroupsWithApp.map(group => {
     const items = group.items.filter(item => {
       // Admin group: superadmin or land admin only
       if (group.id === 'admin') {
