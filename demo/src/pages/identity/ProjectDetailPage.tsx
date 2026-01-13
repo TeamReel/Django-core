@@ -134,7 +134,9 @@ const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
   return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
 };
 
-export const ProjectDetailPage: React.FC = () => {
+type DetailMode = 'club' | 'team';
+
+export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceMode }) => {
   const { orgId, projectId, clubId } = useParams<{ orgId: string; projectId: string; clubId?: string }>();
   const [activeTab, setActiveTab] = useState('overview');
   const { id } = useParams<{ id: string }>();
@@ -460,7 +462,7 @@ export const ProjectDetailPage: React.FC = () => {
 
   const currentProjectSlug = (resolvedProject as any)?.slug || targetId?.toLowerCase(); // Use slug for API calls
 
-  const isTeamRoute = Boolean(clubId);
+  const isTeamRoute = forceMode === 'team' ? true : forceMode === 'club' ? false : Boolean(clubId);
   const clubSlugOrId = clubId || '';
 
   const orgSlugOrId = resolvedOrg?.slug || resolvedOrg?.id;

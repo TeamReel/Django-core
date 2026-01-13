@@ -25,6 +25,7 @@ import {
   ProjectCreatePage,
   ProjectEditPage,
   ProjectDetailPage,
+  ClubDetailPage,
   TeamDetailPage,
   PermissionsPage,
   UsersPage,
@@ -388,7 +389,7 @@ export default function App() {
         path="/organisations/:orgId/projects/:projectId"
         element={
           <ProtectedRoute>
-            <ProjectDetailPage />
+            <ClubDetailPage />
           </ProtectedRoute>
         }
       />
