@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import {
   BreadcrumbContextSwitcher,
@@ -91,6 +91,7 @@ const isSeasonPeriod = (p: any): boolean => {
 
 export const ProjectSeasonDetailPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { orgId, projectId, seasonId, clubId } = useParams<{ orgId: string; projectId: string; seasonId: string; clubId?: string }>();
   const { user } = useAuth();
 
@@ -105,7 +106,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [competitions, setCompetitions] = useState<Period[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<string>('overview');
   const [hierarchySearch, setHierarchySearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -140,6 +140,25 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const seasonsBasePath = isTeamRoute
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
+
+  const activeTab = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
+    const allowed = new Set(['overview', 'hierarchy', 'competitions', 'matches']);
+    return allowed.has(raw) ? raw : 'overview';
+  }, [location.search]);
+
+  const navigateToTab = (tabId: string) => {
+    const seasonKeyOrId = periodPathKey(season as any) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
+    if (!seasonKeyOrId) return;
+
+    if (tabId === 'squad') {
+      navigate(`${seasonsBasePath}/${seasonKeyOrId}/squad`);
+      return;
+    }
+
+    navigate(`${seasonsBasePath}/${seasonKeyOrId}?tab=${encodeURIComponent(tabId)}`);
+  };
 
   const handleSeasonSwitch = (option: BreadcrumbSwitcherOption) => {
     navigate(`${seasonsBasePath}/${option.slug || option.id}`);
@@ -207,7 +226,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     { id: 'hierarchy', label: 'Hierarchy' },
     { id: 'competitions', label: 'Competitions' },
     { id: 'matches', label: 'Matches' },
-    { id: 'people', label: 'Users' },
+    { id: 'squad', label: 'Squad' },
   ];
 
   const savePeriodEdits = async (periodToEdit: any, patch: any) => {
@@ -398,10 +417,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           }
         }
 
-        // Fetch members for the team/project
+        // Fetch season squad (members scoped to this period)
         try {
+          const membersParams = new URLSearchParams();
+          membersParams.set('period', String(seasonUuid));
           const membersRes = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${projectJson.id}/members/`,
+            `${apiBaseUrl}/api/v1/projects/${projectJson.id}/members/?${membersParams.toString()}`,
             { credentials: 'include' }
           );
           if (membersRes.ok) {
@@ -544,7 +565,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => navigateToTab(tab.id)}
                     style={{
                       padding: '10px 14px',
                       borderRadius: '6px 6px 0 0',
@@ -582,7 +603,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <div className="text-2xl font-bold mt-1">{matches.length}</div>
                     </Card>
                     <Card style={{ padding: '16px' }}>
-                      <div className="text-sm font-medium text-gray-500">Users</div>
+                      <div className="text-sm font-medium text-gray-500">Squad</div>
                       <div className="text-2xl font-bold mt-1">{members.length}</div>
                     </Card>
                   </div>
@@ -593,7 +614,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <Card>
                         <div className="flex justify-between items-center mb-4">
                           <h3 className="text-lg font-semibold">Competitions</h3>
-                          <Button variant="secondary" size="sm" onClick={() => setActiveTab('competitions')}>
+                          <Button variant="secondary" size="sm" onClick={() => navigateToTab('competitions')}>
                             View All
                           </Button>
                         </div>
@@ -661,7 +682,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <Card>
                         <div className="flex justify-between items-center mb-4">
                           <h3 className="text-lg font-semibold">Hierarchy</h3>
-                          <Button variant="secondary" size="sm" onClick={() => setActiveTab('hierarchy')}>
+                          <Button variant="secondary" size="sm" onClick={() => navigateToTab('hierarchy')}>
                             View Hierarchy
                           </Button>
                         </div>
@@ -682,7 +703,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             variant="secondary"
                             size="sm"
                             style={{ width: '100%', justifyContent: 'flex-start' }}
-                            onClick={() => setActiveTab('competitions')}
+                            onClick={() => navigateToTab('competitions')}
                           >
                             Manage Competitions
                           </Button>
@@ -690,7 +711,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             variant="secondary"
                             size="sm"
                             style={{ width: '100%', justifyContent: 'flex-start' }}
-                            onClick={() => setActiveTab('matches')}
+                            onClick={() => navigateToTab('matches')}
                           >
                             View Matches
                           </Button>
@@ -698,9 +719,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             variant="secondary"
                             size="sm"
                             style={{ width: '100%', justifyContent: 'flex-start' }}
-                            onClick={() => setActiveTab('people')}
+                            onClick={() => navigateToTab('squad')}
                           >
-                            View Users
+                            View Squad
                           </Button>
                         </div>
                       </Card>
@@ -1042,44 +1063,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 </Card>
               )}
 
-              {activeTab === 'people' && (
-                <Card>
-                  <div style={{ padding: '16px' }}>
-                    <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Users</h3>
-                    {members.length === 0 ? (
-                      <Alert variant="info">No members found.</Alert>
-                    ) : (
-                      <Table style={compactTableStyle}>
-                        <thead>
-                          <tr>
-                            <th style={compactThStyle}>Name</th>
-                            <th style={compactThStyle}>Email</th>
-                            <th style={compactThStyle}>Role</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {members.map((item: any) => {
-                            const user = item.user || item;
-                            const name =
-                              user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || '-';
-                            const email = user.email || '-';
-                            const role = item.role || user.role || 'member';
-                            return (
-                              <tr key={String(user.id || item.id)}>
-                                <td style={compactTextTdStyle}>{name}</td>
-                                <td style={compactTextTdStyle}>{email}</td>
-                                <td style={compactTextTdStyle}>
-                                  <Badge variant="default">{String(role)}</Badge>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </Table>
-                    )}
-                  </div>
-                </Card>
-              )}
             </>
           )}
         </PageContent>

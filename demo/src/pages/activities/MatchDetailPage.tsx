@@ -4,6 +4,7 @@ import { Button, Card, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
+import { periodPathKey } from '../../utils/periodPath';
 
 interface MatchDetail {
   id: string;
@@ -179,7 +180,7 @@ export const MatchDetailPage: React.FC = () => {
                   label: seasonPeriod.name,
                   onClick: () =>
                     navigate(
-                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonPeriod.slug || seasonPeriod.id}`
+                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${periodPathKey(seasonPeriod) || seasonPeriod.id}`
                     ),
                 }
               : seasonPeriod
@@ -190,7 +191,7 @@ export const MatchDetailPage: React.FC = () => {
                   label: competitionPeriod.name,
                   onClick: () =>
                     navigate(
-                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonPeriod.slug || seasonPeriod.id}/competitions/${competitionPeriod.slug || competitionPeriod.id}`
+                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${periodPathKey(seasonPeriod) || seasonPeriod.id}/competitions/${competitionPeriod.id}`
                     ),
                 }
               : competitionPeriod
@@ -201,7 +202,7 @@ export const MatchDetailPage: React.FC = () => {
                   label: 'Matches',
                   onClick: () =>
                     navigate(
-                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonPeriod.slug || seasonPeriod.id}/competitions/${competitionPeriod.slug || competitionPeriod.id}/matches`
+                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${periodPathKey(seasonPeriod) || seasonPeriod.id}/competitions/${competitionPeriod.id}/matches`
                     ),
                 }
               : { label: 'Matches', onClick: () => navigate(-1) },

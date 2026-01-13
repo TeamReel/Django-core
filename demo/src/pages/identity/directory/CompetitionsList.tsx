@@ -722,7 +722,7 @@ export const CompetitionsList: React.FC = () => {
                     <th style={{ ...compactThStyle, width: '12%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: '20%' }}>Competition</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Squad</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
                   <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                 </tr>

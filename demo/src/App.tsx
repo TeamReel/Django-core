@@ -87,6 +87,7 @@ import ProjectSeasonsPage from './pages/periods/ProjectSeasonsPage';
 import ProjectCompetitionDetailPage from './pages/periods/ProjectCompetitionDetailPage';
 import ProjectCompetitionMatchesPage from './pages/periods/ProjectCompetitionMatchesPage';
 import ProjectCompetitionSquadPage from './pages/periods/ProjectCompetitionSquadPage';
+import ProjectSeasonSquadPage from './pages/periods/ProjectSeasonSquadPage';
 
 // Work hierarchy pages
 import ClubsPage from './pages/work/ClubsPage';
@@ -221,6 +222,23 @@ export default function App() {
         element={
           <ProtectedRoute>
             <SeasonDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/organisations/:orgId/projects/:projectId/seasons/:seasonId/squad"
+        element={
+          <ProtectedRoute>
+            <ProjectSeasonSquadPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organisations/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/squad"
+        element={
+          <ProtectedRoute>
+            <ProjectSeasonSquadPage />
           </ProtectedRoute>
         }
       />

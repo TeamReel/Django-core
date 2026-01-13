@@ -8,6 +8,7 @@ import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { periodPathKey } from '../../utils/periodPath';
 import WorkFilterBar, { OrganisationOption, ProjectOption } from './WorkFilterBar';
 
 type Period = {
@@ -234,12 +235,12 @@ export default function SeasonsPage() {
                     <tr key={season.id}>
                       <td>
                         <a
-                          href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.id}`}
+                          href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${periodPathKey(season) || season.id}`}
                           className="text-blue-600 hover:underline"
                           style={{ fontSize: '0.85rem' }}
                           onClick={(e) => {
                             e.preventDefault();
-                            navigate(`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${season.id}`);
+                            navigate(`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${periodPathKey(season) || season.id}`);
                           }}
                         >
                           {season.name}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { periodPathKey } from '../../../utils/periodPath';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
@@ -517,7 +518,7 @@ export const SeasonsList: React.FC = () => {
                     <th style={{ ...compactThStyle, width: '260px' }}>Season</th>
                   <th style={{ ...compactThStyle, width: '110px' }}>Competition</th>
                   <th style={{ ...compactThStyle, width: '100px' }}>Match</th>
-                    <th style={{ ...compactThStyle, width: '90px' }}>Users</th>
+                    <th style={{ ...compactThStyle, width: '90px' }}>Squad</th>
                     <th style={{ ...compactThStyle, width: '100px' }}>Status</th>
                     <th style={{ ...compactThStyle, width: '140px' }}>Actions</th>
                 </tr>
@@ -592,16 +593,16 @@ export const SeasonsList: React.FC = () => {
                           )}
                         </td>
                         <td style={compactTextTdStyle}>
-                        <a
-                            href={`/organisations/${orgId}/projects/${teamId}/seasons/${season.slug || season.id}`}
+                          <a
+                            href={`/organisations/${orgId}/projects/${teamId}/seasons/${periodPathKey(season) || season.slug || season.id}`}
                             className="text-blue-600 hover:underline"
                             onClick={(e) => {
-                                e.preventDefault();
-                                navigate(`/organisations/${orgId}/projects/${teamId}/seasons/${season.slug || season.id}`);
+                              e.preventDefault();
+                              navigate(`/organisations/${orgId}/projects/${teamId}/seasons/${periodPathKey(season) || season.slug || season.id}`);
                             }}
-                        >
+                          >
                             {season.name}
-                        </a>
+                          </a>
                         </td>
                         <td style={compactTdStyle}>
                             <Badge variant="default">

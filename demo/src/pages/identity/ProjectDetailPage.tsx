@@ -21,6 +21,7 @@ import { useAuth } from '@django-core/auth-ui';
 import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
+import { periodPathKey } from '../../utils/periodPath';
 import ProjectDetailModal from './ProjectDetailModal';
 import ProjectCreateModal from './ProjectCreateModal';
 import ProjectEditModal from './ProjectEditModal';
@@ -2153,7 +2154,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                           <Link
                                             to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${
                                               project.slug || project.id
-                                            }/seasons/${season.slug || season.id}/competitions/${comp.slug || comp.id}`}
+                                            }/seasons/${periodPathKey(season) || season.slug || season.id}/competitions/${comp.slug || comp.id}`}
                                             className="font-medium text-blue-600 hover:underline"
                                           >
                                             {comp.name}
@@ -2334,7 +2335,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                           <Link
                                             to={`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
                                               team.slug || team.id
-                                            }/seasons/${season.slug || season.id}`}
+                                            }/seasons/${periodPathKey(season) || season.slug || season.id}`}
                                             className="font-medium text-blue-600 hover:underline"
                                           >
                                             {season.name}
@@ -2969,7 +2970,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           <tbody>
                             {filteredSeasons.map((season: any) => {
                               const seasonId = String(season.id);
-                              const seasonSlugOrId = season.slug || season.id;
+                              const seasonSlugOrId = periodPathKey(season) || season.slug || season.id;
                               const teamId = String(season?.project_id ?? season?.project?.id ?? (isLikelyTeam ? (project as any)?.id : '')).trim();
                               const team = teamId ? teamById.get(teamId) : null;
                               const teamSlugOrId = team?.slug || team?.id || teamId;
