@@ -19,6 +19,7 @@ import {
   compactThStyle,
 } from '../identity/detail/detailStyles';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+import { fetchAllPages } from '../../utils/fetchAllPages';
 
 type Project = {
   id: string;
@@ -347,13 +348,14 @@ export default function ProjectSeasonSquadPage() {
         }
 
         // Resolve season UUID from URL param (UUID or slugified name)
-        const periodsRes = await fetch(
-          `${apiBaseUrl}/api/v1/periods/?page_size=250&project_id=${encodeURIComponent(projectJson.id)}`,
-          { credentials: 'include' }
+        const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?page_size=500&project_id=${encodeURIComponent(
+          projectJson.id
+        )}&parent_id=null`;
+        const allPeriods = await fetchAllPages<any>(
+          rootPeriodsUrl,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: `periods:root:${projectJson.id}` }
         );
-        if (!periodsRes.ok) throw new Error('Failed to load periods');
-
-        const allPeriods = unwrapList(await periodsRes.json());
         const seasonOptions = allPeriods.filter(isSeasonPeriod);
         if (!isCancelled) setSeasonsForSwitcher(seasonOptions);
 

@@ -16,6 +16,7 @@ import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+import { fetchAllPages } from '../../utils/fetchAllPages';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -33,6 +34,8 @@ type Period = {
   end_date: string;
   parent_period?: { id: string; name: string } | null;
   children_count?: number;
+  matches_count?: number;
+  children_matches_count?: number;
 };
 
 type ListResponse<T> = {
@@ -111,6 +114,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [members, setMembers] = useState<any[]>([]);
   const [hierarchySearch, setHierarchySearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [competitionsLoading, setCompetitionsLoading] = useState(false);
+  const [matchesLoading, setMatchesLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Edit modal (match TeamDetail page patterns: edit in-place, no /edit route)
@@ -321,12 +326,26 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   };
 
   // Helper to count matches per competition
-  const getMatchCountForCompetition = (competitionId: string): number => {
+  const getMatchCountForCompetition = (competition: any): number => {
+    const annotated = Number(
+      (competition as any)?.matches_count ?? (competition as any)?.children_matches_count
+    );
+    if (!matches.length && Number.isFinite(annotated) && annotated >= 0) return annotated;
+
+    const competitionId = String((competition as any)?.id || '').trim();
+    if (!competitionId) return 0;
     return matches.filter((m: any) => {
       const periodId = String(m.period_id || m.period?.id || '');
       return periodId === competitionId;
     }).length;
   };
+
+  const seasonMatchesCount = useMemo(() => {
+    if (matches.length) return matches.length;
+    const annotated = Number((season as any)?.children_matches_count ?? (season as any)?.matches_count);
+    if (Number.isFinite(annotated) && annotated >= 0) return annotated;
+    return 0;
+  }, [matches.length, season]);
 
   useEffect(() => {
     const run = async () => {
@@ -366,29 +385,18 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           }
         }
 
-        const periodsRes = await fetch(
-          `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&page_size=250`,
-          { credentials: 'include' }
+        // Fetch only root periods for the season switcher (much smaller than all periods)
+        const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(
+          String(projectJson.id)
+        )}&parent_id=null&page_size=500`;
+        const rootPeriods = await fetchAllPages<Period>(
+          rootPeriodsUrl,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: `periods:root:${projectJson.id}` }
         );
-        if (!periodsRes.ok) throw new Error('Failed to load periods');
-        const rawPeriods: any = await periodsRes.json();
-
-        // Handle multiple envelope formats
-        let allPeriods: Period[] = [];
-        if (Array.isArray(rawPeriods)) {
-          allPeriods = rawPeriods;
-        } else if (Array.isArray(rawPeriods?.data)) {
-          allPeriods = rawPeriods.data;
-        } else if (Array.isArray(rawPeriods?.data?.data)) {
-          allPeriods = rawPeriods.data.data;
-        } else if (Array.isArray(rawPeriods?.data?.results)) {
-          allPeriods = rawPeriods.data.results;
-        } else if (Array.isArray(rawPeriods?.results)) {
-          allPeriods = rawPeriods.results;
-        }
 
         // Seasons switcher options: root seasons within the same team/project
-        const seasonOptions = allPeriods.filter(isSeasonPeriod);
+        const seasonOptions = rootPeriods.filter(isSeasonPeriod);
         setSeasonsForSwitcher(seasonOptions);
 
         // Resolve season UUID from URL param (UUID or slugified name)
@@ -412,48 +420,20 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           navigate(`${seasonsBasePath}/${desiredKey}`, { replace: true });
         }
 
-        // Filter client-side for competitions (children of this season)
-        const competitionResults = allPeriods.filter((p: Period) => {
-          const parentId = p.parent_period?.id || String(p.parent_period || '');
-          const matches = parentId === seasonUuid || String(parentId) === String(seasonUuid);
-          return p.parent_period && matches;
-        });
-        setCompetitions(competitionResults);
-
-        // Fetch matches for competitions in this season
-        const competitionIds = competitionResults.map((c: Period) => c.id);
-        if (competitionIds.length > 0) {
-          try {
-            const matchesRes = await fetch(
-              `${apiBaseUrl}/api/v1/activities/?activity_type=match&page_size=250&ordering=-start_time`,
-              { credentials: 'include' }
-            );
-            if (matchesRes.ok) {
-              const rawMatches: any = await matchesRes.json();
-
-              // Handle multiple envelope formats
-              let allMatches: any[] = [];
-              if (Array.isArray(rawMatches)) {
-                allMatches = rawMatches;
-              } else if (Array.isArray(rawMatches?.data)) {
-                allMatches = rawMatches.data;
-              } else if (Array.isArray(rawMatches?.data?.data)) {
-                allMatches = rawMatches.data.data;
-              } else if (Array.isArray(rawMatches?.data?.results)) {
-                allMatches = rawMatches.data.results;
-              } else if (Array.isArray(rawMatches?.results)) {
-                allMatches = rawMatches.results;
-              }
-
-              const seasonMatches = allMatches.filter((m: any) => {
-                const periodId = String(m.period_id || m.period?.id || '');
-                return competitionIds.includes(periodId);
-              });
-              setMatches(seasonMatches);
-            }
-          } catch (e) {
-            console.error('Failed to fetch matches:', e);
-          }
+        // Load competitions (direct children of this season) using server-side filtering
+        setCompetitionsLoading(true);
+        try {
+          const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(
+            seasonUuid
+          )}&page_size=500`;
+          const competitionResults = await fetchAllPages<Period>(
+            competitionsUrl,
+            { credentials: 'include' },
+            { ttlMs: 60_000, cacheKey: `periods:children:${seasonUuid}` }
+          );
+          setCompetitions(competitionResults);
+        } finally {
+          setCompetitionsLoading(false);
         }
 
         // Fetch season squad (members scoped to this period)
@@ -495,6 +475,49 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
     run();
   }, [apiBaseUrl, orgSlugOrId, projectSlugOrId, effectiveSeasonId, isTeamRoute, clubSlugOrId]);
+
+  // Fetch matches only when the user is on a tab that actually needs them.
+  useEffect(() => {
+    const needsMatches = activeTab === 'hierarchy' || activeTab === 'matches';
+    if (!needsMatches) return;
+    const projectNumericId = String((project as any)?.id || '').trim();
+    const seasonUuid = String(resolvedSeasonId || '').trim();
+    if (!projectNumericId || !seasonUuid) return;
+
+    let cancelled = false;
+    const run = async () => {
+      setMatchesLoading(true);
+      try {
+        // Server supports include_descendants so we can fetch season matches without scanning all activities.
+        const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
+          projectNumericId
+        )}&period_id=${encodeURIComponent(
+          seasonUuid
+        )}&include_descendants=true&activity_type=match&ordering=-start_time&page_size=250`;
+
+        const seasonMatches = await fetchAllPages<any>(
+          url,
+          { credentials: 'include' },
+          {
+            ttlMs: 30_000,
+            cacheKey: `matches:season:${projectNumericId}:${seasonUuid}`,
+            maxItems: 250,
+          }
+        );
+
+        if (!cancelled) setMatches(seasonMatches);
+      } catch (e) {
+        console.error('Failed to fetch matches:', e);
+      } finally {
+        if (!cancelled) setMatchesLoading(false);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, apiBaseUrl, project, resolvedSeasonId]);
 
   return (
     <AppShell>
@@ -621,7 +644,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     </Card>
                     <Card style={{ padding: '16px' }}>
                       <div className="text-sm font-medium text-gray-500">Matches</div>
-                      <div className="text-2xl font-bold mt-1">{matches.length}</div>
+                      <div className="text-2xl font-bold mt-1">{seasonMatchesCount}</div>
                     </Card>
                     <Card style={{ padding: '16px' }}>
                       <div className="text-sm font-medium text-gray-500">Squad</div>
@@ -639,7 +662,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             View All
                           </Button>
                         </div>
-                        {competitions.length === 0 ? (
+                        {competitionsLoading ? (
+                          <div className="text-sm text-gray-500 py-4 text-center">Loading competitions…</div>
+                        ) : competitions.length === 0 ? (
                           <div className="text-sm text-gray-500 py-4 text-center">No competitions in this season.</div>
                         ) : (
                           <div className="overflow-x-auto">
@@ -664,7 +689,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       </Link>
                                     </td>
                                     <td style={compactTdStyle}>
-                                      <Badge variant="default">{getMatchCountForCompetition(competition.id)}</Badge>
+                                      <Badge variant="default">{getMatchCountForCompetition(competition)}</Badge>
                                     </td>
                                     <td style={compactTdStyle}>
                                       <div style={compactActionsStyle}>
@@ -804,10 +829,18 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   </div>
 
                   <h3 className="text-lg font-semibold mb-4">Hierarchy: Competitions & Matches (grouped by competition)</h3>
-                  {competitions.length === 0 ? (
+                  {competitionsLoading ? (
+                    <Alert variant="info">Loading competitions…</Alert>
+                  ) : competitions.length === 0 ? (
                     <Alert variant="info">No competitions found in this season.</Alert>
                   ) : (
                     (() => {
+                      const matchesNotice = matchesLoading ? (
+                        <div style={{ marginBottom: '10px' }}>
+                          <Alert variant="info">Loading matches…</Alert>
+                        </div>
+                      ) : null;
+
                       const normalized = hierarchySearch.trim().toLowerCase();
                       const filteredCompetitions = !normalized
                         ? competitions
@@ -819,7 +852,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             return compMatches.some((m: any) => String(m?.title || m?.name || '').toLowerCase().includes(normalized));
                           });
 
-                      return filteredCompetitions.map((competition) => {
+                      return (
+                        <>
+                          {matchesNotice}
+                          {filteredCompetitions.map((competition) => {
                         const compId = String(competition.id);
                         const compMatches = matches
                           .filter((m: any) => String(m.period_id || m.period?.id || '') === compId)
@@ -852,7 +888,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               >
                                 {competition.name || `Competition ${compId}`}
                               </Link>
-                              <Badge variant="info">{getMatchCountForCompetition(compId)} matches</Badge>
+                              <Badge variant="info">{getMatchCountForCompetition(competition)} matches</Badge>
                               <button
                                 onClick={() =>
                                   navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)
@@ -913,7 +949,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               )}
                             </div>
 
-                            {compMatches.length === 0 ? (
+                            {matchesLoading ? (
+                              <div style={{ paddingLeft: '16px', color: 'var(--app-muted-text)', fontSize: '14px' }}>Loading matches…</div>
+                            ) : compMatches.length === 0 ? (
                               <div style={{ paddingLeft: '16px', color: 'var(--app-muted-text)', fontSize: '14px' }}>No matches in this competition</div>
                             ) : (
                               <div style={{ overflowX: 'auto', marginLeft: '16px' }}>
@@ -996,7 +1034,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             )}
                           </div>
                         );
-                      });
+                      })}
+                        </>
+                      );
                     })()
                   )}
                 </Card>
@@ -1006,7 +1046,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 <Card>
                   <div style={{ padding: '16px' }}>
                     <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Competitions</h3>
-                    {competitions.length === 0 ? (
+                    {competitionsLoading ? (
+                      <Alert variant="info">Loading competitions…</Alert>
+                    ) : competitions.length === 0 ? (
                       <Alert variant="info">No competitions found in this season.</Alert>
                     ) : (
                       <Table style={compactTableStyle}>
@@ -1035,7 +1077,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 {new Date(competition.end_date).toLocaleDateString()}
                               </td>
                               <td style={compactTdStyle}>
-                                <Badge variant="default">{getMatchCountForCompetition(competition.id)}</Badge>
+                                <Badge variant="default">{getMatchCountForCompetition(competition)}</Badge>
                               </td>
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
@@ -1103,7 +1145,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 <Card>
                   <div style={{ padding: '16px' }}>
                     <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Matches</h3>
-                    {matches.length === 0 ? (
+                    {matchesLoading ? (
+                      <Alert variant="info">Loading matches…</Alert>
+                    ) : matches.length === 0 ? (
                       <Alert variant="info">No matches found in this season.</Alert>
                     ) : (
                       <Table style={compactTableStyle}>
