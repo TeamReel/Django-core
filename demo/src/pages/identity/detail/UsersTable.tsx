@@ -15,7 +15,6 @@ type Props = {
   isTeamRoute: boolean;
   pageItems: any[];
   currentOrgSlug: string;
-  resolvedOrgName: string;
   currentClubSlugOrId: string;
   clubLabel: string;
   teamById: Map<string, any>;
@@ -29,7 +28,6 @@ export default function UsersTable({
   isTeamRoute,
   pageItems,
   currentOrgSlug,
-  resolvedOrgName,
   currentClubSlugOrId,
   clubLabel,
   teamById,
@@ -51,9 +49,8 @@ export default function UsersTable({
             </>
           ) : (
             <>
-              <col style={{ width: '180px' }} />
-              <col style={{ width: '180px' }} />
-              <col style={{ width: '180px' }} />
+              <col style={{ width: '220px' }} />
+              <col style={{ width: '220px' }} />
               <col style={{ width: '200px' }} />
               <col style={{ width: '220px' }} />
               <col style={{ width: '120px' }} />
@@ -63,7 +60,6 @@ export default function UsersTable({
         </colgroup>
         <thead>
           <tr>
-            {!isTeamRoute && <th style={compactThStyle}>Federation</th>}
             {!isTeamRoute && <th style={compactThStyle}>Club</th>}
             {!isTeamRoute && <th style={compactThStyle}>Team</th>}
             <th style={compactThStyle}>User</th>
@@ -98,13 +94,6 @@ export default function UsersTable({
 
             return (
               <tr key={String(userObj.id)}>
-                {!isTeamRoute && (
-                  <td style={compactTextTdStyle}>
-                    <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                      {resolvedOrgName || '—'}
-                    </Link>
-                  </td>
-                )}
                 {!isTeamRoute && (
                   <td style={compactTextTdStyle}>
                     {currentClubSlugOrId ? (

@@ -2533,7 +2533,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               isTeamRoute={isTeamRoute}
                               pageItems={pageItems}
                               currentOrgSlug={String(currentOrgSlug || '')}
-                              resolvedOrgName={String(resolvedOrg?.name || currentOrgSlug || '—')}
                               currentClubSlugOrId={String(currentClubSlugOrId || '')}
                               clubLabel={String((clubId ? club?.name : project?.name) || currentClubSlugOrId || '—')}
                               teamById={teamById}
@@ -2669,7 +2668,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             <colgroup>
                               <col style={{ width: '180px' }} />
                               <col style={{ width: '180px' }} />
-                              <col style={{ width: '180px' }} />
                               <col style={{ width: '95px' }} />
                               <col style={{ width: '120px' }} />
                               <col style={{ width: '95px' }} />
@@ -2679,7 +2677,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             </colgroup>
                             <thead>
                               <tr>
-                                <th style={compactThStyle}>Federation</th>
                                 <th style={compactThStyle}>Club</th>
                                 <th style={compactThStyle}>Team</th>
                                 <th style={compactThStyle}>Seasons</th>
@@ -2701,11 +2698,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                                 return (
                                   <tr key={team.id}>
-                                    <td style={compactTextTdStyle}>
-                                      <Link to={`/organisations/${orgSlugOrId}`} className="text-blue-600 hover:underline">
-                                        {String(orgWithRole?.name || resolvedOrg?.name || currentOrgSlug || '—')}
-                                      </Link>
-                                    </td>
                                     <td style={compactTextTdStyle}>
                                       <Link
                                         to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
@@ -2897,14 +2889,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             <col style={{ width: '180px' }} />
                             <col style={{ width: '180px' }} />
                             <col style={{ width: '180px' }} />
-                            <col style={{ width: '180px' }} />
                             <col style={{ width: '120px' }} />
                             <col style={{ width: '95px' }} />
                             <col style={{ width: '330px' }} />
                           </colgroup>
                           <thead>
                             <tr>
-                              <th style={compactThStyle}>Federation</th>
                               <th style={compactThStyle}>Club</th>
                               <th style={compactThStyle}>Team</th>
                               <th style={compactThStyle}>Season</th>
@@ -2931,11 +2921,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                               return (
                                 <tr key={seasonId}>
-                                  <td style={compactTextTdStyle}>
-                                    <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                      {String(orgWithRole?.name || resolvedOrg?.name || currentOrgSlug || '—')}
-                                    </Link>
-                                  </td>
                                   <td style={compactTextTdStyle}>
                                     {currentClubSlugOrId ? (
                                       <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600 hover:underline">
@@ -3165,14 +3150,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             <col style={{ width: '180px' }} />
                             <col style={{ width: '180px' }} />
                             <col style={{ width: '180px' }} />
-                            <col style={{ width: '180px' }} />
                             <col style={{ width: '200px' }} />
                             <col style={{ width: '95px' }} />
                             <col style={{ width: '330px' }} />
                           </colgroup>
                           <thead>
                             <tr>
-                              <th style={compactThStyle}>Federation</th>
                               <th style={compactThStyle}>Club</th>
                               <th style={compactThStyle}>Team</th>
                               <th style={compactThStyle}>Season</th>
@@ -3199,11 +3182,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                               return (
                                 <tr key={comp.id}>
-                                  <td style={compactTextTdStyle}>
-                                    <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                      {String(orgWithRole?.name || resolvedOrg?.name || currentOrgSlug || '—')}
-                                    </Link>
-                                  </td>
                                   <td style={compactTextTdStyle}>
                                     {currentClubSlugOrId ? (
                                       <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600 hover:underline">
@@ -3473,7 +3451,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                     <div className="overflow-x-auto">
                       <Table style={compactTableStyle}>
                         <colgroup>
-                          <col style={{ width: '180px' }} />
                           <col style={{ width: '160px' }} />
                           <col style={{ width: '160px' }} />
                           <col style={{ width: '160px' }} />
@@ -3484,7 +3461,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                         </colgroup>
                         <thead>
                           <tr>
-                            <th style={compactThStyle}>Federation</th>
                             <th style={compactThStyle}>Club</th>
                             <th style={compactThStyle}>Team</th>
                             <th style={compactThStyle}>Season</th>
@@ -3512,11 +3488,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                             return (
                               <tr key={m.id}>
-                                <td style={compactTextTdStyle}>
-                                  <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                    {String(orgWithRole?.name || resolvedOrg?.name || currentOrgSlug || '—')}
-                                  </Link>
-                                </td>
                                 <td style={compactTextTdStyle}>
                                   {currentClubSlugOrId ? (
                                     <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600 hover:underline">
