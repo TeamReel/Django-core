@@ -191,7 +191,8 @@ class ParticipationPermission(permissions.BasePermission):
             ):
                 return True
 
-            return False
+            # Don't hard-fail here: some deployments/roles grant lineup rights via
+            # project.manage_participations (B08), not via match.*.
 
         try:
             # Attempt B08 integration

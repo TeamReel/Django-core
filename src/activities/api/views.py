@@ -650,6 +650,18 @@ class ParticipationViewSet(viewsets.ModelViewSet):
             if getattr(activity, "activity_type", None) == "match":
                 from permissions.evaluator import check_permission
 
+                # Some roles may be granted lineup rights via B08 (project.manage_participations)
+                # instead of match.* permissions.
+                try:
+                    from permissions.utils import has_permission as b08_has_permission
+
+                    if b08_has_permission(
+                        request.user, "project.manage_participations", activity.project
+                    ):
+                        return super().create(request, *args, **kwargs)
+                except ImportError:
+                    pass
+
                 # Direct team permission
                 if check_permission(
                     request.user.id,
