@@ -16,6 +16,8 @@ type Props = {
   pageItems: any[];
   currentOrgSlug: string;
   currentClubSlugOrId: string;
+  currentClubId: string;
+  currentProjectId: string;
   teamById: Map<string, any>;
   userCanManageMembers: boolean;
   onViewMembership: (membershipId: string) => void;
@@ -28,12 +30,110 @@ export default function UsersTable({
   pageItems,
   currentOrgSlug,
   currentClubSlugOrId,
+  currentClubId,
+  currentProjectId,
   teamById,
   userCanManageMembers,
   onViewMembership,
   onEditMembership,
   onRemoveMembership,
 }: Props) {
+  const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
+  const TEAMREEL_ROLE_RANK: Record<string, number> = {
+    superadmin: 100,
+    'land admin': 90,
+    'club admin': 80,
+    'team admin': 70,
+    'team member': 60,
+    supporter: 50,
+    user: 10,
+  };
+
+  const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);
+
+  const mapMembershipToTeamreelRole = (membershipRoleRaw: unknown, kind: 'team' | 'club') => {
+    const membershipRole = normalizeRoleName(membershipRoleRaw);
+    const isAdminLike = ADMIN_LIKE_PROJECT_ROLES.has(membershipRole);
+    if (kind === 'team') return isAdminLike ? 'Team Admin' : 'Team Member';
+    return isAdminLike ? 'Club Admin' : 'Supporter';
+  };
+
+  const getMemberProjectMemberships = (item: any): any[] => {
+    const u = item?.user || item;
+    const list =
+      (item as any)?.project_memberships ||
+      (u as any)?.project_memberships ||
+      (item as any)?.project_membership_details ||
+      (u as any)?.project_membership_details ||
+      [];
+    return Array.isArray(list) ? list : [];
+  };
+
+  const getPmTeamId = (pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '');
+  const getPmClubId = (pm: any) =>
+    String(
+      pm?.club_id ??
+        pm?.club?.id ??
+        pm?.project?.parent_id ??
+        pm?.project?.parent?.id ??
+        pm?.project?.parent_project_id ??
+        ''
+    );
+
+  const getRoleDisplay = (item: any): { label: string; title: string } => {
+    const userObj = item?.user || item;
+    if (!userObj) return { label: '-', title: '' };
+
+    const roles: string[] = [];
+
+    const isSuper = Boolean(userObj?.is_superuser) || normalizeRoleName(userObj?.role) === 'superadmin';
+    if (isSuper) return { label: 'Superadmin', title: 'Superadmin' };
+
+    // Organisation membership role: admin == Land Admin
+    const orgMembershipRole = normalizeRoleName(item?.role);
+    if (orgMembershipRole === 'admin') roles.push('Land Admin');
+
+    const pms = getMemberProjectMemberships(item);
+    const scopedPms = pms.filter((pm: any) => {
+      if (isTeamRoute && currentProjectId) {
+        return getPmTeamId(pm) === String(currentProjectId);
+      }
+      if (currentClubId) {
+        const teamId = getPmTeamId(pm);
+        const clubId = getPmClubId(pm);
+        return String(teamId) === String(currentClubId) || String(clubId) === String(currentClubId);
+      }
+      return true;
+    });
+
+    for (const pm of scopedPms) {
+      const roleRaw = pm?.role;
+      if (!String(roleRaw ?? '').trim()) continue;
+      const teamId = getPmTeamId(pm);
+      const team = teamId ? teamById.get(String(teamId)) : null;
+      const hasParent = Boolean(
+        (team as any)?.parent_id ?? (team as any)?.parent_project_id ?? (team as any)?.parent?.id
+      );
+      roles.push(mapMembershipToTeamreelRole(roleRaw, hasParent ? 'team' : 'club'));
+    }
+
+    const uniqueByKey = new Map<string, string>();
+    for (const r of roles) {
+      const key = normalizeRoleName(r);
+      if (!key) continue;
+      if (!uniqueByKey.has(key)) uniqueByKey.set(key, r);
+    }
+    const unique = Array.from(uniqueByKey.values());
+    if (unique.length === 0) return { label: 'User', title: 'User' };
+
+    const best = [...unique].sort(
+      (a, b) => (TEAMREEL_ROLE_RANK[normalizeRoleName(b)] ?? 0) - (TEAMREEL_ROLE_RANK[normalizeRoleName(a)] ?? 0)
+    )[0];
+    const title = [...unique].sort((a, b) => a.localeCompare(b)).join(', ');
+    const label = unique.length === 1 ? best : `${best} +${unique.length - 1}`;
+    return { label, title };
+  };
+
   return (
     <Card>
       <Table style={compactTableStyle}>
@@ -67,8 +167,9 @@ export default function UsersTable({
         <tbody>
           {pageItems.map((item: any) => {
             const userObj = item.user || item;
-            const role = item.role || 'member';
             const membershipId = String(item.id);
+
+            const roleDisplay = getRoleDisplay(item);
 
             const pms = (() => {
               const u = item?.user || item;
@@ -113,7 +214,9 @@ export default function UsersTable({
                 </td>
                 <td style={compactTextTdStyle}>{userObj.email}</td>
                 <td style={compactTdStyle}>
-                  <Badge variant="default">{role}</Badge>
+                  <Badge variant="default" title={roleDisplay.title}>
+                    {roleDisplay.label}
+                  </Badge>
                 </td>
                 <td style={compactTdStyle}>
                   {userCanManageMembers ? (

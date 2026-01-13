@@ -1666,8 +1666,61 @@ export const OrganisationDetailPage: React.FC = () => {
                           <tbody>
                             {pageItems.map((item: any) => {
                               const user = item.user || item;
-                              const role = item.role || 'member';
                               const membershipId = item.id;
+
+                              const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
+                              const TEAMREEL_ROLE_RANK: Record<string, number> = {
+                                superadmin: 100,
+                                'land admin': 90,
+                                'club admin': 80,
+                                'team admin': 70,
+                                'team member': 60,
+                                supporter: 50,
+                                user: 10,
+                              };
+                              const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);
+                              const mapMembershipToTeamreelRole = (membershipRoleRaw: unknown, hasParentProject: boolean) => {
+                                const membershipRole = normalizeRoleName(membershipRoleRaw);
+                                const isAdminLike = ADMIN_LIKE_PROJECT_ROLES.has(membershipRole);
+                                if (isAdminLike) return hasParentProject ? 'Team Admin' : 'Club Admin';
+                                return hasParentProject ? 'Team Member' : 'Supporter';
+                              };
+
+                              const getTeamreelRoleDisplay = () => {
+                                const roles: string[] = [];
+
+                                const isSuper = Boolean(user?.is_superuser) || normalizeRoleName(user?.role) === 'superadmin';
+                                if (isSuper) return { label: 'Superadmin', title: 'Superadmin' };
+
+                                const orgMembershipRole = normalizeRoleName(item?.role);
+                                if (orgMembershipRole === 'admin') roles.push('Land Admin');
+
+                                for (const pm of pms) {
+                                  const roleRaw = String(pm?.role ?? '').trim();
+                                  if (!roleRaw) continue;
+                                  const parentIdRaw = pm?.project?.parent_id ?? pm?.project?.parent?.id ?? pm?.project?.parent_project_id;
+                                  const hasParentProject = Boolean(parentIdRaw);
+                                  roles.push(mapMembershipToTeamreelRole(roleRaw, hasParentProject));
+                                }
+
+                                const uniqueByKey = new Map<string, string>();
+                                for (const r of roles) {
+                                  const key = normalizeRoleName(r);
+                                  if (!key) continue;
+                                  if (!uniqueByKey.has(key)) uniqueByKey.set(key, r);
+                                }
+                                const unique = Array.from(uniqueByKey.values());
+                                if (unique.length === 0) return { label: 'User', title: 'User' };
+
+                                const best = [...unique].sort(
+                                  (a, b) => (TEAMREEL_ROLE_RANK[normalizeRoleName(b)] ?? 0) - (TEAMREEL_ROLE_RANK[normalizeRoleName(a)] ?? 0)
+                                )[0];
+                                const title = [...unique].sort((a, b) => a.localeCompare(b)).join(', ');
+                                const label = unique.length === 1 ? best : `${best} +${unique.length - 1}`;
+                                return { label, title };
+                              };
+
+                              const roleDisplay = getTeamreelRoleDisplay();
 
                               const pms = ((): any[] => {
                                 const u = item?.user || item;
@@ -1765,7 +1818,9 @@ export const OrganisationDetailPage: React.FC = () => {
                                   </td>
                                   <td style={compactTextTdStyle}>{user.email}</td>
                                   <td style={compactTdStyle}>
-                                    <Badge variant="default">{role}</Badge>
+                                    <Badge variant="default" title={roleDisplay.title}>
+                                      {roleDisplay.label}
+                                    </Badge>
                                   </td>
                                   <td style={compactTdStyle}>
                                     {userCanManageMembers ? (

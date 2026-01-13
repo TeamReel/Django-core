@@ -30,6 +30,8 @@ import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { useUserRole } from './PermissionGuards';
 import ProfileAvatarDropdown from './ProfileAvatarDropdown';
 import { SearchBar } from './SearchBar';
+import { fetchAllPages } from '../utils/fetchAllPages';
+import { periodPathKey } from '../utils/periodPath';
 
 interface NavGroup {
   id: string;
@@ -134,18 +136,82 @@ export default function TopNavbar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const appNavGroup = useMemo<NavGroup>(() => {
+  type AppProjectRow = {
+    id: string | number;
+    name: string;
+    slug: string;
+    updated_at?: string;
+    parent_id?: string | number | null;
+    parent_name?: string | null;
+  };
+
+  type AppPeriodRow = {
+    id: string;
+    name?: string;
+    start_date?: string | null;
+    end_date?: string | null;
+  };
+
+  type AppSelection = {
+    orgSlug: string;
+    clubSlugOrId: string | null;
+    teamSlugOrId: string | null;
+    teamIdForApi: string | null;
+    seasonSlugOrId: string | null;
+  };
+
+  const [appSelection, setAppSelection] = useState<AppSelection>({
+    orgSlug: '',
+    clubSlugOrId: null,
+    teamSlugOrId: null,
+    teamIdForApi: null,
+    seasonSlugOrId: null,
+  });
+
+  const APP_LAST_CTX_KEY = 'demo_app_last_context_v1';
+
+  const readLastAppContext = () => {
+    try {
+      const raw = localStorage.getItem(APP_LAST_CTX_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      return parsed as {
+        orgSlug?: string;
+        clubSlugOrId?: string;
+        teamSlugOrId?: string;
+        seasonSlugOrId?: string;
+        ts?: number;
+      };
+    } catch {
+      return null;
+    }
+  };
+
+  const writeLastAppContext = (next: {
+    orgSlug: string;
+    clubSlugOrId?: string;
+    teamSlugOrId?: string;
+    seasonSlugOrId?: string;
+  }) => {
+    try {
+      localStorage.setItem(
+        APP_LAST_CTX_KEY,
+        JSON.stringify({
+          ...next,
+          ts: Date.now(),
+        })
+      );
+    } catch {
+      // ignore
+    }
+  };
+
+  // Track last visited club/team/season so the App menu can pick a stable "most recent" default.
+  useEffect(() => {
     const path = location.pathname;
-
-    const isUuid = (value: unknown) =>
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
-    const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
-
     const seasonTeamMatch = path.match(
       /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)/
-    );
-    const seasonMatch = path.match(
-      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)/
     );
     const teamMatch = path.match(
       /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)/
@@ -154,35 +220,244 @@ export default function TopNavbar() {
       /^\/organisations\/([^/]+)\/projects\/([^/]+)/
     );
 
-    const orgFromPath = seasonTeamMatch?.[1] || seasonMatch?.[1] || teamMatch?.[1] || clubMatch?.[1] || null;
-    const contextOrgSlug = String((context as any)?.organisation?.slug || '');
-    const contextOrgId = String((context as any)?.organisation?.id || '');
+    if (seasonTeamMatch) {
+      writeLastAppContext({
+        orgSlug: seasonTeamMatch[1],
+        clubSlugOrId: seasonTeamMatch[2],
+        teamSlugOrId: seasonTeamMatch[3],
+        seasonSlugOrId: seasonTeamMatch[4],
+      });
+      return;
+    }
+    if (teamMatch) {
+      writeLastAppContext({
+        orgSlug: teamMatch[1],
+        clubSlugOrId: teamMatch[2],
+        teamSlugOrId: teamMatch[3],
+      });
+      return;
+    }
+    if (clubMatch) {
+      writeLastAppContext({
+        orgSlug: clubMatch[1],
+        clubSlugOrId: clubMatch[2],
+      });
+    }
+  }, [location.pathname]);
 
-    // Prefer slug for detail-page routing (canonical URLs), but keep whatever is in-path
-    // when it already looks like a slug.
-    const orgFromPathStr = String(orgFromPath || '');
-    const orgSlugOrId =
-      (orgFromPathStr && !isNumericId(orgFromPathStr) && !isUuid(orgFromPathStr))
-        ? orgFromPathStr
-        : (contextOrgSlug || orgFromPathStr || contextOrgId || '');
+  // Resolve best-fit club/team/season for App menu based on the logged-in user's accessible projects.
+  useEffect(() => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-    const clubIdFromPath = String(
-      seasonTeamMatch?.[2] || teamMatch?.[2] || (clubMatch ? clubMatch[2] : '') || ''
-    );
-    const clubId = clubIdFromPath || String((context as any)?.project?.slug || (context as any)?.project?.id || '');
-    const teamId = String(seasonTeamMatch?.[3] || teamMatch?.[3] || '');
-    const seasonId = String(seasonTeamMatch?.[4] || seasonMatch?.[3] || '');
-    const projectIdForSeason = String(seasonMatch?.[2] || teamId || clubId || '');
+    const isUuid = (value: unknown) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+    const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
 
-    const federationPath = orgSlugOrId ? `/organisations/${orgSlugOrId}` : '/directory?tab=federations';
-    const clubPath = orgSlugOrId && clubId ? `/organisations/${orgSlugOrId}/projects/${clubId}` : '/directory?tab=clubs';
-    const teamPath = orgSlugOrId && clubId && teamId
-      ? `/organisations/${orgSlugOrId}/projects/${clubId}/teams/${teamId}`
-      : '/directory?tab=teams';
-    const seasonPath = orgSlugOrId && seasonId
-      ? (clubId && teamId
-        ? `/organisations/${orgSlugOrId}/projects/${clubId}/teams/${teamId}/seasons/${seasonId}`
-        : `/organisations/${orgSlugOrId}/projects/${projectIdForSeason}/seasons/${seasonId}`)
+    const pickBestByUpdatedOrName = (items: AppProjectRow[]): AppProjectRow | null => {
+      const list = [...items];
+      list.sort((a, b) => {
+        const da = a.updated_at ? Date.parse(a.updated_at) : NaN;
+        const db = b.updated_at ? Date.parse(b.updated_at) : NaN;
+        const hasDa = Number.isFinite(da);
+        const hasDb = Number.isFinite(db);
+        if (hasDa && hasDb && da !== db) return db - da;
+        if (hasDa && !hasDb) return -1;
+        if (!hasDa && hasDb) return 1;
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      });
+      return list[0] || null;
+    };
+
+    const pickMostRecentSeason = (periods: AppPeriodRow[]): AppPeriodRow | null => {
+      const list = [...periods];
+      list.sort((a, b) => {
+        const ea = a.end_date ? Date.parse(a.end_date) : NaN;
+        const eb = b.end_date ? Date.parse(b.end_date) : NaN;
+        const sa = a.start_date ? Date.parse(a.start_date) : NaN;
+        const sb = b.start_date ? Date.parse(b.start_date) : NaN;
+        const hasE = Number.isFinite(ea) && Number.isFinite(eb);
+        if (hasE && ea !== eb) return eb - ea;
+        const hasS = Number.isFinite(sa) && Number.isFinite(sb);
+        if (hasS && sa !== sb) return sb - sa;
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      });
+      return list[0] || null;
+    };
+
+    const compute = async () => {
+      if (!user) return;
+
+      const path = location.pathname;
+      const seasonTeamMatch = path.match(
+        /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)/
+      );
+      const seasonMatch = path.match(
+        /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)/
+      );
+      const teamMatch = path.match(
+        /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)/
+      );
+      const clubMatch = path.match(
+        /^\/organisations\/([^/]+)\/projects\/([^/]+)/
+      );
+
+      const orgFromPath = seasonTeamMatch?.[1] || seasonMatch?.[1] || teamMatch?.[1] || clubMatch?.[1] || null;
+      const orgFromPathStr = String(orgFromPath || '');
+
+      const contextOrgSlug = String((context as any)?.organisation?.slug || '');
+      const contextOrgId = String((context as any)?.organisation?.id || '');
+
+      const orgSlug =
+        (orgFromPathStr && !isNumericId(orgFromPathStr) && !isUuid(orgFromPathStr))
+          ? orgFromPathStr
+          : (contextOrgSlug || orgFromPathStr || contextOrgId || '');
+
+      if (!orgSlug) return;
+
+      // If we're already on a canonical team/season route, prefer that immediately.
+      if (seasonTeamMatch) {
+        setAppSelection({
+          orgSlug,
+          clubSlugOrId: seasonTeamMatch[2],
+          teamSlugOrId: seasonTeamMatch[3],
+          teamIdForApi: null,
+          seasonSlugOrId: seasonTeamMatch[4],
+        });
+        return;
+      }
+      if (teamMatch) {
+        setAppSelection({
+          orgSlug,
+          clubSlugOrId: teamMatch[2],
+          teamSlugOrId: teamMatch[3],
+          teamIdForApi: null,
+          seasonSlugOrId: null,
+        });
+        return;
+      }
+      if (clubMatch) {
+        setAppSelection({
+          orgSlug,
+          clubSlugOrId: clubMatch[2],
+          teamSlugOrId: null,
+          teamIdForApi: null,
+          seasonSlugOrId: null,
+        });
+        // continue resolving best team/season below (club-only path is not enough)
+      }
+
+      const last = readLastAppContext();
+
+      // Fetch accessible clubs + teams for this organisation.
+      const [clubs, teams] = await Promise.all([
+        fetchAllPages<AppProjectRow>(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=500&parent_project__isnull=true`,
+          { credentials: 'include' },
+          { ttlMs: 120_000 }
+        ),
+        fetchAllPages<AppProjectRow>(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000&parent_project__isnull=false`,
+          { credentials: 'include' },
+          { ttlMs: 120_000 }
+        ),
+      ]);
+
+      const clubsById = new Map<string, AppProjectRow>();
+      const clubsBySlug = new Map<string, AppProjectRow>();
+      for (const c of clubs || []) {
+        clubsById.set(String(c.id), c);
+        clubsBySlug.set(String(c.slug || ''), c);
+      }
+
+      let selectedTeam: AppProjectRow | null = null;
+
+      // 1) Prefer last visited team (if it belongs to this org).
+      if (last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.teamSlugOrId) {
+        selectedTeam = (teams || []).find((t) => String(t.slug) === String(last.teamSlugOrId)) || null;
+      }
+
+      // 2) Else fall back to "most recent" (updated_at) then alphabetic.
+      if (!selectedTeam) {
+        selectedTeam = pickBestByUpdatedOrName(teams || []);
+      }
+
+      // Select club from team parent when possible, else last visited club, else alphabetic.
+      let selectedClub: AppProjectRow | null = null;
+      if (selectedTeam?.parent_id !== null && selectedTeam?.parent_id !== undefined) {
+        selectedClub = clubsById.get(String(selectedTeam.parent_id)) || null;
+      }
+      if (!selectedClub && last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.clubSlugOrId) {
+        selectedClub = clubsBySlug.get(String(last.clubSlugOrId)) || null;
+      }
+      if (!selectedClub) {
+        const clubsSorted = [...(clubs || [])].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+        selectedClub = clubsSorted[0] || null;
+      }
+
+      // Resolve a best season for selected team.
+      let selectedSeasonKey: string | null = null;
+      if (selectedTeam) {
+        try {
+          const seasons = await fetchAllPages<AppPeriodRow>(
+            `${apiBaseUrl}/api/v1/periods/?page_size=250&project_id=${encodeURIComponent(String(selectedTeam.id))}&type=season`,
+            { credentials: 'include' },
+            { ttlMs: 120_000, cacheKey: `GET:seasons:${orgSlug}:${selectedTeam.id}` }
+          );
+
+          // Prefer last visited season in this org.
+          if (last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.seasonSlugOrId) {
+            const match = (seasons || []).find((p) => {
+              const key = periodPathKey(p);
+              return key && String(key) === String(last.seasonSlugOrId);
+            });
+            if (match) {
+              selectedSeasonKey = periodPathKey(match) || String(match.id);
+            }
+          }
+
+          if (!selectedSeasonKey) {
+            const best = pickMostRecentSeason(seasons || []);
+            if (best) selectedSeasonKey = periodPathKey(best) || String(best.id);
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      setAppSelection({
+        orgSlug,
+        clubSlugOrId: selectedClub ? String(selectedClub.slug || selectedClub.id) : null,
+        teamSlugOrId: selectedTeam ? String(selectedTeam.slug || selectedTeam.id) : null,
+        teamIdForApi: selectedTeam ? String(selectedTeam.id) : null,
+        seasonSlugOrId: selectedSeasonKey,
+      });
+    };
+
+    compute();
+  }, [context, location.pathname, user]);
+
+  const appNavGroup = useMemo<NavGroup>(() => {
+    const orgSlug = appSelection.orgSlug || String((context as any)?.organisation?.slug || '');
+    const clubSlugOrId = appSelection.clubSlugOrId;
+    const teamSlugOrId = appSelection.teamSlugOrId;
+    const seasonSlugOrId = appSelection.seasonSlugOrId;
+
+    const federationPath = orgSlug ? `/organisations/${orgSlug}` : '/directory?tab=federations';
+
+    const clubPath = orgSlug && clubSlugOrId
+      ? `/organisations/${orgSlug}/projects/${clubSlugOrId}`
+      : (orgSlug ? `/organisations/${orgSlug}` : '/directory?tab=clubs');
+
+    const teamPath = orgSlug && clubSlugOrId && teamSlugOrId
+      ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`
+      : (orgSlug && teamSlugOrId
+        ? `/organisations/${orgSlug}/projects/${teamSlugOrId}`
+        : '/directory?tab=teams');
+
+    const seasonPath = orgSlug && seasonSlugOrId
+      ? (clubSlugOrId && teamSlugOrId
+        ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+        : (teamSlugOrId ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}` : '/directory?tab=seasons'))
       : '/directory?tab=seasons';
 
     return {
@@ -190,12 +465,12 @@ export default function TopNavbar() {
       label: 'App',
       items: [
         { path: federationPath, label: 'Federation', description: 'Current federation (organisation)', icon: '🏢' },
-        { path: clubPath, label: 'Club', description: 'Current club', icon: '🏟️' },
-        { path: teamPath, label: 'Team', description: 'Current team', icon: '⚽' },
-        { path: seasonPath, label: 'Season', description: 'Current season', icon: '🗓️' },
+        { path: clubPath, label: 'Club', description: 'Your club (best match)', icon: '🏟️' },
+        { path: teamPath, label: 'Team', description: 'Your team (best match)', icon: '⚽' },
+        { path: seasonPath, label: 'Season', description: 'Your season (best match)', icon: '🗓️' },
       ],
     };
-  }, [context, location.pathname]);
+  }, [appSelection, context]);
 
   // Docker-style hover timers
   const hoverTimerRef = useRef<Record<string, NodeJS.Timeout>>({});

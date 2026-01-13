@@ -24,15 +24,17 @@ interface User {
   organisations?: { id: string; name: string; slug: string; role: string }[];
 }
 
-const PROJECT_ROLE_RANK: Record<string, number> = {
-    owner: 50,
-    admin: 40,
-    manager: 35,
-    coach: 30,
-    viewer: 20,
-    player: 10,
-    member: 5,
+const TEAMREEL_ROLE_RANK: Record<string, number> = {
+    superadmin: 100,
+    'land admin': 90,
+    'club admin': 80,
+    'team admin': 70,
+    'team member': 60,
+    supporter: 50,
+    user: 10,
 };
+
+const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);
 
 interface Organisation {
     id: string;
@@ -129,7 +131,13 @@ export const UsersList: React.FC = () => {
     const [organisations, setOrganisations] = useState<Organisation[]>([]);
     const [clubs, setClubs] = useState<ProjectOption[]>([]);
     const [teams, setTeams] = useState<ProjectOption[]>([]);
-    const [availableRoles] = useState<string[]>(['Admin', 'Viewer', 'Player', 'Member']);
+    const [availableRoles] = useState<string[]>([
+        'Land Admin',
+        'Club Admin',
+        'Team Admin',
+        'Team Member',
+        'Supporter',
+    ]);
 
     // Filter State
     const [selectedOrgId, setSelectedOrgId] = useState<string>('');
@@ -406,7 +414,7 @@ export const UsersList: React.FC = () => {
                 if (roleFilter) {
                     const wanted = normalizeRoleName(roleFilter);
                     results = results.filter((u: any) => {
-                        const roleNames = getUserProjectRoleNames(u);
+                        const roleNames = getUserTeamreelRoleNames(u);
                         return roleNames.some((r) => normalizeRoleName(r) === wanted);
                     });
                 }
@@ -425,8 +433,46 @@ export const UsersList: React.FC = () => {
 
     const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
 
-    const getUserProjectRoleNames = (user: any): string[] => {
+    const parseAssignmentRoleLabel = (raw: unknown) => {
+        const s = String(raw ?? '').trim();
+        if (!s) return '';
+        // When include_role_assignments=true, membership entries can look like:
+        // "Team Admin (Ajax 1)".
+        const beforeParen = s.split('(')[0]?.trim();
+        return beforeParen || s;
+    };
+
+    const mapMembershipToTeamreelRole = (membershipRoleRaw: unknown, hasParentProject: boolean) => {
+        const membershipRole = normalizeRoleName(membershipRoleRaw);
+        const isAdminLike = ADMIN_LIKE_PROJECT_ROLES.has(membershipRole);
+        if (isAdminLike) return hasParentProject ? 'Team Admin' : 'Club Admin';
+        // Treat everything else as non-admin (viewer/player/member/etc)
+        return hasParentProject ? 'Team Member' : 'Supporter';
+    };
+
+    const getUserTeamreelRoleNames = (user: any): string[] => {
         if (!user) return [];
+
+        const roles: string[] = [];
+
+        // Superuser is the highest priority.
+        const isSuper = Boolean(user?.is_superuser) || normalizeRoleName(user?.role) === 'superadmin';
+        if (isSuper) {
+            roles.push('Superadmin');
+            return roles;
+        }
+
+        // Organisation membership role: admin == Land Admin in TeamReel.
+        // Note: when include_role_assignments=true, this can also be an assignment label.
+        const membershipSource = normalizeRoleName(user?.membership?.source);
+        const membershipRoleRaw = user?.membership?.role;
+        if (membershipSource === 'assignment') {
+            const assignmentLabel = parseAssignmentRoleLabel(membershipRoleRaw);
+            if (assignmentLabel) roles.push(assignmentLabel);
+        } else {
+            const orgMembershipRole = normalizeRoleName(membershipRoleRaw);
+            if (orgMembershipRole === 'admin') roles.push('Land Admin');
+        }
 
         const memberships = Array.isArray(user?.project_memberships) ? user.project_memberships : [];
         const scopedMemberships = memberships.filter((m: any) => {
@@ -445,34 +491,36 @@ export const UsersList: React.FC = () => {
             return true;
         });
 
-        const roles: string[] = scopedMemberships
-            .map((m: any) => String(m?.role ?? '').trim())
-            .filter((r: string) => Boolean(r))
-            .map((r: string) => normalizeRoleName(r));
+        for (const m of scopedMemberships) {
+            const roleRaw = String(m?.role ?? '').trim();
+            if (!roleRaw) continue;
+            const parentIdRaw = m?.project?.parent_id ?? m?.project?.parent_project_id;
+            const hasParentProject = Boolean(parentIdRaw);
+            roles.push(mapMembershipToTeamreelRole(roleRaw, hasParentProject));
+        }
 
-        return Array.from(new Set(roles)).filter((r): r is string => Boolean(r));
+        // Normalize and de-duplicate (case-insensitive)
+        const uniqueByKey = new Map<string, string>();
+        for (const r of roles) {
+            const key = normalizeRoleName(r);
+            if (!key) continue;
+            if (!uniqueByKey.has(key)) uniqueByKey.set(key, r);
+        }
+        return Array.from(uniqueByKey.values());
     };
 
     // Helper for role display logic
     const getUserRoleDisplay = (user: any): { label: string; title: string } => {
         if (!user) return { label: '-', title: '' };
 
-        const isSuper = Boolean(user?.is_superuser) || String(user?.role || '').toLowerCase() === 'superadmin';
-        if (isSuper) return { label: 'Superadmin', title: 'Superadmin' };
-
-        const roles = getUserProjectRoleNames(user);
+        const roles = getUserTeamreelRoleNames(user);
         if (roles.length > 0) {
-            const best = [...roles].sort((a, b) => (PROJECT_ROLE_RANK[b] ?? 0) - (PROJECT_ROLE_RANK[a] ?? 0))[0];
+            const best = [...roles].sort(
+                (a, b) => (TEAMREEL_ROLE_RANK[normalizeRoleName(b)] ?? 0) - (TEAMREEL_ROLE_RANK[normalizeRoleName(a)] ?? 0)
+            )[0];
             const title = [...roles].sort((a, b) => a.localeCompare(b)).join(', ');
-            const bestLabel = best ? best.charAt(0).toUpperCase() + best.slice(1) : roles[0];
-            const label = roles.length === 1 ? bestLabel : `${bestLabel} +${roles.length - 1}`;
+            const label = roles.length === 1 ? best : `${best} +${roles.length - 1}`;
             return { label, title };
-        }
-
-        const membershipRole = normalizeRoleName(user?.membership?.role);
-        if (membershipRole) {
-            const label = membershipRole.charAt(0).toUpperCase() + membershipRole.slice(1);
-            return { label, title: label };
         }
 
         return { label: 'User', title: 'User' };

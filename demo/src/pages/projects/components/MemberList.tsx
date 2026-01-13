@@ -157,7 +157,10 @@ export const MemberList: React.FC<MemberListProps> = ({
               <tbody>
                 {members.map((item: any) => {
                   const user = item.user || item;
-                  const role = item.role || 'member';
+                  const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
+                  const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);
+                  const membershipRole = normalizeRoleName(item.role || 'member');
+                  const role = ADMIN_LIKE_PROJECT_ROLES.has(membershipRole) ? 'Team Admin' : 'Team Member';
 
                   // Metadata usually lives on the Membership object (item), not user
                   const position = item.metadata?.position || '-';
@@ -178,7 +181,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                          <Badge variant="default" size="sm">{position}</Badge>
                       </td>
                       <td>
-                        <Badge variant={role === 'admin' || role === 'manager' ? 'warning' : 'default'}>
+                        <Badge variant={role === 'Team Admin' ? 'warning' : 'default'}>
                           {role}
                         </Badge>
                       </td>

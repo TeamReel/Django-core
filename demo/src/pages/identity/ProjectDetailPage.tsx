@@ -2642,6 +2642,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               pageItems={pageItems}
                               currentOrgSlug={String(currentOrgSlug || '')}
                               currentClubSlugOrId={String(currentClubSlugOrId || '')}
+                              currentClubId={String(currentClubId || '')}
+                              currentProjectId={String(project?.id || '')}
                               teamById={teamById}
                               userCanManageMembers={Boolean(userCanManageMembers)}
                               onViewMembership={(membershipId) => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
