@@ -195,6 +195,16 @@ export default function HierarchyMatchDetailPage() {
         setRosterLoading(true);
         setRosterError(null);
 
+        const asArray = (value: any): any[] => (Array.isArray(value) ? value : []);
+        const unwrap = (raw: any): any => raw?.data ?? raw;
+        const extractList = (payload: any): any[] => {
+          const unwrapped = unwrap(payload);
+          if (Array.isArray(unwrapped)) return unwrapped;
+          if (Array.isArray(unwrapped?.results)) return unwrapped.results;
+          if (Array.isArray(unwrapped?.items)) return unwrapped.items;
+          return [];
+        };
+
         // 1) Project members (user ids)
         const projectMembersRes = await fetch(
           `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(match.project.id))}/members/?page_size=500`,
@@ -202,8 +212,12 @@ export default function HierarchyMatchDetailPage() {
         );
         if (!projectMembersRes.ok) throw new Error('Failed to load team members');
         const projectMembersRaw = await projectMembersRes.json().catch(() => null);
-        const projectMembers = (projectMembersRaw?.results ?? projectMembersRaw?.data ?? projectMembersRaw ?? []) as any[];
-        const projectUserIds = new Set(projectMembers.map((m: any) => String(m?.user?.id ?? m?.user_id ?? '')).filter(Boolean));
+        const projectMembers = extractList(projectMembersRaw);
+        const projectUserIds = new Set(
+          asArray(projectMembers)
+            .map((m: any) => String(m?.user?.id ?? m?.user_id ?? ''))
+            .filter(Boolean)
+        );
 
         // 2) Organisation memberships (membership ids + user)
         const orgMembersRes = await fetch(
@@ -212,10 +226,10 @@ export default function HierarchyMatchDetailPage() {
         );
         if (!orgMembersRes.ok) throw new Error('Failed to load organisation members');
         const orgMembersRaw = await orgMembersRes.json().catch(() => null);
-        const orgMembers = (orgMembersRaw?.results ?? orgMembersRaw?.data ?? orgMembersRaw ?? []) as OrgMember[];
+        const orgMembers = extractList(orgMembersRaw) as OrgMember[];
 
         // Intersection: project members must exist as org membership.
-        const eligible = orgMembers
+        const eligible = asArray(orgMembers)
           .filter((m: any) => m?.id && projectUserIds.has(String(m?.user?.id ?? '')))
           .sort((a: any, b: any) => {
             const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
