@@ -8,6 +8,31 @@ import { Table } from '../../shims/design-system';
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
 
+type Participation = {
+  id: string;
+  member?: { id: string; user_name?: string };
+  role?: string;
+  status?: string;
+  data?: {
+    side?: 'home' | 'away';
+    jersey_number?: number;
+    position?: string;
+    is_captain?: boolean;
+    team_name?: string;
+    team_id?: string;
+  };
+};
+
+type ActivityEvent = {
+  id: string;
+  event_type: string;
+  minute?: number;
+  team_project?: { id: string; name: string };
+  member?: { id: string; user_name?: string };
+  related_member?: { id: string; user_name?: string };
+  data?: any;
+};
+
 type MatchDetail = {
   id: string;
   title: string;
@@ -19,6 +44,8 @@ type MatchDetail = {
   opponent_project?: { id: string; name: string; slug?: string };
   period?: { id: string; name: string; parent_period?: { id: string; name: string } | null };
   metadata?: Record<string, any>;
+  participations?: Participation[];
+  events?: ActivityEvent[];
 };
 
 type Period = {
@@ -232,6 +259,94 @@ export default function HierarchyMatchDetailPage() {
     ? `${match.metadata?.home_score ?? 0} - ${match.metadata?.away_score ?? 0}`
     : 'vs';
 
+  const sortLineup = (a: Participation, b: Participation) => {
+    const isStarterA = String(a.role || '').toLowerCase() === 'starter';
+    const isStarterB = String(b.role || '').toLowerCase() === 'starter';
+    if (isStarterA && !isStarterB) return -1;
+    if (!isStarterA && isStarterB) return 1;
+
+    if (isStarterA) {
+      if (a.data?.position === 'GK') return -1;
+      if (b.data?.position === 'GK') return 1;
+    }
+
+    return (a.data?.jersey_number || 99) - (b.data?.jersey_number || 99);
+  };
+
+  const allParticipations = match.participations || [];
+  const homeParticipations = allParticipations
+    .filter(
+      (p) => p.data?.side === 'home' || String(p.data?.team_id || '') === String(match.project?.id || '')
+    )
+    .sort(sortLineup);
+  const awayParticipations = allParticipations
+    .filter(
+      (p) =>
+        p.data?.side === 'away' ||
+        (match.opponent_project && String(p.data?.team_id || '') === String(match.opponent_project.id))
+    )
+    .sort(sortLineup);
+
+  const matchEvents = (match.events || []).slice().sort((a, b) => (a.minute || 0) - (b.minute || 0));
+
+  const renderLineup = (participations: Participation[] = []) => (
+    <Table>
+      <thead>
+        <tr>
+          <th className="w-12">#</th>
+          <th>Name</th>
+          <th className="w-16">Pos</th>
+        </tr>
+      </thead>
+      <tbody>
+        {participations.length === 0 ? (
+          <tr>
+            <td colSpan={3} className="text-gray-500 text-center py-4">
+              No lineup available
+            </td>
+          </tr>
+        ) : (
+          participations.map((p) => (
+            <tr key={p.id} className={String(p.role || '').toLowerCase() !== 'starter' ? 'bg-gray-50' : ''}>
+              <td className="font-mono text-sm">{p.data?.jersey_number || '-'}</td>
+              <td>
+                <div className="font-medium">
+                  {p.member?.user_name || 'Unknown Player'}
+                  {p.data?.is_captain && (
+                    <span className="ml-2 text-yellow-500" title="Captain">
+                      ©
+                    </span>
+                  )}
+                </div>
+                {String(p.role || '').toLowerCase() !== 'starter' && p.role && (
+                  <div className="text-xs text-gray-500 capitalize">{p.role.replace('_', ' ')}</div>
+                )}
+              </td>
+              <td className="text-xs font-bold text-gray-400">{p.data?.position}</td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </Table>
+  );
+
+  const renderEventIcon = (type: string) => {
+    switch (String(type || '').toLowerCase()) {
+      case 'goal':
+        return '⚽';
+      case 'card_yellow':
+        return '🟨';
+      case 'card_red':
+        return '🟥';
+      case 'substitution':
+        return 'cS'; // 🔄 glyph issue sometimes
+      case 'injury':
+        return '🚑';
+      default:
+        return '•';
+    }
+  };
+
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'hierarchy', label: 'Hierarchy' },
@@ -333,11 +448,47 @@ export default function HierarchyMatchDetailPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card title="Match Events">
-                  <Alert variant="info">Match events (goals, cards, subs) coming soon.</Alert>
+                  {matchEvents.length === 0 ? (
+                    <div className="text-gray-500 text-sm italic">No events recorded.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {matchEvents.map((evt) => {
+                        const isHome = String(evt.team_project?.id || '') === String(match.project?.id || '');
+                        return (
+                          <div key={evt.id} className="flex items-center text-sm">
+                            <div className="font-mono font-bold w-8 text-right mr-3 text-gray-400">{evt.minute}'</div>
+                            <div className={`flex-1 flex items-center ${isHome ? 'flex-row' : 'flex-row-reverse text-right'}`}>
+                              <span className="text-xl mx-2" title={evt.event_type}>
+                                {renderEventIcon(evt.event_type)}
+                              </span>
+                              <div>
+                                <div className="font-medium">{evt.member?.user_name || 'Unknown'}</div>
+                                {evt.related_member && (
+                                  <div className="text-xs text-gray-500">({evt.related_member.user_name})</div>
+                                )}
+                                {String(evt.event_type || '').toLowerCase() === 'substitution' && evt.related_member && (
+                                  <div className="text-xs text-green-600">IN: {evt.related_member.user_name}</div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </Card>
 
                 <Card title="Lineups">
-                  <Alert variant="info">Lineup management coming soon.</Alert>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">{homeTeamName}</div>
+                      {renderLineup(homeParticipations)}
+                    </div>
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">{awayTeamName}</div>
+                      {renderLineup(awayParticipations)}
+                    </div>
+                  </div>
                 </Card>
               </div>
             </>
@@ -443,7 +594,10 @@ export default function HierarchyMatchDetailPage() {
           {activeTab === 'lineup' && (
             <Card>
               <div style={{ padding: '16px' }}>
-                <Alert variant="info">Lineup tab coming soon.</Alert>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card title={`Lineup: ${homeTeamName}`}>{renderLineup(homeParticipations)}</Card>
+                  <Card title={`Lineup: ${awayTeamName}`}>{renderLineup(awayParticipations)}</Card>
+                </div>
               </div>
             </Card>
           )}
