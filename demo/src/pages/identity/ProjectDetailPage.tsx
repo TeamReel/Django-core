@@ -22,6 +22,7 @@ import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import { periodPathKey } from '../../utils/periodPath';
+import { fetchAllPages as fetchAllPagesCached } from '../../utils/fetchAllPages';
 import ProjectDetailModal from './ProjectDetailModal';
 import ProjectCreateModal from './ProjectCreateModal';
 import ProjectEditModal from './ProjectEditModal';
@@ -1182,50 +1183,31 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   }, [isTeamRoute, club?.id]);
 
   const fetchSeasons = async () => {
-    console.log('[fetchSeasons] START - project:', project?.id, 'isLikelyTeam:', isLikelyTeam);
-    if (!project?.id) {
-      console.log('[fetchSeasons] ABORT - no project.id');
-      return;
-    }
+    if (!project?.id) return;
     setSeasonsLoading(true);
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     try {
-      // Match OrganisationDetailPage pattern: fetch ALL periods and filter client-side
       if (isLikelyTeam) {
-        // For teams: fetch all periods for this team
+        // Teams: fetch root season periods server-side (fast + annotated counts)
         const params = new URLSearchParams();
         params.set('project_id', String(project.id));
-        params.set('page_size', '250');
+        params.set('type', 'season');
+        params.set('parent_id', 'null');
+        params.set('page_size', '500');
 
         const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
-        console.log('[fetchSeasons] Team view: fetching from', url);
-        const results = await fetchAllPages<any>(url, { credentials: 'include' });
-        console.log('[fetchSeasons] Team view: raw results:', results.length);
-        console.log('[fetchSeasons] Team view: first 3 periods:', results.slice(0, 3));
-        const filteredSeasons = (results || []).filter((p) => {
-          const isSeason = isSeasonPeriod(p);
-          if (!isSeason) {
-            console.log('[fetchSeasons] Team view: REJECTED period:', p.name, 'parent:', p.parent_period?.id || 'null', 'type:', p.data?.type);
-          } else {
-            console.log('[fetchSeasons] Team view: ACCEPTED season:', p.name);
-          }
-          return isSeason;
-        });
-        // Remove duplicates by ID
-        const uniqueSeasons = Array.from(
-          new Map(filteredSeasons.map((s: any) => [String(s.id), s])).values()
+        const results = await fetchAllPagesCached<any>(
+          url,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: `periods:team:seasons:${project.id}` }
         );
-        console.log(`[fetchSeasons] Team view: ${filteredSeasons.length} seasons fetched, ${uniqueSeasons.length} unique`);
+
+        const uniqueSeasons = Array.from(new Map((results || []).map((s: any) => [String(s.id), s])).values());
         setSeasons(uniqueSeasons);
       } else {
-        // Clubs: enforce hierarchy strictly.
-        // 1) Resolve direct child teams for this club (required dependency)
-        // 2) Fetch org periods using the same org-wide query as OrganisationDetail
-        // 3) Filter to root season periods for those teamIds
+        // Clubs: fetch seasons scoped to the teams under this club (avoid org-wide periods scan)
         const clubIdValue = String(project.id);
-        console.log('[fetchSeasons] Club view: fetching teams for club', clubIdValue);
         const teams = await fetchClubTeamsForPeriodScope();
-        console.log('[fetchSeasons] Club view: teams found:', teams.length, teams.map(t => ({ id: t.id, name: t.name })));
         const teamIds = new Set(
           (teams || []).map((t: any) => String(t?.id || '')).filter(Boolean)
         );
@@ -1236,34 +1218,31 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
           return;
         }
 
-        // Fetch root periods only, then filter down to season periods.
-        // This avoids relying on pagination/order across all period types.
-        console.log('[fetchSeasons] Club view: fetching periods for teamIds:', Array.from(teamIds));
-        const orgPeriods = await fetchOrgPeriodsForFiltering({ parentId: 'null' });
-        console.log('[fetchSeasons] Club view: org periods fetched:', orgPeriods.length);
-        const filteredSeasons = (orgPeriods || [])
-          .filter((p: any) => {
-            const teamId = String(p?.project_id ?? p?.project?.id ?? '');
-            if (!teamId || !teamIds.has(teamId)) {
-              return false;
-            }
-            const parentId = getPeriodParentId(p);
-            if (parentId) {
-              return false;
-            }
-            const isSeason = isSeasonPeriod(p);
-            if (isSeason) {
-              console.log('[fetchSeasons] Club view: Found season:', p.name, 'for team', teamId);
-            }
-            return isSeason;
-          });
+        const allTeamIds = Array.from(teamIds);
+        const chunkSize = 50;
+        const chunks: string[][] = [];
+        for (let i = 0; i < allTeamIds.length; i += chunkSize) {
+          chunks.push(allTeamIds.slice(i, i + chunkSize));
+        }
 
-        // Remove duplicates by ID
-        const uniqueSeasons = Array.from(
-          new Map(filteredSeasons.map((s: any) => [String(s.id), s])).values()
+        const chunkResults = await Promise.all(
+          chunks.map((chunk, idx) => {
+            const params = new URLSearchParams();
+            params.set('project_id__in', chunk.join(','));
+            params.set('type', 'season');
+            params.set('parent_id', 'null');
+            params.set('page_size', '500');
+            const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+            return fetchAllPagesCached<any>(
+              url,
+              { credentials: 'include' },
+              { ttlMs: 60_000, cacheKey: `periods:club:seasons:${clubIdValue}:${idx}` }
+            );
+          })
         );
-        console.log(`[fetchSeasons] Club view: ${filteredSeasons.length} seasons fetched, ${uniqueSeasons.length} unique`);
-        setSeasons(uniqueSeasons);
+
+        const merged = mergeUniqueById(chunkResults.flat());
+        setSeasons(merged);
       }
     } catch (e) {
       console.error('Failed to fetch seasons', e);
@@ -1277,39 +1256,78 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     setCompetitionsLoading(true);
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     try {
-      // Match OrganisationDetailPage pattern: fetch ALL periods and filter client-side
       if (isLikelyTeam) {
-        // For teams: fetch all periods for this team and filter competitions
-        const params = new URLSearchParams();
-        params.set('project_id', String(project.id));
-        params.set('page_size', '250');
+        // Teams: fetch competitions by fetching direct children of each season
+        const teamId = String(project.id);
+        const seasonsToUse = (seasons || []).filter(isSeasonPeriod);
 
-        const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
-        const results = await fetchAllPages<any>(url, { credentials: 'include' });
-        const filteredCompetitions = (results || []).filter(isCompetitionPeriod);
-        setCompetitions(filteredCompetitions);
-      } else {
-        const [teams, orgPeriods] = await Promise.all([
-          fetchOrgTeamsForPeriodFiltering(),
-          fetchOrgPeriodsForFiltering(),
-        ]);
+        const ensureSeasons = async (): Promise<any[]> => {
+          if (seasonsToUse.length) return seasonsToUse as any[];
+          const params = new URLSearchParams();
+          params.set('project_id', teamId);
+          params.set('type', 'season');
+          params.set('parent_id', 'null');
+          params.set('page_size', '500');
+          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+          return await fetchAllPagesCached<any>(
+            url,
+            { credentials: 'include' },
+            { ttlMs: 60_000, cacheKey: `periods:team:seasons:${teamId}` }
+          );
+        };
 
-        const clubId = String(project.id);
-        const teamIdsUnderClub = new Set(
-          (teams || [])
-            .filter((t: any) => getParentProjectId(t) === clubId)
-            .map((t: any) => String(t?.id || ''))
-            .filter(Boolean)
+        const seasonsList = await ensureSeasons();
+        const seasonIds = (seasonsList || []).map((s: any) => String(s?.id || '')).filter(Boolean);
+        if (!seasonIds.length) {
+          setCompetitions([]);
+          return;
+        }
+
+        const competitionsChunks = await Promise.all(
+          seasonIds.map((seasonId: string) => {
+            const url = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(seasonId)}&page_size=500`;
+            return fetchAllPagesCached<any>(
+              url,
+              { credentials: 'include' },
+              { ttlMs: 60_000, cacheKey: `periods:children:${seasonId}` }
+            );
+          })
         );
 
-        const filteredCompetitions = (orgPeriods || [])
-          .filter(isCompetitionPeriod)
-          .filter((p: any) => {
-            const teamId = String(p?.project_id ?? p?.project?.id ?? '');
-            return teamIdsUnderClub.has(teamId);
-          });
+        const merged = mergeUniqueById(competitionsChunks.flat()).filter(isCompetitionPeriod);
+        setCompetitions(merged);
+      } else {
+        // Clubs: fetch periods only for teams under this club and filter to competitions
+        const teams = await fetchOrgTeamsForPeriodFiltering();
+        const teamIdsUnderClub = getDescendantTeamIdsUnderClub(teams, String(project.id));
+        if (!teamIdsUnderClub.size) {
+          setCompetitions([]);
+          return;
+        }
 
-        setCompetitions(filteredCompetitions);
+        const allTeamIds = Array.from(teamIdsUnderClub);
+        const chunkSize = 50;
+        const chunks: string[][] = [];
+        for (let i = 0; i < allTeamIds.length; i += chunkSize) {
+          chunks.push(allTeamIds.slice(i, i + chunkSize));
+        }
+
+        const chunkResults = await Promise.all(
+          chunks.map((chunk, idx) => {
+            const params = new URLSearchParams();
+            params.set('project_id__in', chunk.join(','));
+            params.set('page_size', '500');
+            const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+            return fetchAllPagesCached<any>(
+              url,
+              { credentials: 'include' },
+              { ttlMs: 60_000, cacheKey: `periods:club:periods:${project.id}:${idx}` }
+            );
+          })
+        );
+
+        const merged = mergeUniqueById(chunkResults.flat()).filter(isCompetitionPeriod);
+        setCompetitions(merged);
       }
     } catch (e) {
       console.error('Failed to fetch competitions', e);
@@ -1331,8 +1349,11 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         params.set('ordering', '-start_time');
 
         const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
-        const results = await fetchAllPages<any>(url, { credentials: 'include' });
-        console.log(`[fetchAllMatches] Team view: Fetched ${results.length} matches for project ${project.id}`);
+        const results = await fetchAllPagesCached<any>(
+          url,
+          { credentials: 'include' },
+          { ttlMs: 30_000, cacheKey: `activities:matches:${project.id}`, maxItems: 250 }
+        );
         setAllMatches(Array.isArray(results) ? results : []);
       } else {
         // Clubs: fetch matches for all teams under this club
@@ -1344,17 +1365,29 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
           return;
         }
 
-        // Fetch matches for each team and combine
+        // Fetch matches for each team and combine (bounded concurrency)
+        const allTeamIds = Array.from(teamIdsUnderClub);
+        const concurrency = 6;
         const allTeamMatches: any[] = [];
-        for (const teamId of Array.from(teamIdsUnderClub)) {
-          const params = new URLSearchParams();
-          params.set('project_id', teamId);
-          params.set('activity_type', 'match');
-          params.set('page_size', '250');
-
-          const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
-          const teamMatches = await fetchAllPages<any>(url, { credentials: 'include' });
-          allTeamMatches.push(...teamMatches);
+        for (let i = 0; i < allTeamIds.length; i += concurrency) {
+          const slice = allTeamIds.slice(i, i + concurrency);
+          const batch = await Promise.all(
+            slice.map(async (teamId) => {
+              const params = new URLSearchParams();
+              params.set('project_id', teamId);
+              params.set('activity_type', 'match');
+              params.set('page_size', '250');
+              const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
+              return await fetchAllPagesCached<any>(
+                url,
+                { credentials: 'include' },
+                { ttlMs: 30_000, cacheKey: `activities:matches:${teamId}`, maxItems: 250 }
+              );
+            })
+          );
+          for (const teamMatches of batch) {
+            allTeamMatches.push(...(teamMatches || []));
+          }
         }
 
         const sorted = sortByStartTimeDesc(mergeUniqueById(allTeamMatches));
@@ -1403,12 +1436,10 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
       if (!isLikelyTeam && childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
       if (competitions.length === 0 && !competitionsLoading) fetchCompetitions();
-      if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
     } else if (activeTab === 'competitions') {
       if (!isLikelyTeam && childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
       if (competitions.length === 0 && !competitionsLoading) fetchCompetitions();
-      if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
     } else if (activeTab === 'matches') {
       if (!isLikelyTeam && childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
@@ -2941,10 +2972,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                   }
 
                   const matchCountByCompetitionId: Record<string, number> = {};
-                  for (const m of allMatches as any[]) {
-                    const compId = String(m?.period_id ?? m?.period?.id ?? '').trim();
+                  for (const c of competitions as any[]) {
+                    const compId = String(c?.id || '').trim();
                     if (!compId) continue;
-                    matchCountByCompetitionId[compId] = (matchCountByCompetitionId[compId] || 0) + 1;
+                    const annotated = Number(c?.matches_count ?? c?.children_matches_count);
+                    if (Number.isFinite(annotated) && annotated >= 0) {
+                      matchCountByCompetitionId[compId] = annotated;
+                    }
                   }
 
                   return (
@@ -2976,8 +3010,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               const teamSlugOrId = team?.slug || team?.id || teamId;
                               const competitionsCount = competitionsBySeasonId[seasonId] || 0;
 
+                              const annotatedSeasonMatches = Number(season?.children_matches_count ?? season?.matches_count);
                               const compsForSeason = (competitions as any[]).filter((c: any) => String(c?.parent_period_id ?? c?.parent_period?.id ?? '') === seasonId);
-                              const matchesCount = compsForSeason.reduce((sum: number, c: any) => sum + (matchCountByCompetitionId[String(c.id)] || 0), 0);
+                              const computedMatchesCount = compsForSeason.reduce((sum: number, c: any) => sum + (matchCountByCompetitionId[String(c.id)] || 0), 0);
+                              const matchesCount = Number.isFinite(annotatedSeasonMatches) && annotatedSeasonMatches >= 0
+                                ? annotatedSeasonMatches
+                                : computedMatchesCount;
 
                               const openHref = currentClubSlugOrId && teamSlugOrId
                                 ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
@@ -3174,10 +3212,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                   }
 
                   const matchCountByCompetitionId: Record<string, number> = {};
-                  for (const m of allMatches as any[]) {
-                    const compId = String(m?.period_id ?? m?.period?.id ?? '').trim();
+                  for (const c of competitions as any[]) {
+                    const compId = String(c?.id || '').trim();
                     if (!compId) continue;
-                    matchCountByCompetitionId[compId] = (matchCountByCompetitionId[compId] || 0) + 1;
+                    const annotated = Number(c?.matches_count ?? c?.children_matches_count);
+                    if (Number.isFinite(annotated) && annotated >= 0) {
+                      matchCountByCompetitionId[compId] = annotated;
+                    }
                   }
 
                   const filteredCompetitions = (competitions as any[])
