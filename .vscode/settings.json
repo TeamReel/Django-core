@@ -9,6 +9,7 @@
     },
     "chat.tools.terminal.autoApprove": {
         ".kittify/scripts/bash/": true,
-        ".kittify/scripts/ps/": true
+        ".kittify/scripts/ps/": true,
+        "git commit": true
     }
 }

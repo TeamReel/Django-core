@@ -43,6 +43,16 @@ type Period = {
   data?: Record<string, any>;
 };
 
+const chunkArray = <T,>(items: T[], chunkSize: number): T[][] => {
+  if (!Array.isArray(items) || items.length === 0) return [];
+  const size = Math.max(1, Math.floor(chunkSize));
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+};
+
 export const SeasonsList: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -155,13 +165,15 @@ export const SeasonsList: React.FC = () => {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
         try {
-          const params = new URLSearchParams();
-          params.set('page_size', '250');
-          params.set('parent_id', 'null');
+          const baseParams = new URLSearchParams();
+          baseParams.set('page_size', '500');
+          baseParams.set('parent_id', 'null');
+          // Push season filtering to the API (backend supports ?type=season).
+          baseParams.set('type', 'season');
 
           // Always fetch based on selection, or all if nothing selected
           if (selectedTeamId) {
-            params.set('project_id', String(selectedTeamId));
+            baseParams.set('project_id', String(selectedTeamId));
           } else if (selectedClubId) {
             // If only club selected, get all seasons for teams in that club
             const clubTeams = teams.filter((t) => {
@@ -169,13 +181,34 @@ export const SeasonsList: React.FC = () => {
               return String(tParent) === String(selectedClubId);
             });
             if (clubTeams.length > 0) {
-              // Fetch for all teams in the club
-              const teamIds = clubTeams.map(t => String(t.id)).join(',');
-              params.set('project_id__in', teamIds);
+              // Fetch for all teams in the club (chunk to avoid long URLs)
+              const teamIds = clubTeams.map((t) => String(t.id));
+              const chunks = chunkArray(teamIds, 25);
+              const results = (
+                await Promise.all(
+                  chunks.map(async (ids) => {
+                    const params = new URLSearchParams(baseParams);
+                    params.set('project_id__in', ids.join(','));
+                    const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+                    return await fetchAllPages<any>(
+                      url,
+                      { credentials: 'include' },
+                      { ttlMs: 120_000, bypass: refreshKey > 0 },
+                    );
+                  }),
+                )
+              ).flat();
+
+              const roots = (Array.isArray(results) ? results : []).filter(
+                (p: any) => (p?.parent_period_id == null && !p?.parent_period),
+              );
+              const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
+              setSeasons(unique as any);
+              return;
             }
           } else if (selectedOrgId) {
             // If only org selected, fetch all seasons for that org
-            params.set('organisation_id', selectedOrgId);
+            baseParams.set('organisation_id', selectedOrgId);
           }
           // If nothing selected at all, fetch all seasons (for superadmin)
 
@@ -185,7 +218,7 @@ export const SeasonsList: React.FC = () => {
             return;
           }
 
-          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+          const url = `${apiBaseUrl}/api/v1/periods/?${baseParams.toString()}`;
           const results = await fetchAllPages<any>(
             url,
             { credentials: 'include' },
@@ -193,13 +226,7 @@ export const SeasonsList: React.FC = () => {
           );
 
           // Root periods represent seasons in the demo scenario.
-          // If metadata.type exists, keep only explicit seasons.
-          const filteredSeasons = results
-            .filter((p: any) => (p?.parent_period_id == null && !p?.parent_period))
-            .filter((p: any) => {
-              const type = String(p?.data?.type ?? '').toLowerCase();
-              return !type || type === 'season';
-            });
+          const filteredSeasons = results.filter((p: any) => (p?.parent_period_id == null && !p?.parent_period));
 
           const unique = [...new Map((Array.isArray(filteredSeasons) ? filteredSeasons : []).map((p: any) => [String(p.id), p])).values()];
           setSeasons(unique as any);
