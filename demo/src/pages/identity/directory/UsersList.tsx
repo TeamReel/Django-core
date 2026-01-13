@@ -24,14 +24,14 @@ interface User {
   organisations?: { id: string; name: string; slug: string; role: string }[];
 }
 
-const ROLE_RANK: Record<string, number> = {
-    superadmin: 100,
-    'land admin': 90,
-    'club admin': 80,
-    'team admin': 70,
-    'team member': 60,
-    supporter: 50,
-    user: 10,
+const PROJECT_ROLE_RANK: Record<string, number> = {
+    owner: 50,
+    admin: 40,
+    manager: 35,
+    coach: 30,
+    viewer: 20,
+    player: 10,
+    member: 5,
 };
 
 interface Organisation {
@@ -129,7 +129,7 @@ export const UsersList: React.FC = () => {
     const [organisations, setOrganisations] = useState<Organisation[]>([]);
     const [clubs, setClubs] = useState<ProjectOption[]>([]);
     const [teams, setTeams] = useState<ProjectOption[]>([]);
-    const [availableRoles, setAvailableRoles] = useState<string[]>([]);
+    const [availableRoles] = useState<string[]>(['Admin', 'Viewer', 'Player', 'Member']);
 
     // Filter State
     const [selectedOrgId, setSelectedOrgId] = useState<string>('');
@@ -149,6 +149,8 @@ export const UsersList: React.FC = () => {
     const userRole = String((user as any)?.role || '').toLowerCase();
     const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
+    const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
+
     const getCsrfToken = () =>
         document.cookie
             .split('; ')
@@ -159,7 +161,7 @@ export const UsersList: React.FC = () => {
         const selectedOrg = selectedOrgId
             ? organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
             : null;
-        return selectedOrg?.slug || selectedOrgId;
+        return selectedOrg?.slug || context.organisation?.slug || selectedOrgId;
     };
 
     const isUuid = (value: unknown) =>
@@ -167,12 +169,17 @@ export const UsersList: React.FC = () => {
 
     // Initial Filter Setup
     useEffect(() => {
-        if (!isSuperAdmin && context.organisation?.id) {
-            setSelectedOrgId(String(context.organisation.id));
+        const orgParam = searchParams.get('org_id');
+        if (orgParam) {
+            setSelectedOrgId(orgParam);
+            return;
         }
 
-        const orgParam = searchParams.get('org_id');
-        if (orgParam && isSuperAdmin) setSelectedOrgId(orgParam);
+        // Default to the current context org (also for superadmin) so we don't
+        // accidentally load the first org in the list.
+        if (context.organisation?.id) {
+            setSelectedOrgId(String(context.organisation.id));
+        }
 
     }, [context.organisation?.id, isSuperAdmin, searchParams]);
 
@@ -201,15 +208,32 @@ export const UsersList: React.FC = () => {
     useEffect(() => {
         const load = async () => {
             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+            // Scope club/team options to a single organisation to avoid fetching
+            // every project in the system (which makes this page slow).
+            const selectedOrg = selectedOrgId
+                ? organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
+                : null;
+            const orgSlugForApi =
+                selectedOrg?.slug ||
+                (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
+                context.organisation?.slug ||
+                '';
+
+            if (!orgSlugForApi) {
+                setClubs([]);
+                setTeams([]);
+                return;
+            }
             try {
                 const [allClubs, allTeams] = await Promise.all([
                     fetchAllPages<ProjectOption>(
-                        `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+                        `${apiBaseUrl}/api/v1/organisations/${orgSlugForApi}/projects/?page_size=500&parent_project__isnull=true`,
                         { credentials: 'include' },
                         { ttlMs: 120_000, bypass: refreshKey > 0 },
                     ),
                     fetchAllPages<ProjectOption>(
-                        `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+                        `${apiBaseUrl}/api/v1/organisations/${orgSlugForApi}/projects/?page_size=2000&parent_project__isnull=false`,
                         { credentials: 'include' },
                         { ttlMs: 120_000, bypass: refreshKey > 0 },
                     ),
@@ -221,28 +245,7 @@ export const UsersList: React.FC = () => {
             }
         };
         load();
-    }, [refreshKey]);
-
-    // Fetch Roles
-    useEffect(() => {
-         const load = async () => {
-             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-             try {
-                const res = await fetch(`${apiBaseUrl}/api/v1/permissions/roles/`, { credentials: 'include' });
-                if (res.ok) {
-                     const data = await res.json();
-                     const results = data.data?.results || data.results || [];
-                     const names = results.map((r: any) => r.name);
-                     setAvailableRoles(['Superadmin', ...names].sort());
-                } else {
-                     setAvailableRoles(['Superadmin', 'Club Admin', 'Team Admin', 'Team Member', 'User']);
-                }
-             } catch {
-                 setAvailableRoles(['Superadmin', 'Club Admin', 'Team Admin', 'Team Member', 'User']);
-             }
-         };
-         load();
-    }, []);
+    }, [context.organisation?.slug, organisations, refreshKey, selectedOrgId]);
 
     // Fetch Users
     useEffect(() => {
@@ -265,17 +268,15 @@ export const UsersList: React.FC = () => {
                 const params = new URLSearchParams();
                 params.set('page_size', '250');
                 params.set('include_project_memberships', 'true');
-                params.set('include_role_assignments', 'true');
                 params.set('include_project_membership_details', 'true');
 
-                // Use the organisations/:slug/members/ endpoint
-                // Fallback: if no specific org selected, and user is superadmin, we might want to list all users relative to first org or just skip
-                let orgSlug = selectedOrg?.slug;
-
-                if (!orgSlug && organisations.length > 0) {
-                     // Default to first organisation if available, to avoid 404
-                     orgSlug = organisations[0].slug;
-                }
+                // Use the organisations/:slug/members/ endpoint.
+                // Prefer the selected org; fall back to the active context org.
+                let orgSlug =
+                    selectedOrg?.slug ||
+                    (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
+                    context.organisation?.slug ||
+                    (organisations.length > 0 ? organisations[0].slug : undefined);
 
                 if (!orgSlug && !isSuperAdmin) {
                      // Should have context check earlier, but safety first
@@ -376,57 +377,6 @@ export const UsersList: React.FC = () => {
 
                 let results = Array.from(byKey.values());
 
-                // RBAC enrichment: if the org members endpoint didn't include role info, merge it from /api/v1/admin/users.
-                // This prevents showing "member" in the Role column.
-                const looksLikeMembershipRole = (value: unknown) => {
-                    const lc = String(value ?? '').trim().toLowerCase();
-                    return ['member', 'viewer', 'admin', 'owner'].includes(lc);
-                };
-
-                const likelyMissingRbac = results.some((u: any) => {
-                    const hasAssignments = Array.isArray(u?.role_assignments) && u.role_assignments.length > 0;
-                    const hasLabel = Boolean(String(u?.role_label || '').trim());
-                    const membershipRole = (u as any)?.membership?.role;
-                    return !hasAssignments && !hasLabel && (looksLikeMembershipRole(membershipRole) || looksLikeMembershipRole(u?.role));
-                });
-
-                if (likelyMissingRbac) {
-                    try {
-                        const adminParams = new URLSearchParams();
-                        adminParams.set('page_size', '500');
-                        adminParams.set('organisation_id', String((selectedOrg as any)?.id ?? selectedOrgId ?? orgSlug));
-                        adminParams.set('include_role_assignments', 'true');
-                        const adminUrl = `${apiBaseUrl}/api/v1/admin/users/?${adminParams.toString()}`;
-                        const adminUsers = await fetchAllPages<any>(
-                            adminUrl,
-                            { credentials: 'include' },
-                            { ttlMs: 120_000, bypass: refreshKey > 0 },
-                        );
-                        const adminById = new Map<string, any>();
-                        for (const au of Array.isArray(adminUsers) ? adminUsers : []) {
-                            const uid = String(au?.id ?? '');
-                            if (uid) adminById.set(uid, au);
-                        }
-
-                        results = results.map((u: any) => {
-                            const au = adminById.get(String(u?.id));
-                            if (!au) return u;
-                            return {
-                                ...u,
-                                role: looksLikeMembershipRole(u?.role) ? (au?.role ?? u?.role) : u?.role,
-                                role_label: u?.role_label || au?.role_label,
-                                role_assignments:
-                                    (Array.isArray(u?.role_assignments) && u.role_assignments.length > 0)
-                                        ? u.role_assignments
-                                        : (au?.role_assignments || au?.rbac_role_assignments || []),
-                                is_superuser: Boolean(u?.is_superuser) || Boolean(au?.is_superuser),
-                            };
-                        });
-                    } catch {
-                        // ignore
-                    }
-                }
-
                 // Client-side filtering for project membership
                 if (selectedTeamId) {
                     results = results.filter((u: any) =>
@@ -456,7 +406,7 @@ export const UsersList: React.FC = () => {
                 if (roleFilter) {
                     const wanted = normalizeRoleName(roleFilter);
                     results = results.filter((u: any) => {
-                        const roleNames = getUserRoleNames(u);
+                        const roleNames = getUserProjectRoleNames(u);
                         return roleNames.some((r) => normalizeRoleName(r) === wanted);
                     });
                 }
@@ -474,65 +424,58 @@ export const UsersList: React.FC = () => {
     }, [selectedOrgId, selectedTeamId, selectedClubId, statusFilter, roleFilter, organisations, isSuperAdmin, refreshKey]);
 
     const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
-    const isMembershipRoleName = (value: unknown) => {
-        const lc = normalizeRoleName(value);
-        return ['member', 'viewer', 'admin', 'owner'].includes(lc);
-    };
 
-    const getUserRoleNames = (user: any): string[] => {
-        if (!user) return ['user'];
+    const getUserProjectRoleNames = (user: any): string[] => {
+        if (!user) return [];
 
-        const isSuper = Boolean(user?.is_superuser) || normalizeRoleName(user?.role) === 'superadmin';
-        if (isSuper) return ['superadmin'];
+        const memberships = Array.isArray(user?.project_memberships) ? user.project_memberships : [];
+        const scopedMemberships = memberships.filter((m: any) => {
+            const projectId = String(m?.project_id ?? m?.project?.id ?? '').trim();
+            if (!projectId) return false;
 
-        const directLabel = String(user?.role_label || '').trim();
-        if (directLabel) return [normalizeRoleName(directLabel)];
+            if (selectedTeamId) return projectId === String(selectedTeamId);
 
-        const rawAssignments = user?.role_assignments;
-        const assignments = Array.isArray(rawAssignments) ? rawAssignments : [];
-        const roleNames = assignments
-            .map((ra: any) => String(ra?.role?.name ?? ra?.role_name ?? ra?.role ?? '').trim())
-            .filter(Boolean);
+            if (selectedClubId) {
+                if (projectId === String(selectedClubId)) return true;
+                const parentIdRaw = m?.project?.parent_id ?? m?.project?.parent_project_id;
+                const parentId = parentIdRaw === null || parentIdRaw === undefined ? '' : String(parentIdRaw).trim();
+                return parentId === String(selectedClubId);
+            }
 
-        const unique = Array.from(new Set(roleNames.map((n) => normalizeRoleName(n)))).filter(Boolean);
-        if (unique.length > 0) return unique;
+            return true;
+        });
 
-        const fallback = normalizeRoleName(user?.role) || 'user';
-        return isMembershipRoleName(fallback) ? ['user'] : [fallback];
+        const roles: string[] = scopedMemberships
+            .map((m: any) => String(m?.role ?? '').trim())
+            .filter((r: string) => Boolean(r))
+            .map((r: string) => normalizeRoleName(r));
+
+        return Array.from(new Set(roles)).filter((r): r is string => Boolean(r));
     };
 
     // Helper for role display logic
     const getUserRoleDisplay = (user: any): { label: string; title: string } => {
-        if (!user) return { label: 'User', title: '' };
+        if (!user) return { label: '-', title: '' };
 
         const isSuper = Boolean(user?.is_superuser) || String(user?.role || '').toLowerCase() === 'superadmin';
         if (isSuper) return { label: 'Superadmin', title: 'Superadmin' };
 
-        const directLabel = String(user?.role_label || '').trim();
-        if (directLabel) return { label: directLabel, title: directLabel };
-
-        const rawAssignments = user?.role_assignments;
-        const assignments = Array.isArray(rawAssignments) ? rawAssignments : [];
-        const roleNames = assignments
-            .map((ra: any) => String(ra?.role?.name ?? ra?.role_name ?? ra?.role ?? '').trim())
-            .filter(Boolean);
-
-        const unique = Array.from(new Set(roleNames));
-        if (unique.length > 0) {
-            const best = unique
-                .map((name) => ({ name, key: name.toLowerCase() }))
-                .sort((a, b) => (ROLE_RANK[b.key] ?? 0) - (ROLE_RANK[a.key] ?? 0))[0];
-
-            if (best) {
-                const title = unique.sort((a, b) => a.localeCompare(b)).join(', ');
-                const label = unique.length === 1 ? best.name : `${best.name} +${unique.length - 1}`;
-                return { label, title };
-            }
+        const roles = getUserProjectRoleNames(user);
+        if (roles.length > 0) {
+            const best = [...roles].sort((a, b) => (PROJECT_ROLE_RANK[b] ?? 0) - (PROJECT_ROLE_RANK[a] ?? 0))[0];
+            const title = [...roles].sort((a, b) => a.localeCompare(b)).join(', ');
+            const bestLabel = best ? best.charAt(0).toUpperCase() + best.slice(1) : roles[0];
+            const label = roles.length === 1 ? bestLabel : `${bestLabel} +${roles.length - 1}`;
+            return { label, title };
         }
 
-        const rawFallback = String(user?.role || '').trim();
-        const safeFallback = rawFallback && !isMembershipRoleName(rawFallback) ? rawFallback : 'User';
-        return { label: safeFallback, title: safeFallback };
+        const membershipRole = normalizeRoleName(user?.membership?.role);
+        if (membershipRole) {
+            const label = membershipRole.charAt(0).toUpperCase() + membershipRole.slice(1);
+            return { label, title: label };
+        }
+
+        return { label: 'User', title: 'User' };
     };
 
     const sortedUsers = React.useMemo(() => {
@@ -729,9 +672,16 @@ export const UsersList: React.FC = () => {
                     <select
                         value={selectedOrgId}
                         onChange={(e) => {
-                            setSelectedOrgId(e.target.value);
+                            const next = e.target.value;
+                            setSelectedOrgId(next);
                             setSelectedClubId('');
                             setSelectedTeamId('');
+
+                            if (next) {
+                                setSearchParams({ org_id: next });
+                            } else {
+                                setSearchParams({});
+                            }
                         }}
                         style={{
                             padding: '8px 12px',
@@ -764,9 +714,7 @@ export const UsersList: React.FC = () => {
                 >
                     <option value="">Club: All</option>
                     {clubs
-                      .filter(c => !selectedOrgId ||
-                        (typeof c.organisation === 'string' ? c.organisation === selectedOrgId : String(c.organisation?.id) === selectedOrgId))
-                                            .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+                                                                                        .sort((a, b) => String(a.name).localeCompare(String(b.name)))
                       .map(c => (
                         <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
@@ -793,8 +741,6 @@ export const UsersList: React.FC = () => {
                             }
                             return true;
                         })
-                        .filter(t => !selectedOrgId ||
-                            (typeof t.organisation === 'string' ? t.organisation === selectedOrgId : String(t.organisation?.id) === selectedOrgId))
                         .sort((a, b) => String(a.name).localeCompare(String(b.name)))
                         .map(t => (
                         <option key={t.id} value={t.id}>{t.name}</option>
@@ -845,7 +791,10 @@ export const UsersList: React.FC = () => {
                              setSelectedTeamId('');
                              setStatusFilter('all');
                              setRoleFilter('');
-                             if (isSuperAdmin) setSelectedOrgId('');
+                             if (isSuperAdmin) {
+                                 setSelectedOrgId('');
+                                 setSearchParams({});
+                             }
                          }}
                      >
                          Clear
