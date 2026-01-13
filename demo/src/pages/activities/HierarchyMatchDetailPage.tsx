@@ -69,6 +69,16 @@ const getEnvelopeData = <T,>(raw: any): T => {
   return (raw?.data ?? raw) as T;
 };
 
+const getCsrfToken = (): string => {
+  return (
+    document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('csrftoken='))
+      ?.split('=')[1] ||
+    ''
+  );
+};
+
 export default function HierarchyMatchDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -464,7 +474,10 @@ export default function HierarchyMatchDetailPage() {
 
     const res = await fetch(`${apiBaseUrl}/api/v1/participations/`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
       credentials: 'include',
       body: JSON.stringify(body),
     });
@@ -479,7 +492,10 @@ export default function HierarchyMatchDetailPage() {
   const updateParticipation = async (p: Participation, patch: any) => {
     const res = await fetch(`${apiBaseUrl}/api/v1/participations/${encodeURIComponent(String(p.id))}/`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
       credentials: 'include',
       body: JSON.stringify(patch),
     });
@@ -494,6 +510,9 @@ export default function HierarchyMatchDetailPage() {
   const deleteParticipation = async (p: Participation) => {
     const res = await fetch(`${apiBaseUrl}/api/v1/participations/${encodeURIComponent(String(p.id))}/`, {
       method: 'DELETE',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+      },
       credentials: 'include',
     });
     if (!res.ok) {
