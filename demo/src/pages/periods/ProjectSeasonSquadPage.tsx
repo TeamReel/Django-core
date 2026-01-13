@@ -6,6 +6,10 @@ import { BreadcrumbContextSwitcher, PageContent, PageHeader } from '@django-core
 import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
+import { useAuth } from '@django-core/auth-ui';
+import { useContextSwitcher } from '@django-core/context-switcher';
+import { canDeleteProject, canEditProject } from '../../utils/permissions';
+import PeriodEditModal from '../identity/PeriodEditModal';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -66,6 +70,8 @@ function unwrapList(payload: any): any[] {
 export default function ProjectSeasonSquadPage() {
   const navigate = useNavigate();
   const params = useParams();
+  const { user } = useAuth();
+  const { context } = useContextSwitcher();
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -94,6 +100,37 @@ export default function ProjectSeasonSquadPage() {
 
   const [seasonsForSwitcher, setSeasonsForSwitcher] = useState<Period[]>([]);
   const [members, setMembers] = useState<any[]>([]);
+
+  const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
+  const [selectedEditPeriod, setSelectedEditPeriod] = useState<any | null>(null);
+
+  const getCsrfToken = () =>
+    document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('csrftoken='))
+      ?.split('=')[1] || '';
+
+  const userRole = String((user as any)?.role || '').toLowerCase();
+  const isSuperAdmin =
+    Boolean((user as any)?.is_superuser) ||
+    Boolean((user as any)?.is_staff) ||
+    userRole === 'superadmin' ||
+    userRole === 'super admin';
+
+  const orgForPermissions = useMemo(() => {
+    const contextOrg = context?.organisation as any;
+    if (contextOrg?.user_role) return contextOrg;
+    if ((organisation as any)?.user_role) return organisation as any;
+    return organisation || contextOrg || null;
+  }, [context?.organisation, organisation]);
+
+  const permissionContext = useMemo(
+    () => ({ currentOrganisation: orgForPermissions as any, isSuperAdmin }),
+    [orgForPermissions, isSuperAdmin]
+  );
+
+  const userCanEditProject = canEditProject(permissionContext);
+  const userCanDeleteProject = canDeleteProject(permissionContext);
 
   const handleSeasonSwitch = (option: { id: string; slug?: string } | null) => {
     if (!option) return;
@@ -227,7 +264,7 @@ export default function ProjectSeasonSquadPage() {
 
     return [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: 'Federations', onClick: () => navigate('/federations') },
+      { label: 'Federations', onClick: () => navigate('/directory?tab=federations') },
       orgCrumb,
       ...(clubCrumb ? [clubCrumb] : []),
       projectCrumb,
@@ -263,26 +300,6 @@ export default function ProjectSeasonSquadPage() {
     seasonsBasePath,
   ]);
 
-  if (loading) {
-    return (
-      <AppShell>
-        <PageContent>
-          <LoadingState message="Loading squad..." />
-        </PageContent>
-      </AppShell>
-    );
-  }
-
-  if (error) {
-    return (
-      <AppShell>
-        <PageContent>
-          <Alert variant="error">{error}</Alert>
-        </PageContent>
-      </AppShell>
-    );
-  }
-
   const title = season ? `${season.name} Squad` : 'Squad';
 
   const seasonKeyOrId =
@@ -302,6 +319,34 @@ export default function ProjectSeasonSquadPage() {
     navigate(`${seasonsBasePath}/${seasonKeyOrId}?tab=${encodeURIComponent(tabId)}`);
   };
 
+  const deleteSeason = async () => {
+    const seasonUuid = String(resolvedSeasonId || '').trim();
+    if (!seasonUuid) return;
+
+    if (!window.confirm(`Are you sure you want to delete season ${season?.name || ''}?`)) return;
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+      });
+
+      if (res.ok) {
+        navigate(seasonsBasePath);
+        return;
+      }
+
+      alert('Error deleting season');
+    } catch (e) {
+      console.error(e);
+      alert('Error deleting season');
+    }
+  };
+
   return (
     <AppShell>
       <div>
@@ -316,45 +361,66 @@ export default function ProjectSeasonSquadPage() {
               >
                 Back to season
               </button>
+              {userCanEditProject && season && (
+                <button
+                  onClick={() => {
+                    setSelectedEditPeriod(season);
+                    setIsPeriodEditModalOpen(true);
+                  }}
+                  style={actionButtonStyle('primary')}
+                >
+                  Edit
+                </button>
+              )}
+              {userCanDeleteProject && season && (
+                <button onClick={deleteSeason} style={actionButtonStyle('danger')}>
+                  Delete
+                </button>
+              )}
             </div>
           }
         />
 
         <PageContent>
-          {/* Tabs (match Season detail) */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '6px',
-              borderBottom: '1px solid var(--app-border)',
-              marginBottom: '20px',
-              flexWrap: 'wrap',
-            }}
-          >
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => navigateToTab(tab.id)}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: '6px 6px 0 0',
-                  border: '1px solid var(--app-border)',
-                  borderBottom: tab.id === 'squad' ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
-                  backgroundColor: tab.id === 'squad' ? 'var(--app-surface)' : 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: tab.id === 'squad' ? 'default' : 'pointer',
-                  fontSize: '13px',
-                  fontWeight: tab.id === 'squad' ? 600 : 500,
-                  opacity: tab.id === 'squad' ? 1 : 0.9,
-                }}
-                disabled={tab.id === 'squad'}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          {loading && <LoadingState message="Loading squad..." />}
+          {!loading && error && <Alert variant="error">{error}</Alert>}
 
-          <Card>
+          {!loading && !error && (
+            <>
+              {/* Tabs (match Season detail) */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '6px',
+                  borderBottom: '1px solid var(--app-border)',
+                  marginBottom: '20px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => navigateToTab(tab.id)}
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '6px 6px 0 0',
+                      border: '1px solid var(--app-border)',
+                      borderBottom: tab.id === 'squad' ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
+                      backgroundColor: tab.id === 'squad' ? 'var(--app-surface)' : 'var(--app-surface-2)',
+                      color: 'var(--app-text)',
+                      cursor: tab.id === 'squad' ? 'default' : 'pointer',
+                      fontSize: '13px',
+                      fontWeight: tab.id === 'squad' ? 600 : 500,
+                      opacity: tab.id === 'squad' ? 1 : 0.9,
+                    }}
+                    disabled={tab.id === 'squad'}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <Card>
             <div style={{ padding: '16px 16px 0 16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Players & Staff</h3>
@@ -397,7 +463,20 @@ export default function ProjectSeasonSquadPage() {
 
                       return (
                         <tr key={String(membershipId || user.id)}>
-                          <td style={compactTextTdStyle}>{name}</td>
+                          <td style={compactTextTdStyle}>
+                            {orgSlugOrId && membershipId ? (
+                              <button
+                                type="button"
+                                className="text-blue-600 hover:underline"
+                                style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                                onClick={() => navigate(`/organisations/${orgSlugOrId}/members/${membershipId}`)}
+                              >
+                                {name}
+                              </button>
+                            ) : (
+                              name
+                            )}
+                          </td>
                           <td style={compactTextTdStyle}>{email}</td>
                           <td style={compactTdStyle}>
                             <Badge variant={role === 'admin' || role === 'manager' ? 'warning' : 'default'}>
@@ -436,7 +515,43 @@ export default function ProjectSeasonSquadPage() {
               </div>
             </div>
           </Card>
+            </>
+          )}
         </PageContent>
+
+        <PeriodEditModal
+          opened={isPeriodEditModalOpen}
+          onClose={() => {
+            setIsPeriodEditModalOpen(false);
+            setSelectedEditPeriod(null);
+          }}
+          period={selectedEditPeriod}
+          onSave={async (payload) => {
+            if (!selectedEditPeriod) return;
+            const periodId = String(selectedEditPeriod?.id || '').trim();
+            if (!periodId) return;
+
+            const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(periodId)}/`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCsrfToken(),
+              },
+              credentials: 'include',
+              body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+              const detail = await res.text().catch(() => '');
+              throw new Error(detail || 'Failed to save season');
+            }
+
+            const raw = await res.json().catch(() => null);
+            const updated = (raw as any)?.data || raw || { ...selectedEditPeriod, ...payload };
+            setSeason((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
+          }}
+        />
       </div>
     </AppShell>
   );

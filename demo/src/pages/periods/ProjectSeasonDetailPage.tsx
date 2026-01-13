@@ -10,6 +10,7 @@ import {
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { useAuth } from '@django-core/auth-ui';
+import { useContextSwitcher } from '@django-core/context-switcher';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
@@ -94,6 +95,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const location = useLocation();
   const { orgId, projectId, seasonId, clubId } = useParams<{ orgId: string; projectId: string; seasonId: string; clubId?: string }>();
   const { user } = useAuth();
+  const { context } = useContextSwitcher();
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -124,12 +126,44 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const isTeamRoute = Boolean(clubId);
   const clubSlugOrId = clubId || '';
 
-  // Permission checks
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || Boolean((user as any)?.is_staff) || (user as any)?.role === 'Superadmin';
-  const permissionContext = {
-    currentOrganisation: org as any,
-    isSuperAdmin,
-  };
+  // Permission checks (match ProjectDetailPage logic)
+  const userRole = String((user as any)?.role || '').toLowerCase();
+  const isSuperAdmin =
+    Boolean((user as any)?.is_superuser) ||
+    Boolean((user as any)?.is_staff) ||
+    userRole === 'superadmin' ||
+    userRole === 'super admin';
+
+  const orgForPermissions = useMemo(() => {
+    const contextOrg = context?.organisation as any;
+    const orgIdMatches = (candidate: any) => {
+      if (!candidate) return false;
+      const cid = String(candidate.id || '').trim();
+      const cslug = String(candidate.slug || '').trim();
+      const oid = String((org as any)?.id || '').trim();
+      const oslug = String((org as any)?.slug || '').trim();
+      const route = String(orgSlugOrId || '').trim();
+      return (
+        (cid && oid && cid === oid) ||
+        (cslug && oslug && cslug === oslug) ||
+        (cid && route && cid === route) ||
+        (cslug && route && cslug === route)
+      );
+    };
+
+    if (orgIdMatches(contextOrg) && contextOrg?.user_role) return contextOrg;
+    const projectOrg = (project as any)?.organisation;
+    if (projectOrg?.user_role) return projectOrg;
+    if ((org as any)?.user_role) return org;
+    if (orgIdMatches(contextOrg)) return contextOrg;
+    return projectOrg || org || contextOrg || null;
+  }, [context?.organisation, org, orgSlugOrId, project]);
+
+  const permissionContext = useMemo(
+    () => ({ currentOrganisation: orgForPermissions as any, isSuperAdmin }),
+    [orgForPermissions, isSuperAdmin]
+  );
+
   const userCanEditProject = canEditProject(permissionContext);
   const userCanDeleteProject = canDeleteProject(permissionContext);
 
@@ -169,11 +203,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: 'Federations', onClick: () => navigate('/federations') },
+      { label: 'Federations', onClick: () => navigate('/directory?tab=federations') },
       { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
       {
         label: 'Clubs',
-        onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}`),
+        onClick: () => navigate(`/directory?tab=clubs&org_id=${encodeURIComponent(String(orgSlugOrId))}`),
       },
       ...(isTeamRoute
         ? [
@@ -321,7 +355,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
         if (isTeamRoute && clubRes && (clubRes as any).ok) {
           try {
-            setClub(await (clubRes as any).json());
+            const rawClub: any = await (clubRes as any).json();
+            setClub(rawClub?.data || rawClub);
           } catch {
             // ignore
           }
@@ -790,7 +825,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 gap: '12px',
                               }}
                             >
-                              <h4 style={{ margin: 0, flex: 1, fontSize: '16px', fontWeight: 600 }}>{competition.name || `Competition ${compId}`}</h4>
+                              <button
+                                type="button"
+                                className="text-blue-600 hover:underline"
+                                style={{
+                                  background: 'transparent',
+                                  border: 0,
+                                  padding: 0,
+                                  cursor: 'pointer',
+                                  textAlign: 'left',
+                                  margin: 0,
+                                  flex: 1,
+                                  fontSize: '16px',
+                                  fontWeight: 600,
+                                }}
+                                onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)}
+                              >
+                                {competition.name || `Competition ${compId}`}
+                              </button>
                               <Badge variant="info">{getMatchCountForCompetition(compId)} matches</Badge>
                               <button
                                 onClick={() =>
@@ -997,7 +1049,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   {match.title || match.name}
                                 </button>
                               </td>
-                              <td style={compactTextTdStyle}>{match.period?.name || '—'}</td>
+                              <td style={compactTextTdStyle}>
+                                {match.period?.id ? (
+                                  <button
+                                    type="button"
+                                    className="text-blue-600 hover:underline"
+                                    style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                                    onClick={() =>
+                                      navigate(
+                                        `${seasonsBasePath}/${seasonPathKey}/competitions/${String(match.period?.id)}`
+                                      )
+                                    }
+                                  >
+                                    {match.period?.name || 'Competition'}
+                                  </button>
+                                ) : (
+                                  match.period?.name || '—'
+                                )}
+                              </td>
                               <td style={compactTextTdStyle}>
                                 {match.start_time ? new Date(match.start_time).toLocaleString() : '—'}
                               </td>
