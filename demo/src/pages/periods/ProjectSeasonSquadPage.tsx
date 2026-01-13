@@ -379,9 +379,9 @@ export default function ProjectSeasonSquadPage() {
                   style={{
                     padding: '6px 12px',
                     borderRadius: '4px',
-                    border: '1px solid #007bff',
+                    border: '1px solid #fd7e14',
                     backgroundColor: 'var(--app-surface)',
-                    color: '#007bff',
+                    color: '#fd7e14',
                     cursor: 'pointer',
                     fontSize: '12px',
                     fontWeight: 500,

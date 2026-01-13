@@ -546,9 +546,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   style={{
                     padding: '6px 12px',
                     borderRadius: '4px',
-                    border: '1px solid #007bff',
+                    border: '1px solid #fd7e14',
                     backgroundColor: 'var(--app-surface)',
-                    color: '#007bff',
+                    color: '#fd7e14',
                     cursor: 'pointer',
                     fontSize: '12px',
                     fontWeight: 500,
@@ -874,24 +874,20 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 gap: '12px',
                               }}
                             >
-                              <button
-                                type="button"
+                              <Link
+                                to={`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`}
                                 className="text-blue-600 hover:underline"
                                 style={{
-                                  background: 'transparent',
-                                  border: 0,
-                                  padding: 0,
-                                  cursor: 'pointer',
-                                  textAlign: 'left',
+                                  textDecoration: 'none',
+                                  backgroundColor: 'transparent',
                                   margin: 0,
                                   flex: 1,
                                   fontSize: '16px',
                                   fontWeight: 600,
                                 }}
-                                onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)}
                               >
                                 {competition.name || `Competition ${compId}`}
-                              </button>
+                              </Link>
                               <Badge variant="info">{getMatchCountForCompetition(compId)} matches</Badge>
                               <button
                                 onClick={() =>
@@ -907,7 +903,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     setSelectedEditPeriod(competition);
                                     setIsPeriodEditModalOpen(true);
                                   }}
-                                  style={actionButtonStyle('primary')}
+                                  style={actionButtonStyle('warning')}
                                 >
                                   Edit
                                 </button>
@@ -989,7 +985,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                                   setSelectedEditMatch(match);
                                                   setIsMatchEditModalOpen(true);
                                                 }}
-                                                style={actionButtonStyle('primary')}
+                                                style={actionButtonStyle('warning')}
                                               >
                                                 Edit
                                               </button>
@@ -1059,7 +1055,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         setSelectedEditPeriod(competition);
                                         setIsPeriodEditModalOpen(true);
                                       }}
-                                      style={actionButtonStyle('primary')}
+                                            style={actionButtonStyle('warning')}
                                     >
                                       Edit
                                     </button>
@@ -1165,7 +1161,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         setSelectedEditMatch(match);
                                         setIsMatchEditModalOpen(true);
                                       }}
-                                      style={actionButtonStyle('primary')}
+                                      style={actionButtonStyle('warning')}
                                     >
                                       Edit
                                     </button>
