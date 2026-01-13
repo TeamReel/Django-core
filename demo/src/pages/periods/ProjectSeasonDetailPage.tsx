@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import {
   BreadcrumbContextSwitcher,
@@ -852,6 +852,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               >
                                 View
                               </button>
+                              {userCanEditProject && (
+                                <button
+                                  onClick={() => {
+                                    setSelectedEditPeriod(competition);
+                                    setIsPeriodEditModalOpen(true);
+                                  }}
+                                  style={actionButtonStyle('primary')}
+                                >
+                                  Edit
+                                </button>
+                              )}
                               <button
                                 onClick={() =>
                                   navigate(
@@ -862,6 +873,35 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               >
                                 Matches
                               </button>
+                              {userCanDeleteProject && (
+                                <button
+                                  onClick={async () => {
+                                    if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
+                                    try {
+                                      const res = await fetch(`${apiBaseUrl}/api/v1/periods/${competition.id}/`, {
+                                        method: 'DELETE',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                          'X-CSRFToken': getCsrfToken(),
+                                        },
+                                        credentials: 'include',
+                                      });
+
+                                      if (res.ok) {
+                                        setCompetitions((prev) => prev.filter((c) => String(c.id) !== String(competition.id)));
+                                      } else {
+                                        alert('Error deleting competition');
+                                      }
+                                    } catch (e) {
+                                      console.error(e);
+                                      alert('Error deleting competition');
+                                    }
+                                  }}
+                                  style={actionButtonStyle('danger')}
+                                >
+                                  Delete
+                                </button>
+                              )}
                             </div>
 
                             {compMatches.length === 0 ? (
@@ -880,14 +920,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     {compMatches.map((match: any) => (
                                       <tr key={match.id}>
                                         <td style={compactTextTdStyle}>
-                                          <button
-                                            type="button"
+                                          <Link
+                                            to={`/matches/${match.id}`}
                                             className="text-blue-600 hover:underline"
-                                            style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
-                                            onClick={() => navigate(`/matches/${match.id}`)}
+                                            style={{ textDecoration: 'none' }}
                                           >
                                             {match.title || match.name || 'Match'}
-                                          </button>
+                                          </Link>
                                         </td>
                                         <td style={compactTextTdStyle}>{match.start_time ? new Date(match.start_time).toLocaleString() : '—'}</td>
                                         <td style={compactTdStyle}>
@@ -942,14 +981,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           {competitions.map((competition) => (
                             <tr key={competition.id}>
                               <td style={compactTextTdStyle}>
-                                <button
-                                  type="button"
+                                <Link
+                                  to={`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`}
                                   className="text-blue-600 hover:underline"
-                                  style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
-                                  onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)}
+                                  style={{ textDecoration: 'none' }}
                                 >
                                   {competition.name}
-                                </button>
+                                </Link>
                               </td>
                               <td style={compactTextTdStyle}>
                                 {new Date(competition.start_date).toLocaleDateString()} –{' '}
@@ -1040,29 +1078,23 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           {matches.map((match) => (
                             <tr key={match.id}>
                               <td style={compactTextTdStyle}>
-                                <button
-                                  type="button"
+                                <Link
+                                  to={`/matches/${match.id}`}
                                   className="text-blue-600 hover:underline"
-                                  style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
-                                  onClick={() => navigate(`/matches/${match.id}`)}
+                                  style={{ textDecoration: 'none' }}
                                 >
                                   {match.title || match.name}
-                                </button>
+                                </Link>
                               </td>
                               <td style={compactTextTdStyle}>
                                 {match.period?.id ? (
-                                  <button
-                                    type="button"
+                                  <Link
+                                    to={`${seasonsBasePath}/${seasonPathKey}/competitions/${String(match.period?.id)}`}
                                     className="text-blue-600 hover:underline"
-                                    style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
-                                    onClick={() =>
-                                      navigate(
-                                        `${seasonsBasePath}/${seasonPathKey}/competitions/${String(match.period?.id)}`
-                                      )
-                                    }
+                                    style={{ textDecoration: 'none' }}
                                   >
                                     {match.period?.name || 'Competition'}
-                                  </button>
+                                  </Link>
                                 ) : (
                                   match.period?.name || '—'
                                 )}

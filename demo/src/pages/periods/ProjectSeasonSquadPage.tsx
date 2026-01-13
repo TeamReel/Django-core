@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Card } from '@django-core/design-system';
 import { BreadcrumbContextSwitcher, PageContent, PageHeader } from '@django-core/page-templates';
 
@@ -357,7 +357,16 @@ export default function ProjectSeasonSquadPage() {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 onClick={() => navigate(`${seasonsBasePath}/${periodPathKey(season || {}) || resolvedSeasonId || effectiveSeasonId}`)}
-                style={actionButtonStyle('neutral')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
               >
                 Back to season
               </button>
@@ -367,13 +376,34 @@ export default function ProjectSeasonSquadPage() {
                     setSelectedEditPeriod(season);
                     setIsPeriodEditModalOpen(true);
                   }}
-                  style={actionButtonStyle('primary')}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid #007bff',
+                    backgroundColor: 'var(--app-surface)',
+                    color: '#007bff',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                  }}
                 >
                   Edit
                 </button>
               )}
               {userCanDeleteProject && season && (
-                <button onClick={deleteSeason} style={actionButtonStyle('danger')}>
+                <button
+                  onClick={deleteSeason}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid #dc3545',
+                    backgroundColor: 'var(--app-surface)',
+                    color: '#dc3545',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                  }}
+                >
                   Delete
                 </button>
               )}
@@ -465,14 +495,13 @@ export default function ProjectSeasonSquadPage() {
                         <tr key={String(membershipId || user.id)}>
                           <td style={compactTextTdStyle}>
                             {orgSlugOrId && membershipId ? (
-                              <button
-                                type="button"
+                              <Link
+                                to={`/organisations/${orgSlugOrId}/members/${membershipId}`}
                                 className="text-blue-600 hover:underline"
-                                style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
-                                onClick={() => navigate(`/organisations/${orgSlugOrId}/members/${membershipId}`)}
+                                style={{ textDecoration: 'none' }}
                               >
                                 {name}
-                              </button>
+                              </Link>
                             ) : (
                               name
                             )}
