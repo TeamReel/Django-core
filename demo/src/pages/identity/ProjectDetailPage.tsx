@@ -124,6 +124,10 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   const [club, setClub] = useState<Project | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Teams under the current club (used for team breadcrumb switcher)
+  const [clubTeamsForSwitcher, setClubTeamsForSwitcher] = useState<Project[]>([]);
+  const [clubTeamsForSwitcherLoading, setClubTeamsForSwitcherLoading] = useState(false);
+
   // Fetch organisation with user_role for permissions
   const [orgWithRole, setOrgWithRole] = useState<any>(null);
 
@@ -1141,6 +1145,41 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
      }
   };
 
+  const fetchClubTeamsForSwitcher = async () => {
+    if (!isTeamRoute) return;
+    const clubIdForTeams = (club as any)?.id;
+    if (!clubIdForTeams) return;
+
+    setClubTeamsForSwitcherLoading(true);
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    try {
+      const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${clubIdForTeams}&page_size=250`;
+      const results = await fetchAllPages<Project>(url, { credentials: 'include' });
+
+      const parentId = String(clubIdForTeams);
+      const orgId = String((club as any)?.organisation_id || (club as any)?.organisation?.id || resolvedOrg?.id || '');
+
+      const filteredByOrg = orgId
+        ? (results as any[]).filter((p: any) => String(getOrganisationId(p) || '') === orgId)
+        : (results as any[]);
+      const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
+      const finalResults = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
+      setClubTeamsForSwitcher(finalResults as Project[]);
+    } catch (e) {
+      console.error('Failed to fetch club teams for switcher', e);
+      setClubTeamsForSwitcher([]);
+    } finally {
+      setClubTeamsForSwitcherLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isTeamRoute) return;
+    if (!club?.id) return;
+    fetchClubTeamsForSwitcher();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTeamRoute, club?.id]);
+
   const fetchSeasons = async () => {
     console.log('[fetchSeasons] START - project:', project?.id, 'isLikelyTeam:', isLikelyTeam);
     if (!project?.id) {
@@ -1609,6 +1648,32 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     });
   }
 
+  const teamBreadcrumbOptions: BreadcrumbSwitcherOption[] = (() => {
+    if (!isTeamRoute) return [];
+
+    const base = (clubTeamsForSwitcher || []).map((t: any) => ({
+      id: String(t.id),
+      label: String(t.name || t.slug || t.id),
+      slug: String(t.slug || t.id),
+    }));
+
+    // Ensure current team is present even before list loads
+    if (project && !base.some((t) => String(t.id) === String(project.id))) {
+      base.push({
+        id: String(project.id),
+        label: String(project.name || project.slug || project.id),
+        slug: String(project.slug || project.id),
+      });
+    }
+
+    // Stable-ish order: keep API order, but fall back to alpha if empty
+    return base;
+  })();
+
+  const handleTeamSwitch = (option: BreadcrumbSwitcherOption) => {
+    navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${option.slug || option.id}`);
+  };
+
   const teamOrProjectDetailPath = isTeamRoute
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}`
     : `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}`;
@@ -1654,7 +1719,18 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                    label: 'Teams',
                    onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)
                 },
-                { label: project.name, current: true }
+                {
+                  label: (
+                    <BreadcrumbContextSwitcher
+                      currentId={String(project.id)}
+                      options={teamBreadcrumbOptions}
+                      onSelect={handleTeamSwitch}
+                      hasDropdown={!clubTeamsForSwitcherLoading && teamBreadcrumbOptions.length > 1}
+                      type="project"
+                    />
+                  ),
+                  current: true,
+                }
               ]
             : [
                 {
@@ -2534,7 +2610,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               pageItems={pageItems}
                               currentOrgSlug={String(currentOrgSlug || '')}
                               currentClubSlugOrId={String(currentClubSlugOrId || '')}
-                              clubLabel={String((clubId ? club?.name : project?.name) || currentClubSlugOrId || '—')}
                               teamById={teamById}
                               userCanManageMembers={Boolean(userCanManageMembers)}
                               onViewMembership={(membershipId) => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
@@ -2667,7 +2742,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           <Table style={compactTableStyle}>
                             <colgroup>
                               <col style={{ width: '180px' }} />
-                              <col style={{ width: '180px' }} />
                               <col style={{ width: '95px' }} />
                               <col style={{ width: '120px' }} />
                               <col style={{ width: '95px' }} />
@@ -2677,7 +2751,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             </colgroup>
                             <thead>
                               <tr>
-                                <th style={compactThStyle}>Club</th>
                                 <th style={compactThStyle}>Team</th>
                                 <th style={compactThStyle}>Seasons</th>
                                 <th style={compactThStyle}>Competitions</th>
@@ -2698,14 +2771,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                                 return (
                                   <tr key={team.id}>
-                                    <td style={compactTextTdStyle}>
-                                      <Link
-                                        to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
-                                        className="text-blue-600 hover:underline"
-                                      >
-                                        {String(project?.name || project?.slug || project?.id || '—')}
-                                      </Link>
-                                    </td>
                                     <td style={compactTextTdStyle}>
                                       <Link
                                         to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
@@ -2886,8 +2951,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                       <div className="overflow-x-auto">
                         <Table style={compactTableStyle}>
                           <colgroup>
-                            <col style={{ width: '180px' }} />
-                            <col style={{ width: '180px' }} />
+                            {!isLikelyTeam && <col style={{ width: '180px' }} />}
                             <col style={{ width: '180px' }} />
                             <col style={{ width: '120px' }} />
                             <col style={{ width: '95px' }} />
@@ -2895,8 +2959,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           </colgroup>
                           <thead>
                             <tr>
-                              <th style={compactThStyle}>Club</th>
-                              <th style={compactThStyle}>Team</th>
+                              {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
                               <th style={compactThStyle}>Season</th>
                               <th style={compactThStyle}>Competitions</th>
                               <th style={compactThStyle}>Matches</th>
@@ -2921,23 +2984,18 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                               return (
                                 <tr key={seasonId}>
-                                  <td style={compactTextTdStyle}>
-                                    {currentClubSlugOrId ? (
-                                      <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600 hover:underline">
-                                        {String((clubId ? club?.name : project?.name) || currentClubSlugOrId)}
-                                      </Link>
-                                    ) : '—'}
-                                  </td>
-                                  <td style={compactTextTdStyle}>
-                                    {teamSlugOrId ? (
-                                      <Link
-                                        to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
-                                        className="text-blue-600 hover:underline"
-                                      >
-                                        {team?.name || teamId || '—'}
-                                      </Link>
-                                    ) : (team?.name || teamId || '—')}
-                                  </td>
+                                  {!isLikelyTeam && (
+                                    <td style={compactTextTdStyle}>
+                                      {teamSlugOrId ? (
+                                        <Link
+                                          to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                          className="text-blue-600 hover:underline"
+                                        >
+                                          {team?.name || teamId || '—'}
+                                        </Link>
+                                      ) : (team?.name || teamId || '—')}
+                                    </td>
+                                  )}
                                   <td style={compactTextTdStyle}>
                                     <Link to={openHref} className="text-blue-600 hover:underline">
                                       {season.name}
@@ -3147,8 +3205,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                       <div className="overflow-x-auto">
                         <Table style={compactTableStyle}>
                           <colgroup>
-                            <col style={{ width: '180px' }} />
-                            <col style={{ width: '180px' }} />
+                            {!isLikelyTeam && <col style={{ width: '180px' }} />}
                             <col style={{ width: '180px' }} />
                             <col style={{ width: '200px' }} />
                             <col style={{ width: '95px' }} />
@@ -3156,8 +3213,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           </colgroup>
                           <thead>
                             <tr>
-                              <th style={compactThStyle}>Club</th>
-                              <th style={compactThStyle}>Team</th>
+                              {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
                               <th style={compactThStyle}>Season</th>
                               <th style={compactThStyle}>Competition</th>
                               <th style={compactThStyle}>Matches</th>
@@ -3182,23 +3238,18 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                               return (
                                 <tr key={comp.id}>
-                                  <td style={compactTextTdStyle}>
-                                    {currentClubSlugOrId ? (
-                                      <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600 hover:underline">
-                                        {String((clubId ? club?.name : project?.name) || currentClubSlugOrId)}
-                                      </Link>
-                                    ) : '—'}
-                                  </td>
-                                  <td style={compactTextTdStyle}>
-                                    {teamSlugOrId ? (
-                                      <Link
-                                        to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
-                                        className="text-blue-600 hover:underline"
-                                      >
-                                        {team?.name || teamId || '—'}
-                                      </Link>
-                                    ) : (team?.name || teamId || '—')}
-                                  </td>
+                                  {!isLikelyTeam && (
+                                    <td style={compactTextTdStyle}>
+                                      {teamSlugOrId ? (
+                                        <Link
+                                          to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                          className="text-blue-600 hover:underline"
+                                        >
+                                          {team?.name || teamId || '—'}
+                                        </Link>
+                                      ) : (team?.name || teamId || '—')}
+                                    </td>
+                                  )}
                                   <td style={compactTextTdStyle}>
                                     {seasonSlugOrId && teamSlugOrId ? (
                                       <Link
@@ -3451,8 +3502,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                     <div className="overflow-x-auto">
                       <Table style={compactTableStyle}>
                         <colgroup>
-                          <col style={{ width: '160px' }} />
-                          <col style={{ width: '160px' }} />
+                          {!isLikelyTeam && <col style={{ width: '160px' }} />}
                           <col style={{ width: '160px' }} />
                           <col style={{ width: '160px' }} />
                           <col style={{ width: '220px' }} />
@@ -3461,8 +3511,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                         </colgroup>
                         <thead>
                           <tr>
-                            <th style={compactThStyle}>Club</th>
-                            <th style={compactThStyle}>Team</th>
+                            {!isLikelyTeam && <th style={compactThStyle}>Team</th>}
                             <th style={compactThStyle}>Season</th>
                             <th style={compactThStyle}>Competition</th>
                             <th style={compactThStyle}>Match</th>
@@ -3488,23 +3537,18 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                             return (
                               <tr key={m.id}>
-                                <td style={compactTextTdStyle}>
-                                  {currentClubSlugOrId ? (
-                                    <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600 hover:underline">
-                                      {String((clubId ? club?.name : project?.name) || currentClubSlugOrId)}
-                                    </Link>
-                                  ) : '-'}
-                                </td>
-                                <td style={compactTextTdStyle}>
-                                  {teamSlugOrId ? (
-                                    <Link
-                                      to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
-                                      className="text-blue-600 hover:underline"
-                                    >
-                                      {team?.name || teamId || '-'}
-                                    </Link>
-                                  ) : (team?.name || teamId || '-')}
-                                </td>
+                                {!isLikelyTeam && (
+                                  <td style={compactTextTdStyle}>
+                                    {teamSlugOrId ? (
+                                      <Link
+                                        to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                        className="text-blue-600 hover:underline"
+                                      >
+                                        {team?.name || teamId || '-'}
+                                      </Link>
+                                    ) : (team?.name || teamId || '-')}
+                                  </td>
+                                )}
                                 <td style={compactTextTdStyle}>
                                   {season && seasonSlugOrId && teamSlugOrId ? (
                                     <Link

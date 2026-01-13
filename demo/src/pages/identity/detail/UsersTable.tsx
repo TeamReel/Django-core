@@ -16,7 +16,6 @@ type Props = {
   pageItems: any[];
   currentOrgSlug: string;
   currentClubSlugOrId: string;
-  clubLabel: string;
   teamById: Map<string, any>;
   userCanManageMembers: boolean;
   onViewMembership: (membershipId: string) => void;
@@ -29,7 +28,6 @@ export default function UsersTable({
   pageItems,
   currentOrgSlug,
   currentClubSlugOrId,
-  clubLabel,
   teamById,
   userCanManageMembers,
   onViewMembership,
@@ -50,8 +48,7 @@ export default function UsersTable({
           ) : (
             <>
               <col style={{ width: '220px' }} />
-              <col style={{ width: '220px' }} />
-              <col style={{ width: '200px' }} />
+              <col style={{ width: '240px' }} />
               <col style={{ width: '220px' }} />
               <col style={{ width: '120px' }} />
               <col style={{ width: '330px' }} />
@@ -60,7 +57,6 @@ export default function UsersTable({
         </colgroup>
         <thead>
           <tr>
-            {!isTeamRoute && <th style={compactThStyle}>Club</th>}
             {!isTeamRoute && <th style={compactThStyle}>Team</th>}
             <th style={compactThStyle}>User</th>
             <th style={compactThStyle}>Email</th>
@@ -94,21 +90,6 @@ export default function UsersTable({
 
             return (
               <tr key={String(userObj.id)}>
-                {!isTeamRoute && (
-                  <td style={compactTextTdStyle}>
-                    {currentClubSlugOrId ? (
-                      <Link
-                        to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`}
-                        className="text-blue-600"
-                        style={{ textDecoration: 'none' }}
-                      >
-                        {clubLabel || currentClubSlugOrId}
-                      </Link>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                )}
                 {!isTeamRoute && (
                   <td style={compactTextTdStyle}>
                     {teamIds.length > 1 ? (
