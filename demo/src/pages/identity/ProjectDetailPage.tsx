@@ -2537,19 +2537,30 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             <Card>
                               <Table style={compactTableStyle}>
                                 <colgroup>
-                                  <col style={{ width: '180px' }} />
-                                  <col style={{ width: '180px' }} />
-                                  <col style={{ width: '180px' }} />
-                                  <col style={{ width: '200px' }} />
-                                  <col style={{ width: '220px' }} />
-                                  <col style={{ width: '120px' }} />
-                                  <col style={{ width: '330px' }} />
+                                  {isTeamRoute ? (
+                                    <>
+                                      <col style={{ width: '260px' }} />
+                                      <col style={{ width: '260px' }} />
+                                      <col style={{ width: '140px' }} />
+                                      <col style={{ width: '330px' }} />
+                                    </>
+                                  ) : (
+                                    <>
+                                      <col style={{ width: '180px' }} />
+                                      <col style={{ width: '180px' }} />
+                                      <col style={{ width: '180px' }} />
+                                      <col style={{ width: '200px' }} />
+                                      <col style={{ width: '220px' }} />
+                                      <col style={{ width: '120px' }} />
+                                      <col style={{ width: '330px' }} />
+                                    </>
+                                  )}
                                 </colgroup>
                                 <thead>
                                   <tr>
-                                    <th style={compactThStyle}>Federation</th>
-                                    <th style={compactThStyle}>Club</th>
-                                    <th style={compactThStyle}>Team</th>
+                                    {!isTeamRoute && <th style={compactThStyle}>Federation</th>}
+                                    {!isTeamRoute && <th style={compactThStyle}>Club</th>}
+                                    {!isTeamRoute && <th style={compactThStyle}>Team</th>}
                                     <th style={compactThStyle}>User</th>
                                     <th style={compactThStyle}>Email</th>
                                     <th style={compactThStyle}>Role</th>
@@ -2580,34 +2591,40 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                                     return (
                                       <tr key={String(userObj.id)}>
-                                        <td style={compactTextTdStyle}>
-                                          <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                            {String(resolvedOrg?.name || currentOrgSlug || '—')}
-                                          </Link>
-                                        </td>
-                                        <td style={compactTextTdStyle}>
-                                          {currentClubSlugOrId ? (
-                                            <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600" style={{ textDecoration: 'none' }}>
-                                              {String((clubId ? club?.name : project?.name) || currentClubSlugOrId)}
+                                        {!isTeamRoute && (
+                                          <td style={compactTextTdStyle}>
+                                            <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
+                                              {String(resolvedOrg?.name || currentOrgSlug || '—')}
                                             </Link>
-                                          ) : (
-                                            '—'
-                                          )}
-                                        </td>
-                                        <td style={compactTextTdStyle}>
-                                          {teamIds.length > 1 ? (
-                                            <span title={teamIds.map((id) => teamById.get(String(id))?.name || id).join(', ')}>Multiple</span>
-                                          ) : teamSlugOrId ? (
-                                            <Link
-                                              to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}`}
-                                              className="text-blue-600 hover:underline"
-                                            >
-                                              {team?.name || teamId}
-                                            </Link>
-                                          ) : (
-                                            '—'
-                                          )}
-                                        </td>
+                                          </td>
+                                        )}
+                                        {!isTeamRoute && (
+                                          <td style={compactTextTdStyle}>
+                                            {currentClubSlugOrId ? (
+                                              <Link to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}`} className="text-blue-600" style={{ textDecoration: 'none' }}>
+                                                {String((clubId ? club?.name : project?.name) || currentClubSlugOrId)}
+                                              </Link>
+                                            ) : (
+                                              '—'
+                                            )}
+                                          </td>
+                                        )}
+                                        {!isTeamRoute && (
+                                          <td style={compactTextTdStyle}>
+                                            {teamIds.length > 1 ? (
+                                              <span title={teamIds.map((id) => teamById.get(String(id))?.name || id).join(', ')}>Multiple</span>
+                                            ) : teamSlugOrId ? (
+                                              <Link
+                                                to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}`}
+                                                className="text-blue-600 hover:underline"
+                                              >
+                                                {team?.name || teamId}
+                                              </Link>
+                                            ) : (
+                                              '—'
+                                            )}
+                                          </td>
+                                        )}
                                         <td style={compactTextTdStyle}>
                                           <Link to={`/organisations/${currentOrgSlug}/users/${userObj.id}`} className="text-blue-600 hover:underline">
                                             {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
