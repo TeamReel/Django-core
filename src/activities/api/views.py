@@ -635,6 +635,44 @@ class ParticipationViewSet(viewsets.ModelViewSet):
     permission_classes = [ParticipationPermission]
     pagination_class = BaseAPIPagination
 
+    def create(self, request, *args, **kwargs):
+        """Enforce TeamReel match permissions for match-participation writes."""
+        if _user_is_system_admin(request.user):
+            return super().create(request, *args, **kwargs)
+
+        activity_id = (request.data or {}).get("activity_id")
+        if activity_id:
+            try:
+                activity = Activity.objects.select_related("project").get(id=activity_id)
+            except Activity.DoesNotExist as e:
+                raise PermissionDenied("Invalid activity") from e
+
+            if getattr(activity, "activity_type", None) == "match":
+                from permissions.evaluator import check_permission
+
+                # Direct team permission
+                if check_permission(
+                    request.user.id,
+                    "match.edit_own_team",
+                    resource_type="project",
+                    resource_id=activity.project_id,
+                ):
+                    return super().create(request, *args, **kwargs)
+
+                # Club admin acting on child team
+                parent_project_id = getattr(activity.project, "parent_project_id", None)
+                if parent_project_id and check_permission(
+                    request.user.id,
+                    "match.edit_own_team",
+                    resource_type="project",
+                    resource_id=parent_project_id,
+                ):
+                    return super().create(request, *args, **kwargs)
+
+                raise PermissionDenied("You do not have permission to edit this match")
+
+        return super().create(request, *args, **kwargs)
+
     def get_queryset(self):
         """Apply query param filters"""
         queryset = super().get_queryset()

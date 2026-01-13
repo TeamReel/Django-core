@@ -161,6 +161,38 @@ class ParticipationPermission(permissions.BasePermission):
         # Write access requires manage_participations permission
         user = request.user
 
+        # System admins always allowed
+        if user.is_superuser or user.is_staff:
+            return True
+
+        # TeamReel Option A: match participations use match.* permissions
+        activity = getattr(obj, "activity", None)
+        if activity is not None and getattr(activity, "activity_type", None) == "match":
+            from permissions.evaluator import check_permission
+
+            required = "match.edit_own_team"
+
+            if check_permission(
+                user.id,
+                required,
+                resource_type="project",
+                resource_id=getattr(activity, "project_id", None),
+            ):
+                return True
+
+            parent_project_id = getattr(
+                getattr(activity, "project", None), "parent_project_id", None
+            )
+            if parent_project_id and check_permission(
+                user.id,
+                required,
+                resource_type="project",
+                resource_id=parent_project_id,
+            ):
+                return True
+
+            return False
+
         try:
             # Attempt B08 integration
             from permissions.utils import has_permission
