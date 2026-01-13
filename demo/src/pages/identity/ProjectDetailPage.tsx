@@ -2346,95 +2346,99 @@ export const ProjectDetailPage: React.FC = () => {
 
           {activeTab === 'people' && (
             <Card className="mb-6">
-              {isLikelyTeam ? (
-                <MemberList projectId={String(project.id)} initialMembers={members as any} />
-              ) : (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Users</h3>
-                      <Input value={memberSearch} onChange={(e) => setMemberSearch(e.target.value)} placeholder="Search users" style={{ width: '240px' }} />
-                      <select
-                        value={userTeamFilterId}
-                        onChange={(e) => {
-                          setUserTeamFilterId(e.target.value);
-                          setUserSeasonFilterId('');
-                          setUsersPage(1);
-                        }}
-                        style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
-                      >
-                        <option value="">Team: All</option>
-                        {(childProjects as any[]).map((t: any) => (
-                          <option key={t.id} value={String(t.id)}>
-                            {t.name}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        value={userSeasonFilterId}
-                        onChange={(e) => {
-                          setUserSeasonFilterId(e.target.value);
-                          setUsersPage(1);
-                        }}
-                        style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
-                      >
-                        <option value="">Season: All</option>
-                        {(seasons as any[])
-                          .filter((p: any) => isSeasonPeriod(p))
-                          .filter((p: any) => {
-                            if (!userTeamFilterId) return true;
-                            const teamId = String(p.project_id ?? p.project?.id ?? '');
-                            return teamId === String(userTeamFilterId);
-                          })
-                          .map((p: any) => (
-                            <option key={p.id} value={String(p.id)}>
-                              {p.name}
-                            </option>
-                          ))}
-                      </select>
-                      <select
-                        value={userRoleFilter}
-                        onChange={(e) => {
-                          setUserRoleFilter(e.target.value);
-                          setUsersPage(1);
-                        }}
-                        style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
-                      >
-                        <option value="">Role: All</option>
-                        <option value="admin">Admin</option>
-                        <option value="member">Member</option>
-                      </select>
+              {(() => {
+                // Team detail is already scoped to a single team; keep the same UI but remove redundant team filter.
+                const effectiveUserTeamFilterId = isTeamRoute ? String(project.id) : userTeamFilterId;
+
+                return (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <h3 className="text-lg font-semibold" style={{ marginRight: '8px' }}>Users</h3>
+                        <Input value={memberSearch} onChange={(e) => setMemberSearch(e.target.value)} placeholder="Search users" style={{ width: '240px' }} />
+                        {!isTeamRoute && (
+                          <select
+                            value={userTeamFilterId}
+                            onChange={(e) => {
+                              setUserTeamFilterId(e.target.value);
+                              setUserSeasonFilterId('');
+                              setUsersPage(1);
+                            }}
+                            style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                          >
+                            <option value="">Team: All</option>
+                            {(childProjects as any[]).map((t: any) => (
+                              <option key={t.id} value={String(t.id)}>
+                                {t.name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        <select
+                          value={userSeasonFilterId}
+                          onChange={(e) => {
+                            setUserSeasonFilterId(e.target.value);
+                            setUsersPage(1);
+                          }}
+                          style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                        >
+                          <option value="">Season: All</option>
+                          {(seasons as any[])
+                            .filter((p: any) => isSeasonPeriod(p))
+                            .filter((p: any) => {
+                              if (!effectiveUserTeamFilterId) return true;
+                              const teamId = String(p.project_id ?? p.project?.id ?? '');
+                              return teamId === String(effectiveUserTeamFilterId);
+                            })
+                            .map((p: any) => (
+                              <option key={p.id} value={String(p.id)}>
+                                {p.name}
+                              </option>
+                            ))}
+                        </select>
+                        <select
+                          value={userRoleFilter}
+                          onChange={(e) => {
+                            setUserRoleFilter(e.target.value);
+                            setUsersPage(1);
+                          }}
+                          style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
+                        >
+                          <option value="">Role: All</option>
+                          <option value="admin">Admin</option>
+                          <option value="member">Member</option>
+                        </select>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            setMemberSearch('');
+                            setUserRoleFilter('');
+                            if (!isTeamRoute) setUserTeamFilterId('');
+                            setUserSeasonFilterId('');
+                            setUsersPage(1);
+                          }}
+                        >
+                          Clear
+                        </Button>
+                        <button
+                          onClick={() => setIsInviteMemberModalOpen(true)}
+                          style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
+                        >
+                          Add User
+                        </button>
+                      </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          setMemberSearch('');
-                          setUserRoleFilter('');
-                          setUserTeamFilterId('');
-                          setUserSeasonFilterId('');
-                          setUsersPage(1);
-                        }}
-                      >
-                        Clear
-                      </Button>
-                      <button
-                        onClick={() => setIsInviteMemberModalOpen(true)}
-                        style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
-                      >
-                        Add User
-                      </button>
-                    </div>
-                  </div>
-
-                  {orgMembersLoading ? (
-                    <Alert variant="info">Loading members...</Alert>
-                  ) : (
-                    <>
-                      {(() => {
-                        const normalizedQuery = memberSearch.trim().toLowerCase();
+                    {orgMembersLoading ? (
+                      <Alert variant="info">Loading members...</Alert>
+                    ) : (
+                      <>
+                        {(() => {
+                          const normalizedQuery = memberSearch.trim().toLowerCase();
 
                         // Only show real org members (exclude virtual/inherited members from project assignments)
                         const orgOnlyMembers = orgMembers.filter((item: any) => {
@@ -2485,7 +2489,7 @@ export const ProjectDetailPage: React.FC = () => {
 
                           // Club scope: ONLY this club
                           const effectiveClubId = currentClubId;
-                          const effectiveTeamId = userTeamFilterId || (userSeasonFilterId ? seasonTeamById.get(String(userSeasonFilterId)) || '' : '');
+                          const effectiveTeamId = effectiveUserTeamFilterId || (userSeasonFilterId ? seasonTeamById.get(String(userSeasonFilterId)) || '' : '');
 
                           const pms = getMemberProjectMemberships(item);
                           if ((effectiveClubId || effectiveTeamId) && (!pms || pms.length === 0)) return false;
@@ -2510,6 +2514,8 @@ export const ProjectDetailPage: React.FC = () => {
 
                         const teamById = new Map<string, any>();
                         for (const t of childProjects as any[]) teamById.set(String(t.id), t);
+                        // Ensure we can resolve the current team in team-detail mode
+                        if (isTeamRoute && project) teamById.set(String(project.id), project);
 
                         return (
                           <>
@@ -2668,10 +2674,11 @@ export const ProjectDetailPage: React.FC = () => {
                           </>
                         );
                       })()}
-                    </>
-                  )}
-                </>
-              )}
+                      </>
+                    )}
+                  </>
+                );
+              })()}
             </Card>
           )}
 
