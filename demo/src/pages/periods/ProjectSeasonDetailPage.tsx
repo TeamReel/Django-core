@@ -14,6 +14,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
+import PeriodDetailModal from '../identity/PeriodDetailModal';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import {
   actionButtonStyle,
@@ -115,6 +116,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   // Edit modal (match TeamDetail page patterns: edit in-place, no /edit route)
   const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
   const [selectedEditPeriod, setSelectedEditPeriod] = useState<any | null>(null);
+
+  const [isPeriodDetailModalOpen, setIsPeriodDetailModalOpen] = useState(false);
+  const [selectedDetailPeriod, setSelectedDetailPeriod] = useState<any | null>(null);
 
   const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
   const [selectedEditMatch, setSelectedEditMatch] = useState<any | null>(null);
@@ -515,6 +519,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               >
                 Back
               </button>
+              <button
+                onClick={() => {
+                  setSelectedDetailPeriod(season);
+                  setIsPeriodDetailModalOpen(true);
+                }}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
+                View
+              </button>
               {userCanEditProject && (
                 <button
                   onClick={() => {
@@ -669,14 +691,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 {competitions.slice(0, 5).map((competition) => (
                                   <tr key={competition.id}>
                                     <td style={compactTextTdStyle}>
-                                      <button
-                                        type="button"
+                                      <Link
+                                        to={`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`}
                                         className="text-blue-600 hover:underline"
-                                        style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
-                                        onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)}
+                                        style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
                                       >
                                         {competition.name}
-                                      </button>
+                                      </Link>
                                     </td>
                                     <td style={compactTdStyle}>
                                       <Badge variant="default">{getMatchCountForCompetition(competition.id)}</Badge>
@@ -684,11 +705,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <td style={compactTdStyle}>
                                       <div style={compactActionsStyle}>
                                         <button
-                                          onClick={() =>
-                                            navigate(
-                                              `${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`
-                                            )
-                                          }
+                                          onClick={() => {
+                                            setSelectedDetailPeriod(competition);
+                                            setIsPeriodDetailModalOpen(true);
+                                          }}
                                           style={actionButtonStyle('neutral')}
                                         >
                                           View
@@ -702,6 +722,35 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             style={actionButtonStyle('primary')}
                                           >
                                             Edit
+                                          </button>
+                                        )}
+                                        {userCanDeleteProject && (
+                                          <button
+                                            onClick={async () => {
+                                              if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
+                                              try {
+                                                const res = await fetch(`${apiBaseUrl}/api/v1/periods/${competition.id}/`, {
+                                                  method: 'DELETE',
+                                                  headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRFToken': getCsrfToken(),
+                                                  },
+                                                  credentials: 'include',
+                                                });
+
+                                                if (res.ok) {
+                                                  setCompetitions((prev) => prev.filter((c) => String(c.id) !== String(competition.id)));
+                                                } else {
+                                                  alert('Error deleting competition');
+                                                }
+                                              } catch (e) {
+                                                console.error(e);
+                                                alert('Error deleting competition');
+                                              }
+                                            }}
+                                            style={actionButtonStyle('danger')}
+                                          >
+                                            Delete
                                           </button>
                                         )}
                                       </div>
@@ -1179,6 +1228,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             if (!selectedEditPeriod) return;
             await savePeriodEdits(selectedEditPeriod, payload);
           }}
+        />
+
+        <PeriodDetailModal
+          opened={isPeriodDetailModalOpen}
+          onClose={() => {
+            setIsPeriodDetailModalOpen(false);
+            setSelectedDetailPeriod(null);
+          }}
+          period={selectedDetailPeriod}
         />
 
         <MatchEditModal
