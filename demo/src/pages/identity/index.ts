@@ -8,6 +8,7 @@ export { ProjectEditPage } from './ProjectEditPage';
 export { ProjectDetailPage } from './ProjectDetailPage';
 export { default as ClubDetailPage } from './ClubDetailPage';
 export { default as TeamDetailPage } from './TeamDetailPage';
+export { default as SeasonDetailPage } from './SeasonDetailPage';
 export { PermissionsPage } from './PermissionsPage';
 export { ProfilePage } from './ProfilePage';
 export { default as UsersPage } from './UsersPage';

@@ -27,6 +27,7 @@ import {
   ProjectDetailPage,
   ClubDetailPage,
   TeamDetailPage,
+  SeasonDetailPage,
   PermissionsPage,
   UsersPage,
   UserDetailPage,
@@ -83,7 +84,6 @@ import ContentLibraryPage from './pages/content/ContentLibraryPage';
 
 // Period (Season/Competition) pages
 import ProjectSeasonsPage from './pages/periods/ProjectSeasonsPage';
-import ProjectSeasonDetailPage from './pages/periods/ProjectSeasonDetailPage';
 import ProjectCompetitionDetailPage from './pages/periods/ProjectCompetitionDetailPage';
 import ProjectCompetitionMatchesPage from './pages/periods/ProjectCompetitionMatchesPage';
 import ProjectCompetitionSquadPage from './pages/periods/ProjectCompetitionSquadPage';
@@ -212,7 +212,7 @@ export default function App() {
         path="/organisations/:orgId/projects/:projectId/seasons/:seasonId"
         element={
           <ProtectedRoute>
-            <ProjectSeasonDetailPage />
+            <SeasonDetailPage />
           </ProtectedRoute>
         }
       />
@@ -220,7 +220,7 @@ export default function App() {
         path="/organisations/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId"
         element={
           <ProtectedRoute>
-            <ProjectSeasonDetailPage />
+            <SeasonDetailPage />
           </ProtectedRoute>
         }
       />

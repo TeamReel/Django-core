@@ -1,11 +1,25 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Badge, Button, Card } from '@django-core/design-system';
-import { PageContent, PageHeader } from '@django-core/page-templates';
+import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
+import {
+  BreadcrumbContextSwitcher,
+  type BreadcrumbSwitcherOption,
+  PageContent,
+  PageHeader,
+} from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { useAuth } from '@django-core/auth-ui';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
+import PeriodEditModal from '../identity/PeriodEditModal';
+import {
+  actionButtonStyle,
+  compactActionsStyle,
+  compactTableStyle,
+  compactTdStyle,
+  compactTextTdStyle,
+  compactThStyle,
+} from '../identity/detail/detailStyles';
 
 type Period = {
   id: string;
@@ -35,46 +49,42 @@ type Organisation = {
   user_role?: 'admin' | 'member';
 };
 
-const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%' };
-const compactThStyle: React.CSSProperties = {
-  textAlign: 'left',
-  padding: '8px 12px',
-  fontSize: '12px',
-  fontWeight: 600,
-  color: 'var(--app-muted-text)',
-  borderBottom: '1px solid var(--app-border)',
-  whiteSpace: 'nowrap',
-};
-const compactTdStyle: React.CSSProperties = {
-  padding: '6px 12px',
-  borderBottom: '1px solid var(--app-border)',
-  verticalAlign: 'middle',
-  height: '40px',
-};
-const compactTextTdStyle: React.CSSProperties = {
-  ...compactTdStyle,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
+const getCsrfToken = (): string => {
+  return (
+    document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('csrftoken='))
+      ?.split('=')[1] ||
+    ''
+  );
 };
 
-type ActionTone = 'neutral' | 'primary' | 'danger';
-const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
-  const base: React.CSSProperties = {
-    padding: '4px 8px',
-    borderRadius: '4px',
-    backgroundColor: 'var(--app-surface)',
-    cursor: 'pointer',
-    fontSize: '12px',
-    lineHeight: 1.2,
-  };
-  if (tone === 'primary') {
-    return { ...base, border: '1px solid #007bff', color: '#007bff' };
-  }
-  if (tone === 'danger') {
-    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
-  }
-  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
+const getPeriodType = (p: any): string => {
+  const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
+  return String(t || '').toLowerCase();
+};
+
+const getPeriodParentId = (p: any): string => {
+  const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
+  return parentId ? String(parentId) : '';
+};
+
+const isSeasonPeriod = (p: any): boolean => {
+  // A season must be a root period (no parent)
+  const parentId = getPeriodParentId(p);
+  if (parentId) return false;
+
+  const type = getPeriodType(p);
+  if (type === 'season') return true;
+
+  // Fallback for seeders without explicit metadata.type
+  const name = String(p?.name || '').toLowerCase();
+  if (name.startsWith('season') || name.startsWith('seizoen')) return true;
+
+  const seasonKey = p?.data?.season ?? p?.metadata?.season;
+  if (seasonKey) return true;
+
+  return false;
 };
 
 export const ProjectSeasonDetailPage: React.FC = () => {
@@ -88,12 +98,18 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [club, setClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
+  const [seasonsForSwitcher, setSeasonsForSwitcher] = useState<Period[]>([]);
   const [competitions, setCompetitions] = useState<Period[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [hierarchySearch, setHierarchySearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Edit modal (match TeamDetail page patterns: edit in-place, no /edit route)
+  const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
+  const [selectedEditPeriod, setSelectedEditPeriod] = useState<any | null>(null);
 
   const orgSlugOrId = orgId || '';
   const projectSlugOrId = projectId || '';
@@ -119,6 +135,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
 
+  const handleSeasonSwitch = (option: BreadcrumbSwitcherOption) => {
+    navigate(`${seasonsBasePath}/${option.slug || option.id}`);
+  };
+
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
@@ -142,17 +162,70 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           ]
         : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),
       { label: 'Seasons', onClick: () => navigate(seasonsBasePath) },
-      { label: season?.name || 'Season', current: true },
+      {
+        label: (
+          <BreadcrumbContextSwitcher
+            currentId={String((season as any)?.slug || effectiveSeasonId)}
+            options={seasonsForSwitcher.map((s) => ({
+              id: String(s.id),
+              label: String(s.name || s.slug || s.id),
+              slug: s.slug ? String(s.slug) : undefined,
+            }))}
+            onSelect={handleSeasonSwitch}
+            hasDropdown={seasonsForSwitcher.length > 1}
+          />
+        ),
+        current: true,
+      },
     ],
-    [navigate, org?.name, project?.name, club?.name, season?.name, orgSlugOrId, seasonsBasePath, projectDetailPath, isTeamRoute, clubSlugOrId]
+    [
+      navigate,
+      org?.name,
+      project?.name,
+      club?.name,
+      orgSlugOrId,
+      seasonsBasePath,
+      projectDetailPath,
+      isTeamRoute,
+      clubSlugOrId,
+      effectiveSeasonId,
+      season,
+      seasonsForSwitcher,
+    ]
   );
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
+    { id: 'hierarchy', label: 'Hierarchy' },
     { id: 'competitions', label: 'Competitions' },
     { id: 'matches', label: 'Matches' },
     { id: 'people', label: 'Users' },
   ];
+
+  const saveSeasonEdits = async (periodToEdit: any, patch: any) => {
+    const periodId = String(periodToEdit?.id || '').trim();
+    if (!periodId) throw new Error('Missing season id');
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(periodId)}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'include',
+      body: JSON.stringify(patch),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(detail || 'Failed to save season');
+    }
+
+    const raw = await res.json().catch(() => null);
+    const updated = (raw as any)?.data || raw || { ...periodToEdit, ...patch };
+    setSeason((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
+  };
 
   // Helper to count matches per competition
   const getMatchCountForCompetition = (competitionId: string): number => {
@@ -225,6 +298,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         } else if (Array.isArray(rawCompetitions?.results)) {
           allPeriods = rawCompetitions.results;
         }
+
+        // Seasons switcher options: root seasons within the same team/project
+        const seasonOptions = allPeriods.filter(isSeasonPeriod);
+        // Ensure current season is included even if API returns partial list
+        if (seasonJson && !seasonOptions.some((p) => String(p.id) === String(seasonJson.id))) {
+          seasonOptions.push(seasonJson);
+        }
+        setSeasonsForSwitcher(seasonOptions);
 
         console.log('[SeasonDetail] All periods:', allPeriods.length);
         console.log('[SeasonDetail] Looking for parent_period:', effectiveSeasonId);
@@ -332,20 +413,35 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 onClick={() => navigate(seasonsBasePath)}
-                style={actionButtonStyle('neutral')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
               >
                 Back
               </button>
-              <button
-                onClick={() => navigate(`${seasonsBasePath}/${effectiveSeasonId}`)}
-                style={actionButtonStyle('neutral')}
-              >
-                View
-              </button>
               {userCanEditProject && (
                 <button
-                  onClick={() => navigate(`${seasonsBasePath}/${effectiveSeasonId}/edit`)}
-                  style={actionButtonStyle('primary')}
+                  onClick={() => {
+                    setSelectedEditPeriod(season);
+                    setIsPeriodEditModalOpen(true);
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid #007bff',
+                    backgroundColor: 'var(--app-surface)',
+                    color: '#007bff',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                  }}
                 >
                   Edit
                 </button>
@@ -355,14 +451,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   onClick={async () => {
                     if (!window.confirm(`Are you sure you want to delete season ${season?.name}?`)) return;
                     try {
-                      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
                       const res = await fetch(
                         `${apiBaseUrl}/api/v1/periods/${effectiveSeasonId}/`,
                         {
                           method: 'DELETE',
                           headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken || '',
+                            'X-CSRFToken': getCsrfToken(),
                           },
                           credentials: 'include',
                         }
@@ -378,7 +473,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       alert('Error deleting season');
                     }
                   }}
-                  style={actionButtonStyle('danger')}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid #dc3545',
+                    backgroundColor: 'var(--app-surface)',
+                    color: '#dc3545',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                  }}
                 >
                   Delete
                 </button>
@@ -394,71 +498,281 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             <Card><div style={{ padding: '16px' }}>Loading...</div></Card>
           ) : (
             <>
-              <div style={{ borderBottom: '1px solid var(--app-border)', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', gap: '24px' }}>
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      style={{
-                        padding: '12px 0',
-                        background: 'none',
-                        border: 'none',
-                        borderBottom: activeTab === tab.id ? '2px solid var(--app-primary)' : '2px solid transparent',
-                        color: activeTab === tab.id ? 'var(--app-primary)' : 'var(--app-text-secondary)',
-                        fontWeight: activeTab === tab.id ? 600 : 400,
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                      }}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
+              {/* Tabs (match TeamDetail/ProjectDetail) */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '6px',
+                  borderBottom: '1px solid var(--app-border)',
+                  marginBottom: '20px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '6px 6px 0 0',
+                      border: '1px solid var(--app-border)',
+                      borderBottom: activeTab === tab.id ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
+                      backgroundColor: activeTab === tab.id ? 'var(--app-surface)' : 'var(--app-surface-2)',
+                      color: 'var(--app-text)',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontWeight: activeTab === tab.id ? 600 : 500,
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
               {activeTab === 'overview' && (
-                <Card>
-                  <div style={{ padding: '16px', display: 'grid', gap: '16px' }}>
-                    <div>
-                      <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 600 }}>Season Information</h3>
-                      <div style={{ display: 'grid', gap: '8px', fontSize: '14px' }}>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <span style={{ color: 'var(--app-text-secondary)', width: '120px' }}>Period:</span>
-                          <span>
-                            {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '—'} –{' '}
-                            {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '—'}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <span style={{ color: 'var(--app-text-secondary)', width: '120px' }}>Competitions:</span>
-                          <Badge variant="info">{competitions.length}</Badge>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <span style={{ color: 'var(--app-text-secondary)', width: '120px' }}>Matches:</span>
-                          <Badge variant="info">{matches.length}</Badge>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <span style={{ color: 'var(--app-text-secondary)', width: '120px' }}>Team Members:</span>
-                          <Badge variant="info">{members.length}</Badge>
-                        </div>
+                <>
+                  {/* Top Stats Row */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <Card style={{ padding: '16px' }}>
+                      <div className="text-sm font-medium text-gray-500">Dates</div>
+                      <div className="text-sm font-semibold mt-1">
+                        {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '—'} –{' '}
+                        {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '—'}
                       </div>
+                    </Card>
+                    <Card style={{ padding: '16px' }}>
+                      <div className="text-sm font-medium text-gray-500">Competitions</div>
+                      <div className="text-2xl font-bold mt-1">{competitions.length}</div>
+                    </Card>
+                    <Card style={{ padding: '16px' }}>
+                      <div className="text-sm font-medium text-gray-500">Matches</div>
+                      <div className="text-2xl font-bold mt-1">{matches.length}</div>
+                    </Card>
+                    <Card style={{ padding: '16px' }}>
+                      <div className="text-sm font-medium text-gray-500">Users</div>
+                      <div className="text-2xl font-bold mt-1">{members.length}</div>
+                    </Card>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column: Overview content */}
+                    <div className="lg:col-span-2 space-y-6">
+                      <Card>
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-lg font-semibold">Competitions</h3>
+                          <Button variant="secondary" size="sm" onClick={() => setActiveTab('competitions')}>
+                            View All
+                          </Button>
+                        </div>
+                        {competitions.length === 0 ? (
+                          <div className="text-sm text-gray-500 py-4 text-center">No competitions in this season.</div>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <Table style={compactTableStyle}>
+                              <thead>
+                                <tr>
+                                  <th style={compactThStyle}>Competition</th>
+                                  <th style={compactThStyle}>Matches</th>
+                                  <th style={compactThStyle} className="text-right"></th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {competitions.slice(0, 5).map((competition) => (
+                                  <tr key={competition.id}>
+                                    <td style={compactTextTdStyle}>{competition.name}</td>
+                                    <td style={compactTdStyle}>
+                                      <Badge variant="default">{getMatchCountForCompetition(competition.id)}</Badge>
+                                    </td>
+                                    <td style={compactTdStyle}>
+                                      <div style={compactActionsStyle}>
+                                        <button
+                                          onClick={() =>
+                                            navigate(
+                                              `${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}`
+                                            )
+                                          }
+                                          style={actionButtonStyle('neutral')}
+                                        >
+                                          View
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </Table>
+                          </div>
+                        )}
+                      </Card>
+
+                      <Card>
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-lg font-semibold">Hierarchy</h3>
+                          <Button variant="secondary" size="sm" onClick={() => setActiveTab('hierarchy')}>
+                            View Hierarchy
+                          </Button>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-lg text-center">
+                          <div className="text-sm text-gray-600 mb-2">
+                            Browse competitions and matches grouped by competition.
+                          </div>
+                        </div>
+                      </Card>
                     </div>
-                    <div>
-                      <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 600 }}>Quick Actions</h3>
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <Button size="sm" variant="secondary" onClick={() => setActiveTab('competitions')}>
-                          View Competitions
-                        </Button>
-                        <Button size="sm" variant="secondary" onClick={() => setActiveTab('matches')}>
-                          View Matches
-                        </Button>
-                        <Button size="sm" variant="secondary" onClick={() => setActiveTab('people')}>
-                          View Team Members
-                        </Button>
-                      </div>
+
+                    {/* Right Column: Quick Actions */}
+                    <div className="space-y-6">
+                      <Card>
+                        <h3 className="text-lg font-semibold mb-3">Quick Actions</h3>
+                        <div className="space-y-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                            onClick={() => setActiveTab('competitions')}
+                          >
+                            Manage Competitions
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                            onClick={() => setActiveTab('matches')}
+                          >
+                            View Matches
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                            onClick={() => setActiveTab('people')}
+                          >
+                            View Users
+                          </Button>
+                        </div>
+                      </Card>
                     </div>
                   </div>
+                </>
+              )}
+
+              {activeTab === 'hierarchy' && (
+                <Card>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '12px',
+                      gap: '12px',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Input
+                        value={hierarchySearch}
+                        onChange={(e) => setHierarchySearch(e.target.value)}
+                        placeholder="Filter competitions/matches"
+                        style={{ width: '240px' }}
+                      />
+                      <Button variant="secondary" size="sm" onClick={() => setHierarchySearch('')}>
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+
+                  <h3 className="text-lg font-semibold mb-4">Hierarchy: Competitions & Matches (grouped by competition)</h3>
+                  {competitions.length === 0 ? (
+                    <Alert variant="info">No competitions found in this season.</Alert>
+                  ) : (
+                    (() => {
+                      const normalized = hierarchySearch.trim().toLowerCase();
+                      const filteredCompetitions = !normalized
+                        ? competitions
+                        : competitions.filter((c) => {
+                            const compName = String(c?.name || '').toLowerCase();
+                            if (compName.includes(normalized)) return true;
+                            const compId = String(c?.id || '');
+                            const compMatches = matches.filter((m: any) => String(m.period_id || m.period?.id || '') === compId);
+                            return compMatches.some((m: any) => String(m?.title || m?.name || '').toLowerCase().includes(normalized));
+                          });
+
+                      return filteredCompetitions.map((competition) => {
+                        const compId = String(competition.id);
+                        const compMatches = matches
+                          .filter((m: any) => String(m.period_id || m.period?.id || '') === compId)
+                          .slice(0, 10);
+
+                        return (
+                          <div key={compId} style={{ marginBottom: '2rem' }}>
+                            <div
+                              style={{
+                                backgroundColor: 'var(--app-surface-2)',
+                                padding: '12px 16px',
+                                borderRadius: '4px',
+                                marginBottom: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                              }}
+                            >
+                              <h4 style={{ margin: 0, flex: 1, fontSize: '16px', fontWeight: 600 }}>{competition.name || `Competition ${compId}`}</h4>
+                              <Badge variant="info">{getMatchCountForCompetition(compId)} matches</Badge>
+                              <button
+                                onClick={() =>
+                                  navigate(`${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}`)
+                                }
+                                style={actionButtonStyle('neutral')}
+                              >
+                                View
+                              </button>
+                              <button
+                                onClick={() =>
+                                  navigate(
+                                    `${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}/matches`
+                                  )
+                                }
+                                style={actionButtonStyle('primary')}
+                              >
+                                Matches
+                              </button>
+                            </div>
+
+                            {compMatches.length === 0 ? (
+                              <div style={{ paddingLeft: '16px', color: 'var(--app-muted-text)', fontSize: '14px' }}>No matches in this competition</div>
+                            ) : (
+                              <div style={{ overflowX: 'auto', marginLeft: '16px' }}>
+                                <Table style={compactTableStyle}>
+                                  <thead>
+                                    <tr>
+                                      <th style={compactThStyle}>Match</th>
+                                      <th style={compactThStyle}>Date</th>
+                                      <th style={compactThStyle} className="text-right"></th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {compMatches.map((match: any) => (
+                                      <tr key={match.id}>
+                                        <td style={compactTextTdStyle}>{match.title || match.name || 'Match'}</td>
+                                        <td style={compactTextTdStyle}>{match.start_time ? new Date(match.start_time).toLocaleString() : '—'}</td>
+                                        <td style={compactTdStyle}>
+                                          <div style={compactActionsStyle}>
+                                            <button onClick={() => navigate(`/matches/${match.id}`)} style={actionButtonStyle('neutral')}>
+                                              View
+                                            </button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </Table>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()
+                  )}
                 </Card>
               )}
 
@@ -490,34 +804,25 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 <Badge variant="default">{getMatchCountForCompetition(competition.id)}</Badge>
                               </td>
                               <td style={compactTdStyle}>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                <div style={compactActionsStyle}>
                                   <button
                                     onClick={() => navigate(`${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}`)}
                                     style={actionButtonStyle('neutral')}
                                   >
                                     View
                                   </button>
-                                  {userCanEditProject && (
-                                    <button
-                                      onClick={() => navigate(`${seasonsBasePath}/${season?.slug || effectiveSeasonId}/competitions/${competition.slug || competition.id}/edit`)}
-                                      style={actionButtonStyle('primary')}
-                                    >
-                                      Edit
-                                    </button>
-                                  )}
                                   {userCanDeleteProject && (
                                     <button
                                       onClick={async () => {
                                         if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
                                         try {
-                                          const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
                                           const res = await fetch(
                                             `${apiBaseUrl}/api/v1/periods/${competition.id}/`,
                                             {
                                               method: 'DELETE',
                                               headers: {
                                                 'Content-Type': 'application/json',
-                                                'X-CSRFToken': csrfToken || '',
+                                                'X-CSRFToken': getCsrfToken(),
                                               },
                                               credentials: 'include',
                                             }
@@ -574,34 +879,25 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 {match.start_time ? new Date(match.start_time).toLocaleString() : '—'}
                               </td>
                               <td style={compactTdStyle}>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                <div style={compactActionsStyle}>
                                   <button
                                     onClick={() => navigate(`/matches/${match.id}`)}
                                     style={actionButtonStyle('neutral')}
                                   >
                                     View
                                   </button>
-                                  {userCanEditProject && (
-                                    <button
-                                      onClick={() => navigate(`/matches/${match.id}/edit`)}
-                                      style={actionButtonStyle('primary')}
-                                    >
-                                      Edit
-                                    </button>
-                                  )}
                                   {userCanDeleteProject && (
                                     <button
                                       onClick={async () => {
                                         if (!window.confirm(`Are you sure you want to delete match ${match.title || match.name}?`)) return;
                                         try {
-                                          const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
                                           const res = await fetch(
                                             `${apiBaseUrl}/api/v1/activities/${match.id}/`,
                                             {
                                               method: 'DELETE',
                                               headers: {
                                                 'Content-Type': 'application/json',
-                                                'X-CSRFToken': csrfToken || '',
+                                                'X-CSRFToken': getCsrfToken(),
                                               },
                                               credentials: 'include',
                                             }
@@ -636,7 +932,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {activeTab === 'people' && (
                 <Card>
                   <div style={{ padding: '16px' }}>
-                    <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Team Members</h3>
+                    <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Users</h3>
                     {members.length === 0 ? (
                       <Alert variant="info">No members found.</Alert>
                     ) : (
@@ -674,6 +970,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             </>
           )}
         </PageContent>
+
+        <PeriodEditModal
+          opened={isPeriodEditModalOpen}
+          onClose={() => {
+            setIsPeriodEditModalOpen(false);
+            setSelectedEditPeriod(null);
+          }}
+          period={selectedEditPeriod}
+          onSave={async (payload) => {
+            if (!selectedEditPeriod) return;
+            await saveSeasonEdits(selectedEditPeriod, payload);
+          }}
+        />
       </div>
     </AppShell>
   );
