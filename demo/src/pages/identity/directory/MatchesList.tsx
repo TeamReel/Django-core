@@ -756,16 +756,23 @@ export const MatchesList: React.FC = () => {
                               ) : compName}
                             </td>
                         <td style={compactTextTdStyle}>
-                            <a
-                              href={`/matches/${m.id}`}
-                              className="text-blue-600 hover:underline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                navigate(`/matches/${m.id}`);
-                              }}
-                            >
-                              {m.title}
-                            </a>
+                            {(() => {
+                              const matchPath = (seasonTarget && compTarget)
+                                ? `${teamBasePath}/seasons/${seasonTarget}/competitions/${compTarget}/matches/${m.id}`
+                                : `/matches/${m.id}`;
+                              return (
+                                <a
+                                  href={matchPath}
+                                  className="text-blue-600 hover:underline"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(matchPath);
+                                  }}
+                                >
+                                  {m.title}
+                                </a>
+                              );
+                            })()}
                         </td>
                         <td style={compactTdStyle}>-</td>
                         <td style={compactTdStyle}>

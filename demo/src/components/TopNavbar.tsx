@@ -158,6 +158,8 @@ export default function TopNavbar() {
     teamSlugOrId: string | null;
     teamIdForApi: string | null;
     seasonSlugOrId: string | null;
+    seasonIdForApi: string | null;
+    matchId: string | null;
   };
 
   const [appSelection, setAppSelection] = useState<AppSelection>({
@@ -166,6 +168,8 @@ export default function TopNavbar() {
     teamSlugOrId: null,
     teamIdForApi: null,
     seasonSlugOrId: null,
+    seasonIdForApi: null,
+    matchId: null,
   });
 
   const APP_LAST_CTX_KEY = 'demo_app_last_context_v1';
@@ -181,6 +185,7 @@ export default function TopNavbar() {
         clubSlugOrId?: string;
         teamSlugOrId?: string;
         seasonSlugOrId?: string;
+        matchId?: string;
         ts?: number;
       };
     } catch {
@@ -193,6 +198,7 @@ export default function TopNavbar() {
     clubSlugOrId?: string;
     teamSlugOrId?: string;
     seasonSlugOrId?: string;
+    matchId?: string;
   }) => {
     try {
       localStorage.setItem(
@@ -210,6 +216,50 @@ export default function TopNavbar() {
   // Track last visited club/team/season so the App menu can pick a stable "most recent" default.
   useEffect(() => {
     const path = location.pathname;
+
+    const hierarchyMatchTeam = path.match(
+      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/
+    );
+    const hierarchyMatch = path.match(
+      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/
+    );
+    const legacyMatch = path.match(/^\/matches\/([^/]+)/);
+
+    if (hierarchyMatchTeam) {
+      writeLastAppContext({
+        orgSlug: hierarchyMatchTeam[1],
+        clubSlugOrId: hierarchyMatchTeam[2],
+        teamSlugOrId: hierarchyMatchTeam[3],
+        seasonSlugOrId: hierarchyMatchTeam[4],
+        matchId: hierarchyMatchTeam[6],
+      });
+      return;
+    }
+
+    if (hierarchyMatch) {
+      writeLastAppContext({
+        orgSlug: hierarchyMatch[1],
+        teamSlugOrId: hierarchyMatch[2],
+        seasonSlugOrId: hierarchyMatch[3],
+        matchId: hierarchyMatch[5],
+      });
+      return;
+    }
+
+    if (legacyMatch) {
+      const last = readLastAppContext();
+      if (last?.orgSlug) {
+        writeLastAppContext({
+          orgSlug: String(last.orgSlug),
+          clubSlugOrId: last.clubSlugOrId,
+          teamSlugOrId: last.teamSlugOrId,
+          seasonSlugOrId: last.seasonSlugOrId,
+          matchId: legacyMatch[1],
+        });
+      }
+      return;
+    }
+
     const seasonTeamMatch = path.match(
       /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)/
     );
@@ -322,6 +372,8 @@ export default function TopNavbar() {
           teamSlugOrId: seasonTeamMatch[3],
           teamIdForApi: null,
           seasonSlugOrId: seasonTeamMatch[4],
+          seasonIdForApi: null,
+          matchId: null,
         });
         return;
       }
@@ -332,6 +384,8 @@ export default function TopNavbar() {
           teamSlugOrId: teamMatch[3],
           teamIdForApi: null,
           seasonSlugOrId: null,
+          seasonIdForApi: null,
+          matchId: null,
         });
         return;
       }
@@ -342,6 +396,8 @@ export default function TopNavbar() {
           teamSlugOrId: null,
           teamIdForApi: null,
           seasonSlugOrId: null,
+          seasonIdForApi: null,
+          matchId: null,
         });
         // continue resolving best team/season below (club-only path is not enough)
       }
@@ -395,6 +451,7 @@ export default function TopNavbar() {
       }
 
       // Resolve a best season for selected team.
+      let selectedSeasonId: string | null = null;
       let selectedSeasonKey: string | null = null;
       if (selectedTeam) {
         try {
@@ -411,14 +468,38 @@ export default function TopNavbar() {
               return key && String(key) === String(last.seasonSlugOrId);
             });
             if (match) {
+              selectedSeasonId = String(match.id);
               selectedSeasonKey = periodPathKey(match) || String(match.id);
             }
           }
 
           if (!selectedSeasonKey) {
             const best = pickMostRecentSeason(seasons || []);
-            if (best) selectedSeasonKey = periodPathKey(best) || String(best.id);
+            if (best) {
+              selectedSeasonId = String(best.id);
+              selectedSeasonKey = periodPathKey(best) || String(best.id);
+            }
           }
+        } catch {
+          // ignore
+        }
+      }
+
+      // Resolve a best match for selected team+season.
+      let selectedMatchId: string | null = null;
+      if (last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.matchId) {
+        selectedMatchId = String(last.matchId);
+      }
+
+      if (!selectedMatchId && selectedTeam?.id && selectedSeasonId) {
+        try {
+          const matches = await fetchAllPages<any>(
+            `${apiBaseUrl}/api/v1/activities/?page_size=5&project_id=${encodeURIComponent(String(selectedTeam.id))}&period_id=${encodeURIComponent(String(selectedSeasonId))}&include_descendants=true&activity_type=match&ordering=-start_time`,
+            { credentials: 'include' },
+            { ttlMs: 30_000, cacheKey: `GET:matches:season:${orgSlug}:${selectedTeam.id}:${selectedSeasonId}` }
+          );
+          const bestMatch = (matches || [])[0];
+          if (bestMatch?.id) selectedMatchId = String(bestMatch.id);
         } catch {
           // ignore
         }
@@ -430,6 +511,8 @@ export default function TopNavbar() {
         teamSlugOrId: selectedTeam ? String(selectedTeam.slug || selectedTeam.id) : null,
         teamIdForApi: selectedTeam ? String(selectedTeam.id) : null,
         seasonSlugOrId: selectedSeasonKey,
+        seasonIdForApi: selectedSeasonId,
+        matchId: selectedMatchId,
       });
     };
 
@@ -437,10 +520,13 @@ export default function TopNavbar() {
   }, [context, location.pathname, user]);
 
   const appNavGroup = useMemo<NavGroup>(() => {
-    const orgSlug = appSelection.orgSlug || String((context as any)?.organisation?.slug || '');
+    const orgSlug =
+      appSelection.orgSlug ||
+      String((context as any)?.organisation?.slug || (context as any)?.organisation?.id || '');
     const clubSlugOrId = appSelection.clubSlugOrId;
     const teamSlugOrId = appSelection.teamSlugOrId;
     const seasonSlugOrId = appSelection.seasonSlugOrId;
+    const matchId = appSelection.matchId;
 
     const federationPath = orgSlug ? `/organisations/${orgSlug}` : '/directory?tab=federations';
 
@@ -457,8 +543,16 @@ export default function TopNavbar() {
     const seasonPath = orgSlug && seasonSlugOrId
       ? (clubSlugOrId && teamSlugOrId
         ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
-        : (teamSlugOrId ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}` : '/directory?tab=seasons'))
-      : '/directory?tab=seasons';
+        : (teamSlugOrId
+          ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+          : `/directory?tab=seasons&org_id=${encodeURIComponent(String(orgSlug))}`))
+      : (orgSlug && clubSlugOrId && teamSlugOrId
+        ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons`
+        : (orgSlug && teamSlugOrId
+          ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons`
+          : '/directory?tab=seasons'));
+
+    const matchPath = matchId ? `/matches/${matchId}` : '/directory?tab=matches';
 
     return {
       id: 'app',
@@ -468,6 +562,7 @@ export default function TopNavbar() {
         { path: clubPath, label: 'Club', description: 'Your club (best match)', icon: '🏟️' },
         { path: teamPath, label: 'Team', description: 'Your team (best match)', icon: '⚽' },
         { path: seasonPath, label: 'Season', description: 'Your season (best match)', icon: '🗓️' },
+        { path: matchPath, label: 'Match', description: 'Your match (best match)', icon: '🎯' },
       ],
     };
   }, [appSelection, context]);

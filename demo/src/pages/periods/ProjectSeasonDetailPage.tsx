@@ -187,7 +187,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'hierarchy', 'competitions', 'matches']);
+    const allowed = new Set(['overview', 'hierarchy', 'competitions', 'matches', 'squad']);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
@@ -195,8 +195,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     const seasonKeyOrId = periodPathKey(season as any) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
     if (!seasonKeyOrId) return;
 
-    if (tabId === 'squad') {
-      navigate(`${seasonsBasePath}/${seasonKeyOrId}/squad`);
+    if (tabId === 'overview') {
+      navigate(`${seasonsBasePath}/${seasonKeyOrId}`);
       return;
     }
 
@@ -204,7 +204,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   };
 
   const handleSeasonSwitch = (option: BreadcrumbSwitcherOption) => {
-    navigate(`${seasonsBasePath}/${option.slug || option.id}`);
+    const suffix = location.search ? location.search : '';
+    navigate(`${seasonsBasePath}/${option.slug || option.id}${suffix}`);
   };
 
   const seasonPathKey = periodPathKey(season) || effectiveSeasonId;
@@ -417,7 +418,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
         const desiredKey = periodPathKey(seasonJson);
         if (desiredKey && desiredKey !== String(effectiveSeasonId)) {
-          navigate(`${seasonsBasePath}/${desiredKey}`, { replace: true });
+          const suffix = location.search ? location.search : '';
+          navigate(`${seasonsBasePath}/${desiredKey}${suffix}`, { replace: true });
         }
 
         // Load competitions (direct children of this season) using server-side filtering
@@ -911,7 +913,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <button
                                 onClick={() =>
                                   navigate(
-                                    `${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}/matches`
+                                    `${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}?tab=matches`
                                   )
                                 }
                                 style={actionButtonStyle('primary')}
@@ -968,7 +970,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       <tr key={match.id}>
                                         <td style={compactTextTdStyle}>
                                           <Link
-                                            to={`/matches/${match.id}`}
+                                            to={`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}/matches/${match.id}`}
                                             className="text-blue-600 hover:underline"
                                             style={{ textDecoration: 'none' }}
                                           >
@@ -978,7 +980,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         <td style={compactTextTdStyle}>{match.start_time ? new Date(match.start_time).toLocaleString() : '—'}</td>
                                         <td style={compactTdStyle}>
                                           <div style={compactActionsStyle}>
-                                            <button onClick={() => navigate(`/matches/${match.id}`)} style={actionButtonStyle('primary')}>
+                                            <button
+                                              onClick={() =>
+                                                navigate(
+                                                  `${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}/matches/${match.id}`
+                                                )
+                                              }
+                                              style={actionButtonStyle('primary')}
+                                            >
                                               View
                                             </button>
                                             {userCanEditProject && (
@@ -1039,6 +1048,98 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       );
                     })()
                   )}
+                </Card>
+              )}
+
+              {activeTab === 'squad' && (
+                <Card>
+                  <div style={{ padding: '16px 16px 0 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Players & Staff</h3>
+                      <Badge variant="info">{members.length} members</Badge>
+                    </div>
+                    <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
+                      Season-scoped roster (filtered by period).
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '16px' }}>
+                    {members.length === 0 ? (
+                      <Alert variant="info">No members found for this season.</Alert>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table style={compactTableStyle}>
+                          <thead>
+                            <tr>
+                              <th style={compactThStyle}>Name</th>
+                              <th style={compactThStyle}>Email</th>
+                              <th style={compactThStyle}>Role</th>
+                              <th style={compactThStyle}>Position</th>
+                              <th style={compactThStyle}>#</th>
+                              <th style={compactThStyle} className="text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {members.map((m: any) => {
+                              const memberUser = m.user || m;
+                              const name =
+                                memberUser.name ||
+                                `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+                                memberUser.email ||
+                                '—';
+
+                              const email = memberUser.email || '—';
+                              const role = String(m.role || 'member');
+                              const position = m.metadata?.position || '—';
+                              const shirtNumber = m.metadata?.shirt_number ?? '';
+                              const membershipId = String(m.id || memberUser.id || Math.random());
+                              const userId = memberUser?.id;
+
+                              return (
+                                <tr key={membershipId}>
+                                  <td style={compactTextTdStyle}>
+                                    {orgSlugOrId && userId ? (
+                                      <Link
+                                        to={`/organisations/${orgSlugOrId}/users/${userId}`}
+                                        className="text-blue-600 hover:underline"
+                                        style={{ textDecoration: 'none' }}
+                                      >
+                                        {name}
+                                      </Link>
+                                    ) : (
+                                      name
+                                    )}
+                                  </td>
+                                  <td style={compactTextTdStyle}>{email}</td>
+                                  <td style={compactTdStyle}>
+                                    <Badge variant={role === 'admin' || role === 'manager' ? 'warning' : 'default'}>
+                                      {role}
+                                    </Badge>
+                                  </td>
+                                  <td style={compactTextTdStyle}>{position}</td>
+                                  <td style={compactTdStyle}>{shirtNumber || '—'}</td>
+                                  <td style={compactTdStyle}>
+                                    <div style={compactActionsStyle}>
+                                      {orgSlugOrId && userId ? (
+                                        <button
+                                          onClick={() => navigate(`/organisations/${orgSlugOrId}/users/${userId}`)}
+                                          style={actionButtonStyle('primary')}
+                                        >
+                                          View
+                                        </button>
+                                      ) : (
+                                        <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
                 </Card>
               )}
 
@@ -1163,13 +1264,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           {matches.map((match) => (
                             <tr key={match.id}>
                               <td style={compactTextTdStyle}>
+                                {(() => {
+                                  const compId = String((match as any).period_id || match.period?.id || '').trim();
+                                  const matchPath = compId
+                                    ? `${seasonsBasePath}/${seasonPathKey}/competitions/${compId}/matches/${match.id}`
+                                    : `/matches/${match.id}`;
+                                  return (
                                 <Link
-                                  to={`/matches/${match.id}`}
+                                      to={matchPath}
                                   className="text-blue-600 hover:underline"
                                   style={{ textDecoration: 'none' }}
                                 >
                                   {match.title || match.name}
                                 </Link>
+                                  );
+                                })()}
                               </td>
                               <td style={compactTextTdStyle}>
                                 {match.period?.id ? (
@@ -1190,7 +1299,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
                                   <button
-                                    onClick={() => navigate(`/matches/${match.id}`)}
+                                    onClick={() => {
+                                      const compId = String((match as any).period_id || match.period?.id || '').trim();
+                                      if (compId) {
+                                        navigate(
+                                          `${seasonsBasePath}/${seasonPathKey}/competitions/${compId}/matches/${match.id}`
+                                        );
+                                        return;
+                                      }
+                                      navigate(`/matches/${match.id}`);
+                                    }}
                                     style={actionButtonStyle('primary')}
                                   >
                                     View

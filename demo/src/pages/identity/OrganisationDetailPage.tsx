@@ -3444,6 +3444,12 @@ export const OrganisationDetailPage: React.FC = () => {
                           const compSeasonId = competition ? String(competition.parent_period_id ?? competition.parent_period?.id ?? '') : '';
                           const season = compSeasonId ? seasonById.get(compSeasonId) : null;
                           const seasonSlugOrId = season?.slug || season?.id || compSeasonId;
+                          const compSlugOrId = String((competition as any)?.slug || periodId || '').trim();
+                          const matchDetailPath = (teamSlugOrId && seasonSlugOrId && compSlugOrId)
+                            ? (clubSlugOrId
+                              ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${m.id}`
+                              : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${m.id}`)
+                            : `/matches/${m.id}`;
 
                           const formattedStart = m.start_time ? new Date(m.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
 
@@ -3495,7 +3501,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 ) : (m.period?.name || '-')}
                               </td>
                               <td style={compactTextTdStyle}>
-                                <Link to={`/matches/${m.id}`} className="text-blue-600 hover:underline">
+                                <Link to={matchDetailPath} className="text-blue-600 hover:underline">
                                   {m.title || m.name || m.id}
                                 </Link>
                               </td>

@@ -278,7 +278,15 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
                             </Badge>
                           </td>
                           <td style={{ textAlign: 'right' }}>
-                            <Button size="sm" variant="secondary" onClick={() => navigate(`/matches/${match.id}`)}>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() =>
+                                navigate(
+                                  `${seasonsBasePath}/${seasonPathKey}/competitions/${effectiveCompetitionId}/matches/${match.id}`
+                                )
+                              }
+                            >
                               View
                             </Button>
                           </td>

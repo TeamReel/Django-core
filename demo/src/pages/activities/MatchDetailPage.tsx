@@ -202,7 +202,7 @@ export const MatchDetailPage: React.FC = () => {
                   label: 'Matches',
                   onClick: () =>
                     navigate(
-                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${periodPathKey(seasonPeriod) || seasonPeriod.id}/competitions/${competitionPeriod.id}/matches`
+                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${periodPathKey(seasonPeriod) || seasonPeriod.id}/competitions/${competitionPeriod.id}?tab=matches`
                     ),
                 }
               : { label: 'Matches', onClick: () => navigate(-1) },
