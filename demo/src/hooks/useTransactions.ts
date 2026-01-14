@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
+
 export interface Transaction {
   id: number;
   organisation: number;
@@ -42,7 +44,7 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
         if (limit) params.append('limit', limit.toString());
 
         const url = `${apiBaseUrl}/api/v1/transactions/?${params.toString()}`;
-        console.log('[useTransactions] Fetching:', url);
+        if (DEBUG_LOGS) console.log('[useTransactions] Fetching:', url);
 
         const response = await fetch(url, {
           credentials: 'include',
@@ -56,8 +58,12 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
           throw new Error(`HTTP ${response.status}`);
         }
 
-        const payload = await response.json();
-        console.log('[useTransactions] Response:', payload);
+        const rawPayload = await response.json();
+        if (DEBUG_LOGS) console.log('[useTransactions] Response:', rawPayload);
+
+        // Unwrap envelope: { status: 'success', data: ... }
+        const payload =
+          rawPayload && rawPayload.status === 'success' && rawPayload.data ? rawPayload.data : rawPayload;
 
         // Unwrap envelope: handle {data: [...]}, {data: {results: [...]}}, {results: [...]}, or [...]
         let results: Transaction[] = [];
@@ -76,14 +82,14 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
         } else {
              // Maybe it's mapped directly in payload.data but not an array?
              // Or maybe payload.data IS the list if it's not a standard DRF pagination
-             console.warn('[useTransactions] Unexpected response format:', payload);
+             if (DEBUG_LOGS) console.warn('[useTransactions] Unexpected response format:', payload);
              results = [];
         }
 
         setTransactions(results);
         setError(null);
       } catch (err) {
-        console.error('[useTransactions] Error:', err);
+        if (DEBUG_LOGS) console.error('[useTransactions] Error:', err);
         setError(err as Error);
       } finally {
         setLoading(false);

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@django-core/auth-ui';
 
+const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
+
 export interface Activity {
   id: string;
   title: string;
@@ -45,8 +47,10 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
         params.append('ordering', '-start_time');
 
         const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
-        console.log('[useActivities] Fetching from:', url);
-        console.log('[useActivities] Params:', { limit, project_id, organisation_id });
+        if (DEBUG_LOGS) {
+          console.log('[useActivities] Fetching from:', url);
+          console.log('[useActivities] Params:', { limit, project_id, organisation_id });
+        }
 
         const response = await fetch(url, {
           credentials: 'include',
@@ -61,19 +65,19 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
         }
 
         const jsonData = await response.json();
-        console.log('[useActivities] Raw API response:', jsonData);
+        if (DEBUG_LOGS) console.log('[useActivities] Raw API response:', jsonData);
 
         // Unwrap "Envelope" response format ({ status: 'success', data: ... })
         const payload = (jsonData.status === 'success' && jsonData.data) ? jsonData.data : jsonData;
-        console.log('[useActivities] Unwrapped payload:', payload);
+        if (DEBUG_LOGS) console.log('[useActivities] Unwrapped payload:', payload);
 
         // Handle nested data structure: payload.data or payload.results or direct array
         const results = Array.isArray(payload) ? payload : (payload.data || payload.results || []);
-        console.log('[useActivities] Final results:', results.length, 'activities');
+        if (DEBUG_LOGS) console.log('[useActivities] Final results:', results.length, 'activities');
         setActivities(results);
         setError(null);
       } catch (err: any) {
-        console.error('[useActivities] Error fetching activities:', err);
+        if (DEBUG_LOGS) console.error('[useActivities] Error fetching activities:', err);
         setError(err.message || 'Unknown error');
       } finally {
         setLoading(false);

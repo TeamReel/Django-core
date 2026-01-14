@@ -371,8 +371,19 @@ class ActivityViewSet(viewsets.ModelViewSet):
         """Apply query param filters"""
         queryset = super().get_queryset()
 
-        # Add participant count for tables
-        queryset = queryset.annotate(participations_count=Count("participations", distinct=True))
+        # Participant count can be expensive on broad activity feeds.
+        # Only include it when it's likely needed (match lists / explicit opt-in / detail).
+        activity_type = (self.request.query_params.get("activity_type") or "").strip().lower()
+        include_participations_count = (
+            self.request.query_params.get("include_participations_count") or ""
+        ).strip().lower() in {"1", "true", "yes"}
+        needs_participations_count = (
+            self.action == "retrieve" or include_participations_count or activity_type == "match"
+        )
+        if needs_participations_count:
+            queryset = queryset.annotate(
+                participations_count=Count("participations", distinct=True)
+            )
 
         # Optimize for detail view
         if self.action == "retrieve":
@@ -426,9 +437,9 @@ class ActivityViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(project__organisation_id=organisation_id)
 
         # Filter by activity_type
-        activity_type = self.request.query_params.get("activity_type")
-        if activity_type:
-            queryset = queryset.filter(activity_type=activity_type)
+        activity_type_param = self.request.query_params.get("activity_type")
+        if activity_type_param:
+            queryset = queryset.filter(activity_type=activity_type_param)
 
         # Filter by date range
         start_time__gte = self.request.query_params.get("start_time__gte")

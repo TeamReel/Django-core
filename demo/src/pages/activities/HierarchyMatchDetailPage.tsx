@@ -35,6 +35,7 @@ type ActivityEvent = {
 
 type OrgMember = {
   id: string; // organisation membership id (uuid)
+  role?: string; // organisation role (admin/member)
   user?: {
     id: string | number;
     email?: string;
@@ -42,6 +43,19 @@ type OrgMember = {
     last_name?: string;
     full_name?: string;
   };
+};
+
+type ProjectMember = {
+  id: string;
+  role?: string; // viewer/editor/admin
+  user?: {
+    id: string | number;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    full_name?: string;
+  };
+  user_id?: string | number;
 };
 
 type MatchDetail = {
@@ -104,6 +118,9 @@ export default function HierarchyMatchDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [eligibleMembers, setEligibleMembers] = useState<OrgMember[]>([]);
+  const [orgMembersAll, setOrgMembersAll] = useState<OrgMember[]>([]);
+  const [teamProjectMembers, setTeamProjectMembers] = useState<ProjectMember[]>([]);
+  const [clubProjectMembers, setClubProjectMembers] = useState<ProjectMember[]>([]);
   const [rosterLoading, setRosterLoading] = useState(false);
   const [rosterError, setRosterError] = useState<string | null>(null);
   const [addHomeMemberId, setAddHomeMemberId] = useState<string>('');
@@ -223,6 +240,7 @@ export default function HierarchyMatchDetailPage() {
         if (!projectMembersRes.ok) throw new Error('Failed to load team members');
         const projectMembersRaw = await projectMembersRes.json().catch(() => null);
         const projectMembers = extractList(projectMembersRaw);
+        setTeamProjectMembers(projectMembers as ProjectMember[]);
         const projectUserIds = new Set(
           asArray(projectMembers)
             .map((m: any) => String(m?.user?.id ?? m?.user_id ?? ''))
@@ -237,6 +255,7 @@ export default function HierarchyMatchDetailPage() {
         if (!orgMembersRes.ok) throw new Error('Failed to load organisation members');
         const orgMembersRaw = await orgMembersRes.json().catch(() => null);
         const orgMembers = extractList(orgMembersRaw) as OrgMember[];
+        setOrgMembersAll(orgMembers);
 
         // Intersection: project members must exist as org membership.
         const eligible = asArray(orgMembers)
@@ -248,6 +267,19 @@ export default function HierarchyMatchDetailPage() {
           });
 
         setEligibleMembers(eligible);
+
+        // Optional: club project members (to detect club admin/supporter personas)
+        if (club?.id) {
+          const clubMembersRes = await fetch(
+            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/members/?page_size=500`,
+            { credentials: 'include' }
+          );
+          if (clubMembersRes.ok) {
+            const clubMembersRaw = await clubMembersRes.json().catch(() => null);
+            const clubMembers = extractList(clubMembersRaw);
+            setClubProjectMembers(clubMembers as ProjectMember[]);
+          }
+        }
       } catch (e) {
         setRosterError(e instanceof Error ? e.message : 'Failed to load roster');
       } finally {
@@ -256,7 +288,7 @@ export default function HierarchyMatchDetailPage() {
     };
 
     run();
-  }, [apiBaseUrl, match?.project?.id, orgSlugOrId]);
+  }, [apiBaseUrl, club?.id, match?.project?.id, orgSlugOrId]);
 
   const breadcrumbs = useMemo(() => {
     const projectDetailPath = isTeamRoute
@@ -669,6 +701,72 @@ export default function HierarchyMatchDetailPage() {
     );
   };
 
+  const roleLabel = (raw: any): string => {
+    const r = String(raw || '').toLowerCase();
+    if (r === 'land_admin' || r === 'land admin') return 'Land Admin';
+    if (r === 'club_admin' || r === 'club admin') return 'Club Admin';
+    if (r === 'team_admin' || r === 'team admin') return 'Team Admin';
+    if (r === 'team_member' || r === 'team member') return 'Team Member';
+    if (r === 'supporter') return 'Supporter';
+    if (r === 'admin') return 'Admin';
+    if (r === 'member') return 'Member';
+    if (r === 'viewer') return 'Viewer';
+    if (r === 'editor') return 'Editor';
+    return raw ? String(raw) : '—';
+  };
+
+  const personaGroups = useMemo(() => {
+    const byMemberId = new Map<string, OrgMember>();
+    for (const m of orgMembersAll) byMemberId.set(String(m.id), m);
+
+    const roleByTeamUserId = new Map<string, string>();
+    for (const m of teamProjectMembers) {
+      const uid = String(m?.user?.id ?? m?.user_id ?? '').trim();
+      if (uid) roleByTeamUserId.set(uid, String(m.role || '').toLowerCase());
+    }
+
+    const roleByClubUserId = new Map<string, string>();
+    for (const m of clubProjectMembers) {
+      const uid = String(m?.user?.id ?? m?.user_id ?? '').trim();
+      if (uid) roleByClubUserId.set(uid, String(m.role || '').toLowerCase());
+    }
+
+    const groups: Record<string, Participation[]> = {
+      'Land Admin': [],
+      'Club Admin': [],
+      'Team Admin': [],
+      'Team Member': [],
+      Supporter: [],
+      Other: [],
+    };
+
+    for (const p of match.participations || []) {
+      const memberId = String(p.member?.id || '').trim();
+      const orgMember = memberId ? byMemberId.get(memberId) : undefined;
+      const userId = String(orgMember?.user?.id ?? '').trim();
+
+      const teamRole = userId ? roleByTeamUserId.get(userId) : undefined;
+      const clubRole = userId ? roleByClubUserId.get(userId) : undefined;
+      const orgRole = String(orgMember?.role || '').toLowerCase();
+
+      if (teamRole === 'admin') {
+        groups['Team Admin'].push(p);
+      } else if (clubRole === 'admin') {
+        groups['Club Admin'].push(p);
+      } else if (teamRole) {
+        groups['Team Member'].push(p);
+      } else if (clubRole) {
+        groups.Supporter.push(p);
+      } else if (orgRole === 'admin') {
+        groups['Land Admin'].push(p);
+      } else {
+        groups.Other.push(p);
+      }
+    }
+
+    return groups;
+  }, [clubProjectMembers, match.participations, orgMembersAll, teamProjectMembers]);
+
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'hierarchy', label: 'Hierarchy' },
@@ -890,6 +988,43 @@ export default function HierarchyMatchDetailPage() {
                       </tr>
                     </tbody>
                   </Table>
+                </div>
+
+                <div style={{ marginTop: '16px' }}>
+                  <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 600 }}>
+                    Selected users by role
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(personaGroups)
+                      .filter(([, users]) => users.length > 0)
+                      .map(([group, users]) => (
+                        <div
+                          key={group}
+                          style={{
+                            border: '1px solid var(--app-border)',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            background: 'var(--app-surface-2)',
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontWeight: 600 }}>{group}</div>
+                            <Badge variant="default">{users.length}</Badge>
+                          </div>
+                          <div style={{ marginTop: '8px', display: 'grid', gap: '6px' }}>
+                            {users.map((p) => (
+                              <div key={String(p.id)} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <span style={{ fontWeight: 500 }}>{p.member?.user_name || 'Unknown'}</span>
+                                {p.role ? <Badge variant="default">{roleLabel(p.role)}</Badge> : null}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    {Object.values(personaGroups).every((arr) => arr.length === 0) ? (
+                      <Alert variant="info">No participants selected for this match.</Alert>
+                    ) : null}
+                  </div>
                 </div>
 
                 <div style={{ marginTop: '14px' }}>

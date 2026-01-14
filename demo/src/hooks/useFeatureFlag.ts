@@ -3,6 +3,8 @@ import { getResolvedFlag } from '../utils/featureFlagStorage';
 import { fetchFlags } from '../utils/featureFlagsApi';
 import { useAuth } from '@django-core/auth-ui';
 
+const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
+
 /**
  * useFeatureFlag hook - checks if a feature flag is enabled
  *
@@ -25,32 +27,14 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
         // Priority: Backend API > useAuth user object > localStorage demo_user_role > demo email check
         let isSuperadmin = false;
 
-        // Try to fetch current user from backend
-        try {
-          const userResponse = await fetch('/api/v1/auth/me/', {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'include',
-          });
-
-          if (userResponse.ok) {
-            const userData = await userResponse.json();
-            isSuperadmin = userData.is_superuser || userData.role === 'superadmin';
-            console.log(`[useFeatureFlag] Backend check: isSuperadmin=${isSuperadmin}`);
-          }
-        } catch (err) {
-          // Backend not available, fallback to demo mode
-          console.debug('[useFeatureFlag] Backend not available, using demo mode');
-        }
+        // NOTE: We intentionally avoid an extra /auth/me call here.
+        // The auth package already loads the current user; duplicating this network request
+        // on every page/view hurts performance.
 
         // Check useAuth user object
-        if (!isSuperadmin && user) {
-          if ((user as any).is_superuser || (user as any).role === 'superadmin') {
-            isSuperadmin = true;
-            console.log(`[useFeatureFlag] useAuth check: isSuperadmin=${isSuperadmin}`);
-          }
+        if (!isSuperadmin && user && ((user as any).is_superuser || (user as any).role === 'superadmin')) {
+          isSuperadmin = true;
+          if (DEBUG_LOGS) console.log(`[useFeatureFlag] useAuth check: isSuperadmin=${isSuperadmin}`);
         }
 
         // DEMO MODE FALLBACK: check localStorage
@@ -79,7 +63,7 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
           const demoRole = localStorage.getItem('demo_user_role');
           if (demoRole === 'superadmin') {
             isSuperadmin = true;
-            console.log(`[useFeatureFlag] Demo mode: found superadmin in localStorage`);
+            if (DEBUG_LOGS) console.log(`[useFeatureFlag] Demo mode: found superadmin in localStorage`);
           }
         }
 
@@ -87,7 +71,9 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
         if (!isSuperadmin && user?.email) {
           if (user.email === 'admin@example.com') {
             isSuperadmin = true;
-            console.log(`[useFeatureFlag] Demo mode: detected superadmin by email (${user.email})`);
+            if (DEBUG_LOGS) {
+              console.log(`[useFeatureFlag] Demo mode: detected superadmin by email (${user.email})`);
+            }
           }
         }
 
@@ -106,7 +92,7 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
               const context = JSON.parse(contextStr);
               orgId = context.organisationId || null;
             } catch (e) {
-              console.debug('[useFeatureFlag] Failed to parse demo_context:', e);
+              if (DEBUG_LOGS) console.debug('[useFeatureFlag] Failed to parse demo_context:', e);
             }
           }
         }
@@ -122,29 +108,40 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
         // If isSuperadmin is true, we still respect the orgId if it exists.
         // The only time we force global is if we are in a "Global Config" mode, but this hook is for *consuming* flags.
 
-        console.log(`[useFeatureFlag] Checking flag "${flagKey}" for orgId:`, orgId, 'isSuperadmin:', isSuperadmin);
+        if (DEBUG_LOGS) {
+          console.log(
+            `[useFeatureFlag] Checking flag "${flagKey}" for orgId:`,
+            orgId,
+            'isSuperadmin:',
+            isSuperadmin
+          );
+        }
 
         // Try to fetch from API first
         try {
           const apiFlags = await fetchFlags(orgId);
           const flag = apiFlags.find(f => f.key === flagKey);
-          console.log(`[useFeatureFlag] API result for "${flagKey}":`, flag);
+          if (DEBUG_LOGS) console.log(`[useFeatureFlag] API result for "${flagKey}":`, flag);
           if (flag !== undefined) {
-            console.log(`[useFeatureFlag] Setting "${flagKey}" enabled to:`, flag.enabled);
+            if (DEBUG_LOGS) {
+              console.log(`[useFeatureFlag] Setting "${flagKey}" enabled to:`, flag.enabled);
+            }
             setIsEnabled(flag.enabled);
             return;
           }
         } catch (apiErr) {
           // API failed, fall back to localStorage
-          console.debug(`[useFeatureFlag] API fetch failed for "${flagKey}", using localStorage:`, apiErr);
+          if (DEBUG_LOGS) {
+            console.debug(`[useFeatureFlag] API fetch failed for "${flagKey}", using localStorage:`, apiErr);
+          }
         }
 
         // Fallback: Resolve flag from localStorage
         const resolved = getResolvedFlag(flagKey, orgId, defaultEnabled);
-        console.log(`[useFeatureFlag] localStorage result for "${flagKey}":`, resolved);
+        if (DEBUG_LOGS) console.log(`[useFeatureFlag] localStorage result for "${flagKey}":`, resolved);
         setIsEnabled(resolved);
       } catch (err) {
-        console.error(`[useFeatureFlag] Error resolving feature flag "${flagKey}":`, err);
+        if (DEBUG_LOGS) console.error(`[useFeatureFlag] Error resolving feature flag "${flagKey}":`, err);
         setIsEnabled(defaultEnabled);
       }
     };

@@ -228,7 +228,7 @@ class ActivitySerializer(serializers.ModelSerializer):
     opponent_project = serializers.SerializerMethodField()
 
     # Annotated fields
-    participations_count = serializers.IntegerField(read_only=True)
+    participations_count = serializers.IntegerField(read_only=True, default=0)
 
     # Write fields (use _id suffix for FK assignment)
     project_id = serializers.IntegerField(write_only=True)

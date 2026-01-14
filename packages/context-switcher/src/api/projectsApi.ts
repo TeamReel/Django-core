@@ -7,6 +7,16 @@
 import { createApiClient, isApiError, isApiSuccess } from '@django-core/api-client';
 import type { Project } from '../types';
 
+const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
+
+type CacheEntry = {
+  createdAt: number;
+  promise: Promise<Project[]>;
+};
+
+const PROJECTS_CACHE_TTL_MS = 60_000;
+const projectsCache = new Map<string, CacheEntry>();
+
 /**
  * Response envelope for projects list endpoint.
  * Supports both direct array and DRF paginated format.
@@ -34,16 +44,25 @@ export async function fetchProjects(
   organisationSlug: string,
   apiBaseUrl: string = '/api'
 ): Promise<Project[]> {
-  console.log(`Fetching projects for org: ${organisationSlug} from ${apiBaseUrl}`);
+  const cacheKey = `${apiBaseUrl}::${organisationSlug}`;
+  const cached = projectsCache.get(cacheKey);
+  if (cached && Date.now() - cached.createdAt < PROJECTS_CACHE_TTL_MS) {
+    return cached.promise;
+  }
+
+  if (DEBUG_LOGS) {
+    console.log(`Fetching projects for org: ${organisationSlug} from ${apiBaseUrl}`);
+  }
+
   const client = createApiClient({ baseUrl: apiBaseUrl });
-  try {
+  const requestPromise = (async () => {
     const response = await client.get<ProjectsResponse>(
       `/organisations/${organisationSlug}/projects/`
     );
-    console.log('Projects API response:', response);
+    if (DEBUG_LOGS) console.log('Projects API response:', response);
 
     if (isApiError(response)) {
-      console.error('Projects API error:', response.error);
+      if (DEBUG_LOGS) console.error('Projects API error:', response.error);
       // Throw error with status code so caller can detect auth failures
       const error = new Error(response.error.message) as Error & { code?: number };
       error.code = response.error.code;
@@ -53,7 +72,7 @@ export async function fetchProjects(
     if (isApiSuccess(response)) {
       const data = response.data as any;
       const rawResults = data.data?.results || data.results || data.projects || [];
-      console.log('Parsed projects (raw):', rawResults);
+      if (DEBUG_LOGS) console.log('Parsed projects (raw):', rawResults);
 
       // Map API response to Project interface
       // API returns nested organisation object, but Project interface expects organisationId
@@ -67,13 +86,19 @@ export async function fetchProjects(
         }
       }));
 
-      console.log('Mapped projects:', mappedResults);
+      if (DEBUG_LOGS) console.log('Mapped projects:', mappedResults);
       return mappedResults;
     }
+    return [];
+  })();
+
+  projectsCache.set(cacheKey, { createdAt: Date.now(), promise: requestPromise });
+  try {
+    return await requestPromise;
   } catch (e) {
-    console.error('Fetch projects exception:', e);
+    // Don't cache failures
+    projectsCache.delete(cacheKey);
+    if (DEBUG_LOGS) console.error('Fetch projects exception:', e);
     throw e;
   }
-
-  return [];
 }
