@@ -37,7 +37,7 @@ Set the `DATABASE_URL` environment variable temporarily for the command executio
 **PowerShell (Windows):**
 ```powershell
 # 1. Set the variable (Actual Production URL)
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 
 # 2. Run the command
 python manage.py migrate
@@ -49,7 +49,7 @@ python manage.py rebuild_search_index
 **Bash (Mac/Linux):**
 ```bash
 # Run command with inline variable
-DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway" python manage.py migrate
+DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway" python manage.py migrate
 ```
 
 > **Warning:** Be careful when running commands against production data. Ensure you do not commit real credentials to version control.

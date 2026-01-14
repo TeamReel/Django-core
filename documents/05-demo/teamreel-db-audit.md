@@ -1,6 +1,6 @@
 # TeamReel Production Database Audit
 
-**Last Updated:** 2026-01-09 10:58
+**Last Updated:** 2026-01-14 20:46
 **Environment:** Railway PostgreSQL Production
 **Database Host:** switchback.proxy.rlwy.net:17304
 **Database Name:** railway
@@ -39,7 +39,7 @@ python scripts/update_teamreel_db_audit.py
 **Duration:** ~10-15 seconds
 
 **Features:**
-- ✅ Scans all 41 Django models
+- ✅ Scans all 42 Django models
 - ✅ Counts records per model
 - ✅ Calculates database fill percentage
 - ✅ Identifies empty vs populated tables
@@ -64,13 +64,13 @@ python scripts/update_teamreel_db_audit.py
 
 ## �📊 Executive Summary
 
-- **Total Models Scanned:** 41
-- **Empty Models:** 25
-- **Total Records:** 14,927
-- **Database Fill:** 39.0%
+- **Total Models Scanned:** 42
+- **Empty Models:** 23
+- **Total Records:** 21,460
+- **Database Fill:** 45.2%
 - **TeamReel Progress:** Core hierarchy present; supporting systems (billing/notifications/settings) still empty
 
-> **Note on “Database Fill”**: This is the % of models that are **non-empty** (16/41 = 39.0%), not the % of “realism” or total rows.
+> **Note on “Database Fill”**: This is the % of models that are **non-empty** (19/42 = 45.2%), not the % of “realism” or total rows.
 
 ---
 
@@ -81,11 +81,11 @@ python scripts/update_teamreel_db_audit.py
 This section reflects the **current audit counts** (not historical claims). Detailed breakdown by federation/season is tracked elsewhere.
 
 1. **Users** - 2,765 (`accounts_user`)
-2. **Organisations** - 5 (`organisations_organisation`) *(THIN)*
-3. **Projects (Clubs/Teams)** - 312 (`projects_project`)
-4. **Periods (Seasons/Competitions)** - 675 (`activities_period`)
-5. **Activities (Matches/Events)** - 852 (`activities_activity`)
-6. **Project Memberships (Players/Staff)** - 2,353 (`projects_membership`)
+2. **Organisations** - 8 (`organisations_organisation`) *(THIN)*
+3. **Projects (Clubs/Teams)** - 315 (`projects_project`)
+4. **Periods (Seasons/Competitions)** - 676 (`activities_period`)
+5. **Activities (Matches/Events)** - 855 (`activities_activity`)
+6. **Project Memberships (Players/Staff)** - 1,841 (`projects_membership`)
 7. **RBAC Roles/Assignments** - 5 roles, 1,546 assignments (`permissions_role`, `permissions_roleassignment`)
 
 ## Detailed Table Status
@@ -95,15 +95,14 @@ This section reflects the **current audit counts** (not historical claims). Deta
 | Model | Table | Count | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | **accounts.User** | `accounts_user` | 2,765 | ✅ READY | Demo users present |
-| **organisations.Organisation** | `organisations_organisation` | 5 | ⚠️ THIN | Federations present |
-| **organisations.Membership** | `organisations_membership` | 2,250 | ✅ READY | Org-level memberships present |
-| **projects.Project** | `projects_project` | 312 | ✅ READY | Clubs/teams present |
-| **activities.Period** | `activities_period` | 675 | ✅ READY | Seasons/competitions present |
-| **activities.Activity** | `activities_activity` | 852 | ✅ READY | Matches/events present |
-| **projects.ProjectMembership** | `projects_membership` | 2,353 | ✅ READY | Player/staff memberships present |
-| **activities.Participation** | `activities_participation` | 0 | 🔜 NEXT | Match participation (lineups, subs, goals) |
-| **activities.ActivityEvent** | `activities_activityevent` | 0 | 🔜 NEXT | Match events (goals, assists, injuries, subs) |
-
+| **organisations.Organisation** | `organisations_organisation` | 8 | ⚠️ THIN | Federations present |
+| **organisations.Membership** | `organisations_membership` | 2,253 | ✅ READY | Org-level memberships present |
+| **projects.Project** | `projects_project` | 315 | ✅ READY | Clubs/teams present |
+| **activities.Period** | `activities_period` | 676 | ✅ READY | Seasons/competitions present |
+| **activities.Activity** | `activities_activity` | 855 | ✅ READY | Matches/events present |
+| **projects.ProjectMembership** | `projects_membership` | 1,841 | ✅ READY | Player/staff memberships present |
+| **activities.Participation** | `activities_participation` | 1,397 | 🔜 NEXT | Match participation (lineups, subs, goals) |
+| **activities.ActivityEvent** | `activities_activityevent` | 201 | 🔜 NEXT | Match events (goals, assists, injuries, subs) |
 #### What Should `activities.Participation` Contain?
 
 `Participation` links an **organisation membership** (`organisations.Membership`, not `accounts.User`) to **exactly one** of:
@@ -173,12 +172,11 @@ Note: match results (score/goals) are currently best stored on `activities.Activ
 | **permissions.Permission** | `permissions_permission` | 23 | ✅ READY | TeamReel permissions (org, project, match, content, etc.) |
 | **permissions.Role** | `permissions_role` | 5 | ⚠️ THIN | Role definitions present |
 | **permissions.RoleAssignment** | `permissions_roleassignment` | 1,546 | ✅ READY | Role assignments present |
-
 ### 📊 Supporting Systems
 
 | Model | Table | Count | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **audit.AuditEvent** | `audit_events` | 2,790 | ✅ OK | Audit logging present |
+| **audit.AuditEvent** | `audit_events` | 5,262 | ✅ OK | Audit logging present |
 | **settings.FeatureFlag** | `settings_feature_flag` | 0 | ❌ EMPTY | Feature flags |
 | **settings.Setting** | `settings_setting` | 0 | ❌ EMPTY | Configuration settings |
 | **transactions.UsageEvent** | `transactions_usageevent` | 0 | ❌ EMPTY | Usage tracking |
@@ -188,17 +186,15 @@ Note: match results (score/goals) are currently best stored on `activities.Activ
 | **notifications.NotificationType** | `notifications_notification_type` | 0 | ❌ EMPTY | Notification types |
 | **notifications.RetryPolicy** | `notifications_retry_policy` | 0 | ❌ EMPTY | Retry policies |
 | **contextual_notifications.RoutingRule** | `contextual_notifications_routingrule` | 0 | ❌ EMPTY | Routing rules |
-
 ### 🖥️ System Tables (Auto-populated)
 
 | Model | Table | Count | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **auth.Permission** | `auth_permission` | 164 | ✅ OK | Django permissions |
-| **contenttypes.ContentType** | `django_content_type` | 41 | ✅ OK | Content types |
+| **auth.Permission** | `auth_permission` | 168 | ✅ OK | Django permissions |
+| **contenttypes.ContentType** | `django_content_type` | 42 | ✅ OK | Content types |
 | **auth.Group** | `auth_group` | 1 | ✅ OK | Default group |
-| **observability.SystemMetric** | `observability_systemmetric` | 1,144 | ✅ OK | System health metrics |
-| **sessions.Session** | `django_session` | 1 | ⚠️ THIN | Active sessions exist |
-
+| **observability.SystemMetric** | `observability_systemmetric` | 4,028 | ✅ OK | System health metrics |
+| **sessions.Session** | `django_session` | 2 | ⚠️ THIN | Active sessions exist |
 ### 🔄 Runtime Tables (Expected Empty)
 
 | Model | Table | Count | Status | Notes |
@@ -215,16 +211,15 @@ Note: match results (score/goals) are currently best stored on `activities.Activ
 | **transactions.BalancePolicy** | `transactions_balancepolicy` | 0 | EMPTY-OK | Balance policies |
 | **files.FileAsset** | `files_fileasset` | 0 | EMPTY-OK | File uploads |
 | **admin.LogEntry** | `django_admin_log` | 0 | EMPTY-OK | Admin actions |
-| **search.SearchEntry** | `search_searchentry` | 0 | EMPTY-OK | Search index |
+| **search.SearchEntry** | `search_searchentry` | 72 | EMPTY-OK | Search index |
 | **projects.ProjectInvite** | `projects_invite` | 0 | EMPTY-OK | Project invitations |
 | **projects.ProjectMembershipPromotion** | `projects_promotion` | 0 | EMPTY-OK | Membership promotions |
-
 ## Top 5 Largest Tables
 
-1. **audit.AuditEvent** - 2,790 records ✅
+1. **audit.AuditEvent** - 5,262 records ✅
 2. **accounts.User** - 2,765 records ✅
-3. **projects.ProjectMembership** - 2,353 records ✅
-4. **organisations.Membership** - 2,250 records ✅
+3. **organisations.Membership** - 2,253 records ✅
+4. **projects.ProjectMembership** - 1,841 records ✅
 5. **permissions.RoleAssignment** - 1,546 records ✅
 
 ## Club Distribution by Federation
@@ -239,6 +234,11 @@ Bundesliga 2024/2025: Bayern München, Bayer Leverkusen, Eintracht Frankfurt, RB
 Jupiler Pro League 2024/2025: Club Brugge, Union Saint-Gilloise, Royal Antwerp, KAA Gent, RSC Anderlecht, KRC Genk, Standard Liège, Cercle Brugge, OH Leuven, KV Mechelen, Sporting Charleroi, STVV, KVC Westerlo, Beerschot VA, KAS Eupen, FCV Dender
 
 ## Changelog
+
+### 2026-01-14 20:46 - Production Re-Audit (Auto-Update) ✅
+- **Ran:** `python scripts/update_teamreel_db_audit.py`
+- **Result:** 42 models scanned, 23 empty, 21,460 total records, 45.2% non-empty models
+- **Notable:** Match participation and events are now populated (`activities_participation = 1,397`, `activities_activityevent = 201`).
 
 ### 2026-01-09 10:58 - Production Re-Audit (No Seeding) ✅
 - **Ran:** `python manage.py audit_production_db`

@@ -46,6 +46,7 @@ def _run_audit_command() -> str:
         cwd=str(REPO_ROOT),
         capture_output=True,
         text=True,
+        check=False,
     )
     if proc.returncode != 0:
         raise RuntimeError(proc.stderr.strip() or "audit_production_db failed")
@@ -116,31 +117,41 @@ def parse_audit_output(stdout: str) -> Tuple[Dict[str, int], AuditSummary]:
 
 
 def _replace_summary(md: str, summary: AuditSummary) -> str:
-    md = re.sub(
-        r"(^- \*\*Total Models Scanned:\*\* )\d+",
-        rf"\\1{summary.total_models}",
-        md,
-        flags=re.MULTILINE,
-    )
-    md = re.sub(
-        r"(^- \*\*Empty Models:\*\* )\d+",
-        rf"\\1{summary.empty_models}",
-        md,
-        flags=re.MULTILINE,
-    )
-    md = re.sub(
-        r"(^- \*\*Total Records:\*\* )[0-9,]+",
-        rf"\\1{summary.total_records:,}",
-        md,
-        flags=re.MULTILINE,
-    )
-    md = re.sub(
-        r"(^- \*\*Database Fill:\*\* )[0-9.]+%",
-        rf"\\1{summary.fill_percent:.1f}%",
-        md,
-        flags=re.MULTILINE,
-    )
-    return md
+    def replace_in_executive_summary(section_md: str) -> str:
+        section_md = re.sub(
+            r"(^- \*\*Total Models Scanned:\*\* )\d+",
+            rf"\g<1>{summary.total_models}",
+            section_md,
+            flags=re.MULTILINE,
+        )
+        section_md = re.sub(
+            r"(^- \*\*Empty Models:\*\* )\d+",
+            rf"\g<1>{summary.empty_models}",
+            section_md,
+            flags=re.MULTILINE,
+        )
+        section_md = re.sub(
+            r"(^- \*\*Total Records:\*\* )[0-9,]+",
+            rf"\g<1>{summary.total_records:,}",
+            section_md,
+            flags=re.MULTILINE,
+        )
+        section_md = re.sub(
+            r"(^- \*\*Database Fill:\*\* )[0-9.]+%",
+            rf"\g<1>{summary.fill_percent:.1f}%",
+            section_md,
+            flags=re.MULTILINE,
+        )
+
+        non_empty = summary.total_models - summary.empty_models
+        section_md = re.sub(
+            r"\(\d+/\d+ = [0-9.]+%\)",
+            f"({non_empty}/{summary.total_models} = {summary.fill_percent:.1f}%)",
+            section_md,
+        )
+        return section_md
+
+    return _replace_in_section(md, "Executive Summary", replace_in_executive_summary)
 
 
 def _replace_last_updated(md: str) -> str:
@@ -148,10 +159,93 @@ def _replace_last_updated(md: str) -> str:
     stamp = now.strftime("%Y-%m-%d %H:%M")
     return re.sub(
         r"(^\*\*Last Updated:\*\* )\d{4}-\d{2}-\d{2} \d{2}:\d{2}",
-        rf"\\1{stamp}",
+        rf"\g<1>{stamp}",
         md,
         flags=re.MULTILINE,
     )
+
+
+def _replace_in_section(md: str, heading_text: str, replacer) -> str:
+    """Apply a replacer function to a markdown section only.
+
+    Section is defined as:
+      "## ...{heading_text}..." up to the next "## " heading or EOF.
+    """
+
+    heading_re = re.compile(rf"^##\s+.*{re.escape(heading_text)}.*$", flags=re.MULTILINE)
+    match = heading_re.search(md)
+    if not match:
+        return md
+
+    start = match.start()
+    next_heading = re.compile(r"^##\s+", flags=re.MULTILINE)
+    next_match = next_heading.search(md, match.end())
+    end = next_match.start() if next_match else len(md)
+
+    before = md[:start]
+    section = md[start:end]
+    after = md[end:]
+    return before + replacer(section) + after
+
+
+def _replace_scanned_models_line(md: str, total_models: int) -> str:
+    return re.sub(
+        r"(^- ✅ Scans all )\d+( Django models)$",
+        rf"\g<1>{total_models}\g<2>",
+        md,
+        flags=re.MULTILINE,
+    )
+
+
+def _replace_seeding_progress(md: str, table_counts: Dict[str, int]) -> str:
+    # Keep this narrowly targeted to the numbered list under "Completed Levels".
+    # We match by the db_table names already present in the markdown.
+
+    def repl_single(table: str, line_re: str) -> None:
+        nonlocal md
+        if table not in table_counts:
+            return
+        md = re.sub(
+            line_re,
+            rf"\g<1>{table_counts[table]:,}\g<2>",
+            md,
+            flags=re.MULTILINE,
+        )
+
+    repl_single(
+        "accounts_user",
+        r"^(1\. \*\*Users\*\* - )[0-9,]+( \(`accounts_user`\))$",
+    )
+    repl_single(
+        "organisations_organisation",
+        r"^(2\. \*\*Organisations\*\* - )[0-9,]+( \(`organisations_organisation`\).*)$",
+    )
+    repl_single(
+        "projects_project",
+        r"^(3\. \*\*Projects \(Clubs/Teams\)\*\* - )[0-9,]+( \(`projects_project`\))$",
+    )
+    repl_single(
+        "activities_period",
+        r"^(4\. \*\*Periods \(Seasons/Competitions\)\*\* - )[0-9,]+( \(`activities_period`\))$",
+    )
+    repl_single(
+        "activities_activity",
+        r"^(5\. \*\*Activities \(Matches/Events\)\*\* - )[0-9,]+( \(`activities_activity`\))$",
+    )
+    repl_single(
+        "projects_membership",
+        r"^(6\. \*\*Project Memberships \(Players/Staff\)\*\* - )[0-9,]+( \(`projects_membership`\))$",
+    )
+
+    if "permissions_role" in table_counts and "permissions_roleassignment" in table_counts:
+        md = re.sub(
+            r"^(7\. \*\*RBAC Roles/Assignments\*\* - )\d+( roles, )\d+( assignments \(`permissions_role`, `permissions_roleassignment`\))$",
+            rf"\g<1>{table_counts['permissions_role']:,}\g<2>{table_counts['permissions_roleassignment']:,}\g<3>",
+            md,
+            flags=re.MULTILINE,
+        )
+
+    return md
 
 
 def _replace_table_counts(md: str, table_counts: Dict[str, int]) -> str:
@@ -188,7 +282,9 @@ def main() -> int:
     md = AUDIT_MD_PATH.read_text(encoding="utf-8")
     md = _replace_last_updated(md)
     md = _replace_summary(md, summary)
+    md = _replace_scanned_models_line(md, summary.total_models)
     md = _replace_table_counts(md, table_counts)
+    md = _replace_seeding_progress(md, table_counts)
 
     AUDIT_MD_PATH.write_text(md, encoding="utf-8")
 

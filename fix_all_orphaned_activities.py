@@ -10,7 +10,7 @@ Solution: Update all affected activities to point to the correct competition per
 import psycopg2
 
 conn_str = (
-    "postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+    "postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 )
 
 try:

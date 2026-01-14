@@ -1,6 +1,6 @@
 # TeamReel Audit Status Overview
 
-**Last Updated:** 2026-01-08
+**Last Updated:** 2026-01-14
 **Purpose:** Quick reference for all audit documents and their currency status
 
 ---
@@ -23,7 +23,7 @@
 
 **Regenerate command:**
 ```powershell
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python generate_db_state.py
 ```
 
@@ -31,24 +31,23 @@ python generate_db_state.py
 
 ### 2. Database Model Audit
 **File:** [teamreel-db-audit.md](teamreel-db-audit.md)
-**Last Updated:** 2026-01-08 09:15
+**Last Updated:** 2026-01-14 20:46
 **Freshness:** 🟢 **Current** (within hours)
-**Auto-Generated:** Partial (requires manual update after command output)
+**Auto-Generated:** Yes (via `scripts/update_teamreel_db_audit.py`)
 **Update Frequency:** After major seeding, monthly for trends
 **Regeneration Time:** 10-15 seconds
 
 **What it tracks:**
-- All 41 Django models with record counts
-- Database fill percentage (68.3%)
+- All 42 Django models with record counts
+- Database fill percentage (45.2%)
 - Empty vs populated tables
 - Model-by-model breakdown by app
 - Changelog of major data operations
 
 **Regenerate command:**
 ```powershell
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
-python manage.py audit_production_db > temp-audit-output.md
-# Then manually update teamreel-db-audit.md with new statistics
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
+python scripts/update_teamreel_db_audit.py
 ```
 
 ---
@@ -92,7 +91,7 @@ python manage.py audit_production_db > temp-audit-output.md
 ### Full Audit Refresh (All 3 Documents)
 ```powershell
 # 1. Database State (5 seconds)
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python generate_db_state.py
 
 # 2. Database Model Audit (10 seconds + manual update)

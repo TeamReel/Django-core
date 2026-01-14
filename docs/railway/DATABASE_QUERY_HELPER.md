@@ -9,7 +9,7 @@
 
 ### Public Connection URL
 ```
-postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway
+postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway
 ```
 
 **Important:** Use the **PUBLIC** URL (`switchback.proxy.rlwy.net`), NOT the internal hostname (`postgres.railway.internal`). The internal hostname only works from within Railway's network.
@@ -65,7 +65,7 @@ Period.objects.filter(name__icontains="Ajax").count()
 
 ```powershell
 # Note: Requires psql installed locally
-$env:PGPASSWORD="amItuWgShiNxWkvKmKyojIAahAtKTXPp"
+$env:PGPASSWORD="<PASSWORD>"
 psql -h switchback.proxy.rlwy.net -p 17304 -U postgres -d railway -c "SELECT COUNT(*) FROM activities_period;"
 ```
 
@@ -201,7 +201,7 @@ conn.close()
 ### Minimal Test Connection
 ```python
 import psycopg2
-conn = psycopg2.connect("postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway")
+conn = psycopg2.connect("postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway")
 cur = conn.cursor()
 cur.execute("SELECT COUNT(*) FROM activities_period")
 print(f"Total periods: {cur.fetchone()[0]}")
@@ -212,7 +212,7 @@ conn.close()
 ### Find All Ajax Data
 ```python
 import psycopg2
-conn = psycopg2.connect("postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway")
+conn = psycopg2.connect("postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway")
 cur = conn.cursor()
 
 print("Ajax Projects:")

@@ -9,7 +9,8 @@ class UsageEventFilter(django_filters.FilterSet):
     """Filter for UsageEvent queryset."""
 
     organization_id = django_filters.UUIDFilter(field_name="organization__id")
-    project_id = django_filters.UUIDFilter(field_name="project__id")
+    # Project uses integer PK
+    project_id = django_filters.NumberFilter(field_name="project__id")
     event_type = django_filters.CharFilter(field_name="event_type", lookup_expr="iexact")
     user__email__icontains = django_filters.CharFilter(
         field_name="user__email", lookup_expr="icontains"
@@ -50,7 +51,8 @@ class TransactionFilter(django_filters.FilterSet):
     """Filter for Transaction queryset."""
 
     organization_id = django_filters.UUIDFilter(field_name="organization__id")
-    project_id = django_filters.UUIDFilter(field_name="project__id")
+    # Project uses integer PK
+    project_id = django_filters.NumberFilter(field_name="project__id")
     source_type = django_filters.ChoiceFilter(
         field_name="source_type",
         choices=SourceTypeChoices.choices,

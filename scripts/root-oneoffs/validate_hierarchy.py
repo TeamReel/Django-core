@@ -6,7 +6,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 os.environ.setdefault(
     "DATABASE_URL",
-    "postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway",
+    "postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway",
 )
 
 import sys

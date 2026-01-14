@@ -49,3 +49,16 @@ def invalidate_cache_on_transaction(sender, instance, created, **kwargs):  # noq
                 organisation_id=instance.organization_id,
                 defaults={"current_balance": int(balance_sum)},
             )
+
+        # Update ProjectCreditsBalance if this is a project/team transaction
+        if instance.project_id:
+            from credits.models import ProjectCreditsBalance
+
+            project_sum = Transaction.objects.filter(project_id=instance.project_id).aggregate(
+                total=Sum("amount")
+            )["total"] or Decimal("0")
+
+            ProjectCreditsBalance.objects.update_or_create(
+                project_id=instance.project_id,
+                defaults={"current_balance": project_sum},
+            )

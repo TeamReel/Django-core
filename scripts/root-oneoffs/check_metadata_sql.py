@@ -4,7 +4,7 @@ import psycopg2
 import json
 
 conn = psycopg2.connect(
-    "postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+    "postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 )
 cur = conn.cursor()
 

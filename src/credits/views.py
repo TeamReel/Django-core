@@ -5,8 +5,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import CreditsBalance
-from .serializers import CreditsBalanceSerializer
+from .models import CreditsBalance, ProjectCreditsBalance
+from .serializers import CreditsBalanceSerializer, ProjectCreditsBalanceSerializer
 
 
 @api_view(["GET"])
@@ -51,5 +51,40 @@ def get_organisation_credits(request):
     except CreditsBalance.DoesNotExist:
         return Response(
             {"error": "No credits configured for this organisation"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_project_credits(request, project_id: int):
+    """Get credits balance for a specific project/team."""
+    from projects.models import Project
+
+    try:
+        project = Project.objects.select_related("organisation").get(id=project_id)
+    except Project.DoesNotExist:
+        return Response({"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    # Security check: Ensure user has access to this organisation (project inherits org access)
+    if not request.user.is_superuser:
+        from organisations.models import Membership
+
+        has_access = Membership.objects.filter(
+            user=request.user, organisation=project.organisation, is_active=True
+        ).exists()
+        if not has_access:
+            return Response(
+                {"error": "You do not have permission to view credits for this project"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+    try:
+        balance = ProjectCreditsBalance.objects.get(project=project)
+        serializer = ProjectCreditsBalanceSerializer(balance)
+        return Response(serializer.data)
+    except ProjectCreditsBalance.DoesNotExist:
+        return Response(
+            {"error": "No credits configured for this project"},
             status=status.HTTP_404_NOT_FOUND,
         )

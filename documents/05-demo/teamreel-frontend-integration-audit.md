@@ -30,7 +30,7 @@ Get-ChildItem -Path demo/src -Recurse -Include *.tsx,*.ts | Select-String -Patte
 #### 2. Check Backend Models
 ```powershell
 # Generate backend model inventory
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python manage.py audit_production_db
 ```
 

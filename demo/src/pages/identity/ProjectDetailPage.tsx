@@ -33,6 +33,7 @@ import MatchEditModal from './MatchEditModal';
 import InviteMemberModal from './InviteMemberModal';
 import UserDetailModal from './UserDetailModal';
 import UsersTable from './detail/UsersTable';
+import TeamCreditsTab from './detail/TeamCreditsTab';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -1779,6 +1780,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   // Tab order: hierarchy first (teams → seasons → competitions → matches), then users/people, then audit.
   const tabs = [
     { id: 'overview', label: 'Overview' },
+    ...(isLikelyTeam ? [{ id: 'credits', label: 'Credits' }] : []),
     { id: 'hierarchy', label: 'Hierarchy' },
     ...(!isLikelyTeam ? [{ id: 'teams', label: 'Teams' }] : []),
     { id: 'seasons', label: 'Seasons' },
@@ -1937,6 +1939,14 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             </button>
           ))}
         </div>
+
+          {activeTab === 'credits' && isLikelyTeam && (
+            <TeamCreditsTab
+              projectId={String(project.id)}
+              projectName={project.name}
+              organisationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '')}
+            />
+          )}
 
           {activeTab === 'overview' && (
             <>

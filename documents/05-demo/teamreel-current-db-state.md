@@ -20,7 +20,7 @@ This document can be regenerated at any time to reflect the current database sta
 ### Option 1: Quick Script (Recommended)
 ```powershell
 # Connect to Railway production database
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python generate_db_state.py
 ```
 
@@ -31,7 +31,7 @@ python generate_db_state.py
 ### Option 2: Detailed Inspection
 ```powershell
 # For more detailed analysis
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python inspect_current_data_v3.py
 ```
 

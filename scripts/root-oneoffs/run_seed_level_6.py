@@ -2,7 +2,7 @@ import os
 import subprocess
 
 os.environ["DATABASE_URL"] = (
-    "postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+    "postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 )
 os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.production"
 

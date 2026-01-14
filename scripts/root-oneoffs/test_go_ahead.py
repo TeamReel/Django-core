@@ -1,7 +1,7 @@
 import psycopg2
 
 DATABASE_URL = (
-    "postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+    "postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 )
 conn = psycopg2.connect(DATABASE_URL)
 cur = conn.cursor()

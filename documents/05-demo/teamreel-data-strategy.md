@@ -1245,7 +1245,7 @@ class ContentApproval(BaseModel):
 ### Pre-Step: Backup Current State
 ```bash
 # Create full backup before rebuild
-$env:PGPASSWORD="amItuWgShiNxWkvKmKyojIAahAtKTXPp"
+$env:PGPASSWORD="<PASSWORD>"
 pg_dump -h switchback.proxy.rlwy.net -p 17304 -U postgres -d railway > backup_before_rebuild_$(Get-Date -Format "yyyyMMdd_HHmmss").sql
 ```
 

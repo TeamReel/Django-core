@@ -4,7 +4,7 @@ import django
 # Setup Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
 os.environ["DATABASE_URL"] = (
-    "postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+    "postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 )
 django.setup()
 

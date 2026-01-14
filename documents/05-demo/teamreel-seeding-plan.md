@@ -43,7 +43,7 @@
 **Expected:** ~258 players + 36 coaches = ~294 users
 
 ```powershell
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python manage.py seed_level_9_players --csv-path documents/05-demo/players_knvb_2024_25.csv --period "Season 2024/2025"
 ```
 
@@ -61,7 +61,7 @@ python generate_reserve_teams.py
 cd ..\..
 
 # Then seed
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python manage.py seed_level_9_players --csv-path documents/05-demo/players_knvb_reserves_2024_25.csv --period "Season 2024/2025"
 ```
 
@@ -76,7 +76,7 @@ python manage.py seed_level_9_players --csv-path documents/05-demo/players_knvb_
 **Expected:** ~266 players + 36 coaches = ~302 users
 
 ```powershell
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python manage.py seed_level_9_players --csv-path documents/05-demo/players_international_2024_25.csv --period "Season 2024/25"
 ```
 
@@ -90,7 +90,7 @@ python manage.py seed_level_9_players --csv-path documents/05-demo/players_inter
 **Expected:** ~45 players + 6 coaches = ~51 users
 
 ```powershell
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python manage.py seed_level_9_players --csv-path documents/05-demo/players_eredivisie_2023_24.csv --period "Season 2023/2024"
 ```
 
@@ -99,7 +99,7 @@ python manage.py seed_level_9_players --csv-path documents/05-demo/players_eredi
 **Expected:** ~51 users
 
 ```powershell
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python manage.py seed_level_9_players --csv-path documents/05-demo/players_eredivisie_2022_23.csv --period "Season 2022/2023"
 ```
 
@@ -108,7 +108,7 @@ python manage.py seed_level_9_players --csv-path documents/05-demo/players_eredi
 **Expected:** ~51 users
 
 ```powershell
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python manage.py seed_level_9_players --csv-path documents/05-demo/players_eredivisie_2021_22.csv --period "Season 2021/2022"
 ```
 
@@ -117,7 +117,7 @@ python manage.py seed_level_9_players --csv-path documents/05-demo/players_eredi
 **Expected:** ~51 users
 
 ```powershell
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python manage.py seed_level_9_players --csv-path documents/05-demo/players_eredivisie_2020_21.csv --period "Season 2020/2021"
 ```
 
@@ -184,7 +184,7 @@ python manage.py seed_level_9_players --csv-path documents/05-demo/players_eredi
 
 ```powershell
 # Check user count
-$env:DATABASE_URL="postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python manage.py shell -c "from accounts.models import User; print(f'Total users: {User.objects.count()}')"
 
 # Check memberships per period
