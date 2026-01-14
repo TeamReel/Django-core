@@ -103,26 +103,34 @@ class MembershipService:
                 pass
 
         # Audit log
-        audit_log.record(
-            "project.membership.created",
-            user=actor,
-            project=project,
-            metadata={
-                "project_id": str(project.id),
-                "user_id": str(user.id),
-                "role": role,
-                "period_id": str(period.id) if period else None,
-                "reason": reason,
-            },
-        )
+        try:
+            audit_log.record(
+                "project.membership.created",
+                user=actor,
+                project=project,
+                metadata={
+                    "project_id": str(project.id),
+                    "user_id": str(user.id),
+                    "role": role,
+                    "period_id": str(period.id) if period else None,
+                    "reason": reason,
+                },
+            )
+        except Exception:
+            # Never fail core membership creation because audit logging is down/misconfigured.
+            pass
 
         # Notification
-        create_notification(
-            recipient_user_id=str(user.id),
-            title=f"Added to {project.name}",
-            message=f"You have been added to project '{project.name}' as {role}.",
-            level="info",
-        )
+        try:
+            create_notification(
+                recipient_user_id=str(user.id),
+                title=f"Added to {project.name}",
+                message=f"You have been added to project '{project.name}' as {role}.",
+                level="info",
+            )
+        except Exception:
+            # Notifications are best-effort.
+            pass
 
         return membership
 

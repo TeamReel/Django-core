@@ -171,3 +171,47 @@ class TestMembershipServiceAdd:
             period=season,
             deleted_at__isnull=True,
         ).exists()
+
+    def test_add_member_does_not_fail_if_notification_errors(
+        self,
+        user_factory,
+        organisation_factory,
+        project_factory,
+        monkeypatch,
+    ):
+        """Membership creation should succeed even if notifications are misconfigured."""
+
+        owner = user_factory()
+        org = organisation_factory(creator=owner)
+        project = project_factory(organisation=org, creator=owner)
+
+        season = Period.objects.create(
+            name="Season",
+            start_date=date(2025, 7, 1),
+            end_date=date(2026, 6, 30),
+            organisation=org,
+        )
+
+        member = user_factory()
+        Membership.objects.create(user=member, organisation=org, role="member")
+
+        def _boom(**kwargs):
+            raise RuntimeError("notifications down")
+
+        monkeypatch.setattr(
+            "projects.services.membership_service.create_notification",
+            _boom,
+            raising=True,
+        )
+
+        service = MembershipService()
+        membership = service.add_member(
+            project=project,
+            user=member,
+            role=ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            metadata={},
+            actor=owner,
+        )
+
+        assert membership.project_id == project.id

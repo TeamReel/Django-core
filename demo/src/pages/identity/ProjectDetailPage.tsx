@@ -4196,11 +4196,16 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
               title: payload.title,
               activity_type: 'match',
               project_id: teamIdValue ? Number(teamIdValue) : undefined,
+              opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
               period_id: competitionIdValue,
               start_time: payload.start_time,
               end_time: payload.end_time,
               location: payload.location,
               description: payload.description,
+              metadata: {
+                venue: payload.venue || 'Home',
+                is_home: (payload.venue || 'Home') === 'Home',
+              },
             }),
           });
 
