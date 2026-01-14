@@ -38,7 +38,7 @@ export const UserDetailPage: React.FC = () => {
   const [hierarchySearch, setHierarchySearch] = useState('');
 
   const allowedTabs = useMemo(
-    () => new Set(['overview', 'hierarchy', 'clubs', 'teams', 'seasons']),
+    () => new Set(['overview', 'hierarchy', 'clubs', 'teams', 'seasons', 'competitions', 'matches']),
     []
   );
 
@@ -404,6 +404,8 @@ export const UserDetailPage: React.FC = () => {
           {renderTabButton('clubs', 'Clubs')}
           {renderTabButton('teams', 'Teams')}
           {renderTabButton('seasons', 'Seasons')}
+          {renderTabButton('competitions', 'Competitions')}
+          {renderTabButton('matches', 'Matches')}
         </div>
 
         {activeTab === 'overview' && (
@@ -662,7 +664,12 @@ export const UserDetailPage: React.FC = () => {
                 </tbody>
               </Table>
             </Card>
+          </div>
+        )}
 
+        {activeTab === 'competitions' && (
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {loadingRelations && <Alert variant="info">Loading competitions…</Alert>}
             <Card>
               <h3 style={{ marginTop: 0 }}>Competitions</h3>
               <Table style={compactTableStyle}>
@@ -710,7 +717,12 @@ export const UserDetailPage: React.FC = () => {
                 </tbody>
               </Table>
             </Card>
+          </div>
+        )}
 
+        {activeTab === 'matches' && (
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {loadingRelations && <Alert variant="info">Loading matches…</Alert>}
             <Card>
               <h3 style={{ marginTop: 0 }}>Matches</h3>
               <Table style={compactTableStyle}>

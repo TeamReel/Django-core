@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { fetchAllPages } from '../../utils/fetchAllPages';
 
 type Organisation = {
   id: string | number;
@@ -20,7 +21,7 @@ type User = {
   first_name?: string;
   last_name?: string;
   organisations?: Array<{ id: string | number; slug?: string; name?: string }>;
-  projects?: Array<{ id?: string | number; slug?: string | null }>;
+  projects?: Array<{ id?: string | number; slug?: string | null; membership_id?: string | number | null }>;
 };
 
 export default function LinkUserModal({
@@ -127,6 +128,17 @@ export default function LinkUserModal({
     return new Set(projects.map((p: any) => String(p?.id ?? p?.slug ?? '')).filter(Boolean));
   }, [user]);
 
+  const projectMembershipIdByProjectId = useMemo(() => {
+    const map = new Map<string, string>();
+    const projects = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+    for (const p of projects) {
+      const projectId = String(p?.id ?? '').trim();
+      const membershipId = String(p?.membership_id ?? '').trim();
+      if (projectId && membershipId) map.set(projectId, membershipId);
+    }
+    return map;
+  }, [user]);
+
   const canSubmit = Boolean(user) && Boolean(organisationId || clubId || teamId);
 
   useEffect(() => {
@@ -206,6 +218,108 @@ export default function LinkUserModal({
       const text = await res.text().catch(() => '');
       if (/already|exists|duplicate/i.test(text)) return;
       throw new Error(text || 'Failed to assign user to project');
+    }
+  };
+
+  const resolveOrgSlugOrIdForApi = (): string => {
+    const org = resolvedOrg;
+    const fromResolved = String((org as any)?.slug || (org as any)?.id || '').trim();
+    if (fromResolved) return fromResolved;
+    const fallback = String(initialOrganisationSlugOrId || '').trim();
+    return fallback;
+  };
+
+  const findOrganisationMembershipId = async (): Promise<string> => {
+    if (!user) throw new Error('User missing');
+    const orgIdValue = String(organisationId || '').trim();
+    if (!orgIdValue) throw new Error('Select a federation first');
+
+    // Fast path: sometimes org entries already contain membership_id.
+    const orgs = Array.isArray((user as any)?.organisations) ? (user as any).organisations : [];
+    const direct = orgs.find((o: any) => String(o?.id ?? '') === orgIdValue);
+    const directMembershipId = String(direct?.membership_id ?? '').trim();
+    if (directMembershipId) return directMembershipId;
+
+    const orgSlugOrId = resolveOrgSlugOrIdForApi();
+    if (!orgSlugOrId) throw new Error('Federation slug/id missing');
+
+    // Fallback: fetch org members and locate by email/id.
+    const members = await fetchAllPages<any>(
+      `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/members/?page_size=500`,
+      { credentials: 'include' },
+      {
+        ttlMs: 5_000,
+        cacheKey: `org:${orgSlugOrId}:members:lookup:${String(user.id)}`,
+        maxPages: 50,
+        maxItems: 10_000,
+      },
+    );
+
+    const email = String(user.email || '').trim().toLowerCase();
+    const uid = String(user.id);
+    const found = (members || []).find((m: any) => {
+      const memberId = String(m?.id ?? '').trim();
+      if (!memberId) return false;
+      const mu = m?.user || m;
+      const mid = String(mu?.id ?? '').trim();
+      const memail = String(mu?.email ?? m?.email ?? '').trim().toLowerCase();
+      return (uid && mid && uid === mid) || (email && memail && email === memail);
+    });
+    const membershipId = String(found?.id ?? '').trim();
+    if (!membershipId) throw new Error('Could not find federation membership for this user');
+    return membershipId;
+  };
+
+  const unlinkOrganisationMembership = async () => {
+    if (!user) return;
+    const orgSlugOrId = resolveOrgSlugOrIdForApi();
+    if (!orgSlugOrId) throw new Error('Federation slug/id missing');
+
+    const membershipId = await findOrganisationMembershipId();
+
+    const res = await fetch(
+      `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/members/${encodeURIComponent(membershipId)}/`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+      }
+    );
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to unlink user from federation');
+    }
+  };
+
+  const unlinkProjectMembership = async (projectId: string) => {
+    if (!user) return;
+    const pid = String(projectId || '').trim();
+    if (!pid) throw new Error('Select a club/team first');
+
+    const membershipId = String(projectMembershipIdByProjectId.get(pid) || '').trim();
+    if (!membershipId) {
+      throw new Error('Missing project membership id for this user. Refresh user data and try again.');
+    }
+
+    const res = await fetch(
+      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+      }
+    );
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to unlink user from project');
     }
   };
 
@@ -349,6 +463,42 @@ export default function LinkUserModal({
                     </option>
                   ))}
                 </select>
+                {organisationId && existingOrgIds.has(String(organisationId)) && (
+                  <div style={{ marginTop: '8px' }}>
+                    <button
+                      type="button"
+                      disabled={saving}
+                      onClick={async () => {
+                        if (!window.confirm('Unlink this user from the selected federation?')) return;
+                        setSaving(true);
+                        setError(null);
+                        setSuccessNote(null);
+                        try {
+                          await unlinkOrganisationMembership();
+                          setSuccessNote('Unlinked federation successfully.');
+                          onSuccess();
+                          onClose();
+                        } catch (err) {
+                          setError(err instanceof Error ? err.message : 'Failed to unlink federation');
+                        } finally {
+                          setSaving(false);
+                        }
+                      }}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '4px',
+                        border: '1px solid #dc3545',
+                        backgroundColor: 'var(--app-surface)',
+                        color: '#dc3545',
+                        cursor: saving ? 'not-allowed' : 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Unlink Federation
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -407,6 +557,42 @@ export default function LinkUserModal({
                     </option>
                   ))}
                 </select>
+                {clubId && existingProjectIds.has(String(clubId)) && (
+                  <div style={{ marginTop: '8px' }}>
+                    <button
+                      type="button"
+                      disabled={saving}
+                      onClick={async () => {
+                        if (!window.confirm('Unlink this user from the selected club?')) return;
+                        setSaving(true);
+                        setError(null);
+                        setSuccessNote(null);
+                        try {
+                          await unlinkProjectMembership(String(clubId));
+                          setSuccessNote('Unlinked club successfully.');
+                          onSuccess();
+                          onClose();
+                        } catch (err) {
+                          setError(err instanceof Error ? err.message : 'Failed to unlink club');
+                        } finally {
+                          setSaving(false);
+                        }
+                      }}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '4px',
+                        border: '1px solid #dc3545',
+                        backgroundColor: 'var(--app-surface)',
+                        color: '#dc3545',
+                        cursor: saving ? 'not-allowed' : 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Unlink Club
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -437,6 +623,42 @@ export default function LinkUserModal({
                     </option>
                   ))}
                 </select>
+                {teamId && existingProjectIds.has(String(teamId)) && (
+                  <div style={{ marginTop: '8px' }}>
+                    <button
+                      type="button"
+                      disabled={saving}
+                      onClick={async () => {
+                        if (!window.confirm('Unlink this user from the selected team?')) return;
+                        setSaving(true);
+                        setError(null);
+                        setSuccessNote(null);
+                        try {
+                          await unlinkProjectMembership(String(teamId));
+                          setSuccessNote('Unlinked team successfully.');
+                          onSuccess();
+                          onClose();
+                        } catch (err) {
+                          setError(err instanceof Error ? err.message : 'Failed to unlink team');
+                        } finally {
+                          setSaving(false);
+                        }
+                      }}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '4px',
+                        border: '1px solid #dc3545',
+                        backgroundColor: 'var(--app-surface)',
+                        color: '#dc3545',
+                        cursor: saving ? 'not-allowed' : 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Unlink Team
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
