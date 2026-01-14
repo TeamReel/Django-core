@@ -9,6 +9,7 @@ import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import UserDetailModal from './UserDetailModal';
 import UserEditModal from './UserEditModal';
+import LinkUserModal from './LinkUserModal';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -17,6 +18,155 @@ import {
   compactTextTdStyle,
   compactThStyle,
 } from './detail/detailStyles';
+
+function ProjectMembershipEditModal({
+  opened,
+  onClose,
+  membership,
+  onSave,
+}: {
+  opened: boolean;
+  onClose: () => void;
+  membership: { projectId: string; projectName: string; currentRole: string } | null;
+  onSave: (payload: { role: string }) => Promise<void>;
+}) {
+  const [role, setRole] = useState('viewer');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!opened || !membership) return;
+    setRole(String(membership.currentRole || 'viewer'));
+    setError(null);
+  }, [opened, membership]);
+
+  if (!opened || !membership) return null;
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: 'var(--app-surface)',
+          padding: '20px',
+          borderRadius: '8px',
+          width: '520px',
+          maxWidth: '95%',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          color: 'var(--app-text)',
+          border: '1px solid var(--app-border)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Edit membership role</h2>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '18px',
+              cursor: 'pointer',
+              color: 'var(--app-text)',
+            }}
+            aria-label="Close"
+            type="button"
+          >
+            ×
+          </button>
+        </div>
+
+        <div style={{ marginTop: '10px', color: 'var(--app-muted-text)', fontSize: '13px' }}>{membership.projectName}</div>
+
+        {error ? (
+          <div style={{ marginTop: '12px', padding: '10px 12px', borderRadius: '6px', backgroundColor: '#fee', color: '#c00' }}>{error}</div>
+        ) : null}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontWeight: 600 }} htmlFor="membership-role-select">
+              Role
+            </label>
+            <select
+              id="membership-role-select"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              disabled={saving}
+              style={{
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+              }}
+            >
+              <option value="viewer">Viewer</option>
+              <option value="editor">Editor</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: saving ? 'not-allowed' : 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={async () => {
+                setSaving(true);
+                setError(null);
+                try {
+                  await onSave({ role });
+                  onClose();
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : 'Failed to save');
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '6px',
+                border: '1px solid #007bff',
+                backgroundColor: '#007bff',
+                color: '#fff',
+                cursor: saving ? 'not-allowed' : 'pointer',
+              }}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export const UserDetailPage: React.FC = () => {
   const { userId, orgId } = useParams<{ userId: string; orgId?: string }>();
@@ -29,6 +179,15 @@ export const UserDetailPage: React.FC = () => {
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [linkOrgs, setLinkOrgs] = useState<any[]>([]);
+  const [linkClubs, setLinkClubs] = useState<any[]>([]);
+  const [linkTeams, setLinkTeams] = useState<any[]>([]);
+  const [linkOptionsLoading, setLinkOptionsLoading] = useState(false);
+  const [linkOptionsError, setLinkOptionsError] = useState<string | null>(null);
+
+  const [editingMembership, setEditingMembership] = useState<{ projectId: string; projectName: string; currentRole: string } | null>(null);
+  const [isEditMembershipModalOpen, setIsEditMembershipModalOpen] = useState(false);
 
   const [clubsById, setClubsById] = useState<Map<string, any>>(new Map());
   const [linkedCompetitions, setLinkedCompetitions] = useState<any[]>([]);
@@ -99,6 +258,50 @@ export const UserDetailPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const ensureLinkOptionsLoaded = async () => {
+    if (linkOptionsLoading) return;
+    if (linkOrgs.length && linkClubs.length && linkTeams.length) return;
+    try {
+      setLinkOptionsLoading(true);
+      setLinkOptionsError(null);
+
+      const [orgs, clubs, teams] = await Promise.all([
+        fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/organisations/?page_size=200`,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: 'user-detail:link:orgs', maxItems: 5000 }
+        ),
+        fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: 'user-detail:link:clubs', maxItems: 20_000 }
+        ),
+        fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: 'user-detail:link:teams', maxItems: 50_000 }
+        ),
+      ]);
+
+      setLinkOrgs(Array.isArray(orgs) ? orgs : []);
+      setLinkClubs(Array.isArray(clubs) ? clubs : []);
+      setLinkTeams(Array.isArray(teams) ? teams : []);
+    } catch (e) {
+      setLinkOptionsError(e instanceof Error ? e.message : 'Failed to load link options');
+      setLinkOrgs([]);
+      setLinkClubs([]);
+      setLinkTeams([]);
+    } finally {
+      setLinkOptionsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isLinkModalOpen) return;
+    void ensureLinkOptionsLoaded();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLinkModalOpen]);
 
   useEffect(() => {
     let isMounted = true;
@@ -177,6 +380,79 @@ export const UserDetailPage: React.FC = () => {
     const first = userOrgs.find((o: any) => o?.slug) || userOrgs[0];
     return String(first?.slug || first?.id || '').trim();
   }, [orgId, userOrgs]);
+
+  const findProjectMembershipId = async (projectId: string, directMembershipId?: any): Promise<string> => {
+    const direct = String(directMembershipId || '').trim();
+    if (direct) return direct;
+    if (!user) throw new Error('User missing');
+
+    const members = await fetchAllPages<any>(
+      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(projectId))}/members/?page_size=500`,
+      { credentials: 'include' },
+      { ttlMs: 5_000, cacheKey: `user-detail:project:${String(projectId)}:members:${String(user.id)}`, maxPages: 50, maxItems: 10_000 }
+    );
+
+    const email = String(user.email || '').trim().toLowerCase();
+    const uid = String(user.id);
+    const found = (members || []).find((m: any) => {
+      const memberId = String(m?.id ?? '').trim();
+      if (!memberId) return false;
+      const mu = m?.user || m;
+      const mid = String(mu?.id ?? '').trim();
+      const memail = String(mu?.email ?? m?.email ?? '').trim().toLowerCase();
+      return (uid && mid && uid === mid) || (email && memail && email === memail);
+    });
+
+    const membershipId = String(found?.id ?? '').trim();
+    if (!membershipId) throw new Error('Could not find project membership for this user');
+    return membershipId;
+  };
+
+  const removeProjectMembership = async (projectId: string, directMembershipId?: any) => {
+    if (!user) return;
+    const pid = String(projectId || '').trim();
+    if (!pid) return;
+
+    const membershipId = await findProjectMembershipId(pid, directMembershipId);
+    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to remove membership');
+    }
+
+    await fetchUser();
+  };
+
+  const updateProjectMembershipRole = async (projectId: string, directMembershipId: any, role: string) => {
+    if (!user) return;
+    const pid = String(projectId || '').trim();
+    if (!pid) return;
+
+    const membershipId = await findProjectMembershipId(pid, directMembershipId);
+    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'include',
+      body: JSON.stringify({ role }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to update role');
+    }
+
+    // 202 may indicate promotion flow; still refresh.
+    await fetchUser();
+  };
 
   const clubMemberships = useMemo(() => {
     return userProjects.filter((p: any) => !p?.parent);
@@ -372,6 +648,15 @@ export const UserDetailPage: React.FC = () => {
             <button
               type="button"
               className="app-action-button"
+              onClick={() => setIsLinkModalOpen(true)}
+              style={{ ...actionButtonStyle('neutral'), padding: '8px 16px', fontSize: '14px', minWidth: '120px' }}
+              disabled={!user}
+            >
+              Add to…
+            </button>
+            <button
+              type="button"
+              className="app-action-button"
               onClick={() => setIsViewModalOpen(true)}
               style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '92px' }}
             >
@@ -515,7 +800,17 @@ export const UserDetailPage: React.FC = () => {
 
         {activeTab === 'clubs' && (
           <Card>
-            <h3 style={{ marginTop: 0 }}>Clubs</h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              <h3 style={{ marginTop: 0, marginBottom: 0 }}>Clubs</h3>
+              <button
+                type="button"
+                onClick={() => setIsLinkModalOpen(true)}
+                style={actionButtonStyle('neutral')}
+                disabled={!user}
+              >
+                Add to…
+              </button>
+            </div>
             <Table style={compactTableStyle}>
               <thead>
                 <tr>
@@ -527,6 +822,8 @@ export const UserDetailPage: React.FC = () => {
               <tbody>
                 {clubMemberships.map((c: any) => {
                   const clubPath = primaryOrgSlug && c?.slug ? `/organisations/${primaryOrgSlug}/projects/${c.slug}` : '';
+                  const projectId = String(c?.id || '').trim();
+                  const membershipId = (c as any)?.membership_id;
                   return (
                     <tr key={String(c?.id)}>
                       <td style={compactTextTdStyle}>{String(c?.name || '')}</td>
@@ -538,13 +835,30 @@ export const UserDetailPage: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => clubPath && navigate(`${clubPath}/edit`)}
-                            disabled={!clubPath}
+                            onClick={() => {
+                              if (!projectId) return;
+                              setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(c?.role || 'viewer') });
+                              setIsEditMembershipModalOpen(true);
+                            }}
+                            disabled={!projectId}
                             style={actionButtonStyle('warning')}
                           >
                             Edit
                           </button>
-                          <button type="button" disabled style={{ ...actionButtonStyle('danger'), opacity: 0.5, cursor: 'not-allowed' }}>
+                          <button
+                            type="button"
+                            style={actionButtonStyle('danger')}
+                            disabled={!projectId}
+                            onClick={async () => {
+                              if (!projectId) return;
+                              if (!window.confirm('Remove this user from the club?')) return;
+                              try {
+                                await removeProjectMembership(projectId, membershipId);
+                              } catch (e) {
+                                alert(e instanceof Error ? e.message : 'Failed to remove membership');
+                              }
+                            }}
+                          >
                             Delete
                           </button>
                         </div>
@@ -566,7 +880,17 @@ export const UserDetailPage: React.FC = () => {
 
         {activeTab === 'teams' && (
           <Card>
-            <h3 style={{ marginTop: 0 }}>Teams</h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              <h3 style={{ marginTop: 0, marginBottom: 0 }}>Teams</h3>
+              <button
+                type="button"
+                onClick={() => setIsLinkModalOpen(true)}
+                style={actionButtonStyle('neutral')}
+                disabled={!user}
+              >
+                Add to…
+              </button>
+            </div>
             <Table style={compactTableStyle}>
               <thead>
                 <tr>
@@ -584,6 +908,8 @@ export const UserDetailPage: React.FC = () => {
                   const teamPath = primaryOrgSlug && clubSlug && teamSlugOrId
                     ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
                     : '';
+                  const projectId = String(t?.id || '').trim();
+                  const membershipId = (t as any)?.membership_id;
                   return (
                     <tr key={String(t?.id)}>
                       <td style={compactTextTdStyle}>{String(t?.parent_name || '')}</td>
@@ -594,10 +920,32 @@ export const UserDetailPage: React.FC = () => {
                           <button type="button" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath} style={actionButtonStyle('primary')}>
                             View
                           </button>
-                          <button type="button" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath} style={actionButtonStyle('warning')}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!projectId) return;
+                              setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer') });
+                              setIsEditMembershipModalOpen(true);
+                            }}
+                            disabled={!projectId}
+                            style={actionButtonStyle('warning')}
+                          >
                             Edit
                           </button>
-                          <button type="button" disabled style={{ ...actionButtonStyle('danger'), opacity: 0.5, cursor: 'not-allowed' }}>
+                          <button
+                            type="button"
+                            style={actionButtonStyle('danger')}
+                            disabled={!projectId}
+                            onClick={async () => {
+                              if (!projectId) return;
+                              if (!window.confirm('Remove this user from the team?')) return;
+                              try {
+                                await removeProjectMembership(projectId, membershipId);
+                              } catch (e) {
+                                alert(e instanceof Error ? e.message : 'Failed to remove membership');
+                              }
+                            }}
+                          >
                             Delete
                           </button>
                         </div>
@@ -774,6 +1122,42 @@ export const UserDetailPage: React.FC = () => {
       <UserDetailModal opened={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} user={user} />
 
       <UserEditModal opened={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} user={user} onSave={handleSaveUser} />
+
+      <LinkUserModal
+        opened={isLinkModalOpen}
+        onClose={() => setIsLinkModalOpen(false)}
+        user={user as any}
+        organisations={(linkOrgs.length ? linkOrgs : userOrgs) as any}
+        clubs={linkClubs as any}
+        teams={linkTeams as any}
+        initialOrganisationSlugOrId={String(primaryOrgSlug || '')}
+        onSuccess={() => {
+          fetchUser();
+          setIsLinkModalOpen(false);
+        }}
+      />
+
+      <ProjectMembershipEditModal
+        opened={isEditMembershipModalOpen}
+        onClose={() => {
+          setIsEditMembershipModalOpen(false);
+          setEditingMembership(null);
+        }}
+        membership={editingMembership}
+        onSave={async ({ role }) => {
+          if (!editingMembership) return;
+          const projectId = editingMembership.projectId;
+          const project = userProjects.find((p: any) => String(p?.id) === String(projectId));
+          const membershipId = (project as any)?.membership_id;
+          await updateProjectMembershipRole(projectId, membershipId, role);
+        }}
+      />
+
+      {linkOptionsError && isLinkModalOpen ? (
+        <div style={{ position: 'fixed', bottom: 12, right: 12, zIndex: 1100, maxWidth: 420 }}>
+          <Alert variant="warning">{linkOptionsError}</Alert>
+        </div>
+      ) : null}
     </AppShell>
   );
 };
