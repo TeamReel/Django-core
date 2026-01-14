@@ -298,21 +298,32 @@ export default function SeasonSquadAddMemberModal({
     };
   }, [opened, apiBaseUrl, selectedOrganisationId, selectedOrganisationSlug]);
 
-  // Load teams (child projects) when club changes.
+  // Load teams (child projects).
+  // - If club selected: only teams in that club.
+  // - Else if federation selected: teams in that federation.
+  // - Else: all teams.
   useEffect(() => {
     if (!opened) return;
     const clubId = String(selectedClubId || '').trim();
-    if (!clubId) {
-      setRemoteTeams([]);
-      return;
-    }
+    const orgId = String(selectedOrganisationId || '').trim();
+    const orgSlug = String(selectedOrganisationSlug || '').trim();
 
     let cancelled = false;
     const abortController = new AbortController();
     const load = async () => {
       setLoadingTeams(true);
       try {
-        const baseUrl = `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubId)}&page_size=200`;
+        // If federation selected but slug not resolved yet, wait.
+        if (!clubId && orgId && !orgSlug) {
+          if (!cancelled) setRemoteTeams([]);
+          return;
+        }
+
+        const baseUrl = clubId
+          ? `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubId)}&page_size=200`
+          : orgId
+            ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=200&parent_project__isnull=false`
+            : `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`;
         const rawList = await fetchAllPages(
           baseUrl,
           { credentials: 'include', signal: abortController.signal },
@@ -333,7 +344,7 @@ export default function SeasonSquadAddMemberModal({
       cancelled = true;
       abortController.abort();
     };
-  }, [opened, apiBaseUrl, selectedClubId]);
+  }, [opened, apiBaseUrl, selectedClubId, selectedOrganisationId, selectedOrganisationSlug]);
 
   // Load user options based on the selected scope:
   // - Team selected: show users that can be added to this team for this season (searchable-users)
@@ -600,7 +611,7 @@ export default function SeasonSquadAddMemberModal({
               id="squad-add-team"
               value={selectedTeamId}
               onChange={(e) => applyTeamSelection(e.target.value)}
-              disabled={saving || loadingTeams || !selectedClubId}
+              disabled={saving || loadingTeams}
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',
