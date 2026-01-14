@@ -21,7 +21,8 @@ ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
 # Build demo + its workspace dependencies (needed because packages export from dist/)
-RUN pnpm -r --filter "./demo..." build
+# Use package-name filter (more reliable than path filter in CI builds).
+RUN pnpm -r --filter "@django-core/demo..." build
 
 # Production stage
 FROM node:20-alpine

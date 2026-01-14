@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryFn, StoryObj } from '@storybook/react';
 import { ContextSwitcher } from './ContextSwitcher';
 import { ContextSwitcherProvider } from '../context/ContextSwitcherProvider';
 import type { RouterAdapter } from '../types';
@@ -72,7 +72,7 @@ const meta: Meta<typeof ContextSwitcher> = {
   title: 'Components/ContextSwitcher',
   component: ContextSwitcher,
   decorators: [
-    (Story) => (
+    (Story: StoryFn) => (
       <ContextSwitcherProvider
         config={{
           routerAdapter: mockRouterAdapter,
@@ -128,7 +128,7 @@ export const InHeader: Story = {
     variant: 'horizontal',
   },
   decorators: [
-    (Story) => (
+    (Story: StoryFn) => (
       <header
         style={{
           display: 'flex',
@@ -155,7 +155,7 @@ export const InSidebar: Story = {
     variant: 'vertical',
   },
   decorators: [
-    (Story) => (
+    (Story: StoryFn) => (
       <aside
         style={{
           width: '250px',
@@ -185,7 +185,7 @@ export const CustomStyled: Story = {
     className: 'custom-context-switcher',
   },
   decorators: [
-    (Story) => (
+    (Story: StoryFn) => (
       <div>
         <style>
           {`
@@ -211,7 +211,7 @@ export const Loading: Story = {
     variant: 'horizontal',
   },
   decorators: [
-    (Story) => {
+    (Story: StoryFn) => {
       // Mock slow API to show loading state
       global.fetch = (() => {
         return new Promise(() => {
@@ -232,16 +232,16 @@ export const Error: Story = {
     variant: 'horizontal',
   },
   decorators: [
-    (Story) => {
+    (Story: StoryFn) => {
       // Mock failed API
-      global.fetch = (() => {
+      global.fetch = ((() => {
         return Promise.resolve({
           ok: false,
           status: 500,
           statusText: 'Internal Server Error',
           json: () => Promise.resolve({ error: { message: 'Failed to load organisations' } }),
         });
-      }) as typeof fetch;
+      }) as unknown) as typeof fetch;
 
       return <Story />;
     },
@@ -256,7 +256,7 @@ export const Compact: Story = {
     variant: 'horizontal',
   },
   decorators: [
-    (Story) => (
+    (Story: StoryFn) => (
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
         <Story />
       </div>
