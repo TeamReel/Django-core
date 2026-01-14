@@ -314,14 +314,36 @@ export default function HierarchyMatchDetailPage() {
           return [];
         };
 
-        // 1) Project members (user ids)
-        const projectMembersRes = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(match.project.id))}/members/?page_size=500`,
-          { credentials: 'include' }
-        );
-        if (!projectMembersRes.ok) throw new Error('Failed to load team members');
-        const projectMembersRaw = await projectMembersRes.json().catch(() => null);
-        const projectMembers = extractList(projectMembersRaw);
+        // 1) Project members (user ids) — prefer season-scoped roster
+        const seasonUuid = String(resolvedSeasonUuid || '').trim();
+        const baseMembersUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(match.project.id))}/members/`;
+
+        const fetchMembers = async (withSeasonFilter: boolean) => {
+          const params = new URLSearchParams();
+          params.set('page_size', '500');
+          if (withSeasonFilter && seasonUuid) params.set('period', seasonUuid);
+          const res = await fetch(`${baseMembersUrl}?${params.toString()}`, { credentials: 'include' });
+          if (!res.ok) return { ok: false, list: [] as any[] };
+          const raw = await res.json().catch(() => null);
+          return { ok: true, list: extractList(raw) };
+        };
+
+        let projectMembers: any[] = [];
+        if (seasonUuid) {
+          const seasonAttempt = await fetchMembers(true);
+          if (seasonAttempt.ok) projectMembers = seasonAttempt.list;
+
+          // Fallback: if season roster is empty (legacy data), use full team roster
+          if (projectMembers.length === 0) {
+            const fallbackAttempt = await fetchMembers(false);
+            if (fallbackAttempt.ok) projectMembers = fallbackAttempt.list;
+          }
+        } else {
+          const fallbackAttempt = await fetchMembers(false);
+          if (fallbackAttempt.ok) projectMembers = fallbackAttempt.list;
+        }
+
+        if (!Array.isArray(projectMembers)) projectMembers = [];
         setTeamProjectMembers(projectMembers as ProjectMember[]);
         const projectUserIds = new Set(
           asArray(projectMembers)
@@ -370,7 +392,7 @@ export default function HierarchyMatchDetailPage() {
     };
 
     run();
-  }, [apiBaseUrl, club?.id, match?.project?.id, orgSlugOrId]);
+  }, [apiBaseUrl, club?.id, match?.project?.id, orgSlugOrId, resolvedSeasonUuid]);
 
   const breadcrumbs = useMemo(() => {
     const projectDetailPath = isTeamRoute
