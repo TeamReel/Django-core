@@ -71,10 +71,10 @@ const getPagedCount = (json: any): number | null => {
   return typeof c === 'number' ? c : null;
 };
 
-const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promise<T[]> => {
+const fetchAllPages = async <T,>(url: string, options: RequestInit = {}, cacheOptions?: any): Promise<T[]> => {
   // Use the shared cached implementation to avoid repeated, expensive multi-page loads.
   // Cache is in-memory (per SPA session) and not related to the backend cache module.
-  return await fetchAllPagesCached<T>(url, options, { ttlMs: 5 * 60_000, maxPages: 10 });
+  return await fetchAllPagesCached<T>(url, options, { ttlMs: 5 * 60_000, maxPages: 10, ...(cacheOptions || {}) });
 };
 
 /**
@@ -557,14 +557,18 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
       params.set('page_size', '250');
 
       const membersUrl = `${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/members/?${params.toString()}`;
-      const allMembers = await fetchAllPages<any>(membersUrl, {
+      const allMembers = await fetchAllPages<any>(
+        membersUrl,
+        {
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
           'X-Organisation-ID': String(resolvedOrg?.id || (project as any)?.organisation_id || ''),
         },
         credentials: 'include',
-      });
+        },
+        force ? { bypass: true } : undefined
+      );
       setOrgMembers(allMembers);
     } catch (e) {
       console.error('[ProjectDetailPage] Org members fetch failed:', e);

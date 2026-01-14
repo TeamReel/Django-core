@@ -29,11 +29,19 @@ type CacheEntry<T> = {
   inFlight?: Promise<T[]>;
 };
 
+type JsonCacheEntry = {
+  expiresAt: number;
+  value?: any;
+  inFlight?: Promise<any>;
+};
+
 const cache = new Map<string, CacheEntry<any>>();
+const pageCache = new Map<string, JsonCacheEntry>();
 
 export function invalidateFetchAllPagesCache(prefix?: string) {
   if (!prefix) {
     cache.clear();
+    pageCache.clear();
     return;
   }
 
@@ -42,6 +50,48 @@ export function invalidateFetchAllPagesCache(prefix?: string) {
       cache.delete(key);
     }
   }
+
+  for (const key of pageCache.keys()) {
+    if (key.startsWith(prefix)) {
+      pageCache.delete(key);
+    }
+  }
+}
+
+async function fetchJsonWithCache(url: string, init: RequestInit, ttlMs: number, bypass: boolean): Promise<any> {
+  const method = (init.method || 'GET').toUpperCase();
+  const canCache = method === 'GET' && !init.body && !bypass;
+  const key = `PAGE:GET:${url}`;
+
+  if (canCache) {
+    const existing = pageCache.get(key);
+    const now = Date.now();
+    if (existing?.value !== undefined && existing.expiresAt > now) return existing.value;
+    if (existing?.inFlight) return await existing.inFlight;
+  }
+
+  const run = (async () => {
+    const res = await fetch(url, init);
+    if (!res.ok) throw new Error(`Request failed (${res.status})`);
+    return await res.json();
+  })();
+
+  if (canCache) {
+    const entry: JsonCacheEntry = { expiresAt: Date.now() + ttlMs, inFlight: run };
+    pageCache.set(key, entry);
+    try {
+      const value = await run;
+      entry.value = value;
+      entry.inFlight = undefined;
+      entry.expiresAt = Date.now() + ttlMs;
+      return value;
+    } catch (err) {
+      pageCache.delete(key);
+      throw err;
+    }
+  }
+
+  return await run;
 }
 
 export async function fetchAllPages<T>(
@@ -55,7 +105,7 @@ export async function fetchAllPages<T>(
     !init.body &&
     (cacheOptions?.bypass !== true);
 
-  const ttlMs = cacheOptions?.ttlMs ?? 60_000;
+  const ttlMs = cacheOptions?.ttlMs ?? 5 * 60_000;
   const cacheKey = cacheOptions?.cacheKey ?? `GET:${initialUrl}`;
 
   if (canCache) {
@@ -73,12 +123,15 @@ export async function fetchAllPages<T>(
   const all: T[] = [];
   let url: string | null = initialUrl;
   let pagesFetched = 0;
+  const bypass = cacheOptions?.bypass === true;
 
   while (url) {
-    const res = await fetch(url, init);
-    if (!res.ok) break;
-
-    const json: Envelope<T> | any = await res.json();
+    let json: Envelope<T> | any;
+    try {
+      json = await fetchJsonWithCache(url, init, ttlMs, bypass);
+    } catch {
+      break;
+    }
 
     const results = (
       json?.data?.results ||

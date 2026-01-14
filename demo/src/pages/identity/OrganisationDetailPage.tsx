@@ -835,14 +835,18 @@ export const OrganisationDetailPage: React.FC = () => {
         params.set('include_project_membership_details', 'true');
         params.set('page_size', '250');
         const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
-        const allMembers = await fetchAllPages<any>(membersUrl, {
+        const allMembers = await fetchAllPages<any>(
+          membersUrl,
+          {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
             'X-Organisation-ID': String(org?.id || currentOrgId || ''),
           },
           credentials: 'include',
-        });
+          },
+          { bypass: true }
+        );
         setMembers(allMembers);
       } catch {
         // ignore
@@ -1011,14 +1015,18 @@ export const OrganisationDetailPage: React.FC = () => {
       params.set('page_size', '250');
 
       const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
-      const allMembers = await fetchAllPages<any>(membersUrl, {
+      const allMembers = await fetchAllPages<any>(
+        membersUrl,
+        {
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
           'X-Organisation-ID': orgId,
         },
         credentials: 'include',
-      });
+        },
+        force ? { bypass: true } : { ttlMs: 5 * 60_000 }
+      );
       console.log('[OrganisationDetailPage] Members loaded:', allMembers.length);
       setMembers(allMembers);
     } catch (e) {
