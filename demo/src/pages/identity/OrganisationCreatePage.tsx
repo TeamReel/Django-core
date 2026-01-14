@@ -82,9 +82,8 @@ export const OrganisationCreatePage: React.FC = () => {
       <PageHeader
         title="Create Organisation"
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Organisations', href: '/organisations' },
-          { label: 'Create', current: true },
+          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+          { label: 'Create Organisation', current: true },
         ]}
       />
       <PageContent>

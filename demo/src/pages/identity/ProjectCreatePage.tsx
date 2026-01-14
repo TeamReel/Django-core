@@ -93,8 +93,7 @@ export const ProjectCreatePage: React.FC = () => {
       <PageHeader
         title="Create Project"
         breadcrumbs={[
-          { label: 'Home', onClick: () => navigate('/') },
-          { label: 'Organisations', onClick: () => navigate('/federations') },
+          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
           {
             label: (
               <BreadcrumbContextSwitcher
@@ -105,7 +104,6 @@ export const ProjectCreatePage: React.FC = () => {
               />
             ),
           },
-          { label: 'Clubs', onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(currentOrgSlug))}`) },
           { label: 'Create', current: true },
         ]}
       />

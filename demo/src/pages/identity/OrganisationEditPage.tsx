@@ -142,8 +142,8 @@ export const OrganisationEditPage: React.FC = () => {
         <PageHeader
           title="Edit Organisation"
           breadcrumbs={[
-            { label: 'Organisations', onClick: () => navigate('/federations') },
-            { label: 'Edit' },
+            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+            { label: 'Edit Organisation', current: true },
           ]}
         />
         <PageContent>
@@ -158,8 +158,7 @@ export const OrganisationEditPage: React.FC = () => {
       <PageHeader
         title={`Edit ${name}`}
         breadcrumbs={[
-          { label: 'Home', onClick: () => navigate('/') },
-          { label: 'Organisations', onClick: () => navigate('/federations') },
+          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
           {
             label: (
               <BreadcrumbContextSwitcher

@@ -167,10 +167,8 @@ export const ProjectEditPage: React.FC = () => {
         <PageHeader
           title="Edit Project"
           breadcrumbs={[
-            { label: 'Home', onClick: () => navigate('/') },
-            { label: 'Organisations', onClick: () => navigate('/federations') },
-            { label: resolvedOrg?.name || 'Organisation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
-            { label: 'Clubs', onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(resolvedOrg?.slug || resolvedOrg?.id || ''))}`) },
+            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+            { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
             { label: 'Edit', current: true },
           ]}
         />
@@ -188,8 +186,7 @@ export const ProjectEditPage: React.FC = () => {
       <PageHeader
         title={`Edit ${name}`}
         breadcrumbs={[
-          { label: 'Home', onClick: () => navigate('/') },
-          { label: 'Organisations', onClick: () => navigate('/federations') },
+          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
           {
             label: (
               <BreadcrumbContextSwitcher
@@ -201,7 +198,6 @@ export const ProjectEditPage: React.FC = () => {
               />
             ),
           },
-          { label: 'Clubs', onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(resolvedOrg?.slug || resolvedOrg?.id || ''))}`) },
           {
             label: (
               <BreadcrumbContextSwitcher

@@ -323,24 +323,44 @@ export default function HierarchyMatchDetailPage() {
           params.set('page_size', '500');
           if (withSeasonFilter && seasonUuid) params.set('period', seasonUuid);
           const res = await fetch(`${baseMembersUrl}?${params.toString()}`, { credentials: 'include' });
-          if (!res.ok) return { ok: false, list: [] as any[] };
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            return { ok: false, status: res.status, detail, list: [] as any[] };
+          }
           const raw = await res.json().catch(() => null);
-          return { ok: true, list: extractList(raw) };
+          return { ok: true, status: res.status, detail: '', list: extractList(raw) };
         };
 
         let projectMembers: any[] = [];
+        let lastRosterError: string | null = null;
         if (seasonUuid) {
           const seasonAttempt = await fetchMembers(true);
-          if (seasonAttempt.ok) projectMembers = seasonAttempt.list;
+          if (seasonAttempt.ok) {
+            projectMembers = seasonAttempt.list;
+          } else {
+            lastRosterError = `Failed to load season roster (${seasonAttempt.status}) ${seasonAttempt.detail || ''}`.trim();
+          }
 
           // Fallback: if season roster is empty (legacy data), use full team roster
           if (projectMembers.length === 0) {
             const fallbackAttempt = await fetchMembers(false);
-            if (fallbackAttempt.ok) projectMembers = fallbackAttempt.list;
+            if (fallbackAttempt.ok) {
+              projectMembers = fallbackAttempt.list;
+            } else {
+              lastRosterError = `Failed to load team roster (${fallbackAttempt.status}) ${fallbackAttempt.detail || ''}`.trim();
+            }
           }
         } else {
           const fallbackAttempt = await fetchMembers(false);
-          if (fallbackAttempt.ok) projectMembers = fallbackAttempt.list;
+          if (fallbackAttempt.ok) {
+            projectMembers = fallbackAttempt.list;
+          } else {
+            lastRosterError = `Failed to load team roster (${fallbackAttempt.status}) ${fallbackAttempt.detail || ''}`.trim();
+          }
+        }
+
+        if (projectMembers.length === 0 && lastRosterError) {
+          throw new Error(lastRosterError);
         }
 
         if (!Array.isArray(projectMembers)) projectMembers = [];
@@ -731,6 +751,11 @@ export default function HierarchyMatchDetailPage() {
     return (
       <Card title={`Lineup: ${title}`}>
         {rosterError && <Alert variant="error">{rosterError}</Alert>}
+        {!rosterError && !rosterLoading && eligibleMembers.length === 0 && (
+          <Alert variant="warning">
+            No eligible players found. Add players to this season’s squad first, or ensure you have access to view the team roster.
+          </Alert>
+        )}
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
           <label className="text-sm" style={{ color: 'var(--app-text-secondary)' }}>
             Add player

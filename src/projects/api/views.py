@@ -566,6 +566,23 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         if user.is_superuser or user.is_staff:
             return
 
+        # Organisation admins can view rosters for projects in their organisation.
+        # This is required for demo/ops workflows (e.g. lineup selection) even when
+        # the admin is not explicitly added as a project member.
+        try:
+            from organisations.models import Membership as OrganisationMembership
+
+            if OrganisationMembership.objects.filter(
+                organisation=project.organisation,
+                user=user,
+                role="admin",
+                is_active=True,
+            ).exists():
+                return
+        except Exception:
+            # If organisations app isn't available for some reason, fall back to stricter checks.
+            pass
+
         is_project_member = ProjectMembership.objects.filter(
             project=project,
             user=user,
