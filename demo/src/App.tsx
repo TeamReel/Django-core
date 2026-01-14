@@ -787,15 +787,6 @@ export default function App() {
       />
 
       <Route
-        path="/organisations/:orgId/users/:userId"
-        element={
-          <ProtectedRoute>
-            <UserDetailPage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
         path="/organisations/:id/edit"
         element={
           <ProtectedRoute>
