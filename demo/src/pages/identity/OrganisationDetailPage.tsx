@@ -1887,16 +1887,20 @@ export const OrganisationDetailPage: React.FC = () => {
                                       }}
                                       style={{ cursor: 'pointer', textAlign: 'left' }}
                                     >
-                                      <span className="text-blue-600 hover:underline" title="View user">
+                                      <Badge variant="default" title="View user">
                                         {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
-                                      </span>
+                                      </Badge>
                                     </button>
                                   </td>
                                   <td style={compactTextTdStyle}>
-                                    <span title={user.email}>{user.email}</span>
+                                    <Badge variant="default" title={user.email}>
+                                      {user.email}
+                                    </Badge>
                                   </td>
                                   <td style={compactTdStyle}>
-                                    <span title={roleDisplay.title}>{roleDisplay.label}</span>
+                                    <Badge variant="default" title={roleDisplay.title}>
+                                      {roleDisplay.label}
+                                    </Badge>
                                   </td>
                                   <td style={compactTdStyle}>
                                     {userCanManageMembers ? (

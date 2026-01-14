@@ -138,8 +138,8 @@ button[style*="backgroundColor: #0066cc"]:not(nav *) {
 }
 
 /* Secondary/Cancel buttons - subtle but visible (excluding nav) */
-form button[type="button"]:not([type="submit"]),
-button[type="button"]:not(nav *):not([type="submit"]):not([style*="backgroundColor: #dc3545"]):not([style*="backgroundColor: '#dc3545'"]) {
+form button[type="button"]:not([type="submit"]):not(.app-action-button):not(.app-unstyled-button),
+button[type="button"]:not(nav *):not([type="submit"]):not(.app-action-button):not(.app-unstyled-button):not([style*="backgroundColor: #dc3545"]):not([style*="backgroundColor: '#dc3545'"]) {
   border: 1px solid var(--app-border) !important;
   background-color: var(--app-surface-2);
 }
@@ -151,7 +151,7 @@ button[style*="backgroundColor: '#dc3545'"]:not(nav *) {
 }
 
 /* Button hover states (excluding nav) */
-button:not([disabled]):not(nav *):hover {
+button:not([disabled]):not(nav *):not(.app-action-button):not(.app-unstyled-button):hover {
   opacity: 0.9;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
