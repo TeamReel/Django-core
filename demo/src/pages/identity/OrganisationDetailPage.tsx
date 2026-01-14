@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Button,
@@ -36,6 +36,8 @@ import { AuditLogTable } from '../../components/AuditLog/AuditLogTable';
 import { PolicyList } from '../../components/Organisations/PolicyList';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 
+const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
+
 /**
  * T007 - Organisation Detail Page
  *
@@ -61,6 +63,10 @@ export const OrganisationDetailPage: React.FC = () => {
   const [teams, setTeams] = useState<Project[]>([]);
   const [teamsLoading, setTeamsLoading] = useState(false);
   const [allClubsForTeams, setAllClubsForTeams] = useState<Project[]>([]);
+
+  const teamsFetchedForOrgRef = useRef<string>('');
+  const teamsFetchInFlightRef = useRef(false);
+  const orgPeriodsFetchInFlightRef = useRef(false);
 
   const [orgPeriods, setOrgPeriods] = useState<any[]>([]);
   const [orgPeriodsLoading, setOrgPeriodsLoading] = useState(false);
@@ -540,16 +546,24 @@ export const OrganisationDetailPage: React.FC = () => {
     }
   };
 
-  const fetchTeamsForOrg = async () => {
+  const fetchTeamsForOrg = async ({ force = false }: { force?: boolean } = {}) => {
     if (!currentOrgSlug) return;
-    console.log('[OrganisationDetailPage] fetchTeamsForOrg starting', { currentOrgSlug, orgId: org?.id || currentOrgId });
+    if (!force && teamsFetchedForOrgRef.current === currentOrgSlug && teams.length > 0) return;
+    if (teamsFetchInFlightRef.current) return;
+    teamsFetchInFlightRef.current = true;
+    if (DEBUG_LOGS) {
+      console.log('[OrganisationDetailPage] fetchTeamsForOrg starting', {
+        currentOrgSlug,
+        orgId: org?.id || currentOrgId,
+      });
+    }
     setTeamsLoading(true);
     try {
       const apiV1BaseUrl = getApiV1BaseUrl();
       const clubsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=true`;
       const teamsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=false`;
 
-      console.log('[OrganisationDetailPage] Fetching teams from', teamsUrl);
+      if (DEBUG_LOGS) console.log('[OrganisationDetailPage] Fetching teams from', teamsUrl);
 
       const [clubsAll, teamsAll] = await Promise.all([
         fetchAllPages<Project>(clubsUrl, {
@@ -580,15 +594,19 @@ export const OrganisationDetailPage: React.FC = () => {
         return Boolean(parentId);
       });
 
-      console.log('[OrganisationDetailPage] Teams loaded:', teamsOnly.length, 'Clubs loaded:', clubsOnly.length);
+      if (DEBUG_LOGS) {
+        console.log('[OrganisationDetailPage] Teams loaded:', teamsOnly.length, 'Clubs loaded:', clubsOnly.length);
+      }
       setAllClubsForTeams(clubsOnly);
       setTeams(teamsOnly);
+      teamsFetchedForOrgRef.current = currentOrgSlug;
     } catch (e) {
       console.error(e);
       setTeams([]);
       setAllClubsForTeams([]);
     } finally {
       setTeamsLoading(false);
+      teamsFetchInFlightRef.current = false;
     }
   };
 
@@ -627,11 +645,20 @@ export const OrganisationDetailPage: React.FC = () => {
   };
 
   const ensureOrgPeriodsLoaded = async () => {
-    console.log('[OrganisationDetailPage] ensureOrgPeriodsLoaded called', { activeTab, teamsCount: teams.length, orgPeriodsCount: orgPeriods.length, loading: orgPeriodsLoading });
+    if (DEBUG_LOGS) {
+      console.log('[OrganisationDetailPage] ensureOrgPeriodsLoaded called', {
+        activeTab,
+        teamsCount: teams.length,
+        orgPeriodsCount: orgPeriods.length,
+        loading: orgPeriodsLoading,
+      });
+    }
+    if (orgPeriodsFetchInFlightRef.current) return;
     if (orgPeriodsLoading) return;
     if (orgPeriods.length > 0) return;
     if (!teams || teams.length === 0) return;
 
+    orgPeriodsFetchInFlightRef.current = true;
     setOrgPeriodsLoading(true);
     const apiV1BaseUrl = getApiV1BaseUrl();
     try {
@@ -644,7 +671,11 @@ export const OrganisationDetailPage: React.FC = () => {
           teamChunks.push(teams.slice(i, i + chunkSize));
         }
 
-        console.log(`[OrganisationDetailPage] Fetching periods for ${teams.length} teams in ${teamChunks.length} chunks`);
+        if (DEBUG_LOGS) {
+          console.log(
+            `[OrganisationDetailPage] Fetching periods for ${teams.length} teams in ${teamChunks.length} chunks`
+          );
+        }
 
         for (const chunk of teamChunks) {
            await Promise.all(chunk.map(async (t: any) => {
@@ -669,7 +700,9 @@ export const OrganisationDetailPage: React.FC = () => {
            }));
         } // Close chunk loop
 
-        console.log('[OrganisationDetailPage] Total unique periods fetched via teams:', unique.size);
+        if (DEBUG_LOGS) {
+          console.log('[OrganisationDetailPage] Total unique periods fetched via teams:', unique.size);
+        }
 
         const merged = Array.from(unique.values());
         setOrgPeriods(merged);
@@ -678,6 +711,7 @@ export const OrganisationDetailPage: React.FC = () => {
         console.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
       } finally {
         setOrgPeriodsLoading(false);
+        orgPeriodsFetchInFlightRef.current = false;
       }
     };
 
@@ -986,7 +1020,7 @@ export const OrganisationDetailPage: React.FC = () => {
         const rawOrgData = await orgResponse.json();
         // Handle B13 response envelope
         const orgData = rawOrgData.data || rawOrgData;
-        console.log('[OrganisationDetailPage] Org data loaded', orgData);
+        if (DEBUG_LOGS) console.log('[OrganisationDetailPage] Org data loaded', orgData);
         setOrg(orgData);
         // NOTE: We intentionally avoid calling the context switcher here.
         // In production this triggers a call to `/api/v1/context/set/` which may not exist,

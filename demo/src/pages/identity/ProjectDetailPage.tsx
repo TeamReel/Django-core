@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Button,
@@ -41,6 +41,8 @@ import {
   compactThStyle,
 } from './detail/detailStyles';
 
+const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
+
 const getPagedResults = (json: any): any[] => {
   // Supports both legacy DRF shapes and this app's envelope (BaseAPIPagination).
   // - { results: [...] }
@@ -78,7 +80,7 @@ const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promis
     while (nextUrl && pageCount < maxPages) {
       const res: Response = await fetch(nextUrl, options);
       if (!res.ok) {
-        console.warn(`[fetchAllPages] Request failed for ${nextUrl}: ${res.status}`);
+        if (DEBUG_LOGS) console.warn(`[fetchAllPages] Request failed for ${nextUrl}: ${res.status}`);
         break;
       }
       const json: any = await res.json();
@@ -91,7 +93,7 @@ const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promis
     }
     return results;
   } catch (err) {
-    console.error(`[fetchAllPages] Error fetching ${url}:`, err);
+    if (DEBUG_LOGS) console.error(`[fetchAllPages] Error fetching ${url}:`, err);
     return results;
   }
 };
@@ -252,6 +254,26 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   const [recentPlayedMatchesLoading, setRecentPlayedMatchesLoading] = useState(false);
   const [matchesCount, setMatchesCount] = useState<number | null>(null);
 
+  const childTeamsCacheRef = useRef<
+    Map<
+      string,
+      {
+        createdAt: number;
+        promise: Promise<Project[]>;
+      }
+    >
+  >(new Map());
+
+  const membersCacheRef = useRef<
+    Map<
+      string,
+      {
+        createdAt: number;
+        members: any[];
+      }
+    >
+  >(new Map());
+
   const getParentProjectId = (p: any): string | null => {
     const parent = p?.parent_project || p?.parent || p?.parent_project_id || p?.parent_id;
     if (!parent) return null;
@@ -266,9 +288,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
   const ensureChildTeamsLoaded = async (projectData?: any): Promise<Project[]> => {
     const proj = projectData || project;
-    console.log(`[ensureChildTeamsLoaded] Called. proj?.id = ${proj?.id}, proj =`, proj);
+    if (DEBUG_LOGS) console.log(`[ensureChildTeamsLoaded] Called. proj?.id = ${proj?.id}, proj =`, proj);
     if (!proj?.id) {
-      console.log(`[ensureChildTeamsLoaded] No project.id, returning empty array`);
+      if (DEBUG_LOGS) console.log(`[ensureChildTeamsLoaded] No project.id, returning empty array`);
       return [];
     }
     // Don't use cached childProjects - always fetch fresh to avoid stale data
@@ -276,29 +298,56 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
     const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${proj.id}&page_size=250`;
-    console.log(`[ensureChildTeamsLoaded] Fetching teams for parent project ID: ${proj.id} from ${url}`);
-    const results = await fetchAllPages<Project>(url, { credentials: 'include' });
-    console.log(`[ensureChildTeamsLoaded] Raw results: ${results.length} projects`);
+
+    const cacheKey = `${apiBaseUrl}::childTeams::${String(proj.id)}`;
+    const cached = childTeamsCacheRef.current.get(cacheKey);
+    if (cached && Date.now() - cached.createdAt < 60_000) {
+      return cached.promise;
+    }
+
+    const requestPromise = (async () => {
+      if (DEBUG_LOGS) {
+        console.log(`[ensureChildTeamsLoaded] Fetching teams for parent project ID: ${proj.id} from ${url}`);
+      }
+      const results = await fetchAllPages<Project>(url, { credentials: 'include' });
+      if (DEBUG_LOGS) console.log(`[ensureChildTeamsLoaded] Raw results: ${results.length} projects`);
 
     const parentId = String(proj.id);
     const orgId = String(
       (proj as any)?.organisation_id || (proj as any)?.organisation?.id || resolvedOrg?.id || ''
     );
 
-    const filteredByOrg = orgId
-      ? (results as any[]).filter((p: any) => String(getOrganisationId(p) || '') === orgId)
-      : (results as any[]);
-    console.log(`[ensureChildTeamsLoaded] After org filter (org=${orgId}): ${filteredByOrg.length} projects`);
+      const filteredByOrg = orgId
+        ? (results as any[]).filter((p: any) => String(getOrganisationId(p) || '') === orgId)
+        : (results as any[]);
+      if (DEBUG_LOGS) {
+        console.log(`[ensureChildTeamsLoaded] After org filter (org=${orgId}): ${filteredByOrg.length} projects`);
+      }
 
-    const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
-    console.log(`[ensureChildTeamsLoaded] After parent filter (parent=${parentId}): ${filteredByParent.length} projects`);
+      const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
+      if (DEBUG_LOGS) {
+        console.log(
+          `[ensureChildTeamsLoaded] After parent filter (parent=${parentId}): ${filteredByParent.length} projects`
+        );
+      }
     // For displaying in Teams tab, use direct children only
     const directChildren = filteredByParent.length > 0 ? filteredByParent : [];
 
-    setChildProjects(directChildren as Project[]);
-    // Return direct children only (for members, matches, etc.)
-    console.log(`[ensureChildTeamsLoaded] Returning ${directChildren.length} direct child teams`);
-    return directChildren as Project[];
+      setChildProjects(directChildren as Project[]);
+      // Return direct children only (for members, matches, etc.)
+      if (DEBUG_LOGS) {
+        console.log(`[ensureChildTeamsLoaded] Returning ${directChildren.length} direct child teams`);
+      }
+      return directChildren as Project[];
+    })();
+
+    childTeamsCacheRef.current.set(cacheKey, { createdAt: Date.now(), promise: requestPromise });
+    try {
+      return await requestPromise;
+    } catch (e) {
+      childTeamsCacheRef.current.delete(cacheKey);
+      throw e;
+    }
   };
 
   const fetchOrgTeamsForPeriodFiltering = async (): Promise<any[]> => {
@@ -482,14 +531,16 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   const orgForPermissions = orgWithRole || (project as any)?.organisation || resolvedOrg;
 
   // Debug: Log permission context
-  console.log('[ProjectDetailPage] Permission Debug:', {
-    isSuperAdmin,
-    orgForPermissions: orgForPermissions,
-    user_role: (orgForPermissions as any)?.user_role,
-    orgWithRole: orgWithRole,
-    projectOrgFromData: (project as any)?.organisation,
-    resolvedOrg: resolvedOrg
-  });
+  if (DEBUG_LOGS) {
+    console.log('[ProjectDetailPage] Permission Debug:', {
+      isSuperAdmin,
+      orgForPermissions: orgForPermissions,
+      user_role: (orgForPermissions as any)?.user_role,
+      orgWithRole: orgWithRole,
+      projectOrgFromData: (project as any)?.organisation,
+      resolvedOrg: resolvedOrg,
+    });
+  }
 
   const permissionContext = {
     currentOrganisation: orgForPermissions as any,
@@ -659,10 +710,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     setAllMatches((prev) => prev.map((m: any) => (String(m.id) === String(updated.id) ? { ...m, ...updated } : m)));
   };
 
-  console.log('[ProjectDetailPage] Permission Results:', {
-    userCanEditProject,
-    userCanDeleteProject
-  });
+  if (DEBUG_LOGS) {
+    console.log('[ProjectDetailPage] Permission Results:', {
+      userCanEditProject,
+      userCanDeleteProject,
+    });
+  }
 
   const handleDelete = async () => {
     if (!project) return;
@@ -918,6 +971,11 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
           if (!projectIdForApi) {
             setMembers([]);
           } else {
+            const membersCacheKey = `members:${String(projectIdForApi)}:${isTeamRoute ? 'team' : 'club'}`;
+            const cachedMembers = membersCacheRef.current.get(membersCacheKey);
+            if (cachedMembers && Date.now() - cachedMembers.createdAt < 60_000) {
+              setMembers(cachedMembers.members);
+            } else {
             const membersByIdEndpoint = `${apiBaseUrl}/api/v1/projects/${projectIdForApi}/members/`;
             const membersByIdResponse = await fetch(membersByIdEndpoint, {
               headers: {
@@ -938,7 +996,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                 const teams = await ensureChildTeamsLoaded(projectData);
                 const teamIds = Array.from(teams.map((t: any) => String(t.id)));
 
-                console.log(`[ProjectDetailPage] Fetching members for ${teamIds.length} teams:`, teamIds);
+                if (DEBUG_LOGS) {
+                  console.log(`[ProjectDetailPage] Fetching members for ${teamIds.length} teams:`, teamIds);
+                }
 
                 // Fetch members per team to avoid pagination issues
                 // (org-wide fetch with page_size=250 only returns subset of members)
@@ -969,7 +1029,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                       },
                       credentials: 'include',
                     });
-                    console.log(`[ProjectDetailPage] Team ${teamId} returned ${teamMembersList.length} members`);
+                    if (DEBUG_LOGS) {
+                      console.log(`[ProjectDetailPage] Team ${teamId} returned ${teamMembersList.length} members`);
+                    }
 
                     // Add to map to deduplicate (users can be in multiple teams)
                     for (const member of teamMembersList) {
@@ -990,9 +1052,15 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                 const clubMembers = Array.from(allMembersMap.values());
                 setMembers(clubMembers);
-                console.log(`[ProjectDetailPage] Club members loaded: ${clubMembers.length} unique members (${normalized.length} direct + ${clubMembers.length - normalized.length} from teams)`);
+                membersCacheRef.current.set(membersCacheKey, { createdAt: Date.now(), members: clubMembers });
+                if (DEBUG_LOGS) {
+                  console.log(
+                    `[ProjectDetailPage] Club members loaded: ${clubMembers.length} unique members (${normalized.length} direct + ${clubMembers.length - normalized.length} from teams)`
+                  );
+                }
               } else {
                 setMembers(normalized);
+                membersCacheRef.current.set(membersCacheKey, { createdAt: Date.now(), members: normalized });
               }
             } else {
               console.error(
@@ -1036,10 +1104,17 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                 const clubMembers = Array.from(allMembersMap.values());
                 setMembers(clubMembers);
-                console.log(`[ProjectDetailPage] Fallback: Loaded ${clubMembers.length} unique club members from ${teamIds.length} teams`);
+                membersCacheRef.current.set(membersCacheKey, { createdAt: Date.now(), members: clubMembers });
+                if (DEBUG_LOGS) {
+                  console.log(
+                    `[ProjectDetailPage] Fallback: Loaded ${clubMembers.length} unique club members from ${teamIds.length} teams`
+                  );
+                }
               } else {
                 setMembers([]);
+                membersCacheRef.current.set(membersCacheKey, { createdAt: Date.now(), members: [] });
               }
+            }
             }
           }
         } catch (membersErr) {
@@ -1076,7 +1151,16 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     };
 
     fetchProjectDetails();
-  }, [currentProjectSlug, resolvedOrg, context.isLoading, isTeamRoute, clubSlugOrId, orgSlugOrId, resolvedProject?.id]);
+  }, [
+    currentProjectSlug,
+    resolvedOrg?.id,
+    resolvedOrg?.slug,
+    context.isLoading,
+    isTeamRoute,
+    clubSlugOrId,
+    orgSlugOrId,
+    resolvedProject?.id,
+  ]);
 
   // Fetch organisation with user_role for permissions
   useEffect(() => {
@@ -1108,7 +1192,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
           const rawOrgData = await orgResponse.json();
           const orgData = rawOrgData.data || rawOrgData;
           setOrgWithRole(orgData);
-          console.log('[ProjectDetailPage] Org with user_role fetched:', orgData);
+          if (DEBUG_LOGS) console.log('[ProjectDetailPage] Org with user_role fetched:', orgData);
         }
       } catch (err) {
         console.error('[ProjectDetailPage] Failed to fetch org with user_role:', err);
@@ -1411,8 +1495,10 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
   // Trigger data fetch on tab change
   useEffect(() => {
-    console.log('[useEffect] activeTab:', activeTab, 'project:', project?.id, 'isLikelyTeam:', isLikelyTeam);
-    console.log('[useEffect] seasons.length:', seasons.length, 'seasonsLoading:', seasonsLoading);
+    if (DEBUG_LOGS) {
+      console.log('[useEffect] activeTab:', activeTab, 'project:', project?.id, 'isLikelyTeam:', isLikelyTeam);
+      console.log('[useEffect] seasons.length:', seasons.length, 'seasonsLoading:', seasonsLoading);
+    }
     if (!project) return;
     if (activeTab === 'hierarchy') {
       // Load data needed for hierarchy view
