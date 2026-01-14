@@ -475,7 +475,9 @@ export default function SeasonSquadAddMemberModal({
     });
   }, [userOptions, userSearch]);
 
-  const canSubmit = Boolean(String(selectedTeamId || '').trim()) && Boolean(String(selectedUserId || '').trim()) && !saving;
+  const missingTeam = !String(selectedTeamId || '').trim();
+  const missingUser = !String(selectedUserId || '').trim();
+  const canSubmit = !missingTeam && !missingUser && !saving;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -727,6 +729,18 @@ export default function SeasonSquadAddMemberModal({
           </div>
 
           {error && <div style={{ marginTop: '12px', color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
+
+          {!canSubmit && !saving && (
+            <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--app-text-muted, #6b7280)' }}>
+              {missingTeam && missingUser
+                ? 'Select a team and a user to enable “Add to squad”.'
+                : missingTeam
+                  ? 'Select a team to enable “Add to squad”.'
+                  : missingUser
+                    ? 'Select a user to enable “Add to squad”.'
+                    : null}
+            </div>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
             <button
