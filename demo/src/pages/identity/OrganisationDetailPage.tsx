@@ -1885,22 +1885,18 @@ export const OrganisationDetailPage: React.FC = () => {
                                         setDetailUser(user);
                                         setIsUserDetailModalOpen(true);
                                       }}
-                                      style={{ cursor: 'pointer' }}
+                                      style={{ cursor: 'pointer', textAlign: 'left' }}
                                     >
-                                      <Badge variant="default" title="View user">
+                                      <span className="text-blue-600 hover:underline" title="View user">
                                         {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
-                                      </Badge>
+                                      </span>
                                     </button>
                                   </td>
                                   <td style={compactTextTdStyle}>
-                                    <Badge variant="default" title={user.email}>
-                                      {user.email}
-                                    </Badge>
+                                    <span title={user.email}>{user.email}</span>
                                   </td>
                                   <td style={compactTdStyle}>
-                                    <Badge variant="default" title={roleDisplay.title}>
-                                      {roleDisplay.label}
-                                    </Badge>
+                                    <span title={roleDisplay.title}>{roleDisplay.label}</span>
                                   </td>
                                   <td style={compactTdStyle}>
                                     {userCanManageMembers ? (
