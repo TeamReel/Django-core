@@ -1780,18 +1780,18 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   // Tab order: hierarchy first (teams → seasons → competitions → matches), then users/people, then audit.
   const tabs = [
     { id: 'overview', label: 'Overview' },
-    ...(isLikelyTeam
-      ? [
-          { id: 'balance', label: 'Balance' },
-          { id: 'transactions', label: 'Transactions' },
-        ]
-      : []),
     { id: 'hierarchy', label: 'Hierarchy' },
     ...(!isLikelyTeam ? [{ id: 'teams', label: 'Teams' }] : []),
     { id: 'seasons', label: 'Seasons' },
     { id: 'competitions', label: 'Competitions' },
     { id: 'matches', label: 'Matches' },
     { id: 'people', label: 'Users' },
+    ...(isLikelyTeam
+      ? [
+          { id: 'balance', label: 'Balance' },
+          { id: 'transactions', label: 'Transactions' },
+        ]
+      : []),
     { id: 'audit', label: 'Audit' },
   ];
 
