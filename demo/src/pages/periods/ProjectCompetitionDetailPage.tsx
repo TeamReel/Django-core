@@ -1310,12 +1310,16 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 <td style={compactTdStyle}>
                   <div style={compactActionsStyle}>
                     <button
+                      type="button"
+                      className="app-action-button"
                       onClick={() => navigate(matchDetailPath(String(m.id)))}
                       style={actionButtonStyle('primary')}
                     >
                       View
                     </button>
                     <button
+                      type="button"
+                      className="app-action-button"
                       onClick={() => {
                         setSelectedEditMatch(m);
                         setIsMatchEditModalOpen(true);
@@ -1325,6 +1329,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                       Edit
                     </button>
                     <button
+                      type="button"
+                      className="app-action-button"
                       onClick={async () => {
                         if (!window.confirm(`Delete match ${m.title || m.id}?`)) return;
                         try {
@@ -1368,34 +1374,60 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
           breadcrumbs={breadcrumbs}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <Button variant="secondary" onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}>
+              <button
+                type="button"
+                className="app-action-button"
+                onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}
+                style={actionButtonStyle('neutral')}
+              >
                 Back to Season
-              </Button>
-              <Button onClick={() => setIsMatchCreateModalOpen(true)}>Create Match</Button>
-              <Button
-                variant="secondary"
+              </button>
+              <button
+                type="button"
+                className="app-action-button"
+                onClick={() => setIsMatchCreateModalOpen(true)}
+                style={actionButtonStyle('primary')}
+              >
+                Create Match
+              </button>
+              <button
+                type="button"
+                className="app-action-button"
                 onClick={() => {
                   setSelectedDetailPeriod(competition);
                   setIsPeriodDetailModalOpen(true);
                 }}
+                style={actionButtonStyle('primary')}
               >
                 View
-              </Button>
-              <Button
-                variant="warning"
+              </button>
+              <button
+                type="button"
+                className="app-action-button"
                 onClick={() => {
                   setSelectedEditPeriod(competition);
                   setIsPeriodEditModalOpen(true);
                 }}
+                style={actionButtonStyle('warning')}
               >
                 Edit
-              </Button>
-              <Button variant="secondary" onClick={() => navigate('/audit')}>
+              </button>
+              <button
+                type="button"
+                className="app-action-button"
+                onClick={() => navigate('/audit')}
+                style={actionButtonStyle('neutral')}
+              >
                 Audit
-              </Button>
-              <Button variant="secondary" onClick={deleteCompetition}>
+              </button>
+              <button
+                type="button"
+                className="app-action-button"
+                onClick={deleteCompetition}
+                style={actionButtonStyle('danger')}
+              >
                 Delete
-              </Button>
+              </button>
             </div>
           }
         />
@@ -1597,6 +1629,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                   <td style={compactTdStyle}>
                                     <div style={compactActionsStyle}>
                                       <button
+                                        type="button"
+                                        className="app-action-button"
                                         onClick={() => {
                                           setSelectedMembershipDetail(m);
                                           setIsMembershipDetailModalOpen(true);
@@ -1606,6 +1640,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                         View
                                       </button>
                                       <button
+                                        type="button"
+                                        className="app-action-button"
                                         onClick={() => {
                                           setSelectedMembershipEdit(m);
                                           setIsMembershipEditModalOpen(true);
@@ -1615,6 +1651,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                         Edit
                                       </button>
                                       <button
+                                        type="button"
+                                        className="app-action-button"
                                         onClick={() => deleteMembership(m)}
                                         style={actionButtonStyle('danger')}
                                       >
