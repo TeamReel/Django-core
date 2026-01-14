@@ -792,6 +792,8 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
         Query Parameters:
         - search: Filter by name or email (optional)
+        - scope_project_id: Optional project id to scope users to a specific club/team subtree
+        - page_size: Max number of results to return (default 50, max 1000)
 
         Returns:
         - List of users with id, email, first_name, last_name, full_name
@@ -834,6 +836,40 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
             .distinct()
         )
 
+        # Optional scoping: limit to users that belong to a specific club/team subtree.
+        # This matches the demo UX expectation where selecting Federation/Club/Team
+        # should not show users from other clubs within the same federation.
+        scope_project_param = (
+            request.query_params.get("scope_project_id")
+            or request.query_params.get("scope_project")
+            or ""
+        ).strip()
+        if scope_project_param:
+            try:
+                scope_project = Project.objects.select_related("organisation").get(
+                    pk=scope_project_param
+                )
+            except Project.DoesNotExist:
+                raise ValidationError({"scope_project_id": "Project does not exist."})
+
+            if scope_project.organisation_id != project.organisation_id:
+                raise ValidationError(
+                    {"scope_project_id": "Project is not in the same organisation."}
+                )
+
+            # Include the scope project plus its direct children (club -> teams).
+            scoped_project_ids = [scope_project.id]
+            scoped_project_ids.extend(
+                Project.objects.filter(parent_project_id=scope_project.id).values_list(
+                    "id", flat=True
+                )
+            )
+
+            available_users = available_users.filter(
+                project_memberships__project_id__in=scoped_project_ids,
+                project_memberships__deleted_at__isnull=True,
+            ).distinct()
+
         # Apply search filter if provided
         search_query = request.query_params.get("search", "")
         if search_query:
@@ -844,6 +880,12 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
             )
 
         # Serialize results
+        try:
+            limit = int(request.query_params.get("page_size") or 50)
+        except (TypeError, ValueError):
+            limit = 50
+        limit = max(1, min(limit, 1000))
+
         users_data = [
             {
                 "id": user.id,
@@ -852,7 +894,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                 "last_name": user.last_name,
                 "full_name": f"{user.first_name} {user.last_name}".strip() or user.email,
             }
-            for user in available_users[:50]  # Limit to 50 results
+            for user in available_users[:limit]
         ]
 
         return Response({"data": users_data})

@@ -407,49 +407,19 @@ export default function SeasonSquadAddMemberModal({
         if (teamId) {
           if (!season) throw new Error('Missing season context');
 
-          // If we know the parent club, scope to club members for a cleaner UX.
-          // This matches the demo expectation: selecting Federation/Club/Team should not show users from other clubs.
-          if (clubId) {
-            const teamParams = new URLSearchParams();
-            teamParams.set('period', season);
-            teamParams.set('page_size', '500');
-
-            const teamMemberships = await fetchAllPages(
-              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/?${teamParams.toString()}`,
-              { credentials: 'include', signal: abortController.signal },
-              2000
-            );
-            const existingUserIds = new Set(teamMemberships.map(getMembershipUserId).filter(Boolean));
-
-            const clubParams = new URLSearchParams();
-            clubParams.set('page_size', '500');
-
-            const clubMemberships = await fetchAllPages(
-              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(clubId)}/members/?${clubParams.toString()}`,
-              { credentials: 'include', signal: abortController.signal },
-              2000
-            );
-
-            usersRaw = clubMemberships
-              .map((m: any) => m?.user)
-              .filter(Boolean)
-              .filter((u: any) => {
-                const uid = u?.id == null ? '' : String(u.id);
-                return uid && !existingUserIds.has(uid);
-              });
-          } else {
-            // Fallback: use server-provided "searchable users" scoped to the federation/organisation.
-            const params = new URLSearchParams();
-            params.set('period', season);
-            params.set('page_size', '500');
-            const res = await fetch(
-              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/searchable-users/?${params.toString()}`,
-              { credentials: 'include', signal: abortController.signal }
-            );
-            if (!res.ok) throw new Error('Failed to load users');
-            const raw: any = await res.json().catch(() => null);
-            usersRaw = extractList(raw);
-          }
+          // Use server-provided "searchable users".
+          // When club is selected (team context), scope the results to that club subtree.
+          const params = new URLSearchParams();
+          params.set('period', season);
+          params.set('page_size', '500');
+          if (clubId) params.set('scope_project_id', clubId);
+          const res = await fetch(
+            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/searchable-users/?${params.toString()}`,
+            { credentials: 'include', signal: abortController.signal }
+          );
+          if (!res.ok) throw new Error('Failed to load users');
+          const raw: any = await res.json().catch(() => null);
+          usersRaw = extractList(raw);
         } else if (clubId) {
           const params = new URLSearchParams();
           params.set('page_size', '500');
