@@ -18,6 +18,7 @@ import PeriodDetailModal from '../identity/PeriodDetailModal';
 import PeriodCreateModal from '../identity/PeriodCreateModal';
 import MatchCreateModal from '../identity/MatchCreateModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
+import SeasonSquadAddMemberModal from '../identity/SeasonSquadAddMemberModal';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import {
@@ -125,6 +126,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [addPosition, setAddPosition] = useState('');
   const [addShirtNumber, setAddShirtNumber] = useState('');
   const [addingMember, setAddingMember] = useState(false);
+
+  const [isAddSquadMemberModalOpen, setIsAddSquadMemberModalOpen] = useState(false);
   const [hierarchySearch, setHierarchySearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [competitionsLoading, setCompetitionsLoading] = useState(false);
@@ -371,6 +374,41 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     }).length;
   };
 
+  const getMatchParticipantsCount = (match: any): number => {
+    const direct = Number(
+      (match as any)?.participants_count ??
+        (match as any)?.participations_count ??
+        (match as any)?.participantsCount ??
+        (match as any)?.participationsCount
+    );
+    if (Number.isFinite(direct) && direct >= 0) return direct;
+
+    const maybeParticipants = (match as any)?.participants;
+    if (Array.isArray(maybeParticipants)) return maybeParticipants.length;
+    const maybeParticipations = (match as any)?.participations;
+    if (Array.isArray(maybeParticipations)) return maybeParticipations.length;
+
+    return 0;
+  };
+
+  const getCompetitionParticipantsCount = (competition: any): number => {
+    const direct = Number(
+      (competition as any)?.participants_count ??
+        (competition as any)?.participations_count ??
+        (competition as any)?.participantsCount ??
+        (competition as any)?.participationsCount
+    );
+    if (Number.isFinite(direct) && direct >= 0) return direct;
+
+    const competitionId = String((competition as any)?.id || '').trim();
+    if (!competitionId) return 0;
+
+    // Best-effort aggregation from loaded matches.
+    const related = matches.filter((m: any) => String(m.period_id || m.period?.id || '') === competitionId);
+    if (related.length === 0) return 0;
+    return related.reduce((sum: number, m: any) => sum + getMatchParticipantsCount(m), 0);
+  };
+
   const seasonMatchesCount = useMemo(() => {
     if (matches.length) return matches.length;
     const annotated = Number((season as any)?.children_matches_count ?? (season as any)?.matches_count);
@@ -563,7 +601,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Fetch matches only when the user is on a tab that actually needs them.
   useEffect(() => {
-    const needsMatches = activeTab === 'hierarchy' || activeTab === 'matches';
+    const needsMatches = activeTab === 'hierarchy' || activeTab === 'matches' || activeTab === 'competitions';
     if (!needsMatches) return;
     const projectNumericId = String((project as any)?.id || '').trim();
     const seasonUuid = String(resolvedSeasonId || '').trim();
@@ -1187,112 +1225,18 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                   <div style={{ padding: '16px' }}>
                     {userCanEditProject && (
-                      <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'flex-end' }}>
-                        <div style={{ minWidth: '240px', flex: '1 1 240px' }}>
-                          <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
-                            Search user (min 2 chars)
-                          </label>
-                          <Input
-                            value={memberSearch}
-                            onChange={(e) => {
-                              setMemberSearch(e.target.value);
-                              setSelectedAddUserId('');
-                            }}
-                            placeholder="Start typing a name or email…"
-                          />
-                        </div>
-
-                        <div style={{ minWidth: '260px', flex: '1 1 260px' }}>
-                          <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
-                            Select user
-                          </label>
-                          <select
-                            value={selectedAddUserId}
-                            onChange={(e) => setSelectedAddUserId(e.target.value)}
-                            style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid var(--app-border)', padding: '0 10px', background: 'var(--app-surface)' }}
-                          >
-                            <option value="">— Choose —</option>
-                            {memberSearchResults.map((u: any) => {
-                              const label = `${u.full_name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email || u.id} (${u.email || '—'})`;
-                              return (
-                                <option key={String(u.id)} value={String(u.id)}>
-                                  {label}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </div>
-
-                        <div style={{ minWidth: '160px' }}>
-                          <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
-                            Position (optional)
-                          </label>
-                          <Input value={addPosition} onChange={(e) => setAddPosition(e.target.value)} placeholder="e.g. Keeper" />
-                        </div>
-
-                        <div style={{ width: '90px' }}>
-                          <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
-                            # (optional)
-                          </label>
-                          <Input value={addShirtNumber} onChange={(e) => setAddShirtNumber(e.target.value)} placeholder="10" />
-                        </div>
-
+                      <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
                         <button
                           type="button"
                           className="app-action-button"
-                          onClick={async () => {
-                            const projectIdForMembers = String((project as any)?.id || '').trim();
-                            const seasonUuid = String(resolvedSeasonId || '').trim();
-                            const userId = String(selectedAddUserId || '').trim();
-                            if (!projectIdForMembers || !seasonUuid || !userId) return;
-
-                            try {
-                              setAddingMember(true);
-                              const payload: any = {
-                                user_id: Number(userId),
-                                role: 'viewer',
-                                period_id: seasonUuid,
-                                metadata: {
-                                  position: String(addPosition || '').trim(),
-                                  shirt_number: String(addShirtNumber || '').trim(),
-                                },
-                              };
-
-                              const res = await fetch(
-                                `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
-                                {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRFToken': getCsrfToken(),
-                                  },
-                                  credentials: 'include',
-                                  body: JSON.stringify(payload),
-                                }
-                              );
-
-                              if (!res.ok) {
-                                const text = await res.text();
-                                throw new Error(text || 'Failed to add member');
-                              }
-
-                              setMemberSearch('');
-                              setMemberSearchResults([]);
-                              setSelectedAddUserId('');
-                              setAddPosition('');
-                              setAddShirtNumber('');
-                              setMembersReloadToken((x) => x + 1);
-                            } catch (e) {
-                              alert(e instanceof Error ? e.message : 'Failed to add member');
-                            } finally {
-                              setAddingMember(false);
-                            }
-                          }}
-                          style={actionButtonStyle('primary')}
-                          disabled={addingMember || !selectedAddUserId}
+                          onClick={() => setIsAddSquadMemberModalOpen(true)}
+                          style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: 500 }}
                         >
-                          {addingMember ? 'Adding…' : 'Add to squad'}
+                          Add User
                         </button>
+                        <div style={{ color: 'var(--app-muted-text)', fontSize: '13px' }}>
+                          Add a user to this season’s squad.
+                        </div>
                       </div>
                     )}
 
@@ -1442,6 +1386,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             <th style={compactThStyle}>Competition</th>
                             <th style={compactThStyle}>Dates</th>
                             <th style={compactThStyle}>Matches</th>
+                            <th style={compactThStyle}>Participants</th>
                             <th style={compactThStyle} className="text-right">Actions</th>
                           </tr>
                         </thead>
@@ -1463,6 +1408,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </td>
                               <td style={compactTdStyle}>
                                 <Badge variant="default">{getMatchCountForCompetition(competition)}</Badge>
+                              </td>
+                              <td style={compactTdStyle}>
+                                <Badge variant="default">{getCompetitionParticipantsCount(competition)}</Badge>
                               </td>
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
@@ -1562,6 +1510,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             <th style={compactThStyle}>Match</th>
                             <th style={compactThStyle}>Competition</th>
                             <th style={compactThStyle}>Date</th>
+                            <th style={compactThStyle}>Participants</th>
                             <th style={compactThStyle} className="text-right">Actions</th>
                           </tr>
                         </thead>
@@ -1604,6 +1553,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </td>
                               <td style={compactTextTdStyle}>
                                 {match.start_time ? new Date(match.start_time).toLocaleString() : '—'}
+                              </td>
+                              <td style={compactTdStyle}>
+                                <Badge variant="default">{getMatchParticipantsCount(match)}</Badge>
                               </td>
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
@@ -1830,7 +1782,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             }
 
             // Refresh matches if currently visible.
-            if (activeTab === 'hierarchy' || activeTab === 'matches') {
+            if (activeTab === 'hierarchy' || activeTab === 'matches' || activeTab === 'competitions') {
               setMatchesLoading(true);
               try {
                 const projectNumericId = String((project as any)?.id || '').trim();
@@ -1851,6 +1803,57 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               } finally {
                 setMatchesLoading(false);
               }
+            }
+          }}
+        />
+
+        <SeasonSquadAddMemberModal
+          opened={isAddSquadMemberModalOpen}
+          onClose={() => setIsAddSquadMemberModalOpen(false)}
+          apiBaseUrl={apiBaseUrl}
+          seasonId={String(resolvedSeasonId || '').trim()}
+          organisations={createModalOrganisations as any}
+          clubs={createModalClubs as any}
+          teams={createModalTeams as any}
+          initialOrganisationId={String(org?.id || '')}
+          initialClubId={String((club as any)?.id || '')}
+          initialTeamId={String((project as any)?.id || '')}
+          onAdd={async (payload) => {
+            const teamIdValue = String(payload.project_id || '').trim();
+            const seasonUuid = String(resolvedSeasonId || '').trim();
+            const userIdValue = String(payload.user_id || '').trim();
+            if (!teamIdValue || !seasonUuid || !userIdValue) return;
+
+            try {
+              setAddingMember(true);
+              const body: any = {
+                user_id: Number(userIdValue),
+                role: 'viewer',
+                period_id: seasonUuid,
+                metadata: {
+                  position: String(payload.position || '').trim(),
+                  shirt_number: String(payload.shirt_number || '').trim(),
+                },
+              };
+
+              const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamIdValue)}/members/`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': getCsrfToken(),
+                },
+                credentials: 'include',
+                body: JSON.stringify(body),
+              });
+
+              if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || 'Failed to add member');
+              }
+
+              setMembersReloadToken((x) => x + 1);
+            } finally {
+              setAddingMember(false);
             }
           }}
         />
