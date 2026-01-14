@@ -14,14 +14,14 @@ COPY packages/ ./packages/
 COPY demo/ ./demo/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile --prefer-offline
+RUN pnpm install --frozen-lockfile --prefer-offline --prod=false
 
 # Declare build arguments (Railway injects these)
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
-# Build the demo and only its workspace deps
-RUN pnpm --filter "./demo..." build
+# Build demo + its workspace dependencies (needed because packages export from dist/)
+RUN pnpm -r --filter "./demo..." build
 
 # Production stage
 FROM node:20-alpine
