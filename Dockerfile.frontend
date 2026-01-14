@@ -2,7 +2,7 @@
 FROM node:20-slim AS builder
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 
 WORKDIR /app
 
@@ -14,17 +14,14 @@ COPY packages/ ./packages/
 COPY demo/ ./demo/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --prefer-offline
 
 # Declare build arguments (Railway injects these)
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
-# Build shared packages first
-RUN pnpm --filter "./packages/**" build
-
-# Build the demo-shell application
-RUN pnpm --filter "./demo" build
+# Build the demo and only its workspace deps
+RUN pnpm --filter "./demo..." build
 
 # Production stage
 FROM node:20-alpine
