@@ -38,6 +38,8 @@ interface MatchCreateModalProps {
   initialOrganisationId?: string;
   initialClubId?: string;
   initialTeamId?: string;
+  initialSeasonId?: string;
+  initialCompetitionId?: string;
 }
 
 export default function MatchCreateModal({
@@ -50,6 +52,8 @@ export default function MatchCreateModal({
   initialOrganisationId = '',
   initialClubId = '',
   initialTeamId = '',
+  initialSeasonId = '',
+  initialCompetitionId = '',
 }: MatchCreateModalProps) {
   const [title, setTitle] = useState('');
   const [matchDate, setMatchDate] = useState('');
@@ -76,11 +80,11 @@ export default function MatchCreateModal({
     setSelectedOrganisationId(String(initialOrganisationId || ''));
     setSelectedClubId(String(initialClubId || ''));
     setSelectedTeamId(String(initialTeamId || ''));
-    setSelectedSeasonId('');
-    setSelectedCompetitionId('');
+    setSelectedSeasonId(String(initialSeasonId || ''));
+    setSelectedCompetitionId(String(initialCompetitionId || ''));
     setSeasonOptions([]);
     setCompetitionOptions([]);
-  }, [opened, initialOrganisationId, initialClubId, initialTeamId]);
+  }, [opened, initialOrganisationId, initialClubId, initialTeamId, initialSeasonId, initialCompetitionId]);
 
   const sortedOrganisations = useMemo(() => {
     return [...organisations].sort((a, b) => a.name.localeCompare(b.name));

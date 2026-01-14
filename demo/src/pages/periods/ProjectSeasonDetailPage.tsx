@@ -15,6 +15,9 @@ import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
+import PeriodCreateModal from '../identity/PeriodCreateModal';
+import MatchCreateModal from '../identity/MatchCreateModal';
+import MatchDetailModal from '../identity/MatchDetailModal';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import {
@@ -135,8 +138,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [isPeriodDetailModalOpen, setIsPeriodDetailModalOpen] = useState(false);
   const [selectedDetailPeriod, setSelectedDetailPeriod] = useState<any | null>(null);
 
+  const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
+  const [selectedDetailMatch, setSelectedDetailMatch] = useState<any | null>(null);
+
   const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
   const [selectedEditMatch, setSelectedEditMatch] = useState<any | null>(null);
+
+  const [isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen] = useState(false);
+  const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
 
   const orgSlugOrId = orgId || '';
   const projectSlugOrId = projectId || '';
@@ -144,6 +153,27 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   const isTeamRoute = Boolean(clubId);
   const clubSlugOrId = clubId || '';
+
+  const createModalOrganisations = useMemo(() => {
+    if (!org) return [];
+    return [{ id: String(org.id), name: String(org.name || ''), slug: (org as any).slug }];
+  }, [org]);
+
+  const createModalClubs = useMemo(() => {
+    const baseOrgId = String(org?.id || '').trim();
+    const c = club || null;
+    if (c) {
+      return [{ id: String((c as any).id), name: String((c as any).name || ''), slug: (c as any).slug, organisation: baseOrgId || undefined } as any];
+    }
+    return [] as any[];
+  }, [club, org]);
+
+  const createModalTeams = useMemo(() => {
+    const team = project || null;
+    if (!team) return [] as any[];
+    const clubIdValue = String((club as any)?.id || '').trim();
+    return [{ id: String((team as any).id), name: String((team as any).name || ''), slug: (team as any).slug, parent_id: clubIdValue || undefined } as any];
+  }, [project, club]);
 
   // Permission checks (match ProjectDetailPage logic)
   const userRole = String((user as any)?.role || '').toLowerCase();
@@ -895,6 +925,29 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         Clear
                       </Button>
                     </div>
+
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      {userCanEditProject && (
+                        <>
+                          <button
+                            type="button"
+                            className="app-action-button"
+                            onClick={() => setIsCreateCompetitionModalOpen(true)}
+                            style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: 500 }}
+                          >
+                            Add Competition
+                          </button>
+                          <button
+                            type="button"
+                            className="app-action-button"
+                            onClick={() => setIsCreateMatchModalOpen(true)}
+                            style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: 500 }}
+                          >
+                            Add Match
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   <h3 className="text-lg font-semibold mb-4">Hierarchy: Competitions & Matches (grouped by competition)</h3>
@@ -957,13 +1010,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               >
                                 {competition.name || `Competition ${compId}`}
                               </Link>
-                              <Badge variant="info">{getMatchCountForCompetition(competition)} matches</Badge>
+                              <Badge variant="default">{getMatchCountForCompetition(competition)} Matches</Badge>
                               <button
                                 type="button"
                                 className="app-action-button"
-                                onClick={() =>
-                                  navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`)
-                                }
+                                onClick={() => {
+                                  setSelectedDetailPeriod(competition);
+                                  setIsPeriodDetailModalOpen(true);
+                                }}
                                 style={actionButtonStyle('primary')}
                               >
                                 View
@@ -981,18 +1035,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   Edit
                                 </button>
                               )}
-                              <button
-                                type="button"
-                                className="app-action-button"
-                                onClick={() =>
-                                  navigate(
-                                    `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}?tab=matches`
-                                  )
-                                }
-                                style={actionButtonStyle('primary')}
-                              >
-                                Matches
-                              </button>
                               {userCanDeleteProject && (
                                 <button
                                   type="button"
@@ -1058,11 +1100,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             <button
                                               type="button"
                                               className="app-action-button"
-                                              onClick={() =>
-                                                navigate(
-                                                  `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}/matches/${(match as any).slug || match.id}`
-                                                )
-                                              }
+                                              onClick={() => {
+                                                setSelectedDetailMatch(match);
+                                                setIsMatchDetailModalOpen(true);
+                                              }}
                                               style={actionButtonStyle('primary')}
                                             >
                                               View
@@ -1137,7 +1178,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   <div style={{ padding: '16px 16px 0 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                       <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Players & Staff</h3>
-                      <Badge variant="info">{members.length} members</Badge>
+                      <Badge variant="default">{members.length} Members</Badge>
                     </div>
                     <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
                       Season-scoped roster (filtered by period).
@@ -1377,7 +1418,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {activeTab === 'competitions' && (
                 <Card>
                   <div style={{ padding: '16px' }}>
-                    <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Competitions</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Competitions</h3>
+                      {userCanEditProject ? (
+                        <button
+                          type="button"
+                          className="app-action-button"
+                          onClick={() => setIsCreateCompetitionModalOpen(true)}
+                          style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: 500 }}
+                        >
+                          Add Competition
+                        </button>
+                      ) : null}
+                    </div>
                     {competitionsLoading ? (
                       <Alert variant="info">Loading competitions…</Alert>
                     ) : competitions.length === 0 ? (
@@ -1416,7 +1469,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   <button
                                     type="button"
                                     className="app-action-button"
-                                    onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`)}
+                                    onClick={() => {
+                                      setSelectedDetailPeriod(competition);
+                                      setIsPeriodDetailModalOpen(true);
+                                    }}
                                     style={actionButtonStyle('primary')}
                                   >
                                     View
@@ -1482,7 +1538,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {activeTab === 'matches' && (
                 <Card>
                   <div style={{ padding: '16px' }}>
-                    <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>Matches</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Matches</h3>
+                      {userCanEditProject ? (
+                        <button
+                          type="button"
+                          className="app-action-button"
+                          onClick={() => setIsCreateMatchModalOpen(true)}
+                          style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: 500 }}
+                        >
+                          Add Match
+                        </button>
+                      ) : null}
+                    </div>
                     {matchesLoading ? (
                       <Alert variant="info">Loading matches…</Alert>
                     ) : matches.length === 0 ? (
@@ -1543,18 +1611,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     type="button"
                                     className="app-action-button"
                                     onClick={() => {
-                                      const compId = String(
-                                        (match as any).period_id || match.period?.id || (match as any).period || ''
-                                      ).trim();
-                                      const compKey = periodPathKey(match.period as any) || compId;
-                                      const matchKey = (match as any).slug || match.id;
-                                      if (compId) {
-                                        navigate(
-                                          `${seasonsBasePath}/${seasonPathKey}/competitions/${compKey}/matches/${matchKey}`
-                                        );
-                                        return;
-                                      }
-                                      navigate(`/matches/${matchKey}`);
+                                      setSelectedDetailMatch(match);
+                                      setIsMatchDetailModalOpen(true);
                                     }}
                                     style={actionButtonStyle('primary')}
                                   >
@@ -1644,6 +1702,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           period={selectedDetailPeriod}
         />
 
+        <MatchDetailModal
+          opened={isMatchDetailModalOpen}
+          onClose={() => {
+            setIsMatchDetailModalOpen(false);
+            setSelectedDetailMatch(null);
+          }}
+          match={selectedDetailMatch}
+        />
+
         <MatchEditModal
           opened={isMatchEditModalOpen}
           onClose={() => {
@@ -1654,6 +1721,137 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           onSave={async (payload) => {
             if (!selectedEditMatch) return;
             await saveMatchEdits(selectedEditMatch, payload);
+          }}
+        />
+
+        <PeriodCreateModal
+          opened={isCreateCompetitionModalOpen}
+          onClose={() => setIsCreateCompetitionModalOpen(false)}
+          title="Create Competition"
+          organisations={createModalOrganisations as any}
+          clubs={createModalClubs as any}
+          teams={createModalTeams as any}
+          requireOrganisation
+          requireClub
+          requireTeam
+          requireSeason
+          initialOrganisationId={String(org?.id || '')}
+          initialClubId={String((club as any)?.id || '')}
+          initialTeamId={String((project as any)?.id || '')}
+          initialSeasonId={String(resolvedSeasonId || season?.id || '')}
+          onCreate={async (payload) => {
+            const orgIdValue = String(payload.organisation_id || org?.id || '').trim();
+            const teamIdValue = String(payload.project_id || (project as any)?.id || '').trim();
+            const seasonIdValue = String(payload.parent_period_id || resolvedSeasonId || season?.id || '').trim();
+            if (!orgIdValue) throw new Error('Select a federation first');
+            if (!teamIdValue) throw new Error('Select a team first');
+            if (!seasonIdValue) throw new Error('Select a season first');
+
+            const res = await fetch(`${apiBaseUrl}/api/v1/periods/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                organisation_id: orgIdValue,
+                project_id: teamIdValue ? Number(teamIdValue) : undefined,
+                parent_period_id: seasonIdValue,
+                name: payload.name,
+                description: payload.description,
+                start_date: payload.start_date,
+                end_date: payload.end_date,
+                metadata: { type: 'competition' },
+              }),
+            });
+
+            if (!res.ok) {
+              const detail = await res.text().catch(() => '');
+              throw new Error(detail || 'Failed to create competition');
+            }
+
+            // Reload competitions list (matches will be fetched on-demand).
+            if (resolvedSeasonId) {
+              setCompetitionsLoading(true);
+              try {
+                const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(resolvedSeasonId)}&page_size=500`;
+                const competitionResults = await fetchAllPages<Period>(
+                  competitionsUrl,
+                  { credentials: 'include' },
+                  { ttlMs: 10_000, cacheKey: `periods:children:${resolvedSeasonId}` }
+                );
+                setCompetitions(competitionResults);
+              } finally {
+                setCompetitionsLoading(false);
+              }
+            }
+          }}
+        />
+
+        <MatchCreateModal
+          opened={isCreateMatchModalOpen}
+          onClose={() => setIsCreateMatchModalOpen(false)}
+          organisations={createModalOrganisations as any}
+          clubs={createModalClubs as any}
+          teams={createModalTeams as any}
+          initialOrganisationId={String(org?.id || '')}
+          initialClubId={String((club as any)?.id || '')}
+          initialTeamId={String((project as any)?.id || '')}
+          initialSeasonId={String(resolvedSeasonId || season?.id || '')}
+          onCreate={async (payload) => {
+            const teamIdValue = String(payload.project_id || (project as any)?.id || '').trim();
+            const competitionIdValue = String(payload.period_id || '').trim();
+            if (!teamIdValue) throw new Error('Select a team first');
+            if (!competitionIdValue) throw new Error('Select a competition first');
+
+            const res = await fetch(`${apiBaseUrl}/api/v1/activities/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                title: payload.title,
+                activity_type: 'match',
+                project_id: teamIdValue ? Number(teamIdValue) : undefined,
+                period_id: competitionIdValue,
+                start_time: payload.start_time,
+                end_time: payload.end_time,
+                location: payload.location,
+                description: payload.description,
+              }),
+            });
+
+            if (!res.ok) {
+              const detail = await res.text().catch(() => '');
+              throw new Error(detail || 'Failed to create match');
+            }
+
+            // Refresh matches if currently visible.
+            if (activeTab === 'hierarchy' || activeTab === 'matches') {
+              setMatchesLoading(true);
+              try {
+                const projectNumericId = String((project as any)?.id || '').trim();
+                const seasonUuid = String(resolvedSeasonId || '').trim();
+                if (projectNumericId && seasonUuid) {
+                  const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
+                    projectNumericId
+                  )}&period_id=${encodeURIComponent(
+                    seasonUuid
+                  )}&include_descendants=true&activity_type=match&ordering=-start_time&page_size=250`;
+                  const seasonMatches = await fetchAllPages<any>(
+                    url,
+                    { credentials: 'include' },
+                    { ttlMs: 10_000, cacheKey: `matches:season:${projectNumericId}:${seasonUuid}`, maxItems: 250 }
+                  );
+                  setMatches(seasonMatches);
+                }
+              } finally {
+                setMatchesLoading(false);
+              }
+            }
           }}
         />
       </div>

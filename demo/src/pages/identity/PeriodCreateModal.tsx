@@ -42,6 +42,7 @@ interface PeriodCreateModalProps {
   initialOrganisationId?: string;
   initialClubId?: string;
   initialTeamId?: string;
+  initialSeasonId?: string;
 }
 
 export default function PeriodCreateModal({
@@ -59,6 +60,7 @@ export default function PeriodCreateModal({
   initialOrganisationId = '',
   initialClubId = '',
   initialTeamId = '',
+  initialSeasonId = '',
 }: PeriodCreateModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -85,8 +87,8 @@ export default function PeriodCreateModal({
     setSelectedOrganisationId(String(initialOrganisationId || ''));
     setSelectedClubId(String(initialClubId || ''));
     setSelectedTeamId(String(initialTeamId || ''));
-    setSelectedSeasonId('');
-  }, [opened, initialOrganisationId, initialClubId, initialTeamId]);
+    setSelectedSeasonId(String(initialSeasonId || ''));
+  }, [opened, initialOrganisationId, initialClubId, initialTeamId, initialSeasonId]);
 
   const sortedOrganisations = useMemo(() => {
     return [...organisations].sort((a, b) => a.name.localeCompare(b.name));
