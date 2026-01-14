@@ -60,6 +60,11 @@ export default function SeasonSquadAddMemberModal({
   initialClubId = '',
   initialTeamId = '',
 }: SeasonSquadAddMemberModalProps) {
+  const extractList = (raw: any): any[] => {
+    const list = raw?.data?.data || raw?.data?.results || raw?.results || raw?.data || raw;
+    return Array.isArray(list) ? list : [];
+  };
+
   const [selectedOrganisationId, setSelectedOrganisationId] = useState('');
   const [selectedClubId, setSelectedClubId] = useState('');
   const [selectedTeamId, setSelectedTeamId] = useState('');
@@ -71,16 +76,35 @@ export default function SeasonSquadAddMemberModal({
   const [position, setPosition] = useState('');
   const [shirtNumber, setShirtNumber] = useState('');
 
+  const [remoteOrganisations, setRemoteOrganisations] = useState<OrgOption[]>([]);
+  const [remoteClubs, setRemoteClubs] = useState<ProjectOption[]>([]);
+  const [remoteTeams, setRemoteTeams] = useState<ProjectOption[]>([]);
+  const [loadingOrganisations, setLoadingOrganisations] = useState(false);
+  const [loadingClubs, setLoadingClubs] = useState(false);
+  const [loadingTeams, setLoadingTeams] = useState(false);
+
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const organisationsOptions = useMemo(() => {
+    return remoteOrganisations.length ? remoteOrganisations : organisations;
+  }, [remoteOrganisations, organisations]);
+
+  const clubsOptions = useMemo(() => {
+    return remoteClubs.length ? remoteClubs : clubs;
+  }, [remoteClubs, clubs]);
+
+  const teamsOptions = useMemo(() => {
+    return remoteTeams.length ? remoteTeams : teams;
+  }, [remoteTeams, teams]);
+
   const sortedOrganisations = useMemo(() => {
-    return [...organisations].sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  }, [organisations]);
+    return [...organisationsOptions].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  }, [organisationsOptions]);
 
   const getClubOrganisationId = (clubId: string): string | null => {
-    const club = clubs.find((c) => String(c.id) === String(clubId));
+    const club = clubsOptions.find((c) => String(c.id) === String(clubId));
     if (!club) return null;
     const org = typeof (club as any).organisation === 'string' ? (club as any).organisation : (club as any).organisation?.id;
     return org ? String(org) : null;
@@ -99,19 +123,19 @@ export default function SeasonSquadAddMemberModal({
   const filteredClubs = useMemo(() => {
     const orgId = selectedOrganisationId;
     const list = orgId
-      ? clubs.filter((c) => {
+      ? clubsOptions.filter((c) => {
           const cOrg = typeof (c as any).organisation === 'string' ? (c as any).organisation : (c as any).organisation?.id;
           return String(cOrg) === String(orgId);
         })
-      : clubs;
+      : clubsOptions;
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  }, [clubs, selectedOrganisationId]);
+  }, [clubsOptions, selectedOrganisationId]);
 
   const filteredTeams = useMemo(() => {
     const clubId = selectedClubId;
-    const list = clubId ? teams.filter((t) => getTeamParentId(t) === String(clubId)) : teams;
+    const list = clubId ? teamsOptions.filter((t) => getTeamParentId(t) === String(clubId)) : teamsOptions;
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  }, [teams, selectedClubId]);
+  }, [teamsOptions, selectedClubId]);
 
   const applyOrganisationSelection = (orgId: string) => {
     setSelectedOrganisationId(orgId);
@@ -136,7 +160,7 @@ export default function SeasonSquadAddMemberModal({
     setSelectedUserId('');
     setUserOptions([]);
 
-    const team = teams.find((t) => String(t.id) === String(teamId));
+    const team = teamsOptions.find((t) => String(t.id) === String(teamId));
     if (!team) return;
 
     const clubId = getTeamParentId(team);
@@ -153,6 +177,10 @@ export default function SeasonSquadAddMemberModal({
     setSaving(false);
     setLoadingUsers(false);
 
+    setRemoteOrganisations([]);
+    setRemoteClubs([]);
+    setRemoteTeams([]);
+
     setSelectedOrganisationId(String(initialOrganisationId || ''));
     setSelectedClubId(String(initialClubId || ''));
     setSelectedTeamId(String(initialTeamId || ''));
@@ -164,34 +192,128 @@ export default function SeasonSquadAddMemberModal({
     setShirtNumber('');
   }, [opened, initialOrganisationId, initialClubId, initialTeamId]);
 
+  // Load federations so the user can switch context.
   useEffect(() => {
     if (!opened) return;
-    const q = String(userSearch || '').trim();
+    let cancelled = false;
+
+    const load = async () => {
+      setLoadingOrganisations(true);
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=500`, { credentials: 'include' });
+        if (!res.ok) return;
+        const raw = await res.json().catch(() => null);
+        const list = extractList(raw)
+          .map((o: any) => ({ id: String(o.id), name: String(o.name || o.slug || o.id), slug: o.slug }))
+          .filter((o: any) => o.id);
+        const unique = [...new Map(list.map((o: any) => [String(o.id), o])).values()];
+        if (!cancelled) setRemoteOrganisations(unique);
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingOrganisations(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [opened, apiBaseUrl]);
+
+  // Load clubs (root projects) when federation changes.
+  useEffect(() => {
+    if (!opened) return;
+    const orgId = String(selectedOrganisationId || '').trim();
+    if (!orgId) {
+      setRemoteClubs([]);
+      return;
+    }
+
+    let cancelled = false;
+    const load = async () => {
+      setLoadingClubs(true);
+      try {
+        const url = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgId)}/projects/?page_size=500&parent_project__isnull=true`;
+        const res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) return;
+        const raw = await res.json().catch(() => null);
+        const list = extractList(raw).map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
+        const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
+        if (!cancelled) setRemoteClubs(unique as any);
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingClubs(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [opened, apiBaseUrl, selectedOrganisationId]);
+
+  // Load teams (child projects) when club changes.
+  useEffect(() => {
+    if (!opened) return;
+    const clubId = String(selectedClubId || '').trim();
+    if (!clubId) {
+      setRemoteTeams([]);
+      return;
+    }
+
+    let cancelled = false;
+    const load = async () => {
+      setLoadingTeams(true);
+      try {
+        const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubId)}&page_size=500`;
+        const res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) return;
+        const raw = await res.json().catch(() => null);
+        const list = extractList(raw).map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
+        const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
+        if (!cancelled) setRemoteTeams(unique as any);
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingTeams(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [opened, apiBaseUrl, selectedClubId]);
+
+  // Preload users immediately when a team is selected (no 2-char requirement).
+  useEffect(() => {
+    if (!opened) return;
     const teamId = String(selectedTeamId || '').trim();
     const season = String(seasonId || '').trim();
-
-    if (!teamId || !season || q.length < 2) {
+    if (!teamId || !season) {
       setUserOptions([]);
       setSelectedUserId('');
       return;
     }
 
     let cancelled = false;
-    const timer = window.setTimeout(async () => {
+    const load = async () => {
       setLoadingUsers(true);
       setError(null);
       try {
         const params = new URLSearchParams();
-        params.set('search', q);
         params.set('period', season);
+        params.set('page_size', '500');
 
         const res = await fetch(
           `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/searchable-users/?${params.toString()}`,
           { credentials: 'include' }
         );
         if (!res.ok) throw new Error('Failed to load users');
-        const raw: any = await res.json();
-        const list = Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : [];
+        const raw: any = await res.json().catch(() => null);
+        const list = extractList(raw);
         const unique = [...new Map((list as any[]).map((u) => [String(u.id), u])).values()];
         if (!cancelled) setUserOptions(unique as any);
       } catch (e) {
@@ -202,13 +324,24 @@ export default function SeasonSquadAddMemberModal({
       } finally {
         if (!cancelled) setLoadingUsers(false);
       }
-    }, 300);
+    };
 
+    load();
     return () => {
       cancelled = true;
-      window.clearTimeout(timer);
     };
-  }, [opened, userSearch, selectedTeamId, seasonId, apiBaseUrl]);
+  }, [opened, selectedTeamId, seasonId, apiBaseUrl]);
+
+  const filteredUserOptions = useMemo(() => {
+    const q = String(userSearch || '').trim().toLowerCase();
+    if (!q) return userOptions;
+    return userOptions.filter((u: any) => {
+      const name =
+        String(u.full_name || u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || '').toLowerCase();
+      const email = String(u.email || '').toLowerCase();
+      return name.includes(q) || email.includes(q);
+    });
+  }, [userOptions, userSearch]);
 
   const canSubmit = Boolean(String(selectedTeamId || '').trim()) && Boolean(String(selectedUserId || '').trim()) && !saving;
 
@@ -298,7 +431,7 @@ export default function SeasonSquadAddMemberModal({
               id="squad-add-org"
               value={selectedOrganisationId}
               onChange={(e) => applyOrganisationSelection(e.target.value)}
-              disabled={saving || sortedOrganisations.length <= 1}
+              disabled={saving || loadingOrganisations}
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',
@@ -322,7 +455,7 @@ export default function SeasonSquadAddMemberModal({
               id="squad-add-club"
               value={selectedClubId}
               onChange={(e) => applyClubSelection(e.target.value)}
-              disabled={saving || filteredClubs.length <= 1}
+              disabled={saving || loadingClubs || !selectedOrganisationId}
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',
@@ -346,7 +479,7 @@ export default function SeasonSquadAddMemberModal({
               id="squad-add-team"
               value={selectedTeamId}
               onChange={(e) => applyTeamSelection(e.target.value)}
-              disabled={saving || filteredTeams.length <= 1}
+              disabled={saving || loadingTeams || !selectedClubId}
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',
@@ -371,7 +504,7 @@ export default function SeasonSquadAddMemberModal({
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               disabled={saving || !selectedTeamId}
-              placeholder="Type at least 2 characters…"
+              placeholder="Filter users (optional)…"
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',
@@ -388,7 +521,7 @@ export default function SeasonSquadAddMemberModal({
               id="squad-add-user"
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
-              disabled={saving || loadingUsers || userOptions.length === 0}
+              disabled={saving || loadingUsers || !selectedTeamId}
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',
@@ -398,9 +531,17 @@ export default function SeasonSquadAddMemberModal({
               }}
             >
               <option value="">
-                {loadingUsers ? 'Loading users…' : userOptions.length ? 'Select user…' : 'Search for a user…'}
+                {loadingUsers
+                  ? 'Loading users…'
+                  : !selectedTeamId
+                    ? 'Select a team first…'
+                    : filteredUserOptions.length
+                      ? 'Select user…'
+                      : userOptions.length
+                        ? 'No match for filter…'
+                        : 'No users found…'}
               </option>
-              {userOptions.map((u) => {
+              {filteredUserOptions.map((u) => {
                 const name =
                   u.full_name ||
                   u.name ||
