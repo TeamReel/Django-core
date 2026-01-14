@@ -54,8 +54,10 @@ class Command(BaseCommand):
                     self.stdout.write(f"{activity.id} -> {new_slug}")
                     continue
 
-                activity.slug = new_slug
-                activity.save(update_fields=["slug"])
+                # Use a queryset update to avoid triggering model save signals
+                # (e.g. search indexing via transaction.on_commit), so this command
+                # can be run safely from a local machine against Railway DB.
+                Activity.objects.filter(pk=activity.pk).update(slug=new_slug)
                 updated += 1
 
         if dry_run:
