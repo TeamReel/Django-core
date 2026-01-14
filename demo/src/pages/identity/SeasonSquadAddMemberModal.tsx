@@ -65,6 +65,29 @@ export default function SeasonSquadAddMemberModal({
     return Array.isArray(list) ? list : [];
   };
 
+  const getNextUrl = (raw: any): string => {
+    const next = raw?.data?.next ?? raw?.next;
+    return typeof next === 'string' ? next : '';
+  };
+
+  const fetchAllPages = async (url: string, opts: RequestInit, maxItems = 1000): Promise<any[]> => {
+    const all: any[] = [];
+    let nextUrl = url;
+    const seen = new Set<string>();
+
+    while (nextUrl && all.length < maxItems && !seen.has(nextUrl)) {
+      seen.add(nextUrl);
+      const res = await fetch(nextUrl, opts);
+      if (!res.ok) break;
+      const raw = await res.json().catch(() => null);
+      const pageItems = extractList(raw);
+      all.push(...pageItems);
+      nextUrl = getNextUrl(raw);
+    }
+
+    return all.slice(0, maxItems);
+  };
+
   const [selectedOrganisationId, setSelectedOrganisationId] = useState('');
   const [selectedClubId, setSelectedClubId] = useState('');
   const [selectedTeamId, setSelectedTeamId] = useState('');
@@ -228,32 +251,37 @@ export default function SeasonSquadAddMemberModal({
     };
   }, [opened, apiBaseUrl]);
 
-  // Load clubs (root projects) when federation changes.
+  // Load clubs (root projects).
+  // - If federation selected: only clubs in that federation.
+  // - If no federation: all clubs (across federations).
   useEffect(() => {
     if (!opened) return;
     const orgId = String(selectedOrganisationId || '').trim();
     const orgSlug = String(selectedOrganisationSlug || '').trim();
-    if (!orgId) {
-      setRemoteClubs([]);
-      return;
-    }
-
-    // Nested organisations/{org_slug}/projects uses slug, not UUID.
-    // Wait until we can resolve the slug.
-    if (!orgSlug) {
-      setRemoteClubs([]);
-      return;
-    }
 
     let cancelled = false;
+    const abortController = new AbortController();
     const load = async () => {
       setLoadingClubs(true);
       try {
-        const url = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=500&parent_project__isnull=true`;
-        const res = await fetch(url, { credentials: 'include' });
-        if (!res.ok) return;
-        const raw = await res.json().catch(() => null);
-        const list = extractList(raw).map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
+        // Nested organisations/{org_slug}/projects uses slug, not UUID.
+        // If federation selected but slug not resolved yet, wait.
+        if (orgId && !orgSlug) {
+          if (!cancelled) setRemoteClubs([]);
+          return;
+        }
+
+        const baseUrl = orgId
+          ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=200&parent_project__isnull=true`
+          : `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`;
+
+        const rawList = await fetchAllPages(
+          baseUrl,
+          { credentials: 'include', signal: abortController.signal },
+          1000
+        );
+
+        const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteClubs(unique as any);
       } catch {
@@ -266,6 +294,7 @@ export default function SeasonSquadAddMemberModal({
     load();
     return () => {
       cancelled = true;
+      abortController.abort();
     };
   }, [opened, apiBaseUrl, selectedOrganisationId, selectedOrganisationSlug]);
 
@@ -279,14 +308,17 @@ export default function SeasonSquadAddMemberModal({
     }
 
     let cancelled = false;
+    const abortController = new AbortController();
     const load = async () => {
       setLoadingTeams(true);
       try {
-        const url = `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubId)}&page_size=500`;
-        const res = await fetch(url, { credentials: 'include' });
-        if (!res.ok) return;
-        const raw = await res.json().catch(() => null);
-        const list = extractList(raw).map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
+        const baseUrl = `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubId)}&page_size=200`;
+        const rawList = await fetchAllPages(
+          baseUrl,
+          { credentials: 'include', signal: abortController.signal },
+          1000
+        );
+        const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteTeams(unique as any);
       } catch {
@@ -299,6 +331,7 @@ export default function SeasonSquadAddMemberModal({
     load();
     return () => {
       cancelled = true;
+      abortController.abort();
     };
   }, [opened, apiBaseUrl, selectedClubId]);
 
@@ -543,7 +576,7 @@ export default function SeasonSquadAddMemberModal({
               id="squad-add-club"
               value={selectedClubId}
               onChange={(e) => applyClubSelection(e.target.value)}
-              disabled={saving || loadingClubs || !selectedOrganisationId}
+              disabled={saving || loadingClubs}
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',

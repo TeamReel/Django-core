@@ -63,6 +63,45 @@ class MembershipService:
             metadata=metadata or {},
         )
 
+        # TeamReel: If adding a member to a child team, also ensure they're added to the parent club
+        # for the same season. This keeps navigation/visibility consistent in the demo.
+        parent_project = getattr(project, "parent_project", None)
+        if parent_project is not None:
+            try:
+                exists_on_parent = ProjectMembership.objects.filter(
+                    project=parent_project,
+                    user=user,
+                    period=period,
+                    deleted_at__isnull=True,
+                ).exists()
+
+                if not exists_on_parent:
+                    ProjectMembership.objects.create(
+                        project=parent_project,
+                        user=user,
+                        role=ProjectMembership.Role.VIEWER,
+                        assignment_reason=ProjectMembership.AssignmentReason.MANUAL,
+                        period=period,
+                        metadata={},
+                    )
+
+                    audit_log.record(
+                        "project.membership.created",
+                        user=actor,
+                        project=parent_project,
+                        metadata={
+                            "project_id": str(parent_project.id),
+                            "user_id": str(user.id),
+                            "role": ProjectMembership.Role.VIEWER,
+                            "period_id": str(period.id) if period else None,
+                            "reason": "parent_cascade",
+                            "source_project_id": str(project.id),
+                        },
+                    )
+            except Exception:
+                # Don't fail the main add_member operation if club auto-add fails.
+                pass
+
         # Audit log
         audit_log.record(
             "project.membership.created",

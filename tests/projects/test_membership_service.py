@@ -1,5 +1,7 @@
 import pytest
+from datetime import date
 from django.core.exceptions import ValidationError
+from activities.models import Period
 from projects.models import ProjectMembership
 from projects.services.membership_service import MembershipService
 from organisations.models import Membership
@@ -127,3 +129,45 @@ class TestMembershipServiceRemoval:
             ).count()
             == 1
         )
+
+
+@pytest.mark.django_db
+class TestMembershipServiceAdd:
+    def test_add_member_to_team_also_adds_to_parent_club(
+        self, user_factory, organisation_factory, project_factory
+    ):
+        owner = user_factory()
+        org = organisation_factory(creator=owner)
+
+        club = project_factory(organisation=org, creator=owner)
+        team = project_factory(organisation=org, creator=owner, parent_project=club)
+
+        season = Period.objects.create(
+            name="Season",
+            start_date=date(2025, 7, 1),
+            end_date=date(2026, 6, 30),
+            organisation=org,
+        )
+
+        member = user_factory()
+        Membership.objects.create(user=member, organisation=org, role="member")
+
+        service = MembershipService()
+        team_membership = service.add_member(
+            project=team,
+            user=member,
+            role=ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+            metadata={"position": "Keeper", "shirt_number": "1"},
+        )
+
+        assert team_membership.project_id == team.id
+        assert team_membership.period_id == season.id
+
+        assert ProjectMembership.objects.filter(
+            project=club,
+            user=member,
+            period=season,
+            deleted_at__isnull=True,
+        ).exists()
