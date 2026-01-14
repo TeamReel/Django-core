@@ -1870,7 +1870,9 @@ export const OrganisationDetailPage: React.FC = () => {
                                   <td style={compactTextTdStyle}>
                                     <button
                                       type="button"
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
                                         setDetailUser(user);
                                         setIsUserDetailModalOpen(true);
                                       }}
@@ -1890,7 +1892,10 @@ export const OrganisationDetailPage: React.FC = () => {
                                     {userCanManageMembers ? (
                                       <div style={compactActionsStyle}>
                                         <button
-                                          onClick={() => {
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
                                             setDetailUser(user);
                                             setIsUserDetailModalOpen(true);
                                           }}
@@ -1899,7 +1904,10 @@ export const OrganisationDetailPage: React.FC = () => {
                                           View
                                         </button>
                                         <button
-                                          onClick={() => {
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
                                             setEditingMember(item);
                                             setEditingMemberRole((item?.role || 'member') as any);
                                             setEditMemberRoleError(null);
@@ -1910,6 +1918,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                           Edit
                                         </button>
                                         <button
+                                          type="button"
                                           onClick={async () => {
                                             if (!window.confirm(`Remove ${user.email} from federation?`)) return;
                                             try {
