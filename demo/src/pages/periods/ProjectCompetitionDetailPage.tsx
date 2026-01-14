@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
-import { PageContent, PageHeader } from '@django-core/page-templates';
+import { BreadcrumbContextSwitcher, BreadcrumbSwitcherOption, PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
@@ -691,6 +691,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const [competition, setCompetition] = useState<Period | null>(null);
   const [resolvedSeasonId, setResolvedSeasonId] = useState<string>('');
   const [resolvedCompetitionId, setResolvedCompetitionId] = useState<string>('');
+  const [competitionsForSwitcher, setCompetitionsForSwitcher] = useState<Period[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
@@ -727,11 +728,11 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const clubSlugOrId = clubId || '';
 
   const projectDetailPath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}`
+    ? `/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
 
   const seasonsBasePath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
+    ? `/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
 
   const activeTab = useMemo(() => {
@@ -746,8 +747,10 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
   const competitionBasePath = useMemo(() => {
     if (!seasonKeyOrId || !competitionKeyOrId) return '';
-    return `${seasonsBasePath}/${seasonKeyOrId}/competitions/${competitionKeyOrId}`;
-  }, [competitionKeyOrId, seasonKeyOrId, seasonsBasePath]);
+    return isTeamRoute
+      ? `${seasonsBasePath}/${seasonKeyOrId}/${competitionKeyOrId}`
+      : `${seasonsBasePath}/${seasonKeyOrId}/competitions/${competitionKeyOrId}`;
+  }, [competitionKeyOrId, isTeamRoute, seasonKeyOrId, seasonsBasePath]);
 
   const navigateToTab = (tabId: string) => {
     if (!competitionBasePath) return;
@@ -758,6 +761,18 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     navigate(`${competitionBasePath}?tab=${encodeURIComponent(tabId)}`);
   };
 
+  const handleCompetitionSwitch = (option: BreadcrumbSwitcherOption) => {
+    if (!seasonKeyOrId) return;
+    const suffix = location.search ? location.search : '';
+    const compKey = String(option.slug || option.id).trim();
+    if (!compKey) return;
+    navigate(
+      isTeamRoute
+        ? `${seasonsBasePath}/${seasonKeyOrId}/${compKey}${suffix}`
+        : `${seasonsBasePath}/${seasonKeyOrId}/competitions/${compKey}${suffix}`
+    );
+  };
+
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
@@ -766,7 +781,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         ? [
             {
               label: club?.name || 'Club',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+              onClick: () => navigate(`/organisations/${orgSlugOrId}/${clubSlugOrId}`),
             },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
@@ -775,7 +790,21 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         label: season?.name || 'Season',
         onClick: () => navigate(`${seasonsBasePath}/${seasonKeyOrId}`),
       },
-      { label: competition?.name || 'Competition', current: true },
+      {
+        label: (
+          <BreadcrumbContextSwitcher
+            currentId={String(resolvedCompetitionId || (competition as any)?.id || '')}
+            options={competitionsForSwitcher.map((c) => ({
+              id: String(c.id),
+              label: String(c.name || c.slug || c.id),
+              slug: periodPathKey(c) || String(c.id),
+            }))}
+            onSelect={handleCompetitionSwitch}
+            hasDropdown={competitionsForSwitcher.length > 1}
+          />
+        ),
+        current: true,
+      },
     ],
     [
       navigate,
@@ -783,13 +812,15 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
       project?.name,
       club?.name,
       season?.name,
-      competition?.name,
       orgSlugOrId,
       seasonsBasePath,
       projectDetailPath,
       seasonKeyOrId,
       isTeamRoute,
       clubSlugOrId,
+      competition,
+      competitionsForSwitcher,
+      resolvedCompetitionId,
     ]
   );
 
@@ -861,9 +892,14 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         const desiredSeasonKey = periodPathKey(seasonJson);
         if (desiredSeasonKey && desiredSeasonKey !== String(effectiveSeasonId)) {
           const suffix = location.search ? location.search : '';
-          navigate(`${seasonsBasePath}/${desiredSeasonKey}/competitions/${effectiveCompetitionId}${suffix}`, {
+          navigate(
+            isTeamRoute
+              ? `${seasonsBasePath}/${desiredSeasonKey}/${effectiveCompetitionId}${suffix}`
+              : `${seasonsBasePath}/${desiredSeasonKey}/competitions/${effectiveCompetitionId}${suffix}`,
+            {
             replace: true,
-          });
+            }
+          );
           return;
         }
 
@@ -874,6 +910,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
           { credentials: 'include' },
           { ttlMs: 60_000, cacheKey: `periods:children:${seasonUuid}` }
         );
+        setCompetitionsForSwitcher(competitionOptions);
 
         const isUuidCompetition = looksLikeUuid(effectiveCompetitionId);
         const competitionFromList = isUuidCompetition
@@ -897,9 +934,14 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         if (desiredCompetitionKey && desiredCompetitionKey !== String(effectiveCompetitionId)) {
           const suffix = location.search ? location.search : '';
           const seasonKey = periodPathKey(seasonJson) || String(effectiveSeasonId || seasonUuid);
-          navigate(`${seasonsBasePath}/${seasonKey}/competitions/${desiredCompetitionKey}${suffix}`, {
+          navigate(
+            isTeamRoute
+              ? `${seasonsBasePath}/${seasonKey}/${desiredCompetitionKey}${suffix}`
+              : `${seasonsBasePath}/${seasonKey}/competitions/${desiredCompetitionKey}${suffix}`,
+            {
             replace: true,
-          });
+            }
+          );
           return;
         }
       } catch (e) {
@@ -910,7 +952,17 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     };
 
     run();
-  }, [apiBaseUrl, orgSlugOrId, projectSlugOrId, effectiveSeasonId, effectiveCompetitionId]);
+  }, [
+    apiBaseUrl,
+    effectiveCompetitionId,
+    effectiveSeasonId,
+    isTeamRoute,
+    location.search,
+    navigate,
+    orgSlugOrId,
+    projectSlugOrId,
+    seasonsBasePath,
+  ]);
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -1209,7 +1261,9 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     const competitionForLink = String(periodPathKey(competition) || competitionKeyOrId || '').trim();
     const matchForLink = String((matches || []).find((m: any) => String(m?.id) === String(matchId))?.slug || matchId).trim();
     if (!seasonForLink || !competitionForLink) return `/matches/${matchForLink || matchId}`;
-    return `${seasonsBasePath}/${seasonForLink}/competitions/${competitionForLink}/matches/${matchForLink || matchId}`;
+    return isTeamRoute
+      ? `${seasonsBasePath}/${seasonForLink}/${competitionForLink}/${matchForLink || matchId}`
+      : `${seasonsBasePath}/${seasonForLink}/competitions/${competitionForLink}/matches/${matchForLink || matchId}`;
   };
 
   const renderMatchesTable = (rows: any[]) => {

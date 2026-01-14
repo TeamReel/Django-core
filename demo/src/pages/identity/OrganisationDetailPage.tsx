@@ -18,12 +18,15 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { Organisation, User, Project } from '../../types';
 import AppShell from '../../components/AppShell';
+import OrganisationDetailModal from './OrganisationDetailModal';
+import OrganisationEditModal from './OrganisationEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectCreateModal from './ProjectCreateModal';
 import PeriodCreateModal from './PeriodCreateModal';
 import MatchCreateModal from './MatchCreateModal';
 import InviteMemberModal from './InviteMemberModal';
+import UserDetailModal from './UserDetailModal';
 import {
   canEditOrganisation,
   canDeleteOrganisation,
@@ -159,6 +162,12 @@ export const OrganisationDetailPage: React.FC = () => {
   const [editType, setEditType] = useState('');
   const [editCountry, setEditCountry] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Modal state for view/edit
+  const [isOrgDetailModalOpen, setIsOrgDetailModalOpen] = useState(false);
+  const [isOrgEditModalOpen, setIsOrgEditModalOpen] = useState(false);
+  const [detailUser, setDetailUser] = useState<any | null>(null);
+  const [isUserDetailModalOpen, setIsUserDetailModalOpen] = useState(false);
 
   // Compute period hierarchy for recursive activity counts
   const periodChildrenMap = useMemo(() => {
@@ -948,6 +957,33 @@ export const OrganisationDetailPage: React.FC = () => {
     }
   };
 
+  const saveOrganisationEdits = async (orgData: Partial<Organisation>) => {
+    if (!org) throw new Error('Missing organisation');
+
+    const apiV1BaseUrl = getApiV1BaseUrl();
+    const patch: any = { ...orgData };
+    delete patch.slug;
+
+    const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken() || '',
+      },
+      credentials: 'include',
+      body: JSON.stringify(patch),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new Error(detail || `Failed to update organisation (${response.status})`);
+    }
+
+    const raw = await response.json().catch(() => null);
+    const updatedOrg = (raw as any)?.data || raw;
+    if (updatedOrg) setOrg(updatedOrg);
+  };
+
   // Lazy load members only when Users tab is active (performance optimization)
   const fetchMembers = async (force = false) => {
     if (membersLoading) return;
@@ -1198,23 +1234,71 @@ export const OrganisationDetailPage: React.FC = () => {
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <Button variant="secondary" size="sm" onClick={() => navigate('/federations')}>
+            <button
+              onClick={() => navigate('/federations')}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500,
+              }}
+            >
               Back
-            </Button>
+            </button>
+            <button
+              onClick={() => setIsOrgDetailModalOpen(true)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 500,
+              }}
+            >
+              View
+            </button>
             {userCanEditOrg && (
-              <>
-                <Button variant="secondary" size="sm" onClick={() => {
-                  setActiveTab('overview');
-                  setTimeout(() => {
-                    handleEdit();
-                  }, 100);
-                }}>
-                  Edit
-                </Button>
-                <Button variant="secondary" size="sm" onClick={handleDelete} disabled={deleteLoading}>
-                  {deleteLoading ? 'Deleting...' : 'Delete'}
-                </Button>
-              </>
+              <button
+                onClick={() => setIsOrgEditModalOpen(true)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid #007bff',
+                  backgroundColor: 'var(--app-surface)',
+                  color: '#007bff',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
+                Edit
+              </button>
+            )}
+            {userCanEditOrg && (
+              <button
+                onClick={handleDelete}
+                disabled={deleteLoading}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid #dc3545',
+                  backgroundColor: 'var(--app-surface)',
+                  color: '#dc3545',
+                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  opacity: deleteLoading ? 0.6 : 1,
+                }}
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </button>
             )}
           </div>
         }
@@ -1271,76 +1355,27 @@ export const OrganisationDetailPage: React.FC = () => {
             <Card>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Organisation Details</h3>
-                {!isEditMode && canEditOrganisation(permissionContext) && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleEdit}
-                  >
+                {canEditOrganisation(permissionContext) && (
+                  <Button variant="secondary" size="sm" onClick={() => setIsOrgEditModalOpen(true)}>
                     Edit
                   </Button>
                 )}
               </div>
 
-              {isEditMode ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                    <Input
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      placeholder="Organisation name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                    <Input
-                      value={editType}
-                      onChange={(e) => setEditType(e.target.value)}
-                      placeholder="e.g., League, Federation, Association"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                    <Input
-                      value={editCountry}
-                      onChange={(e) => setEditCountry(e.target.value)}
-                      placeholder="e.g., Netherlands, Belgium"
-                    />
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      onClick={handleSaveEdit}
-                      loading={saving}
-                      disabled={saving}
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={handleCancelEdit}
-                      disabled={saving}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+              <div className="space-y-3">
+                <div>
+                  <div className="text-sm font-medium text-gray-500">Name</div>
+                  <div className="text-base text-gray-900 mt-1">{org?.name || '—'}</div>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-sm font-medium text-gray-500">Name</div>
-                    <div className="text-base text-gray-900 mt-1">{org?.name || '—'}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-500">Type</div>
-                    <div className="text-base text-gray-900 mt-1">{org?.metadata?.type || '—'}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-500">Country</div>
-                    <div className="text-base text-gray-900 mt-1">{org?.metadata?.country || '—'}</div>
-                  </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-500">Type</div>
+                  <div className="text-base text-gray-900 mt-1">{org?.metadata?.type || '—'}</div>
                 </div>
-              )}
+                <div>
+                  <div className="text-sm font-medium text-gray-500">Country</div>
+                  <div className="text-base text-gray-900 mt-1">{org?.metadata?.country || '—'}</div>
+                </div>
+              </div>
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1677,7 +1712,6 @@ export const OrganisationDetailPage: React.FC = () => {
                           <colgroup>
                             <col style={{ width: '180px' }} />
                             <col style={{ width: '180px' }} />
-                            <col style={{ width: '180px' }} />
                             <col style={{ width: '200px' }} />
                             <col style={{ width: '220px' }} />
                             <col style={{ width: '120px' }} />
@@ -1685,7 +1719,6 @@ export const OrganisationDetailPage: React.FC = () => {
                           </colgroup>
                           <thead>
                             <tr>
-                              <th style={compactThStyle}>Federation</th>
                               <th style={compactThStyle}>Club</th>
                               <th style={compactThStyle}>Team</th>
                               <th style={compactThStyle}>User</th>
@@ -1698,6 +1731,17 @@ export const OrganisationDetailPage: React.FC = () => {
                             {pageItems.map((item: any) => {
                               const user = item.user || item;
                               const membershipId = item.id;
+
+                              const pms = ((): any[] => {
+                                const u = item?.user || item;
+                                const list =
+                                  (item as any)?.project_memberships ||
+                                  (u as any)?.project_memberships ||
+                                  (item as any)?.project_membership_details ||
+                                  (u as any)?.project_membership_details ||
+                                  [];
+                                return Array.isArray(list) ? list : [];
+                              })();
 
                               const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
                               const TEAMREEL_ROLE_RANK: Record<string, number> = {
@@ -1753,17 +1797,6 @@ export const OrganisationDetailPage: React.FC = () => {
 
                               const roleDisplay = getTeamreelRoleDisplay();
 
-                              const pms = ((): any[] => {
-                                const u = item?.user || item;
-                                const list =
-                                  (item as any)?.project_memberships ||
-                                  (u as any)?.project_memberships ||
-                                  (item as any)?.project_membership_details ||
-                                  (u as any)?.project_membership_details ||
-                                  [];
-                                return Array.isArray(list) ? list : [];
-                              })();
-
                               const clubIds = Array.from(
                                 new Set(
                                   pms
@@ -1794,11 +1827,6 @@ export const OrganisationDetailPage: React.FC = () => {
                               return (
                                 <tr key={user.id}>
                                   <td style={compactTextTdStyle}>
-                                    <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                      {org?.name || resolvedOrg?.name || currentOrgSlug}
-                                    </Link>
-                                  </td>
-                                  <td style={compactTextTdStyle}>
                                     {clubIds.length > 1 ? (
                                       <span
                                         title={clubIds
@@ -1809,7 +1837,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                       </span>
                                     ) : clubSlugOrId ? (
                                       <Link
-                                        to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
+                                        to={`/organisations/${currentOrgSlug}/${clubSlugOrId}`}
                                         className="text-blue-600"
                                         style={{ textDecoration: 'none' }}
                                       >
@@ -1830,7 +1858,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                       </span>
                                     ) : teamSlugOrId ? (
                                       <Link
-                                        to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                        to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/${teamSlugOrId}`}
                                         className="text-blue-600 hover:underline"
                                       >
                                         {team?.name || teamId}
@@ -1840,12 +1868,17 @@ export const OrganisationDetailPage: React.FC = () => {
                                     )}
                                   </td>
                                   <td style={compactTextTdStyle}>
-                                    <Link
-                                      to={`/organisations/${currentOrgSlug}/users/${user.id}`}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setDetailUser(user);
+                                        setIsUserDetailModalOpen(true);
+                                      }}
                                       className="text-blue-600 hover:underline"
+                                      style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
                                     >
                                       {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
-                                    </Link>
+                                    </button>
                                   </td>
                                   <td style={compactTextTdStyle}>{user.email}</td>
                                   <td style={compactTdStyle}>
@@ -1857,7 +1890,10 @@ export const OrganisationDetailPage: React.FC = () => {
                                     {userCanManageMembers ? (
                                       <div style={compactActionsStyle}>
                                         <button
-                                          onClick={() => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
+                                          onClick={() => {
+                                            setDetailUser(user);
+                                            setIsUserDetailModalOpen(true);
+                                          }}
                                           style={actionButtonStyle('primary')}
                                         >
                                           View
@@ -2057,7 +2093,6 @@ export const OrganisationDetailPage: React.FC = () => {
                       <div className="overflow-x-auto">
                         <Table style={compactTableStyle}>
                           <colgroup>
-                            <col style={{ width: '180px' }} />
                             <col />
                             <col style={{ width: '90px' }} />
                             <col style={{ width: '95px' }} />
@@ -2069,7 +2104,6 @@ export const OrganisationDetailPage: React.FC = () => {
                           </colgroup>
                           <thead>
                             <tr>
-                              <th style={compactThStyle}>Federation</th>
                               <th style={compactThStyle}>Club</th>
                               <th style={compactThStyle}>Teams</th>
                               <th style={compactThStyle}>Seasons</th>
@@ -2092,13 +2126,8 @@ export const OrganisationDetailPage: React.FC = () => {
                               return (
                                 <tr key={club.id}>
                                   <td style={compactTextTdStyle}>
-                                    <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                      {String(org?.name || resolvedOrg?.name || currentOrgSlug || '—')}
-                                    </Link>
-                                  </td>
-                                  <td style={compactTextTdStyle}>
                                     <Link
-                                      to={`/organisations/${currentOrgSlug}/projects/${club.slug || club.id}`}
+                                      to={`/organisations/${currentOrgSlug}/${club.slug || club.id}`}
                                       style={{ ...compactTextTdStyle, display: 'inline-block', maxWidth: '100%', textDecoration: 'none', color: '#007bff' }}
                                     >
                                       {club.name}
@@ -2305,7 +2334,6 @@ export const OrganisationDetailPage: React.FC = () => {
                         <colgroup>
                           <col style={{ width: '180px' }} />
                           <col style={{ width: '180px' }} />
-                          <col style={{ width: '180px' }} />
                           <col style={{ width: '95px' }} />
                           <col style={{ width: '120px' }} />
                           <col style={{ width: '95px' }} />
@@ -2315,7 +2343,6 @@ export const OrganisationDetailPage: React.FC = () => {
                         </colgroup>
                         <thead>
                           <tr>
-                            <th style={compactThStyle}>Federation</th>
                             <th style={compactThStyle}>Club</th>
                             <th style={compactThStyle}>Team</th>
                             <th style={compactThStyle}>Seasons</th>
@@ -2340,14 +2367,9 @@ export const OrganisationDetailPage: React.FC = () => {
                             return (
                               <tr key={team.id}>
                                 <td style={compactTextTdStyle}>
-                                  <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                    {String(org?.name || resolvedOrg?.name || currentOrgSlug || '—')}
-                                  </Link>
-                                </td>
-                                <td style={compactTextTdStyle}>
                                   {clubId ? (
                                     <Link
-                                      to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
+                                      to={`/organisations/${currentOrgSlug}/${clubSlugOrId}`}
                                       className="text-blue-600 hover:underline"
                                     >
                                       {clubNameById.get(clubId) || '-'}
@@ -2356,7 +2378,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 </td>
                                 <td style={compactTextTdStyle}>
                                   <Link
-                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
+                                    to={`/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {team.name}
@@ -2799,14 +2821,12 @@ export const OrganisationDetailPage: React.FC = () => {
                         <col style={{ width: '180px' }} />
                         <col style={{ width: '180px' }} />
                         <col style={{ width: '180px' }} />
-                        <col style={{ width: '180px' }} />
                         <col style={{ width: '120px' }} />
                         <col style={{ width: '95px' }} />
                         <col style={{ width: '330px' }} />
                       </colgroup>
                       <thead>
                         <tr>
-                          <th style={compactThStyle}>Federation</th>
                           <th style={compactThStyle}>Club</th>
                           <th style={compactThStyle}>Team</th>
                           <th style={compactThStyle}>Season</th>
@@ -2831,20 +2851,15 @@ export const OrganisationDetailPage: React.FC = () => {
                           const matchesCount = getRecursiveMatchesCount(season);
 
                           const openHref = clubSlugOrId
-                            ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`
+                            ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`
                             : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`;
 
                           return (
                             <tr key={seasonId}>
                               <td style={compactTextTdStyle}>
-                                <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                  {String(org?.name || resolvedOrg?.name || currentOrgSlug || '—')}
-                                </Link>
-                              </td>
-                              <td style={compactTextTdStyle}>
                                 {clubId && clubSlugOrId ? (
                                   <Link
-                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
+                                    to={`/organisations/${currentOrgSlug}/${clubSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {clubNameById.get(clubId) || clubId}
@@ -2854,7 +2869,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {team && teamSlugOrId ? (
                                   <Link
-                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {team.name}
@@ -3093,14 +3108,12 @@ export const OrganisationDetailPage: React.FC = () => {
                         <col style={{ width: '180px' }} />
                         <col style={{ width: '180px' }} />
                         <col style={{ width: '180px' }} />
-                        <col style={{ width: '180px' }} />
                         <col style={{ width: '200px' }} />
                         <col style={{ width: '95px' }} />
                         <col style={{ width: '330px' }} />
                       </colgroup>
                       <thead>
                         <tr>
-                          <th style={compactThStyle}>Federation</th>
                           <th style={compactThStyle}>Club</th>
                           <th style={compactThStyle}>Team</th>
                           <th style={compactThStyle}>Season</th>
@@ -3125,7 +3138,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
                           const seasonSlug = season?.slug || comp.parent_period?.slug;
                           const openHref = clubSlugOrId
-                            ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`
+                            ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/${comp.slug || comp.id}`
                             : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
 
                           const matchesCount = getRecursiveMatchesCount(comp);
@@ -3133,14 +3146,9 @@ export const OrganisationDetailPage: React.FC = () => {
                           return (
                             <tr key={comp.id}>
                               <td style={compactTextTdStyle}>
-                                <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                  {String(org?.name || resolvedOrg?.name || currentOrgSlug || '—')}
-                                </Link>
-                              </td>
-                              <td style={compactTextTdStyle}>
                                 {clubId && clubSlugOrId ? (
                                   <Link
-                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
+                                    to={`/organisations/${currentOrgSlug}/${clubSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {clubNameById.get(clubId) || clubId}
@@ -3150,7 +3158,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {team && teamSlugOrId ? (
                                   <Link
-                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {team.name}
@@ -3160,7 +3168,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {season && seasonId ? (
                                   <Link
-                                    to={clubSlugOrId && teamSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlug || seasonId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
+                                    to={clubSlugOrId && teamSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {season.name}
@@ -3439,7 +3447,6 @@ export const OrganisationDetailPage: React.FC = () => {
                   <div className="overflow-x-auto">
                     <Table style={compactTableStyle}>
                       <colgroup>
-                        <col style={{ width: '180px' }} />
                         <col style={{ width: '160px' }} />
                         <col style={{ width: '160px' }} />
                         <col style={{ width: '160px' }} />
@@ -3450,7 +3457,6 @@ export const OrganisationDetailPage: React.FC = () => {
                       </colgroup>
                       <thead>
                         <tr>
-                          <th style={compactThStyle}>Federation</th>
                           <th style={compactThStyle}>Club</th>
                           <th style={compactThStyle}>Team</th>
                           <th style={compactThStyle}>Season</th>
@@ -3479,7 +3485,7 @@ export const OrganisationDetailPage: React.FC = () => {
                           const matchSlugOrId = String((m as any)?.slug || m.id || '').trim();
                           const matchDetailPath = (teamSlugOrId && seasonSlugOrId && compSlugOrId)
                             ? (clubSlugOrId
-                              ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${matchSlugOrId}`
+                              ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}/${compSlugOrId}/${matchSlugOrId}`
                               : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${matchSlugOrId}`)
                             : `/matches/${matchSlugOrId}`;
 
@@ -3488,14 +3494,9 @@ export const OrganisationDetailPage: React.FC = () => {
                           return (
                             <tr key={m.id}>
                               <td style={compactTextTdStyle}>
-                                <Link to={`/organisations/${currentOrgSlug}`} className="text-blue-600 hover:underline">
-                                  {String(org?.name || resolvedOrg?.name || currentOrgSlug || '—')}
-                                </Link>
-                              </td>
-                              <td style={compactTextTdStyle}>
                                 {clubId && clubSlugOrId ? (
                                   <Link
-                                    to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}`}
+                                    to={`/organisations/${currentOrgSlug}/${clubSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {clubNameById.get(clubId) || clubId}
@@ -3505,7 +3506,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {team && teamSlugOrId ? (
                                   <Link
-                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {team.name}
@@ -3515,7 +3516,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {season && seasonSlugOrId ? (
                                   <Link
-                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
+                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {season.name}
@@ -3525,7 +3526,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {competition ? (
                                   <Link
-                                    to={clubSlugOrId && seasonSlugOrId ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}`}
+                                    to={clubSlugOrId && seasonSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}/${competition.slug || periodId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {competition.name || m.period?.name}
@@ -4035,6 +4036,25 @@ export const OrganisationDetailPage: React.FC = () => {
           </div>
         </div>
       ) : null}
+
+      <OrganisationDetailModal
+        opened={isOrgDetailModalOpen}
+        onClose={() => setIsOrgDetailModalOpen(false)}
+        organisation={org as any}
+      />
+
+      <OrganisationEditModal
+        opened={isOrgEditModalOpen}
+        onClose={() => setIsOrgEditModalOpen(false)}
+        organisation={org as any}
+        onSave={saveOrganisationEdits}
+      />
+
+      <UserDetailModal
+        user={detailUser}
+        opened={isUserDetailModalOpen}
+        onClose={() => setIsUserDetailModalOpen(false)}
+      />
       </div>
     </AppShell>
   );
