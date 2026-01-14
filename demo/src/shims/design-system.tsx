@@ -42,14 +42,31 @@ export type TableProps = TableHTMLAttributes<HTMLTableElement> & {
   columns?: TableColumn[];
   rows?: Record<string, ReactNode>[];
   loading?: boolean;
+  responsive?: boolean;
 };
 
-export const Table = ({ children, columns, rows, loading, style, ...rest }: TableProps) => {
+export const Table = ({ children, columns, rows, loading, style, responsive = true, ...rest }: TableProps) => {
   const baseStyle: CSSProperties = { width: '100%', borderCollapse: 'collapse', textAlign: 'left' };
   const mergedStyle = { ...baseStyle, ...style };
 
-  if (columns && rows) {
+  const wrap = (tableEl: ReactNode) => {
+    if (!responsive) return tableEl;
     return (
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '100%',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        {tableEl}
+      </div>
+    );
+  };
+
+  if (columns && rows) {
+    return wrap(
       <table style={mergedStyle} {...rest}>
         <thead>
           <tr style={{ borderBottom: '1px solid #eee' }}>
@@ -81,7 +98,7 @@ export const Table = ({ children, columns, rows, loading, style, ...rest }: Tabl
     );
   }
 
-  return (
+  return wrap(
     <table style={{ width: '100%', borderCollapse: 'collapse', ...style }} {...rest}>
       {children}
     </table>
