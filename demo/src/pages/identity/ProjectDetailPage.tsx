@@ -2202,18 +2202,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               <h4 style={{ margin: 0, flex: 1, fontSize: '16px', fontWeight: 600 }}>
                                 {season.name || `Season ${seasonId}`}
                               </h4>
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                <Badge variant="default">{seasonComps.length}</Badge>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>Competitions</span>
-                              </div>
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                <Badge variant="default">{totalMatches}</Badge>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>Matches</span>
-                              </div>
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                <Badge variant="default">{members.length}</Badge>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>Players</span>
-                              </div>
+                              <Badge variant="default">{seasonComps.length} Competitions</Badge>
+                              <Badge variant="default">{totalMatches} Matches</Badge>
+                              <Badge variant="default">{members.length} Players</Badge>
                             </div>
 
                             {seasonComps.length === 0 ? (
@@ -2393,14 +2384,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                   {team.name}
                                 </Link>
                               </h4>
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                <Badge variant="default">{teamSeasons.length}</Badge>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>Seasons</span>
-                              </div>
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                <Badge variant="default">{team.member_count || 0}</Badge>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>Players</span>
-                              </div>
+                              <Badge variant="default">{teamSeasons.length} Seasons</Badge>
+                              <Badge variant="default">{team.member_count || 0} Players</Badge>
                             </div>
 
                             {teamSeasons.length === 0 ? (
