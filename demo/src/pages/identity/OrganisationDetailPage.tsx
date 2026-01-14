@@ -395,6 +395,9 @@ export const OrganisationDetailPage: React.FC = () => {
     flexWrap: 'wrap',
   };
 
+  const compareText = (a: unknown, b: unknown) =>
+    String(a ?? '').localeCompare(String(b ?? ''), undefined, { sensitivity: 'base' });
+
   const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
   const TEAMREEL_ROLE_RANK: Record<string, number> = {
     superadmin: 100,
@@ -1318,12 +1321,13 @@ export const OrganisationDetailPage: React.FC = () => {
             </button>
             <button
               onClick={() => setIsOrgDetailModalOpen(true)}
+              type="button"
+              className="app-action-button"
               style={{
                 padding: '6px 12px',
                 borderRadius: '4px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
+                backgroundColor: 'var(--app-surface)',
+                color: 'var(--app-link)',
                 cursor: 'pointer',
                 fontSize: '12px',
                 fontWeight: 500,
@@ -1595,7 +1599,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                 >
                   <option value="">Club: All</option>
-                  {allClubsForTeams.map((c: any) => (
+                  {[...allClubsForTeams].sort((a: any, b: any) => compareText(a?.name, b?.name)).map((c: any) => (
                     <option key={c.id} value={String(c.id)}>{c.name}</option>
                   ))}
                 </select>
@@ -1614,6 +1618,7 @@ export const OrganisationDetailPage: React.FC = () => {
                       const parentId = String(t.parent_id ?? t.parent ?? t.parent_project ?? t.parent_project_id ?? '');
                       return parentId === String(userClubFilterId);
                     })
+                    .sort((a: any, b: any) => compareText(a?.name, b?.name))
                     .map((t: any) => (
                       <option key={t.id} value={String(t.id)}>{t.name}</option>
                     ))}
@@ -1693,7 +1698,8 @@ export const OrganisationDetailPage: React.FC = () => {
                         ''
                     );
 
-                  const filteredMembers = orgOnlyMembers.filter((item: any) => {
+                  const filteredMembers = orgOnlyMembers
+                  .filter((item: any) => {
                     const u = item.user || item;
                     const pms = getMemberProjectMemberships(item);
                     const roleDisplay = getTeamreelRoleDisplay(u, item, pms);
@@ -1723,6 +1729,13 @@ export const OrganisationDetailPage: React.FC = () => {
                     }
 
                     return true;
+                  })
+                  .sort((a: any, b: any) => {
+                    const ua = a?.user || a;
+                    const ub = b?.user || b;
+                    const nameA = `${ua?.first_name || ''} ${ua?.last_name || ''}`.trim() || String(ua?.email || '');
+                    const nameB = `${ub?.first_name || ''} ${ub?.last_name || ''}`.trim() || String(ub?.email || '');
+                    return compareText(nameA, nameB);
                   });
 
                   if (filteredMembers.length === 0) return <Alert variant="info">No users match your search.</Alert>;
@@ -1870,6 +1883,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                   <td style={compactTextTdStyle}>
                                     <button
                                       type="button"
+                                      className="app-unstyled-button"
                                       onMouseDown={(e) => {
                                         // Prevent default focus ring (matches badge-only look)
                                         e.preventDefault();
@@ -1880,7 +1894,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         setDetailUser(user);
                                         setIsUserDetailModalOpen(true);
                                       }}
-                                      style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', outline: 'none', boxShadow: 'none' }}
+                                      style={{ cursor: 'pointer' }}
                                     >
                                       <Badge variant="default" title="View user">
                                         {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
@@ -1902,6 +1916,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                       <div style={compactActionsStyle}>
                                         <button
                                           type="button"
+                                          className="app-action-button"
                                           onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
@@ -1914,6 +1929,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         </button>
                                         <button
                                           type="button"
+                                          className="app-action-button"
                                           onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
@@ -1928,6 +1944,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         </button>
                                         <button
                                           type="button"
+                                          className="app-action-button"
                                           onClick={async () => {
                                             if (!window.confirm(`Remove ${user.email} from federation?`)) return;
                                             try {
@@ -2032,6 +2049,8 @@ export const OrganisationDetailPage: React.FC = () => {
                 return String(club.name || '').toLowerCase().includes(normalized);
               });
 
+              const sortedClubs = [...filteredClubs].sort((a: any, b: any) => compareText(a?.name, b?.name));
+
               return (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '12px', flexWrap: 'wrap' }}>
@@ -2133,7 +2152,7 @@ export const OrganisationDetailPage: React.FC = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {filteredClubs.map((club: any) => {
+                            {sortedClubs.map((club: any) => {
                               const key = String(club.id);
                               const teamsN = clubTeamCount[key] || 0;
                               const seasonsN = clubSeasonsCount[key] || 0;
@@ -2264,7 +2283,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   }}
                 >
                   <option value="">Club: All</option>
-                  {allClubsForTeams.map((c: any) => (
+                  {[...allClubsForTeams].sort((a: any, b: any) => compareText(a?.name, b?.name)).map((c: any) => (
                     <option key={c.id} value={String(c.id)}>
                       {c.name}
                     </option>
@@ -2341,7 +2360,9 @@ export const OrganisationDetailPage: React.FC = () => {
                   return String(t.name || '').toLowerCase().includes(normalized);
                 });
 
-                if (filteredTeams.length === 0) {
+                const sortedTeams = [...filteredTeams].sort((a: any, b: any) => compareText(a?.name, b?.name));
+
+                if (sortedTeams.length === 0) {
                   return <Alert variant="info">No teams match your search.</Alert>;
                 }
 
@@ -2372,7 +2393,7 @@ export const OrganisationDetailPage: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredTeams.map((team: any) => {
+                          {sortedTeams.map((team: any) => {
                             const teamSlugOrId = team.slug || team.id;
                             const clubId = String(team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? '');
                             const clubSlugOrId = clubSlugById.get(clubId) || clubId;
@@ -2519,7 +2540,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   }}
                 >
                   <option value="">Club: All</option>
-                  {allClubsForTeams.map((c: any) => (
+                  {[...allClubsForTeams].sort((a: any, b: any) => compareText(a?.name, b?.name)).map((c: any) => (
                     <option key={c.id} value={String(c.id)}>
                       {c.name}
                     </option>
@@ -2578,9 +2599,15 @@ export const OrganisationDetailPage: React.FC = () => {
                   byClubId.set(parentId, arr);
                 }
 
+                const sortedByClub = Array.from(byClubId.entries()).sort(([aClubId], [bClubId]) => {
+                  const aName = clubNameById.get(aClubId) || aClubId;
+                  const bName = clubNameById.get(bClubId) || bClubId;
+                  return compareText(aName, bName);
+                });
+
                 return (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {Array.from(byClubId.entries()).map(([clubId, clubTeams]) => (
+                    {sortedByClub.map(([clubId, clubTeams]) => (
                       <Card key={clubId}>
                         <div className="text-sm font-semibold" style={{ marginBottom: '10px' }}>
                           <Link
@@ -2611,7 +2638,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {(clubTeams || []).map((team: any) => {
+                              {[...(clubTeams || [])].sort((a: any, b: any) => compareText(a?.name, b?.name)).map((team: any) => {
                               const teamSlugOrId = team.slug || team.id;
                               const clubSlugOrId = clubSlugById.get(clubId) || clubId;
                               const teamIdKey = String(team.id);
@@ -2735,7 +2762,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   }}
                 >
                   <option value="">Club: All</option>
-                  {allClubsForTeams.map((c: any) => (
+                  {[...allClubsForTeams].sort((a: any, b: any) => compareText(a?.name, b?.name)).map((c: any) => (
                     <option key={c.id} value={String(c.id)}>
                       {c.name}
                     </option>
@@ -2759,6 +2786,7 @@ export const OrganisationDetailPage: React.FC = () => {
                       const parentId = String(t.parent_id ?? t.parent ?? t.parent_project ?? t.parent_project_id ?? '');
                       return parentId === String(seasonClubFilterId);
                     })
+                    .sort((a: any, b: any) => compareText(a?.name, b?.name))
                     .map((t: any) => (
                       <option key={t.id} value={String(t.id)}>
                         {t.name}
@@ -2827,6 +2855,25 @@ export const OrganisationDetailPage: React.FC = () => {
                   return name.includes(normalized);
                 });
 
+              const sortedSeasons = [...seasons].sort((a: any, b: any) => {
+                const aTeamId = String(a.project_id ?? a.project?.id ?? '');
+                const bTeamId = String(b.project_id ?? b.project?.id ?? '');
+
+                const aTeam = aTeamId ? teamById.get(aTeamId) : null;
+                const bTeam = bTeamId ? teamById.get(bTeamId) : null;
+
+                const aClubId = aTeam ? String(aTeam.parent_id ?? aTeam.parent ?? aTeam.parent_project ?? aTeam.parent_project_id ?? '') : '';
+                const bClubId = bTeam ? String(bTeam.parent_id ?? bTeam.parent ?? bTeam.parent_project ?? bTeam.parent_project_id ?? '') : '';
+
+                const clubCmp = compareText(clubNameById.get(aClubId) || aClubId, clubNameById.get(bClubId) || bClubId);
+                if (clubCmp !== 0) return clubCmp;
+
+                const teamCmp = compareText(aTeam?.name || aTeamId, bTeam?.name || bTeamId);
+                if (teamCmp !== 0) return teamCmp;
+
+                return compareText(a?.name, b?.name);
+              });
+
               if (seasons.length === 0) {
                 return <Alert variant="info">No seasons found for this federation (or current filters).</Alert>;
               }
@@ -2854,7 +2901,7 @@ export const OrganisationDetailPage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {seasons.map((season: any) => {
+                        {sortedSeasons.map((season: any) => {
                           const teamId = String(season.project_id ?? season.project?.id ?? '');
                           const team = teamId ? teamById.get(teamId) : null;
                           const teamSlugOrId = team?.slug || team?.id || teamId;
@@ -2992,7 +3039,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                 >
                   <option value="">Club: All</option>
-                  {allClubsForTeams.map((c: any) => (
+                  {[...allClubsForTeams].sort((a: any, b: any) => compareText(a?.name, b?.name)).map((c: any) => (
                     <option key={c.id} value={String(c.id)}>{c.name}</option>
                   ))}
                 </select>
@@ -3011,6 +3058,7 @@ export const OrganisationDetailPage: React.FC = () => {
                       const parentId = String(t.parent_id ?? t.parent ?? t.parent_project ?? t.parent_project_id ?? '');
                       return parentId === String(compClubFilterId);
                     })
+                    .sort((a: any, b: any) => compareText(a?.name, b?.name))
                     .map((t: any) => (
                       <option key={t.id} value={String(t.id)}>{t.name}</option>
                     ))}
@@ -3031,6 +3079,11 @@ export const OrganisationDetailPage: React.FC = () => {
                       })
                       .map((s: any) => JSON.stringify({ id: String(s.id), name: s.name }))
                   ))
+                  .sort((a, b) => {
+                    const aa = JSON.parse(a).name;
+                    const bb = JSON.parse(b).name;
+                    return compareText(aa, bb);
+                  })
                   .map((jsonStr) => {
                     const s = JSON.parse(jsonStr);
                     return <option key={s.id} value={s.id}>{s.name}</option>;
@@ -3114,6 +3167,33 @@ export const OrganisationDetailPage: React.FC = () => {
                   return String(comp.name || '').toLowerCase().includes(normalized);
                 });
 
+              const sortedCompetitions = [...competitions].sort((a: any, b: any) => {
+                const aTeamId = String(a.project_id ?? a.project?.id ?? '');
+                const bTeamId = String(b.project_id ?? b.project?.id ?? '');
+
+                const aTeam = aTeamId ? teamById.get(aTeamId) : null;
+                const bTeam = bTeamId ? teamById.get(bTeamId) : null;
+
+                const aClubId = aTeam ? String(aTeam.parent_id ?? aTeam.parent ?? aTeam.parent_project ?? aTeam.parent_project_id ?? '') : '';
+                const bClubId = bTeam ? String(bTeam.parent_id ?? bTeam.parent ?? bTeam.parent_project ?? bTeam.parent_project_id ?? '') : '';
+
+                const clubCmp = compareText(clubNameById.get(aClubId) || aClubId, clubNameById.get(bClubId) || bClubId);
+                if (clubCmp !== 0) return clubCmp;
+
+                const teamCmp = compareText(aTeam?.name || aTeamId, bTeam?.name || bTeamId);
+                if (teamCmp !== 0) return teamCmp;
+
+                const aSeasonId = String(a.parent_period_id ?? a.parent_period?.id ?? '');
+                const bSeasonId = String(b.parent_period_id ?? b.parent_period?.id ?? '');
+                const seasonCmp = compareText(
+                  seasonById.get(aSeasonId)?.name || a.parent_period?.name || aSeasonId,
+                  seasonById.get(bSeasonId)?.name || b.parent_period?.name || bSeasonId
+                );
+                if (seasonCmp !== 0) return seasonCmp;
+
+                return compareText(a?.name, b?.name);
+              });
+
               if (competitions.length === 0) {
                 return <Alert variant="info">No competitions found for this federation.</Alert>;
               }
@@ -3141,7 +3221,7 @@ export const OrganisationDetailPage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {competitions.map((comp: any) => {
+                        {sortedCompetitions.map((comp: any) => {
                           const seasonId = String(comp.parent_period_id ?? comp.parent_period?.id ?? '');
                           const season = seasonId ? seasonById.get(seasonId) : null;
 
@@ -3288,7 +3368,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                 >
                   <option value="">Club: All</option>
-                  {allClubsForTeams.map((c: any) => (
+                  {[...allClubsForTeams].sort((a: any, b: any) => compareText(a?.name, b?.name)).map((c: any) => (
                     <option key={c.id} value={String(c.id)}>{c.name}</option>
                   ))}
                 </select>
@@ -3308,6 +3388,7 @@ export const OrganisationDetailPage: React.FC = () => {
                       const parentId = String(t.parent_id ?? t.parent ?? t.parent_project ?? t.parent_project_id ?? '');
                       return parentId === String(matchClubFilterId);
                     })
+                    .sort((a: any, b: any) => compareText(a?.name, b?.name))
                     .map((t: any) => (
                       <option key={t.id} value={String(t.id)}>{t.name}</option>
                     ))}
@@ -3331,6 +3412,11 @@ export const OrganisationDetailPage: React.FC = () => {
                       })
                       .map((s: any) => JSON.stringify({ id: String(s.id), name: s.name }))
                   ))
+                  .sort((a, b) => {
+                    const aa = JSON.parse(a).name;
+                    const bb = JSON.parse(b).name;
+                    return compareText(aa, bb);
+                  })
                   .map((jsonStr) => {
                     const s = JSON.parse(jsonStr);
                     return <option key={s.id} value={s.id}>{s.name}</option>;
@@ -3354,6 +3440,11 @@ export const OrganisationDetailPage: React.FC = () => {
                       })
                       .map((c: any) => JSON.stringify({ id: String(c.id), name: c.name }))
                   ))
+                  .sort((a, b) => {
+                    const aa = JSON.parse(a).name;
+                    const bb = JSON.parse(b).name;
+                    return compareText(aa, bb);
+                  })
                   .map((jsonStr) => {
                     const c = JSON.parse(jsonStr);
                     return <option key={c.id} value={c.id}>{c.name}</option>;
@@ -3456,6 +3547,44 @@ export const OrganisationDetailPage: React.FC = () => {
                 return String(m.title || m.name || m.id).toLowerCase().includes(normalized);
               });
 
+              const sortedMatches = [...matches].sort((a: any, b: any) => {
+                const getMeta = (m: any) => {
+                  const teamId = String(m.project?.id ?? m.project_id ?? '');
+                  const team = teamId ? teamById.get(teamId) : null;
+                  const clubId = team
+                    ? String(team.parent_id ?? team.parent ?? team.parent_project ?? team.parent_project_id ?? '')
+                    : '';
+
+                  const periodId = String(m.period?.id ?? m.period_id ?? '');
+                  const competition = periodId ? periodById.get(periodId) : null;
+                  const compSeasonId = competition ? String(competition.parent_period_id ?? competition.parent_period?.id ?? '') : '';
+                  const season = compSeasonId ? seasonById.get(compSeasonId) : null;
+
+                  const startMs = m.start_time ? Date.parse(m.start_time) : Number.POSITIVE_INFINITY;
+
+                  return {
+                    clubName: clubId ? (clubNameById.get(clubId) || '') : '',
+                    teamName: String(team?.name || ''),
+                    seasonName: String(season?.name || ''),
+                    competitionName: String(competition?.name || ''),
+                    matchName: String(m.title || m.name || m.id || ''),
+                    startMs: Number.isFinite(startMs) ? startMs : Number.POSITIVE_INFINITY,
+                  };
+                };
+
+                const aa = getMeta(a);
+                const bb = getMeta(b);
+
+                return (
+                  compareText(aa.clubName, bb.clubName) ||
+                  compareText(aa.teamName, bb.teamName) ||
+                  compareText(aa.seasonName, bb.seasonName) ||
+                  compareText(aa.competitionName, bb.competitionName) ||
+                  compareText(aa.matchName, bb.matchName) ||
+                  aa.startMs - bb.startMs
+                );
+              });
+
               if (matches.length === 0) {
                 return <Alert variant="info">No matches found for this federation.</Alert>;
               }
@@ -3487,7 +3616,7 @@ export const OrganisationDetailPage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {matches.map((m: any) => {
+                        {sortedMatches.map((m: any) => {
                           const teamId = String(m.project?.id ?? m.project_id ?? '');
                           const team = teamId ? teamById.get(teamId) : null;
                           const teamSlugOrId = team?.slug || team?.id || teamId;

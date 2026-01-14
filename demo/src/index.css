@@ -162,6 +162,34 @@ button:focus-visible, [class*="Button"]:focus-visible {
   outline-offset: 2px;
 }
 
+/* Utility: opt-out of global button chrome (used for badge-only click targets) */
+.app-unstyled-button {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+.app-unstyled-button:hover {
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* Utility: outlined action button (border uses current text color) */
+.app-action-button {
+  border: 1px solid currentColor !important;
+  background-color: var(--app-surface) !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+.app-action-button:hover {
+  background-color: var(--app-surface-2) !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
 a {
   color: var(--app-link);
   text-decoration: none;
