@@ -1810,7 +1810,10 @@ export const OrganisationDetailPage: React.FC = () => {
                               const clubId = clubIds.length === 1 ? clubIds[0] : '';
                               const teamId = teamIds.length === 1 ? teamIds[0] : '';
 
-                              const club = clubId ? (allClubsForTeams as any[]).find((c: any) => String(c.id) === String(clubId)) : null;
+                              const club = clubId
+                                ? (allClubsForTeams as any[]).find((c: any) => String(c.id) === String(clubId)) ||
+                                  (clubs as any[]).find((c: any) => String(c.id) === String(clubId))
+                                : null;
                               const team = teamId ? (teams as any[]).find((t: any) => String(t.id) === String(teamId)) : null;
 
                               const clubNameFromMembership = clubId
@@ -1822,10 +1825,16 @@ export const OrganisationDetailPage: React.FC = () => {
                                 ? (pms.find((pm: any) => String(pm?.project?.id ?? pm?.project_id ?? '') === String(teamId))?.project?.name || '')
                                 : '';
 
+                              const clubNameFromTeam =
+                                (team as any)?.parent?.name ||
+                                (team as any)?.parent_project?.name ||
+                                (team as any)?.parent_name ||
+                                '';
+
                               const clubSlugOrId = club ? (club as any).slug || String((club as any).id) : (clubId ? clubId : '');
                               const teamSlugOrId = team ? (team as any).slug || String((team as any).id) : teamId;
 
-                              const clubDisplayName = club?.name || clubNameFromMembership || clubId;
+                              const clubDisplayName = club?.name || clubNameFromMembership || clubNameFromTeam || clubId;
                               const teamDisplayName = team?.name || teamNameFromMembership || teamId;
 
                               return (
@@ -1872,25 +1881,12 @@ export const OrganisationDetailPage: React.FC = () => {
                                     )}
                                   </td>
                                   <td style={compactTextTdStyle}>
-                                    <button
-                                      type="button"
-                                      className="app-unstyled-button"
-                                      onMouseDown={(e) => {
-                                        // Prevent default focus ring (matches badge-only look)
-                                        e.preventDefault();
-                                      }}
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setDetailUser(user);
-                                        setIsUserDetailModalOpen(true);
-                                      }}
-                                      style={{ cursor: 'pointer', textAlign: 'left' }}
-                                    >
-                                      <Badge variant="default" title="View user">
+                                      <Link
+                                        to={`/organisations/${currentOrgSlug}/users/${user.id}`}
+                                        className="text-blue-600 hover:underline"
+                                      >
                                         {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
-                                      </Badge>
-                                    </button>
+                                      </Link>
                                   </td>
                                   <td style={compactTextTdStyle}>
                                     <Badge variant="default" title={user.email}>
