@@ -1837,12 +1837,30 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   'X-CSRFToken': getCsrfToken(),
                 },
                 credentials: 'include',
+                cache: 'no-store',
                 body: JSON.stringify(body),
               });
 
               if (!res.ok) {
                 const text = await res.text();
                 throw new Error(text || 'Failed to add member');
+              }
+
+              // Optimistically reflect the new membership in the current squad list.
+              // (Prevents confusing UX when the add succeeds but the refreshed list is stale.)
+              try {
+                const created: any = await res.json().catch(() => null);
+                const createdMembership = created?.data ?? created;
+                const createdId = String(createdMembership?.id || '').trim();
+                if (createdId) {
+                  setMembers((prev) => {
+                    const list = Array.isArray(prev) ? prev : [];
+                    if (list.some((m: any) => String(m?.id || '').trim() === createdId)) return list;
+                    return [createdMembership, ...list];
+                  });
+                }
+              } catch {
+                // ignore
               }
 
               setMembersReloadToken((x) => x + 1);
