@@ -239,6 +239,7 @@ class ActivitySerializer(serializers.ModelSerializer):
         model = Activity
         fields = [
             "id",
+            "slug",
             "organisation",
             "project",
             "project_id",
@@ -276,13 +277,17 @@ class ActivitySerializer(serializers.ModelSerializer):
     def get_project(self, obj):
         """Return nested project representation"""
         if obj.project:
-            return {"id": str(obj.project.id), "name": obj.project.name}
+            return {"id": str(obj.project.id), "name": obj.project.name, "slug": obj.project.slug}
         return None
 
     def get_opponent_project(self, obj):
         """Return nested opponent project name/id"""
         if obj.opponent_project:
-            return {"id": str(obj.opponent_project.id), "name": obj.opponent_project.name}
+            return {
+                "id": str(obj.opponent_project.id),
+                "name": obj.opponent_project.name,
+                "slug": obj.opponent_project.slug,
+            }
         return None
 
     def get_period(self, obj):

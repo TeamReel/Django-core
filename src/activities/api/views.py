@@ -10,10 +10,13 @@ TeamReel (Option A) notes:
 from api.pagination import BaseAPIPagination
 from django.db import connection
 from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+
+import uuid
 
 from activities.models import Activity, ActivityEvent, Participation, Period
 
@@ -366,6 +369,24 @@ class ActivityViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return ActivityDetailSerializer
         return super().get_serializer_class()
+
+    def get_object(self):
+        """Support lookups by UUID (pk) or by slug."""
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs.get(lookup_url_kwarg)
+
+        if lookup_value is None:
+            return super().get_object()
+
+        try:
+            uuid.UUID(str(lookup_value))
+            obj = get_object_or_404(queryset, pk=lookup_value)
+        except (ValueError, TypeError):
+            obj = get_object_or_404(queryset, slug=str(lookup_value))
+
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get_queryset(self):
         """Apply query param filters"""

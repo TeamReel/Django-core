@@ -11,6 +11,7 @@ import uuid
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+from django.utils.text import slugify
 from .managers import PeriodQuerySet
 
 User = get_user_model()
@@ -118,6 +119,9 @@ class Activity(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # Human-friendly identifier for URLs. Nullable for safe rollout + backfill.
+    slug = models.SlugField(max_length=240, unique=True, null=True, blank=True, db_index=True)
     project = models.ForeignKey(
         "projects.Project", on_delete=models.CASCADE, related_name="activities"
     )
@@ -166,6 +170,28 @@ class Activity(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.start_time.date()})"
+
+    def _generate_unique_slug(self, base_slug: str | None = None) -> str:
+        base = (base_slug or slugify(self.title or "") or "activity").strip("-")
+
+        # Add date to reduce collisions and improve readability.
+        if self.start_time:
+            base = f"{base}-{self.start_time.date().isoformat()}"
+
+        # Keep room for suffix.
+        base = base[:230].strip("-")
+        candidate = base
+        counter = 2
+        while Activity.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
+            suffix = f"-{counter}"
+            candidate = f"{base[: (240 - len(suffix))].strip('-')}{suffix}"
+            counter += 1
+        return candidate
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self._generate_unique_slug()
+        super().save(*args, **kwargs)
 
     def clean(self):
         """Application-level validation"""
