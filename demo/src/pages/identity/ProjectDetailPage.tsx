@@ -2179,9 +2179,15 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             return comps.some((c: any) => String(c?.name || '').toLowerCase().includes(normalized));
                           });
 
-                      return filteredSeasons.map((season: any) => {
+                      const sortedSeasons = [...filteredSeasons].sort((a: any, b: any) =>
+                        String(a?.name || '').localeCompare(String(b?.name || ''), undefined, { sensitivity: 'base' })
+                      );
+
+                      return sortedSeasons.map((season: any) => {
                         const seasonId = String(season.id);
-                        const seasonComps = compsBySeason.get(seasonId) || [];
+                        const seasonComps = [...(compsBySeason.get(seasonId) || [])].sort((a: any, b: any) =>
+                          String(a?.name || '').localeCompare(String(b?.name || ''), undefined, { sensitivity: 'base' })
+                        );
                         const totalMatches = seasonComps.reduce((sum, comp) => {
                           return sum + (matchesByComp.get(String(comp.id)) || 0);
                         }, 0);
@@ -2357,9 +2363,15 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                         ? childProjects
                         : childProjects.filter((t: any) => String(t?.name || '').toLowerCase().includes(normalized));
 
-                      return filteredTeams.map((team: any) => {
+                      const sortedTeams = [...filteredTeams].sort((a: any, b: any) =>
+                        String(a?.name || '').localeCompare(String(b?.name || ''), undefined, { sensitivity: 'base' })
+                      );
+
+                      return sortedTeams.map((team: any) => {
                         const teamId = String(team.id);
-                        const teamSeasons = seasonsByTeam.get(teamId) || [];
+                        const teamSeasons = [...(seasonsByTeam.get(teamId) || [])].sort((a: any, b: any) =>
+                          String(a?.name || '').localeCompare(String(b?.name || ''), undefined, { sensitivity: 'base' })
+                        );
 
                         return (
                           <div key={teamId} style={{ marginBottom: '2rem' }}>
@@ -2827,6 +2839,10 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                       return String(t.name || '').toLowerCase().includes(normalized);
                     });
 
+                    const sortedTeams = [...filteredTeams].sort((a: any, b: any) =>
+                      String(a?.name || '').localeCompare(String(b?.name || ''), undefined, { sensitivity: 'base' })
+                    );
+
                     if (filteredTeams.length === 0) {
                       return <Alert variant="info">No teams match your search.</Alert>;
                     }
@@ -2858,7 +2874,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               </tr>
                             </thead>
                             <tbody>
-                              {filteredTeams.map((team: any) => {
+                              {sortedTeams.map((team: any) => {
                                 const teamSlugOrId = team.slug || team.id;
                                 const teamIdKey = String(team.id);
                                 const seasonsCount = teamSeasonsCountById[teamIdKey] ?? 0;
@@ -3033,6 +3049,20 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                       return String(s?.name || '').toLowerCase().includes(normalized);
                     });
 
+                  const getSeasonTeamName = (s: any) => {
+                    const teamId = String(s?.project_id ?? s?.project?.id ?? '').trim();
+                    const team = teamId ? teamById.get(teamId) : null;
+                    return String(team?.name || teamId || '');
+                  };
+
+                  const sortedSeasons = [...filteredSeasons].sort((a: any, b: any) => {
+                    if (!isLikelyTeam) {
+                      const teamCmp = getSeasonTeamName(a).localeCompare(getSeasonTeamName(b), undefined, { sensitivity: 'base' });
+                      if (teamCmp !== 0) return teamCmp;
+                    }
+                    return String(a?.name || '').localeCompare(String(b?.name || ''), undefined, { sensitivity: 'base' });
+                  });
+
                   if (filteredSeasons.length === 0) {
                     return <Alert variant="info">No seasons found for this club (or current filters).</Alert>;
                   }
@@ -3075,7 +3105,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             </tr>
                           </thead>
                           <tbody>
-                            {filteredSeasons.map((season: any) => {
+                            {sortedSeasons.map((season: any) => {
                               const seasonId = String(season.id);
                               const seasonSlugOrId = periodPathKey(season) || season.slug || season.id;
                               const teamId = String(season?.project_id ?? season?.project?.id ?? (isLikelyTeam ? (project as any)?.id : '')).trim();
@@ -3357,6 +3387,28 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                       return String(comp.name || '').toLowerCase().includes(normalized);
                     });
 
+                  const getCompetitionTeamName = (comp: any) => {
+                    const teamId = String(comp.project_id ?? comp.project?.id ?? '').trim();
+                    const team = teamId ? teamById.get(teamId) : null;
+                    return String(team?.name || teamId || '');
+                  };
+
+                  const getCompetitionSeasonName = (comp: any) => {
+                    const seasonId = String(comp.parent_period_id ?? comp.parent_period?.id ?? '').trim();
+                    const season = seasonId ? seasonById.get(seasonId) : null;
+                    return String(season?.name || comp.parent_period?.name || seasonId || '');
+                  };
+
+                  const sortedCompetitions = [...filteredCompetitions].sort((a: any, b: any) => {
+                    if (!isLikelyTeam) {
+                      const teamCmp = getCompetitionTeamName(a).localeCompare(getCompetitionTeamName(b), undefined, { sensitivity: 'base' });
+                      if (teamCmp !== 0) return teamCmp;
+                    }
+                    const seasonCmp = getCompetitionSeasonName(a).localeCompare(getCompetitionSeasonName(b), undefined, { sensitivity: 'base' });
+                    if (seasonCmp !== 0) return seasonCmp;
+                    return String(a?.name || '').localeCompare(String(b?.name || ''), undefined, { sensitivity: 'base' });
+                  });
+
                   if (filteredCompetitions.length === 0) {
                     return <Alert variant="info">No competitions found for this club (or current filters).</Alert>;
                   }
@@ -3384,7 +3436,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             </tr>
                           </thead>
                           <tbody>
-                            {filteredCompetitions.map((comp: any) => {
+                            {sortedCompetitions.map((comp: any) => {
                               const teamId = String(comp.project_id ?? comp.project?.id ?? '').trim();
                               const team = teamId ? teamById.get(teamId) : null;
                               const teamSlugOrId = team?.slug || team?.id || teamId;
@@ -3670,6 +3722,42 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                   return String(m.title || m.name || m.id).toLowerCase().includes(normalized);
                 });
 
+                const getMatchTeamName = (m: any) => {
+                  const teamId = String(m.project?.id ?? m.project_id ?? '').trim();
+                  const team = teamId ? teamById.get(teamId) : null;
+                  return String(team?.name || teamId || '');
+                };
+
+                const getMatchCompetitionName = (m: any) => {
+                  const periodId = String(m.period?.id ?? m.period_id ?? '').trim();
+                  const competition = periodId ? periodById.get(periodId) : null;
+                  return String(competition?.name || m.period?.name || '');
+                };
+
+                const getMatchSeasonName = (m: any) => {
+                  const periodId = String(m.period?.id ?? m.period_id ?? '').trim();
+                  const competition = periodId ? periodById.get(periodId) : null;
+                  const compSeasonId = competition ? String(competition.parent_period_id ?? competition.parent_period?.id ?? '') : '';
+                  const season = compSeasonId ? seasonById.get(compSeasonId) : null;
+                  return String(season?.name || '');
+                };
+
+                const sortedMatches = [...matches].sort((a: any, b: any) => {
+                  if (!isLikelyTeam) {
+                    const teamCmp = getMatchTeamName(a).localeCompare(getMatchTeamName(b), undefined, { sensitivity: 'base' });
+                    if (teamCmp !== 0) return teamCmp;
+                  }
+                  const seasonCmp = getMatchSeasonName(a).localeCompare(getMatchSeasonName(b), undefined, { sensitivity: 'base' });
+                  if (seasonCmp !== 0) return seasonCmp;
+                  const compCmp = getMatchCompetitionName(a).localeCompare(getMatchCompetitionName(b), undefined, { sensitivity: 'base' });
+                  if (compCmp !== 0) return compCmp;
+                  return String(a?.title || a?.name || a?.id || '').localeCompare(
+                    String(b?.title || b?.name || b?.id || ''),
+                    undefined,
+                    { sensitivity: 'base' }
+                  );
+                });
+
                 if (matches.length === 0) {
                   return <Alert variant="info">No matches found for this club (or current filters).</Alert>;
                 }
@@ -3699,7 +3787,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           </tr>
                         </thead>
                         <tbody>
-                          {matches.map((m: any) => {
+                          {sortedMatches.map((m: any) => {
                             const teamId = String(m.project?.id ?? m.project_id ?? '').trim();
                             const team = teamId ? teamById.get(teamId) : null;
                             const teamSlugOrId = team?.slug || team?.id || teamId;
