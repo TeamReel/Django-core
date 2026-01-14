@@ -1837,6 +1837,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button
+              type="button"
               onClick={() => navigate(backPath)}
               style={{
                 padding: '6px 12px',
@@ -1852,6 +1853,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
               Back
             </button>
             <button
+              type="button"
+              className="app-action-button"
               onClick={() => {
                 setDetailProject(project);
                 setIsDetailModalOpen(true);
@@ -1859,9 +1862,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
               style={{
                 padding: '6px 12px',
                 borderRadius: '4px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
+                backgroundColor: 'var(--app-surface)',
+                color: 'var(--app-link)',
                 cursor: 'pointer',
                 fontSize: '12px',
                 fontWeight: 500,
@@ -1871,6 +1873,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             </button>
             {userCanEditProject && (
               <button
+                type="button"
+                className="app-action-button"
                 onClick={() => {
                   setSelectedEditProject(project);
                   setIsProjectEditModalOpen(true);
@@ -1878,7 +1882,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                 style={{
                   padding: '6px 12px',
                   borderRadius: '4px',
-                  border: '1px solid var(--app-warning)',
                   backgroundColor: 'var(--app-surface)',
                   color: 'var(--app-warning)',
                   cursor: 'pointer',
@@ -1891,12 +1894,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             )}
             {userCanDeleteProject && (
               <button
+                type="button"
+                className="app-action-button"
                 onClick={handleDelete}
                 disabled={deleteLoading}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '4px',
-                  border: '1px solid #dc3545',
                   backgroundColor: 'var(--app-surface)',
                   color: '#dc3545',
                   cursor: deleteLoading ? 'not-allowed' : 'pointer',
@@ -2015,7 +2019,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 </td>
                                 <td style={compactTdStyle}>
                                   <button
-                                    className="text-xs text-blue-600 hover:underline"
+                                    type="button"
+                                    className="app-unstyled-button text-xs text-blue-600 hover:underline"
                                     onClick={() => {
                                       setDetailProject(m);
                                       setIsDetailModalOpen(true);
@@ -2081,7 +2086,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 }) : 'TBA'}
                               </div>
                               <button
-                                className="text-xs text-blue-600 mt-1 hover:underline bg-transparent border-0 p-0 cursor-pointer"
+                                type="button"
+                                className="app-unstyled-button text-xs text-blue-600 mt-1 hover:underline bg-transparent border-0 p-0 cursor-pointer"
                                 onClick={() => navigate(`/matches/${(m as any).slug || m.id}`)}
                               >
                                 View Details →
@@ -2142,6 +2148,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
                 {!isLikelyTeam ? (
                   <button
+                    type="button"
+                    className="app-action-button"
                     onClick={() => setIsCreateTeamModalOpen(true)}
                     style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: 500 }}
                   >
@@ -2256,6 +2264,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                         <td style={compactTdStyle}>
                                           <div style={compactActionsStyle}>
                                             <button
+                                              type="button"
+                                              className="app-action-button"
                                               onClick={() => {
                                                 setDetailProject(comp);
                                                 setIsDetailModalOpen(true);
@@ -2266,6 +2276,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                             </button>
                                             {userCanEditProject && (
                                               <button
+                                                type="button"
+                                                className="app-action-button"
                                                 onClick={() => {
                                                   setSelectedEditPeriod(comp);
                                                   setIsPeriodEditModalOpen(true);
@@ -2277,6 +2289,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                             )}
                                             {userCanDeleteProject && (
                                               <button
+                                                type="button"
+                                                className="app-action-button"
                                                 onClick={async () => {
                                                   if (!window.confirm(`Are you sure you want to delete competition ${comp.name}?`)) return;
                                                   try {
@@ -2440,6 +2454,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                         <td style={compactTdStyle}>
                                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                             <button
+                                              type="button"
+                                              className="app-action-button"
                                               onClick={() => {
                                                 setDetailProject(season);
                                                 setIsDetailModalOpen(true);
@@ -2450,6 +2466,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                             </button>
                                             {userCanEditProject && (
                                               <button
+                                                type="button"
+                                                className="app-action-button"
                                                 onClick={() => {
                                                   setSelectedEditPeriod(season);
                                                   setIsPeriodEditModalOpen(true);
@@ -2461,6 +2479,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                             )}
                                             {userCanDeleteProject && (
                                               <button
+                                                type="button"
+                                                className="app-action-button"
                                                 onClick={async () => {
                                                   if (
                                                     !window.confirm(`Are you sure you want to delete season ${season.name}?`)
@@ -2893,6 +2913,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                     <td style={compactTdStyle}>
                                       <div style={compactActionsStyle}>
                                         <button
+                                          type="button"
+                                          className="app-action-button"
                                           onClick={() => {
                                             setDetailProject(team);
                                             setIsDetailModalOpen(true);
@@ -2903,6 +2925,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                         </button>
                                         {userCanEditProject && (
                                           <button
+                                            type="button"
+                                            className="app-action-button"
                                             onClick={() => {
                                               setSelectedEditProject(team);
                                               setIsProjectEditModalOpen(true);
@@ -2914,6 +2938,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                         )}
                                         {userCanDeleteProject && (
                                           <button
+                                            type="button"
+                                            className="app-action-button"
                                             onClick={async () => {
                                               if (!window.confirm(`Are you sure you want to delete project ${team.name}?`)) return;
                                               try {
@@ -2994,6 +3020,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                       Clear
                     </Button>
                     <button
+                      type="button"
+                      className="app-action-button"
                       onClick={() => setIsCreateSeasonModalOpen(true)}
                       style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                     >
@@ -3111,6 +3139,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                   <td style={compactTdStyle}>
                                     <div style={compactActionsStyle}>
                                       <button
+                                        type="button"
+                                        className="app-action-button"
                                         onClick={() => {
                                           setDetailProject({ id: season.id, slug: season.slug, name: season.name, project_type: 'period' } as any);
                                           setIsDetailModalOpen(true);
@@ -3121,6 +3151,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                       </button>
                                       {userCanEditProject && (
                                         <button
+                                          type="button"
+                                          className="app-action-button"
                                           onClick={() => {
                                             setSelectedEditPeriod(season);
                                             setIsPeriodEditModalOpen(true);
@@ -3132,6 +3164,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                       )}
                                       {userCanDeleteProject && (
                                         <button
+                                          type="button"
+                                          className="app-action-button"
                                           onClick={async () => {
                                             if (!window.confirm(`Are you sure you want to delete season ${season.name}?`)) return;
                                             try {
@@ -3248,6 +3282,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                       Clear
                     </Button>
                     <button
+                      type="button"
+                      className="app-action-button"
                       onClick={() => setIsCreateCompetitionModalOpen(true)}
                       style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: '500' }}
                     >
@@ -3375,6 +3411,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                   <td style={compactTdStyle}>
                                     <div style={compactActionsStyle}>
                                       <button
+                                        type="button"
+                                        className="app-action-button"
                                         onClick={() => {
                                           setDetailProject({ id: comp.id, slug: comp.slug, name: comp.name, project_type: 'period' } as any);
                                           setIsDetailModalOpen(true);
@@ -3385,6 +3423,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                       </button>
                                       {userCanEditProject && (
                                         <button
+                                          type="button"
+                                          className="app-action-button"
                                           onClick={() => {
                                             setSelectedEditPeriod(comp);
                                             setIsPeriodEditModalOpen(true);
@@ -3396,6 +3436,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                       )}
                                       {userCanDeleteProject && (
                                         <button
+                                          type="button"
+                                          className="app-action-button"
                                           onClick={async () => {
                                             if (!window.confirm(`Are you sure you want to delete competition ${comp.name}?`)) return;
                                             try {
@@ -3535,6 +3577,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                     Clear
                   </Button>
                   <button
+                    type="button"
+                    className="app-action-button"
                     onClick={() => setIsCreateMatchModalOpen(true)}
                     style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: '500' }}
                   >
@@ -3689,6 +3733,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 <td style={compactTdStyle}>
                                   <div style={compactActionsStyle}>
                                     <button
+                                      type="button"
+                                      className="app-action-button"
                                       onClick={() => {
                                         setDetailProject({ id: m.id, name: m.title || m.name, project_type: 'activity' } as any);
                                         setIsDetailModalOpen(true);
@@ -3699,6 +3745,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                     </button>
                                     {userCanEditProject && (
                                       <button
+                                        type="button"
+                                        className="app-action-button"
                                         onClick={() => {
                                           setSelectedEditMatch(m);
                                           setIsMatchEditModalOpen(true);
@@ -3710,6 +3758,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                     )}
                                     {userCanDeleteProject && (
                                       <button
+                                        type="button"
+                                        className="app-action-button"
                                         onClick={async () => {
                                           if (!window.confirm(`Are you sure you want to delete match "${m.title || m.name}"?`)) return;
                                           try {

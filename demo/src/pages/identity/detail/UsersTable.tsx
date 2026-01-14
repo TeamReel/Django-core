@@ -218,14 +218,8 @@ export default function UsersTable({
                         e.stopPropagation();
                         onViewUser(userObj);
                       }}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        padding: 0,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                      }}
-                      className="text-blue-600 hover:underline"
+                      style={{ cursor: 'pointer', textAlign: 'left' }}
+                      className="app-unstyled-button text-blue-600 hover:underline"
                     >
                       {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
                     </button>
@@ -247,11 +241,12 @@ export default function UsersTable({
                       <button
                         type="button"
                         onClick={() => (onViewUser ? onViewUser(userObj) : onViewMembership(membershipId))}
+                        className="app-action-button"
                         style={actionButtonStyle('primary')}
                       >
                         View
                       </button>
-                      <button type="button" onClick={() => onEditMembership(item)} style={actionButtonStyle('warning')}>
+                      <button type="button" onClick={() => onEditMembership(item)} className="app-action-button" style={actionButtonStyle('warning')}>
                         Edit
                       </button>
                       <button
@@ -260,6 +255,7 @@ export default function UsersTable({
                           if (!window.confirm(`Remove ${userObj.email} from federation?`)) return;
                           await onRemoveMembership(membershipId, String(userObj.email || ''));
                         }}
+                        className="app-action-button"
                         style={actionButtonStyle('danger')}
                       >
                         Remove
