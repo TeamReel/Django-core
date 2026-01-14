@@ -1859,15 +1859,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                 setDetailProject(project);
                 setIsDetailModalOpen(true);
               }}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '4px',
-                backgroundColor: 'var(--app-surface)',
-                color: 'var(--app-link)',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 500,
-              }}
+              style={{ ...actionButtonStyle('primary'), padding: '6px 12px', fontWeight: 500 }}
             >
               View
             </button>
@@ -1879,15 +1871,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                   setSelectedEditProject(project);
                   setIsProjectEditModalOpen(true);
                 }}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  backgroundColor: 'var(--app-surface)',
-                  color: 'var(--app-warning)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                }}
+                style={{ ...actionButtonStyle('warning'), padding: '6px 12px', fontWeight: 500 }}
               >
                 Edit
               </button>
@@ -1899,13 +1883,10 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                 onClick={handleDelete}
                 disabled={deleteLoading}
                 style={{
+                  ...actionButtonStyle('danger'),
                   padding: '6px 12px',
-                  borderRadius: '4px',
-                  backgroundColor: 'var(--app-surface)',
-                  color: '#dc3545',
-                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
-                  fontSize: '12px',
                   fontWeight: 500,
+                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
                   opacity: deleteLoading ? 0.6 : 1,
                 }}
               >

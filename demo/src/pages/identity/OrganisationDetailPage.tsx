@@ -1324,12 +1324,8 @@ export const OrganisationDetailPage: React.FC = () => {
               type="button"
               className="app-action-button"
               style={{
+                ...actionButtonStyle('primary'),
                 padding: '6px 12px',
-                borderRadius: '4px',
-                backgroundColor: 'var(--app-surface)',
-                color: 'var(--app-link)',
-                cursor: 'pointer',
-                fontSize: '12px',
                 fontWeight: 500,
               }}
             >
@@ -1341,12 +1337,8 @@ export const OrganisationDetailPage: React.FC = () => {
                 className="app-action-button"
                 onClick={() => setIsOrgEditModalOpen(true)}
                 style={{
+                  ...actionButtonStyle('warning'),
                   padding: '6px 12px',
-                  borderRadius: '4px',
-                  backgroundColor: 'var(--app-surface)',
-                  color: 'var(--app-link)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
                   fontWeight: 500,
                 }}
               >
@@ -1355,17 +1347,15 @@ export const OrganisationDetailPage: React.FC = () => {
             )}
             {userCanEditOrg && (
               <button
+                type="button"
+                className="app-action-button"
                 onClick={handleDelete}
                 disabled={deleteLoading}
                 style={{
+                  ...actionButtonStyle('danger'),
                   padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid #dc3545',
-                  backgroundColor: 'var(--app-surface)',
-                  color: '#dc3545',
-                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
-                  fontSize: '12px',
                   fontWeight: 500,
+                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
                   opacity: deleteLoading ? 0.6 : 1,
                 }}
               >
