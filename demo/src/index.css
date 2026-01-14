@@ -176,15 +176,18 @@ button:focus-visible, [class*="Button"]:focus-visible {
   opacity: 1 !important;
 }
 
-/* Utility: outlined action button (border uses current text color) */
-.app-action-button {
+/* Utility: outlined action button (border uses current text color)
+   NOTE: selector specificity must beat global button border rules above. */
+button.app-action-button,
+button.app-action-button[type="button"],
+button.app-action-button[type="submit"] {
   border: 1px solid currentColor !important;
   background-color: var(--app-surface) !important;
   box-shadow: none !important;
   opacity: 1 !important;
 }
 
-.app-action-button:hover {
+button.app-action-button:hover {
   background-color: var(--app-surface-2) !important;
   box-shadow: none !important;
   opacity: 1 !important;
