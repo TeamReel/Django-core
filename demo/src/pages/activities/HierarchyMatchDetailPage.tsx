@@ -401,23 +401,16 @@ export default function HierarchyMatchDetailPage() {
 
     return [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: 'Federations', onClick: () => navigate('/directory?tab=federations') },
       { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
-      {
-        label: 'Clubs',
-        onClick: () => navigate(`/directory?tab=clubs&org_id=${encodeURIComponent(String(orgSlugOrId))}`),
-      },
       ...(isTeamRoute
         ? [
             {
               label: club?.name || 'Club',
               onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
             },
-            { label: 'Teams', onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`) },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
         : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),
-      { label: 'Seasons', onClick: () => navigate(seasonsBasePath) },
       {
         label: season?.name || 'Season',
         onClick: () => navigate(`${seasonsBasePath}/${seasonKeyOrId}`),
@@ -425,11 +418,6 @@ export default function HierarchyMatchDetailPage() {
       {
         label: competition?.name || 'Competition',
         onClick: () => navigate(`${seasonsBasePath}/${seasonKeyOrId}/competitions/${effectiveCompetitionId}`),
-      },
-      {
-        label: 'Matches',
-        onClick: () =>
-          navigate(`${seasonsBasePath}/${seasonKeyOrId}/competitions/${effectiveCompetitionId}?tab=matches`),
       },
       { label: match?.title || 'Match', current: true },
     ] as any[];

@@ -65,29 +65,16 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: 'Federations', onClick: () => navigate('/federations') },
       { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
-      {
-        label: 'Clubs',
-        onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}`),
-      },
       ...(isTeamRoute
         ? [
             {
               label: club?.name || 'Club',
               onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
             },
-            {
-              label: 'Teams',
-              onClick: () =>
-                navigate(
-                  `/teams?org_id=${encodeURIComponent(String(orgSlugOrId))}&club_id=${encodeURIComponent(String(clubSlugOrId))}`
-                ),
-            },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
         : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),
-      { label: 'Seasons', onClick: () => navigate(seasonsBasePath) },
       { label: season?.name || 'Season', onClick: () => navigate(`${seasonsBasePath}/${seasonPathKey}`) },
       {
         label: competition?.name || 'Competition',

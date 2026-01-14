@@ -223,26 +223,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: 'Federations', onClick: () => navigate('/directory?tab=federations') },
       { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
-      {
-        label: 'Clubs',
-        onClick: () => navigate(`/directory?tab=clubs&org_id=${encodeURIComponent(String(orgSlugOrId))}`),
-      },
       ...(isTeamRoute
         ? [
             {
               label: club?.name || 'Club',
               onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
             },
-            {
-              label: 'Teams',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
-            },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
         : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),
-      { label: 'Seasons', onClick: () => navigate(seasonsBasePath) },
       {
         label: (
           <BreadcrumbContextSwitcher

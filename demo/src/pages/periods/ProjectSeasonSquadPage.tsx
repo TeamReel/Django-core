@@ -423,25 +423,11 @@ export default function ProjectSeasonSquadPage() {
         }
       : { label: 'Team' };
 
-    const seasonsCrumb = {
-      label: 'Seasons',
-      onClick: () => navigate(seasonsBasePath),
-    };
-
-    const seasonCrumb = season
-      ? {
-          label: season.name,
-          onClick: () => navigate(`${seasonsBasePath}/${periodPathKey(season) || season.id}`),
-        }
-      : { label: 'Season' };
-
     return [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: 'Federations', onClick: () => navigate('/directory?tab=federations') },
       orgCrumb,
       ...(clubCrumb ? [clubCrumb] : []),
       projectCrumb,
-      seasonsCrumb,
       {
         label: (
           <BreadcrumbContextSwitcher
@@ -782,7 +768,6 @@ export default function ProjectSeasonSquadPage() {
           opened={isPeriodEditModalOpen}
           onClose={() => {
             setIsPeriodEditModalOpen(false);
-            setSelectedEditPeriod(null);
           }}
           period={selectedEditPeriod}
           onSave={async (payload) => {

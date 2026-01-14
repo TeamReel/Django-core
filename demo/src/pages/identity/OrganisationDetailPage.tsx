@@ -1136,7 +1136,6 @@ export const OrganisationDetailPage: React.FC = () => {
             title="Organisation Details"
             breadcrumbs={[
               { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-              { label: 'Federations', onClick: () => navigate('/federations') },
               { label: 'Loading...', current: true },
             ]}
           />
@@ -1160,7 +1159,6 @@ export const OrganisationDetailPage: React.FC = () => {
             title="Organisation Details"
             breadcrumbs={[
               { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-              { label: 'Federations', onClick: () => navigate('/federations') },
               { label: 'Error', current: true },
             ]}
           />
@@ -1185,7 +1183,6 @@ export const OrganisationDetailPage: React.FC = () => {
         subtitle="Federation overview"
         breadcrumbs={[
           { label: 'Dashboard', onClick: () => navigate('/') },
-          { label: 'Federations', onClick: () => navigate('/federations') },
           {
             label: (
               <BreadcrumbContextSwitcher

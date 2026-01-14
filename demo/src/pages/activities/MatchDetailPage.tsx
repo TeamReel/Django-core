@@ -253,19 +253,12 @@ export const MatchDetailPage: React.FC = () => {
           title={match.title}
           breadcrumbs={([
             { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-            { label: 'Federations', onClick: () => navigate('/federations') },
             federationSlugOrId
               ? {
                   label: competitionPeriod.organisation?.name || 'Federation',
                   onClick: () => navigate(`/organisations/${federationSlugOrId}`),
                 }
               : { label: 'Federation' },
-            federationSlugOrId
-              ? {
-                  label: 'Clubs',
-                  onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(federationSlugOrId))}`),
-                }
-              : { label: 'Clubs', onClick: () => navigate('/clubs') },
             federationSlugOrId
               ? {
                   label: match.project.name,
@@ -295,16 +288,7 @@ export const MatchDetailPage: React.FC = () => {
               : competitionPeriod
                 ? { label: competitionPeriod.name }
                 : null,
-            competitionPeriod && seasonPeriod && federationSlugOrId
-              ? {
-                  label: 'Matches',
-                  onClick: () =>
-                    navigate(
-                      `/organisations/${federationSlugOrId}/projects/${projectSlugOrId}/seasons/${periodPathKey(seasonPeriod) || seasonPeriod.id}/competitions/${competitionPeriod.id}?tab=matches`
-                    ),
-                }
-              : { label: 'Matches', onClick: () => navigate(-1) },
-            { label: 'Details', current: true },
+            { label: match.title || 'Match', current: true },
           ].filter(Boolean) as any[])}
           actions={
             <Button onClick={() => navigate(`/studio/create?context=${match.id}`)}>

@@ -1687,17 +1687,11 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             title="Project Details"
             breadcrumbs={[
               { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-              { label: 'Federations', onClick: () => navigate('/federations') },
               { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
-              { label: 'Clubs', onClick: () => navigate(clubsListPath) },
               ...(isTeamRoute
                 ? [
                     {
                       label: clubSlugOrId || 'Club',
-                      onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
-                    },
-                    {
-                      label: 'Teams',
                       onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
                     },
                     { label: projectId || 'Team', current: true },
@@ -1725,17 +1719,11 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             title="Project Details"
             breadcrumbs={[
               { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-              { label: 'Federations', onClick: () => navigate('/federations') },
               { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
-              { label: 'Clubs', onClick: () => navigate(clubsListPath) },
               ...(isTeamRoute
                 ? [
                     {
                       label: clubSlugOrId || 'Club',
-                      onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
-                    },
-                    {
-                      label: 'Teams',
                       onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
                     },
                     { label: projectId || 'Team', current: true },
@@ -1824,17 +1812,11 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         title={project.name}
         breadcrumbs={[
           { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-          { label: 'Federations', onClick: () => navigate('/federations') },
           { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
-          { label: 'Clubs', onClick: () => navigate(clubsListPath) },
           ...(isTeamRoute
             ? [
                 {
                    label: club?.name || 'Club',
-                   onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)
-                },
-                {
-                   label: 'Teams',
                    onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)
                 },
                 {
