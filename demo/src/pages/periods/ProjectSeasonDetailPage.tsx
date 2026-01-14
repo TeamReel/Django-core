@@ -683,7 +683,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   <tr key={competition.id}>
                                     <td style={compactTextTdStyle}>
                                       <Link
-                                        to={`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`}
+                                        to={`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`}
                                         className="text-blue-600 hover:underline"
                                         style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
                                       >
@@ -877,7 +877,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               }}
                             >
                               <Link
-                                to={`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`}
+                                to={`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`}
                                 className="text-blue-600 hover:underline"
                                 style={{
                                   textDecoration: 'none',
@@ -893,7 +893,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <Badge variant="info">{getMatchCountForCompetition(competition)} matches</Badge>
                               <button
                                 onClick={() =>
-                                  navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)
+                                  navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`)
                                 }
                                 style={actionButtonStyle('primary')}
                               >
@@ -913,7 +913,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <button
                                 onClick={() =>
                                   navigate(
-                                    `${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}?tab=matches`
+                                    `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}?tab=matches`
                                   )
                                 }
                                 style={actionButtonStyle('primary')}
@@ -970,7 +970,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       <tr key={match.id}>
                                         <td style={compactTextTdStyle}>
                                           <Link
-                                            to={`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}/matches/${match.id}`}
+                                            to={`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}/matches/${(match as any).slug || match.id}`}
                                             className="text-blue-600 hover:underline"
                                             style={{ textDecoration: 'none' }}
                                           >
@@ -983,7 +983,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             <button
                                               onClick={() =>
                                                 navigate(
-                                                  `${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}/matches/${match.id}`
+                                                  `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}/matches/${(match as any).slug || match.id}`
                                                 )
                                               }
                                               style={actionButtonStyle('primary')}
@@ -1166,7 +1166,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             <tr key={competition.id}>
                               <td style={compactTextTdStyle}>
                                 <Link
-                                  to={`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`}
+                                  to={`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`}
                                   className="text-blue-600 hover:underline"
                                   style={{ textDecoration: 'none' }}
                                 >
@@ -1183,7 +1183,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
                                   <button
-                                    onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${competition.id}`)}
+                                    onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`)}
                                     style={actionButtonStyle('primary')}
                                   >
                                     View

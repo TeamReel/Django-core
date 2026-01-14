@@ -4,6 +4,7 @@ import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
+import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -83,6 +84,12 @@ const getEnvelopeData = <T,>(raw: any): T => {
   return (raw?.data ?? raw) as T;
 };
 
+const getEnvelopeListResults = <T,>(raw: any): T[] => {
+  const envelope = raw?.data ?? raw;
+  const results = envelope?.results ?? envelope?.data?.results ?? envelope?.data ?? envelope;
+  return Array.isArray(results) ? (results as T[]) : [];
+};
+
 const getCsrfToken = (): string => {
   return (
     document.cookie
@@ -114,6 +121,8 @@ export default function HierarchyMatchDetailPage() {
   const [season, setSeason] = useState<Period | null>(null);
   const [competition, setCompetition] = useState<Period | null>(null);
   const [match, setMatch] = useState<MatchDetail | null>(null);
+  const [resolvedSeasonUuid, setResolvedSeasonUuid] = useState<string>('');
+  const [resolvedCompetitionUuid, setResolvedCompetitionUuid] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -161,7 +170,7 @@ export default function HierarchyMatchDetailPage() {
         setLoading(true);
         setError(null);
 
-        const [orgRes, projectRes, clubRes, competitionRes, matchRes] = await Promise.all([
+        const [orgRes, projectRes, clubRes, matchRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, { credentials: 'include' }),
           fetch(
             `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(projectSlugOrId)}/`,
@@ -173,25 +182,85 @@ export default function HierarchyMatchDetailPage() {
                 { credentials: 'include' }
               )
             : Promise.resolve(null as any),
-          fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(effectiveCompetitionId)}/`, { credentials: 'include' }),
           fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(effectiveMatchId)}/`, { credentials: 'include' }),
         ]);
 
         if (orgRes.ok) setOrg(getEnvelopeData(await orgRes.json()));
-        if (projectRes.ok) setProject(getEnvelopeData(await projectRes.json()));
+        let projectJson: Project | null = null;
+        if (projectRes.ok) {
+          projectJson = getEnvelopeData<Project>(await projectRes.json());
+          setProject(projectJson);
+        }
         if (isTeamRoute && clubRes?.ok) setClub(getEnvelopeData(await clubRes.json()));
+
+        if (!projectJson?.id) throw new Error('Failed to load project');
+
+        // Resolve season UUID from URL param (UUID or slugified name) using root periods only
+        let seasonUuid = '';
+        if (looksLikeUuid(seasonKeyOrId)) {
+          seasonUuid = String(seasonKeyOrId).trim();
+        } else {
+          const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(
+            String(projectJson.id)
+          )}&parent_id=null&page_size=500`;
+          const rootRes = await fetch(rootPeriodsUrl, { credentials: 'include' });
+          if (rootRes.ok) {
+            const rootRaw: any = await rootRes.json().catch(() => null);
+            const rootPeriods = getEnvelopeListResults<Period>(rootRaw);
+            const resolved = rootPeriods.find((p: any) => periodPathKey(p) === String(seasonKeyOrId));
+            seasonUuid = String((resolved as any)?.id || '').trim();
+          }
+        }
+
+        // Resolve competition UUID from URL param (UUID or slugified name) against season children
+        let competitionUuid = '';
+        if (looksLikeUuid(effectiveCompetitionId)) {
+          competitionUuid = String(effectiveCompetitionId).trim();
+        } else if (seasonUuid) {
+          const childrenUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(seasonUuid)}&page_size=500`;
+          const childrenRes = await fetch(childrenUrl, { credentials: 'include' });
+          if (childrenRes.ok) {
+            const childrenRaw: any = await childrenRes.json().catch(() => null);
+            const children = getEnvelopeListResults<Period>(childrenRaw);
+            const resolved = children.find((p: any) => periodPathKey(p) === String(effectiveCompetitionId));
+            competitionUuid = String((resolved as any)?.id || '').trim();
+          }
+        }
+
+        if (!seasonUuid) throw new Error('Season not found');
+        if (!competitionUuid) throw new Error('Competition not found');
+
+        setResolvedSeasonUuid(seasonUuid);
+        setResolvedCompetitionUuid(competitionUuid);
+
+        const [seasonRes, competitionRes] = await Promise.all([
+          fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, { credentials: 'include' }),
+          fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(competitionUuid)}/`, { credentials: 'include' }),
+        ]);
+
+        if (!seasonRes.ok) throw new Error('Failed to load season');
+        const seasonJson = getEnvelopeData<Period>(await seasonRes.json());
+        setSeason(seasonJson);
 
         if (!competitionRes.ok) throw new Error('Failed to load competition');
         const competitionJson = getEnvelopeData<Period>(await competitionRes.json());
         setCompetition(competitionJson);
 
-        // Best-effort season lookup via competition parent.
-        const seasonUuid = String(competitionJson?.parent_period?.id || '').trim();
-        if (seasonUuid) {
-          const seasonRes = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, {
-            credentials: 'include',
-          });
-          if (seasonRes.ok) setSeason(getEnvelopeData(await seasonRes.json()));
+        // Canonicalize URL to slugs when possible
+        const desiredSeasonKey = periodPathKey(seasonJson) || '';
+        const desiredCompetitionKey = periodPathKey(competitionJson) || '';
+        if (
+          desiredSeasonKey &&
+          desiredCompetitionKey &&
+          (String(desiredSeasonKey) !== String(seasonKeyOrId) ||
+            String(desiredCompetitionKey) !== String(effectiveCompetitionId))
+        ) {
+          const suffix = location.search ? location.search : '';
+          navigate(
+            `${seasonsBasePath}/${desiredSeasonKey}/competitions/${desiredCompetitionKey}/matches/${effectiveMatchId}${suffix}`,
+            { replace: true }
+          );
+          return;
         }
 
         if (!matchRes.ok) throw new Error(matchRes.status === 404 ? 'Match not found' : 'Failed to load match');
