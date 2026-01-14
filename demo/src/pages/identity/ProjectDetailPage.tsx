@@ -1780,7 +1780,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   // Tab order: hierarchy first (teams → seasons → competitions → matches), then users/people, then audit.
   const tabs = [
     { id: 'overview', label: 'Overview' },
-    ...(isLikelyTeam ? [{ id: 'credits', label: 'Credits' }] : []),
+    ...(isLikelyTeam
+      ? [
+          { id: 'balance', label: 'Balance' },
+          { id: 'transactions', label: 'Transactions' },
+        ]
+      : []),
     { id: 'hierarchy', label: 'Hierarchy' },
     ...(!isLikelyTeam ? [{ id: 'teams', label: 'Teams' }] : []),
     { id: 'seasons', label: 'Seasons' },
@@ -1940,8 +1945,18 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
           ))}
         </div>
 
-          {activeTab === 'credits' && isLikelyTeam && (
+          {activeTab === 'balance' && isLikelyTeam && (
             <TeamCreditsTab
+              view="balance"
+              projectId={String(project.id)}
+              projectName={project.name}
+              organisationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '')}
+            />
+          )}
+
+          {activeTab === 'transactions' && isLikelyTeam && (
+            <TeamCreditsTab
+              view="transactions"
               projectId={String(project.id)}
               projectName={project.name}
               organisationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '')}

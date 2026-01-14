@@ -9,7 +9,7 @@ import {
   compactThStyle,
 } from './detailStyles';
 
-type TabType = 'balance' | 'transactions';
+type TeamCreditsView = 'balance' | 'transactions';
 
 type ProjectCreditsBalance = {
   project_id: number;
@@ -68,12 +68,12 @@ function sourceTypeLabel(sourceType: string): string {
 }
 
 export default function TeamCreditsTab(props: {
+  view: TeamCreditsView;
   projectId: string | number;
   projectName?: string;
   organisationId?: string | null;
 }) {
-  const { projectId, projectName, organisationId } = props;
-  const [activeTab, setActiveTab] = useState<TabType>('balance');
+  const { view, projectId, projectName, organisationId } = props;
 
   const [balance, setBalance] = useState<ProjectCreditsBalance | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
@@ -145,81 +145,34 @@ export default function TeamCreditsTab(props: {
   };
 
   useEffect(() => {
-    // Always fetch balance; transactions are fetched lazily when needed.
+    // Always fetch balance (used in Balance tab, and useful context in Transactions tab).
     fetchBalance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiBaseUrl, projectId]);
 
   useEffect(() => {
-    if (activeTab === 'transactions') {
+    if (view === 'transactions') {
       fetchTransactionsList();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, apiBaseUrl, projectId, organisationId]);
+  }, [view, apiBaseUrl, projectId, organisationId]);
 
   return (
     <div>
-      {/* Sub tabs (mirrors /credits) */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '8px',
-          marginBottom: '16px',
-          borderBottom: '1px solid var(--app-border)',
-        }}
-      >
-        <button
-          onClick={() => setActiveTab('balance')}
-          style={{
-            padding: '10px 18px',
-            background: activeTab === 'balance' ? 'var(--primary-bg, #1976d2)' : 'transparent',
-            color: activeTab === 'balance' ? 'white' : 'var(--app-text)',
-            border: 'none',
-            borderBottom:
-              activeTab === 'balance'
-                ? '2px solid var(--primary-bg, #1976d2)'
-                : '2px solid transparent',
-            cursor: 'pointer',
-            fontWeight: activeTab === 'balance' ? 700 : 500,
-            fontSize: '14px',
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            fetchBalance();
+            if (view === 'transactions') fetchTransactionsList();
           }}
         >
-          Balance
-        </button>
-        <button
-          onClick={() => setActiveTab('transactions')}
-          style={{
-            padding: '10px 18px',
-            background: activeTab === 'transactions' ? 'var(--primary-bg, #1976d2)' : 'transparent',
-            color: activeTab === 'transactions' ? 'white' : 'var(--app-text)',
-            border: 'none',
-            borderBottom:
-              activeTab === 'transactions'
-                ? '2px solid var(--primary-bg, #1976d2)'
-                : '2px solid transparent',
-            cursor: 'pointer',
-            fontWeight: activeTab === 'transactions' ? 700 : 500,
-            fontSize: '14px',
-          }}
-        >
-          Transactions
-        </button>
-
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              fetchBalance();
-              if (activeTab === 'transactions') fetchTransactionsList();
-            }}
-          >
-            Refresh
-          </Button>
-        </div>
+          Refresh
+        </Button>
       </div>
 
-      {activeTab === 'balance' && (
+      {view === 'balance' && (
         <>
           {balanceError && (
             <Alert variant="info" style={{ marginBottom: '16px' }}>
@@ -258,7 +211,25 @@ export default function TeamCreditsTab(props: {
                   {balance?.updated_at ? ` • Last updated ${formatDateTime(balance.updated_at)}` : ''}
                 </div>
               </Card>
+            </>
+          )}
+        </>
+      )}
 
+      {view === 'transactions' && (
+        <>
+          {transactionsError && (
+            <Alert variant="info" style={{ marginBottom: '16px' }}>
+              {transactionsError}
+            </Alert>
+          )}
+
+          {transactionsLoading ? (
+            <div style={{ padding: '16px', textAlign: 'center', opacity: 0.7 }}>Loading transactions…</div>
+          ) : transactions.length === 0 ? (
+            <Alert variant="info">No transactions found for this team.</Alert>
+          ) : (
+            <>
               <div
                 style={{
                   display: 'grid',
@@ -297,72 +268,52 @@ export default function TeamCreditsTab(props: {
                 </Card>
               </div>
 
-              <Alert variant="info">
-                Tip: Open the “Transactions” tab to see the ledger for this team.
-              </Alert>
-            </>
-          )}
-        </>
-      )}
-
-      {activeTab === 'transactions' && (
-        <>
-          {transactionsError && (
-            <Alert variant="info" style={{ marginBottom: '16px' }}>
-              {transactionsError}
-            </Alert>
-          )}
-
-          {transactionsLoading ? (
-            <div style={{ padding: '16px', textAlign: 'center', opacity: 0.7 }}>Loading transactions…</div>
-          ) : transactions.length === 0 ? (
-            <Alert variant="info">No transactions found for this team.</Alert>
-          ) : (
-            <Card style={{ padding: '0', overflow: 'hidden' }}>
-              <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--app-border)' }}>
-                <div style={{ fontSize: '14px', fontWeight: 700 }}>Team Transactions</div>
-                <div style={{ fontSize: '12px', opacity: 0.6 }}>
-                  Showing {transactions.length} most recent entries
+              <Card style={{ padding: '0', overflow: 'hidden' }}>
+                <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--app-border)' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 700 }}>Team Transactions</div>
+                  <div style={{ fontSize: '12px', opacity: 0.6 }}>
+                    Showing {transactions.length} most recent entries
+                  </div>
                 </div>
-              </div>
-              <div className="overflow-x-auto">
-                <Table style={compactTableStyle}>
-                  <thead>
-                    <tr>
-                      <th style={compactThStyle}>Time</th>
-                      <th style={compactThStyle}>Type</th>
-                      <th style={compactThStyle}>Amount</th>
-                      <th style={compactThStyle}>Notes</th>
-                      <th style={compactThStyle}>User</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.map((t) => {
-                      const amountNum = Number(t.amount);
-                      const showPlus = Number.isFinite(amountNum) && amountNum > 0;
-                      return (
-                        <tr key={t.id}>
-                          <td style={compactTextTdStyle}>{formatDateTime(t.timestamp)}</td>
-                          <td style={compactTextTdStyle}>
-                            <Badge variant="default">{sourceTypeLabel(t.source_type)}</Badge>
-                          </td>
-                          <td style={{ ...compactTdStyle, color: amountColor(amountNum), fontWeight: 700 }}>
-                            {showPlus ? '+' : ''}
-                            {formatCredits(t.amount)}
-                          </td>
-                          <td style={compactTextTdStyle}>
-                            <span style={{ opacity: t.notes ? 1 : 0.5 }}>{t.notes || '—'}</span>
-                          </td>
-                          <td style={compactTextTdStyle}>
-                            <span style={{ opacity: t.created_by_email ? 1 : 0.5 }}>{t.created_by_email || '—'}</span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </Table>
-              </div>
-            </Card>
+                <div className="overflow-x-auto">
+                  <Table style={compactTableStyle}>
+                    <thead>
+                      <tr>
+                        <th style={compactThStyle}>Time</th>
+                        <th style={compactThStyle}>Type</th>
+                        <th style={compactThStyle}>Amount</th>
+                        <th style={compactThStyle}>Notes</th>
+                        <th style={compactThStyle}>User</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.map((t) => {
+                        const amountNum = Number(t.amount);
+                        const showPlus = Number.isFinite(amountNum) && amountNum > 0;
+                        return (
+                          <tr key={t.id}>
+                            <td style={compactTextTdStyle}>{formatDateTime(t.timestamp)}</td>
+                            <td style={compactTextTdStyle}>
+                              <Badge variant="default">{sourceTypeLabel(t.source_type)}</Badge>
+                            </td>
+                            <td style={{ ...compactTdStyle, color: amountColor(amountNum), fontWeight: 700 }}>
+                              {showPlus ? '+' : ''}
+                              {formatCredits(t.amount)}
+                            </td>
+                            <td style={compactTextTdStyle}>
+                              <span style={{ opacity: t.notes ? 1 : 0.5 }}>{t.notes || '—'}</span>
+                            </td>
+                            <td style={compactTextTdStyle}>
+                              <span style={{ opacity: t.created_by_email ? 1 : 0.5 }}>{t.created_by_email || '—'}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </Table>
+                </div>
+              </Card>
+            </>
           )}
         </>
       )}
