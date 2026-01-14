@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '@django-core/auth-ui';
-import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Alert, Badge, Card, Input } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 
 import AppShell from '../../components/AppShell';
@@ -23,7 +22,6 @@ export const UserDetailPage: React.FC = () => {
   const { userId, orgId } = useParams<{ userId: string; orgId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user: currentUser } = useAuth();
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -594,12 +592,7 @@ export const UserDetailPage: React.FC = () => {
                           <button type="button" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath} style={actionButtonStyle('primary')}>
                             View
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => teamPath && navigate(`${teamPath}/edit`)}
-                            disabled={!teamPath}
-                            style={actionButtonStyle('warning')}
-                          >
+                          <button type="button" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath} style={actionButtonStyle('warning')}>
                             Edit
                           </button>
                           <button type="button" disabled style={{ ...actionButtonStyle('danger'), opacity: 0.5, cursor: 'not-allowed' }}>
