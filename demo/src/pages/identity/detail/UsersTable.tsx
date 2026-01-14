@@ -210,26 +210,15 @@ export default function UsersTable({
                   </td>
                 )}
                 <td style={compactTextTdStyle}>
-                  {onViewUser ? (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onViewUser(userObj);
-                      }}
-                      style={{ cursor: 'pointer', textAlign: 'left' }}
-                      className="app-unstyled-button text-blue-600 hover:underline"
-                    >
-                      {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
-                    </button>
-                  ) : (
-                    <Link to={`/organisations/${currentOrgSlug}/users/${userObj.id}`} className="text-blue-600 hover:underline">
-                      {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
-                    </Link>
-                  )}
+                  <Link to={`/organisations/${currentOrgSlug}/users/${userObj.id}`} className="text-blue-600 hover:underline">
+                    {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
+                  </Link>
                 </td>
-                <td style={compactTextTdStyle}>{userObj.email}</td>
+                <td style={compactTdStyle}>
+                  <Badge variant="default" title={String(userObj.email || '')}>
+                    {String(userObj.email || '—')}
+                  </Badge>
+                </td>
                 <td style={compactTdStyle}>
                   <Badge variant="default" title={roleDisplay.title}>
                     {roleDisplay.label}

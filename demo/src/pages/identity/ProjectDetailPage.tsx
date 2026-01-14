@@ -1512,6 +1512,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
       if (!isLikelyTeam && childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
       if (competitions.length === 0 && !competitionsLoading) fetchCompetitions();
+      // Needed for Participants counts per competition.
+      if (allMatches.length === 0 && !allMatchesLoading) fetchAllMatches();
     } else if (activeTab === 'matches') {
       if (!isLikelyTeam && childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
       if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
@@ -2200,9 +2202,18 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               <h4 style={{ margin: 0, flex: 1, fontSize: '16px', fontWeight: 600 }}>
                                 {season.name || `Season ${seasonId}`}
                               </h4>
-                              <Badge variant="info">{seasonComps.length} competitions</Badge>
-                              <Badge variant="info">{totalMatches} matches</Badge>
-                              <Badge variant="info">{members.length} players</Badge>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Badge variant="default">{seasonComps.length}</Badge>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>Competitions</span>
+                              </div>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Badge variant="default">{totalMatches}</Badge>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>Matches</span>
+                              </div>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Badge variant="default">{members.length}</Badge>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>Players</span>
+                              </div>
                             </div>
 
                             {seasonComps.length === 0 ? (
@@ -2235,7 +2246,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                           </Link>
                                         </td>
                                         <td style={compactTdStyle}>
-                                          <Badge variant="info">{compMatchCount}</Badge>
+                                          <Badge variant="default">{compMatchCount}</Badge>
                                         </td>
                                         <td style={compactTdStyle}>
                                           <Badge variant={comp.is_active ? 'success' : 'warning'}>
@@ -2382,8 +2393,14 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                   {team.name}
                                 </Link>
                               </h4>
-                              <Badge variant="info">{teamSeasons.length} seasons</Badge>
-                              <Badge variant="info">{team.member_count || 0} players</Badge>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Badge variant="default">{teamSeasons.length}</Badge>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>Seasons</span>
+                              </div>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Badge variant="default">{team.member_count || 0}</Badge>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>Players</span>
+                              </div>
                             </div>
 
                             {teamSeasons.length === 0 ? (
@@ -2422,10 +2439,10 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                           </Link>
                                         </td>
                                         <td style={compactTdStyle}>
-                                          <Badge variant="info">{seasonComps.length}</Badge>
+                                          <Badge variant="default">{seasonComps.length}</Badge>
                                         </td>
                                         <td style={compactTdStyle}>
-                                          <Badge variant="info">{totalMatches}</Badge>
+                                          <Badge variant="default">{totalMatches}</Badge>
                                         </td>
                                         <td style={compactTdStyle}>
                                           <Badge variant={season.is_active !== false ? 'success' : 'warning'}>
@@ -3290,6 +3307,44 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                     seasonById.set(String(s.id), s);
                   }
 
+                  const getMatchParticipationsCount = (m: any): number => {
+                    const raw = (m as any)?.participations_count ?? (m as any)?.participants_count;
+                    const n = Number(raw);
+                    if (Number.isFinite(n) && n >= 0) return n;
+                    const list = (m as any)?.participations ?? (m as any)?.participants;
+                    return Array.isArray(list) ? list.length : 0;
+                  };
+
+                  // Aggregate participant counts per competition (best-effort).
+                  const allCompetitionIds = new Set(
+                    (competitions as any[])
+                      .filter((p: any) => isCompetitionPeriod(p))
+                      .map((p: any) => String(p?.id ?? '').trim())
+                      .filter(Boolean)
+                  );
+
+                  const participantsByCompetitionId: Record<string, number> = {};
+                  for (const m of allMatches as any[]) {
+                    const count = getMatchParticipationsCount(m);
+                    if (!count) continue;
+
+                    const periodObj = (m as any)?.period;
+                    const directId = String(periodObj?.id ?? (m as any)?.period_id ?? '').trim();
+                    if (!directId) continue;
+
+                    const parent1 = String(periodObj?.parent_period_id ?? periodObj?.parent_period?.id ?? '').trim();
+                    const parentObj = periodObj?.parent_period ?? periodObj?.parent;
+                    const parent2 = String(parentObj?.parent_period_id ?? parentObj?.parent_period?.id ?? '').trim();
+
+                    const bucketId =
+                      (directId && allCompetitionIds.has(directId) && directId) ||
+                      (parent1 && allCompetitionIds.has(parent1) && parent1) ||
+                      (parent2 && allCompetitionIds.has(parent2) && parent2) ||
+                      directId;
+
+                    participantsByCompetitionId[bucketId] = (participantsByCompetitionId[bucketId] || 0) + count;
+                  }
+
                   const matchCountByCompetitionId: Record<string, number> = {};
                   for (const c of competitions as any[]) {
                     const compId = String(c?.id || '').trim();
@@ -3330,6 +3385,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             <col style={{ width: '180px' }} />
                             <col style={{ width: '200px' }} />
                             <col style={{ width: '95px' }} />
+                            <col style={{ width: '120px' }} />
                             <col style={{ width: '330px' }} />
                           </colgroup>
                           <thead>
@@ -3338,6 +3394,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               <th style={compactThStyle}>Season</th>
                               <th style={compactThStyle}>Competition</th>
                               <th style={compactThStyle}>Matches</th>
+                              <th style={compactThStyle}>Participants</th>
                               <th style={compactThStyle}>Actions</th>
                             </tr>
                           </thead>
@@ -3356,6 +3413,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${comp.slug || comp.id}`;
 
                               const matchesCount = matchCountByCompetitionId[String(comp.id)] || 0;
+                              const participantsCount =
+                                Number(comp?.participants_count ?? comp?.participations_count) ||
+                                (participantsByCompetitionId[String(comp.id)] || 0);
 
                               return (
                                 <tr key={comp.id}>
@@ -3388,6 +3448,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                   </td>
                                   <td style={compactTdStyle}>
                                     <Badge variant="default">{matchesCount}</Badge>
+                                  </td>
+                                  <td style={compactTdStyle}>
+                                    <Badge variant="default">{participantsCount}</Badge>
                                   </td>
                                   <td style={compactTdStyle}>
                                     <div style={compactActionsStyle}>
@@ -3636,6 +3699,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           <col style={{ width: '160px' }} />
                           <col style={{ width: '220px' }} />
                           <col style={{ width: '140px' }} />
+                          <col style={{ width: '120px' }} />
                           <col style={{ width: '390px' }} />
                         </colgroup>
                         <thead>
@@ -3645,6 +3709,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             <th style={compactThStyle}>Competition</th>
                             <th style={compactThStyle}>Match</th>
                             <th style={compactThStyle}>Start</th>
+                            <th style={compactThStyle}>Participants</th>
                             <th style={compactThStyle}>Actions</th>
                           </tr>
                         </thead>
@@ -3670,6 +3735,14 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             const formattedStart = m.start_time
                               ? new Date(m.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' })
                               : '-';
+
+                            const participantsCount = (() => {
+                              const raw = (m as any)?.participations_count ?? (m as any)?.participants_count;
+                              const n = Number(raw);
+                              if (Number.isFinite(n) && n >= 0) return n;
+                              const list = (m as any)?.participations ?? (m as any)?.participants;
+                              return Array.isArray(list) ? list.length : 0;
+                            })();
 
                             return (
                               <tr key={m.id}>
@@ -3711,6 +3784,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                   </Link>
                                 </td>
                                 <td style={compactTextTdStyle}>{formattedStart}</td>
+                                <td style={compactTdStyle}>
+                                  <Badge variant="default">{participantsCount}</Badge>
+                                </td>
                                 <td style={compactTdStyle}>
                                   <div style={compactActionsStyle}>
                                     <button
