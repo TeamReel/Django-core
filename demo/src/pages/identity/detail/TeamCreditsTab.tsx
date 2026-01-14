@@ -128,8 +128,6 @@ export default function TeamCreditsTab(props: {
     try {
       const params = new URLSearchParams();
       params.set('project_id', String(projectId));
-      // Optional extra scoping (also helps debugging)
-      if (organisationId) params.set('organization_id', String(organisationId));
       // Grab enough for the detail page; paging is handled by fetchAllPages.
       params.set('page_size', '100');
 
