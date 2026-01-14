@@ -37,6 +37,8 @@ interface MatchCreateModalProps {
   onClose: () => void;
   onCreate: (payload: MatchCreatePayload) => Promise<void>;
 
+  apiBaseUrl?: string;
+
   organisations?: OrgOption[];
   clubs?: ProjectOption[];
   teams?: ProjectOption[];
@@ -52,6 +54,7 @@ export default function MatchCreateModal({
   opened,
   onClose,
   onCreate,
+  apiBaseUrl: apiBaseUrlProp,
   organisations = [],
   clubs = [],
   teams = [],
@@ -61,6 +64,35 @@ export default function MatchCreateModal({
   initialSeasonId = '',
   initialCompetitionId = '',
 }: MatchCreateModalProps) {
+  const apiBaseUrl = apiBaseUrlProp || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+  const extractList = (raw: any): any[] => {
+    const list = raw?.data?.data || raw?.data?.results || raw?.results || raw?.data || raw;
+    return Array.isArray(list) ? list : [];
+  };
+
+  const getNextUrl = (raw: any): string => {
+    const next = raw?.data?.next ?? raw?.next;
+    return typeof next === 'string' ? next : '';
+  };
+
+  const fetchAllPagesLocal = async (url: string, opts: RequestInit, maxItems = 2000): Promise<any[]> => {
+    const all: any[] = [];
+    let nextUrl = url;
+    const seen = new Set<string>();
+
+    while (nextUrl && all.length < maxItems && !seen.has(nextUrl)) {
+      seen.add(nextUrl);
+      const res = await fetch(nextUrl, opts);
+      if (!res.ok) break;
+      const raw = await res.json().catch(() => null);
+      all.push(...extractList(raw));
+      nextUrl = getNextUrl(raw);
+    }
+
+    return all.slice(0, maxItems);
+  };
+
   const [title, setTitle] = useState('');
   const [matchDate, setMatchDate] = useState('');
   const [matchTime, setMatchTime] = useState('');
@@ -85,9 +117,21 @@ export default function MatchCreateModal({
   const [opponentTeams, setOpponentTeams] = useState<ProjectOption[]>([]);
   const [loadingOpponentTeams, setLoadingOpponentTeams] = useState(false);
 
+  const [remoteOrganisations, setRemoteOrganisations] = useState<OrgOption[]>([]);
+  const [remoteClubs, setRemoteClubs] = useState<ProjectOption[]>([]);
+  const [remoteTeams, setRemoteTeams] = useState<ProjectOption[]>([]);
+  const [loadingOrganisations, setLoadingOrganisations] = useState(false);
+  const [loadingClubs, setLoadingClubs] = useState(false);
+  const [loadingTeams, setLoadingTeams] = useState(false);
+
   useEffect(() => {
     if (!opened) return;
     setError(null);
+    setTitle('');
+    setMatchDate('');
+    setMatchTime('14:30');
+    setLocation('');
+    setDescription('');
     setSelectedOrganisationId(String(initialOrganisationId || ''));
     setSelectedClubId(String(initialClubId || ''));
     setSelectedTeamId(String(initialTeamId || ''));
@@ -98,25 +142,161 @@ export default function MatchCreateModal({
     setSeasonOptions([]);
     setCompetitionOptions([]);
     setOpponentTeams([]);
+    setRemoteOrganisations([]);
+    setRemoteClubs([]);
+    setRemoteTeams([]);
   }, [opened, initialOrganisationId, initialClubId, initialTeamId, initialSeasonId, initialCompetitionId]);
 
+  // Load federations/organisations so user can select outside current page context.
+  useEffect(() => {
+    if (!opened) return;
+    let cancelled = false;
+    const abortController = new AbortController();
+
+    const load = async () => {
+      setLoadingOrganisations(true);
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=500`, {
+          credentials: 'include',
+          signal: abortController.signal,
+        });
+        if (!res.ok) return;
+        const raw = await res.json().catch(() => null);
+        const list = extractList(raw)
+          .map((o: any) => ({ id: String(o.id), name: String(o.name || o.slug || o.id), slug: o.slug }))
+          .filter((o: any) => o.id);
+        const unique = [...new Map(list.map((o: any) => [String(o.id), o])).values()];
+        if (!cancelled) setRemoteOrganisations(unique);
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingOrganisations(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+      abortController.abort();
+    };
+  }, [opened, apiBaseUrl]);
+
+  const organisationsOptions = useMemo(() => {
+    return remoteOrganisations.length ? remoteOrganisations : organisations;
+  }, [remoteOrganisations, organisations]);
+
+  const selectedOrganisationSlug = useMemo(() => {
+    const orgId = String(selectedOrganisationId || '').trim();
+    if (!orgId) return '';
+    const org = organisationsOptions.find((o) => String(o.id) === String(orgId));
+    return String(org?.slug || '').trim();
+  }, [organisationsOptions, selectedOrganisationId]);
+
+  // Load clubs (root projects).
+  useEffect(() => {
+    if (!opened) return;
+    let cancelled = false;
+    const abortController = new AbortController();
+
+    const orgId = String(selectedOrganisationId || '').trim();
+
+    const load = async () => {
+      setLoadingClubs(true);
+      try {
+        const params = new URLSearchParams();
+        params.set('page_size', '200');
+        params.set('parent_project__isnull', 'true');
+        if (orgId) params.set('organisation_id', orgId);
+
+        const list = await fetchAllPages<ProjectOption>(
+          `${apiBaseUrl}/api/v1/projects/?${params.toString()}`,
+          { credentials: 'include', signal: abortController.signal },
+          { ttlMs: 10_000, cacheKey: `projects:clubs:${orgId || 'all'}`, maxItems: 3000 }
+        );
+        const unique = [...new Map((list || []).map((p: any) => [String(p.id), p])).values()];
+        if (!cancelled) setRemoteClubs(unique as any);
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingClubs(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+      abortController.abort();
+    };
+  }, [opened, apiBaseUrl, selectedOrganisationId]);
+
+  // Load teams (child projects).
+  useEffect(() => {
+    if (!opened) return;
+    let cancelled = false;
+    const abortController = new AbortController();
+
+    const orgId = String(selectedOrganisationId || '').trim();
+    const clubId = String(selectedClubId || '').trim();
+    const orgSlug = String(selectedOrganisationSlug || '').trim();
+
+    const load = async () => {
+      setLoadingTeams(true);
+      try {
+        const baseUrl = clubId
+          ? `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubId)}&page_size=200`
+          : orgId
+            ? orgSlug
+              ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=200&parent_project__isnull=false`
+              : `${apiBaseUrl}/api/v1/projects/?organisation_id=${encodeURIComponent(orgId)}&page_size=200&parent_project__isnull=false`
+            : `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`;
+
+        const rawList = await fetchAllPagesLocal(
+          baseUrl,
+          { credentials: 'include', signal: abortController.signal },
+          3000
+        );
+        const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
+        const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
+        if (!cancelled) setRemoteTeams(unique as any);
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingTeams(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+      abortController.abort();
+    };
+  }, [opened, apiBaseUrl, selectedClubId, selectedOrganisationId, selectedOrganisationSlug]);
+
+  const clubsOptions = useMemo(() => {
+    return remoteClubs.length ? remoteClubs : clubs;
+  }, [remoteClubs, clubs]);
+
+  const teamsOptions = useMemo(() => {
+    return remoteTeams.length ? remoteTeams : teams;
+  }, [remoteTeams, teams]);
+
   const sortedOrganisations = useMemo(() => {
-    return [...organisations].sort((a, b) => a.name.localeCompare(b.name));
-  }, [organisations]);
+    return [...organisationsOptions].sort((a, b) => a.name.localeCompare(b.name));
+  }, [organisationsOptions]);
 
   const filteredClubs = useMemo(() => {
     const orgId = selectedOrganisationId;
     const list = orgId
-      ? clubs.filter((c) => {
+      ? clubsOptions.filter((c) => {
           const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
           return String(cOrg) === String(orgId);
         })
-      : clubs;
+      : clubsOptions;
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  }, [clubs, selectedOrganisationId]);
+  }, [clubsOptions, selectedOrganisationId]);
 
   const getClubOrganisationId = (clubId: string): string | null => {
-    const club = clubs.find((c) => String(c.id) === String(clubId));
+    const club = clubsOptions.find((c) => String(c.id) === String(clubId));
     if (!club) return null;
     const org = typeof (club as any).organisation === 'string' ? (club as any).organisation : (club as any).organisation?.id;
     return org ? String(org) : null;
@@ -134,9 +314,9 @@ export default function MatchCreateModal({
 
   const filteredTeams = useMemo(() => {
     const clubId = selectedClubId;
-    const list = clubId ? teams.filter((t) => getTeamParentId(t) === String(clubId)) : teams;
+    const list = clubId ? teamsOptions.filter((t) => getTeamParentId(t) === String(clubId)) : teamsOptions;
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  }, [teams, selectedClubId]);
+  }, [teamsOptions, selectedClubId]);
 
   const getProjectOrganisationId = (p: ProjectOption): string | null => {
     const org = typeof (p as any).organisation === 'string' ? (p as any).organisation : (p as any).organisation?.id;
@@ -172,7 +352,7 @@ export default function MatchCreateModal({
     setSelectedSeasonId('');
     setSelectedCompetitionId('');
 
-    const team = teams.find((t) => String(t.id) === String(teamId));
+    const team = teamsOptions.find((t) => String(t.id) === String(teamId));
     if (!team) return;
 
     const clubId = getTeamParentId(team);
@@ -201,7 +381,7 @@ export default function MatchCreateModal({
 
   const projectNameById = (id: string): string | null => {
     if (!id) return null;
-    const fromTeams = (teams || []).find((t) => String(t.id) === String(id));
+    const fromTeams = (teamsOptions || []).find((t) => String(t.id) === String(id));
     if (fromTeams?.name) return String(fromTeams.name);
     const fromOpponents = (opponentTeams || []).find((t) => String(t.id) === String(id));
     if (fromOpponents?.name) return String(fromOpponents.name);
@@ -219,7 +399,6 @@ export default function MatchCreateModal({
     const load = async () => {
       setLoadingOpponentTeams(true);
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('organisation_id', orgId);
@@ -254,7 +433,6 @@ export default function MatchCreateModal({
     const load = async () => {
       setLoadingSeasons(true);
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('parent_id', 'null');
