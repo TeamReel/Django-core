@@ -112,6 +112,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [competitions, setCompetitions] = useState<Period[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [membersError, setMembersError] = useState<string | null>(null);
+  const [membersReloadToken, setMembersReloadToken] = useState(0);
+
+  const [memberSearch, setMemberSearch] = useState('');
+  const [memberSearchResults, setMemberSearchResults] = useState<any[]>([]);
+  const [selectedAddUserId, setSelectedAddUserId] = useState<string>('');
+  const [addPosition, setAddPosition] = useState('');
+  const [addShirtNumber, setAddShirtNumber] = useState('');
+  const [addingMember, setAddingMember] = useState(false);
   const [hierarchySearch, setHierarchySearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [competitionsLoading, setCompetitionsLoading] = useState(false);
@@ -437,37 +447,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         } finally {
           setCompetitionsLoading(false);
         }
-
-        // Fetch season squad (members scoped to this period)
-        try {
-          const membersParams = new URLSearchParams();
-          membersParams.set('period', String(seasonUuid));
-          const membersRes = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${projectJson.id}/members/?${membersParams.toString()}`,
-            { credentials: 'include' }
-          );
-          if (membersRes.ok) {
-            const rawMembers: any = await membersRes.json();
-
-            // Handle multiple envelope formats
-            let membersList: any[] = [];
-            if (Array.isArray(rawMembers)) {
-              membersList = rawMembers;
-            } else if (Array.isArray(rawMembers?.data)) {
-              membersList = rawMembers.data;
-            } else if (Array.isArray(rawMembers?.data?.data)) {
-              membersList = rawMembers.data.data;
-            } else if (Array.isArray(rawMembers?.data?.results)) {
-              membersList = rawMembers.data.results;
-            } else if (Array.isArray(rawMembers?.results)) {
-              membersList = rawMembers.results;
-            }
-
-            setMembers(membersList);
-          }
-        } catch (e) {
-          console.error('Failed to fetch members:', e);
-        }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load season');
       } finally {
@@ -477,6 +456,90 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
     run();
   }, [apiBaseUrl, orgSlugOrId, projectSlugOrId, effectiveSeasonId, isTeamRoute, clubSlugOrId]);
+
+  // Fetch season squad memberships (season-scoped roster)
+  useEffect(() => {
+    const projectIdForMembers = String((project as any)?.id || '').trim();
+    const seasonUuid = String(resolvedSeasonId || '').trim();
+    if (!projectIdForMembers || !seasonUuid) return;
+
+    let cancelled = false;
+    const run = async () => {
+      setMembersLoading(true);
+      setMembersError(null);
+      try {
+        const membersParams = new URLSearchParams();
+        membersParams.set('period', seasonUuid);
+        const membersRes = await fetch(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/?${membersParams.toString()}`,
+          { credentials: 'include' }
+        );
+        if (!membersRes.ok) throw new Error('Failed to load squad');
+
+        const rawMembers: any = await membersRes.json();
+        let membersList: any[] = [];
+        if (Array.isArray(rawMembers)) {
+          membersList = rawMembers;
+        } else if (Array.isArray(rawMembers?.data)) {
+          membersList = rawMembers.data;
+        } else if (Array.isArray(rawMembers?.data?.data)) {
+          membersList = rawMembers.data.data;
+        } else if (Array.isArray(rawMembers?.data?.results)) {
+          membersList = rawMembers.data.results;
+        } else if (Array.isArray(rawMembers?.results)) {
+          membersList = rawMembers.results;
+        }
+
+        if (!cancelled) setMembers(membersList);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'Failed to load squad';
+        if (!cancelled) setMembersError(msg);
+      } finally {
+        if (!cancelled) setMembersLoading(false);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBaseUrl, project, resolvedSeasonId, membersReloadToken]);
+
+  // Search for users that can be added to this season squad
+  useEffect(() => {
+    if (!userCanEditProject) return;
+    const projectIdForMembers = String((project as any)?.id || '').trim();
+    const seasonUuid = String(resolvedSeasonId || '').trim();
+    const q = String(memberSearch || '').trim();
+    if (!projectIdForMembers || !seasonUuid || q.length < 2) {
+      setMemberSearchResults([]);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        const params = new URLSearchParams();
+        params.set('search', q);
+        params.set('period', seasonUuid);
+        const res = await fetch(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/searchable-users/?${params.toString()}`,
+          { credentials: 'include' }
+        );
+        if (!res.ok) throw new Error('Failed to search users');
+        const raw: any = await res.json();
+        const list = Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : [];
+        if (!cancelled) setMemberSearchResults(list);
+      } catch {
+        if (!cancelled) setMemberSearchResults([]);
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [apiBaseUrl, project, resolvedSeasonId, memberSearch, userCanEditProject]);
 
   // Fetch matches only when the user is on a tab that actually needs them.
   useEffect(() => {
@@ -1064,9 +1127,120 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   </div>
 
                   <div style={{ padding: '16px' }}>
-                    {members.length === 0 ? (
+                    {userCanEditProject && (
+                      <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'flex-end' }}>
+                        <div style={{ minWidth: '240px', flex: '1 1 240px' }}>
+                          <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                            Search user (min 2 chars)
+                          </label>
+                          <Input
+                            value={memberSearch}
+                            onChange={(e) => {
+                              setMemberSearch(e.target.value);
+                              setSelectedAddUserId('');
+                            }}
+                            placeholder="Start typing a name or email…"
+                          />
+                        </div>
+
+                        <div style={{ minWidth: '260px', flex: '1 1 260px' }}>
+                          <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                            Select user
+                          </label>
+                          <select
+                            value={selectedAddUserId}
+                            onChange={(e) => setSelectedAddUserId(e.target.value)}
+                            style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid var(--app-border)', padding: '0 10px', background: 'var(--app-surface)' }}
+                          >
+                            <option value="">— Choose —</option>
+                            {memberSearchResults.map((u: any) => {
+                              const label = `${u.full_name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email || u.id} (${u.email || '—'})`;
+                              return (
+                                <option key={String(u.id)} value={String(u.id)}>
+                                  {label}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </div>
+
+                        <div style={{ minWidth: '160px' }}>
+                          <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                            Position (optional)
+                          </label>
+                          <Input value={addPosition} onChange={(e) => setAddPosition(e.target.value)} placeholder="e.g. Keeper" />
+                        </div>
+
+                        <div style={{ width: '90px' }}>
+                          <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                            # (optional)
+                          </label>
+                          <Input value={addShirtNumber} onChange={(e) => setAddShirtNumber(e.target.value)} placeholder="10" />
+                        </div>
+
+                        <button
+                          onClick={async () => {
+                            const projectIdForMembers = String((project as any)?.id || '').trim();
+                            const seasonUuid = String(resolvedSeasonId || '').trim();
+                            const userId = String(selectedAddUserId || '').trim();
+                            if (!projectIdForMembers || !seasonUuid || !userId) return;
+
+                            try {
+                              setAddingMember(true);
+                              const payload: any = {
+                                user_id: Number(userId),
+                                role: 'viewer',
+                                period_id: seasonUuid,
+                                metadata: {
+                                  position: String(addPosition || '').trim(),
+                                  shirt_number: String(addShirtNumber || '').trim(),
+                                },
+                              };
+
+                              const res = await fetch(
+                                `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
+                                {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCsrfToken(),
+                                  },
+                                  credentials: 'include',
+                                  body: JSON.stringify(payload),
+                                }
+                              );
+
+                              if (!res.ok) {
+                                const text = await res.text();
+                                throw new Error(text || 'Failed to add member');
+                              }
+
+                              setMemberSearch('');
+                              setMemberSearchResults([]);
+                              setSelectedAddUserId('');
+                              setAddPosition('');
+                              setAddShirtNumber('');
+                              setMembersReloadToken((x) => x + 1);
+                            } catch (e) {
+                              alert(e instanceof Error ? e.message : 'Failed to add member');
+                            } finally {
+                              setAddingMember(false);
+                            }
+                          }}
+                          style={actionButtonStyle('primary')}
+                          disabled={addingMember || !selectedAddUserId}
+                        >
+                          {addingMember ? 'Adding…' : 'Add to squad'}
+                        </button>
+                      </div>
+                    )}
+
+                    {membersLoading && <Alert variant="info">Loading squad…</Alert>}
+                    {membersError && <Alert variant="error">{membersError}</Alert>}
+
+                    {!membersLoading && !membersError && members.length === 0 ? (
                       <Alert variant="info">No members found for this season.</Alert>
-                    ) : (
+                    ) : !membersLoading && !membersError ? (
                       <div className="overflow-x-auto">
                         <Table style={compactTableStyle}>
                           <thead>
@@ -1092,7 +1266,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               const role = String(m.role || 'member');
                               const position = m.metadata?.position || '—';
                               const shirtNumber = m.metadata?.shirt_number ?? '';
-                              const membershipId = String(m.id || memberUser.id || Math.random());
+                              const membershipId = String(m.id || '').trim();
                               const userId = memberUser?.id;
 
                               return (
@@ -1130,6 +1304,39 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       ) : (
                                         <span style={{ color: 'var(--app-muted-text)' }}>—</span>
                                       )}
+
+                                      {userCanEditProject && membershipId && (
+                                        <button
+                                          onClick={async () => {
+                                            if (!window.confirm(`Remove ${name} from this season squad?`)) return;
+                                            const projectIdForMembers = String((project as any)?.id || '').trim();
+                                            if (!projectIdForMembers) return;
+                                            try {
+                                              const res = await fetch(
+                                                `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/${encodeURIComponent(membershipId)}/`,
+                                                {
+                                                  method: 'DELETE',
+                                                  headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRFToken': getCsrfToken(),
+                                                  },
+                                                  credentials: 'include',
+                                                }
+                                              );
+                                              if (!res.ok) {
+                                                const text = await res.text();
+                                                throw new Error(text || 'Failed to remove member');
+                                              }
+                                              setMembersReloadToken((x) => x + 1);
+                                            } catch (e) {
+                                              alert(e instanceof Error ? e.message : 'Failed to remove member');
+                                            }
+                                          }}
+                                          style={actionButtonStyle('danger')}
+                                        >
+                                          Remove
+                                        </button>
+                                      )}
                                     </div>
                                   </td>
                                 </tr>
@@ -1138,7 +1345,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           </tbody>
                         </Table>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </Card>
               )}

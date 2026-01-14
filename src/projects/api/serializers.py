@@ -23,6 +23,9 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
 
     user = UserNestedSerializer(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
+    period = serializers.UUIDField(source="period_id", read_only=True)
+    period_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    metadata = serializers.JSONField(required=False)
 
     class Meta:
         model = ProjectMembership
@@ -30,7 +33,10 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "user_id",
+            "period",
+            "period_id",
             "role",
+            "metadata",
             "assignment_reason",
             "created_at",
         ]
@@ -43,6 +49,13 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         User = get_user_model()
         if not User.objects.filter(id=value).exists():
             raise serializers.ValidationError("User does not exist.")
+        return value
+
+    def validate_period_id(self, value):
+        if value is None:
+            return value
+        if not Period.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Period does not exist.")
         return value
 
 

@@ -642,7 +642,21 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         # Enforce read access (avoid leaking rosters by UUID guessing)
         self._check_can_view_members(project)
 
-        return ProjectMembership.objects.filter(project_id=project_pk).select_related("user")
+        qs = ProjectMembership.objects.filter(
+            project_id=project_pk,
+            deleted_at__isnull=True,
+        ).select_related("user")
+
+        # Optional season filter for squads
+        period_param = (
+            self.request.query_params.get("period")
+            or self.request.query_params.get("period_id")
+            or ""
+        ).strip()
+        if period_param:
+            qs = qs.filter(period_id=period_param)
+
+        return qs
 
     def perform_create(self, serializer):
         """Use service to add member."""
@@ -654,6 +668,8 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         # Extract validated data
         user_id = serializer.validated_data["user_id"]
         role = serializer.validated_data["role"]
+        period_id = serializer.validated_data.get("period_id")
+        metadata = serializer.validated_data.get("metadata")
 
         # Get the user instance
         from django.contrib.auth import get_user_model
@@ -667,6 +683,8 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                 project=project,
                 user=user,
                 role=role,
+                period_id=str(period_id) if period_id else None,
+                metadata=metadata or {},
                 actor=self.request.user,
             )
             # Set the instance on the serializer so response data is correct
@@ -770,9 +788,14 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         self._check_can_manage_members(project)
 
         # Get org members not already in project
-        existing_member_ids = ProjectMembership.objects.filter(
-            project=project, deleted_at__isnull=True
-        ).values_list("user_id", flat=True)
+        period_param = (
+            request.query_params.get("period") or request.query_params.get("period_id") or ""
+        ).strip()
+        existing_qs = ProjectMembership.objects.filter(project=project, deleted_at__isnull=True)
+        if period_param:
+            existing_qs = existing_qs.filter(period_id=period_param)
+
+        existing_member_ids = existing_qs.values_list("user_id", flat=True)
 
         # Get org members excluding project members
         from django.contrib.auth import get_user_model

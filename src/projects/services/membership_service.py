@@ -21,6 +21,8 @@ class MembershipService:
         project: Project,
         user: User,
         role: str,
+        period_id: Optional[str] = None,
+        metadata: Optional[dict] = None,
         actor: Optional[User] = None,
         reason: str = ProjectMembership.AssignmentReason.MANUAL,
     ) -> ProjectMembership:
@@ -37,15 +39,28 @@ class MembershipService:
         Returns:
             The created ProjectMembership.
         """
-        # Check if already a member
-        if ProjectMembership.objects.filter(project=project, user=user).exists():
-            raise ValueError("User is already a member of this project.")
+        period = None
+        if period_id:
+            from activities.models import Period
+
+            period = Period.objects.get(pk=period_id)
+
+        # Check if already a member for this specific period scope
+        if ProjectMembership.objects.filter(
+            project=project,
+            user=user,
+            period=period,
+            deleted_at__isnull=True,
+        ).exists():
+            raise ValueError("User is already a member of this project for this season.")
 
         membership = ProjectMembership.objects.create(
             project=project,
             user=user,
             role=role,
             assignment_reason=reason,
+            period=period,
+            metadata=metadata or {},
         )
 
         # Audit log
@@ -57,6 +72,7 @@ class MembershipService:
                 "project_id": str(project.id),
                 "user_id": str(user.id),
                 "role": role,
+                "period_id": str(period.id) if period else None,
                 "reason": reason,
             },
         )
