@@ -931,7 +931,35 @@ export const UserDetailPage: React.FC = () => {
                   return (
                     <tr key={String(o?.id || o?.slug)}>
                       <td style={compactTextTdStyle}>{renderNavLink(String(o?.name || orgSlugOrId || ''), orgPath)}</td>
-                      <td style={compactTextTdStyle}>{currentRole}</td>
+                      <td style={compactTextTdStyle}>
+                        <button
+                          type="button"
+                          disabled={!orgSlugOrId}
+                          onClick={async () => {
+                            if (!orgSlugOrId) return;
+                            const next = window.prompt('Set federation role (admin/member):', currentRole) || '';
+                            const role = next.trim().toLowerCase();
+                            if (!role) return;
+                            try {
+                              await updateOrganisationMembershipRole(orgSlugOrId, role);
+                            } catch (e) {
+                              alert(e instanceof Error ? e.message : 'Failed to update role');
+                            }
+                          }}
+                          style={{
+                            border: 'none',
+                            background: 'transparent',
+                            padding: 0,
+                            color: orgSlugOrId ? '#007bff' : 'var(--app-muted-text)',
+                            fontWeight: 700,
+                            cursor: orgSlugOrId ? 'pointer' : 'not-allowed',
+                            textDecoration: orgSlugOrId ? 'underline' : 'none',
+                          }}
+                          title={orgSlugOrId ? 'Click to edit role' : 'Missing federation id'}
+                        >
+                          {currentRole}
+                        </button>
+                      </td>
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
                           <button type="button" onClick={() => orgPath && navigate(orgPath)} disabled={!orgPath} style={actionButtonStyle('primary')}>
@@ -1017,7 +1045,29 @@ export const UserDetailPage: React.FC = () => {
                   return (
                     <tr key={String(c?.id)}>
                       <td style={compactTextTdStyle}>{renderNavLink(String(c?.name || ''), clubPath)}</td>
-                      <td style={compactTextTdStyle}>{String(c?.role || '')}</td>
+                      <td style={compactTextTdStyle}>
+                        <button
+                          type="button"
+                          disabled={!projectId}
+                          onClick={() => {
+                            if (!projectId) return;
+                            setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(c?.role || 'viewer') });
+                            setIsEditMembershipModalOpen(true);
+                          }}
+                          style={{
+                            border: 'none',
+                            background: 'transparent',
+                            padding: 0,
+                            color: projectId ? '#007bff' : 'var(--app-muted-text)',
+                            fontWeight: 700,
+                            cursor: projectId ? 'pointer' : 'not-allowed',
+                            textDecoration: projectId ? 'underline' : 'none',
+                          }}
+                          title={projectId ? 'Click to edit role' : 'Missing project id'}
+                        >
+                          {String(c?.role || '') || '—'}
+                        </button>
+                      </td>
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
                           <button type="button" onClick={() => clubPath && navigate(clubPath)} disabled={!clubPath} style={actionButtonStyle('primary')}>
@@ -1105,7 +1155,29 @@ export const UserDetailPage: React.FC = () => {
                     <tr key={String(t?.id)}>
                       <td style={compactTextTdStyle}>{renderNavLink(String(t?.parent_name || ''), clubPath)}</td>
                       <td style={compactTextTdStyle}>{renderNavLink(String(t?.name || ''), teamPath)}</td>
-                      <td style={compactTextTdStyle}>{String(t?.role || '')}</td>
+                      <td style={compactTextTdStyle}>
+                        <button
+                          type="button"
+                          disabled={!projectId}
+                          onClick={() => {
+                            if (!projectId) return;
+                            setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer') });
+                            setIsEditMembershipModalOpen(true);
+                          }}
+                          style={{
+                            border: 'none',
+                            background: 'transparent',
+                            padding: 0,
+                            color: projectId ? '#007bff' : 'var(--app-muted-text)',
+                            fontWeight: 700,
+                            cursor: projectId ? 'pointer' : 'not-allowed',
+                            textDecoration: projectId ? 'underline' : 'none',
+                          }}
+                          title={projectId ? 'Click to edit role' : 'Missing project id'}
+                        >
+                          {String(t?.role || '') || '—'}
+                        </button>
+                      </td>
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
                           <button type="button" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath} style={actionButtonStyle('primary')}>
