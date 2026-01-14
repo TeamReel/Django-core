@@ -1294,13 +1294,17 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             {rows.map((m: any) => (
               <tr key={String(m.id)}>
                 <td style={compactTextTdStyle}>
-                  <Link
-                    to={matchDetailPath(String(m.id))}
-                    className="text-blue-600 hover:underline"
-                    style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
+                  <button
+                    type="button"
+                    className="app-unstyled-button text-blue-600 hover:underline"
+                    onClick={() => {
+                      setSelectedDetailMatch(m);
+                      setIsMatchDetailModalOpen(true);
+                    }}
+                    style={{ textDecoration: 'none', backgroundColor: 'transparent', padding: 0, font: 'inherit' }}
                   >
                     {m.title || `Match ${m.id}`}
-                  </Link>
+                  </button>
                 </td>
                 <td style={compactTdStyle}>{m.start_time ? new Date(m.start_time).toLocaleString() : '—'}</td>
                 <td style={compactTdStyle}>{m.location || '—'}</td>
