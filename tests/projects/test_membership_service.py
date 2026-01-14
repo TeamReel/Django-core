@@ -133,6 +133,22 @@ class TestMembershipServiceRemoval:
 
 @pytest.mark.django_db
 class TestMembershipServiceAdd:
+    def test_add_member_creates_org_membership_if_missing(
+        self, user_factory, organisation_factory, project_factory
+    ):
+        owner = user_factory()
+        org = organisation_factory(creator=owner)
+        project = project_factory(organisation=org, creator=owner)
+
+        member = user_factory()
+        assert not Membership.objects.filter(user=member, organisation=org).exists()
+
+        service = MembershipService()
+        service.add_member(project, member, ProjectMembership.Role.VIEWER, actor=owner)
+
+        org_membership = Membership.objects.get(user=member, organisation=org)
+        assert org_membership.is_active is True
+
     def test_add_member_to_team_also_adds_to_parent_club(
         self, user_factory, organisation_factory, project_factory
     ):

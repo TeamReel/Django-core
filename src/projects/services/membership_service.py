@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from audit.api import audit_log
 from notifications.services.notification_service import create_notification
+from organisations.models import Membership as OrganisationMembership
 from projects.models import Project, ProjectMembership
 
 User = get_user_model()
@@ -44,6 +45,21 @@ class MembershipService:
             from activities.models import Period
 
             period = Period.objects.get(pk=period_id)
+
+        # Lineups/participations reference Organisation Memberships (not Users).
+        # Ensure the user is an active member of the organisation when added to a project.
+        org_membership, _ = OrganisationMembership.objects.get_or_create(
+            organisation=project.organisation,
+            user=user,
+            defaults={
+                "role": "member",
+                "is_active": True,
+                "invited_by": actor,
+            },
+        )
+        if not org_membership.is_active:
+            org_membership.is_active = True
+            org_membership.save(update_fields=["is_active"])
 
         # Check if already a member for this specific period scope
         if ProjectMembership.objects.filter(
