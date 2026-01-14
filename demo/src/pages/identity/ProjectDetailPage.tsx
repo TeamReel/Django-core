@@ -31,6 +31,7 @@ import PeriodEditModal from './PeriodEditModal';
 import MatchCreateModal from './MatchCreateModal';
 import MatchEditModal from './MatchEditModal';
 import InviteMemberModal from './InviteMemberModal';
+import UserDetailModal from './UserDetailModal';
 import UsersTable from './detail/UsersTable';
 import {
   actionButtonStyle,
@@ -71,31 +72,9 @@ const getPagedCount = (json: any): number | null => {
 };
 
 const fetchAllPages = async <T,>(url: string, options: RequestInit = {}): Promise<T[]> => {
-  const results: T[] = [];
-  let nextUrl: string | null = url;
-  let pageCount = 0;
-  const maxPages = 10; // Safety limit
-
-  try {
-    while (nextUrl && pageCount < maxPages) {
-      const res: Response = await fetch(nextUrl, options);
-      if (!res.ok) {
-        if (DEBUG_LOGS) console.warn(`[fetchAllPages] Request failed for ${nextUrl}: ${res.status}`);
-        break;
-      }
-      const json: any = await res.json();
-      const pageResults = getPagedResults(json);
-      results.push(...(pageResults as T[]));
-      pageCount++;
-
-      nextUrl = getPagedNextUrl(json);
-      if (!nextUrl) break;
-    }
-    return results;
-  } catch (err) {
-    if (DEBUG_LOGS) console.error(`[fetchAllPages] Error fetching ${url}:`, err);
-    return results;
-  }
+  // Use the shared cached implementation to avoid repeated, expensive multi-page loads.
+  // Cache is in-memory (per SPA session) and not related to the backend cache module.
+  return await fetchAllPagesCached<T>(url, options, { ttlMs: 5 * 60_000, maxPages: 10 });
 };
 
 /**
@@ -138,6 +117,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   // Modal state for view/edit
   const [detailProject, setDetailProject] = useState<any | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  const [detailUser, setDetailUser] = useState<any | null>(null);
+  const [isUserDetailModalOpen, setIsUserDetailModalOpen] = useState(false);
 
   // Tab Data State
   const [childProjects, setChildProjects] = useState<Project[]>([]);
@@ -2714,7 +2696,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               currentProjectId={String(project?.id || '')}
                               teamById={teamById}
                               userCanManageMembers={Boolean(userCanManageMembers)}
-                              onViewMembership={(membershipId) => navigate(`/organisations/${currentOrgSlug}/members/${membershipId}`)}
+                              onViewUser={(userObj) => {
+                                setDetailUser(userObj);
+                                setIsUserDetailModalOpen(true);
+                              }}
+                              onViewMembership={() => {
+                                // View is handled via onViewUser (modal).
+                              }}
                               onEditMembership={(item) => {
                                 setEditingMember(item);
                                 setEditingMemberRole((item?.role || 'member') as any);
@@ -3887,6 +3875,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         onInviteSuccess={() => {
           fetchOrgMembers(true);
         }}
+      />
+
+      <UserDetailModal
+        opened={isUserDetailModalOpen}
+        onClose={() => setIsUserDetailModalOpen(false)}
+        user={detailUser}
       />
 
       <PeriodCreateModal

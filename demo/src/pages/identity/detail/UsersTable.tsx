@@ -20,6 +20,7 @@ type Props = {
   currentProjectId: string;
   teamById: Map<string, any>;
   userCanManageMembers: boolean;
+  onViewUser?: (user: any) => void;
   onViewMembership: (membershipId: string) => void;
   onEditMembership: (item: any) => void;
   onRemoveMembership: (membershipId: string, email: string) => Promise<void>;
@@ -34,6 +35,7 @@ export default function UsersTable({
   currentProjectId,
   teamById,
   userCanManageMembers,
+  onViewUser,
   onViewMembership,
   onEditMembership,
   onRemoveMembership,
@@ -208,9 +210,30 @@ export default function UsersTable({
                   </td>
                 )}
                 <td style={compactTextTdStyle}>
-                  <Link to={`/organisations/${currentOrgSlug}/users/${userObj.id}`} className="text-blue-600 hover:underline">
-                    {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
-                  </Link>
+                  {onViewUser ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onViewUser(userObj);
+                      }}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
+                    </button>
+                  ) : (
+                    <Link to={`/organisations/${currentOrgSlug}/users/${userObj.id}`} className="text-blue-600 hover:underline">
+                      {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
+                    </Link>
+                  )}
                 </td>
                 <td style={compactTextTdStyle}>{userObj.email}</td>
                 <td style={compactTdStyle}>
@@ -221,13 +244,18 @@ export default function UsersTable({
                 <td style={compactTdStyle}>
                   {userCanManageMembers ? (
                     <div style={compactActionsStyle}>
-                      <button onClick={() => onViewMembership(membershipId)} style={actionButtonStyle('primary')}>
+                      <button
+                        type="button"
+                        onClick={() => (onViewUser ? onViewUser(userObj) : onViewMembership(membershipId))}
+                        style={actionButtonStyle('primary')}
+                      >
                         View
                       </button>
-                      <button onClick={() => onEditMembership(item)} style={actionButtonStyle('warning')}>
+                      <button type="button" onClick={() => onEditMembership(item)} style={actionButtonStyle('warning')}>
                         Edit
                       </button>
                       <button
+                        type="button"
                         onClick={async () => {
                           if (!window.confirm(`Remove ${userObj.email} from federation?`)) return;
                           await onRemoveMembership(membershipId, String(userObj.email || ''));

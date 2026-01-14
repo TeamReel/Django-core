@@ -1821,8 +1821,20 @@ export const OrganisationDetailPage: React.FC = () => {
                               const club = clubId ? (allClubsForTeams as any[]).find((c: any) => String(c.id) === String(clubId)) : null;
                               const team = teamId ? (teams as any[]).find((t: any) => String(t.id) === String(teamId)) : null;
 
+                              const clubNameFromMembership = clubId
+                                ? (pms.find((pm: any) => String(pm?.club?.id ?? pm?.club_id ?? '') === String(clubId))?.club?.name ||
+                                    pms.find((pm: any) => String(pm?.project?.parent?.id ?? pm?.project?.parent_id ?? pm?.project?.parent_project_id ?? '') === String(clubId))?.project?.parent?.name ||
+                                    '')
+                                : '';
+                              const teamNameFromMembership = teamId
+                                ? (pms.find((pm: any) => String(pm?.project?.id ?? pm?.project_id ?? '') === String(teamId))?.project?.name || '')
+                                : '';
+
                               const clubSlugOrId = club ? (club as any).slug || String((club as any).id) : (clubId ? clubId : '');
                               const teamSlugOrId = team ? (team as any).slug || String((team as any).id) : teamId;
+
+                              const clubDisplayName = club?.name || clubNameFromMembership || clubId;
+                              const teamDisplayName = team?.name || teamNameFromMembership || teamId;
 
                               return (
                                 <tr key={user.id}>
@@ -1830,7 +1842,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                     {clubIds.length > 1 ? (
                                       <span
                                         title={clubIds
-                                          .map((id) => (allClubsForTeams as any[]).find((c: any) => String(c.id) === id)?.name || id)
+                                          .map((id) => (allClubsForTeams as any[]).find((c: any) => String(c.id) === id)?.name || pms.find((pm: any) => String(pm?.club?.id ?? pm?.club_id ?? '') === String(id))?.club?.name || id)
                                           .join(', ')}
                                       >
                                         Multiple
@@ -1841,7 +1853,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         className="text-blue-600"
                                         style={{ textDecoration: 'none' }}
                                       >
-                                        {club?.name || clubId}
+                                        {clubDisplayName || '—'}
                                       </Link>
                                     ) : (
                                       '—'
@@ -1851,7 +1863,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                     {teamIds.length > 1 ? (
                                       <span
                                         title={teamIds
-                                          .map((id) => (teams as any[]).find((t: any) => String(t.id) === id)?.name || id)
+                                          .map((id) => (teams as any[]).find((t: any) => String(t.id) === id)?.name || pms.find((pm: any) => String(pm?.project?.id ?? pm?.project_id ?? '') === String(id))?.project?.name || id)
                                           .join(', ')}
                                       >
                                         Multiple
@@ -1861,7 +1873,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                         to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/${teamSlugOrId}`}
                                         className="text-blue-600 hover:underline"
                                       >
-                                        {team?.name || teamId}
+                                        {teamDisplayName || '—'}
                                       </Link>
                                     ) : (
                                       '—'
@@ -1876,10 +1888,12 @@ export const OrganisationDetailPage: React.FC = () => {
                                         setDetailUser(user);
                                         setIsUserDetailModalOpen(true);
                                       }}
-                                      className="text-blue-600 hover:underline"
+                                      className="hover:underline"
                                       style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
                                     >
-                                      {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                                      <Badge variant="default">
+                                        {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                                      </Badge>
                                     </button>
                                   </td>
                                   <td style={compactTextTdStyle}>{user.email}</td>
