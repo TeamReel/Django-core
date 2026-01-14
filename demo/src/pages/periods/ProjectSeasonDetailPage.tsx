@@ -583,12 +583,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
+                type="button"
+                className="app-action-button"
                 onClick={() => navigate(seasonsBasePath)}
                 style={actionButtonStyle('neutral')}
               >
                 Back
               </button>
               <button
+                type="button"
+                className="app-action-button"
                 onClick={() => {
                   setSelectedDetailPeriod(season);
                   setIsPeriodDetailModalOpen(true);
@@ -599,6 +603,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               </button>
               {userCanEditProject && (
                 <button
+                  type="button"
+                  className="app-action-button"
                   onClick={() => {
                     setSelectedEditPeriod(season);
                     setIsPeriodEditModalOpen(true);
@@ -610,6 +616,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               )}
               {userCanDeleteProject && (
                 <button
+                  type="button"
+                  className="app-action-button"
                   onClick={async () => {
                     if (!window.confirm(`Are you sure you want to delete season ${season?.name}?`)) return;
                     try {
@@ -749,6 +757,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <td style={compactTdStyle}>
                                       <div style={compactActionsStyle}>
                                         <button
+                                          type="button"
+                                          className="app-action-button"
                                           onClick={() => {
                                             setSelectedDetailPeriod(competition);
                                             setIsPeriodDetailModalOpen(true);
@@ -759,6 +769,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         </button>
                                         {userCanEditProject && (
                                           <button
+                                            type="button"
+                                            className="app-action-button"
                                             onClick={() => {
                                               setSelectedEditPeriod(competition);
                                               setIsPeriodEditModalOpen(true);
@@ -770,6 +782,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         )}
                                         {userCanDeleteProject && (
                                           <button
+                                            type="button"
+                                            className="app-action-button"
                                             onClick={async () => {
                                               if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
                                               try {
@@ -945,6 +959,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </Link>
                               <Badge variant="info">{getMatchCountForCompetition(competition)} matches</Badge>
                               <button
+                                type="button"
+                                className="app-action-button"
                                 onClick={() =>
                                   navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`)
                                 }
@@ -954,6 +970,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </button>
                               {userCanEditProject && (
                                 <button
+                                  type="button"
+                                  className="app-action-button"
                                   onClick={() => {
                                     setSelectedEditPeriod(competition);
                                     setIsPeriodEditModalOpen(true);
@@ -964,6 +982,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 </button>
                               )}
                               <button
+                                type="button"
+                                className="app-action-button"
                                 onClick={() =>
                                   navigate(
                                     `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}?tab=matches`
@@ -975,6 +995,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </button>
                               {userCanDeleteProject && (
                                 <button
+                                  type="button"
+                                  className="app-action-button"
                                   onClick={async () => {
                                     if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
                                     try {
@@ -1034,6 +1056,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         <td style={compactTdStyle}>
                                           <div style={compactActionsStyle}>
                                             <button
+                                              type="button"
+                                              className="app-action-button"
                                               onClick={() =>
                                                 navigate(
                                                   `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}/matches/${(match as any).slug || match.id}`
@@ -1045,6 +1069,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             </button>
                                             {userCanEditProject && (
                                               <button
+                                                type="button"
+                                                className="app-action-button"
                                                 onClick={() => {
                                                   setSelectedEditMatch(match);
                                                   setIsMatchEditModalOpen(true);
@@ -1056,6 +1082,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             )}
                                             {userCanDeleteProject && (
                                               <button
+                                                type="button"
+                                                className="app-action-button"
                                                 onClick={async () => {
                                                   if (!window.confirm(`Are you sure you want to delete match ${match.title || match.name}?`)) return;
                                                   try {
@@ -1169,6 +1197,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         </div>
 
                         <button
+                          type="button"
+                          className="app-action-button"
                           onClick={async () => {
                             const projectIdForMembers = String((project as any)?.id || '').trim();
                             const seasonUuid = String(resolvedSeasonId || '').trim();
@@ -1286,6 +1316,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <div style={compactActionsStyle}>
                                       {orgSlugOrId && userId ? (
                                         <button
+                                          type="button"
+                                          className="app-action-button"
                                           onClick={() => navigate(`/organisations/${orgSlugOrId}/users/${userId}`)}
                                           style={actionButtonStyle('primary')}
                                         >
@@ -1297,6 +1329,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                                       {userCanEditProject && membershipId && (
                                         <button
+                                          type="button"
+                                          className="app-action-button"
                                           onClick={async () => {
                                             if (!window.confirm(`Remove ${name} from this season squad?`)) return;
                                             const projectIdForMembers = String((project as any)?.id || '').trim();
@@ -1380,6 +1414,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
                                   <button
+                                    type="button"
+                                    className="app-action-button"
                                     onClick={() => navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`)}
                                     style={actionButtonStyle('primary')}
                                   >
@@ -1387,6 +1423,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   </button>
                                   {userCanEditProject && (
                                     <button
+                                      type="button"
+                                      className="app-action-button"
                                       onClick={() => {
                                         setSelectedEditPeriod(competition);
                                         setIsPeriodEditModalOpen(true);
@@ -1398,6 +1436,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   )}
                                   {userCanDeleteProject && (
                                     <button
+                                      type="button"
+                                      className="app-action-button"
                                       onClick={async () => {
                                         if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
                                         try {
@@ -1500,6 +1540,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <td style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
                                   <button
+                                    type="button"
+                                    className="app-action-button"
                                     onClick={() => {
                                       const compId = String(
                                         (match as any).period_id || match.period?.id || (match as any).period || ''
@@ -1520,6 +1562,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   </button>
                                   {userCanEditProject && (
                                     <button
+                                      type="button"
+                                      className="app-action-button"
                                       onClick={() => {
                                         setSelectedEditMatch(match);
                                         setIsMatchEditModalOpen(true);
@@ -1531,6 +1575,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   )}
                                   {userCanDeleteProject && (
                                     <button
+                                      type="button"
+                                      className="app-action-button"
                                       onClick={async () => {
                                         if (!window.confirm(`Are you sure you want to delete match ${match.title || match.name}?`)) return;
                                         try {
