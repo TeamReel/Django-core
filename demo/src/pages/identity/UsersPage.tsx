@@ -11,6 +11,7 @@ import UserDetailModal from './UserDetailModal';
 import InviteMemberModal from './InviteMemberModal';
 import CreateUserModal from './CreateUserModal';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
+import LinkUserModal from './LinkUserModal';
 import LoadingState from '../../components/LoadingState';
 
 interface User {
@@ -103,6 +104,10 @@ export default function UsersPage() {
   // Assign User Modal
   const [assignUser, setAssignUser] = useState<User | null>(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+
+    // Link User Modal (federation + club/team)
+    const [linkUser, setLinkUser] = useState<User | null>(null);
+    const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
   // Check if user is superadmin based on the role returned by /auth/me/
     const userRole = String((user as any)?.role || '').toLowerCase();
@@ -1016,6 +1021,28 @@ export default function UsersPage() {
                             </button>
                             )}
 
+                                                        {/* Link (Federation/Club/Team) */}
+                                                        {canManageUsers && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setLinkUser(user);
+                                                                    setIsLinkModalOpen(true);
+                                                                }}
+                                                                style={{
+                                                                    padding: '6px 12px',
+                                                                    borderRadius: '4px',
+                                                                    border: '1px solid #007bff',
+                                                                    backgroundColor: 'var(--app-surface)',
+                                                                    color: '#007bff',
+                                                                    cursor: 'pointer',
+                                                                    fontSize: '12px',
+                                                                    fontWeight: 500,
+                                                                }}
+                                                            >
+                                                                Link
+                                                            </button>
+                                                        )}
+
                             {/* Assign / Unassign Logic */}
                             {(() => {
                                 if (!canManageUsers) return null;
@@ -1216,6 +1243,20 @@ export default function UsersPage() {
             setIsAssignModalOpen(false);
         }}
       />
+
+            <LinkUserModal
+                opened={isLinkModalOpen}
+                onClose={() => setIsLinkModalOpen(false)}
+                user={linkUser as any}
+                organisations={(isSuperAdmin ? organisations : myOrganisations) as any}
+                clubs={clubs as any}
+                teams={teams as any}
+                initialOrganisationSlugOrId={String(orgIdParam || context.organisation?.slug || '')}
+                onSuccess={() => {
+                    fetchUsers();
+                    setIsLinkModalOpen(false);
+                }}
+            />
 
       <UserDetailModal
         opened={isDetailModalOpen}
