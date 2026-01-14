@@ -197,7 +197,7 @@ export const UserDetailPage: React.FC = () => {
   const [hierarchySearch, setHierarchySearch] = useState('');
 
   const allowedTabs = useMemo(
-    () => new Set(['overview', 'hierarchy', 'clubs', 'teams', 'seasons', 'competitions', 'matches']),
+    () => new Set(['overview', 'hierarchy', 'federations', 'clubs', 'teams', 'seasons', 'competitions', 'matches']),
     []
   );
 
@@ -216,6 +216,23 @@ export const UserDetailPage: React.FC = () => {
     else params.set('tab', tab);
     const suffix = params.toString() ? `?${params.toString()}` : '';
     navigate(`${basePath}${suffix}`);
+  };
+
+  const renderNavLink = (label: string, href?: string) => {
+    const safe = String(label || '').trim();
+    if (!href) return <span>{safe || '—'}</span>;
+    return (
+      <a
+        href={href}
+        onClick={(e) => {
+          e.preventDefault();
+          navigate(href);
+        }}
+        style={{ color: '#007bff', textDecoration: 'none', fontWeight: 600 }}
+      >
+        {safe || '—'}
+      </a>
+    );
   };
 
   const getCsrfToken = (): string => {
@@ -380,6 +397,91 @@ export const UserDetailPage: React.FC = () => {
     const first = userOrgs.find((o: any) => o?.slug) || userOrgs[0];
     return String(first?.slug || first?.id || '').trim();
   }, [orgId, userOrgs]);
+
+  const findOrganisationMembershipId = async (orgSlugOrId: string): Promise<string> => {
+    if (!user) throw new Error('User missing');
+    const slugOrId = String(orgSlugOrId || '').trim();
+    if (!slugOrId) throw new Error('Missing federation');
+
+    const orgs = Array.isArray((user as any)?.organisations) ? (user as any).organisations : [];
+    const direct = orgs.find((o: any) => String(o?.slug || o?.id || '') === slugOrId || String(o?.id || '') === slugOrId);
+    const directMembershipId = String(direct?.membership_id ?? '').trim();
+    if (directMembershipId) return directMembershipId;
+
+    const members = await fetchAllPages<any>(
+      `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(slugOrId)}/members/?page_size=500`,
+      { credentials: 'include' },
+      { ttlMs: 5_000, cacheKey: `user-detail:org:${slugOrId}:members:${String(user.id)}`, maxPages: 50, maxItems: 10_000 }
+    );
+
+    const email = String(user.email || '').trim().toLowerCase();
+    const uid = String(user.id);
+    const found = (members || []).find((m: any) => {
+      const memberId = String(m?.id ?? '').trim();
+      if (!memberId) return false;
+      const mu = m?.user || m;
+      const mid = String(mu?.id ?? '').trim();
+      const memail = String(mu?.email ?? m?.email ?? '').trim().toLowerCase();
+      return (uid && mid && uid === mid) || (email && memail && email === memail);
+    });
+
+    const membershipId = String(found?.id ?? '').trim();
+    if (!membershipId) throw new Error('Could not find federation membership for this user');
+    return membershipId;
+  };
+
+  const updateOrganisationMembershipRole = async (orgSlugOrId: string, role: string) => {
+    if (!user) return;
+    const slugOrId = String(orgSlugOrId || '').trim();
+    if (!slugOrId) return;
+
+    const membershipId = await findOrganisationMembershipId(slugOrId);
+    const res = await fetch(
+      `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(slugOrId)}/members/${encodeURIComponent(membershipId)}/`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify({ role }),
+      }
+    );
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to update federation role');
+    }
+
+    await fetchUser();
+  };
+
+  const removeOrganisationMembership = async (orgSlugOrId: string) => {
+    if (!user) return;
+    const slugOrId = String(orgSlugOrId || '').trim();
+    if (!slugOrId) return;
+
+    const membershipId = await findOrganisationMembershipId(slugOrId);
+    const res = await fetch(
+      `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(slugOrId)}/members/${encodeURIComponent(membershipId)}/`,
+      {
+        method: 'DELETE',
+        headers: {
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+      }
+    );
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to unlink federation');
+    }
+
+    await fetchUser();
+  };
 
   const findProjectMembershipId = async (projectId: string, directMembershipId?: any): Promise<string> => {
     const direct = String(directMembershipId || '').trim();
@@ -686,6 +788,7 @@ export const UserDetailPage: React.FC = () => {
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
           {renderTabButton('overview', 'Overview')}
           {renderTabButton('hierarchy', 'Hierarchy')}
+          {renderTabButton('federations', 'Federations')}
           {renderTabButton('clubs', 'Clubs')}
           {renderTabButton('teams', 'Teams')}
           {renderTabButton('seasons', 'Seasons')}
@@ -758,9 +861,14 @@ export const UserDetailPage: React.FC = () => {
                 <tbody>
                   {hierarchyRows.map((r) => (
                     <tr key={`${r.teamId}::${r.seasonId}`}>
-                      <td style={compactTextTdStyle}>{r.clubName || '-'}</td>
-                      <td style={compactTextTdStyle}>{r.teamName || '-'}</td>
-                      <td style={compactTextTdStyle}>{r.seasonName || r.seasonId}</td>
+                      <td style={compactTextTdStyle}>
+                        {renderNavLink(
+                          r.clubName || '-',
+                          r.clubSlug ? `/organisations/${primaryOrgSlug}/projects/${r.clubSlug}` : ''
+                        )}
+                      </td>
+                      <td style={compactTextTdStyle}>{renderNavLink(r.teamName || '-', r.teamPath)}</td>
+                      <td style={compactTextTdStyle}>{renderNavLink(r.seasonName || r.seasonId, r.seasonPath)}</td>
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
                           {r.teamPath ? (
@@ -798,6 +906,88 @@ export const UserDetailPage: React.FC = () => {
           </Card>
         )}
 
+        {activeTab === 'federations' && (
+          <Card>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              <h3 style={{ marginTop: 0, marginBottom: 0 }}>Federations</h3>
+              <button type="button" onClick={() => setIsLinkModalOpen(true)} style={actionButtonStyle('neutral')} disabled={!user}>
+                Add to…
+              </button>
+            </div>
+
+            <Table style={compactTableStyle}>
+              <thead>
+                <tr>
+                  <th style={compactThStyle}>Name</th>
+                  <th style={compactThStyle}>Role</th>
+                  <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userOrgs.map((o: any) => {
+                  const orgSlugOrId = String(o?.slug || o?.id || '').trim();
+                  const orgPath = orgSlugOrId ? `/organisations/${orgSlugOrId}` : '';
+                  const currentRole = String(o?.role || o?.user_role || '').trim() || 'member';
+                  return (
+                    <tr key={String(o?.id || o?.slug)}>
+                      <td style={compactTextTdStyle}>{renderNavLink(String(o?.name || orgSlugOrId || ''), orgPath)}</td>
+                      <td style={compactTextTdStyle}>{currentRole}</td>
+                      <td style={compactTdStyle}>
+                        <div style={compactActionsStyle}>
+                          <button type="button" onClick={() => orgPath && navigate(orgPath)} disabled={!orgPath} style={actionButtonStyle('primary')}>
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            style={actionButtonStyle('warning')}
+                            disabled={!orgSlugOrId}
+                            onClick={async () => {
+                              if (!orgSlugOrId) return;
+                              const next = window.prompt('Set federation role (admin/member):', currentRole) || '';
+                              const role = next.trim().toLowerCase();
+                              if (!role) return;
+                              try {
+                                await updateOrganisationMembershipRole(orgSlugOrId, role);
+                              } catch (e) {
+                                alert(e instanceof Error ? e.message : 'Failed to update role');
+                              }
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            style={actionButtonStyle('danger')}
+                            disabled={!orgSlugOrId}
+                            onClick={async () => {
+                              if (!orgSlugOrId) return;
+                              if (!window.confirm('Unlink this user from the federation?')) return;
+                              try {
+                                await removeOrganisationMembership(orgSlugOrId);
+                              } catch (e) {
+                                alert(e instanceof Error ? e.message : 'Failed to unlink federation');
+                              }
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {!userOrgs.length && (
+                  <tr>
+                    <td style={compactTdStyle} colSpan={3}>
+                      <em style={{ color: 'var(--app-muted-text)' }}>No federation memberships.</em>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </Card>
+        )}
+
         {activeTab === 'clubs' && (
           <Card>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
@@ -826,7 +1016,7 @@ export const UserDetailPage: React.FC = () => {
                   const membershipId = (c as any)?.membership_id;
                   return (
                     <tr key={String(c?.id)}>
-                      <td style={compactTextTdStyle}>{String(c?.name || '')}</td>
+                      <td style={compactTextTdStyle}>{renderNavLink(String(c?.name || ''), clubPath)}</td>
                       <td style={compactTextTdStyle}>{String(c?.role || '')}</td>
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
@@ -908,12 +1098,13 @@ export const UserDetailPage: React.FC = () => {
                   const teamPath = primaryOrgSlug && clubSlug && teamSlugOrId
                     ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
                     : '';
+                  const clubPath = primaryOrgSlug && clubSlug ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}` : '';
                   const projectId = String(t?.id || '').trim();
                   const membershipId = (t as any)?.membership_id;
                   return (
                     <tr key={String(t?.id)}>
-                      <td style={compactTextTdStyle}>{String(t?.parent_name || '')}</td>
-                      <td style={compactTextTdStyle}>{String(t?.name || '')}</td>
+                      <td style={compactTextTdStyle}>{renderNavLink(String(t?.parent_name || ''), clubPath)}</td>
+                      <td style={compactTextTdStyle}>{renderNavLink(String(t?.name || ''), teamPath)}</td>
                       <td style={compactTextTdStyle}>{String(t?.role || '')}</td>
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
@@ -989,9 +1180,21 @@ export const UserDetailPage: React.FC = () => {
                       : '';
                     return (
                       <tr key={`${r.teamId}::${r.seasonId}`}>
-                        <td style={compactTextTdStyle}>{r.seasonName || r.seasonId}</td>
-                        <td style={compactTextTdStyle}>{r.teamName || r.teamId}</td>
-                        <td style={compactTextTdStyle}>{r.clubName || r.clubId}</td>
+                        <td style={compactTextTdStyle}>{renderNavLink(r.seasonName || r.seasonId, seasonPath)}</td>
+                        <td style={compactTextTdStyle}>
+                          {renderNavLink(
+                            r.teamName || r.teamId,
+                            primaryOrgSlug && clubSlug && teamSlugOrId
+                              ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
+                              : ''
+                          )}
+                        </td>
+                        <td style={compactTextTdStyle}>
+                          {renderNavLink(
+                            r.clubName || r.clubId,
+                            primaryOrgSlug && clubSlug ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}` : ''
+                          )}
+                        </td>
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>
                             <button type="button" onClick={() => seasonPath && navigate(seasonPath)} disabled={!seasonPath} style={actionButtonStyle('primary')}>
@@ -1042,9 +1245,23 @@ export const UserDetailPage: React.FC = () => {
                       : '';
                     return (
                       <tr key={String(c?.id)}>
-                        <td style={compactTextTdStyle}>{String(c?.name || '')}</td>
-                        <td style={compactTextTdStyle}>{String(c?.parent_period?.name || '')}</td>
-                        <td style={compactTextTdStyle}>{String(team?.name || '')}</td>
+                        <td style={compactTextTdStyle}>{renderNavLink(String(c?.name || ''), competitionPath)}</td>
+                        <td style={compactTextTdStyle}>
+                          {renderNavLink(
+                            String(c?.parent_period?.name || ''),
+                            parentSeasonId && primaryOrgSlug && clubSlug && teamSlugOrId
+                              ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${parentSeasonId}`
+                              : ''
+                          )}
+                        </td>
+                        <td style={compactTextTdStyle}>
+                          {renderNavLink(
+                            String(team?.name || ''),
+                            primaryOrgSlug && clubSlug && teamSlugOrId
+                              ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
+                              : ''
+                          )}
+                        </td>
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>
                             <button type="button" onClick={() => competitionPath && navigate(competitionPath)} disabled={!competitionPath} style={actionButtonStyle('primary')}>
@@ -1084,15 +1301,24 @@ export const UserDetailPage: React.FC = () => {
                 </thead>
                 <tbody>
                   {linkedMatches.slice(0, 200).map((m: any) => {
-                    const teamName = String(m?.project?.name || m?.project_name || '').trim();
+                    const teamIdValue = String(m?.project?.id || m?.project_id || '').trim();
+                    const team = teamMemberships.find((t: any) => String(t?.id) === teamIdValue);
+                    const clubIdValue = String(team?.parent || '').trim();
+                    const clubSlug = clubSlugById.get(clubIdValue) || '';
+                    const teamSlugOrId = String(team?.slug || team?.id || '').trim();
+                    const teamPath = primaryOrgSlug && clubSlug && teamSlugOrId
+                      ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
+                      : '';
+                    const teamName = String(team?.name || m?.project?.name || m?.project_name || '').trim();
+                    const matchPath = m?.id ? `/matches/${String(m?.id)}` : '';
                     return (
                       <tr key={String(m?.id)}>
-                        <td style={compactTextTdStyle}>{String(m?.title || '')}</td>
+                        <td style={compactTextTdStyle}>{renderNavLink(String(m?.title || ''), matchPath)}</td>
                         <td style={compactTextTdStyle}>{String(m?.start_time || '')}</td>
-                        <td style={compactTextTdStyle}>{teamName}</td>
+                        <td style={compactTextTdStyle}>{renderNavLink(teamName, teamPath)}</td>
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>
-                            <button type="button" onClick={() => navigate(`/matches/${String(m?.id)}`)} style={actionButtonStyle('primary')}>
+                            <button type="button" onClick={() => matchPath && navigate(matchPath)} disabled={!matchPath} style={actionButtonStyle('primary')}>
                               View
                             </button>
                           </div>
