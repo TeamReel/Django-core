@@ -109,24 +109,45 @@ def log_project_deleted(sender, instance, **kwargs):
 @receiver(post_save, sender=ProjectMembership)
 def invalidate_on_membership_change(sender, instance, **kwargs):
     """Invalidate cache when membership changes."""
-    cache_service = CacheService()
-    cache_service.invalidate_user_project_permissions(
-        str(instance.user_id), str(instance.project_id)
-    )
+    try:
+        cache_service = CacheService()
+        cache_service.invalidate_user_project_permissions(
+            str(instance.user_id), str(instance.project_id)
+        )
+    except Exception:
+        # Cache invalidation is best-effort; never break core writes.
+        logger.warning(
+            "Failed to invalidate permissions cache on membership change",
+            exc_info=True,
+        )
 
 
 @receiver(post_delete, sender=ProjectMembership)
 def invalidate_on_membership_delete(sender, instance, **kwargs):
     """Invalidate cache when membership deleted."""
-    cache_service = CacheService()
-    cache_service.invalidate_user_project_permissions(
-        str(instance.user_id), str(instance.project_id)
-    )
+    try:
+        cache_service = CacheService()
+        cache_service.invalidate_user_project_permissions(
+            str(instance.user_id), str(instance.project_id)
+        )
+    except Exception:
+        # Cache invalidation is best-effort; never break core writes.
+        logger.warning(
+            "Failed to invalidate permissions cache on membership delete",
+            exc_info=True,
+        )
 
 
 @receiver(post_save, sender=Project)
 def invalidate_on_privacy_change(sender, instance, **kwargs):
     """Invalidate all project permissions if privacy changed."""
     if kwargs.get("update_fields") and "is_private" in kwargs["update_fields"]:
-        cache_service = CacheService()
-        cache_service.invalidate_project_permissions(str(instance.id))
+        try:
+            cache_service = CacheService()
+            cache_service.invalidate_project_permissions(str(instance.id))
+        except Exception:
+            # Cache invalidation is best-effort; never break core writes.
+            logger.warning(
+                "Failed to invalidate project permissions cache on privacy change",
+                exc_info=True,
+            )
