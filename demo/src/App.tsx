@@ -131,8 +131,8 @@ export default function App() {
     const clubSlugOrId = String(clubId || '').trim();
 
     const basePath = clubSlugOrId
-      ? `/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}`
-      : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonKeyOrId}`;
+      ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}`
+      : `/${orgSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonKeyOrId}`;
 
     return <Navigate to={`${basePath}?tab=squad`} replace />;
   };
@@ -155,8 +155,8 @@ export default function App() {
     const clubSlugOrId = String(clubId || '').trim();
 
     const basePath = clubSlugOrId
-      ? `/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}/${competitionKeyOrId}`
-      : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonKeyOrId}/competitions/${competitionKeyOrId}`;
+      ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}/${competitionKeyOrId}`
+      : `/${orgSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonKeyOrId}/competitions/${competitionKeyOrId}`;
 
     const nextSearchParams = new URLSearchParams(location.search);
     nextSearchParams.set('tab', 'matches');
@@ -181,8 +181,8 @@ export default function App() {
 
     const location = useLocation();
     const basePath = clubSlugOrId
-      ? `/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}/${competitionKeyOrId}`
-      : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonKeyOrId}/competitions/${competitionKeyOrId}`;
+      ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}/${competitionKeyOrId}`
+      : `/${orgSlugOrId}/projects/${projectSlugOrId}/seasons/${seasonKeyOrId}/competitions/${competitionKeyOrId}`;
 
     const nextSearchParams = new URLSearchParams(location.search);
     nextSearchParams.set('tab', 'users');
@@ -196,7 +196,7 @@ export default function App() {
     const location = useLocation();
     const orgSlugOrId = String(orgId || '').trim();
     const projectSlugOrId = String(projectId || '').trim();
-    return <Navigate to={`/organisations/${orgSlugOrId}/${projectSlugOrId}${location.search || ''}`} replace />;
+    return <Navigate to={`/${orgSlugOrId}/${projectSlugOrId}${location.search || ''}`} replace />;
   };
 
   const TeamDetailRedirect = () => {
@@ -207,7 +207,7 @@ export default function App() {
     const projectSlugOrId = String(projectId || '').trim();
     return (
       <Navigate
-        to={`/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}${location.search || ''}`}
+        to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}${location.search || ''}`}
         replace
       />
     );
@@ -221,7 +221,7 @@ export default function App() {
     const projectSlugOrId = String(projectId || '').trim();
     return (
       <Navigate
-        to={`/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons${location.search || ''}`}
+        to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons${location.search || ''}`}
         replace
       />
     );
@@ -241,7 +241,7 @@ export default function App() {
     const seasonKeyOrId = String(seasonId || '').trim();
     return (
       <Navigate
-        to={`/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}${location.search || ''}`}
+        to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}${location.search || ''}`}
         replace
       />
     );
@@ -263,7 +263,7 @@ export default function App() {
     const competitionKeyOrId = String(competitionId || '').trim();
     return (
       <Navigate
-        to={`/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}/${competitionKeyOrId}${location.search || ''}`}
+        to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}/${competitionKeyOrId}${location.search || ''}`}
         replace
       />
     );
@@ -287,10 +287,17 @@ export default function App() {
     const matchKeyOrId = String(matchId || '').trim();
     return (
       <Navigate
-        to={`/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}/${competitionKeyOrId}/${matchKeyOrId}${location.search || ''}`}
+        to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons/${seasonKeyOrId}/${competitionKeyOrId}/${matchKeyOrId}${location.search || ''}`}
         replace
       />
     );
+  };
+
+  const OrganisationDetailRedirect = () => {
+    const { id } = useParams<{ id: string }>();
+    const location = useLocation();
+    const orgSlugOrId = String(id || '').trim();
+    return <Navigate to={`/${orgSlugOrId}${location.search || ''}`} replace />;
   };
 
   return (
@@ -381,6 +388,121 @@ export default function App() {
       />
 
       {/* TeamReel hierarchy: Seasons/Competitions under a Project */}
+      <Route
+        path="/:orgId/projects/:projectId/seasons"
+        element={
+          <ProtectedRoute>
+            <ProjectSeasonsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:clubId/teams/:projectId/seasons"
+        element={
+          <ProtectedRoute>
+            <TeamSeasonsRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:projectId/seasons/:seasonId"
+        element={
+          <ProtectedRoute>
+            <SeasonDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId"
+        element={
+          <ProtectedRoute>
+            <TeamSeasonRedirect />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/:orgId/projects/:projectId/seasons/:seasonId/squad"
+        element={
+          <ProtectedRoute>
+            <SeasonSquadRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/squad"
+        element={
+          <ProtectedRoute>
+            <SeasonSquadRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId"
+        element={
+          <ProtectedRoute>
+            <ProjectCompetitionDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId"
+        element={
+          <ProtectedRoute>
+            <TeamCompetitionRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/matches"
+        element={
+          <ProtectedRoute>
+            <CompetitionMatchesRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId/matches"
+        element={
+          <ProtectedRoute>
+            <CompetitionMatchesRedirect />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/matches/:matchId"
+        element={
+          <ProtectedRoute>
+            <HierarchyMatchDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId/matches/:matchId"
+        element={
+          <ProtectedRoute>
+            <TeamMatchRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/squad"
+        element={
+          <ProtectedRoute>
+            <CompetitionUsersRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId/squad"
+        element={
+          <ProtectedRoute>
+            <CompetitionUsersRedirect />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/organisations/:orgId/projects/:projectId/seasons"
         element={
@@ -498,6 +620,47 @@ export default function App() {
 
       {/* Canonical TeamReel hierarchy (no projects/teams/competitions/matches segments) */}
       <Route
+        path="/:orgId/:clubId/:projectId"
+        element={
+          <ProtectedRoute>
+            <TeamDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/:clubId/:projectId/seasons"
+        element={
+          <ProtectedRoute>
+            <ProjectSeasonsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/:clubId/:projectId/seasons/:seasonId"
+        element={
+          <ProtectedRoute>
+            <SeasonDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/:clubId/:projectId/seasons/:seasonId/:competitionId"
+        element={
+          <ProtectedRoute>
+            <ProjectCompetitionDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/:clubId/:projectId/seasons/:seasonId/:competitionId/:matchId"
+        element={
+          <ProtectedRoute>
+            <HierarchyMatchDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/organisations/:orgId/:clubId/:projectId"
         element={
           <ProtectedRoute>
@@ -591,6 +754,15 @@ export default function App() {
         path="/organisations/:id"
         element={
           <ProtectedRoute>
+            <OrganisationDetailRedirect />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/:id"
+        element={
+          <ProtectedRoute>
             <OrganisationDetailPage />
           </ProtectedRoute>
         }
@@ -660,7 +832,25 @@ export default function App() {
       />
 
       <Route
+        path="/:orgId/projects/:projectId"
+        element={
+          <ProtectedRoute>
+            <ClubDetailRedirect />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/organisations/:orgId/:projectId"
+        element={
+          <ProtectedRoute>
+            <ClubDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/:orgId/:projectId"
         element={
           <ProtectedRoute>
             <ClubDetailPage />
@@ -671,6 +861,15 @@ export default function App() {
       {/* TeamReel hierarchy: Team (Project child) under a Club */}
       <Route
         path="/organisations/:orgId/projects/:clubId/teams/:projectId"
+        element={
+          <ProtectedRoute>
+              <TeamDetailRedirect />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/:orgId/projects/:clubId/teams/:projectId"
         element={
           <ProtectedRoute>
               <TeamDetailRedirect />

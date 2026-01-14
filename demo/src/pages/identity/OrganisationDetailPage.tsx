@@ -122,7 +122,6 @@ export const OrganisationDetailPage: React.FC = () => {
   const [userRoleFilter, setUserRoleFilter] = useState<string>('');
   const [userClubFilterId, setUserClubFilterId] = useState<string>('');
   const [userTeamFilterId, setUserTeamFilterId] = useState<string>('');
-  const [userSeasonFilterId, setUserSeasonFilterId] = useState<string>('');
   const [usersPage, setUsersPage] = useState(1);
   const usersPageSize = 25;
 
@@ -394,6 +393,66 @@ export const OrganisationDetailPage: React.FC = () => {
     justifyContent: 'flex-end',
     gap: '8px',
     flexWrap: 'wrap',
+  };
+
+  const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
+  const TEAMREEL_ROLE_RANK: Record<string, number> = {
+    superadmin: 100,
+    'land admin': 90,
+    'club admin': 80,
+    'team admin': 70,
+    'team member': 60,
+    supporter: 50,
+    user: 10,
+  };
+  const TEAMREEL_ROLE_OPTIONS: Array<{ key: string; label: string }> = [
+    { key: 'superadmin', label: 'Superadmin' },
+    { key: 'land admin', label: 'Land Admin' },
+    { key: 'club admin', label: 'Club Admin' },
+    { key: 'team admin', label: 'Team Admin' },
+    { key: 'team member', label: 'Team Member' },
+    { key: 'supporter', label: 'Supporter' },
+    { key: 'user', label: 'User' },
+  ];
+  const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);
+  const mapMembershipToTeamreelRole = (membershipRoleRaw: unknown, hasParentProject: boolean) => {
+    const membershipRole = normalizeRoleName(membershipRoleRaw);
+    const isAdminLike = ADMIN_LIKE_PROJECT_ROLES.has(membershipRole);
+    if (isAdminLike) return hasParentProject ? 'Team Admin' : 'Club Admin';
+    return hasParentProject ? 'Team Member' : 'Supporter';
+  };
+  const getTeamreelRoleDisplay = (user: any, orgMembership: any, projectMemberships: any[]) => {
+    const roles: string[] = [];
+
+    const isSuper = Boolean(user?.is_superuser) || normalizeRoleName(user?.role) === 'superadmin';
+    if (isSuper) return { bestKey: 'superadmin', label: 'Superadmin', title: 'Superadmin' };
+
+    const orgMembershipRole = normalizeRoleName(orgMembership?.role);
+    if (orgMembershipRole === 'admin') roles.push('Land Admin');
+
+    for (const pm of projectMemberships || []) {
+      const roleRaw = String(pm?.role ?? '').trim();
+      if (!roleRaw) continue;
+      const parentIdRaw = pm?.project?.parent_id ?? pm?.project?.parent?.id ?? pm?.project?.parent_project_id;
+      const hasParentProject = Boolean(parentIdRaw);
+      roles.push(mapMembershipToTeamreelRole(roleRaw, hasParentProject));
+    }
+
+    const uniqueByKey = new Map<string, string>();
+    for (const r of roles) {
+      const key = normalizeRoleName(r);
+      if (!key) continue;
+      if (!uniqueByKey.has(key)) uniqueByKey.set(key, r);
+    }
+    const unique = Array.from(uniqueByKey.values());
+    if (unique.length === 0) return { bestKey: 'user', label: 'User', title: 'User' };
+
+    const best = [...unique].sort(
+      (a, b) => (TEAMREEL_ROLE_RANK[normalizeRoleName(b)] ?? 0) - (TEAMREEL_ROLE_RANK[normalizeRoleName(a)] ?? 0)
+    )[0];
+    const title = [...unique].sort((a, b) => a.localeCompare(b)).join(', ');
+    const label = unique.length === 1 ? best : `${best} +${unique.length - 1}`;
+    return { bestKey: normalizeRoleName(best), label, title };
   };
 
   type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
@@ -1112,8 +1171,8 @@ export const OrganisationDetailPage: React.FC = () => {
        }
     }
 
-    // Members are used for Users tab and user-count badges on Clubs/Teams
-    if (activeTab === 'users' || activeTab === 'clubs' || activeTab === 'teams') {
+    // Members can be large; load only when Users tab is opened.
+    if (activeTab === 'users') {
       fetchMembers();
     }
   }, [activeTab, org?.id, currentOrgId]);
@@ -1364,9 +1423,9 @@ export const OrganisationDetailPage: React.FC = () => {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Organisation Details</h3>
                 {canEditOrganisation(permissionContext) && (
-                  <Button variant="secondary" size="sm" onClick={() => setIsOrgEditModalOpen(true)}>
+                  <button type="button" onClick={() => setIsOrgEditModalOpen(true)} style={actionButtonStyle('warning')}>
                     Edit
-                  </Button>
+                  </button>
                 )}
               </div>
 
@@ -1531,7 +1590,6 @@ export const OrganisationDetailPage: React.FC = () => {
                   onChange={(e) => {
                     setUserClubFilterId(e.target.value);
                     setUserTeamFilterId('');
-                    setUserSeasonFilterId('');
                     setUsersPage(1);
                   }}
                   style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
@@ -1545,7 +1603,6 @@ export const OrganisationDetailPage: React.FC = () => {
                   value={userTeamFilterId}
                   onChange={(e) => {
                     setUserTeamFilterId(e.target.value);
-                    setUserSeasonFilterId('');
                     setUsersPage(1);
                   }}
                   style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
@@ -1562,26 +1619,6 @@ export const OrganisationDetailPage: React.FC = () => {
                     ))}
                 </select>
                 <select
-                  value={userSeasonFilterId}
-                  onChange={(e) => {
-                    setUserSeasonFilterId(e.target.value);
-                    setUsersPage(1);
-                  }}
-                  style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
-                >
-                  <option value="">Season: All</option>
-                  {(orgPeriods as any[])
-                    .filter((p: any) => isSeasonPeriod(p))
-                    .filter((s: any) => {
-                      const teamId = String(s.project_id ?? s.project?.id ?? '');
-                      if (userTeamFilterId && teamId !== userTeamFilterId) return false;
-                      return true;
-                    })
-                    .map((s: any) => (
-                      <option key={s.id} value={String(s.id)}>{s.name}</option>
-                    ))}
-                </select>
-                <select
                   value={userRoleFilter}
                   onChange={(e) => {
                     setUserRoleFilter(e.target.value);
@@ -1590,8 +1627,11 @@ export const OrganisationDetailPage: React.FC = () => {
                   style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                 >
                   <option value="">Role: All</option>
-                  <option value="admin">Admin</option>
-                  <option value="member">Member</option>
+                  {TEAMREEL_ROLE_OPTIONS.map((opt) => (
+                    <option key={opt.key} value={opt.key}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -1604,7 +1644,6 @@ export const OrganisationDetailPage: React.FC = () => {
                     setUserRoleFilter('');
                     setUserClubFilterId('');
                     setUserTeamFilterId('');
-                    setUserSeasonFilterId('');
                     setUsersPage(1);
                   }}
                 >
@@ -1632,13 +1671,6 @@ export const OrganisationDetailPage: React.FC = () => {
                     return !isVirtualMember;
                   });
 
-                  const seasonTeamById = new Map<string, string>();
-                  for (const p of orgPeriods as any[]) {
-                    if (!isSeasonPeriod(p)) continue;
-                    const teamId = String(p.project_id ?? p.project?.id ?? '');
-                    if (teamId) seasonTeamById.set(String(p.id), teamId);
-                  }
-
                   const getMemberProjectMemberships = (item: any): any[] => {
                     const u = item?.user || item;
                     const list =
@@ -1663,10 +1695,11 @@ export const OrganisationDetailPage: React.FC = () => {
 
                   const filteredMembers = orgOnlyMembers.filter((item: any) => {
                     const u = item.user || item;
-                    const role = item.role || 'member';
+                    const pms = getMemberProjectMemberships(item);
+                    const roleDisplay = getTeamreelRoleDisplay(u, item, pms);
 
-                    // Role filter
-                    if (userRoleFilter && role !== userRoleFilter) return false;
+                    // Role filter (match Role column)
+                    if (userRoleFilter && roleDisplay.bestKey !== userRoleFilter) return false;
 
                     // Search filter
                     const haystack = `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase();
@@ -1674,8 +1707,7 @@ export const OrganisationDetailPage: React.FC = () => {
                     if (normalizedQuery && !haystack.includes(normalizedQuery)) return false;
 
                     // Club/Team/Season filters (best-effort)
-                    const pms = getMemberProjectMemberships(item);
-                    const effectiveTeamId = userTeamFilterId || (userSeasonFilterId ? seasonTeamById.get(String(userSeasonFilterId)) || '' : '');
+                    const effectiveTeamId = userTeamFilterId;
                     const effectiveClubId = userClubFilterId;
 
                     if (effectiveTeamId || effectiveClubId) {
@@ -1751,59 +1783,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 return Array.isArray(list) ? list : [];
                               })();
 
-                              const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
-                              const TEAMREEL_ROLE_RANK: Record<string, number> = {
-                                superadmin: 100,
-                                'land admin': 90,
-                                'club admin': 80,
-                                'team admin': 70,
-                                'team member': 60,
-                                supporter: 50,
-                                user: 10,
-                              };
-                              const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);
-                              const mapMembershipToTeamreelRole = (membershipRoleRaw: unknown, hasParentProject: boolean) => {
-                                const membershipRole = normalizeRoleName(membershipRoleRaw);
-                                const isAdminLike = ADMIN_LIKE_PROJECT_ROLES.has(membershipRole);
-                                if (isAdminLike) return hasParentProject ? 'Team Admin' : 'Club Admin';
-                                return hasParentProject ? 'Team Member' : 'Supporter';
-                              };
-
-                              const getTeamreelRoleDisplay = () => {
-                                const roles: string[] = [];
-
-                                const isSuper = Boolean(user?.is_superuser) || normalizeRoleName(user?.role) === 'superadmin';
-                                if (isSuper) return { label: 'Superadmin', title: 'Superadmin' };
-
-                                const orgMembershipRole = normalizeRoleName(item?.role);
-                                if (orgMembershipRole === 'admin') roles.push('Land Admin');
-
-                                for (const pm of pms) {
-                                  const roleRaw = String(pm?.role ?? '').trim();
-                                  if (!roleRaw) continue;
-                                  const parentIdRaw = pm?.project?.parent_id ?? pm?.project?.parent?.id ?? pm?.project?.parent_project_id;
-                                  const hasParentProject = Boolean(parentIdRaw);
-                                  roles.push(mapMembershipToTeamreelRole(roleRaw, hasParentProject));
-                                }
-
-                                const uniqueByKey = new Map<string, string>();
-                                for (const r of roles) {
-                                  const key = normalizeRoleName(r);
-                                  if (!key) continue;
-                                  if (!uniqueByKey.has(key)) uniqueByKey.set(key, r);
-                                }
-                                const unique = Array.from(uniqueByKey.values());
-                                if (unique.length === 0) return { label: 'User', title: 'User' };
-
-                                const best = [...unique].sort(
-                                  (a, b) => (TEAMREEL_ROLE_RANK[normalizeRoleName(b)] ?? 0) - (TEAMREEL_ROLE_RANK[normalizeRoleName(a)] ?? 0)
-                                )[0];
-                                const title = [...unique].sort((a, b) => a.localeCompare(b)).join(', ');
-                                const label = unique.length === 1 ? best : `${best} +${unique.length - 1}`;
-                                return { label, title };
-                              };
-
-                              const roleDisplay = getTeamreelRoleDisplay();
+                              const roleDisplay = getTeamreelRoleDisplay(user, item, pms);
 
                               const clubIds = Array.from(
                                 new Set(
@@ -1857,7 +1837,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                       </span>
                                     ) : clubSlugOrId ? (
                                       <Link
-                                        to={`/organisations/${currentOrgSlug}/${clubSlugOrId}`}
+                                        to={`/${currentOrgSlug}/${clubSlugOrId}`}
                                         className="text-blue-600"
                                         style={{ textDecoration: 'none' }}
                                       >
@@ -1878,7 +1858,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                       </span>
                                     ) : teamSlugOrId ? (
                                       <Link
-                                        to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/${teamSlugOrId}`}
+                                        to={clubSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/${currentOrgSlug}/${teamSlugOrId}`}
                                         className="text-blue-600 hover:underline"
                                       >
                                         {teamDisplayName || '—'}
@@ -1890,21 +1870,28 @@ export const OrganisationDetailPage: React.FC = () => {
                                   <td style={compactTextTdStyle}>
                                     <button
                                       type="button"
+                                      onMouseDown={(e) => {
+                                        // Prevent default focus ring (matches badge-only look)
+                                        e.preventDefault();
+                                      }}
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
                                         setDetailUser(user);
                                         setIsUserDetailModalOpen(true);
                                       }}
-                                      className="hover:underline"
-                                      style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+                                      style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', outline: 'none', boxShadow: 'none' }}
                                     >
-                                      <Badge variant="default">
+                                      <Badge variant="default" title="View user">
                                         {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
                                       </Badge>
                                     </button>
                                   </td>
-                                  <td style={compactTextTdStyle}>{user.email}</td>
+                                  <td style={compactTextTdStyle}>
+                                    <Badge variant="default" title={user.email}>
+                                      {user.email}
+                                    </Badge>
+                                  </td>
                                   <td style={compactTdStyle}>
                                     <Badge variant="default" title={roleDisplay.title}>
                                       {roleDisplay.label}
@@ -2158,7 +2145,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <tr key={club.id}>
                                   <td style={compactTextTdStyle}>
                                     <Link
-                                      to={`/organisations/${currentOrgSlug}/${club.slug || club.id}`}
+                                      to={`/${currentOrgSlug}/${club.slug || club.id}`}
                                       style={{ ...compactTextTdStyle, display: 'inline-block', maxWidth: '100%', textDecoration: 'none', color: '#007bff' }}
                                     >
                                       {club.name}
@@ -2400,16 +2387,16 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <td style={compactTextTdStyle}>
                                   {clubId ? (
                                     <Link
-                                      to={`/organisations/${currentOrgSlug}/${clubSlugOrId}`}
+                                      to={`/${currentOrgSlug}/${clubSlugOrId}`}
                                       className="text-blue-600 hover:underline"
                                     >
-                                      {clubNameById.get(clubId) || '-'}
+                                      {clubNameById.get(clubId) || clubId}
                                     </Link>
                                   ) : '-'}
                                 </td>
                                 <td style={compactTextTdStyle}>
                                   <Link
-                                    to={`/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}`}
+                                    to={`/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {team.name}
@@ -2597,7 +2584,7 @@ export const OrganisationDetailPage: React.FC = () => {
                       <Card key={clubId}>
                         <div className="text-sm font-semibold" style={{ marginBottom: '10px' }}>
                           <Link
-                            to={`/organisations/${currentOrgSlug}/projects/${clubSlugById.get(clubId) || clubId}`}
+                            to={`/${currentOrgSlug}/projects/${clubSlugById.get(clubId) || clubId}`}
                             className="text-blue-600 hover:underline"
                           >
                             {clubNameById.get(clubId) || `Club ${clubId}`}
@@ -2635,7 +2622,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <tr key={team.id}>
                                   <td style={compactTextTdStyle}>
                                     <Link
-                                      to={`/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
+                                      to={`/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
                                       className="text-blue-600 hover:underline"
                                     >
                                       {team.name}
@@ -2882,15 +2869,15 @@ export const OrganisationDetailPage: React.FC = () => {
                           const matchesCount = getRecursiveMatchesCount(season);
 
                           const openHref = clubSlugOrId
-                            ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`
-                            : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`;
+                            ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`
+                            : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`;
 
                           return (
                             <tr key={seasonId}>
                               <td style={compactTextTdStyle}>
                                 {clubId && clubSlugOrId ? (
                                   <Link
-                                    to={`/organisations/${currentOrgSlug}/${clubSlugOrId}`}
+                                    to={`/${currentOrgSlug}/${clubSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {clubNameById.get(clubId) || clubId}
@@ -2900,7 +2887,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {team && teamSlugOrId ? (
                                   <Link
-                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                    to={clubSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {team.name}
@@ -3169,8 +3156,8 @@ export const OrganisationDetailPage: React.FC = () => {
 
                           const seasonSlug = season?.slug || comp.parent_period?.slug;
                           const openHref = clubSlugOrId
-                            ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/${comp.slug || comp.id}`
-                            : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
+                            ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/${comp.slug || comp.id}`
+                            : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
 
                           const matchesCount = getRecursiveMatchesCount(comp);
 
@@ -3179,7 +3166,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {clubId && clubSlugOrId ? (
                                   <Link
-                                    to={`/organisations/${currentOrgSlug}/${clubSlugOrId}`}
+                                    to={`/${currentOrgSlug}/${clubSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {clubNameById.get(clubId) || clubId}
@@ -3189,7 +3176,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {team && teamSlugOrId ? (
                                   <Link
-                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                    to={clubSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {team.name}
@@ -3199,7 +3186,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {season && seasonId ? (
                                   <Link
-                                    to={clubSlugOrId && teamSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
+                                    to={clubSlugOrId && teamSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {season.name}
@@ -3477,15 +3464,16 @@ export const OrganisationDetailPage: React.FC = () => {
                 <Card>
                   <div className="overflow-x-auto">
                     <Table style={compactTableStyle}>
-                      <colgroup>
-                        <col style={{ width: '160px' }} />
-                        <col style={{ width: '160px' }} />
-                        <col style={{ width: '160px' }} />
-                        <col style={{ width: '160px' }} />
-                        <col style={{ width: '220px' }} />
-                        <col style={{ width: '140px' }} />
-                        <col style={{ width: '390px' }} />
-                      </colgroup>
+                        <colgroup>
+                          <col style={{ width: '160px' }} />
+                          <col style={{ width: '160px' }} />
+                          <col style={{ width: '160px' }} />
+                          <col style={{ width: '160px' }} />
+                          <col style={{ width: '220px' }} />
+                          <col style={{ width: '120px' }} />
+                          <col style={{ width: '140px' }} />
+                          <col style={{ width: '330px' }} />
+                        </colgroup>
                       <thead>
                         <tr>
                           <th style={compactThStyle}>Club</th>
@@ -3493,6 +3481,7 @@ export const OrganisationDetailPage: React.FC = () => {
                           <th style={compactThStyle}>Season</th>
                           <th style={compactThStyle}>Competition</th>
                           <th style={compactThStyle}>Match</th>
+                          <th style={compactThStyle}>Participants</th>
                           <th style={compactThStyle}>Start</th>
                           <th style={compactThStyle}>Actions</th>
                         </tr>
@@ -3516,8 +3505,8 @@ export const OrganisationDetailPage: React.FC = () => {
                           const matchSlugOrId = String((m as any)?.slug || m.id || '').trim();
                           const matchDetailPath = (teamSlugOrId && seasonSlugOrId && compSlugOrId)
                             ? (clubSlugOrId
-                              ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}/${compSlugOrId}/${matchSlugOrId}`
-                              : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${matchSlugOrId}`)
+                              ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}/${compSlugOrId}/${matchSlugOrId}`
+                              : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${matchSlugOrId}`)
                             : `/matches/${matchSlugOrId}`;
 
                           const formattedStart = m.start_time ? new Date(m.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
@@ -3527,7 +3516,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {clubId && clubSlugOrId ? (
                                   <Link
-                                    to={`/organisations/${currentOrgSlug}/${clubSlugOrId}`}
+                                    to={`/${currentOrgSlug}/${clubSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {clubNameById.get(clubId) || clubId}
@@ -3537,7 +3526,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {team && teamSlugOrId ? (
                                   <Link
-                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                    to={clubSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {team.name}
@@ -3547,7 +3536,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {season && seasonSlugOrId ? (
                                   <Link
-                                    to={clubSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
+                                    to={clubSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {season.name}
@@ -3557,7 +3546,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {competition ? (
                                   <Link
-                                    to={clubSlugOrId && seasonSlugOrId ? `/organisations/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}/${competition.slug || periodId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}`}
+                                    to={clubSlugOrId && seasonSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}/${competition.slug || periodId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {competition.name || m.period?.name}
@@ -3568,6 +3557,13 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <Link to={matchDetailPath} className="text-blue-600 hover:underline">
                                   {m.title || m.name || m.id}
                                 </Link>
+                              </td>
+                              <td style={compactTdStyle}>
+                                {m.participations_count !== undefined ? (
+                                  <Badge variant="default">{m.participations_count}</Badge>
+                                ) : (
+                                  '-'
+                                )}
                               </td>
                               <td style={compactTextTdStyle}>{formattedStart}</td>
                               <td style={compactTdStyle}>
