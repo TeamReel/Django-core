@@ -1,128 +1,81 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
-import {
-  Button,
-  Card,
-  Alert,
-  Badge,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanel,
-} from '@django-core/design-system';
-import {
-  PageHeader,
-  PageContent,
-  BreadcrumbContextSwitcher,
-  useBreadcrumbContextSwitcher,
-  type BreadcrumbSwitcherOption,
-} from '@django-core/page-templates';
-import { useContextSwitcher } from '@django-core/context-switcher';
+import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
+import { PageContent, PageHeader } from '@django-core/page-templates';
+
 import AppShell from '../../components/AppShell';
-import UserEditModal from './UserEditModal';
-import AssignUserToOrgModal from './AssignUserToOrgModal';
 import LoadingState from '../../components/LoadingState';
+import { Table } from '../../shims/design-system';
+import { fetchAllPages } from '../../utils/fetchAllPages';
+import UserDetailModal from './UserDetailModal';
+import UserEditModal from './UserEditModal';
+import {
+  actionButtonStyle,
+  compactActionsStyle,
+  compactTableStyle,
+  compactTdStyle,
+  compactTextTdStyle,
+  compactThStyle,
+} from './detail/detailStyles';
 
 export const UserDetailPage: React.FC = () => {
   const { userId, orgId } = useParams<{ userId: string; orgId?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user: currentUser } = useAuth();
-  const { organisations: contextOrganisations, context } = useContextSwitcher();
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [orgUsers, setOrgUsers] = useState<any[]>([]); // For user switcher
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-  // Modals
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  const [organisations, setOrganisations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'profile' | 'memberships'>('profile');
 
-  // Get current org for context switcher
-  const currentOrg = orgId ? contextOrganisations.find(o => o.slug === orgId || o.id === orgId) : null;
+  const [clubsById, setClubsById] = useState<Map<string, any>>(new Map());
+  const [linkedCompetitions, setLinkedCompetitions] = useState<any[]>([]);
+  const [linkedMatches, setLinkedMatches] = useState<any[]>([]);
+  const [loadingRelations, setLoadingRelations] = useState(false);
 
-  // Breadcrumb context switcher setup
-  const {
-    userOptions,
-  } = useBreadcrumbContextSwitcher({
-    organisations: contextOrganisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
-    projects: [],
-    users: orgUsers.map(u => ({
-      id: u.id.toString(),
-      username: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email,
-      email: u.email,
-      slug: u.id.toString(),
-    })),
-    context: {
-      currentOrgId: currentOrg?.id ? String(currentOrg.id) : undefined,
-      currentUserId: userId,
-    },
-    basePath: '',
-  });
+  const [hierarchySearch, setHierarchySearch] = useState('');
 
-  // Custom handler for user navigation
-  const handleUserSwitch = (option: BreadcrumbSwitcherOption) => {
-    if (orgId) {
-      navigate(`/organisations/${orgId}/users/${option.slug || option.id}`);
-    } else {
-      navigate(`/users/${option.slug || option.id}`);
-    }
+  const allowedTabs = useMemo(
+    () => new Set(['overview', 'hierarchy', 'clubs', 'teams', 'seasons']),
+    []
+  );
+
+  const basePath = orgId ? `/organisations/${orgId}/users/${userId}` : `/users/${userId}`;
+
+  const activeTab = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = String(params.get('tab') || 'overview').trim().toLowerCase();
+    return allowedTabs.has(tab) ? (tab as any) : 'overview';
+  }, [allowedTabs, location.search]);
+
+  const setTab = (tab: string) => {
+    if (!allowedTabs.has(tab)) return;
+    const params = new URLSearchParams(location.search);
+    if (tab === 'overview') params.delete('tab');
+    else params.set('tab', tab);
+    const suffix = params.toString() ? `?${params.toString()}` : '';
+    navigate(`${basePath}${suffix}`);
   };
 
-  // Fetch users for the current organisation (for switcher dropdown)
-  useEffect(() => {
-    let isMounted = true;
-    const fetchOrgUsers = async () => {
-      if (!orgId) return;
-
-      try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-
-        const response = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${orgId}/members/`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'include',
-          }
-        );
-
-        if (response.ok && isMounted) {
-          const rawData = await response.json();
-          // Handle B13 envelope and extract user data from members
-          const data = rawData.data || rawData;
-          const members = Array.isArray(data) ? data : (data.data || data.results || []);
-          // Extract user objects from membership objects
-          const users = members.map((m: any) => m.user).filter(Boolean);
-          setOrgUsers(users);
-        }
-      } catch (err) {
-        console.error('Failed to fetch org users for switcher:', err);
-      }
-    };
-
-    fetchOrgUsers();
-    return () => { isMounted = false; };
-  }, [orgId]);
-
-  // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
-  // IMPORTANT: We must NOT return early here if it causes hooks (like useEffect below) to be skipped.
-  // Instead, we'll render the loading state but keep the hooks execution order consistent.
-  const isLoadingContext = orgId && context.isLoading;
+  const getCsrfToken = (): string => {
+    return (
+      document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('csrftoken='))
+        ?.split('=')[1] ||
+      ''
+    );
+  };
 
   const fetchUser = async () => {
     try {
       setLoading(true);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-
-      // Always use admin endpoint for user details
-      // (org-scoped user endpoints don't exist, only members endpoints with membership UUIDs)
-      const response = await fetch(`${apiBaseUrl}/api/v1/admin/users/${userId}/`, {
-          credentials: 'include',
+      const response = await fetch(`${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(String(userId))}/`, {
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -149,24 +102,6 @@ export const UserDetailPage: React.FC = () => {
     }
   };
 
-  const fetchOrganisations = async () => {
-      try {
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/`, {
-              credentials: 'include',
-          });
-          if (res.ok) {
-              const rawData = await res.json();
-              // Handle B13 envelope: {data: {results: [...]}} or direct {results: [...]}
-              const data = rawData.data || rawData;
-              const results = data.results || data.data?.results || [];
-              setOrganisations(Array.isArray(results) ? results : []);
-          }
-      } catch (e) {
-          console.error('Failed to fetch organisations', e);
-      }
-  };
-
   useEffect(() => {
     let isMounted = true;
     if (userId) {
@@ -174,49 +109,20 @@ export const UserDetailPage: React.FC = () => {
       const loadData = async () => {
           if (!isMounted) return;
           await fetchUser();
-          if (!isMounted) return;
-          await fetchOrganisations();
       };
       loadData();
     }
     return () => { isMounted = false; };
   }, [userId]);
 
-  if (isLoadingContext) {
-    return (
-      <AppShell>
-        <LoadingState message="Loading organisation context..." />
-      </AppShell>
-    );
-  }
-
-  const handleSaveUser = async (updatedUser: any) => {
+    const handleSaveUser = async (updatedUser: any) => {
       try {
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-
-          // Get CSRF token
-          const getCookie = (name: string) => {
-              let cookieValue = null;
-              if (document.cookie && document.cookie !== '') {
-                  const cookies = document.cookie.split(';');
-                  for (let i = 0; i < cookies.length; i++) {
-                      const cookie = cookies[i].trim();
-                      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                          break;
-                      }
-                  }
-              }
-              return cookieValue;
-          };
-          const csrfToken = getCookie('csrftoken');
-
           // Use userId from URL params instead of updatedUser.id (which may be undefined)
-          const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${userId}/`, {
+        const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(String(userId))}/`, {
               method: 'PATCH',
               headers: {
                   'Content-Type': 'application/json',
-                  'X-CSRFToken': csrfToken || '',
+            'X-CSRFToken': getCsrfToken(),
               },
               body: JSON.stringify(updatedUser),
               credentials: 'include',
@@ -237,286 +143,632 @@ export const UserDetailPage: React.FC = () => {
       }
   };
 
-  const handleRemoveFromOrg = async (orgSlug: string, membershipId: string) => {
-      if (!window.confirm('Are you sure you want to remove this user from the organisation?')) return;
-
-      try {
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-          const getCookie = (name: string) => {
-              let cookieValue = null;
-              if (document.cookie && document.cookie !== '') {
-                  const cookies = document.cookie.split(';');
-                  for (let i = 0; i < cookies.length; i++) {
-                      const cookie = cookies[i].trim();
-                      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                          break;
-                      }
-                  }
-              }
-              return cookieValue;
-          };
-          const csrfToken = getCookie('csrftoken');
-
-          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${membershipId}/`, {
-              method: 'DELETE',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRFToken': csrfToken || '',
-              },
-              credentials: 'include',
-          });
-
-          if (res.ok) {
-              fetchUser();
-          } else {
-              const data = await res.json();
-              alert(data.detail || 'Failed to remove member');
-          }
-      } catch (e) {
-          console.error(e);
-          alert('Error removing member');
+  const handleDeleteUser = async () => {
+    if (!userId) return;
+    if (!window.confirm('Delete this user? This cannot be undone.')) return;
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(String(userId))}/`, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || 'Failed to delete user');
       }
+      navigate(orgId ? `/organisations/${orgId}/users` : '/users');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Failed to delete user');
+    }
   };
 
-  if (loading) return <AppShell><div>Loading...</div></AppShell>;
+  const userOrgs = useMemo(() => {
+    const orgs = user?.organisations;
+    return Array.isArray(orgs) ? orgs : [];
+  }, [user]);
+
+  const userProjects = useMemo(() => {
+    const projects = user?.projects;
+    return Array.isArray(projects) ? projects : [];
+  }, [user]);
+
+  const primaryOrgSlug = useMemo(() => {
+    if (orgId) return String(orgId);
+    const first = userOrgs.find((o: any) => o?.slug) || userOrgs[0];
+    return String(first?.slug || first?.id || '').trim();
+  }, [orgId, userOrgs]);
+
+  const clubMemberships = useMemo(() => {
+    return userProjects.filter((p: any) => !p?.parent);
+  }, [userProjects]);
+
+  const teamMemberships = useMemo(() => {
+    return userProjects.filter((p: any) => Boolean(p?.parent));
+  }, [userProjects]);
+
+  const clubSlugById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of clubMemberships) {
+      const id = String(c?.id || '').trim();
+      const slug = String(c?.slug || '').trim();
+      if (id && slug) m.set(id, slug);
+    }
+    // add clubs fetched from API
+    for (const [id, club] of clubsById.entries()) {
+      const slug = String(club?.slug || '').trim();
+      if (id && slug && !m.has(id)) m.set(id, slug);
+    }
+    return m;
+  }, [clubMemberships, clubsById]);
+
+  const teamSeasonPairs = useMemo(() => {
+    const pairs: Array<{ teamId: string; teamName: string; teamSlug: string; clubId: string; clubName: string; seasonId: string; seasonName: string }> = [];
+    for (const t of teamMemberships) {
+      const teamId = String(t?.id || '').trim();
+      const teamSlug = String(t?.slug || '').trim();
+      const teamName = String(t?.name || '').trim();
+      const clubId = String(t?.parent || '').trim();
+      const clubName = String(t?.parent_name || '').trim();
+      const seasonId = String(t?.period?.id || '').trim();
+      const seasonName = String(t?.period?.name || '').trim();
+      if (!teamId || !clubId || !seasonId) continue;
+      pairs.push({ teamId, teamName, teamSlug, clubId, clubName, seasonId, seasonName });
+    }
+    // unique
+    const seen = new Set<string>();
+    return pairs.filter((p) => {
+      const k = `${p.teamId}::${p.seasonId}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [teamMemberships]);
+
+  // Load club slug map + competitions/matches for team-season memberships.
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      if (!userId) return;
+      if (!primaryOrgSlug) return;
+      if (!user) return;
+
+      setLoadingRelations(true);
+      try {
+        // Fetch all clubs for the primary org so we can link teams reliably.
+        const clubs = await fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/projects/?organisation_id=${encodeURIComponent(primaryOrgSlug)}&parent_project__isnull=true&page_size=200`,
+          { credentials: 'include' },
+          { ttlMs: 30_000, cacheKey: `user:${userId}:clubs:${primaryOrgSlug}`, maxItems: 2000 }
+        );
+
+        if (!cancelled) {
+          const map = new Map<string, any>();
+          for (const c of clubs || []) {
+            const id = String(c?.id || '').trim();
+            if (id) map.set(id, c);
+          }
+          setClubsById(map);
+        }
+
+        // Fetch competitions + matches for linked team-season pairs.
+        const competitionsAll: any[] = [];
+        const matchesAll: any[] = [];
+
+        for (const pair of teamSeasonPairs) {
+          const teamId = pair.teamId;
+          const seasonId = pair.seasonId;
+
+          const competitions = await fetchAllPages<any>(
+            `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(seasonId)}&project_id=${encodeURIComponent(teamId)}&page_size=250`,
+            { credentials: 'include' },
+            { ttlMs: 30_000, cacheKey: `user:${userId}:competitions:${teamId}:${seasonId}`, maxItems: 2000 }
+          );
+          competitionsAll.push(...(competitions || []));
+
+          const matches = await fetchAllPages<any>(
+            `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(teamId)}&period_id=${encodeURIComponent(seasonId)}&include_descendants=true&activity_type=match&ordering=-start_time&page_size=250`,
+            { credentials: 'include' },
+            { ttlMs: 30_000, cacheKey: `user:${userId}:matches:${teamId}:${seasonId}`, maxItems: 250 }
+          );
+          matchesAll.push(...(matches || []));
+        }
+
+        if (!cancelled) {
+          // De-dupe
+          const uniqueCompetitions = [...new Map(competitionsAll.map((c: any) => [String(c?.id || ''), c])).values()].filter(Boolean);
+          const uniqueMatches = [...new Map(matchesAll.map((m: any) => [String(m?.id || ''), m])).values()].filter(Boolean);
+          setLinkedCompetitions(uniqueCompetitions);
+          setLinkedMatches(uniqueMatches);
+        }
+      } catch {
+        if (!cancelled) {
+          setLinkedCompetitions([]);
+          setLinkedMatches([]);
+        }
+      } finally {
+        if (!cancelled) setLoadingRelations(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBaseUrl, primaryOrgSlug, teamSeasonPairs, user, userId]);
+
+  if (loading) {
+    return (
+      <AppShell>
+        <LoadingState message="Loading user..." />
+      </AppShell>
+    );
+  }
   if (error) return <AppShell><Alert variant="error" title="Error">{error}</Alert></AppShell>;
   if (!user) return <AppShell><div>User not found</div></AppShell>;
 
-  // Determine back path based on whether we're in org context
   const backPath = orgId ? `/organisations/${orgId}/users` : '/users';
-  const usersLabel = orgId ? 'Members' : 'Users';
+  const userDisplayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || `User ${userId}`;
+
+  const renderTabButton = (id: string, label: string) => {
+    const isActive = activeTab === id;
+    return (
+      <button
+        type="button"
+        onClick={() => setTab(id)}
+        style={{
+          padding: '8px 12px',
+          borderRadius: '8px',
+          border: `1px solid ${isActive ? 'var(--app-border)' : 'transparent'}`,
+          backgroundColor: isActive ? 'var(--app-surface-2)' : 'transparent',
+          color: 'var(--app-text)',
+          cursor: 'pointer',
+          fontWeight: isActive ? 700 : 600,
+          fontSize: '13px',
+        }}
+      >
+        {label}
+      </button>
+    );
+  };
+
+  const hierarchyRows = (() => {
+    const q = hierarchySearch.trim().toLowerCase();
+    const rows = teamSeasonPairs.map((p) => {
+      const clubSlug = clubSlugById.get(p.clubId) || '';
+      const teamPath = clubSlug
+        ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${p.teamSlug || p.teamId}`
+        : '';
+      const seasonPath = clubSlug
+        ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${p.teamSlug || p.teamId}/seasons/${p.seasonId}`
+        : '';
+      return {
+        ...p,
+        clubSlug,
+        teamPath,
+        seasonPath,
+      };
+    });
+    if (!q) return rows;
+    return rows.filter((r) => {
+      return (
+        r.teamName.toLowerCase().includes(q) ||
+        r.clubName.toLowerCase().includes(q) ||
+        r.seasonName.toLowerCase().includes(q)
+      );
+    });
+  })();
 
   return (
     <AppShell>
       <PageHeader
-        title="User Details"
+        title={userDisplayName}
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           ...(orgId ? [{ label: 'Federations', href: '/organisations' }] : []),
-          ...(currentOrg ? [{ label: currentOrg.name, href: `/organisations/${orgId}` }] : []),
-          { label: usersLabel, onClick: () => navigate(backPath) },
-          ...(orgId && userOptions.length > 1 ? [{
-            label: (
-              <BreadcrumbContextSwitcher
-                currentId={userId || ''}
-                options={userOptions.map(u => ({
-                  id: u.id,
-                  label: u.label || u.id,
-                  slug: u.slug
-                }))}
-                onSelect={handleUserSwitch}
-                hasDropdown={true}
-                type="user"
-              />
-            )
-          }] : [{ label: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email : 'User', current: true }]),
+          ...(orgId ? [{ label: 'Members', href: backPath }] : [{ label: 'Users', href: backPath }]),
+          { label: userDisplayName, current: true },
         ]}
         actions={
-            <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={() => navigate(backPath)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface-2)',
-                    color: 'var(--app-text)',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: 500
-                  }}
-                >
-                  Back to List
-                </button>
-                <button
-                  onClick={() => setIsEditModalOpen(true)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--app-warning)',
-                    backgroundColor: 'var(--app-surface)',
-                    color: 'var(--app-warning)',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: 500
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => setIsAssignModalOpen(true)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface-2)',
-                    color: 'var(--app-text)',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: 500
-                  }}
-                >
-                  Assign
-                </button>
-            </div>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              type="button"
+              className="app-action-button"
+              onClick={() => setIsViewModalOpen(true)}
+              style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '92px' }}
+            >
+              View
+            </button>
+            <button
+              type="button"
+              className="app-action-button"
+              onClick={() => setIsEditModalOpen(true)}
+              style={{ ...actionButtonStyle('warning'), padding: '8px 16px', fontSize: '14px', minWidth: '92px' }}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              className="app-action-button"
+              onClick={handleDeleteUser}
+              style={{ ...actionButtonStyle('danger'), padding: '8px 16px', fontSize: '14px', minWidth: '92px' }}
+            >
+              Delete
+            </button>
+          </div>
         }
       />
 
       <PageContent>
-      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as any)}>
-        <TabList className="mb-6">
-          <Tab value="profile">Profile</Tab>
-          <Tab value="memberships">Organisations</Tab>
-        </TabList>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
+          {renderTabButton('overview', 'Overview')}
+          {renderTabButton('hierarchy', 'Hierarchy')}
+          {renderTabButton('clubs', 'Clubs')}
+          {renderTabButton('teams', 'Teams')}
+          {renderTabButton('seasons', 'Seasons')}
+        </div>
 
-        <TabPanel value="profile">
-          <Card>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>
-              Profile Information
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '12px',
-                    color: 'var(--app-muted-text)',
-                    marginBottom: '4px',
-                  }}
-                >
-                  Full Name
-                </label>
-                <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>
-                  {user.first_name} {user.last_name}
+        {activeTab === 'overview' && (
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <Card>
+              <h3 style={{ marginTop: 0 }}>User</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '8px 16px' }}>
+                <div style={{ color: 'var(--app-muted-text)' }}>Name</div>
+                <div style={{ fontWeight: 600 }}>{userDisplayName}</div>
+
+                <div style={{ color: 'var(--app-muted-text)' }}>Email</div>
+                <div>{user.email}</div>
+
+                <div style={{ color: 'var(--app-muted-text)' }}>Role</div>
+                <div>
+                  <Badge variant={String(user.role || '').toLowerCase() === 'superadmin' ? 'primary' : 'default'}>
+                    {user.role}
+                  </Badge>
+                </div>
+
+                <div style={{ color: 'var(--app-muted-text)' }}>Status</div>
+                <div>
+                  <Badge variant={user.is_active ? 'success' : 'error'}>{user.is_active ? 'Active' : 'Inactive'}</Badge>
                 </div>
               </div>
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '12px',
-                    color: 'var(--app-muted-text)',
-                    marginBottom: '4px',
-                  }}
-                >
-                  Email
-                </label>
-                <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{user.email}</div>
-              </div>
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '12px',
-                    color: 'var(--app-muted-text)',
-                    marginBottom: '4px',
-                  }}
-                >
-                  System Role
-                </label>
-                <Badge variant={String(user.role || '').toLowerCase() === 'superadmin' ? 'primary' : 'default'}>
-                  {user.role}
-                </Badge>
-              </div>
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '12px',
-                    color: 'var(--app-muted-text)',
-                    marginBottom: '4px',
-                  }}
-                >
-                  Status
-                </label>
-                <Badge variant={user.is_active ? 'success' : 'error'}>{user.is_active ? 'Active' : 'Inactive'}</Badge>
-              </div>
+            </Card>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '12px' }}>
+              <Card>
+                <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Federations</div>
+                <div style={{ fontWeight: 800, fontSize: '22px' }}>{userOrgs.length}</div>
+              </Card>
+              <Card>
+                <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Clubs</div>
+                <div style={{ fontWeight: 800, fontSize: '22px' }}>{clubMemberships.length}</div>
+              </Card>
+              <Card>
+                <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Teams</div>
+                <div style={{ fontWeight: 800, fontSize: '22px' }}>{teamMemberships.length}</div>
+              </Card>
+              <Card>
+                <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Matches</div>
+                <div style={{ fontWeight: 800, fontSize: '22px' }}>{linkedMatches.length}</div>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'hierarchy' && (
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
+              <h3 style={{ marginTop: 0, marginBottom: 0 }}>Hierarchy</h3>
+              <Input value={hierarchySearch} onChange={(e) => setHierarchySearch((e.target as any).value)} placeholder="Search…" />
+            </div>
+            <div style={{ marginTop: '12px' }}>
+              <Table style={compactTableStyle}>
+                <thead>
+                  <tr>
+                    <th style={compactThStyle}>Club</th>
+                    <th style={compactThStyle}>Team</th>
+                    <th style={compactThStyle}>Season</th>
+                    <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {hierarchyRows.map((r) => (
+                    <tr key={`${r.teamId}::${r.seasonId}`}>
+                      <td style={compactTextTdStyle}>{r.clubName || '-'}</td>
+                      <td style={compactTextTdStyle}>{r.teamName || '-'}</td>
+                      <td style={compactTextTdStyle}>{r.seasonName || r.seasonId}</td>
+                      <td style={compactTdStyle}>
+                        <div style={compactActionsStyle}>
+                          {r.teamPath ? (
+                            <button type="button" onClick={() => navigate(r.teamPath)} style={actionButtonStyle('primary')}>
+                              View Team
+                            </button>
+                          ) : (
+                            <button type="button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>
+                              View Team
+                            </button>
+                          )}
+                          {r.seasonPath ? (
+                            <button type="button" onClick={() => navigate(r.seasonPath)} style={actionButtonStyle('primary')}>
+                              View Season
+                            </button>
+                          ) : (
+                            <button type="button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>
+                              View Season
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {!hierarchyRows.length && (
+                    <tr>
+                      <td style={compactTdStyle} colSpan={4}>
+                        <em style={{ color: 'var(--app-muted-text)' }}>No linked seasons found.</em>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
             </div>
           </Card>
-        </TabPanel>
+        )}
 
-        <TabPanel value="memberships">
+        {activeTab === 'clubs' && (
           <Card>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>
-              Organisations
-            </h3>
-            {user.organisations && user.organisations.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {user.organisations.map((org: any) => {
-                  const myOrg = organisations.find((o) => o.id === org.id);
-                  const isSuperAdmin =
-                    Boolean((currentUser as any)?.is_superuser) ||
-                    String((currentUser as any)?.role || '').toLowerCase() === 'superadmin';
-
-                  const canRemove =
-                    org.membership_id &&
-                    (isSuperAdmin || (myOrg && (myOrg.user_role === 'admin' || myOrg.user_role === 'owner')));
-
+            <h3 style={{ marginTop: 0 }}>Clubs</h3>
+            <Table style={compactTableStyle}>
+              <thead>
+                <tr>
+                  <th style={compactThStyle}>Name</th>
+                  <th style={compactThStyle}>Role</th>
+                  <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clubMemberships.map((c: any) => {
+                  const clubPath = primaryOrgSlug && c?.slug ? `/organisations/${primaryOrgSlug}/projects/${c.slug}` : '';
                   return (
-                    <div
-                      key={org.id}
-                      style={{
-                        padding: '12px',
-                        border: '1px solid #eee',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 500 }}>{org.name}</div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>{org.slug}</div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Badge variant="default">{org.role}</Badge>
-                        {canRemove && (
-                          <button
-                            onClick={() => handleRemoveFromOrg(org.slug, org.membership_id)}
-                            style={{
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              border: '1px solid #dc3545',
-                              backgroundColor: 'white',
-                              color: '#dc3545',
-                              cursor: 'pointer',
-                              fontSize: '12px',
-                            }}
-                          >
-                            Remove
+                    <tr key={String(c?.id)}>
+                      <td style={compactTextTdStyle}>{String(c?.name || '')}</td>
+                      <td style={compactTextTdStyle}>{String(c?.role || '')}</td>
+                      <td style={compactTdStyle}>
+                        <div style={compactActionsStyle}>
+                          <button type="button" onClick={() => clubPath && navigate(clubPath)} disabled={!clubPath} style={actionButtonStyle('primary')}>
+                            View
                           </button>
-                        )}
-                      </div>
-                    </div>
+                          <button
+                            type="button"
+                            onClick={() => clubPath && navigate(`${clubPath}/edit`)}
+                            disabled={!clubPath}
+                            style={actionButtonStyle('warning')}
+                          >
+                            Edit
+                          </button>
+                          <button type="button" disabled style={{ ...actionButtonStyle('danger'), opacity: 0.5, cursor: 'not-allowed' }}>
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })}
-              </div>
-            ) : (
-              <div style={{ color: '#666', fontStyle: 'italic' }}>No organisation memberships</div>
-            )}
+                {!clubMemberships.length && (
+                  <tr>
+                    <td style={compactTdStyle} colSpan={3}>
+                      <em style={{ color: 'var(--app-muted-text)' }}>No club memberships.</em>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
           </Card>
-        </TabPanel>
-      </Tabs>
+        )}
+
+        {activeTab === 'teams' && (
+          <Card>
+            <h3 style={{ marginTop: 0 }}>Teams</h3>
+            <Table style={compactTableStyle}>
+              <thead>
+                <tr>
+                  <th style={compactThStyle}>Club</th>
+                  <th style={compactThStyle}>Team</th>
+                  <th style={compactThStyle}>Role</th>
+                  <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teamMemberships.map((t: any) => {
+                  const clubIdValue = String(t?.parent || '').trim();
+                  const clubSlug = clubSlugById.get(clubIdValue) || '';
+                  const teamSlugOrId = String(t?.slug || t?.id || '').trim();
+                  const teamPath = primaryOrgSlug && clubSlug && teamSlugOrId
+                    ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
+                    : '';
+                  return (
+                    <tr key={String(t?.id)}>
+                      <td style={compactTextTdStyle}>{String(t?.parent_name || '')}</td>
+                      <td style={compactTextTdStyle}>{String(t?.name || '')}</td>
+                      <td style={compactTextTdStyle}>{String(t?.role || '')}</td>
+                      <td style={compactTdStyle}>
+                        <div style={compactActionsStyle}>
+                          <button type="button" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath} style={actionButtonStyle('primary')}>
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => teamPath && navigate(`${teamPath}/edit`)}
+                            disabled={!teamPath}
+                            style={actionButtonStyle('warning')}
+                          >
+                            Edit
+                          </button>
+                          <button type="button" disabled style={{ ...actionButtonStyle('danger'), opacity: 0.5, cursor: 'not-allowed' }}>
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {!teamMemberships.length && (
+                  <tr>
+                    <td style={compactTdStyle} colSpan={4}>
+                      <em style={{ color: 'var(--app-muted-text)' }}>No team memberships.</em>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </Card>
+        )}
+
+        {activeTab === 'seasons' && (
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {loadingRelations && <Alert variant="info">Loading seasons, competitions and matches…</Alert>}
+
+            <Card>
+              <h3 style={{ marginTop: 0 }}>Seasons</h3>
+              <Table style={compactTableStyle}>
+                <thead>
+                  <tr>
+                    <th style={compactThStyle}>Season</th>
+                    <th style={compactThStyle}>Team</th>
+                    <th style={compactThStyle}>Club</th>
+                    <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teamSeasonPairs.map((r) => {
+                    const clubSlug = clubSlugById.get(r.clubId) || '';
+                    const teamSlugOrId = String(r.teamSlug || r.teamId).trim();
+                    const seasonPath = primaryOrgSlug && clubSlug && teamSlugOrId && r.seasonId
+                      ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${r.seasonId}`
+                      : '';
+                    return (
+                      <tr key={`${r.teamId}::${r.seasonId}`}>
+                        <td style={compactTextTdStyle}>{r.seasonName || r.seasonId}</td>
+                        <td style={compactTextTdStyle}>{r.teamName || r.teamId}</td>
+                        <td style={compactTextTdStyle}>{r.clubName || r.clubId}</td>
+                        <td style={compactTdStyle}>
+                          <div style={compactActionsStyle}>
+                            <button type="button" onClick={() => seasonPath && navigate(seasonPath)} disabled={!seasonPath} style={actionButtonStyle('primary')}>
+                              View
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {!teamSeasonPairs.length && (
+                    <tr>
+                      <td style={compactTdStyle} colSpan={4}>
+                        <em style={{ color: 'var(--app-muted-text)' }}>No season-linked team memberships.</em>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            </Card>
+
+            <Card>
+              <h3 style={{ marginTop: 0 }}>Competitions</h3>
+              <Table style={compactTableStyle}>
+                <thead>
+                  <tr>
+                    <th style={compactThStyle}>Name</th>
+                    <th style={compactThStyle}>Season</th>
+                    <th style={compactThStyle}>Team</th>
+                    <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {linkedCompetitions.map((c: any) => {
+                    const teamIdValue = String(c?.project_id ?? c?.project?.id ?? '').trim();
+                    const team = teamMemberships.find((t: any) => String(t?.id) === teamIdValue);
+                    const clubIdValue = String(team?.parent || '').trim();
+                    const clubSlug = clubSlugById.get(clubIdValue) || '';
+                    const teamSlugOrId = String(team?.slug || team?.id || '').trim();
+                    const parentSeasonId = String(c?.parent_period_id ?? c?.parent_period?.id ?? '').trim();
+                    const competitionPath = primaryOrgSlug && clubSlug && teamSlugOrId && parentSeasonId && c?.id
+                      ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${parentSeasonId}/competitions/${c.id}`
+                      : '';
+                    return (
+                      <tr key={String(c?.id)}>
+                        <td style={compactTextTdStyle}>{String(c?.name || '')}</td>
+                        <td style={compactTextTdStyle}>{String(c?.parent_period?.name || '')}</td>
+                        <td style={compactTextTdStyle}>{String(team?.name || '')}</td>
+                        <td style={compactTdStyle}>
+                          <div style={compactActionsStyle}>
+                            <button type="button" onClick={() => competitionPath && navigate(competitionPath)} disabled={!competitionPath} style={actionButtonStyle('primary')}>
+                              View
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {!linkedCompetitions.length && (
+                    <tr>
+                      <td style={compactTdStyle} colSpan={4}>
+                        <em style={{ color: 'var(--app-muted-text)' }}>No competitions found for linked seasons.</em>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            </Card>
+
+            <Card>
+              <h3 style={{ marginTop: 0 }}>Matches</h3>
+              <Table style={compactTableStyle}>
+                <thead>
+                  <tr>
+                    <th style={compactThStyle}>Title</th>
+                    <th style={compactThStyle}>Start</th>
+                    <th style={compactThStyle}>Team</th>
+                    <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {linkedMatches.slice(0, 200).map((m: any) => {
+                    const teamName = String(m?.project?.name || m?.project_name || '').trim();
+                    return (
+                      <tr key={String(m?.id)}>
+                        <td style={compactTextTdStyle}>{String(m?.title || '')}</td>
+                        <td style={compactTextTdStyle}>{String(m?.start_time || '')}</td>
+                        <td style={compactTextTdStyle}>{teamName}</td>
+                        <td style={compactTdStyle}>
+                          <div style={compactActionsStyle}>
+                            <button type="button" onClick={() => navigate(`/matches/${String(m?.id)}`)} style={actionButtonStyle('primary')}>
+                              View
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {!linkedMatches.length && (
+                    <tr>
+                      <td style={compactTdStyle} colSpan={4}>
+                        <em style={{ color: 'var(--app-muted-text)' }}>No matches found.</em>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+              {linkedMatches.length > 200 && (
+                <div style={{ marginTop: '8px', color: 'var(--app-muted-text)' }}>
+                  Showing first 200 matches.
+                </div>
+              )}
+            </Card>
+          </div>
+        )}
       </PageContent>
 
-      <UserEditModal
-        opened={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        user={user}
-        onSave={handleSaveUser}
-      />
+      <UserDetailModal opened={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} user={user} />
 
-      <AssignUserToOrgModal
-        opened={isAssignModalOpen}
-        onClose={() => setIsAssignModalOpen(false)}
-        user={user}
-        organisations={organisations}
-        onSuccess={() => {
-            fetchUser();
-            setIsAssignModalOpen(false);
-        }}
-      />
+      <UserEditModal opened={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} user={user} onSave={handleSaveUser} />
     </AppShell>
   );
 };

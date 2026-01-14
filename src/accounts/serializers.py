@@ -183,7 +183,9 @@ class UserListSerializer(serializers.ModelSerializer):
 
             project_memberships = ProjectMembership.objects.filter(
                 user=obj, deleted_at__isnull=True
-            ).select_related("project", "project__parent_project")
+            ).select_related(
+                "project", "project__parent_project", "period", "period__parent_period"
+            )
 
             for pm in project_memberships:
                 if pm.project:
@@ -199,6 +201,24 @@ class UserListSerializer(serializers.ModelSerializer):
                             pm.project.parent_project.name if pm.project.parent_project else None
                         ),
                         "membership_id": str(pm.id),
+                        "period": (
+                            {
+                                "id": str(pm.period.id),
+                                "name": pm.period.name,
+                                "parent_id": (
+                                    str(pm.period.parent_period.id)
+                                    if getattr(pm.period, "parent_period", None)
+                                    else None
+                                ),
+                                "parent_name": (
+                                    pm.period.parent_period.name
+                                    if getattr(pm.period, "parent_period", None)
+                                    else None
+                                ),
+                            }
+                            if pm.period
+                            else None
+                        ),
                     }
         except ImportError:
             pass

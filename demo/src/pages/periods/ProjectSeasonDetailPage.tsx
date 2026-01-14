@@ -1732,6 +1732,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         <MatchCreateModal
           opened={isCreateMatchModalOpen}
           onClose={() => setIsCreateMatchModalOpen(false)}
+          mode="season-detail"
           apiBaseUrl={apiBaseUrl}
           organisations={createModalOrganisations as any}
           clubs={createModalClubs as any}

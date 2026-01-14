@@ -37,6 +37,8 @@ interface MatchCreateModalProps {
   onClose: () => void;
   onCreate: (payload: MatchCreatePayload) => Promise<void>;
 
+  mode?: 'default' | 'season-detail';
+
   apiBaseUrl?: string;
 
   organisations?: OrgOption[];
@@ -54,6 +56,7 @@ export default function MatchCreateModal({
   opened,
   onClose,
   onCreate,
+  mode = 'default',
   apiBaseUrl: apiBaseUrlProp,
   organisations = [],
   clubs = [],
@@ -65,6 +68,18 @@ export default function MatchCreateModal({
   initialCompetitionId = '',
 }: MatchCreateModalProps) {
   const apiBaseUrl = apiBaseUrlProp || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const isSeasonDetailMode = mode === 'season-detail';
+  const requireOpponent = !isSeasonDetailMode;
+
+  const controlStyle = (disabled: boolean) => ({
+    padding: '8px 10px',
+    borderRadius: '6px',
+    border: '1px solid var(--app-border)',
+    backgroundColor: disabled ? 'var(--app-surface-3, #e9eef5)' : 'var(--app-surface-2)',
+    color: disabled ? 'var(--app-text-muted, #667085)' : 'var(--app-text)',
+    opacity: disabled ? 0.9 : 1,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+  } as const);
 
   const extractList = (raw: any): any[] => {
     const list = raw?.data?.data || raw?.data?.results || raw?.results || raw?.data || raw;
@@ -109,6 +124,9 @@ export default function MatchCreateModal({
   const [selectedSeasonId, setSelectedSeasonId] = useState('');
   const [selectedCompetitionId, setSelectedCompetitionId] = useState('');
 
+  const [selectedOpponentOrganisationId, setSelectedOpponentOrganisationId] = useState('');
+  const [selectedOpponentClubId, setSelectedOpponentClubId] = useState('');
+
   const [seasonOptions, setSeasonOptions] = useState<PeriodOption[]>([]);
   const [competitionOptions, setCompetitionOptions] = useState<PeriodOption[]>([]);
   const [loadingSeasons, setLoadingSeasons] = useState(false);
@@ -116,6 +134,9 @@ export default function MatchCreateModal({
 
   const [opponentTeams, setOpponentTeams] = useState<ProjectOption[]>([]);
   const [loadingOpponentTeams, setLoadingOpponentTeams] = useState(false);
+
+  const [opponentClubs, setOpponentClubs] = useState<ProjectOption[]>([]);
+  const [loadingOpponentClubs, setLoadingOpponentClubs] = useState(false);
 
   const [remoteOrganisations, setRemoteOrganisations] = useState<OrgOption[]>([]);
   const [remoteClubs, setRemoteClubs] = useState<ProjectOption[]>([]);
@@ -136,12 +157,15 @@ export default function MatchCreateModal({
     setSelectedClubId(String(initialClubId || ''));
     setSelectedTeamId(String(initialTeamId || ''));
     setSelectedOpponentTeamId('');
+    setSelectedOpponentOrganisationId(String(initialOrganisationId || ''));
+    setSelectedOpponentClubId('');
     setVenue('Home');
     setSelectedSeasonId(String(initialSeasonId || ''));
     setSelectedCompetitionId(String(initialCompetitionId || ''));
     setSeasonOptions([]);
     setCompetitionOptions([]);
     setOpponentTeams([]);
+    setOpponentClubs([]);
     setRemoteOrganisations([]);
     setRemoteClubs([]);
     setRemoteTeams([]);
@@ -324,16 +348,21 @@ export default function MatchCreateModal({
   };
 
   const opponentTeamOptions = useMemo(() => {
-    const orgId = String(selectedOrganisationId || '').trim();
+    const orgId = String((selectedOpponentOrganisationId || selectedOrganisationId) || '').trim();
     const list = (opponentTeams || []).filter((t) => {
       const tOrg = getProjectOrganisationId(t);
       if (orgId && tOrg && String(tOrg) !== String(orgId)) return false;
+      if (selectedOpponentClubId) {
+        const parentId = getTeamParentId(t);
+        if (!parentId) return false;
+        if (String(parentId) !== String(selectedOpponentClubId)) return false;
+      }
       if (selectedTeamId && String(t.id) === String(selectedTeamId)) return false;
       return true;
     });
     const unique = [...new Map(list.map((t) => [String(t.id), t])).values()];
     return unique.sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  }, [opponentTeams, selectedOrganisationId, selectedTeamId]);
+  }, [opponentTeams, selectedOrganisationId, selectedOpponentOrganisationId, selectedOpponentClubId, selectedTeamId]);
 
   const applyClubSelection = (clubId: string) => {
     setSelectedClubId(clubId);
@@ -343,7 +372,10 @@ export default function MatchCreateModal({
     setSelectedCompetitionId('');
 
     const orgId = clubId ? getClubOrganisationId(clubId) : null;
-    if (orgId) setSelectedOrganisationId(orgId);
+    if (orgId) {
+      setSelectedOrganisationId(orgId);
+      setSelectedOpponentOrganisationId(orgId);
+    }
   };
 
   const applyTeamSelection = (teamId: string) => {
@@ -359,9 +391,66 @@ export default function MatchCreateModal({
     if (clubId) {
       setSelectedClubId(String(clubId));
       const orgId = getClubOrganisationId(String(clubId));
-      if (orgId) setSelectedOrganisationId(String(orgId));
+      if (orgId) {
+        setSelectedOrganisationId(String(orgId));
+        setSelectedOpponentOrganisationId(String(orgId));
+      }
     }
   };
+
+  const filteredOpponentClubs = useMemo(() => {
+    const orgId = String(selectedOpponentOrganisationId || '').trim();
+    const list = orgId
+      ? (opponentClubs || []).filter((c) => {
+          const cOrg = typeof (c as any).organisation === 'string' ? (c as any).organisation : (c as any).organisation?.id;
+          return !cOrg || String(cOrg) === String(orgId);
+        })
+      : opponentClubs || [];
+    return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  }, [opponentClubs, selectedOpponentOrganisationId]);
+
+  useEffect(() => {
+    if (!opened) return;
+    if (!isSeasonDetailMode) return;
+
+    const orgId = String(selectedOpponentOrganisationId || '').trim();
+    if (!orgId) {
+      setOpponentClubs([]);
+      setSelectedOpponentClubId('');
+      return;
+    }
+
+    let cancelled = false;
+    const abortController = new AbortController();
+
+    const load = async () => {
+      setLoadingOpponentClubs(true);
+      try {
+        const params = new URLSearchParams();
+        params.set('page_size', '200');
+        params.set('parent_project__isnull', 'true');
+        params.set('organisation_id', orgId);
+
+        const list = await fetchAllPages<ProjectOption>(
+          `${apiBaseUrl}/api/v1/projects/?${params.toString()}`,
+          { credentials: 'include', signal: abortController.signal },
+          { ttlMs: 10_000, cacheKey: `projects:clubs:opponent:${orgId}`, maxItems: 3000 }
+        );
+        const unique = [...new Map((list || []).map((p: any) => [String(p.id), p])).values()];
+        if (!cancelled) setOpponentClubs(unique as any);
+      } catch {
+        if (!cancelled) setOpponentClubs([]);
+      } finally {
+        if (!cancelled) setLoadingOpponentClubs(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+      abortController.abort();
+    };
+  }, [opened, isSeasonDetailMode, apiBaseUrl, selectedOpponentOrganisationId]);
 
   const combineDateTime = (date: string, time: string): string | null => {
     if (!date || !time) return null;
@@ -390,7 +479,7 @@ export default function MatchCreateModal({
 
   useEffect(() => {
     if (!opened) return;
-    const orgId = String(selectedOrganisationId || '').trim();
+    const orgId = String((selectedOpponentOrganisationId || selectedOrganisationId) || '').trim();
     if (!orgId) {
       setOpponentTeams([]);
       return;
@@ -418,7 +507,7 @@ export default function MatchCreateModal({
     };
 
     load();
-  }, [opened, selectedOrganisationId]);
+  }, [opened, selectedOrganisationId, selectedOpponentOrganisationId]);
 
   useEffect(() => {
     if (!opened) return;
@@ -512,7 +601,7 @@ export default function MatchCreateModal({
       if (!selectedOrganisationId) throw new Error('Select a federation first.');
       if (!selectedClubId) throw new Error('Select a club first.');
       if (!selectedTeamId) throw new Error('Select a team first.');
-      if (!selectedOpponentTeamId) throw new Error('Select an opponent first.');
+      if (requireOpponent && !selectedOpponentTeamId) throw new Error('Select an opponent first.');
       if (!selectedSeasonId) throw new Error('Select a season first.');
       if (!selectedCompetitionId) throw new Error('Select a competition first.');
 
@@ -532,7 +621,7 @@ export default function MatchCreateModal({
         venue,
         organisation_id: selectedOrganisationId,
         project_id: selectedTeamId,
-        opponent_project_id: selectedOpponentTeamId,
+        opponent_project_id: selectedOpponentTeamId || undefined,
         season_id: selectedSeasonId,
         period_id: selectedCompetitionId,
       });
@@ -616,13 +705,7 @@ export default function MatchCreateModal({
                 }
               }}
               disabled={isSaving}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              style={controlStyle(Boolean(isSaving))}
             >
               <option value="Home">Home</option>
               <option value="Away">Away</option>
@@ -636,6 +719,8 @@ export default function MatchCreateModal({
               value={selectedOrganisationId}
               onChange={(e) => {
                 setSelectedOrganisationId(e.target.value);
+                setSelectedOpponentOrganisationId(e.target.value);
+                setSelectedOpponentClubId('');
                 setSelectedClubId('');
                 setSelectedTeamId('');
                 setSelectedOpponentTeamId('');
@@ -643,15 +728,9 @@ export default function MatchCreateModal({
                 setSelectedCompetitionId('');
                 setOpponentTeams([]);
               }}
-              disabled={isSaving}
+              disabled={isSaving || isSeasonDetailMode}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              style={controlStyle(Boolean(isSaving || isSeasonDetailMode))}
             >
               <option value="">Select federation…</option>
               {sortedOrganisations.map((o) => (
@@ -668,15 +747,9 @@ export default function MatchCreateModal({
               id="match-create-club"
               value={selectedClubId}
               onChange={(e) => applyClubSelection(e.target.value)}
-              disabled={isSaving}
+              disabled={isSaving || isSeasonDetailMode}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              style={controlStyle(Boolean(isSaving || isSeasonDetailMode))}
             >
               <option value="">Select club…</option>
               {filteredClubs.map((c) => (
@@ -693,15 +766,9 @@ export default function MatchCreateModal({
               id="match-create-team"
               value={selectedTeamId}
               onChange={(e) => applyTeamSelection(e.target.value)}
-              disabled={isSaving}
+              disabled={isSaving || isSeasonDetailMode}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              style={controlStyle(Boolean(isSaving || isSeasonDetailMode))}
             >
               <option value="">Select team…</option>
               {filteredTeams.map((t) => (
@@ -711,39 +778,112 @@ export default function MatchCreateModal({
               ))}
             </select>
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-opponent">
-              Opponent
-            </label>
-            <select
-              id="match-create-opponent"
-              value={selectedOpponentTeamId}
-              onChange={(e) => {
-                const nextId = e.target.value;
-                setSelectedOpponentTeamId(nextId);
+            {isSeasonDetailMode ? (
+              <>
+                <label style={{ fontWeight: 600 }} htmlFor="match-create-opponent-org">
+                  Opponent Federation
+                </label>
+                <select
+                  id="match-create-opponent-org"
+                  value={selectedOpponentOrganisationId}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setSelectedOpponentOrganisationId(next);
+                    setSelectedOpponentClubId('');
+                    setSelectedOpponentTeamId('');
+                  }}
+                  disabled={isSaving}
+                  style={controlStyle(Boolean(isSaving))}
+                >
+                  <option value="">(Optional) Select federation…</option>
+                  {sortedOrganisations.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.name}
+                    </option>
+                  ))}
+                </select>
 
-                if (!title.trim() && selectedTeamId && nextId) {
-                  const home = projectNameById(String(selectedTeamId)) || 'Home';
-                  const away = projectNameById(String(nextId)) || 'Opponent';
-                  setTitle(venue === 'Home' ? `${home} vs ${away}` : `${home} @ ${away}`);
-                }
-              }}
-              disabled={isSaving || loadingOpponentTeams || !selectedOrganisationId}
-              required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
-            >
-              <option value="">{loadingOpponentTeams ? 'Loading opponents…' : 'Select opponent…'}</option>
-              {opponentTeamOptions.map((t) => (
-                <option key={String(t.id)} value={String(t.id)}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+                <label style={{ fontWeight: 600 }} htmlFor="match-create-opponent-club">
+                  Opponent Club
+                </label>
+                <select
+                  id="match-create-opponent-club"
+                  value={selectedOpponentClubId}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setSelectedOpponentClubId(next);
+                    setSelectedOpponentTeamId('');
+                  }}
+                  disabled={isSaving || loadingOpponentClubs || !selectedOpponentOrganisationId}
+                  style={controlStyle(Boolean(isSaving || loadingOpponentClubs || !selectedOpponentOrganisationId))}
+                >
+                  <option value="">(Optional) Select club…</option>
+                  {filteredOpponentClubs.map((c) => (
+                    <option key={String(c.id)} value={String(c.id)}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+
+                <label style={{ fontWeight: 600 }} htmlFor="match-create-opponent">
+                  Opponent Team
+                </label>
+                <select
+                  id="match-create-opponent"
+                  value={selectedOpponentTeamId}
+                  onChange={(e) => {
+                    const nextId = e.target.value;
+                    setSelectedOpponentTeamId(nextId);
+
+                    if (!title.trim() && selectedTeamId && nextId) {
+                      const home = projectNameById(String(selectedTeamId)) || 'Home';
+                      const away = projectNameById(String(nextId)) || 'Opponent';
+                      setTitle(venue === 'Home' ? `${home} vs ${away}` : `${home} @ ${away}`);
+                    }
+                  }}
+                  disabled={isSaving || loadingOpponentTeams || !selectedOpponentOrganisationId}
+                  required={requireOpponent}
+                  style={controlStyle(Boolean(isSaving || loadingOpponentTeams || !selectedOpponentOrganisationId))}
+                >
+                  <option value="">{loadingOpponentTeams ? 'Loading opponents…' : '(Optional) Select opponent team…'}</option>
+                  {opponentTeamOptions.map((t) => (
+                    <option key={String(t.id)} value={String(t.id)}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </>
+            ) : (
+              <>
+                <label style={{ fontWeight: 600 }} htmlFor="match-create-opponent">
+                  Opponent
+                </label>
+                <select
+                  id="match-create-opponent"
+                  value={selectedOpponentTeamId}
+                  onChange={(e) => {
+                    const nextId = e.target.value;
+                    setSelectedOpponentTeamId(nextId);
+
+                    if (!title.trim() && selectedTeamId && nextId) {
+                      const home = projectNameById(String(selectedTeamId)) || 'Home';
+                      const away = projectNameById(String(nextId)) || 'Opponent';
+                      setTitle(venue === 'Home' ? `${home} vs ${away}` : `${home} @ ${away}`);
+                    }
+                  }}
+                  disabled={isSaving || loadingOpponentTeams || !selectedOrganisationId}
+                  required
+                  style={controlStyle(Boolean(isSaving || loadingOpponentTeams || !selectedOrganisationId))}
+                >
+                  <option value="">{loadingOpponentTeams ? 'Loading opponents…' : 'Select opponent…'}</option>
+                  {opponentTeamOptions.map((t) => (
+                    <option key={String(t.id)} value={String(t.id)}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
 
             <label style={{ fontWeight: 600 }} htmlFor="match-create-season">
               Season
@@ -755,15 +895,9 @@ export default function MatchCreateModal({
                 setSelectedSeasonId(e.target.value);
                 setSelectedCompetitionId('');
               }}
-              disabled={isSaving || loadingSeasons}
+              disabled={isSaving || loadingSeasons || isSeasonDetailMode}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              style={controlStyle(Boolean(isSaving || loadingSeasons || isSeasonDetailMode))}
             >
               <option value="">{loadingSeasons ? 'Loading seasons…' : 'Select season…'}</option>
               {seasonOptions.map((s) => (
@@ -782,13 +916,7 @@ export default function MatchCreateModal({
               onChange={(e) => setSelectedCompetitionId(e.target.value)}
               disabled={isSaving || loadingCompetitions}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              style={controlStyle(Boolean(isSaving || loadingCompetitions))}
             >
               <option value="">{loadingCompetitions ? 'Loading competitions…' : 'Select competition…'}</option>
               {competitionOptions.map((c) => (
@@ -808,11 +936,8 @@ export default function MatchCreateModal({
               required
               disabled={isSaving}
               style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
+                ...controlStyle(Boolean(isSaving)),
+                cursor: isSaving ? 'not-allowed' : 'text',
               }}
             />
 
@@ -827,11 +952,8 @@ export default function MatchCreateModal({
               disabled={isSaving}
               required
               style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
+                ...controlStyle(Boolean(isSaving)),
+                cursor: isSaving ? 'not-allowed' : 'text',
               }}
             />
 
@@ -846,11 +968,8 @@ export default function MatchCreateModal({
               disabled={isSaving}
               required
               style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
+                ...controlStyle(Boolean(isSaving)),
+                cursor: isSaving ? 'not-allowed' : 'text',
               }}
             />
 
@@ -863,11 +982,8 @@ export default function MatchCreateModal({
               onChange={(e) => setLocation(e.target.value)}
               disabled={isSaving}
               style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
+                ...controlStyle(Boolean(isSaving)),
+                cursor: isSaving ? 'not-allowed' : 'text',
               }}
             />
 
@@ -881,11 +997,8 @@ export default function MatchCreateModal({
               rows={5}
               disabled={isSaving}
               style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
+                ...controlStyle(Boolean(isSaving)),
+                cursor: isSaving ? 'not-allowed' : 'text',
                 resize: 'vertical',
               }}
             />
