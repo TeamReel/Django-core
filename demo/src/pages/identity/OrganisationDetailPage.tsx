@@ -1337,9 +1337,9 @@ export const OrganisationDetailPage: React.FC = () => {
                 style={{
                   padding: '6px 12px',
                   borderRadius: '4px',
-                  border: '1px solid #007bff',
+                  border: '1px solid var(--app-warning)',
                   backgroundColor: 'var(--app-surface)',
-                  color: '#007bff',
+                  color: 'var(--app-warning)',
                   cursor: 'pointer',
                   fontSize: '12px',
                   fontWeight: 500,

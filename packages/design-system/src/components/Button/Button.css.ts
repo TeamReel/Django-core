@@ -71,6 +71,17 @@ export const button = recipe({
           backgroundColor: themeVars.color.interactive.destructiveHover,
         },
       },
+      warning: {
+        backgroundColor: 'transparent',
+        color: themeVars.color.text.warning,
+        border: `1px solid ${themeVars.color.text.warning}`,
+        ':hover:not(:disabled)': {
+          backgroundColor: themeVars.color.background.warning,
+        },
+        ':active:not(:disabled)': {
+          backgroundColor: themeVars.color.background.tertiary,
+        },
+      },
     },
     size: {
       sm: {

@@ -12,7 +12,7 @@ export const darkTheme = createTheme(themeVars, {
       link: '#60a5fa',
       error: '#f87171',
       success: '#4ade80',
-      warning: '#facc15',
+      warning: '#fd7e14',
     },
     background: {
       primary: '#1a1a1a', // Surface 1 (Cards, Modals) - Distinct from page bg #0f0f0f

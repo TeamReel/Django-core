@@ -56,13 +56,13 @@ export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 
 
   // Match Federations tab button tones
   if (variant === 'primary') {
-    return { ...base, border: '1px solid #007bff', color: '#007bff' };
+    return { ...base, border: '1px solid var(--app-link)', color: 'var(--app-link)' };
   }
   if (variant === 'warning') {
-    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
+    return { ...base, border: '1px solid var(--app-warning)', color: 'var(--app-warning)' };
   }
   if (variant === 'danger') {
-    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+    return { ...base, border: '1px solid var(--app-error)', color: 'var(--app-error)' };
   }
 
   // secondary / neutral

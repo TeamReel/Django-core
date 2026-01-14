@@ -195,7 +195,7 @@ export function TemplatesPage() {
                             {MOCK_TASKS.find(t => t.id === selectedTaskId)?.title}
                           </h2>
                         </div>
-                        <Button variant="secondary" size="sm">Edit</Button>
+                        <Button variant="warning" size="sm">Edit</Button>
                       </div>
                       <Card className="p-6 mb-6">
                         <h3 className="font-semibold mb-4">Description</h3>
@@ -324,7 +324,7 @@ export function TemplatesPage() {
                             <td className="p-3">User {i}</td>
                             <td className="p-3 text-gray-500">Editor</td>
                             <td className="p-3"><Badge size="sm" variant="success">Active</Badge></td>
-                            <td className="p-3 text-right text-blue-600 cursor-pointer hover:underline">Edit</td>
+                            <td className="p-3 text-right text-orange-600 cursor-pointer hover:underline">Edit</td>
                           </tr>
                         ))}
                       </tbody>

@@ -334,9 +334,9 @@ export const UserDetailPage: React.FC = () => {
                   style={{
                     padding: '6px 12px',
                     borderRadius: '4px',
-                    border: '1px solid #0056b3',
+                    border: '1px solid var(--app-warning)',
                     backgroundColor: 'var(--app-surface)',
-                    color: 'var(--app-text)',
+                    color: 'var(--app-warning)',
                     cursor: 'pointer',
                     fontSize: '12px',
                     fontWeight: 500

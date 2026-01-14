@@ -12,7 +12,7 @@ export const lightTheme = createTheme(themeVars, {
       link: '#2563eb',
       error: '#dc2626',
       success: '#16a34a',
-      warning: '#ca8a04',
+      warning: '#fd7e14',
     },
     background: {
       primary: '#ffffff', // Surface 1 (Cards) - Distinct from page bg #f5f5f5
@@ -21,7 +21,7 @@ export const lightTheme = createTheme(themeVars, {
       inverse: '#1a1a1a',
       overlay: 'rgba(0, 0, 0, 0.5)',
       success: '#dcfce7',
-      warning: '#fef9c3',
+      warning: '#fff4e6',
       error: '#fee2e2',
       info: '#dbeafe',
     },

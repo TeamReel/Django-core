@@ -1382,7 +1382,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 View
               </Button>
               <Button
-                variant="secondary"
+                variant="warning"
                 onClick={() => {
                   setSelectedEditPeriod(competition);
                   setIsPeriodEditModalOpen(true);
