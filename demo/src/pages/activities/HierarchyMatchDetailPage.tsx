@@ -309,8 +309,20 @@ export default function HierarchyMatchDetailPage() {
         const extractList = (payload: any): any[] => {
           const unwrapped = unwrap(payload);
           if (Array.isArray(unwrapped)) return unwrapped;
+
+          // Common envelope shapes across the API:
+          // - { data: [...] }
+          // - { data: { results: [...] } }
+          // - { data: { data: [...] } }
+          // - { data: { data: { results: [...] } } }
           if (Array.isArray(unwrapped?.results)) return unwrapped.results;
           if (Array.isArray(unwrapped?.items)) return unwrapped.items;
+          if (Array.isArray(unwrapped?.data)) return unwrapped.data;
+          if (Array.isArray(unwrapped?.data?.results)) return unwrapped.data.results;
+          if (Array.isArray(unwrapped?.data?.items)) return unwrapped.data.items;
+          if (Array.isArray(unwrapped?.data?.data)) return unwrapped.data.data;
+          if (Array.isArray(unwrapped?.data?.data?.results)) return unwrapped.data.data.results;
+
           return [];
         };
 
