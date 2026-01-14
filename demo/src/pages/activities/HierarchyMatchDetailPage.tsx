@@ -346,6 +346,58 @@ export default function HierarchyMatchDetailPage() {
     seasonsBasePath,
   ]);
 
+  const personaGroups = useMemo(() => {
+    const byMemberId = new Map<string, OrgMember>();
+    for (const m of orgMembersAll) byMemberId.set(String(m.id), m);
+
+    const roleByTeamUserId = new Map<string, string>();
+    for (const m of teamProjectMembers) {
+      const uid = String(m?.user?.id ?? m?.user_id ?? '').trim();
+      if (uid) roleByTeamUserId.set(uid, String(m.role || '').toLowerCase());
+    }
+
+    const roleByClubUserId = new Map<string, string>();
+    for (const m of clubProjectMembers) {
+      const uid = String(m?.user?.id ?? m?.user_id ?? '').trim();
+      if (uid) roleByClubUserId.set(uid, String(m.role || '').toLowerCase());
+    }
+
+    const groups: Record<string, Participation[]> = {
+      'Land Admin': [],
+      'Club Admin': [],
+      'Team Admin': [],
+      'Team Member': [],
+      Supporter: [],
+      Other: [],
+    };
+
+    for (const p of match?.participations ?? []) {
+      const memberId = String(p.member?.id || '').trim();
+      const orgMember = memberId ? byMemberId.get(memberId) : undefined;
+      const userId = String(orgMember?.user?.id ?? '').trim();
+
+      const teamRole = userId ? roleByTeamUserId.get(userId) : undefined;
+      const clubRole = userId ? roleByClubUserId.get(userId) : undefined;
+      const orgRole = String(orgMember?.role || '').toLowerCase();
+
+      if (teamRole === 'admin') {
+        groups['Team Admin'].push(p);
+      } else if (clubRole === 'admin') {
+        groups['Club Admin'].push(p);
+      } else if (teamRole) {
+        groups['Team Member'].push(p);
+      } else if (clubRole) {
+        groups.Supporter.push(p);
+      } else if (orgRole === 'admin') {
+        groups['Land Admin'].push(p);
+      } else {
+        groups.Other.push(p);
+      }
+    }
+
+    return groups;
+  }, [clubProjectMembers, match?.participations, orgMembersAll, teamProjectMembers]);
+
   if (loading) {
     return (
       <AppShell>
@@ -715,57 +767,6 @@ export default function HierarchyMatchDetailPage() {
     return raw ? String(raw) : '—';
   };
 
-  const personaGroups = useMemo(() => {
-    const byMemberId = new Map<string, OrgMember>();
-    for (const m of orgMembersAll) byMemberId.set(String(m.id), m);
-
-    const roleByTeamUserId = new Map<string, string>();
-    for (const m of teamProjectMembers) {
-      const uid = String(m?.user?.id ?? m?.user_id ?? '').trim();
-      if (uid) roleByTeamUserId.set(uid, String(m.role || '').toLowerCase());
-    }
-
-    const roleByClubUserId = new Map<string, string>();
-    for (const m of clubProjectMembers) {
-      const uid = String(m?.user?.id ?? m?.user_id ?? '').trim();
-      if (uid) roleByClubUserId.set(uid, String(m.role || '').toLowerCase());
-    }
-
-    const groups: Record<string, Participation[]> = {
-      'Land Admin': [],
-      'Club Admin': [],
-      'Team Admin': [],
-      'Team Member': [],
-      Supporter: [],
-      Other: [],
-    };
-
-    for (const p of match.participations || []) {
-      const memberId = String(p.member?.id || '').trim();
-      const orgMember = memberId ? byMemberId.get(memberId) : undefined;
-      const userId = String(orgMember?.user?.id ?? '').trim();
-
-      const teamRole = userId ? roleByTeamUserId.get(userId) : undefined;
-      const clubRole = userId ? roleByClubUserId.get(userId) : undefined;
-      const orgRole = String(orgMember?.role || '').toLowerCase();
-
-      if (teamRole === 'admin') {
-        groups['Team Admin'].push(p);
-      } else if (clubRole === 'admin') {
-        groups['Club Admin'].push(p);
-      } else if (teamRole) {
-        groups['Team Member'].push(p);
-      } else if (clubRole) {
-        groups.Supporter.push(p);
-      } else if (orgRole === 'admin') {
-        groups['Land Admin'].push(p);
-      } else {
-        groups.Other.push(p);
-      }
-    }
-
-    return groups;
-  }, [clubProjectMembers, match.participations, orgMembersAll, teamProjectMembers]);
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
