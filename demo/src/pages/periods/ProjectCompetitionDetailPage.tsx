@@ -9,6 +9,7 @@ import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
+import MatchDetailModal from '../identity/MatchDetailModal';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -709,6 +710,9 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
   const [selectedEditMatch, setSelectedEditMatch] = useState<any | null>(null);
 
+  const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
+  const [selectedDetailMatch, setSelectedDetailMatch] = useState<any | null>(null);
+
   const [isMatchCreateModalOpen, setIsMatchCreateModalOpen] = useState(false);
 
   const [isMembershipDetailModalOpen, setIsMembershipDetailModalOpen] = useState(false);
@@ -1312,7 +1316,10 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                     <button
                       type="button"
                       className="app-action-button"
-                      onClick={() => navigate(matchDetailPath(String(m.id)))}
+                      onClick={() => {
+                        setSelectedDetailMatch(m);
+                        setIsMatchDetailModalOpen(true);
+                      }}
                       style={actionButtonStyle('primary')}
                     >
                       View
@@ -1714,6 +1721,15 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                   if (!selectedEditMatch) return;
                   await saveMatchEdits(selectedEditMatch, patch);
                 }}
+              />
+
+              <MatchDetailModal
+                opened={isMatchDetailModalOpen}
+                onClose={() => {
+                  setIsMatchDetailModalOpen(false);
+                  setSelectedDetailMatch(null);
+                }}
+                match={selectedDetailMatch}
               />
 
               <MatchCreateModal
