@@ -232,7 +232,15 @@ export default function SeasonSquadAddMemberModal({
   useEffect(() => {
     if (!opened) return;
     const orgId = String(selectedOrganisationId || '').trim();
+    const orgSlug = String(selectedOrganisationSlug || '').trim();
     if (!orgId) {
+      setRemoteClubs([]);
+      return;
+    }
+
+    // Nested organisations/{org_slug}/projects uses slug, not UUID.
+    // Wait until we can resolve the slug.
+    if (!orgSlug) {
       setRemoteClubs([]);
       return;
     }
@@ -241,7 +249,7 @@ export default function SeasonSquadAddMemberModal({
     const load = async () => {
       setLoadingClubs(true);
       try {
-        const url = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgId)}/projects/?page_size=500&parent_project__isnull=true`;
+        const url = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=500&parent_project__isnull=true`;
         const res = await fetch(url, { credentials: 'include' });
         if (!res.ok) return;
         const raw = await res.json().catch(() => null);
@@ -259,7 +267,7 @@ export default function SeasonSquadAddMemberModal({
     return () => {
       cancelled = true;
     };
-  }, [opened, apiBaseUrl, selectedOrganisationId]);
+  }, [opened, apiBaseUrl, selectedOrganisationId, selectedOrganisationSlug]);
 
   // Load teams (child projects) when club changes.
   useEffect(() => {
