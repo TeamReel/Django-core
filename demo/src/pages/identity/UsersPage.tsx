@@ -863,12 +863,7 @@ export default function UsersPage() {
                         <div
                             style={{ fontWeight: 500, color: '#0066cc', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.85rem' }}
                             onClick={() => {
-                                if (orgIdParam || context.organisation) {
-                                    // Navigate to user detail within org context
-                                    navigate(`/organisations/${orgIdParam || context.organisation?.slug}/users/${user.id}`);
-                                } else {
-                                    navigate(`/users/${user.id}`);
-                                }
+                                navigate(`/users/${user.id}`);
                             }}
                         >
                             {user.first_name} {user.last_name}

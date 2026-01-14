@@ -42,7 +42,7 @@ export const UserDetailPage: React.FC = () => {
     []
   );
 
-  const basePath = orgId ? `/organisations/${orgId}/users/${userId}` : `/users/${userId}`;
+  const basePath = `/users/${userId}`;
 
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);

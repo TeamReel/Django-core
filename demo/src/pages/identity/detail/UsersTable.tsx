@@ -210,7 +210,7 @@ export default function UsersTable({
                   </td>
                 )}
                 <td style={compactTextTdStyle}>
-                  <Link to={`/organisations/${currentOrgSlug}/users/${userObj.id}`} className="text-blue-600 hover:underline">
+                  <Link to={`/users/${userObj.id}`} className="text-blue-600 hover:underline">
                     {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
                   </Link>
                 </td>

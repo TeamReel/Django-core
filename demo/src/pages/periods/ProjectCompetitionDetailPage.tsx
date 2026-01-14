@@ -1753,9 +1753,9 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                               return (
                                 <tr key={String(m?.id || user?.id || idx)}>
                                   <td style={compactTextTdStyle}>
-                                    {orgSlugOrId && userId ? (
+                                    {userId ? (
                                       <Link
-                                        to={`/organisations/${orgSlugOrId}/users/${userId}`}
+                                        to={`/users/${userId}`}
                                         className="text-blue-600 hover:underline"
                                         style={{ textDecoration: 'none' }}
                                       >

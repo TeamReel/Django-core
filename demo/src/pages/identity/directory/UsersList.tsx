@@ -593,24 +593,10 @@ export const UsersList: React.FC = () => {
         return `/organisations/${slugOrId}`;
     };
 
-    const getOrganisationSlugOrIdForRow = (u: any): string | null => {
-        const fromMembership = u?.membership?.organisation;
-        const fromRow = u?.organisation;
-        const slugOrId =
-            fromMembership?.slug ??
-            fromMembership?.id ??
-            fromRow?.slug ??
-            fromRow?.id ??
-            getSelectedOrgSlug();
-        const cleaned = String(slugOrId || '').trim();
-        return cleaned ? cleaned : null;
-    };
-
     const getUserDetailHrefForRow = (u: any): string | null => {
         const userId = u?.id ? String(u.id).trim() : '';
         if (!userId) return null;
-        const orgSlugOrId = getOrganisationSlugOrIdForRow(u);
-        return orgSlugOrId ? `/organisations/${orgSlugOrId}/users/${userId}` : `/users/${userId}`;
+        return `/users/${userId}`;
     };
 
     const getClubAndTeamLinksForRow = (u: any) => {

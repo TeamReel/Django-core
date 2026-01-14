@@ -1882,7 +1882,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                   </td>
                                   <td style={compactTextTdStyle}>
                                       <Link
-                                        to={`/organisations/${currentOrgSlug}/users/${user.id}`}
+                                        to={`/users/${user.id}`}
                                         className="text-blue-600 hover:underline"
                                       >
                                         {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}

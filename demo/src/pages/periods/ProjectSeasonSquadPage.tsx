@@ -693,9 +693,9 @@ export default function ProjectSeasonSquadPage() {
                       return (
                         <tr key={String(membershipId || user.id)}>
                           <td style={compactTextTdStyle}>
-                            {orgSlugOrId && userId ? (
+                            {userId ? (
                               <Link
-                                to={`/organisations/${orgSlugOrId}/users/${userId}`}
+                                to={`/users/${userId}`}
                                 className="text-blue-600 hover:underline"
                                 style={{ textDecoration: 'none' }}
                               >
@@ -715,9 +715,9 @@ export default function ProjectSeasonSquadPage() {
                           <td style={compactTdStyle}>{shirtNumber || '—'}</td>
                           <td style={compactTdStyle}>
                             <div style={compactActionsStyle}>
-                              {orgSlugOrId && userId ? (
+                              {userId ? (
                                 <button
-                                  onClick={() => navigate(`/organisations/${orgSlugOrId}/users/${userId}`)}
+                                  onClick={() => navigate(`/users/${userId}`)}
                                   style={actionButtonStyle('primary')}
                                 >
                                   View

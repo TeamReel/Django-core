@@ -1265,9 +1265,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               return (
                                 <tr key={membershipId}>
                                   <td style={compactTextTdStyle}>
-                                    {orgSlugOrId && userId ? (
+                                    {userId ? (
                                       <Link
-                                        to={`/organisations/${orgSlugOrId}/users/${userId}`}
+                                        to={`/users/${userId}`}
                                         className="text-blue-600 hover:underline"
                                         style={{ textDecoration: 'none' }}
                                       >
@@ -1287,11 +1287,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   <td style={compactTdStyle}>{shirtNumber || '—'}</td>
                                   <td style={compactTdStyle}>
                                     <div style={compactActionsStyle}>
-                                      {orgSlugOrId && userId ? (
+                                      {userId ? (
                                         <button
                                           type="button"
                                           className="app-action-button"
-                                          onClick={() => navigate(`/organisations/${orgSlugOrId}/users/${userId}`)}
+                                          onClick={() => navigate(`/users/${userId}`)}
                                           style={actionButtonStyle('primary')}
                                         >
                                           View
