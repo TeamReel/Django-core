@@ -1,0 +1,54 @@
+# Railway snapshot exclusions
+# This reduces the amount of data Railway needs to upload/scan before the build starts.
+# Keep this conservative: exclude docs, archives, caches, local envs, and build outputs.
+
+# Git / tooling
+.git
+.worktrees
+.github
+.vscode
+.idea
+
+# Python
+venv/
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+*.pyc
+*.pyo
+
+# Node
+**/node_modules/
+**/.pnpm-store/
+
+# Build outputs / caches
+**/dist/
+**/build/
+**/.vite/
+coverage/
+**/coverage/
+htmlcov/
+logs/
+**/*.log
+
+# Docs & specs (not needed for runtime builds)
+docs/
+documents/
+kitty-specs/
+archive/
+examples/
+
+# Large static artifacts often tracked historically
+**/*.pdf
+**/*.zip
+**/*.tgz
+**/*.tar
+**/*.gz
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
