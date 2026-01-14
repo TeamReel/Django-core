@@ -91,6 +91,13 @@ export default function SeasonSquadAddMemberModal({
     return remoteOrganisations.length ? remoteOrganisations : organisations;
   }, [remoteOrganisations, organisations]);
 
+  const selectedOrganisationSlug = useMemo(() => {
+    const orgId = String(selectedOrganisationId || '').trim();
+    if (!orgId) return '';
+    const org = organisationsOptions.find((o) => String(o.id) === String(orgId));
+    return String(org?.slug || '').trim();
+  }, [organisationsOptions, selectedOrganisationId]);
+
   const clubsOptions = useMemo(() => {
     return remoteClubs.length ? remoteClubs : clubs;
   }, [remoteClubs, clubs]);
@@ -287,37 +294,109 @@ export default function SeasonSquadAddMemberModal({
     };
   }, [opened, apiBaseUrl, selectedClubId]);
 
-  // Preload users immediately when a team is selected (no 2-char requirement).
+  // Load user options based on the selected scope:
+  // - Team selected: show users that can be added to this team for this season (searchable-users)
+  // - Club selected: show members of this club
+  // - Federation selected: show members of this federation
   useEffect(() => {
     if (!opened) return;
+
     const teamId = String(selectedTeamId || '').trim();
+    const clubId = String(selectedClubId || '').trim();
+    const orgId = String(selectedOrganisationId || '').trim();
+    const orgSlug = String(selectedOrganisationSlug || '').trim();
     const season = String(seasonId || '').trim();
-    if (!teamId || !season) {
+
+    // No scope selected yet.
+    if (!teamId && !clubId && !orgId) {
+      setUserOptions([]);
+      setSelectedUserId('');
+      return;
+    }
+
+    // If only federation is selected, wait until we can resolve a usable slug.
+    if (!teamId && !clubId && orgId && !orgSlug) {
       setUserOptions([]);
       setSelectedUserId('');
       return;
     }
 
     let cancelled = false;
+    const abortController = new AbortController();
+
+    const normalizeUser = (u: any): UserOption | null => {
+      if (!u) return null;
+      const id = (u as any).id;
+      if (id == null) return null;
+      const first = String((u as any).first_name || '').trim();
+      const last = String((u as any).last_name || '').trim();
+      const fullName = String((u as any).full_name || (first || last ? `${first} ${last}`.trim() : '')).trim();
+      return {
+        id,
+        email: (u as any).email,
+        first_name: (u as any).first_name,
+        last_name: (u as any).last_name,
+        full_name: fullName,
+        name: (u as any).name,
+      };
+    };
+
     const load = async () => {
       setLoadingUsers(true);
       setError(null);
       try {
-        const params = new URLSearchParams();
-        params.set('period', season);
-        params.set('page_size', '500');
+        let usersRaw: any[] = [];
 
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/searchable-users/?${params.toString()}`,
-          { credentials: 'include' }
-        );
-        if (!res.ok) throw new Error('Failed to load users');
-        const raw: any = await res.json().catch(() => null);
-        const list = extractList(raw);
-        const unique = [...new Map((list as any[]).map((u) => [String(u.id), u])).values()];
-        if (!cancelled) setUserOptions(unique as any);
-      } catch (e) {
+        if (teamId) {
+          if (!season) throw new Error('Missing season context');
+          const params = new URLSearchParams();
+          params.set('period', season);
+          params.set('page_size', '500');
+          const res = await fetch(
+            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/searchable-users/?${params.toString()}`,
+            { credentials: 'include', signal: abortController.signal }
+          );
+          if (!res.ok) throw new Error('Failed to load users');
+          const raw: any = await res.json().catch(() => null);
+          usersRaw = extractList(raw);
+        } else if (clubId) {
+          const params = new URLSearchParams();
+          params.set('page_size', '500');
+          const res = await fetch(
+            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(clubId)}/members/?${params.toString()}`,
+            { credentials: 'include', signal: abortController.signal }
+          );
+          if (!res.ok) throw new Error('Failed to load club members');
+          const raw: any = await res.json().catch(() => null);
+          const memberships = extractList(raw);
+          usersRaw = memberships.map((m: any) => m?.user).filter(Boolean);
+        } else {
+          const params = new URLSearchParams();
+          params.set('page_size', '500');
+          params.set('include_project_memberships', 'true');
+          const res = await fetch(
+            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/members/?${params.toString()}`,
+            { credentials: 'include', signal: abortController.signal }
+          );
+          if (!res.ok) throw new Error('Failed to load federation members');
+          const raw: any = await res.json().catch(() => null);
+          const memberships = extractList(raw);
+          usersRaw = memberships.map((m: any) => m?.user).filter(Boolean);
+        }
+
+        const normalized = usersRaw.map(normalizeUser).filter(Boolean) as UserOption[];
+        const unique = [...new Map(normalized.map((u) => [String(u.id), u])).values()];
+
         if (!cancelled) {
+          setUserOptions(unique);
+
+          const selected = String(selectedUserId || '').trim();
+          if (selected && !unique.some((u) => String(u.id) === selected)) {
+            setSelectedUserId('');
+          }
+        }
+      } catch (e: any) {
+        if (!cancelled && e?.name !== 'AbortError') {
           setUserOptions([]);
           setError(e instanceof Error ? e.message : 'Failed to load users');
         }
@@ -329,8 +408,9 @@ export default function SeasonSquadAddMemberModal({
     load();
     return () => {
       cancelled = true;
+      abortController.abort();
     };
-  }, [opened, selectedTeamId, seasonId, apiBaseUrl]);
+  }, [opened, selectedTeamId, selectedClubId, selectedOrganisationId, selectedOrganisationSlug, seasonId, apiBaseUrl, selectedUserId]);
 
   const filteredUserOptions = useMemo(() => {
     const q = String(userSearch || '').trim().toLowerCase();
@@ -503,7 +583,7 @@ export default function SeasonSquadAddMemberModal({
               id="squad-add-search"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
-              disabled={saving || !selectedTeamId}
+              disabled={saving || (!selectedOrganisationId && !selectedClubId && !selectedTeamId)}
               placeholder="Filter users (optional)…"
               style={{
                 padding: '8px 10px',
@@ -521,7 +601,7 @@ export default function SeasonSquadAddMemberModal({
               id="squad-add-user"
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
-              disabled={saving || loadingUsers || !selectedTeamId}
+              disabled={saving || loadingUsers || (!selectedOrganisationId && !selectedClubId && !selectedTeamId)}
               style={{
                 padding: '8px 10px',
                 borderRadius: '6px',
@@ -533,8 +613,8 @@ export default function SeasonSquadAddMemberModal({
               <option value="">
                 {loadingUsers
                   ? 'Loading users…'
-                  : !selectedTeamId
-                    ? 'Select a team first…'
+                  : !selectedOrganisationId && !selectedClubId && !selectedTeamId
+                    ? 'Select a federation first…'
                     : filteredUserOptions.length
                       ? 'Select user…'
                       : userOptions.length
