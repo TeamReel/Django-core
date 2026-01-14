@@ -526,29 +526,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       setMembersLoading(true);
       setMembersError(null);
       try {
-        const membersParams = new URLSearchParams();
-        membersParams.set('period', seasonUuid);
-        const membersRes = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/?${membersParams.toString()}`,
-          { credentials: 'include' }
+        const membersUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(
+          projectIdForMembers
+        )}/members/?period=${encodeURIComponent(seasonUuid)}&page_size=200`;
+
+        const membersList = await fetchAllPages<any>(
+          membersUrl,
+          { credentials: 'include' },
+          { bypass: true, maxItems: 5000 }
         );
-        if (!membersRes.ok) throw new Error('Failed to load squad');
 
-        const rawMembers: any = await membersRes.json();
-        let membersList: any[] = [];
-        if (Array.isArray(rawMembers)) {
-          membersList = rawMembers;
-        } else if (Array.isArray(rawMembers?.data)) {
-          membersList = rawMembers.data;
-        } else if (Array.isArray(rawMembers?.data?.data)) {
-          membersList = rawMembers.data.data;
-        } else if (Array.isArray(rawMembers?.data?.results)) {
-          membersList = rawMembers.data.results;
-        } else if (Array.isArray(rawMembers?.results)) {
-          membersList = rawMembers.results;
-        }
-
-        if (!cancelled) setMembers(membersList);
+        if (!cancelled) setMembers(Array.isArray(membersList) ? membersList : []);
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'Failed to load squad';
         if (!cancelled) setMembersError(msg);

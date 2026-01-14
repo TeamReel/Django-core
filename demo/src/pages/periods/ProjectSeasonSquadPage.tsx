@@ -380,15 +380,18 @@ export default function ProjectSeasonSquadPage() {
           navigate(`${seasonsBasePath}/${desiredKey}/squad`, { replace: true });
         }
 
-        // Season-scoped squad
-        const membersRes = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectJson.id)}/members/?period=${encodeURIComponent(seasonUuid)}`,
-          { credentials: 'include' }
+        // Season-scoped squad (fetch all pages to avoid missing members on large rosters)
+        const membersUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(
+          projectJson.id
+        )}/members/?period=${encodeURIComponent(seasonUuid)}&page_size=200`;
+
+        const membersList = await fetchAllPages<any>(
+          membersUrl,
+          { credentials: 'include' },
+          { bypass: true, maxItems: 5000 }
         );
-        if (membersRes.ok) {
-          const rawMembers = await membersRes.json();
-          if (!isCancelled) setMembers(unwrapList(rawMembers));
-        }
+
+        if (!isCancelled) setMembers(Array.isArray(membersList) ? membersList : []);
       } catch (e) {
         if (!isCancelled) setError(e instanceof Error ? e.message : 'Failed to load squad');
       } finally {
