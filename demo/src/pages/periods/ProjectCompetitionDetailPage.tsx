@@ -1294,20 +1294,18 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             {rows.map((m: any) => (
               <tr key={String(m.id)}>
                 <td style={compactTextTdStyle}>
-                  <button
-                    type="button"
-                    className="app-unstyled-button text-blue-600 hover:underline"
-                    onClick={() => {
-                      setSelectedDetailMatch(m);
-                      setIsMatchDetailModalOpen(true);
-                    }}
-                    style={{ textDecoration: 'none', backgroundColor: 'transparent', padding: 0, font: 'inherit' }}
+                  <Link
+                    to={matchDetailPath(String(m.id))}
+                    className="hover:underline"
+                    style={{ textDecoration: 'none', color: 'var(--app-link)' }}
                   >
                     {m.title || `Match ${m.id}`}
-                  </button>
+                  </Link>
                 </td>
-                <td style={compactTdStyle}>{m.start_time ? new Date(m.start_time).toLocaleString() : '—'}</td>
-                <td style={compactTdStyle}>{m.location || '—'}</td>
+                <td style={compactTdStyle}>
+                  {m.start_time ? <Badge variant="default">{new Date(m.start_time).toLocaleString()}</Badge> : '—'}
+                </td>
+                <td style={compactTdStyle}>{m.location ? <Badge variant="default">{m.location}</Badge> : '—'}</td>
                 <td style={compactTdStyle}>
                   {m.participations_count !== undefined ? (
                     <Badge variant="default">{m.participations_count}</Badge>
