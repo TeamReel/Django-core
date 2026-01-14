@@ -300,10 +300,38 @@ export default function LinkUserModal({
     const pid = String(projectId || '').trim();
     if (!pid) throw new Error('Select a club/team first');
 
-    const membershipId = String(projectMembershipIdByProjectId.get(pid) || '').trim();
-    if (!membershipId) {
-      throw new Error('Missing project membership id for this user. Refresh user data and try again.');
-    }
+    const findProjectMembershipId = async (): Promise<string> => {
+      const direct = String(projectMembershipIdByProjectId.get(pid) || '').trim();
+      if (direct) return direct;
+
+      const members = await fetchAllPages<any>(
+        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/?page_size=500`,
+        { credentials: 'include' },
+        {
+          ttlMs: 5_000,
+          cacheKey: `project:${pid}:members:lookup:${String(user.id)}`,
+          maxPages: 50,
+          maxItems: 10_000,
+        },
+      );
+
+      const email = String(user.email || '').trim().toLowerCase();
+      const uid = String(user.id);
+      const found = (members || []).find((m: any) => {
+        const memberId = String(m?.id ?? '').trim();
+        if (!memberId) return false;
+        const mu = m?.user || m;
+        const mid = String(mu?.id ?? '').trim();
+        const memail = String(mu?.email ?? m?.email ?? '').trim().toLowerCase();
+        return (uid && mid && uid === mid) || (email && memail && email === memail);
+      });
+
+      const membershipId = String(found?.id ?? '').trim();
+      if (!membershipId) throw new Error('Could not find project membership for this user');
+      return membershipId;
+    };
+
+    const membershipId = await findProjectMembershipId();
 
     const res = await fetch(
       `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
