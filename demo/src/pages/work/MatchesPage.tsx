@@ -214,12 +214,12 @@ export default function MatchesPage() {
                     <tr key={m.id}>
                       <td>
                         <a
-                          href={`/matches/${m.id}`}
+                          href={`/matches/${(m as any).slug || m.id}`}
                           className="text-blue-600 hover:underline"
                           style={{ fontSize: '0.85rem' }}
                           onClick={(e) => {
                             e.preventDefault();
-                            navigate(`/matches/${m.id}`);
+                            navigate(`/matches/${(m as any).slug || m.id}`);
                           }}
                         >
                           {m.title}

@@ -283,7 +283,7 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
                               variant="secondary"
                               onClick={() =>
                                 navigate(
-                                  `${seasonsBasePath}/${seasonPathKey}/competitions/${effectiveCompetitionId}/matches/${match.id}`
+                                  `${seasonsBasePath}/${seasonPathKey}/competitions/${effectiveCompetitionId}/matches/${(match as any).slug || match.id}`
                                 )
                               }
                             >

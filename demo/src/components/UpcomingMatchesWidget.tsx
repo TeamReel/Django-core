@@ -96,7 +96,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
                   </div>
                </div>
 
-               <Button size="sm" variant="secondary" onClick={() => navigate(`/matches/${match.id}`)}>
+              <Button size="sm" variant="secondary" onClick={() => navigate(`/matches/${(match as any).slug || match.id}`)}>
                   Details
                </Button>
             </div>

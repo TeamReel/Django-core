@@ -1268,9 +1268,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   const compId = String(
                                     (match as any).period_id || match.period?.id || (match as any).period || ''
                                   ).trim();
+                                  const compKey = periodPathKey(match.period as any) || compId;
+                                  const matchKey = (match as any).slug || match.id;
                                   const matchPath = compId
-                                    ? `${seasonsBasePath}/${seasonPathKey}/competitions/${compId}/matches/${match.id}`
-                                    : `/matches/${match.id}`;
+                                    ? `${seasonsBasePath}/${seasonPathKey}/competitions/${compKey}/matches/${matchKey}`
+                                    : `/matches/${matchKey}`;
                                   return (
                                 <Link
                                       to={matchPath}
@@ -1305,13 +1307,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       const compId = String(
                                         (match as any).period_id || match.period?.id || (match as any).period || ''
                                       ).trim();
+                                      const compKey = periodPathKey(match.period as any) || compId;
+                                      const matchKey = (match as any).slug || match.id;
                                       if (compId) {
                                         navigate(
-                                          `${seasonsBasePath}/${seasonPathKey}/competitions/${compId}/matches/${match.id}`
+                                          `${seasonsBasePath}/${seasonPathKey}/competitions/${compKey}/matches/${matchKey}`
                                         );
                                         return;
                                       }
-                                      navigate(`/matches/${match.id}`);
+                                      navigate(`/matches/${matchKey}`);
                                     }}
                                     style={actionButtonStyle('primary')}
                                   >

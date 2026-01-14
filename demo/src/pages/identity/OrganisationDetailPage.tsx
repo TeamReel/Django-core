@@ -1386,7 +1386,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <td style={compactTdStyle}>
                                   <button
                                     className="text-xs text-blue-600 hover:underline"
-                                    onClick={() => navigate(`/matches/${m.id}`)}
+                                    onClick={() => navigate(`/matches/${(m as any).slug || m.id}`)}
                                   >
                                     View
                                   </button>
@@ -1437,7 +1437,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               </div>
                               <button
                                 className="text-xs text-blue-600 mt-1 hover:underline bg-transparent border-0 p-0 cursor-pointer"
-                                onClick={() => navigate(`/matches/${m.id}`)}
+                                onClick={() => navigate(`/matches/${(m as any).slug || m.id}`)}
                               >
                                 View Details →
                               </button>
@@ -3479,11 +3479,12 @@ export const OrganisationDetailPage: React.FC = () => {
                           const season = compSeasonId ? seasonById.get(compSeasonId) : null;
                           const seasonSlugOrId = season?.slug || season?.id || compSeasonId;
                           const compSlugOrId = String((competition as any)?.slug || periodId || '').trim();
+                          const matchSlugOrId = String((m as any)?.slug || m.id || '').trim();
                           const matchDetailPath = (teamSlugOrId && seasonSlugOrId && compSlugOrId)
                             ? (clubSlugOrId
-                              ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${m.id}`
-                              : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${m.id}`)
-                            : `/matches/${m.id}`;
+                              ? `/organisations/${currentOrgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${matchSlugOrId}`
+                              : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${matchSlugOrId}`)
+                            : `/matches/${matchSlugOrId}`;
 
                           const formattedStart = m.start_time ? new Date(m.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
 

@@ -264,7 +264,20 @@ export default function HierarchyMatchDetailPage() {
         }
 
         if (!matchRes.ok) throw new Error(matchRes.status === 404 ? 'Match not found' : 'Failed to load match');
-        setMatch(getEnvelopeData(await matchRes.json()));
+        const matchJson = getEnvelopeData<MatchDetail>(await matchRes.json());
+        setMatch(matchJson);
+
+        const desiredMatchKey = String((matchJson as any)?.slug || '').trim();
+        if (desiredMatchKey && desiredMatchKey !== String(effectiveMatchId)) {
+          const suffix = location.search ? location.search : '';
+          const seasonKey = periodPathKey(seasonJson) || String(seasonKeyOrId);
+          const compKey = periodPathKey(competitionJson) || String(effectiveCompetitionId);
+          navigate(
+            `${seasonsBasePath}/${seasonKey}/competitions/${compKey}/matches/${desiredMatchKey}${suffix}`,
+            { replace: true }
+          );
+          return;
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load match');
       } finally {

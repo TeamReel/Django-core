@@ -159,9 +159,9 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                      {status}
                    </Badge>
                 </td>
-                <td style={{ textAlign: 'right' }}>
-                   <Button size="sm" variant="secondary" onClick={() => navigate(`/matches/${match.id}`)}>View</Button>
-                </td>
+                 <td style={{ textAlign: 'right' }}>
+                   <Button size="sm" variant="secondary" onClick={() => navigate(`/matches/${(match as any).slug || match.id}`)}>View</Button>
+                 </td>
               </tr>
             );
           })}
