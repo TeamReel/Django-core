@@ -1337,13 +1337,14 @@ export const OrganisationDetailPage: React.FC = () => {
             </button>
             {userCanEditOrg && (
               <button
+                type="button"
+                className="app-action-button"
                 onClick={() => setIsOrgEditModalOpen(true)}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '4px',
-                  border: '1px solid var(--app-warning)',
                   backgroundColor: 'var(--app-surface)',
-                  color: 'var(--app-warning)',
+                  color: 'var(--app-link)',
                   cursor: 'pointer',
                   fontSize: '12px',
                   fontWeight: 500,

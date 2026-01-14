@@ -1408,7 +1408,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                   setSelectedEditPeriod(competition);
                   setIsPeriodEditModalOpen(true);
                 }}
-                style={actionButtonStyle('warning')}
+                style={actionButtonStyle('primary')}
               >
                 Edit
               </button>
