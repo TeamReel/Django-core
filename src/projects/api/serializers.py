@@ -23,6 +23,7 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
 
     user = UserNestedSerializer(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
+    organisation_membership_id = serializers.UUIDField(read_only=True)
     period = serializers.UUIDField(source="period_id", read_only=True)
     period_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
     metadata = serializers.JSONField(required=False)
@@ -33,6 +34,7 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "user_id",
+            "organisation_membership_id",
             "period",
             "period_id",
             "role",

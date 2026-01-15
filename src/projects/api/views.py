@@ -2,7 +2,7 @@
 
 import logging
 
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -662,7 +662,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         qs = ProjectMembership.objects.filter(
             project_id=project_pk,
             deleted_at__isnull=True,
-        ).select_related("user")
+        ).select_related("user", "project", "project__organisation")
 
         # Optional season filter for squads
         period_param = (
@@ -672,6 +672,21 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         ).strip()
         if period_param:
             qs = qs.filter(period_id=period_param)
+
+        # Provide organisation membership id (used for lineup/participations).
+        # This avoids a separate /organisations/{id}/members call which may be permission-restricted
+        # and can lead to an empty lineup roster in the UI.
+        from organisations.models import Membership as OrganisationMembership
+
+        qs = qs.annotate(
+            organisation_membership_id=Subquery(
+                OrganisationMembership.objects.filter(
+                    organisation_id=project.organisation_id,
+                    user_id=OuterRef("user_id"),
+                    is_active=True,
+                ).values("id")[:1]
+            )
+        )
 
         return qs
 

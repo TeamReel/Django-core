@@ -32,7 +32,7 @@ from faker import Faker
 
 from accounts.models import User
 from activities.models import Period
-from organisations.models import Organisation
+from organisations.models import Membership, Organisation
 from projects.models import Project, ProjectMembership
 
 
@@ -153,6 +153,27 @@ class Command(BaseCommand):
                     project=team, period=season
                 ).count()
                 if existing_memberships > 0:
+                    # Team already seeded for this season. Still ensure Organisation Memberships exist
+                    # for all existing squad users so they can be used in match participations.
+                    if not dry_run:
+                        existing_users = User.objects.filter(
+                            project_memberships__project=team,
+                            project_memberships__period=season,
+                            project_memberships__deleted_at__isnull=True,
+                        ).distinct()
+                        for u in existing_users:
+                            m, _ = Membership.objects.get_or_create(
+                                organisation=team.organisation,
+                                user=u,
+                                defaults={
+                                    "role": "member",
+                                    "is_active": True,
+                                },
+                            )
+                            if not m.is_active:
+                                m.is_active = True
+                                m.save(update_fields=["is_active"])
+
                     total_teams_skipped += 1
                     continue
 
@@ -185,6 +206,19 @@ class Command(BaseCommand):
                         total_users_created += 1
 
                     if not dry_run:
+                        # Ensure organisation-level membership exists (required for lineups/participations)
+                        m, _ = Membership.objects.get_or_create(
+                            organisation=team.organisation,
+                            user=user,
+                            defaults={
+                                "role": "member",
+                                "is_active": True,
+                            },
+                        )
+                        if not m.is_active:
+                            m.is_active = True
+                            m.save(update_fields=["is_active"])
+
                         _, membership_created = ProjectMembership.objects.get_or_create(
                             project=team,
                             user=user,
@@ -226,6 +260,19 @@ class Command(BaseCommand):
                     shirt_number = shirt_numbers[i] if i < len(shirt_numbers) else None
 
                     if not dry_run:
+                        # Ensure organisation-level membership exists (required for lineups/participations)
+                        m, _ = Membership.objects.get_or_create(
+                            organisation=team.organisation,
+                            user=user,
+                            defaults={
+                                "role": "member",
+                                "is_active": True,
+                            },
+                        )
+                        if not m.is_active:
+                            m.is_active = True
+                            m.save(update_fields=["is_active"])
+
                         _, membership_created = ProjectMembership.objects.get_or_create(
                             project=team,
                             user=user,

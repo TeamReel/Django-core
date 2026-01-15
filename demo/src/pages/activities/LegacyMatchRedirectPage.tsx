@@ -4,7 +4,6 @@ import { Alert, Button } from '@django-core/design-system';
 import { PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
-import MatchDetailPage from './MatchDetailPage';
 import { periodPathKey } from '../../utils/periodPath';
 
 const getEnvelopeData = <T,>(raw: any): T => (raw?.data ?? raw) as T;
@@ -132,7 +131,7 @@ export default function LegacyMatchRedirectPage() {
   }
 
   if (status === 'fallback') {
-    // Fall back to the legacy match page rather than breaking navigation.
+    // Avoid rendering a separate legacy match page; keep a single match-detail UX.
     return (
       <>
         {error ? (
@@ -145,7 +144,16 @@ export default function LegacyMatchRedirectPage() {
             </PageContent>
           </AppShell>
         ) : (
-          <MatchDetailPage />
+          <AppShell>
+            <PageContent>
+              <Alert variant="info">
+                This match can’t be resolved into the TeamReel hierarchy route.
+              </Alert>
+              <Button variant="secondary" onClick={() => navigate('/directory?tab=matches')} className="mt-4">
+                Back to Matches
+              </Button>
+            </PageContent>
+          </AppShell>
         )}
       </>
     );

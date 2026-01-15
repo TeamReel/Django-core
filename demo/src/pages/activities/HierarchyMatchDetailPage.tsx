@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
-import { PageContent, PageHeader } from '@django-core/page-templates';
+import { BreadcrumbContextSwitcher, type BreadcrumbSwitcherOption, PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import { useAuth } from '@django-core/auth-ui';
+import MatchDetailModal from '../identity/MatchDetailModal';
+import MatchEditModal from '../identity/MatchEditModal';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -49,9 +51,19 @@ type OrgMember = {
   };
 };
 
+type SeasonSquadParticipation = {
+  id: string;
+  member?: { id: string; user_name?: string };
+  period?: { id: string; name?: string };
+  role?: string;
+  status?: string;
+  data?: any;
+};
+
 type ProjectMember = {
   id: string;
   role?: string; // viewer/editor/admin
+  organisation_membership_id?: string;
   user?: {
     id: string | number;
     email?: string;
@@ -132,6 +144,10 @@ export default function HierarchyMatchDetailPage() {
 
   const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
 
+  const [matchesForSwitcher, setMatchesForSwitcher] = useState<any[]>([]);
+  const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
+  const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
+
   const matchWalletOptions = useMemo<WalletOption[]>(() => {
     const opts: WalletOption[] = [{ kind: 'default', label: 'Default (recommended)' }];
     opts.push({ kind: 'organization', label: 'Federation/Organisation wallet' });
@@ -163,20 +179,43 @@ export default function HierarchyMatchDetailPage() {
     ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
 
+  const competitionBasePath = useMemo(() => {
+    const seasonKey = String(seasonKeyOrId || '').trim();
+    const compKey = String(effectiveCompetitionId || '').trim();
+    if (!seasonKey || !compKey) return '';
+    return isTeamRoute
+      ? `${seasonsBasePath}/${seasonKey}/${compKey}`
+      : `${seasonsBasePath}/${seasonKey}/competitions/${compKey}`;
+  }, [effectiveCompetitionId, isTeamRoute, seasonKeyOrId, seasonsBasePath]);
+
+  const matchBasePath = useMemo(() => {
+    if (!competitionBasePath || !effectiveMatchId) return '';
+    return `${competitionBasePath}/matches/${effectiveMatchId}`;
+  }, [competitionBasePath, effectiveMatchId]);
+
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'hierarchy', 'match', 'lineup', 'date']);
+    const allowed = new Set(['overview', 'hierarchy', 'match', 'lineup', 'date', 'transactions']);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
   const navigateToTab = (tabId: string) => {
-    const base = `${seasonsBasePath}/${seasonKeyOrId}/competitions/${effectiveCompetitionId}/matches/${effectiveMatchId}`;
+    const base = matchBasePath || '';
+    if (!base) return;
     if (tabId === 'overview') {
       navigate(base);
       return;
     }
     navigate(`${base}?tab=${encodeURIComponent(tabId)}`);
+  };
+
+  const handleMatchSwitch = (option: BreadcrumbSwitcherOption) => {
+    if (!competitionBasePath) return;
+    const suffix = location.search ? location.search : '';
+    const matchKey = String(option.slug || option.id).trim();
+    if (!matchKey) return;
+    navigate(`${competitionBasePath}/matches/${matchKey}${suffix}`);
   };
 
   useEffect(() => {
@@ -273,7 +312,9 @@ export default function HierarchyMatchDetailPage() {
         ) {
           const suffix = location.search ? location.search : '';
           navigate(
-            `${seasonsBasePath}/${desiredSeasonKey}/competitions/${desiredCompetitionKey}/matches/${effectiveMatchId}${suffix}`,
+            isTeamRoute
+              ? `${seasonsBasePath}/${desiredSeasonKey}/${desiredCompetitionKey}/matches/${effectiveMatchId}${suffix}`
+              : `${seasonsBasePath}/${desiredSeasonKey}/competitions/${desiredCompetitionKey}/matches/${effectiveMatchId}${suffix}`,
             { replace: true }
           );
           return;
@@ -289,7 +330,9 @@ export default function HierarchyMatchDetailPage() {
           const seasonKey = periodPathKey(seasonJson) || String(seasonKeyOrId);
           const compKey = periodPathKey(competitionJson) || String(effectiveCompetitionId);
           navigate(
-            `${seasonsBasePath}/${seasonKey}/competitions/${compKey}/matches/${desiredMatchKey}${suffix}`,
+            isTeamRoute
+              ? `${seasonsBasePath}/${seasonKey}/${compKey}/matches/${desiredMatchKey}${suffix}`
+              : `${seasonsBasePath}/${seasonKey}/competitions/${compKey}/matches/${desiredMatchKey}${suffix}`,
             { replace: true }
           );
           return;
@@ -312,6 +355,29 @@ export default function HierarchyMatchDetailPage() {
     effectiveCompetitionId,
     effectiveMatchId,
   ]);
+
+  useEffect(() => {
+    const run = async () => {
+      const projectIdValue = String(match?.project?.id || project?.id || '').trim();
+      const competitionIdValue = String(resolvedCompetitionUuid || effectiveCompetitionId || '').trim();
+      if (!projectIdValue || !competitionIdValue) return;
+
+      try {
+        const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
+          projectIdValue
+        )}&period_id=${encodeURIComponent(competitionIdValue)}&activity_type=match&ordering=-start_time&page_size=250`;
+        const res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) return;
+        const raw = await res.json().catch(() => null);
+        const list = getEnvelopeListResults<any>(raw);
+        setMatchesForSwitcher(Array.isArray(list) ? list : []);
+      } catch {
+        // Best-effort only: breadcrumb switcher should not break page.
+      }
+    };
+
+    run();
+  }, [apiBaseUrl, effectiveCompetitionId, match?.project?.id, project?.id, resolvedCompetitionUuid]);
 
   useEffect(() => {
     const run = async () => {
@@ -342,7 +408,17 @@ export default function HierarchyMatchDetailPage() {
           return [];
         };
 
-        // 1) Project members (user ids) — prefer season-scoped roster
+        const buildSyntheticMember = (id: string, label: string): OrgMember => {
+          return {
+            id,
+            user: {
+              id,
+              full_name: label,
+            },
+          };
+        };
+
+        // 1) Project members (user ids) — used for persona grouping + fallback roster matching
         const seasonUuid = String(resolvedSeasonUuid || '').trim();
         const baseMembersUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(match.project.id))}/members/`;
 
@@ -399,26 +475,133 @@ export default function HierarchyMatchDetailPage() {
             .filter(Boolean)
         );
 
-        // 2) Organisation memberships (membership ids + user)
-        const orgMembersRes = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(String(orgSlugOrId))}/members/?page_size=1000`,
-          { credentials: 'include' }
-        );
-        if (!orgMembersRes.ok) throw new Error('Failed to load organisation members');
-        const orgMembersRaw = await orgMembersRes.json().catch(() => null);
-        const orgMembers = extractList(orgMembersRaw) as OrgMember[];
+        // Prefer using organisation membership IDs directly from the project members endpoint.
+        // This avoids relying on /organisations/:id/members (which may be permission-restricted).
+        const eligibleFromProjectMembers: OrgMember[] = asArray(projectMembers)
+          .map((m: any) => {
+            const memberId = String(m?.organisation_membership_id || '').trim();
+            if (!memberId) return null;
+            return {
+              id: memberId,
+              user: m?.user,
+            } as OrgMember;
+          })
+          .filter(Boolean) as OrgMember[];
+
+        eligibleFromProjectMembers.sort((a: any, b: any) => {
+          const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
+          const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
+          return an.localeCompare(bn);
+        });
+
+        // 2) Organisation memberships (membership ids + user) — best-effort only.
+        // If this endpoint is permission-restricted, we can still build a valid roster from
+        // organisation_membership_id on project members.
+        let orgMembers: OrgMember[] = [];
+        try {
+          const orgMembersRes = await fetch(
+            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(String(orgSlugOrId))}/members/?page_size=1000`,
+            { credentials: 'include' }
+          );
+          if (orgMembersRes.ok) {
+            const orgMembersRaw = await orgMembersRes.json().catch(() => null);
+            orgMembers = extractList(orgMembersRaw) as OrgMember[];
+          } else if (eligibleFromProjectMembers.length === 0) {
+            const detail = await orgMembersRes.text().catch(() => '');
+            throw new Error(`Failed to load organisation members (${orgMembersRes.status}) ${detail || ''}`.trim());
+          }
+        } catch (e) {
+          if (eligibleFromProjectMembers.length === 0) {
+            throw e;
+          }
+        }
         setOrgMembersAll(orgMembers);
 
-        // Intersection: project members must exist as org membership.
-        const eligible = asArray(orgMembers)
-          .filter((m: any) => m?.id && projectUserIds.has(String(m?.user?.id ?? '')))
-          .sort((a: any, b: any) => {
-            const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
-            const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
-            return an.localeCompare(bn);
-          });
+        const byOrgMembershipId = new Map<string, OrgMember>();
+        for (const m of asArray(orgMembers)) {
+          if (m?.id) byOrgMembershipId.set(String(m.id), m);
+        }
 
-        setEligibleMembers(eligible);
+        let preferredEligibleMembers: OrgMember[] | null = null;
+
+        if (eligibleFromProjectMembers.length > 0) {
+          preferredEligibleMembers = eligibleFromProjectMembers;
+        }
+
+        // Prefer season squad as Period participations (TeamReel: squad lives on the season period)
+        // This yields organisation membership IDs directly, which we need for match participations.
+        if ((!preferredEligibleMembers || preferredEligibleMembers.length === 0) && seasonUuid) {
+          const baseSquadParams = new URLSearchParams();
+          baseSquadParams.set('page_size', '500');
+          baseSquadParams.set('period_id', seasonUuid);
+
+          const fetchSquad = async (withRoleFilter: boolean) => {
+            const params = new URLSearchParams(baseSquadParams);
+            if (withRoleFilter) params.set('role', 'squad_member');
+            const res = await fetch(`${apiBaseUrl}/api/v1/participations/?${params.toString()}`, {
+              credentials: 'include',
+            });
+            if (!res.ok) {
+              const detail = await res.text().catch(() => '');
+              return { ok: false, status: res.status, detail, list: [] as any[] };
+            }
+            const raw = await res.json().catch(() => null);
+            return { ok: true, status: res.status, detail: '', list: extractList(raw) };
+          };
+
+          const squadAttempt = await fetchSquad(true);
+          let squadParticipations = squadAttempt.ok ? (squadAttempt.list as SeasonSquadParticipation[]) : [];
+
+          // Fallback: if no explicit squad_member roles exist, list all period participations for the season.
+          if (squadParticipations.length === 0) {
+            const anyRoleAttempt = await fetchSquad(false);
+            if (anyRoleAttempt.ok) squadParticipations = anyRoleAttempt.list as SeasonSquadParticipation[];
+          }
+
+          const squadMembers: OrgMember[] = [];
+          for (const p of squadParticipations) {
+            const mid = String(p?.member?.id || '').trim();
+            if (!mid) continue;
+            const existing = byOrgMembershipId.get(mid);
+            if (existing) {
+              squadMembers.push(existing);
+            } else {
+              const label = String(p?.member?.user_name || '—').trim();
+              squadMembers.push(buildSyntheticMember(mid, label || '—'));
+            }
+          }
+
+          if (squadMembers.length > 0) {
+            const seen = new Set<string>();
+            const deduped = squadMembers.filter((m) => {
+              const key = String(m.id);
+              if (!key || seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+
+            deduped.sort((a: any, b: any) => {
+              const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
+              const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
+              return an.localeCompare(bn);
+            });
+
+            preferredEligibleMembers = deduped;
+          }
+        }
+
+        // Intersection: project members must exist as org membership.
+        if (!preferredEligibleMembers || preferredEligibleMembers.length === 0) {
+          preferredEligibleMembers = asArray(orgMembers)
+            .filter((m: any) => m?.id && projectUserIds.has(String(m?.user?.id ?? '')))
+            .sort((a: any, b: any) => {
+              const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
+              const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
+              return an.localeCompare(bn);
+            });
+        }
+
+        setEligibleMembers(preferredEligibleMembers || []);
 
         // Optional: club project members (to detect club admin/supporter personas)
         if (club?.id) {
@@ -467,7 +650,21 @@ export default function HierarchyMatchDetailPage() {
         label: competition?.name || 'Competition',
         onClick: () => navigate(`${seasonsBasePath}/${seasonKeyOrId}/competitions/${effectiveCompetitionId}`),
       },
-      { label: match?.title || 'Match', current: true },
+      {
+        label: (
+          <BreadcrumbContextSwitcher
+            currentId={String(match?.id || '')}
+            options={matchesForSwitcher.map((m: any) => ({
+              id: String(m.id),
+              label: String(m.title || m.name || m.slug || m.id),
+              slug: String(m.slug || m.id),
+            }))}
+            onSelect={handleMatchSwitch}
+            hasDropdown={matchesForSwitcher.length > 1}
+          />
+        ),
+        current: true,
+      },
     ] as any[];
   }, [
     club,
@@ -475,7 +672,10 @@ export default function HierarchyMatchDetailPage() {
     competition?.name,
     effectiveCompetitionId,
     isTeamRoute,
+    handleMatchSwitch,
     match?.title,
+    match?.id,
+    matchesForSwitcher,
     navigate,
     org?.name,
     orgSlugOrId,
@@ -485,6 +685,51 @@ export default function HierarchyMatchDetailPage() {
     seasonKeyOrId,
     seasonsBasePath,
   ]);
+
+  const saveMatchEdits = async (matchToEdit: any, patch: any) => {
+    const matchIdValue = String(matchToEdit?.id || '').trim();
+    if (!matchIdValue) throw new Error('Missing match id');
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(matchIdValue)}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'include',
+      body: JSON.stringify(patch || {}),
+    });
+
+    if (!res.ok) throw new Error('Failed to update match');
+    const raw = await res.json().catch(() => null);
+    const updated = getEnvelopeData<MatchDetail>(raw);
+    setMatch(updated);
+  };
+
+  const handleDeleteMatch = async () => {
+    if (!match?.id) return;
+    if (!window.confirm(`Are you sure you want to delete match ${match.title || match.id}?`)) return;
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(match.id))}/`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'include',
+    });
+
+    if (!res.ok) {
+      alert('Error deleting match');
+      return;
+    }
+
+    // Navigate back to competition matches list.
+    if (competitionBasePath) {
+      navigate(`${competitionBasePath}?tab=matches`);
+    } else {
+      navigate(-1);
+    }
+  };
 
   const personaGroups = useMemo(() => {
     const byMemberId = new Map<string, OrgMember>();
@@ -781,7 +1026,9 @@ export default function HierarchyMatchDetailPage() {
         {rosterError && <Alert variant="error">{rosterError}</Alert>}
         {!rosterError && !rosterLoading && eligibleMembers.length === 0 && (
           <Alert variant="warning">
-            No eligible players found. Add players to this season’s squad first, or ensure you have access to view the team roster.
+            No eligible players found. Add players to this season’s squad first.
+            If the squad exists but this list is empty, either the backend is not returning organisation membership IDs for project members,
+            or the organisation members endpoint is not accessible for this user.
           </Alert>
         )}
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
@@ -930,6 +1177,15 @@ export default function HierarchyMatchDetailPage() {
           breadcrumbs={breadcrumbs}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <Button variant="secondary" onClick={() => setIsMatchDetailModalOpen(true)}>
+                View
+              </Button>
+              <Button variant="secondary" onClick={() => setIsMatchEditModalOpen(true)}>
+                Edit
+              </Button>
+              <Button variant="secondary" onClick={handleDeleteMatch}>
+                Delete
+              </Button>
               <Button variant="secondary" onClick={() => navigate(`/studio/create?context=${match.id}`)}>
                 ✨ Generate Content (AI)
               </Button>
@@ -951,13 +1207,28 @@ export default function HierarchyMatchDetailPage() {
           title="Create match transaction"
           scope="match"
           organizationId={String(org?.id || '').trim()}
-          defaultProjectId={project?.id != null ? String(project.id) : null}
+          defaultProjectId={match?.project?.id != null ? String(match.project.id) : project?.id != null ? String(project.id) : null}
           seasonId={String(resolvedSeasonUuid || '').trim() || null}
           periodId={String(match?.period?.id || '').trim() || null}
           activityId={String(match?.id || '').trim() || null}
           currentUserId={Number((user as any)?.id)}
           chargedUserId={Number((user as any)?.id)}
           walletOptions={matchWalletOptions}
+        />
+
+        <MatchDetailModal
+          opened={isMatchDetailModalOpen}
+          onClose={() => setIsMatchDetailModalOpen(false)}
+          match={match as any}
+        />
+
+        <MatchEditModal
+          opened={isMatchEditModalOpen}
+          onClose={() => setIsMatchEditModalOpen(false)}
+          match={match as any}
+          onSave={async (payload) => {
+            await saveMatchEdits(match as any, payload);
+          }}
         />
 
         <PageContent>
@@ -1093,7 +1364,7 @@ export default function HierarchyMatchDetailPage() {
                 description="Match-scoped transactions (usage_event.metadata.activity_id)"
                 filters={{
                   organization_id: String(org?.id || ''),
-                  project_id: String(project?.id || ''),
+                  project_id: String(match?.project?.id || project?.id || ''),
                   activity_id: String(match?.id || ''),
                 }}
               />
