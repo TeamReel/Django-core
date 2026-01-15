@@ -134,7 +134,34 @@ export default function TopNavbar() {
   const [language, setLanguage] = useState<'EN' | 'NL' | 'DE' | 'IT' | 'FR'>('EN');
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [myCreditsBalance, setMyCreditsBalance] = useState<string | null>(null);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const orgIdForMyBalance = String((context as any)?.organisation?.id || '').trim();
+  const currentUserId = (user as any)?.id;
+  const myCreditsNumber = useMemo(() => {
+    if (myCreditsBalance == null) return null;
+    const n = Number(myCreditsBalance);
+    return Number.isFinite(n) ? n : null;
+  }, [myCreditsBalance]);
+  const formattedCredits = useMemo(() => {
+    if (myCreditsBalance == null) return null;
+    const n = Number(myCreditsBalance);
+    if (!Number.isFinite(n)) return String(myCreditsBalance);
+    const rounded = Math.round(n);
+    if (Math.abs(n - rounded) < 0.001) return String(rounded);
+    return n.toFixed(2);
+  }, [myCreditsBalance]);
+  const creditsBadgeColor = useMemo(() => {
+    if (myCreditsNumber == null) return '#6b7280'; // gray
+    if (myCreditsNumber < 0) return '#dc3545'; // red
+    if (myCreditsNumber === 0) return '#2563eb'; // blue
+    return '#16a34a'; // green
+  }, [myCreditsNumber]);
+  const creditsTooltip = useMemo(() => {
+    if (myCreditsBalance == null) return 'My balance';
+    return `Credits: ${String(myCreditsBalance)}`;
+  }, [myCreditsBalance]);
 
   type AppProjectRow = {
     id: string | number;
@@ -848,6 +875,46 @@ export default function TopNavbar() {
     };
   }, [user]);
 
+  // Fetch current user's credits (within selected organisation)
+  useEffect(() => {
+    if (!user) {
+      setMyCreditsBalance(null);
+      return;
+    }
+    if (!orgIdForMyBalance) {
+      setMyCreditsBalance(null);
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    const fetchBalance = async () => {
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const response = await fetch(
+          `${apiBaseUrl}/api/v1/transactions/organizations/${encodeURIComponent(orgIdForMyBalance)}/balance/me/`,
+          { credentials: 'include', signal: controller.signal }
+        );
+        if (!response.ok) return;
+        const raw = await response.json();
+        const data = (raw as any)?.data ?? raw;
+        const v = (data as any)?.current_balance;
+        if (!cancelled) setMyCreditsBalance(v != null ? String(v) : null);
+      } catch {
+        // ignore
+      }
+    };
+
+    fetchBalance();
+    const interval = setInterval(fetchBalance, 30000);
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearInterval(interval);
+    };
+  }, [orgIdForMyBalance, user]);
+
   // Filter based on permissions (keep Admin grouped; only show what the user can access)
   const isAdmin = isSystemAdmin || isLandAdmin;
   const navGroupsWithApp = useMemo(() => [appNavGroup, ...navGroups], [appNavGroup]);
@@ -1275,34 +1342,65 @@ export default function TopNavbar() {
               )}
             </button>
 
+            {/* Credits / Transactions Icon */}
+            {user ? (
+              <button
+                onClick={() => {
+                  const id = Number(currentUserId);
+                  if (!Number.isFinite(id)) return;
+                  navigate(`/users/${id}?tab=balance`);
+                }}
+                style={{
+                  position: 'relative',
+                  padding: '8px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '20px',
+                }}
+                title={creditsTooltip}
+                aria-label="My balance"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  style={{ display: 'block' }}
+                >
+                  <path
+                    d="M3 7.5C3 6.11929 4.11929 5 5.5 5H18.5C19.8807 5 21 6.11929 21 7.5V16.5C21 17.8807 19.8807 19 18.5 19H5.5C4.11929 19 3 17.8807 3 16.5V7.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  />
+                  <path d="M3 9H21" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M7 15H12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+                {formattedCredits != null && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: '4px',
+                      backgroundColor: creditsBadgeColor,
+                      color: 'white',
+                      borderRadius: '10px',
+                      padding: '2px 6px',
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {formattedCredits}
+                  </span>
+                )}
+              </button>
+            ) : null}
+
             {/* Profile Avatar Dropdown */}
             <ProfileAvatarDropdown />
-
-            {/* Explicit Log out */}
-            <button
-              onClick={async () => {
-                try {
-                  await signOut();
-                } finally {
-                  navigate('/login');
-                }
-              }}
-              disabled={signOutLoading}
-              style={{
-                padding: '8px 12px',
-                backgroundColor: 'transparent',
-                border: '1px solid var(--app-border)',
-                borderRadius: '6px',
-                cursor: signOutLoading ? 'default' : 'pointer',
-                fontSize: '14px',
-                color: 'var(--app-text)',
-                opacity: signOutLoading ? 0.6 : 1,
-              }}
-              aria-label="Log out"
-              title="Log out"
-            >
-              Log out
-            </button>
           </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

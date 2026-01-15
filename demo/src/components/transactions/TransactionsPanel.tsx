@@ -39,6 +39,7 @@ function amountColor(amount: number): string {
 export type TransactionsPanelFilters = {
   organization_id?: string;
   project_id?: string | number;
+  project_id__in?: string;
   charged_user_id?: string | number;
   season_id?: string;
   activity_id?: string;

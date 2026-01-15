@@ -6,7 +6,7 @@ import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
-import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
+import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import { useAuth } from '@django-core/auth-ui';
 
 type Organisation = { id: string; name: string; slug?: string };
@@ -129,6 +129,18 @@ export default function HierarchyMatchDetailPage() {
   const [resolvedCompetitionUuid, setResolvedCompetitionUuid] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
+
+  const matchWalletOptions = useMemo<WalletOption[]>(() => {
+    const opts: WalletOption[] = [{ kind: 'default', label: 'Default (recommended)' }];
+    opts.push({ kind: 'organization', label: 'Federation/Organisation wallet' });
+    if (project?.id != null) {
+      opts.push({ kind: 'project', label: 'Team wallet', projectId: String(project.id) });
+    }
+    opts.push({ kind: 'me', label: 'My user wallet' });
+    return opts;
+  }, [project?.id]);
 
   const [eligibleMembers, setEligibleMembers] = useState<OrgMember[]>([]);
   const [orgMembersAll, setOrgMembersAll] = useState<OrgMember[]>([]);
@@ -922,46 +934,30 @@ export default function HierarchyMatchDetailPage() {
                 ✨ Generate Content (AI)
               </Button>
               <Button
-                onClick={async () => {
-                  try {
-                    const orgIdForTxn = String(org?.id || '').trim();
-                    const projectIdForTxn = String(project?.id || '').trim();
-                    const seasonUuid = String(resolvedSeasonUuid || '').trim();
-                    const periodUuid = String(match?.period?.id || '').trim();
-                    const activityUuid = String(match?.id || '').trim();
-                    const currentUserId = Number((user as any)?.id);
-
-                    if (!orgIdForTxn || !projectIdForTxn || !activityUuid) {
-                      alert('Missing org/project/match context for transaction');
-                      return;
-                    }
-                    if (!Number.isFinite(currentUserId)) {
-                      alert('No current user id available');
-                      return;
-                    }
-
-                    await createTeamreelDemoTransaction({
-                      apiBaseUrl,
-                      scope: 'match',
-                      organizationId: orgIdForTxn,
-                      projectId: projectIdForTxn,
-                      seasonId: seasonUuid || null,
-                      periodId: periodUuid || null,
-                      activityId: activityUuid,
-                      currentUserId,
-                      chargedUserId: currentUserId,
-                    });
-
-                    navigateToTab('transactions');
-                  } catch (e: any) {
-                    alert(e?.message || 'Failed to create transaction');
-                  }
-                }}
+                onClick={() => setIsCreateTxnModalOpen(true)}
               >
                 Create transaction
               </Button>
             </div>
           }
+        />
+
+        <CreateTransactionModal
+          isOpen={isCreateTxnModalOpen}
+          onClose={() => setIsCreateTxnModalOpen(false)}
+          onCreated={() => {
+            navigateToTab('transactions');
+          }}
+          title="Create match transaction"
+          scope="match"
+          organizationId={String(org?.id || '').trim()}
+          defaultProjectId={project?.id != null ? String(project.id) : null}
+          seasonId={String(resolvedSeasonUuid || '').trim() || null}
+          periodId={String(match?.period?.id || '').trim() || null}
+          activityId={String(match?.id || '').trim() || null}
+          currentUserId={Number((user as any)?.id)}
+          chargedUserId={Number((user as any)?.id)}
+          walletOptions={matchWalletOptions}
         />
 
         <PageContent>
@@ -1099,33 +1095,6 @@ export default function HierarchyMatchDetailPage() {
                   organization_id: String(org?.id || ''),
                   project_id: String(project?.id || ''),
                   activity_id: String(match?.id || ''),
-                }}
-                onCreateTransaction={async () => {
-                  const orgIdForTxn = String(org?.id || '').trim();
-                  const projectIdForTxn = String(project?.id || '').trim();
-                  const seasonUuid = String(resolvedSeasonUuid || '').trim();
-                  const periodUuid = String(match?.period?.id || '').trim();
-                  const activityUuid = String(match?.id || '').trim();
-                  const currentUserId = Number((user as any)?.id);
-
-                  if (!orgIdForTxn || !projectIdForTxn || !activityUuid) {
-                    throw new Error('Missing org/project/match context');
-                  }
-                  if (!Number.isFinite(currentUserId)) {
-                    throw new Error('No current user id');
-                  }
-
-                  await createTeamreelDemoTransaction({
-                    apiBaseUrl,
-                    scope: 'match',
-                    organizationId: orgIdForTxn,
-                    projectId: projectIdForTxn,
-                    seasonId: seasonUuid || null,
-                    periodId: periodUuid || null,
-                    activityId: activityUuid,
-                    currentUserId,
-                    chargedUserId: currentUserId,
-                  });
                 }}
               />
             </div>

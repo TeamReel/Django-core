@@ -35,6 +35,8 @@ import UserDetailModal from './UserDetailModal';
 import UsersTable from './detail/UsersTable';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
+import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
+import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -1490,6 +1492,64 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   const creditsScope: DetailMode = forceMode || (isLikelyTeam ? 'team' : 'club');
   const canCreateTransaction = Boolean((user as any)?.id) && Boolean(project?.id);
 
+  const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
+
+  const [clubTeamBalances, setClubTeamBalances] = useState<Record<string, any>>({});
+  const [clubTeamBalancesLoading, setClubTeamBalancesLoading] = useState(false);
+  const [clubTeamBalancesError, setClubTeamBalancesError] = useState<string | null>(null);
+
+  const fetchClubTeamBalances = async () => {
+    if (isLikelyTeam) return;
+    if (!Array.isArray(childProjects) || childProjects.length === 0) {
+      setClubTeamBalances({});
+      return;
+    }
+
+    setClubTeamBalancesLoading(true);
+    setClubTeamBalancesError(null);
+    try {
+      const results = await Promise.all(
+        (childProjects || []).map(async (t: any) => {
+          const id = String(t?.id || '').trim();
+          if (!id) return null;
+          const res = await fetch(`${apiBaseUrl}/api/v1/credits/projects/${encodeURIComponent(id)}/`, { credentials: 'include' });
+          const raw = await res.json().catch(() => null);
+          const data = (raw?.data || raw) as any;
+          return { id, data };
+        })
+      );
+
+      const map: Record<string, any> = {};
+      (results || []).forEach((r: any) => {
+        if (!r?.id) return;
+        map[String(r.id)] = r.data;
+      });
+      setClubTeamBalances(map);
+    } catch (e: any) {
+      setClubTeamBalances({});
+      setClubTeamBalancesError(e?.message || 'Failed to load team balances');
+    } finally {
+      setClubTeamBalancesLoading(false);
+    }
+  };
+
+  const clubWalletOptions = useMemo<WalletOption[]>(() => {
+    const opts: WalletOption[] = [{ kind: 'default', label: 'Default (recommended)' }];
+    opts.push({ kind: 'organization', label: 'Federation/Organisation wallet' });
+    if (project?.id != null) {
+      const label = isLikelyTeam ? 'This team wallet' : 'This club wallet';
+      opts.push({ kind: 'project', label, projectId: String(project.id) });
+    }
+    if (!isLikelyTeam) {
+      (childProjects || []).forEach((t: any) => {
+        if (!t?.id) return;
+        opts.push({ kind: 'project', label: `Team wallet: ${t?.name || t?.title || t?.slug || t?.id}`, projectId: String(t.id) });
+      });
+    }
+    opts.push({ kind: 'me', label: 'My user wallet' });
+    return opts;
+  }, [project?.id, childProjects, isLikelyTeam]);
+
   // Trigger data fetch on tab change
   useEffect(() => {
     if (DEBUG_LOGS) {
@@ -1536,8 +1596,21 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         if (seasons.length === 0 && !seasonsLoading) fetchSeasons();
       }
       fetchOrgMembers(false);
+    } else if (activeTab === 'balance' || activeTab === 'transactions') {
+      if (!isLikelyTeam) {
+        if (childProjects.length === 0 && !childProjectsLoading) fetchChildTeams();
+      }
     }
   }, [activeTab, project?.id, isLikelyTeam]);
+
+  useEffect(() => {
+    if (activeTab !== 'balance') return;
+    if (isLikelyTeam) return;
+    if (childProjectsLoading) return;
+    if ((childProjects || []).length === 0) return;
+    fetchClubTeamBalances();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, isLikelyTeam, childProjectsLoading, childProjects.length, transactionsReloadToken]);
 
 
   // Fetch Dashboard Data (Matches, Stats)
@@ -1914,36 +1987,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
               className="app-action-button"
               disabled={!canCreateTransaction}
               onClick={async () => {
-                try {
-                  const orgIdForTxn = String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '').trim();
-                  const currentUserId = Number((user as any)?.id);
-
-                  if (!orgIdForTxn) {
-                    alert('No organisation resolved for this project');
-                    return;
-                  }
-                  if (!Number.isFinite(currentUserId)) {
-                    alert('No current user id available');
-                    return;
-                  }
-
-                  await createTeamreelDemoTransaction({
-                    apiBaseUrl,
-                    scope: creditsScope,
-                    organizationId: orgIdForTxn,
-                    projectId: project.id,
-                    seasonId: null,
-                    periodId: null,
-                    activityId: null,
-                    currentUserId,
-                    chargedUserId: null,
-                  });
-
-                  setActiveTab('transactions');
-                  setTransactionsReloadToken((n) => n + 1);
-                } catch (e: any) {
-                  alert(e?.message || 'Failed to create transaction');
-                }
+                setIsCreateTxnModalOpen(true);
               }}
               style={{ ...actionButtonStyle('primary'), padding: '6px 12px', fontWeight: 500, opacity: canCreateTransaction ? 1 : 0.6 }}
             >
@@ -1951,6 +1995,25 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             </button>
           </div>
         }
+      />
+
+      <CreateTransactionModal
+        isOpen={isCreateTxnModalOpen}
+        onClose={() => setIsCreateTxnModalOpen(false)}
+        onCreated={() => {
+          setActiveTab('transactions');
+          setTransactionsReloadToken((n) => n + 1);
+        }}
+        title={isLikelyTeam ? 'Create team transaction' : 'Create club/team transaction'}
+        scope={creditsScope}
+        organizationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '').trim()}
+        defaultProjectId={project?.id != null ? String(project.id) : null}
+        seasonId={null}
+        periodId={null}
+        activityId={null}
+        currentUserId={Number((user as any)?.id)}
+        chargedUserId={null}
+        walletOptions={clubWalletOptions}
       />
 
       <PageContent>
@@ -1993,23 +2056,102 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         </div>
 
           {activeTab === 'balance' && project?.id && (
-            <TeamCreditsTab
-              view="balance"
-              projectId={String(project.id)}
-              projectName={project.name}
-              organisationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '')}
-              reloadToken={transactionsReloadToken}
-            />
+            isLikelyTeam ? (
+              <TeamCreditsTab
+                view="balance"
+                projectId={String(project.id)}
+                projectName={project.name}
+                organisationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '')}
+                reloadToken={transactionsReloadToken}
+                walletLabel="Team"
+              />
+            ) : (
+              <div style={{ display: 'grid', gap: '12px' }}>
+                <TeamCreditsTab
+                  view="balance"
+                  projectId={String(project.id)}
+                  projectName={project.name}
+                  organisationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '')}
+                  reloadToken={transactionsReloadToken}
+                  walletLabel="Club"
+                />
+
+                <Card style={{ padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '16px' }}>Team balances</div>
+                      <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
+                        Balances per team under this club.
+                      </div>
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        fetchClubTeamBalances();
+                      }}
+                    >
+                      Refresh
+                    </Button>
+                  </div>
+
+                  {clubTeamBalancesError ? (
+                    <Alert variant="info" style={{ marginTop: '12px' }}>
+                      {clubTeamBalancesError}
+                    </Alert>
+                  ) : null}
+
+                  {childProjectsLoading || clubTeamBalancesLoading ? (
+                    <div style={{ padding: '12px', opacity: 0.7, textAlign: 'center' }}>Loading teams…</div>
+                  ) : (childProjects || []).length === 0 ? (
+                    <div style={{ padding: '12px', opacity: 0.7, textAlign: 'center' }}>No teams found under this club.</div>
+                  ) : (
+                    <div style={{ marginTop: '12px', overflowX: 'auto' }}>
+                      <Table style={{ width: '100%' }}>
+                        <thead>
+                          <tr>
+                            <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: '12px', opacity: 0.8 }}>Team</th>
+                            <th style={{ textAlign: 'right', padding: '8px 10px', fontSize: '12px', opacity: 0.8 }}>Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(childProjects || []).slice(0, 50).map((t: any) => (
+                            <tr key={String(t?.id || '')}>
+                              <td style={{ padding: '8px 10px', fontSize: '13px' }}>{t?.name || t?.title || t?.slug || t?.id}</td>
+                              <td style={{ padding: '8px 10px', fontSize: '13px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                                {String(clubTeamBalances?.[String(t?.id || '')]?.current_balance ?? '—')}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </div>
+                  )}
+                </Card>
+              </div>
+            )
           )}
 
           {activeTab === 'transactions' && project?.id && (
-            <TeamCreditsTab
-              view="transactions"
-              projectId={String(project.id)}
-              projectName={project.name}
-              organisationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '')}
-              reloadToken={transactionsReloadToken}
-            />
+            isLikelyTeam ? (
+              <TeamCreditsTab
+                view="transactions"
+                projectId={String(project.id)}
+                projectName={project.name}
+                organisationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '')}
+                reloadToken={transactionsReloadToken}
+              />
+            ) : (
+              <TransactionsPanel
+                title="Club transactions (all teams)"
+                description="Shows transactions across this club and all teams under it."
+                filters={{
+                  organization_id: String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || ''),
+                  project_id__in: [String(project.id), ...(childProjects || []).map((t: any) => String(t?.id || '')).filter(Boolean)].join(','),
+                }}
+                reloadToken={transactionsReloadToken}
+              />
+            )
           )}
 
           {activeTab === 'overview' && (

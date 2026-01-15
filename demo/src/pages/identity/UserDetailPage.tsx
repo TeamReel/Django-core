@@ -11,7 +11,7 @@ import UserDetailModal from './UserDetailModal';
 import UserEditModal from './UserEditModal';
 import LinkUserModal from './LinkUserModal';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
-import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
+import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import { useAuth } from '@django-core/auth-ui';
 import {
   actionButtonStyle,
@@ -184,11 +184,23 @@ export const UserDetailPage: React.FC = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
   const [linkOrgs, setLinkOrgs] = useState<any[]>([]);
   const [linkClubs, setLinkClubs] = useState<any[]>([]);
   const [linkTeams, setLinkTeams] = useState<any[]>([]);
   const [linkOptionsLoading, setLinkOptionsLoading] = useState(false);
   const [linkOptionsError, setLinkOptionsError] = useState<string | null>(null);
+
+  const currentUserIdForTxn = Number((currentUser as any)?.id);
+  const targetUserIdForTxn = Number((user as any)?.id || userId);
+  const userWalletOptions = useMemo<WalletOption[]>(
+    () => [
+      { kind: 'default', label: 'Default (charge this user)' },
+      { kind: 'organization', label: 'Organisation wallet' },
+      { kind: 'me', label: 'My user wallet' },
+    ],
+    []
+  );
 
   const [editingMembership, setEditingMembership] = useState<{ projectId: string; projectName: string; currentRole: string } | null>(null);
   const [isEditMembershipModalOpen, setIsEditMembershipModalOpen] = useState(false);
@@ -200,8 +212,13 @@ export const UserDetailPage: React.FC = () => {
 
   const [hierarchySearch, setHierarchySearch] = useState('');
 
+  const [userBalance, setUserBalance] = useState<string | null>(null);
+  const [userBalanceLoading, setUserBalanceLoading] = useState(false);
+  const [userBalanceError, setUserBalanceError] = useState<string | null>(null);
+  const [userBalanceReloadToken, setUserBalanceReloadToken] = useState(0);
+
   const allowedTabs = useMemo(
-    () => new Set(['overview', 'hierarchy', 'federations', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'transactions']),
+    () => new Set(['overview', 'balance', 'hierarchy', 'federations', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'transactions']),
     []
   );
 
@@ -262,6 +279,65 @@ export const UserDetailPage: React.FC = () => {
 
     return '';
   };
+
+  useEffect(() => {
+    if (activeTab !== 'balance') return;
+
+    const orgIdForBalance = getPreferredOrganisationId();
+    const isSelf =
+      Number.isFinite(currentUserIdForTxn) &&
+      Number.isFinite(targetUserIdForTxn) &&
+      Number(currentUserIdForTxn) === Number(targetUserIdForTxn);
+
+    if (!isSelf) {
+      setUserBalance(null);
+      setUserBalanceError('Balance is only available on your own user page.');
+      setUserBalanceLoading(false);
+      return;
+    }
+
+    if (!orgIdForBalance) {
+      setUserBalance(null);
+      setUserBalanceError('Select an organisation first (context switcher).');
+      setUserBalanceLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    const run = async () => {
+      try {
+        setUserBalanceLoading(true);
+        setUserBalanceError(null);
+
+        const response = await fetch(
+          `${apiBaseUrl}/api/v1/transactions/organizations/${encodeURIComponent(orgIdForBalance)}/balance/me/`,
+          { credentials: 'include', signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch balance (${response.status})`);
+        }
+
+        const raw = await response.json();
+        const data = (raw as any)?.data ?? raw;
+        const v = (data as any)?.current_balance;
+        if (!cancelled) setUserBalance(v != null ? String(v) : null);
+      } catch (e: any) {
+        if (!cancelled) setUserBalanceError(e?.message || 'Failed to fetch balance');
+      } finally {
+        if (!cancelled) setUserBalanceLoading(false);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, apiBaseUrl, userBalanceReloadToken]);
 
   const fetchUser = async () => {
     try {
@@ -768,41 +844,21 @@ export const UserDetailPage: React.FC = () => {
             <button
               type="button"
               className="app-action-button"
-              onClick={async () => {
-                try {
-                  const orgIdForTxn = getPreferredOrganisationId();
-                  const currentUserId = Number((currentUser as any)?.id);
-                  const targetUserId = Number((user as any)?.id || userId);
-
-                  if (!orgIdForTxn) {
-                    alert('Select an organisation first (context switcher), then try again');
-                    return;
-                  }
-                  if (!Number.isFinite(currentUserId)) {
-                    alert('No current user id available');
-                    return;
-                  }
-                  if (!Number.isFinite(targetUserId)) {
-                    alert('No target user id available');
-                    return;
-                  }
-
-                  await createTeamreelDemoTransaction({
-                    apiBaseUrl,
-                    scope: 'user',
-                    organizationId: orgIdForTxn,
-                    projectId: null,
-                    seasonId: null,
-                    periodId: null,
-                    activityId: null,
-                    currentUserId,
-                    chargedUserId: targetUserId,
-                  });
-
-                  setTab('transactions');
-                } catch (e: any) {
-                  alert(e?.message || 'Failed to create transaction');
+              onClick={() => {
+                const orgIdForTxn = getPreferredOrganisationId();
+                if (!orgIdForTxn) {
+                  alert('Select an organisation first (context switcher), then try again');
+                  return;
                 }
+                if (!Number.isFinite(currentUserIdForTxn)) {
+                  alert('No current user id available');
+                  return;
+                }
+                if (!Number.isFinite(targetUserIdForTxn)) {
+                  alert('No target user id available');
+                  return;
+                }
+                setIsCreateTxnModalOpen(true);
               }}
               style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '160px' }}
               disabled={!user}
@@ -849,6 +905,7 @@ export const UserDetailPage: React.FC = () => {
       <PageContent>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
           {renderTabButton('overview', 'Overview')}
+          {renderTabButton('balance', 'Balance')}
           {renderTabButton('hierarchy', 'Hierarchy')}
           {renderTabButton('federations', 'Federations')}
           {renderTabButton('clubs', 'Clubs')}
@@ -905,6 +962,50 @@ export const UserDetailPage: React.FC = () => {
           </div>
         )}
 
+        {activeTab === 'balance' && (
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                <h3 style={{ marginTop: 0, marginBottom: 0 }}>Balance</h3>
+                <button
+                  type="button"
+                  onClick={() => setUserBalanceReloadToken((n) => n + 1)}
+                  style={actionButtonStyle('neutral')}
+                  disabled={userBalanceLoading}
+                >
+                  Refresh
+                </button>
+              </div>
+
+              {userBalanceError ? (
+                <div style={{ marginTop: '12px' }}>
+                  <Alert variant="warning">{userBalanceError}</Alert>
+                </div>
+              ) : null}
+
+              <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <Card>
+                  <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Current balance</div>
+                  <div style={{ fontWeight: 900, fontSize: '28px', marginTop: '6px' }}>
+                    {userBalanceLoading ? 'Loading…' : userBalance != null ? userBalance : '—'}
+                  </div>
+                </Card>
+                <Card>
+                  <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Quick links</div>
+                  <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button type="button" onClick={() => setTab('transactions')} style={actionButtonStyle('primary')}>
+                      View transactions
+                    </button>
+                    <button type="button" onClick={() => setIsCreateTxnModalOpen(true)} style={actionButtonStyle('neutral')}>
+                      Create transaction
+                    </button>
+                  </div>
+                </Card>
+              </div>
+            </Card>
+          </div>
+        )}
+
         {activeTab === 'transactions' && (
           <div style={{ display: 'grid', gap: '12px' }}>
             <TransactionsPanel
@@ -913,27 +1014,6 @@ export const UserDetailPage: React.FC = () => {
               filters={{
                 organization_id: getPreferredOrganisationId(),
                 charged_user_id: String((user as any)?.id || userId),
-              }}
-              onCreateTransaction={async () => {
-                const orgIdForTxn = getPreferredOrganisationId();
-                const currentUserId = Number((currentUser as any)?.id);
-                const targetUserId = Number((user as any)?.id || userId);
-
-                if (!orgIdForTxn) throw new Error('Select an organisation first (context switcher)');
-                if (!Number.isFinite(currentUserId)) throw new Error('No current user id');
-                if (!Number.isFinite(targetUserId)) throw new Error('No target user id');
-
-                await createTeamreelDemoTransaction({
-                  apiBaseUrl,
-                  scope: 'user',
-                  organizationId: orgIdForTxn,
-                  projectId: null,
-                  seasonId: null,
-                  periodId: null,
-                  activityId: null,
-                  currentUserId,
-                  chargedUserId: targetUserId,
-                });
               }}
             />
           </div>
@@ -1513,6 +1593,22 @@ export const UserDetailPage: React.FC = () => {
           </div>
         )}
       </PageContent>
+
+      <CreateTransactionModal
+        isOpen={isCreateTxnModalOpen}
+        onClose={() => setIsCreateTxnModalOpen(false)}
+        onCreated={() => setTab('transactions')}
+        title="Create transaction"
+        scope="user"
+        organizationId={String(getPreferredOrganisationId() || '')}
+        defaultProjectId={null}
+        seasonId={null}
+        periodId={null}
+        activityId={null}
+        currentUserId={currentUserIdForTxn}
+        chargedUserId={Number.isFinite(targetUserIdForTxn) ? targetUserIdForTxn : null}
+        walletOptions={userWalletOptions}
+      />
 
       <UserDetailModal opened={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} user={user} />
 

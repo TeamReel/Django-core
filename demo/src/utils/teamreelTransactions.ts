@@ -51,6 +51,10 @@ export async function createTeamreelDemoTransaction(args: {
   activityId?: string | null;
   currentUserId: number;
   chargedUserId?: number | null;
+  notes?: string | null;
+  debitAmount?: string | null;
+  topupAmount?: string | null;
+  payerWallet?: 'default' | 'organization' | 'project' | 'me';
 }): Promise<{ usageEventId?: string; transactionId?: string; topupTransactionId?: string }>{
   const apiBaseUrl = String(args.apiBaseUrl || '').replace(/\/+$/, '');
 
@@ -63,12 +67,18 @@ export async function createTeamreelDemoTransaction(args: {
   const currentUserId = Number(args.currentUserId);
   const chargedUserId = args.chargedUserId != null ? Number(args.chargedUserId) : null;
 
+  // Optional overrides (used by the Create Transaction modal)
+  const notesOverride = args.notes != null ? String(args.notes) : null;
+  const debitAmountOverride = args.debitAmount != null ? String(args.debitAmount) : null;
+  const topupAmountOverride = args.topupAmount != null ? String(args.topupAmount) : null;
+  const payerWalletOverride = args.payerWallet || 'default';
+
   const baseKey = `ui:teamreel:${scope}:${safeUuid()}`;
 
   // Default: create a debit usage transaction (like an AI action)
   // If that is blocked by prepaid policy (insufficient balance), we top-up the relevant wallet once and retry.
-  const debitAmount = '-1.00';
-  const topupAmount = '10.00';
+  const debitAmount = (debitAmountOverride || '-1.00').trim();
+  const topupAmount = (topupAmountOverride || '10.00').trim();
 
   const eventType = 'content_generation';
   const metadata: Record<string, any> = {
@@ -111,10 +121,14 @@ export async function createTeamreelDemoTransaction(args: {
   const usageEventId = String(usageEvent?.id || '');
   if (!usageEventId) throw new Error('Usage event created but no id returned');
 
+  const effectiveProjectId =
+    payerWalletOverride === 'organization' || payerWalletOverride === 'me' ? null : projectId;
+  const effectiveChargedUserId = payerWalletOverride === 'me' ? currentUserId : chargedUserId;
+
   const txnPayloadBase: any = {
     organization_id: organizationId,
-    project_id: projectId,
-    charged_user_id: chargedUserId,
+    project_id: effectiveProjectId,
+    charged_user_id: effectiveChargedUserId,
     amount: debitAmount,
     source_type: 'usage_event',
     usage_event_id: usageEventId,
@@ -123,15 +137,17 @@ export async function createTeamreelDemoTransaction(args: {
     payer_routing:
       scope === 'match' ? 'user_project_org' : scope === 'user' ? 'explicit' : 'explicit',
     notes:
-      scope === 'club'
-        ? 'TeamReel demo: Club logo import (AI)'
-        : scope === 'team'
-          ? 'TeamReel demo: Team kit import (AI)'
-          : scope === 'season'
-            ? 'TeamReel demo: Season kickoff pack (AI)'
-            : scope === 'match'
-              ? 'TeamReel demo: Match report generation (AI)'
-              : 'TeamReel demo: Personal assistant action (AI)',
+      (notesOverride && notesOverride.trim())
+        ? notesOverride.trim()
+        : scope === 'club'
+          ? 'TeamReel demo: Club logo import (AI)'
+          : scope === 'team'
+            ? 'TeamReel demo: Team kit import (AI)'
+            : scope === 'season'
+              ? 'TeamReel demo: Season kickoff pack (AI)'
+              : scope === 'match'
+                ? 'TeamReel demo: Match report generation (AI)'
+                : 'TeamReel demo: Personal assistant action (AI)',
   };
 
   const createTxn = async (payload: any) => {
@@ -155,8 +171,8 @@ export async function createTeamreelDemoTransaction(args: {
   // Top-up the likely payer wallet, then retry once.
   const topupPayload: any = {
     organization_id: organizationId,
-    project_id: projectId,
-    charged_user_id: chargedUserId,
+    project_id: effectiveProjectId,
+    charged_user_id: effectiveChargedUserId,
     amount: topupAmount,
     source_type: 'adjustment',
     usage_event_id: null,

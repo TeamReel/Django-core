@@ -22,7 +22,7 @@ import SeasonSquadAddMemberModal from '../identity/SeasonSquadAddMemberModal';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
-import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
+import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -151,6 +151,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   const [isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen] = useState(false);
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
+  const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
+
+  const seasonWalletOptions = useMemo<WalletOption[]>(() => {
+    const opts: WalletOption[] = [{ kind: 'default', label: 'Default (recommended)' }];
+    opts.push({ kind: 'organization', label: 'Federation/Organisation wallet' });
+    if (project?.id != null) {
+      opts.push({ kind: 'project', label: 'Team wallet', projectId: String(project.id) });
+    }
+    opts.push({ kind: 'me', label: 'My user wallet' });
+    return opts;
+  }, [project?.id]);
 
   const orgSlugOrId = orgId || '';
   const projectSlugOrId = projectId || '';
@@ -710,46 +721,31 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               <button
                 type="button"
                 className="app-action-button"
-                onClick={async () => {
-                  try {
-                    const orgIdForTxn = String(org?.id || '').trim();
-                    const projectIdForTxn = String(project?.id || '').trim();
-                    const seasonUuid = String(resolvedSeasonId || effectiveSeasonId || '').trim();
-                    const currentUserId = Number((user as any)?.id);
-
-                    if (!orgIdForTxn || !projectIdForTxn || !seasonUuid) {
-                      alert('Missing org/project/season context for transaction');
-                      return;
-                    }
-                    if (!Number.isFinite(currentUserId)) {
-                      alert('No current user id available');
-                      return;
-                    }
-
-                    await createTeamreelDemoTransaction({
-                      apiBaseUrl,
-                      scope: 'season',
-                      organizationId: orgIdForTxn,
-                      projectId: projectIdForTxn,
-                      seasonId: seasonUuid,
-                      periodId: seasonUuid,
-                      activityId: null,
-                      currentUserId,
-                      chargedUserId: null,
-                    });
-
-                    // Switch to the transactions tab so the result is visible immediately.
-                    navigateToTab('transactions');
-                  } catch (e: any) {
-                    alert(e?.message || 'Failed to create transaction');
-                  }
-                }}
+                onClick={() => setIsCreateTxnModalOpen(true)}
                 style={actionButtonStyle('primary')}
               >
                 Create transaction
               </button>
             </div>
           }
+        />
+
+        <CreateTransactionModal
+          isOpen={isCreateTxnModalOpen}
+          onClose={() => setIsCreateTxnModalOpen(false)}
+          onCreated={() => {
+            navigateToTab('transactions');
+          }}
+          title="Create season transaction"
+          scope="season"
+          organizationId={String(org?.id || '').trim()}
+          defaultProjectId={project?.id != null ? String(project.id) : null}
+          seasonId={String(resolvedSeasonId || effectiveSeasonId || '').trim() || null}
+          periodId={String(resolvedSeasonId || effectiveSeasonId || '').trim() || null}
+          activityId={null}
+          currentUserId={Number((user as any)?.id)}
+          chargedUserId={null}
+          walletOptions={seasonWalletOptions}
         />
 
         <PageContent>
@@ -1672,31 +1668,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   organization_id: String(org?.id || ''),
                   project_id: String(project?.id || ''),
                   season_id: String(resolvedSeasonId || effectiveSeasonId || ''),
-                }}
-                onCreateTransaction={async () => {
-                  const orgIdForTxn = String(org?.id || '').trim();
-                  const projectIdForTxn = String(project?.id || '').trim();
-                  const seasonUuid = String(resolvedSeasonId || effectiveSeasonId || '').trim();
-                  const currentUserId = Number((user as any)?.id);
-
-                  if (!orgIdForTxn || !projectIdForTxn || !seasonUuid) {
-                    throw new Error('Missing org/project/season context');
-                  }
-                  if (!Number.isFinite(currentUserId)) {
-                    throw new Error('No current user id');
-                  }
-
-                  await createTeamreelDemoTransaction({
-                    apiBaseUrl,
-                    scope: 'season',
-                    organizationId: orgIdForTxn,
-                    projectId: projectIdForTxn,
-                    seasonId: seasonUuid,
-                    periodId: seasonUuid,
-                    activityId: null,
-                    currentUserId,
-                    chargedUserId: null,
-                  });
                 }}
               />
             </div>

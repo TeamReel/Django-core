@@ -80,8 +80,9 @@ export default function TeamCreditsTab(props: {
   projectName?: string;
   organisationId?: string | null;
   reloadToken?: number;
+  walletLabel?: string;
 }) {
-  const { view, projectId, projectName, organisationId, reloadToken } = props;
+  const { view, projectId, projectName, organisationId, reloadToken, walletLabel } = props;
 
   const [balance, setBalance] = useState<ProjectCreditsBalance | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
@@ -282,7 +283,7 @@ export default function TeamCreditsTab(props: {
                   }}
                 >
                   <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6 }}>
-                    Team Credits Balance
+                    {(walletLabel || 'Team')} Credits Balance
                   </div>
                   <div
                     style={{

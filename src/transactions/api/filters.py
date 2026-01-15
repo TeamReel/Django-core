@@ -37,7 +37,7 @@ class UsageEventFilter(django_filters.FilterSet):
             "timestamp__lte",
         ]
 
-    def filter_unbilled(self, queryset, name, value):  # noqa: ARG002
+    def filter_unbilled(self, queryset, _name, value):
         """Filter for usage events not linked to transactions."""
         if value:
             # Return events with no associated transactions
@@ -53,6 +53,7 @@ class TransactionFilter(django_filters.FilterSet):
     organization_id = django_filters.UUIDFilter(field_name="organization__id")
     # Project uses integer PK
     project_id = django_filters.NumberFilter(field_name="project__id")
+    project_id__in = django_filters.CharFilter(method="filter_project_id_in")
     charged_user_id = django_filters.NumberFilter(field_name="charged_user__id")
 
     # TeamReel hierarchy filters (stored on usage_event.metadata)
@@ -74,6 +75,7 @@ class TransactionFilter(django_filters.FilterSet):
         fields = [
             "organization_id",
             "project_id",
+            "project_id__in",
             "charged_user_id",
             "season_id",
             "period_id",
@@ -83,17 +85,36 @@ class TransactionFilter(django_filters.FilterSet):
             "end_date",
         ]
 
-    def filter_season_id(self, queryset, name, value):  # noqa: ARG002
+    def filter_project_id_in(self, queryset, _name, value):
+        """Filter by a comma-separated list of project ids.
+
+        Matches the existing pattern used elsewhere in the demo (e.g. periods).
+        Example: ?project_id__in=1,2,3
+        """
+        if not value:
+            return queryset
+        raw_parts = [p.strip() for p in str(value).split(",") if p and p.strip()]
+        ids: list[int] = []
+        for part in raw_parts:
+            try:
+                ids.append(int(part))
+            except ValueError:
+                continue
+        if not ids:
+            return queryset
+        return queryset.filter(project__id__in=ids)
+
+    def filter_season_id(self, queryset, _name, value):
         if not value:
             return queryset
         return queryset.filter(usage_event__metadata__season_id=str(value))
 
-    def filter_period_id(self, queryset, name, value):  # noqa: ARG002
+    def filter_period_id(self, queryset, _name, value):
         if not value:
             return queryset
         return queryset.filter(usage_event__metadata__period_id=str(value))
 
-    def filter_activity_id(self, queryset, name, value):  # noqa: ARG002
+    def filter_activity_id(self, queryset, _name, value):
         if not value:
             return queryset
         return queryset.filter(usage_event__metadata__activity_id=str(value))
