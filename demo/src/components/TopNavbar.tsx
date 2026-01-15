@@ -584,37 +584,43 @@ export default function TopNavbar() {
     const competitionSlugOrId = appSelection.competitionSlugOrId;
     const matchId = appSelection.matchId;
 
-    const federationPath = orgSlug ? `/organisations/${orgSlug}` : '/directory?tab=federations';
+    const federationPath = orgSlug ? `/organisations/${orgSlug}` : '/organisations';
 
     const clubPath = orgSlug && clubSlugOrId
       ? `/organisations/${orgSlug}/projects/${clubSlugOrId}`
-      : (orgSlug ? `/organisations/${orgSlug}` : '/directory?tab=clubs');
+      : (orgSlug ? `/organisations/${orgSlug}/projects` : '/organisations');
 
     const teamPath = orgSlug && clubSlugOrId && teamSlugOrId
       ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`
       : (orgSlug && teamSlugOrId
         ? `/organisations/${orgSlug}/projects/${teamSlugOrId}`
-        : '/directory?tab=teams');
+        : (orgSlug ? `/organisations/${orgSlug}/projects` : '/organisations'));
 
     const seasonPath = orgSlug && seasonSlugOrId
       ? (clubSlugOrId && teamSlugOrId
         ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
         : (teamSlugOrId
           ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
-          : `/directory?tab=seasons&org_id=${encodeURIComponent(String(orgSlug))}`))
+          : (orgSlug ? `/organisations/${orgSlug}/projects` : '/organisations')))
       : (orgSlug && clubSlugOrId && teamSlugOrId
         ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons`
         : (orgSlug && teamSlugOrId
           ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons`
-          : '/directory?tab=seasons'));
+          : (orgSlug ? `/organisations/${orgSlug}/projects` : '/organisations')));
 
     const competitionPath = orgSlug && seasonSlugOrId && competitionSlugOrId
       ? (clubSlugOrId && teamSlugOrId
         ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`
         : (teamSlugOrId
           ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`
-          : '/directory?tab=competitions'))
-      : '/directory?tab=competitions';
+          : (orgSlug ? `/organisations/${orgSlug}/projects` : '/organisations')))
+      : (orgSlug && seasonSlugOrId
+        ? (clubSlugOrId && teamSlugOrId
+          ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+          : (teamSlugOrId
+            ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+            : (orgSlug ? `/organisations/${orgSlug}/projects` : '/organisations')))
+        : (orgSlug ? `/organisations/${orgSlug}/projects` : '/organisations'));
 
     const matchPath = matchId && orgSlug && seasonSlugOrId && competitionSlugOrId
       ? (clubSlugOrId && teamSlugOrId
@@ -622,7 +628,21 @@ export default function TopNavbar() {
         : (teamSlugOrId
           ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`
           : `/matches/${matchId}`))
-      : (matchId ? `/matches/${matchId}` : '/directory?tab=matches');
+      : (matchId
+        ? `/matches/${matchId}`
+        : (orgSlug && seasonSlugOrId && competitionSlugOrId
+          ? (clubSlugOrId && teamSlugOrId
+            ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches`
+            : (teamSlugOrId
+              ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches`
+              : (orgSlug ? `/organisations/${orgSlug}/projects` : '/organisations')))
+          : (orgSlug && seasonSlugOrId
+            ? (clubSlugOrId && teamSlugOrId
+              ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+              : (teamSlugOrId
+                ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+                : (orgSlug ? `/organisations/${orgSlug}/projects` : '/organisations')))
+            : (orgSlug ? `/organisations/${orgSlug}/projects` : '/organisations'))));
 
     return {
       id: 'app',
