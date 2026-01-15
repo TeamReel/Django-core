@@ -1358,6 +1358,7 @@ export default function TopNavbar() {
                   borderRadius: '4px',
                   cursor: 'pointer',
                   fontSize: '20px',
+                  color: 'var(--app-text)',
                 }}
                 title={creditsTooltip}
                 aria-label="My balance"
@@ -1371,13 +1372,11 @@ export default function TopNavbar() {
                   aria-hidden="true"
                   style={{ display: 'block' }}
                 >
-                  <path
-                    d="M3 7.5C3 6.11929 4.11929 5 5.5 5H18.5C19.8807 5 21 6.11929 21 7.5V16.5C21 17.8807 19.8807 19 18.5 19H5.5C4.11929 19 3 17.8807 3 16.5V7.5Z"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  />
-                  <path d="M3 9H21" stroke="currentColor" strokeWidth="1.8" />
-                  <path d="M7 15H12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8" />
+                  <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.6" opacity="0.9" />
+                  <path d="M10.2 10.8H13.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  <path d="M10.2 13.2H13.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  <path d="M15.9 8.7L16.8 7.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
                 {formattedCredits != null && (
                   <span

@@ -905,7 +905,6 @@ export const UserDetailPage: React.FC = () => {
       <PageContent>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
           {renderTabButton('overview', 'Overview')}
-          {renderTabButton('balance', 'Balance')}
           {renderTabButton('hierarchy', 'Hierarchy')}
           {renderTabButton('federations', 'Federations')}
           {renderTabButton('clubs', 'Clubs')}
@@ -914,6 +913,7 @@ export const UserDetailPage: React.FC = () => {
           {renderTabButton('competitions', 'Competitions')}
           {renderTabButton('matches', 'Matches')}
           {renderTabButton('transactions', 'Transactions')}
+          {renderTabButton('balance', 'Balance')}
         </div>
 
         {activeTab === 'overview' && (
