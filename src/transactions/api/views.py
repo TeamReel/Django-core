@@ -4,6 +4,7 @@ import csv
 from io import StringIO
 
 from django.http import StreamingHttpResponse
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from permissions.api.permissions import HasOrganizationPermission, HasProjectPermission
 from rest_framework import status, viewsets
@@ -33,6 +34,48 @@ from .serializers import (
     TransactionSerializer,
     UsageEventSerializer,
 )
+
+
+class TransactionsApiRootCompatView(APIView):
+    """Compatibility view for GET /api/v1/transactions/.
+
+    Some clients mistakenly call the transactions API root (router index) with
+    filter params like ?project_id=... expecting a transaction list.
+
+    Behavior:
+    - If query params look like list filters/pagination, delegate to
+      TransactionViewSet.list.
+    - Otherwise, return the same link-index payload as the router root.
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request: Request) -> Response:
+        interesting_params = {
+            "organization_id",
+            "project_id",
+            "charged_user_id",
+            "source_type",
+            "start_date",
+            "end_date",
+            "timestamp__gte",
+            "timestamp__lte",
+            "ordering",
+            "page",
+            "page_size",
+            "export",
+        }
+
+        if any(k in request.query_params for k in interesting_params):
+            list_view = TransactionViewSet.as_view({"get": "list"})
+            return list_view(request._request)  # type: ignore[attr-defined]
+
+        links = {
+            "usage-events": request.build_absolute_uri(reverse("usage-event-list")),
+            "transactions": request.build_absolute_uri(reverse("transaction-list")),
+            "balance-policies": request.build_absolute_uri(reverse("balance-policy-list")),
+        }
+        return Response(links)
 
 
 class UsageEventViewSet(viewsets.ModelViewSet):

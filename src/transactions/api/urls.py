@@ -9,6 +9,7 @@ from .views import (
     MyUserBalanceView,
     OrganizationBalanceView,
     ProjectBalanceView,
+    TransactionsApiRootCompatView,
     TransactionViewSet,
     UsageEventViewSet,
 )
@@ -21,6 +22,11 @@ router.register(r"transactions", TransactionViewSet, basename="transaction")
 router.register(r"balance-policies", BalancePolicyViewSet, basename="balance-policy")
 
 urlpatterns = [
+    path(
+        "",
+        TransactionsApiRootCompatView.as_view(),
+        name="transactions-api-root-compat",
+    ),
     path(
         "organizations/<uuid:organization_id>/balance/",
         OrganizationBalanceView.as_view(),
