@@ -119,6 +119,10 @@ export default function TeamCreditsTab(props: {
     return { added, used, net, count: amounts.length };
   }, [transactions]);
 
+  const recentTransactions = useMemo(() => {
+    return (transactions || []).slice(0, 5);
+  }, [transactions]);
+
   const fetchBalance = async () => {
     setBalanceLoading(true);
     setBalanceError(null);
@@ -194,6 +198,14 @@ export default function TeamCreditsTab(props: {
 
   useEffect(() => {
     if (view === 'transactions') {
+      fetchTransactionsList();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, apiBaseUrl, projectId, organisationId]);
+
+  useEffect(() => {
+    // Balance tab also shows a transaction timeline + recent activity.
+    if (view === 'balance') {
       fetchTransactionsList();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -286,6 +298,145 @@ export default function TeamCreditsTab(props: {
                     {projectName || balance?.project_name || 'Team'}
                     {balance?.updated_at ? ` • Last updated ${formatDateTime(balance.updated_at)}` : ''}
                   </div>
+                </Card>
+              </div>
+
+              {/* Transaction Timeline + Recent Activity (same idea as /credits balance tab) */}
+              <div style={{ marginTop: '16px' }}>
+                <Card style={{ padding: '24px', marginBottom: '12px' }}>
+                  <h3 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>📊 Transaction Timeline</h3>
+                  {transactionsLoading ? (
+                    <div style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>Loading transactions…</div>
+                  ) : transactions.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>No transactions recorded yet.</div>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {transactions.slice(0, 10).map((txn) => {
+                          const amount = Number(txn.amount);
+                          const maxAmount = Math.max(
+                            ...transactions.slice(0, 10).map((t) => Math.abs(Number(t.amount))).filter((n) => Number.isFinite(n)),
+                            0,
+                          );
+                          const absAmount = Number.isFinite(amount) ? Math.abs(amount) : 0;
+                          const barWidth = maxAmount > 0 ? (absAmount / maxAmount) * 100 : 0;
+                          const isPositive = Number.isFinite(amount) && amount > 0;
+
+                          return (
+                            <div key={txn.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div style={{ minWidth: '120px', fontSize: '12px', opacity: 0.7, textAlign: 'right' }}>
+                                {new Date(txn.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </div>
+
+                              <div style={{ flex: 1, position: 'relative', height: '32px', display: 'flex', alignItems: 'center' }}>
+                                <div
+                                  style={{
+                                    width: `${barWidth}%`,
+                                    height: '24px',
+                                    backgroundColor: isPositive ? 'var(--app-success)' : 'var(--app-error)',
+                                    borderRadius: '4px',
+                                    opacity: 0.8,
+                                    transition: 'all 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    paddingLeft: '8px',
+                                    paddingRight: '8px',
+                                    minWidth: '60px',
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: '12px',
+                                      fontWeight: 'bold',
+                                      color: 'white',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {isPositive ? '+' : ''}
+                                    {Number.isFinite(amount) ? amount.toLocaleString() : String(txn.amount)}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div
+                                style={{
+                                  minWidth: '150px',
+                                  fontSize: '12px',
+                                  opacity: 0.6,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {txn.notes || sourceTypeLabel(txn.source_type)}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {transactions.length > 10 && (
+                        <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '12px', opacity: 0.6 }}>
+                          Showing 10 of {transactions.length} transactions
+                        </div>
+                      )}
+                    </>
+                  )}
+                </Card>
+
+                <Card style={{ padding: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h3 style={{ margin: 0, fontSize: '18px' }}>📋 Recent Activity</h3>
+                  </div>
+
+                  {transactionsLoading ? (
+                    <div style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>Loading transactions…</div>
+                  ) : recentTransactions.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>No recent activity.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {recentTransactions.map((txn) => {
+                        const amount = Number(txn.amount);
+                        const isPositive = Number.isFinite(amount) && amount > 0;
+                        return (
+                          <div
+                            key={txn.id}
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '16px',
+                              borderRadius: '8px',
+                              backgroundColor: 'var(--app-surface-2)',
+                              border: '1px solid var(--app-border)',
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '15px', fontWeight: 500, marginBottom: '6px' }}>
+                                {txn.notes || sourceTypeLabel(txn.source_type)}
+                              </div>
+                              <div style={{ fontSize: '13px', opacity: 0.6 }}>
+                                {new Date(txn.timestamp).toLocaleDateString()} • {new Date(txn.timestamp).toLocaleTimeString()}
+                              </div>
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                color: isPositive ? 'var(--app-success)' : 'var(--app-error)',
+                                minWidth: '100px',
+                                textAlign: 'right',
+                              }}
+                            >
+                              {isPositive ? '+' : ''}
+                              {Number.isFinite(amount) ? amount.toLocaleString() : String(txn.amount)}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </Card>
               </div>
             </>
