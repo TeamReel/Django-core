@@ -42,6 +42,8 @@ export default function SearchPage() {
 
   const getCategoryLabel = (category: string): string => {
     const labels: Record<string, string> = {
+      clubs: 'Clubs',
+      teams: 'Teams',
       users: 'Users',
       organisations: 'Organisations',
       projects: 'Projects',
@@ -51,6 +53,8 @@ export default function SearchPage() {
 
   const getCategoryIcon = (category: string): string => {
     const icons: Record<string, string> = {
+      clubs: '🏟️',
+      teams: '👕',
       users: '👥',
       organisations: '🏢',
       projects: '📁',
@@ -59,7 +63,9 @@ export default function SearchPage() {
   };
 
   const totalResults = groupedResults
-    ? (groupedResults.users?.length || 0) +
+    ? (groupedResults.clubs?.length || 0) +
+      (groupedResults.teams?.length || 0) +
+      (groupedResults.users?.length || 0) +
       (groupedResults.organisations?.length || 0) +
       (groupedResults.projects?.length || 0)
     : paginatedResults?.count || 0;

@@ -36,7 +36,7 @@ Set the `DATABASE_URL` environment variable temporarily for the command executio
 
 **PowerShell (Windows):**
 ```powershell
-# 1. Set the variable (Actual Production URL)
+# 1. Set the variable (use the Public Connection URL from Railway)
 $env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 
 # 2. Run the command

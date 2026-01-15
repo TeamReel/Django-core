@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { createApiClient } from '@django-core/api-client';
 
 export interface SearchResult {
-  id: number;
+  id: string;
   title: string;
   description: string;
   url: string;
@@ -12,6 +12,8 @@ export interface SearchResult {
 }
 
 export interface GroupedSearchResults {
+  clubs?: SearchResult[];
+  teams?: SearchResult[];
   users?: SearchResult[];
   organisations?: SearchResult[];
   projects?: SearchResult[];

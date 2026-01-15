@@ -65,6 +65,8 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
 
   const getCategoryLabel = (category: string): string => {
     const labels: Record<string, string> = {
+      clubs: 'Clubs',
+      teams: 'Teams',
       users: 'Users',
       organisations: 'Organisations',
       projects: 'Projects',
@@ -74,6 +76,8 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
 
   const getCategoryIcon = (category: string): string => {
     const icons: Record<string, string> = {
+      clubs: '🏟️',
+      teams: '👕',
       users: '👥',
       organisations: '🏢',
       projects: '📁',
@@ -82,7 +86,11 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
   };
 
   const totalResults = results
-    ? (results.users?.length || 0) + (results.organisations?.length || 0) + (results.projects?.length || 0)
+    ? (results.clubs?.length || 0) +
+      (results.teams?.length || 0) +
+      (results.users?.length || 0) +
+      (results.organisations?.length || 0) +
+      (results.projects?.length || 0)
     : 0;
 
   return (

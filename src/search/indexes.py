@@ -86,6 +86,11 @@ class ProjectIndex(SearchIndex):
         return obj.description or ""
 
     def get_url(self, obj):
+        if getattr(obj, "parent_project", None):
+            return (
+                f"/organisations/{obj.organisation.slug}/projects/{obj.parent_project.slug}"
+                f"/teams/{obj.slug}"
+            )
         return f"/organisations/{obj.organisation.slug}/projects/{obj.slug}"
 
     def get_visible_ids(self, user):

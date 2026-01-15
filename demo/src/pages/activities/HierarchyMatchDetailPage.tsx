@@ -201,21 +201,33 @@ export default function HierarchyMatchDetailPage() {
   }, [location.search]);
 
   const navigateToTab = (tabId: string) => {
-    const base = matchBasePath || '';
-    if (!base) return;
+    const pathname = location.pathname;
+    if (!pathname) return;
+
+    const params = new URLSearchParams(location.search);
     if (tabId === 'overview') {
-      navigate(base);
-      return;
+      params.delete('tab');
+    } else {
+      params.set('tab', tabId);
     }
-    navigate(`${base}?tab=${encodeURIComponent(tabId)}`);
+
+    const search = params.toString();
+    navigate({ pathname, search: search ? `?${search}` : '' });
   };
 
   const handleMatchSwitch = (option: BreadcrumbSwitcherOption) => {
-    if (!competitionBasePath) return;
-    const suffix = location.search ? location.search : '';
     const matchKey = String(option.slug || option.id).trim();
     if (!matchKey) return;
-    navigate(`${competitionBasePath}/matches/${matchKey}${suffix}`);
+
+    const pathname = location.pathname || '';
+    if (!pathname) return;
+
+    const marker = '/matches/';
+    const newPathname = pathname.includes(marker)
+      ? pathname.replace(new RegExp(`${marker}[^/]+$`), `${marker}${matchKey}`)
+      : pathname.replace(/[^/]+$/, matchKey);
+
+    navigate({ pathname: newPathname, search: location.search ? location.search : '' });
   };
 
   useEffect(() => {
@@ -1177,13 +1189,25 @@ export default function HierarchyMatchDetailPage() {
           breadcrumbs={breadcrumbs}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <Button variant="secondary" onClick={() => setIsMatchDetailModalOpen(true)}>
+              <Button
+                variant="outline"
+                style={{ borderColor: '#2196f3', color: '#2196f3' }}
+                onClick={() => setIsMatchDetailModalOpen(true)}
+              >
                 View
               </Button>
-              <Button variant="secondary" onClick={() => setIsMatchEditModalOpen(true)}>
+              <Button
+                variant="outline"
+                style={{ borderColor: '#ff9800', color: '#ff9800' }}
+                onClick={() => setIsMatchEditModalOpen(true)}
+              >
                 Edit
               </Button>
-              <Button variant="secondary" onClick={handleDeleteMatch}>
+              <Button
+                variant="outline"
+                style={{ borderColor: '#f44336', color: '#f44336' }}
+                onClick={handleDeleteMatch}
+              >
                 Delete
               </Button>
               <Button variant="secondary" onClick={() => navigate(`/studio/create?context=${match.id}`)}>
