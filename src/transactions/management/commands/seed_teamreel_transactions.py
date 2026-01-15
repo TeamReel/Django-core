@@ -98,9 +98,30 @@ class Command(BaseCommand):
             help="Only seed these project slugs (team slugs) within the selected org(s)",
         )
         parser.add_argument(
+            "--teams-only",
+            action="store_true",
+            help=(
+                "Only seed team projects (child projects: parent_project__isnull=false). "
+                "Recommended for TeamReel where project wallets primarily live on teams."
+            ),
+        )
+        parser.add_argument(
+            "--club-slugs",
+            nargs="+",
+            help=(
+                "Only seed teams under these club slugs (root projects). "
+                "Example: --orgs knvb --teams-only --club-slugs ajax"
+            ),
+        )
+        parser.add_argument(
             "--list-projects",
             action="store_true",
             help="List projects (teams) for the selected org(s) and exit",
+        )
+        parser.add_argument(
+            "--list-clubs",
+            action="store_true",
+            help="List club projects (root projects) for the selected org(s) and exit",
         )
         parser.add_argument(
             "--series",
@@ -122,7 +143,10 @@ class Command(BaseCommand):
         )
         projects_limit: int | None = options.get("projects_limit")
         project_slugs: list[str] | None = options.get("project_slugs")
+        teams_only: bool = bool(options.get("teams_only"))
+        club_slugs: list[str] | None = options.get("club_slugs")
         list_projects: bool = bool(options.get("list_projects"))
+        list_clubs: bool = bool(options.get("list_clubs"))
         series: str = str(options.get("series") or "v1").strip() or "v1"
 
         if org_slugs:
@@ -235,10 +259,37 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"Skipping {org.slug}: no actor user found"))
                 continue
 
+            if list_clubs:
+                clubs = list(
+                    Project.objects.filter(
+                        organisation=org, is_active=True, parent_project__isnull=True
+                    )
+                    .order_by("id")
+                    .only("slug", "name")
+                    .values_list("slug", "name")
+                )
+                if not clubs:
+                    self.stdout.write(self.style.WARNING(f"{org.slug}: no clubs found"))
+                else:
+                    self.stdout.write(self.style.SUCCESS(f"{org.slug}: {len(clubs)} club(s)"))
+                    for slug, name in clubs:
+                        self.stdout.write(f"- {slug}  ({name})")
+                continue
+
             if list_projects:
                 projects_qs = Project.objects.filter(organisation=org, is_active=True).order_by(
                     "id"
                 )
+                if teams_only:
+                    projects_qs = projects_qs.filter(parent_project__isnull=False)
+                if club_slugs:
+                    clubs = Project.objects.filter(
+                        organisation=org,
+                        is_active=True,
+                        parent_project__isnull=True,
+                        slug__in=club_slugs,
+                    )
+                    projects_qs = projects_qs.filter(parent_project__in=clubs)
                 if project_slugs:
                     projects_qs = projects_qs.filter(slug__in=project_slugs)
 
@@ -314,6 +365,25 @@ class Command(BaseCommand):
                 continue
 
             projects_qs = Project.objects.filter(organisation=org, is_active=True).order_by("id")
+            if teams_only:
+                projects_qs = projects_qs.filter(parent_project__isnull=False)
+            if club_slugs:
+                clubs = list(
+                    Project.objects.filter(
+                        organisation=org,
+                        is_active=True,
+                        parent_project__isnull=True,
+                        slug__in=club_slugs,
+                    )
+                )
+                if not clubs:
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"{org.slug}: no clubs found for --club-slugs={club_slugs}; skipping per-project seeding"
+                        )
+                    )
+                    continue
+                projects_qs = projects_qs.filter(parent_project__in=clubs)
             if project_slugs:
                 projects_qs = projects_qs.filter(slug__in=project_slugs)
 
