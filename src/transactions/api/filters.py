@@ -54,6 +54,12 @@ class TransactionFilter(django_filters.FilterSet):
     # Project uses integer PK
     project_id = django_filters.NumberFilter(field_name="project__id")
     charged_user_id = django_filters.NumberFilter(field_name="charged_user__id")
+
+    # TeamReel hierarchy filters (stored on usage_event.metadata)
+    # See: seed_teamreel_contentgen_demo usage_metadata keys.
+    season_id = django_filters.UUIDFilter(method="filter_season_id")
+    period_id = django_filters.UUIDFilter(method="filter_period_id")
+    activity_id = django_filters.UUIDFilter(method="filter_activity_id")
     source_type = django_filters.ChoiceFilter(
         field_name="source_type",
         choices=SourceTypeChoices.choices,
@@ -69,7 +75,25 @@ class TransactionFilter(django_filters.FilterSet):
             "organization_id",
             "project_id",
             "charged_user_id",
+            "season_id",
+            "period_id",
+            "activity_id",
             "source_type",
             "start_date",
             "end_date",
         ]
+
+    def filter_season_id(self, queryset, name, value):  # noqa: ARG002
+        if not value:
+            return queryset
+        return queryset.filter(usage_event__metadata__season_id=str(value))
+
+    def filter_period_id(self, queryset, name, value):  # noqa: ARG002
+        if not value:
+            return queryset
+        return queryset.filter(usage_event__metadata__period_id=str(value))
+
+    def filter_activity_id(self, queryset, name, value):  # noqa: ARG002
+        if not value:
+            return queryset
+        return queryset.filter(usage_event__metadata__activity_id=str(value))

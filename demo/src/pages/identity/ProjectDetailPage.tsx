@@ -34,6 +34,7 @@ import InviteMemberModal from './InviteMemberModal';
 import UserDetailModal from './UserDetailModal';
 import UsersTable from './detail/UsersTable';
 import TeamCreditsTab from './detail/TeamCreditsTab';
+import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -107,6 +108,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   const [orgProjects, setOrgProjects] = useState<Project[]>([]); // For switcher
   const [club, setClub] = useState<Project | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const [transactionsReloadToken, setTransactionsReloadToken] = useState(0);
 
   // Teams under the current club (used for team breadcrumb switcher)
   const [clubTeamsForSwitcher, setClubTeamsForSwitcher] = useState<Project[]>([]);
@@ -263,6 +266,11 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     if (typeof parent === 'object') return String(parent.id || parent.slug || '');
     return String(parent);
   };
+
+  const apiBaseUrl = useMemo(() => {
+    const raw = String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
+    return raw.replace(/\/+$/, '');
+  }, []);
 
   const getOrganisationId = (p: any): string | null => {
     const oid = p?.organisation_id || p?.organisation?.id;
@@ -1479,6 +1487,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
       (project as any)?.parent_project_id
   );
   const isLikelyTeam = isTeamRoute || hasParentClub;
+  const creditsScope: DetailMode = forceMode || (isLikelyTeam ? 'team' : 'club');
+  const canCreateTransaction = Boolean((user as any)?.id) && Boolean(project?.id);
 
   // Trigger data fetch on tab change
   useEffect(() => {
@@ -1786,12 +1796,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     { id: 'competitions', label: 'Competitions' },
     { id: 'matches', label: 'Matches' },
     { id: 'people', label: 'Users' },
-    ...(isLikelyTeam
-      ? [
-          { id: 'balance', label: 'Balance' },
-          { id: 'transactions', label: 'Transactions' },
-        ]
-      : []),
+    { id: 'balance', label: 'Balance' },
+    { id: 'transactions', label: 'Transactions' },
     { id: 'audit', label: 'Audit' },
   ];
 
@@ -1902,6 +1908,47 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                 {deleteLoading ? 'Deleting...' : 'Delete'}
               </button>
             )}
+
+            <button
+              type="button"
+              className="app-action-button"
+              disabled={!canCreateTransaction}
+              onClick={async () => {
+                try {
+                  const orgIdForTxn = String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '').trim();
+                  const currentUserId = Number((user as any)?.id);
+
+                  if (!orgIdForTxn) {
+                    alert('No organisation resolved for this project');
+                    return;
+                  }
+                  if (!Number.isFinite(currentUserId)) {
+                    alert('No current user id available');
+                    return;
+                  }
+
+                  await createTeamreelDemoTransaction({
+                    apiBaseUrl,
+                    scope: creditsScope,
+                    organizationId: orgIdForTxn,
+                    projectId: project.id,
+                    seasonId: null,
+                    periodId: null,
+                    activityId: null,
+                    currentUserId,
+                    chargedUserId: null,
+                  });
+
+                  setActiveTab('transactions');
+                  setTransactionsReloadToken((n) => n + 1);
+                } catch (e: any) {
+                  alert(e?.message || 'Failed to create transaction');
+                }
+              }}
+              style={{ ...actionButtonStyle('primary'), padding: '6px 12px', fontWeight: 500, opacity: canCreateTransaction ? 1 : 0.6 }}
+            >
+              Create transaction
+            </button>
           </div>
         }
       />
@@ -1945,21 +1992,23 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
           ))}
         </div>
 
-          {activeTab === 'balance' && isLikelyTeam && (
+          {activeTab === 'balance' && project?.id && (
             <TeamCreditsTab
               view="balance"
               projectId={String(project.id)}
               projectName={project.name}
               organisationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '')}
+              reloadToken={transactionsReloadToken}
             />
           )}
 
-          {activeTab === 'transactions' && isLikelyTeam && (
+          {activeTab === 'transactions' && project?.id && (
             <TeamCreditsTab
               view="transactions"
               projectId={String(project.id)}
               projectName={project.name}
               organisationId={String(resolvedOrg?.id || (project as any)?.organisation_id || orgId || '')}
+              reloadToken={transactionsReloadToken}
             />
           )}
 

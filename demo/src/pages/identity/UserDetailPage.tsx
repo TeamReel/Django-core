@@ -10,6 +10,9 @@ import { fetchAllPages } from '../../utils/fetchAllPages';
 import UserDetailModal from './UserDetailModal';
 import UserEditModal from './UserEditModal';
 import LinkUserModal from './LinkUserModal';
+import TransactionsPanel from '../../components/transactions/TransactionsPanel';
+import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
+import { useAuth } from '@django-core/auth-ui';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -172,6 +175,7 @@ export const UserDetailPage: React.FC = () => {
   const { userId, orgId } = useParams<{ userId: string; orgId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user: currentUser } = useAuth();
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -197,7 +201,7 @@ export const UserDetailPage: React.FC = () => {
   const [hierarchySearch, setHierarchySearch] = useState('');
 
   const allowedTabs = useMemo(
-    () => new Set(['overview', 'hierarchy', 'federations', 'clubs', 'teams', 'seasons', 'competitions', 'matches']),
+    () => new Set(['overview', 'hierarchy', 'federations', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'transactions']),
     []
   );
 
@@ -243,6 +247,20 @@ export const UserDetailPage: React.FC = () => {
         ?.split('=')[1] ||
       ''
     );
+  };
+
+  const getPreferredOrganisationId = (): string => {
+    const fromStorage = String(localStorage.getItem('django-core:currentOrgId') || '').trim();
+    if (fromStorage) return fromStorage;
+
+    const memberships = (user as any)?.memberships || (user as any)?.organisation_memberships || (user as any)?.organization_memberships;
+    if (Array.isArray(memberships) && memberships.length > 0) {
+      const first = memberships[0];
+      const oid = first?.organisation?.id || first?.organization?.id || first?.org?.id || first?.organisation_id || first?.organization_id;
+      if (oid) return String(oid);
+    }
+
+    return '';
   };
 
   const fetchUser = async () => {
@@ -750,6 +768,50 @@ export const UserDetailPage: React.FC = () => {
             <button
               type="button"
               className="app-action-button"
+              onClick={async () => {
+                try {
+                  const orgIdForTxn = getPreferredOrganisationId();
+                  const currentUserId = Number((currentUser as any)?.id);
+                  const targetUserId = Number((user as any)?.id || userId);
+
+                  if (!orgIdForTxn) {
+                    alert('Select an organisation first (context switcher), then try again');
+                    return;
+                  }
+                  if (!Number.isFinite(currentUserId)) {
+                    alert('No current user id available');
+                    return;
+                  }
+                  if (!Number.isFinite(targetUserId)) {
+                    alert('No target user id available');
+                    return;
+                  }
+
+                  await createTeamreelDemoTransaction({
+                    apiBaseUrl,
+                    scope: 'user',
+                    organizationId: orgIdForTxn,
+                    projectId: null,
+                    seasonId: null,
+                    periodId: null,
+                    activityId: null,
+                    currentUserId,
+                    chargedUserId: targetUserId,
+                  });
+
+                  setTab('transactions');
+                } catch (e: any) {
+                  alert(e?.message || 'Failed to create transaction');
+                }
+              }}
+              style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '160px' }}
+              disabled={!user}
+            >
+              Create transaction
+            </button>
+            <button
+              type="button"
+              className="app-action-button"
               onClick={() => setIsLinkModalOpen(true)}
               style={{ ...actionButtonStyle('neutral'), padding: '8px 16px', fontSize: '14px', minWidth: '120px' }}
               disabled={!user}
@@ -794,6 +856,7 @@ export const UserDetailPage: React.FC = () => {
           {renderTabButton('seasons', 'Seasons')}
           {renderTabButton('competitions', 'Competitions')}
           {renderTabButton('matches', 'Matches')}
+          {renderTabButton('transactions', 'Transactions')}
         </div>
 
         {activeTab === 'overview' && (
@@ -839,6 +902,40 @@ export const UserDetailPage: React.FC = () => {
                 <div style={{ fontWeight: 800, fontSize: '22px' }}>{linkedMatches.length}</div>
               </Card>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'transactions' && (
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <TransactionsPanel
+              title="Transactions"
+              description="User-scoped transactions (charged_user_id)"
+              filters={{
+                organization_id: getPreferredOrganisationId(),
+                charged_user_id: String((user as any)?.id || userId),
+              }}
+              onCreateTransaction={async () => {
+                const orgIdForTxn = getPreferredOrganisationId();
+                const currentUserId = Number((currentUser as any)?.id);
+                const targetUserId = Number((user as any)?.id || userId);
+
+                if (!orgIdForTxn) throw new Error('Select an organisation first (context switcher)');
+                if (!Number.isFinite(currentUserId)) throw new Error('No current user id');
+                if (!Number.isFinite(targetUserId)) throw new Error('No target user id');
+
+                await createTeamreelDemoTransaction({
+                  apiBaseUrl,
+                  scope: 'user',
+                  organizationId: orgIdForTxn,
+                  projectId: null,
+                  seasonId: null,
+                  periodId: null,
+                  activityId: null,
+                  currentUserId,
+                  chargedUserId: targetUserId,
+                });
+              }}
+            />
           </div>
         )}
 

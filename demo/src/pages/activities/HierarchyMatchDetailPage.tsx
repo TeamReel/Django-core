@@ -5,6 +5,9 @@ import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+import TransactionsPanel from '../../components/transactions/TransactionsPanel';
+import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
+import { useAuth } from '@django-core/auth-ui';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -103,6 +106,7 @@ const getCsrfToken = (): string => {
 export default function HierarchyMatchDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   const { orgId, projectId, seasonId, competitionId, matchId, clubId } = useParams<{
     orgId: string;
@@ -903,6 +907,7 @@ export default function HierarchyMatchDetailPage() {
     { id: 'match', label: 'Match' },
     { id: 'lineup', label: 'Lineup' },
     { id: 'date', label: 'Date' },
+    { id: 'transactions', label: 'Transactions' },
   ];
 
   return (
@@ -912,9 +917,50 @@ export default function HierarchyMatchDetailPage() {
           title={match.title}
           breadcrumbs={breadcrumbs}
           actions={
-            <Button onClick={() => navigate(`/studio/create?context=${match.id}`)}>
-              ✨ Generate Content (AI)
-            </Button>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <Button variant="secondary" onClick={() => navigate(`/studio/create?context=${match.id}`)}>
+                ✨ Generate Content (AI)
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    const orgIdForTxn = String(org?.id || '').trim();
+                    const projectIdForTxn = String(project?.id || '').trim();
+                    const seasonUuid = String(resolvedSeasonUuid || '').trim();
+                    const periodUuid = String(match?.period?.id || '').trim();
+                    const activityUuid = String(match?.id || '').trim();
+                    const currentUserId = Number((user as any)?.id);
+
+                    if (!orgIdForTxn || !projectIdForTxn || !activityUuid) {
+                      alert('Missing org/project/match context for transaction');
+                      return;
+                    }
+                    if (!Number.isFinite(currentUserId)) {
+                      alert('No current user id available');
+                      return;
+                    }
+
+                    await createTeamreelDemoTransaction({
+                      apiBaseUrl,
+                      scope: 'match',
+                      organizationId: orgIdForTxn,
+                      projectId: projectIdForTxn,
+                      seasonId: seasonUuid || null,
+                      periodId: periodUuid || null,
+                      activityId: activityUuid,
+                      currentUserId,
+                      chargedUserId: currentUserId,
+                    });
+
+                    navigateToTab('transactions');
+                  } catch (e: any) {
+                    alert(e?.message || 'Failed to create transaction');
+                  }
+                }}
+              >
+                Create transaction
+              </Button>
+            </div>
           }
         />
 
@@ -1042,6 +1088,47 @@ export default function HierarchyMatchDetailPage() {
                 </Card>
               </div>
             </>
+          )}
+
+          {activeTab === 'transactions' && (
+            <div style={{ display: 'grid', gap: '12px' }}>
+              <TransactionsPanel
+                title="Transactions"
+                description="Match-scoped transactions (usage_event.metadata.activity_id)"
+                filters={{
+                  organization_id: String(org?.id || ''),
+                  project_id: String(project?.id || ''),
+                  activity_id: String(match?.id || ''),
+                }}
+                onCreateTransaction={async () => {
+                  const orgIdForTxn = String(org?.id || '').trim();
+                  const projectIdForTxn = String(project?.id || '').trim();
+                  const seasonUuid = String(resolvedSeasonUuid || '').trim();
+                  const periodUuid = String(match?.period?.id || '').trim();
+                  const activityUuid = String(match?.id || '').trim();
+                  const currentUserId = Number((user as any)?.id);
+
+                  if (!orgIdForTxn || !projectIdForTxn || !activityUuid) {
+                    throw new Error('Missing org/project/match context');
+                  }
+                  if (!Number.isFinite(currentUserId)) {
+                    throw new Error('No current user id');
+                  }
+
+                  await createTeamreelDemoTransaction({
+                    apiBaseUrl,
+                    scope: 'match',
+                    organizationId: orgIdForTxn,
+                    projectId: projectIdForTxn,
+                    seasonId: seasonUuid || null,
+                    periodId: periodUuid || null,
+                    activityId: activityUuid,
+                    currentUserId,
+                    chargedUserId: currentUserId,
+                  });
+                }}
+              />
+            </div>
           )}
 
           {activeTab === 'hierarchy' && (

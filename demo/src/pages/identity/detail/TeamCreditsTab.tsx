@@ -79,8 +79,9 @@ export default function TeamCreditsTab(props: {
   projectId: string | number;
   projectName?: string;
   organisationId?: string | null;
+  reloadToken?: number;
 }) {
-  const { view, projectId, projectName, organisationId } = props;
+  const { view, projectId, projectName, organisationId, reloadToken } = props;
 
   const [balance, setBalance] = useState<ProjectCreditsBalance | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
@@ -194,14 +195,14 @@ export default function TeamCreditsTab(props: {
     fetchBalance();
     fetchUserBalance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiBaseUrl, projectId, organisationId]);
+  }, [apiBaseUrl, projectId, organisationId, reloadToken]);
 
   useEffect(() => {
     if (view === 'transactions') {
       fetchTransactionsList();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, apiBaseUrl, projectId, organisationId]);
+  }, [view, apiBaseUrl, projectId, organisationId, reloadToken]);
 
   useEffect(() => {
     // Balance tab also shows a transaction timeline + recent activity.
@@ -209,7 +210,7 @@ export default function TeamCreditsTab(props: {
       fetchTransactionsList();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, apiBaseUrl, projectId, organisationId]);
+  }, [view, apiBaseUrl, projectId, organisationId, reloadToken]);
 
   return (
     <div>
