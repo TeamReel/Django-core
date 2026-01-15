@@ -20,8 +20,10 @@ Cache Strategy:
 import logging
 import time
 from decimal import Decimal
+from enum import Enum
 from typing import Optional
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction as db_transaction
 
@@ -41,9 +43,145 @@ from .models import (
     SourceTypeChoices,
     Transaction,
     UsageEvent,
+    WalletScopeChoices,
 )
 
 logger = logging.getLogger(__name__)
+
+
+class PayerRoutingChoices(str, Enum):
+    """Routing strategy when choosing which wallet to charge."""
+
+    EXPLICIT = "explicit"  # current behavior: charged_user/project decide wallet
+    USER_PROJECT_ORG = "user_project_org"  # try user, then project, then org
+    PROJECT_USER_ORG = "project_user_org"  # try project, then user, then org
+
+
+def _get_default_payer_routing() -> PayerRoutingChoices:
+    raw = getattr(settings, "TRANSACTIONS_PAYER_ROUTING_DEFAULT", PayerRoutingChoices.EXPLICIT)
+    try:
+        if isinstance(raw, PayerRoutingChoices):
+            return raw
+        return PayerRoutingChoices(str(raw))
+    except (TypeError, ValueError):
+        return PayerRoutingChoices.EXPLICIT
+
+
+def _get_org_payer_routing(organization_id) -> PayerRoutingChoices:
+    """Resolve payer routing for an organisation using B10 Settings (with env fallback)."""
+    try:
+        from settings.api import get_setting as get_b10_setting
+
+        raw = get_b10_setting(
+            "transactions_payer_routing_default",
+            organisation_id=organization_id,
+            default=getattr(settings, "TRANSACTIONS_PAYER_ROUTING_DEFAULT", "explicit"),
+        )
+    except (ImportError, AttributeError, TypeError, ValueError):
+        raw = getattr(settings, "TRANSACTIONS_PAYER_ROUTING_DEFAULT", "explicit")
+
+    try:
+        if isinstance(raw, PayerRoutingChoices):
+            return raw
+        return PayerRoutingChoices(str(raw))
+    except (TypeError, ValueError):
+        return PayerRoutingChoices.EXPLICIT
+
+
+def create_transaction_with_routing(
+    amount: Decimal,
+    organization,
+    created_by,
+    idempotency_key: str,
+    project=None,
+    charged_user=None,
+    payer_routing: Optional[str | PayerRoutingChoices] = None,
+    source_type: str = SourceTypeChoices.ADJUSTMENT,
+    usage_event=None,
+    external_reference_id: Optional[str] = None,
+    notes: str = "",
+) -> Transaction:
+    """Create a transaction using a fallback payer routing strategy.
+
+    Option B (fallback) behavior:
+    - For negative amounts only (debits), if policy would BLOCK on the first wallet,
+      try the next wallet in the configured order.
+    - Credits/top-ups remain explicit; caller should choose the wallet.
+
+    If payer_routing is None, uses B10 Setting key 'transactions_payer_routing_default'
+    at organisation scope (fallback to settings.TRANSACTIONS_PAYER_ROUTING_DEFAULT).
+    """
+
+    if payer_routing is None:
+        routing = _get_org_payer_routing(organization.id)
+    else:
+        routing = (
+            payer_routing
+            if isinstance(payer_routing, PayerRoutingChoices)
+            else PayerRoutingChoices(str(payer_routing))
+        )
+
+    # Only apply fallback for debits; credits should be explicit.
+    if amount >= 0 or routing == PayerRoutingChoices.EXPLICIT:
+        return create_transaction(
+            amount=amount,
+            organization=organization,
+            created_by=created_by,
+            idempotency_key=idempotency_key,
+            project=project,
+            charged_user=charged_user,
+            source_type=source_type,
+            usage_event=usage_event,
+            external_reference_id=external_reference_id,
+            notes=notes,
+        )
+
+    # Build wallet candidates. Each candidate is (project, charged_user).
+    candidates: list[tuple[object | None, object | None]] = []
+
+    if routing == PayerRoutingChoices.USER_PROJECT_ORG:
+        if charged_user is not None:
+            candidates.append((project, charged_user))
+        if project is not None:
+            candidates.append((project, None))
+        candidates.append((None, None))
+    elif routing == PayerRoutingChoices.PROJECT_USER_ORG:
+        if project is not None:
+            candidates.append((project, None))
+        if charged_user is not None:
+            candidates.append((project, charged_user))
+        candidates.append((None, None))
+    else:
+        # Unknown routing string; fall back to explicit.
+        candidates.append((project, charged_user))
+
+    last_error = None
+    for cand_project, cand_user in candidates:
+        try:
+            return create_transaction(
+                amount=amount,
+                organization=organization,
+                created_by=created_by,
+                idempotency_key=idempotency_key,
+                project=cand_project,
+                charged_user=cand_user,
+                source_type=source_type,
+                usage_event=usage_event,
+                external_reference_id=external_reference_id,
+                notes=notes,
+            )
+        except InsufficientBalanceError as e:
+            last_error = e
+            continue
+
+    # If we got here, every candidate wallet was blocked.
+    if last_error is not None:
+        raise last_error
+    raise InsufficientBalanceError(
+        current_balance=Decimal("0"),
+        requested_amount=amount,
+        policy="unknown",
+    )
 
 
 def record_usage_event(
@@ -102,6 +240,7 @@ def create_transaction(
     created_by,
     idempotency_key: str,
     project=None,
+    charged_user=None,
     source_type: str = SourceTypeChoices.ADJUSTMENT,
     usage_event=None,
     external_reference_id: Optional[str] = None,
@@ -156,9 +295,21 @@ def create_transaction(
     start_time = time.time()
 
     with db_transaction.atomic():
-        # Acquire pessimistic lock on organization or project
-        # This prevents concurrent transactions from causing race conditions
-        if project:
+        # Determine which wallet is affected (organization, project, or user).
+        if charged_user is not None:
+            wallet_scope = WalletScopeChoices.USER
+        elif project is not None:
+            wallet_scope = WalletScopeChoices.PROJECT
+        else:
+            wallet_scope = WalletScopeChoices.ORGANIZATION
+
+        # Acquire pessimistic lock on the wallet target.
+        # This prevents concurrent transactions from causing race conditions.
+        if wallet_scope == WalletScopeChoices.USER:
+            lock_target = charged_user
+            lock_model = lock_target.__class__
+            lock_model.objects.select_for_update().get(pk=lock_target.pk)
+        elif wallet_scope == WalletScopeChoices.PROJECT:
             lock_target = project
             lock_model = lock_target.__class__
             lock_model.objects.select_for_update().get(pk=lock_target.pk)
@@ -168,15 +319,24 @@ def create_transaction(
             lock_model.objects.select_for_update().get(pk=lock_target.pk)
 
         # Get current balance (bypass cache to ensure consistency)
-        if project:
+        if wallet_scope == WalletScopeChoices.USER:
+            current_balance_data = get_user_balance(
+                organization_id=organization.id,
+                user_id=charged_user.id,
+                use_cache=False,
+            )
+        elif wallet_scope == WalletScopeChoices.PROJECT:
             current_balance_data = get_project_balance(project.id, use_cache=False)
         else:
             current_balance_data = get_organization_balance(organization.id, use_cache=False)
+
         current_balance = current_balance_data["current_balance"]
 
         # Check policy violation
+        # For user-scoped wallets we currently enforce the org-level policy.
+        policy_project = project if wallet_scope == WalletScopeChoices.PROJECT else None
         is_violation, violation_type = check_policy_violation(
-            organization, project, amount, current_balance
+            organization, policy_project, amount, current_balance
         )
 
         if is_violation and violation_type == "block":
@@ -206,7 +366,9 @@ def create_transaction(
         txn = Transaction.objects.create(
             amount=amount,
             organization=organization,
+            wallet_scope=wallet_scope,
             project=project,
+            charged_user=charged_user,
             source_type=source_type,
             usage_event=usage_event,
             external_reference_id=external_reference_id,
@@ -216,7 +378,11 @@ def create_transaction(
         )
 
         # Invalidate balance cache
-        invalidate_balance_cache(organization.id, project.id if project else None)
+        invalidate_balance_cache(
+            organization_id=organization.id,
+            project_id=project.id if project else None,
+            user_id=charged_user.id if charged_user is not None else None,
+        )
 
         # Record metrics
         latency = time.time() - start_time
@@ -232,6 +398,8 @@ def create_transaction(
                 "transaction_id": str(txn.id),
                 "organization_id": str(organization.id),
                 "project_id": str(project.id) if project else None,
+                "wallet_scope": wallet_scope,
+                "charged_user_id": str(charged_user.id) if charged_user is not None else None,
                 "amount": str(txn.amount),
                 "source_type": source_type,
                 "latency_seconds": latency,
@@ -306,6 +474,60 @@ def get_organization_balance(organization_id: int, use_cache: bool = True) -> di
         extra={
             "organization_id": str(organization_id),
             "scope": "organization",
+            "current_balance": str(balance_data["current_balance"]),
+            "latency_seconds": latency,
+        },
+    )
+
+    return balance_data
+
+
+def get_user_balance(
+    organization_id,
+    user_id,
+    use_cache: bool = True,
+) -> dict:
+    """Compute user wallet balance within an organization."""
+    cache_key = f"balance:user:{organization_id}:{user_id}"
+    start_time = time.time()
+
+    if use_cache:
+        cached = cache.get(cache_key)
+        if cached:
+            cache_hits_total.labels(cache_key_prefix="balance:user").inc()
+
+            latency = time.time() - start_time
+            balance_queries_total.labels(scope="user").inc()
+            balance_query_latency_seconds.labels(scope="user", cache_hit="true").observe(latency)
+
+            logger.debug(
+                "balance.query.cache_hit",
+                extra={
+                    "organization_id": str(organization_id),
+                    "user_id": str(user_id),
+                    "scope": "user",
+                    "latency_seconds": latency,
+                },
+            )
+            return cached
+
+    cache_misses_total.labels(cache_key_prefix="balance:user").inc()
+
+    balance_data = Transaction.objects.for_user(organization_id, user_id).compute_balance()
+
+    if use_cache:
+        cache.set(cache_key, balance_data, timeout=60)
+
+    latency = time.time() - start_time
+    balance_queries_total.labels(scope="user").inc()
+    balance_query_latency_seconds.labels(scope="user", cache_hit="false").observe(latency)
+
+    logger.debug(
+        "balance.query.computed",
+        extra={
+            "organization_id": str(organization_id),
+            "user_id": str(user_id),
+            "scope": "user",
             "current_balance": str(balance_data["current_balance"]),
             "latency_seconds": latency,
         },
@@ -465,7 +687,11 @@ def check_policy_violation(
     return (False, None)
 
 
-def invalidate_balance_cache(organization_id: int, project_id: Optional[int] = None) -> None:
+def invalidate_balance_cache(
+    organization_id,
+    project_id: Optional[int] = None,
+    user_id=None,
+) -> None:
     """
     Invalidate Redis cache keys for organization and/or project balances.
 
@@ -482,3 +708,5 @@ def invalidate_balance_cache(organization_id: int, project_id: Optional[int] = N
     cache.delete(f"balance:org:{organization_id}")
     if project_id:
         cache.delete(f"balance:proj:{project_id}")
+    if user_id is not None:
+        cache.delete(f"balance:user:{organization_id}:{user_id}")

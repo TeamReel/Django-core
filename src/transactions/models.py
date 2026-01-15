@@ -27,6 +27,14 @@ class EnforcementModeChoices(models.TextChoices):
     ALLOW = "allow", "Allow"
 
 
+class WalletScopeChoices(models.TextChoices):
+    """Which wallet this transaction affects."""
+
+    ORGANIZATION = "organization", "Organization"
+    PROJECT = "project", "Project"
+    USER = "user", "User"
+
+
 class UsageEvent(models.Model):
     """Immutable record of a billable action.
 
@@ -91,12 +99,27 @@ class Transaction(models.Model):
     organization = models.ForeignKey(
         Organisation, on_delete=models.PROTECT, related_name="transactions"
     )
+    wallet_scope = models.CharField(
+        max_length=20,
+        choices=WalletScopeChoices.choices,
+        db_index=True,
+        default=WalletScopeChoices.ORGANIZATION,
+        help_text="Which wallet balance this transaction affects",
+    )
     project = models.ForeignKey(
         Project,
         on_delete=models.PROTECT,
         related_name="transactions",
         null=True,
         blank=True,
+    )
+    charged_user = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="charged_transactions",
+        null=True,
+        blank=True,
+        help_text="If wallet_scope=user, the user whose balance is charged/credited",
     )
     source_type = models.CharField(max_length=50, choices=SourceTypeChoices.choices, db_index=True)
     usage_event = models.ForeignKey(
@@ -128,7 +151,13 @@ class Transaction(models.Model):
                 name="txn_proj_ts_idx",
                 condition=models.Q(project__isnull=False),
             ),
+            models.Index(
+                fields=["charged_user", "-timestamp"],
+                name="txn_user_ts_idx",
+                condition=models.Q(charged_user__isnull=False),
+            ),
             models.Index(fields=["source_type", "-timestamp"], name="txn_src_ts_idx"),
+            models.Index(fields=["wallet_scope", "-timestamp"], name="txn_scope_ts_idx"),
         ]
         constraints = [
             models.CheckConstraint(check=~models.Q(amount=Decimal("0")), name="txn_amount_nonzero"),
@@ -147,6 +176,22 @@ class Transaction(models.Model):
     def __str__(self) -> str:
         """Return string representation."""
         return f"{self.amount} - {self.organization} - {self.timestamp}"
+
+    def save(self, *args, **kwargs):
+        # Normalize wallet scope for legacy/test call sites that create transactions
+        # directly without passing wallet_scope.
+        if self.charged_user_id is not None and self.wallet_scope != WalletScopeChoices.USER:
+            self.wallet_scope = WalletScopeChoices.USER
+        elif (
+            self.charged_user_id is None
+            and self.project_id is not None
+            and self.wallet_scope == WalletScopeChoices.ORGANIZATION
+        ):
+            self.wallet_scope = WalletScopeChoices.PROJECT
+        elif self.project_id is None and self.wallet_scope == WalletScopeChoices.PROJECT:
+            self.wallet_scope = WalletScopeChoices.ORGANIZATION
+
+        return super().save(*args, **kwargs)
 
 
 class BalancePolicy(models.Model):

@@ -21,6 +21,13 @@ type ProjectCreditsBalance = {
   updated_at?: string;
 };
 
+type UserWalletBalance = {
+  organization_id?: string;
+  user_id?: number;
+  current_balance: string | number;
+  transaction_count?: number;
+};
+
 type Transaction = {
   id: string;
   amount: string;
@@ -79,6 +86,10 @@ export default function TeamCreditsTab(props: {
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
 
+  const [userBalance, setUserBalance] = useState<UserWalletBalance | null>(null);
+  const [userBalanceLoading, setUserBalanceLoading] = useState(false);
+  const [userBalanceError, setUserBalanceError] = useState<string | null>(null);
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
@@ -93,6 +104,12 @@ export default function TeamCreditsTab(props: {
     const n = typeof v === 'number' ? v : Number(v);
     return Number.isFinite(n) ? n : null;
   }, [balance?.current_balance]);
+
+  const numericUserBalance = useMemo(() => {
+    const v = userBalance?.current_balance;
+    const n = typeof v === 'number' ? v : Number(v);
+    return Number.isFinite(n) ? n : null;
+  }, [userBalance?.current_balance]);
 
   const totals = useMemo(() => {
     const amounts = (transactions || []).map((t) => Number(t.amount)).filter((n) => Number.isFinite(n));
@@ -121,6 +138,32 @@ export default function TeamCreditsTab(props: {
     }
   };
 
+  const fetchUserBalance = async () => {
+    if (!organisationId) {
+      setUserBalance(null);
+      return;
+    }
+
+    setUserBalanceLoading(true);
+    setUserBalanceError(null);
+
+    try {
+      const url = `${apiBaseUrl}/api/v1/transactions/organizations/${encodeURIComponent(
+        String(organisationId)
+      )}/balance/me/`;
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const raw = await res.json();
+      const data = unwrapObject<UserWalletBalance>(raw);
+      setUserBalance(data);
+    } catch (e: any) {
+      setUserBalance(null);
+      setUserBalanceError(e?.message || 'Failed to load your credits balance');
+    } finally {
+      setUserBalanceLoading(false);
+    }
+  };
+
   const fetchTransactionsList = async () => {
     setTransactionsLoading(true);
     setTransactionsError(null);
@@ -131,7 +174,7 @@ export default function TeamCreditsTab(props: {
       // Grab enough for the detail page; paging is handled by fetchAllPages.
       params.set('page_size', '100');
 
-      const url = `${apiBaseUrl}/api/v1/transactions/?${params.toString()}`;
+      const url = `${apiBaseUrl}/api/v1/transactions/transactions/?${params.toString()}`;
       const results = await fetchAllPages<Transaction>(url, { credentials: 'include' }, { ttlMs: 60_000, maxPages: 5 });
       setTransactions(Array.isArray(results) ? results : []);
     } catch (e: any) {
@@ -145,8 +188,9 @@ export default function TeamCreditsTab(props: {
   useEffect(() => {
     // Always fetch balance (used in Balance tab, and useful context in Transactions tab).
     fetchBalance();
+    fetchUserBalance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiBaseUrl, projectId]);
+  }, [apiBaseUrl, projectId, organisationId]);
 
   useEffect(() => {
     if (view === 'transactions') {
@@ -163,6 +207,7 @@ export default function TeamCreditsTab(props: {
           size="sm"
           onClick={() => {
             fetchBalance();
+            fetchUserBalance();
             if (view === 'transactions') fetchTransactionsList();
           }}
         >
@@ -178,37 +223,71 @@ export default function TeamCreditsTab(props: {
             </Alert>
           )}
 
-          {balanceLoading ? (
+          {userBalanceError && (
+            <Alert variant="info" style={{ marginBottom: '16px' }}>
+              {userBalanceError}
+            </Alert>
+          )}
+
+          {balanceLoading || userBalanceLoading ? (
             <div style={{ padding: '16px', textAlign: 'center', opacity: 0.7 }}>Loading balance…</div>
           ) : (
             <>
-              <Card
-                style={{
-                  padding: '24px',
-                  marginBottom: '16px',
-                  textAlign: 'center',
-                  background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
-                }}
-              >
-                <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6 }}>
-                  Team Credits Balance
-                </div>
-                <div
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+                <Card
                   style={{
-                    fontSize: '48px',
-                    fontWeight: 800,
-                    margin: '8px 0',
-                    color: numericBalance !== null && numericBalance < 500 ? 'var(--app-warning)' : 'var(--app-success)',
+                    padding: '24px',
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
                   }}
                 >
-                  {formatCredits(balance?.current_balance)}
-                </div>
-                <div style={{ fontSize: '16px', opacity: 0.7, marginBottom: '8px' }}>credits</div>
-                <div style={{ fontSize: '12px', opacity: 0.55 }}>
-                  {projectName || balance?.project_name || 'Team'}
-                  {balance?.updated_at ? ` • Last updated ${formatDateTime(balance.updated_at)}` : ''}
-                </div>
-              </Card>
+                  <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6 }}>
+                    Your Credits Balance
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '48px',
+                      fontWeight: 800,
+                      margin: '8px 0',
+                      color:
+                        numericUserBalance !== null && numericUserBalance < 500
+                          ? 'var(--app-warning)'
+                          : 'var(--app-success)',
+                    }}
+                  >
+                    {formatCredits(userBalance?.current_balance)}
+                  </div>
+                  <div style={{ fontSize: '16px', opacity: 0.7, marginBottom: '8px' }}>credits</div>
+                  <div style={{ fontSize: '12px', opacity: 0.55 }}>Charged to your account</div>
+                </Card>
+
+                <Card
+                  style={{
+                    padding: '24px',
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
+                  }}
+                >
+                  <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6 }}>
+                    Team Credits Balance
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '48px',
+                      fontWeight: 800,
+                      margin: '8px 0',
+                      color: numericBalance !== null && numericBalance < 500 ? 'var(--app-warning)' : 'var(--app-success)',
+                    }}
+                  >
+                    {formatCredits(balance?.current_balance)}
+                  </div>
+                  <div style={{ fontSize: '16px', opacity: 0.7, marginBottom: '8px' }}>credits</div>
+                  <div style={{ fontSize: '12px', opacity: 0.55 }}>
+                    {projectName || balance?.project_name || 'Team'}
+                    {balance?.updated_at ? ` • Last updated ${formatDateTime(balance.updated_at)}` : ''}
+                  </div>
+                </Card>
+              </div>
             </>
           )}
         </>

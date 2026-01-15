@@ -51,6 +51,13 @@ if get_flag('beta_features', project_id=project.id):
 max_size = get_setting('max_upload_size', organisation_id=org.id)
 ```
 
+## Recommended Keys
+
+- `transactions_payer_routing_default` (STRING)
+    - Scope: GLOBAL or ORGANISATION
+    - Values: `explicit`, `user_project_org`, `project_user_org`
+    - Used by the transactions engine to decide fallback payer routing for debits.
+
 ## Related Apps
 
 - **B06 (organisations)**: Scope entities

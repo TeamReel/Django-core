@@ -132,7 +132,7 @@ export const CreditsPage: React.FC = () => {
 
         // Filter for credit transactions: source_type=adjustment (credits are org-level adjustments)
         const response = await client.get<Transaction[]>(
-          `/api/v1/transactions/?${params.toString()}`
+          `/api/v1/transactions/transactions/?${params.toString()}`
         );
 
         if (response.error) {
@@ -211,7 +211,7 @@ export const CreditsPage: React.FC = () => {
     try {
       debugLog('[CreditsPage] Fetching balance tab transactions for org:', currentOrgId);
       const response = await client.get<Transaction[]>(
-        `/api/v1/transactions/?organization_id=${currentOrgId}`
+        `/api/v1/transactions/transactions/?organization_id=${currentOrgId}`
       );
       debugLog('[CreditsPage] Balance tab API response:', response);
 
@@ -341,7 +341,7 @@ export const CreditsPage: React.FC = () => {
       // Generate unique idempotency key
       const idempotencyKey = `demo-credit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      const response = await client.post('/api/v1/transactions/', {
+      const response = await client.post('/api/v1/transactions/transactions/', {
         amount: amount.toString(),
         organization_id: currentOrgId,
         created_by_id: user?.id,
@@ -373,7 +373,7 @@ export const CreditsPage: React.FC = () => {
           debugLog('[CreditsPage] Refetching transactions with params:', params.toString());
 
           const txnResponse = await client.get<Transaction[]>(
-            `/api/v1/transactions/?${params.toString()}`
+            `/api/v1/transactions/transactions/?${params.toString()}`
           );
 
           if (!txnResponse.error && txnResponse.data) {

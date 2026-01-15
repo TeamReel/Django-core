@@ -8,7 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from permissions.api.permissions import HasOrganizationPermission, HasProjectPermission
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,7 +19,12 @@ from transactions.exceptions import (
     PolicyViolationError,
 )
 from transactions.models import BalancePolicy, Transaction, UsageEvent
-from transactions.services import get_organization_balance, get_policy, get_project_balance
+from transactions.services import (
+    get_organization_balance,
+    get_policy,
+    get_project_balance,
+    get_user_balance,
+)
 
 from .filters import TransactionFilter, UsageEventFilter
 from .serializers import (
@@ -83,7 +88,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Transaction.objects.select_related(
-        "organization", "project", "created_by", "usage_event"
+        "organization", "project", "created_by", "usage_event", "charged_user"
     )
     serializer_class = TransactionSerializer
     filter_backends = [DjangoFilterBackend]
@@ -278,6 +283,36 @@ class ProjectBalanceView(APIView):
         # Compute balance via service layer (uses cache)
         balance_data = get_project_balance(project.id)
         balance_data["project_id"] = project.id  # Add project ID for serializer
+
+        serializer = BalanceSerializer(balance_data)
+        return Response(serializer.data)
+
+
+class MyUserBalanceView(APIView):
+    """Authenticated user's wallet balance within an organisation.
+
+    Endpoint: GET /organizations/{organization_id}/balance/me/
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, organization_id: str) -> Response:
+        from organisations.models import Organisation
+
+        try:
+            organization = Organisation.objects.get(id=organization_id)
+        except Organisation.DoesNotExist:
+            return Response(
+                {"error": "Organization not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        balance_data = get_user_balance(
+            organization_id=organization.id,
+            user_id=request.user.id,
+        )
+        balance_data["organization_id"] = organization.id
+        balance_data["user_id"] = request.user.id
 
         serializer = BalanceSerializer(balance_data)
         return Response(serializer.data)

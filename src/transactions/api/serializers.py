@@ -102,10 +102,10 @@ class UsageEventSerializer(serializers.ModelSerializer):
                             "project_id": f"Project {project_id} does not belong to organization {organization_id}"
                         }
                     )
-            except Project.DoesNotExist:
+            except Exception as exc:
                 raise serializers.ValidationError(
                     {"project_id": f"Project {project_id} does not exist"}
-                )
+                ) from exc
 
         return attrs
 
@@ -137,10 +137,24 @@ class TransactionSerializer(serializers.ModelSerializer):
         write_only=True, required=False, allow_null=True
     )  # Project uses integer PK
     created_by_id = serializers.IntegerField(write_only=True, required=True)  # User uses integer PK
+    charged_user_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     usage_event_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+
+    payer_routing = serializers.ChoiceField(
+        write_only=True,
+        required=False,
+        allow_null=True,
+        choices=[
+            ("explicit", "Explicit"),
+            ("user_project_org", "User → Project → Organization"),
+            ("project_user_org", "Project → User → Organization"),
+        ],
+        help_text="Optional fallback routing when charging debits",
+    )
 
     # Read-only display fields
     created_by_email = serializers.EmailField(source="created_by.email", read_only=True)
+    charged_user_email = serializers.EmailField(source="charged_user.email", read_only=True)
     organization_name = serializers.CharField(source="organization.name", read_only=True)
     project_name = serializers.CharField(source="project.name", read_only=True, allow_null=True)
 
@@ -153,8 +167,12 @@ class TransactionSerializer(serializers.ModelSerializer):
             "amount",
             "organization_id",
             "organization_name",
+            "wallet_scope",
             "project_id",
             "project_name",
+            "charged_user_id",
+            "charged_user_email",
+            "payer_routing",
             "source_type",
             "usage_event_id",
             "external_reference_id",
@@ -223,6 +241,15 @@ class TransactionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"User with ID {value} does not exist")
         return value
 
+    def validate_charged_user_id(self, value):
+        if value is None:
+            return value
+        from accounts.models import User
+
+        if not User.objects.filter(id=value).exists():
+            raise serializers.ValidationError(f"User with ID {value} does not exist")
+        return value
+
     def validate_usage_event_id(self, value):
         """Validate usage event exists."""
         if value is None:
@@ -251,10 +278,10 @@ class TransactionSerializer(serializers.ModelSerializer):
                             "project_id": f"Project {project_id} does not belong to organization {organization_id}"
                         }
                     )
-            except Project.DoesNotExist:
+            except Exception as exc:
                 raise serializers.ValidationError(
                     {"project_id": f"Project {project_id} does not exist"}
-                )
+                ) from exc
 
         # If source_type is USAGE_EVENT, usage_event_id is required
         if source_type == SourceTypeChoices.USAGE_EVENT and not usage_event_id:
@@ -270,16 +297,22 @@ class TransactionSerializer(serializers.ModelSerializer):
         from organisations.models import Organisation
         from projects.models import Project
 
-        from transactions.services import create_transaction
+        from transactions.services import create_transaction_with_routing
 
         # Extract IDs and fetch actual instances
         organization_id = validated_data.pop("organization_id")
         project_id = validated_data.pop("project_id", None)
         created_by_id = validated_data.pop("created_by_id")
+        charged_user_id = validated_data.pop("charged_user_id", None)
         usage_event_id = validated_data.pop("usage_event_id", None)
+        payer_routing = validated_data.pop("payer_routing", None)
 
         organization = Organisation.objects.get(id=organization_id)
         created_by = User.objects.get(id=created_by_id)
+
+        charged_user = None
+        if charged_user_id is not None:
+            charged_user = User.objects.get(id=charged_user_id)
 
         project = None
         if project_id:
@@ -290,13 +323,15 @@ class TransactionSerializer(serializers.ModelSerializer):
             usage_event = UsageEvent.objects.get(id=usage_event_id)
 
         # Call service layer (raises InsufficientBalanceError, PolicyViolationError, DuplicateIdempotencyKeyError)
-        return create_transaction(
+        return create_transaction_with_routing(
             organization=organization,
             amount=validated_data["amount"],
             source_type=validated_data["source_type"],
             created_by=created_by,
             idempotency_key=validated_data["idempotency_key"],
             project=project,
+            charged_user=charged_user,
+            payer_routing=payer_routing,
             usage_event=usage_event,
             external_reference_id=validated_data.get("external_reference_id"),
             notes=validated_data.get("notes", ""),
@@ -310,6 +345,7 @@ class BalanceSerializer(serializers.Serializer):
     project_id = serializers.IntegerField(
         required=False, allow_null=True
     )  # Project uses integer PK
+    user_id = serializers.IntegerField(required=False, allow_null=True)
     current_balance = serializers.DecimalField(max_digits=14, decimal_places=4)
     transaction_count = serializers.IntegerField()
     total_positive_amounts = serializers.DecimalField(
@@ -325,11 +361,18 @@ class BalanceSerializer(serializers.Serializer):
         return {
             "organization_id": instance.get("organization_id"),
             "project_id": instance.get("project_id"),
+            "user_id": instance.get("user_id"),
             "current_balance": instance["current_balance"],
             "transaction_count": instance["transaction_count"],
             "total_positive_amounts": instance.get("total_positive_amounts", Decimal("0")),
             "total_negative_amounts": instance.get("total_negative_amounts", Decimal("0")),
         }
+
+    def create(self, validated_data):  # pragma: no cover
+        raise NotImplementedError("BalanceSerializer is read-only")
+
+    def update(self, instance, validated_data):  # pragma: no cover
+        raise NotImplementedError("BalanceSerializer is read-only")
 
 
 class BalancePolicySerializer(serializers.ModelSerializer):

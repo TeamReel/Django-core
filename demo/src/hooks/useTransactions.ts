@@ -3,13 +3,15 @@ import { useState, useEffect } from 'react';
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
 export interface Transaction {
-  id: number;
-  organisation: number;
-  transaction_type: string;
-  amount: number;
-  balance_after: number;
-  description: string;
-  created_at: string;
+  id: string;
+  amount: string;
+  timestamp: string;
+  created_at?: string;
+  source_type: string;
+  notes?: string;
+  created_by_email?: string;
+  organization_name?: string;
+  project_name?: string | null;
 }
 
 interface UseTransactionsParams {
@@ -40,10 +42,11 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.teamreel.app';
 
         const params = new URLSearchParams();
-        if (organisation_id) params.append('organisation', organisation_id);
-        if (limit) params.append('limit', limit.toString());
+        if (organisation_id) params.append('organization_id', organisation_id);
+        if (limit) params.append('page_size', limit.toString());
+        params.append('ordering', '-timestamp');
 
-        const url = `${apiBaseUrl}/api/v1/transactions/?${params.toString()}`;
+        const url = `${apiBaseUrl}/api/v1/transactions/transactions/?${params.toString()}`;
         if (DEBUG_LOGS) console.log('[useTransactions] Fetching:', url);
 
         const response = await fetch(url, {
@@ -62,28 +65,18 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
         if (DEBUG_LOGS) console.log('[useTransactions] Response:', rawPayload);
 
         // Unwrap envelope: { status: 'success', data: ... }
-        const payload =
-          rawPayload && rawPayload.status === 'success' && rawPayload.data ? rawPayload.data : rawPayload;
+        const payload = rawPayload && rawPayload.status === 'success' && rawPayload.data ? rawPayload.data : rawPayload;
 
-        // Unwrap envelope: handle {data: [...]}, {data: {results: [...]}}, {results: [...]}, or [...]
+        // Handle DRF pagination ({results: [...]}) and a few legacy/envelope shapes.
         let results: Transaction[] = [];
-
-        if (Array.isArray(payload)) {
-          results = payload;
-        } else if (Array.isArray(payload.data)) {
-          results = payload.data;
-        } else if (payload.data && Array.isArray(payload.data.results)) {
-          results = payload.data.results;
-        } else if (Array.isArray(payload.results)) {
-          results = payload.results;
-        } else if (payload.data && Array.isArray(payload.data.data)) {
-            // Handle double-nested data (e.g., { status: 'success', data: { data: [...] } })
-             results = payload.data.data;
-        } else {
-             // Maybe it's mapped directly in payload.data but not an array?
-             // Or maybe payload.data IS the list if it's not a standard DRF pagination
-             if (DEBUG_LOGS) console.warn('[useTransactions] Unexpected response format:', payload);
-             results = [];
+        if (Array.isArray(payload)) results = payload;
+        else if (Array.isArray(payload.results)) results = payload.results;
+        else if (payload.data && Array.isArray(payload.data.results)) results = payload.data.results;
+        else if (payload.data && Array.isArray(payload.data)) results = payload.data;
+        else if (Array.isArray(payload.data)) results = payload.data;
+        else {
+          if (DEBUG_LOGS) console.warn('[useTransactions] Unexpected response format:', payload);
+          results = [];
         }
 
         setTransactions(results);

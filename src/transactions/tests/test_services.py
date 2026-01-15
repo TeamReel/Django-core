@@ -26,6 +26,7 @@ from transactions.models import (
 from transactions.services import (
     check_policy_violation,
     create_transaction,
+    create_transaction_with_routing,
     get_organization_balance,
     get_policy,
     get_project_balance,
@@ -178,9 +179,140 @@ class TestCreateTransaction:
 
         assert txn.amount == Decimal("-100.00")
 
-        # Verify negative balance
-        balance = get_organization_balance(organization.id, use_cache=False)
-        assert balance["current_balance"] == Decimal("-100.00")
+
+class TestCreateTransactionWithRouting:
+    def test_routing_project_then_user_fallback(self, user, organization, project):
+        """If project wallet is empty, fallback to user wallet when configured."""
+        BalancePolicy.objects.create(
+            organization=organization,
+            allow_negative=False,
+            enforcement_mode=EnforcementModeChoices.BLOCK,
+        )
+
+        # User wallet has credits
+        create_transaction(
+            amount=Decimal("50.00"),
+            organization=organization,
+            created_by=user,
+            charged_user=user,
+            idempotency_key="txn-user-credit-1",
+        )
+
+        txn = create_transaction_with_routing(
+            amount=Decimal("-10.00"),
+            organization=organization,
+            created_by=user,
+            idempotency_key="txn-route-1",
+            project=project,
+            charged_user=user,
+            payer_routing="project_user_org",
+            source_type=SourceTypeChoices.USAGE_EVENT,
+            usage_event=record_usage_event(
+                event_type="api_call",
+                user=user,
+                organization=organization,
+                project=project,
+                idempotency_key="evt-route-1",
+            ),
+        )
+
+        assert txn.wallet_scope == "user"
+        assert txn.charged_user_id == user.id
+
+    def test_routing_user_then_project_fallback(self, user, organization, project):
+        """If user wallet is empty, fallback to project wallet when configured."""
+        BalancePolicy.objects.create(
+            organization=organization,
+            allow_negative=False,
+            enforcement_mode=EnforcementModeChoices.BLOCK,
+        )
+
+        # Project wallet has credits
+        create_transaction(
+            amount=Decimal("30.00"),
+            organization=organization,
+            created_by=user,
+            project=project,
+            idempotency_key="txn-proj-credit-1",
+        )
+
+        txn = create_transaction_with_routing(
+            amount=Decimal("-10.00"),
+            organization=organization,
+            created_by=user,
+            idempotency_key="txn-route-2",
+            project=project,
+            charged_user=user,
+            payer_routing="user_project_org",
+            source_type=SourceTypeChoices.USAGE_EVENT,
+            usage_event=record_usage_event(
+                event_type="api_call",
+                user=user,
+                organization=organization,
+                project=project,
+                idempotency_key="evt-route-2",
+            ),
+        )
+
+        assert txn.wallet_scope == "project"
+        assert txn.project_id == project.id
+        assert txn.charged_user_id is None
+
+    def test_routing_uses_b10_setting_by_default(self, user, organization, project):
+        """If payer_routing is omitted, use org-scoped B10 setting."""
+        from settings.models import ScopeType, Setting, SettingType
+
+        BalancePolicy.objects.create(
+            organization=organization,
+            allow_negative=False,
+            enforcement_mode=EnforcementModeChoices.BLOCK,
+        )
+
+        Setting.objects.update_or_create(
+            key="transactions_payer_routing_default",
+            scope_type=ScopeType.ORGANISATION,
+            organisation=organization,
+            project=None,
+            user=None,
+            defaults={
+                "value_type": SettingType.STRING,
+                "value": "user_project_org",
+                "default_value": "explicit",
+                "description": "Test routing",
+            },
+        )
+
+        # Put credits on project wallet only; user has 0.
+        create_transaction(
+            amount=Decimal("25.00"),
+            organization=organization,
+            created_by=user,
+            project=project,
+            idempotency_key="txn-proj-credit-2",
+        )
+
+        txn = create_transaction_with_routing(
+            amount=Decimal("-5.00"),
+            organization=organization,
+            created_by=user,
+            idempotency_key="txn-route-3",
+            project=project,
+            charged_user=user,
+            payer_routing=None,
+            source_type=SourceTypeChoices.USAGE_EVENT,
+            usage_event=record_usage_event(
+                event_type="api_call",
+                user=user,
+                organization=organization,
+                project=project,
+                idempotency_key="evt-route-3",
+            ),
+        )
+
+        assert txn.wallet_scope == "project"
+
+        project_balance = get_project_balance(project.id, use_cache=False)
+        assert project_balance["current_balance"] == Decimal("20.00")
 
 
 class TestBalanceQueries:

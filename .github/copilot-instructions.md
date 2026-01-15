@@ -1,13 +1,18 @@
-﻿## Current Mode: Demo Finalization & Verification (Go-Live Track)
+﻿## Current Mode: TeamReel Webapp Integration & Demo Readiness (Go-Live Track)
 
-We are currently in the **DEMO FINALIZATION** phase.
-**Goal:** Ensure the production demo (Railway) is fully populated, stable, and visually correct for all core pages.
+We are currently in the **TEAMREEL WEBAPP “INREGELEN”** phase.
+**Goal:** Ensure the TeamReel webapp (frontend + backend on Railway) is stable, correctly wired, and populated with realistic data for all core pages.
 
 **Project Context:**
 - **System:** Django Core-App (SaaS Boilerplate).
 - **Architecture:** Django REST Framework (Backend) + React/Vite (Frontend).
-- **Demo Scenario:** "Football Leagues" (Organisations = Leagues, Projects = Teams/Seasons).
+- **TeamReel Scenario:** Football leagues/club structure (Organisations = Leagues/Clubs, Projects = Teams/Seasons).
 - **Key Capabilities:** Auth, RBAC, Audit Logging, Transactions/Credits, Notifications.
+
+**Documentation Source of Truth:**
+- The legacy `docs/` folder has been archived under `archive/docs-root/` and is not used.
+- Active documentation lives in `documents/` (vision, roadmap, modules, demo, operations, etc.).
+- TeamReel master data/hierarchy decisions live in `documents/05-demo/teamreel-data-strategy.md`.
 
 **Infrastructure & Deployment:**
 - **Backend:** Deployed on **Railway** (Service: `backend`).
@@ -16,23 +21,23 @@ We are currently in the **DEMO FINALIZATION** phase.
 - **Frontend:** Deployed on Vercel/Netlify (consumes Backend API).
 - **Management Commands:** User does NOT have access to Railway Shell. All commands must be run locally using the `DATABASE_URL` environment variable pointing to the Railway Public URL.
 - **Reference Docs:**
-    - `docs/railway/RAILWAY_SETUP.md`: Deployment variables and troubleshooting.
-    - `docs/demo/DEMO_DB_STATUS.md`: Current data population status.
+   - `documents/06-workflow/railway-setup.md` and `documents/07-operations/railway-integration.md`: Railway deploy/operations.
+   - `documents/05-demo/CURRENT_DB_STATE.md` and related files in `documents/05-demo/`: TeamReel demo data state and seeding strategy.
 
 **What "Done" Means:**
 - All core pages (Dashboard, Usage Events, Health, Projects, etc.) render with realistic data.
 - No "Empty State" placeholders unless intentionally designed.
 - System Health page shows "Green" status with real backend checks.
-- `docs/demo/DEMO_DB_STATUS.md` shows "READY" for all critical models.
+- `documents/05-demo/` reflects a consistent, "ready for demo" state.
 
 **Workflow:**
-1.  **Check Status:** Consult `docs/demo/DEMO_DB_STATUS.md` to see which models are empty.
-2.  **Verify UI:** Check the corresponding frontend page (e.g., `/usage-events`).
-3.  **Populate:** If empty, create/run a specific seeder (e.g., `seed_usage_events`).
-4.  **Validate:** Verify the page renders correctly with the new data.
+1.  **Check Status:** Consult `documents/05-demo/` (especially current DB state + audit) to see what's missing.
+2.  **Verify UI:** Check the corresponding frontend page (e.g., `/usage-events`, team detail pages).
+3.  **Populate:** If empty, create/run a specific seeder (idempotent).
+4.  **Validate:** Verify the page renders correctly with the new data and real API calls.
 
 **Source of Truth Hierarchy:**
-1.  `docs/demo/DEMO_DB_STATUS.md` (Data State)
+1.  `documents/05-demo/` (Data State)
 2.  Current Production Behavior (Railway)
 3.  Codebase Implementation
 
@@ -40,13 +45,13 @@ We are currently in the **DEMO FINALIZATION** phase.
 - **No Mock Data:** Replace hardcoded frontend mocks with real API calls.
 - **Safe Seeding:** Seeding commands must be idempotent or safe to run multiple times (check for existing data).
 - **Production Safe:** Do not drop tables or flush the database. Use `update_or_create` or `get_or_create` patterns.
+- **No Secrets in Chat:** Do not ask the user to paste Railway secrets/URLs into chat; rely on env vars already set locally.
 
 **Priority Order:**
-1.  System Health & Observability (Completed)
-2.  Usage Events & Transactions (Completed)
-3.  Projects & Memberships (Next)
-4.  Notifications & Activity Feeds
-5.  Settings & Feature Flags
+1.  Projects/Teams & Memberships (core navigation + RBAC)
+2.  Transactions/Credits (balances, routing, usage visibility)
+3.  Notifications & Activity Feeds
+4.  Settings & Feature Flags (B10) for demo-safe configurability
 ---
 
 ## Spec-Kitty Decision Support Protocol
@@ -64,15 +69,15 @@ For each clarification question or planning decision with multiple valid options
    - ❌ **Nadelen (Disadvantages)** - What this option compromises or complicates
 
 3. **Apply Project Context**: Evaluate each option against:
-   - **PROJECT_VISION.md** (`docs/project/PROJECT_VISION.md`)
+   - **Vision & Principles** (`documents/01-vision/vision.md`, `documents/01-vision/principles.md`)
      - 80/20 Foundation Principle
      - Product-Agnostic Constraint (Principle I)
      - Architecture & Modularity (Principle II)
      - Security & Privacy (Principle V)
      - "Guardrails not walls" philosophy
      - Constitutional governance requirements
-   - **Project Roadmap** (Fase 1-13 phasing, current phase priorities)
-   - **Constitution Principles** (as defined in PROJECT_VISION.md sections 4 & 9)
+   - **Project Roadmap** (`documents/02-roadmap/roadmap.md` and `documents/02-roadmap/phases/`)
+   - **Constitution Principles** (`documents/03-system/constitution.md`)
 
 4. **Provide Explicit Recommendation**: Based on analysis, state:
    - ⭐ **AANBEVOLEN**: [Option X]
@@ -148,7 +153,7 @@ if feature_flags.get("[optional_strict_mode]"):
 ### Mandatory References
 
 Every decision analysis MUST reference:
-- `docs/project/PROJECT_VISION.md` - Core principles and 80/20 philosophy
+- `documents/01-vision/vision.md` / `documents/01-vision/principles.md` - Core principles and 80/20 philosophy
 - Relevant Constitution principles (Security, Testing, Modularity, etc.)
 - Current project phase context (which Fase are we in?)
 

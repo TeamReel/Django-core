@@ -41,6 +41,9 @@ TeamReel is the reference implementation of the Django Core-App, demonstrating a
 - **[TeamReel RBAC Configuration](teamreel-rbac-config.md)**
   Production-ready Role-Based Access Control with 23 permissions, 5 roles, and hierarchical access patterns.
 
+- **[TeamReel Transactions, Balances & Wallets Plan](teamreel-transactions-wallets-plan.md)**
+  How credits are modeled (ledger + wallet scopes), how balances are computed, and how payer routing + demo seeding are configured.
+
 - **[TeamReel Seeding Plan](teamreel-seeding-plan.md)**
   Step-by-step player and team seeding procedures for Railway production environment.
 

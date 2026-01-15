@@ -51,11 +51,19 @@ class TransactionQuerySet(models.QuerySet):
 
     def for_organization(self, organization_id):
         """Filter transactions for a specific organization."""
-        return self.filter(organization_id=organization_id)
+        return self.filter(organization_id=organization_id, wallet_scope="organization")
 
     def for_project(self, project_id):
         """Filter transactions for a specific project."""
-        return self.filter(project_id=project_id)
+        return self.filter(project_id=project_id, wallet_scope="project")
+
+    def for_user(self, organization_id, user_id):
+        """Filter transactions for a specific user's wallet within an organization."""
+        return self.filter(
+            organization_id=organization_id,
+            charged_user_id=user_id,
+            wallet_scope="user",
+        )
 
     def compute_balance(self):
         """Compute current balance for filtered transactions.
@@ -95,3 +103,7 @@ class TransactionManager(models.Manager):
     def for_project(self, project_id):
         """Filter transactions for a specific project."""
         return self.get_queryset().for_project(project_id)
+
+    def for_user(self, organization_id, user_id):
+        """Filter transactions for a specific user's wallet within an organization."""
+        return self.get_queryset().for_user(organization_id, user_id)

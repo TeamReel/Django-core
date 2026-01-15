@@ -373,14 +373,34 @@ class Command(BaseCommand):
 
         # Ajax players
         ajax_players = [
-            {"user_key": "ajax_player", "team_key": "ajax_1", "role": "player"},
-            {"user_key": "ajax_coach", "team_key": "ajax_1", "role": "owner"},
+            {
+                "user_key": "ajax_player",
+                "team_key": "ajax_1",
+                "access_role": "viewer",
+                "character_role": "player",
+            },
+            {
+                "user_key": "ajax_coach",
+                "team_key": "ajax_1",
+                "access_role": "admin",
+                "character_role": "coach",
+            },
         ]
 
         # PSV players
         psv_players = [
-            {"user_key": "psv_player", "team_key": "psv_1", "role": "player"},
-            {"user_key": "psv_coach", "team_key": "psv_1", "role": "owner"},
+            {
+                "user_key": "psv_player",
+                "team_key": "psv_1",
+                "access_role": "viewer",
+                "character_role": "player",
+            },
+            {
+                "user_key": "psv_coach",
+                "team_key": "psv_1",
+                "access_role": "admin",
+                "character_role": "coach",
+            },
         ]
 
         all_players = ajax_players + psv_players
@@ -395,8 +415,12 @@ class Command(BaseCommand):
                 project=team,
                 period=season,  # SEASON LINK (CRITICAL!)
                 defaults={
-                    "role": player_data["role"],
-                    "metadata": {"contract_type": "professional", "jersey_number": 9},
+                    "role": player_data["access_role"],
+                    "metadata": {
+                        "character_role": player_data["character_role"],
+                        "contract_type": "professional",
+                        "jersey_number": 9,
+                    },
                 },
             )
             if created:

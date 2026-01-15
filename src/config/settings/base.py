@@ -398,6 +398,20 @@ from .celery import *  # noqa
 SITE_NAME = "Django Core"  # Used in page titles (<title> tag) and branding (header)
 
 # ==============================================================================
+# Transactions Configuration (B11)
+# ==============================================================================
+
+# Default payer routing for debits when caller does not specify payer_routing.
+# Options:
+# - explicit
+# - user_project_org
+# - project_user_org
+TRANSACTIONS_PAYER_ROUTING_DEFAULT = os.getenv(
+    "TRANSACTIONS_PAYER_ROUTING_DEFAULT",
+    "explicit",
+)
+
+# ==============================================================================
 # Observability Configuration (B18)
 # ==============================================================================
 

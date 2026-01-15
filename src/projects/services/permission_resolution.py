@@ -113,13 +113,18 @@ class PermissionResolutionService:
         permission_cache_misses_total.inc()
 
         # Step 1: Explicit membership
-        try:
-            membership = (
-                ProjectMembership.objects.active()
-                .select_related("project")
-                .get(project_id=project_id, user_id=user_id)
-            )
-            result = self._build_result(membership.role, "explicit_membership")
+        # NOTE: TeamReel allows multiple memberships per (project, user) across seasons/roles.
+        # We must not assume uniqueness here.
+        memberships = (
+            ProjectMembership.objects.active()
+            .filter(project_id=project_id, user_id=user_id)
+            .only("role", "created_at")
+            .order_by("-created_at")
+        )
+
+        if memberships.exists():
+            best_role = self._pick_best_membership_role(list(memberships))
+            result = self._build_result(best_role, "explicit_membership")
             self.cache_service.set_permission(user_id, project_id, result)
 
             # Record metrics
@@ -129,8 +134,6 @@ class PermissionResolutionService:
             permission_resolution_duration_seconds.observe(time.time() - start_time)
 
             return result
-        except ProjectMembership.DoesNotExist:
-            pass
 
         # Step 2: Private project check
         try:
@@ -231,6 +234,7 @@ class PermissionResolutionService:
 
     def _build_result(self, role: str, source: str) -> PermissionResult:
         """Build permission result with role-to-permission mapping."""
+        role = self._normalize_membership_role(role)
         permission_map = {
             "admin": [
                 "projects.view",
@@ -251,6 +255,40 @@ class PermissionResolutionService:
             "source": source,  # type: ignore
             "permissions": permissions,
         }
+
+    def _normalize_membership_role(self, value: str) -> str:
+        """Normalize legacy/TeamReel membership role strings to access roles.
+
+        Core access roles: admin/editor/viewer/no_access.
+        TeamReel seeders historically used roles like owner/coach/player/staff.
+        """
+        raw = (value or "").strip().lower()
+        if raw in {"admin", "editor", "viewer", "no_access"}:
+            return raw
+
+        # TeamReel / legacy role names
+        if raw in {"owner", "coach", "manager", "team_admin"}:
+            return "admin"
+        if raw in {"staff", "assistant", "player", "supporter", "member"}:
+            return "viewer"
+
+        return "viewer" if raw else "no_access"
+
+    def _pick_best_membership_role(self, memberships: list[ProjectMembership]) -> str:
+        """Choose the most privileged access role from a set of memberships."""
+        role_rank = {"no_access": 0, "viewer": 10, "editor": 20, "admin": 30}
+
+        best_role = "no_access"
+        best_rank = 0
+
+        for membership in memberships:
+            normalized = self._normalize_membership_role(getattr(membership, "role", ""))
+            rank = role_rank.get(normalized, 0)
+            if rank > best_rank:
+                best_rank = rank
+                best_role = normalized
+
+        return best_role
 
     def _is_org_admin(self, user_id: str, organisation_id: str) -> bool:
         """Check if user is an admin or owner of the organisation."""

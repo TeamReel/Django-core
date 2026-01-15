@@ -33,6 +33,7 @@ def invalidate_cache_on_transaction(sender, instance, created, **kwargs):  # noq
         invalidate_balance_cache(
             organization_id=instance.organization_id,
             project_id=instance.project_id if instance.project else None,
+            user_id=instance.charged_user_id,
         )
 
         # Update CreditsBalance if this is an org-level transaction (no project)
@@ -51,7 +52,7 @@ def invalidate_cache_on_transaction(sender, instance, created, **kwargs):  # noq
             )
 
         # Update ProjectCreditsBalance if this is a project/team transaction
-        if instance.project_id:
+        if instance.project_id and instance.wallet_scope == "project":
             from credits.models import ProjectCreditsBalance
 
             project_sum = Transaction.objects.filter(project_id=instance.project_id).aggregate(
@@ -61,4 +62,20 @@ def invalidate_cache_on_transaction(sender, instance, created, **kwargs):  # noq
             ProjectCreditsBalance.objects.update_or_create(
                 project_id=instance.project_id,
                 defaults={"current_balance": project_sum},
+            )
+
+        # Update UserCreditsBalance if this is a user-wallet transaction
+        if instance.charged_user_id and instance.wallet_scope == "user":
+            from credits.models import UserCreditsBalance
+
+            user_sum = Transaction.objects.filter(
+                organization_id=instance.organization_id,
+                charged_user_id=instance.charged_user_id,
+                wallet_scope="user",
+            ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
+
+            UserCreditsBalance.objects.update_or_create(
+                organisation_id=instance.organization_id,
+                user_id=instance.charged_user_id,
+                defaults={"current_balance": user_sum},
             )

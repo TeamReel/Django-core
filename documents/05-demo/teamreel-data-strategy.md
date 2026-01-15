@@ -6,6 +6,7 @@
 **Related Docs:**
 - [TeamReel Data Structure](teamreel-data-structure.md) - Practical hierarchy examples
 - [TeamReel RBAC Configuration](teamreel-rbac-config.md) - Permission model implementation
+- [TeamReel Transactions, Balances & Wallets Plan](teamreel-transactions-wallets-plan.md) - Wallet scopes + balances + routing
 - [TeamReel Database Audit](teamreel-db-audit.md) - Current database state
 - [index.md](index.md) - Documentation overview
 
@@ -34,6 +35,8 @@
 | **6. Opponent reference** | **ForeignKey to Project** | Tegenstander is ForeignKey naar ander Project (niet string in metadata). |
 | **7. Visibility levels** | **Hierarchical permissions** | Club-level: zie ALLES. Team-level: alleen eigen teams bewerken. |
 | **8. User vs Character** | **Separation of concerns** | User = fysieke persoon (1x). Character/Membership = rol binnen team (meerdere mogelijk). |
+| **9. Credits wallets** | **User + Team(Project) + Organisation wallets** | Demo UX heeft “your balance”, plus team budget en org fallback. |
+| **10. Debit payer routing** | **Config via B10 settings per org** | Productie-vriendelijk, zonder hardcoding per org.
 
 ---
 
@@ -47,8 +50,12 @@
 | **Land Admin** | Organisation-wide | Alle clubs/teams binnen land | Alle clubs/teams binnen land | Alle credits binnen org | KNVB beheerder |
 | **Club Admin** | Club-wide | **ALLE clubs** (cross-club) <br> Alle teams binnen eigen club | Alleen eigen club + teams | Club-level credits | Ajax media manager |
 | **Team Admin** | Team-specific | Alle teams binnen eigen club <br> **ALLE clubs** (read-only) | Team settings + **alle team matches** | Team credits only | Eerste Elftal coach |
-| **Team Member** | User-specific | Eigen team <br> Andere teams binnen club (read-only) | **Only own user profile** (naam, foto, geboortedatum) | Cannot manage credits | Speler, assistent |
+| **Team Member** | User-specific | Eigen team <br> Andere teams binnen club (read-only) | **Only own user profile** (naam, foto, geboortedatum) | Own user wallet (read-only) | Speler, assistent |
 | **Supporter** | External viewer | Team content (if granted access) | None (read-only) | Cannot manage credits | Fan, ouder, sponsor |
+
+**Credits column note (TeamReel):**
+- **Manage** means: create/manage **project/team wallet** transactions (and for Land Admin also org-level credits). This maps to the **project wallet** in the transactions ledger.
+- **Own user wallet (read-only)** means: a Team Member can see their personal “Your Credits Balance” (user wallet within the org), but cannot manage team/org credits.
 
 ### Visibility Matrix (Updated)
 
@@ -76,7 +83,7 @@ R = Read, W = Write
 5. **Cross-club visibility:** Altijd read-only (om wedstrijdgegevens tegenstander op te halen)
 6. **Within-club visibility:** Siblings binnen club zijn zichtbaar maar niet bewerkbaar (tenzij je Club Admin bent)
 7. **Supporter access:** External viewers kunnen content **bekijken** als ze toegang krijgen (geen edit rechten)
-8. **Credits per Team:** Credits beheerd op team-niveau, alleen Team Admin kan credit-transacties doen
+8. **Credits governance (Team-first):** Credits worden primair beheerd op team-niveau (project wallet) door Team Admin; daarnaast bestaat een user wallet (“your balance”) en kan debit-routing terugvallen volgens org-config.
 9. **Feature Flags hierarchy:** Hoger niveau (Land/Club) kan meer feature flags beheren dan lager niveau (Team)
 
 ---

@@ -6,6 +6,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     BalancePolicyViewSet,
     HealthCheckView,
+    MyUserBalanceView,
     OrganizationBalanceView,
     ProjectBalanceView,
     TransactionViewSet,
@@ -24,6 +25,11 @@ urlpatterns = [
         "organizations/<uuid:organization_id>/balance/",
         OrganizationBalanceView.as_view(),
         name="organization-balance",
+    ),
+    path(
+        "organizations/<uuid:organization_id>/balance/me/",
+        MyUserBalanceView.as_view(),
+        name="my-user-balance",
     ),
     path(
         "projects/<int:project_id>/balance/",  # Project uses integer PK

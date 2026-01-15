@@ -116,15 +116,22 @@ class Command(BaseCommand):
                         # Determine role based on user index (simulate realistic squad)
                         # 1 admin (coach/manager), 2-3 staff, rest players
                         if created_this_team == 0:
-                            role = "admin"  # Team coach
+                            roster_role = "coach"  # Team coach
                         elif created_this_team < 3:
-                            role = "staff"  # Assistant coaches
+                            roster_role = "staff"  # Assistant coaches
                         else:
-                            role = "player"
+                            roster_role = "player"
+
+                        # ProjectMembership.role is used for access control (viewer/editor/admin).
+                        access_role = "admin" if roster_role == "coach" else "viewer"
 
                         if not dry_run:
                             ProjectMembership.objects.create(
-                                user=user, project=team, period=season, role=role
+                                user=user,
+                                project=team,
+                                period=season,
+                                role=access_role,
+                                metadata={"character_role": roster_role},
                             )
 
                         created_this_team += 1
@@ -138,7 +145,7 @@ class Command(BaseCommand):
                     )
 
             if dry_run:
-                raise Exception("Dry run - rolling back transaction")
+                transaction.set_rollback(True)
 
         # Summary
         self.stdout.write("\n" + "=" * 60)

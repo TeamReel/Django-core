@@ -53,6 +53,7 @@ class TransactionFilter(django_filters.FilterSet):
     organization_id = django_filters.UUIDFilter(field_name="organization__id")
     # Project uses integer PK
     project_id = django_filters.NumberFilter(field_name="project__id")
+    charged_user_id = django_filters.NumberFilter(field_name="charged_user__id")
     source_type = django_filters.ChoiceFilter(
         field_name="source_type",
         choices=SourceTypeChoices.choices,
@@ -64,4 +65,11 @@ class TransactionFilter(django_filters.FilterSet):
         """Filter metadata."""
 
         model = Transaction
-        fields = ["organization_id", "project_id", "source_type", "start_date", "end_date"]
+        fields = [
+            "organization_id",
+            "project_id",
+            "charged_user_id",
+            "source_type",
+            "start_date",
+            "end_date",
+        ]

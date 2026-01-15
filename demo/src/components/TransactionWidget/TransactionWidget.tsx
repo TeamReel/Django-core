@@ -8,8 +8,11 @@ interface TransactionWidgetProps {
 }
 
 const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }) => {
-  const date = new Date(transaction.created_at);
-  const isCredit = transaction.amount > 0;
+  const date = new Date(transaction.timestamp || transaction.created_at || '');
+  const amountNum = Number(transaction.amount);
+  const isCredit = Number.isFinite(amountNum) && amountNum > 0;
+  const amountText = Number.isFinite(amountNum) ? amountNum.toFixed(2) : String(transaction.amount);
+  const label = transaction.notes || transaction.source_type;
 
   return (
     <div style={{
@@ -26,7 +29,7 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
           color: 'var(--app-text)',
           marginBottom: '4px'
         }}>
-          {transaction.description || transaction.transaction_type}
+          {label}
         </div>
         <div style={{ fontSize: '11px', color: 'var(--app-text-muted)' }}>
           {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} •
@@ -41,7 +44,7 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
         minWidth: '80px',
         textAlign: 'right'
       }}>
-        {isCredit ? '+' : ''}{transaction.amount}
+        {isCredit ? '+' : ''}{amountText}
       </div>
     </div>
   );

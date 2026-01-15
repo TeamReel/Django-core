@@ -4,6 +4,7 @@
 **Purpose:** Document the hierarchical data model used in the TeamReel demo
 **Related Docs:**
 - [TeamReel Data Strategy](teamreel-data-strategy.md) - Architecture & Design Decisions
+- [TeamReel Transactions, Balances & Wallets Plan](teamreel-transactions-wallets-plan.md) - Wallet scopes + balances + routing
 - [TeamReel Database Audit](teamreel-db-audit.md) - Current Database State
 - [TeamReel Seeding Plan](teamreel-seeding-plan.md) - Seeding Procedures
 - [index.md](index.md) - Documentation Overview
@@ -95,6 +96,30 @@ The actual event.
     *   `activity_type`: `"match"`
     *   `start_time`: Timezone-aware datetime.
     *   `metadata`: Contains scores, home/away flags, etc.
+
+---
+
+## 2b. Credits & Wallets Overlay (TeamReel)
+
+Credits sit "next to" the hierarchy as an immutable ledger (`Transaction`). In TeamReel we use three wallet scopes:
+
+- **User wallet** (within an org): `wallet_scope=user`, `charged_user != NULL`
+- **Team/Project wallet**: `wallet_scope=project`, `project != NULL`
+- **Organisation wallet**: `wallet_scope=organization`, `project=NULL`, `charged_user=NULL`
+
+Balances are queried via the transactions API (used by the TeamReel webapp):
+
+- `GET /api/v1/transactions/organizations/<org_uuid>/balance/` (organisation)
+- `GET /api/v1/transactions/projects/<project_id>/balance/` (team/project)
+- `GET /api/v1/transactions/organizations/<org_uuid>/balance/me/` (logged-in user)
+
+Routing note:
+- Debits can be routed (fallback) based on an org-configured strategy (B10 setting `transactions_payer_routing_default`).
+- If a debit falls back to the **org** wallet, the resulting transaction is intentionally **org-scoped** (`project=NULL`). The initiating team context is retained via `UsageEvent`/`notes`.
+
+Demo verification:
+- Deterministic routing verification can be seeded with `python manage.py seed_transactions_routing_smoke --settings=config.settings.production --org knvb`.
+- Optional `--team-id <project_id>` targets a specific team for reproducibility.
 
 ---
 
