@@ -381,7 +381,10 @@ def test_search_projects(organisation, user):
 
 1. **Issue**: Search returns no results for known content
    - **Cause**: Object not indexed or search_vector not updated
-   - **Solution**: Manually reindex: `python manage.py rebuild_search_index`
+    - **Solution**: Manually reindex: `python manage.py rebuild_search_index`
+    - **Ops tip (prod reset)**: Remove all current entries then rebuild (without Activities):
+      - `python manage.py rebuild_search_index --purge-all --exclude activities`
+    - **Ops tip (fast smoke test)**: `python manage.py rebuild_search_index --purge-all --exclude activities --limit 10`
 
 2. **Issue**: Slow search queries
    - **Cause**: Missing GIN index on search_vector field
