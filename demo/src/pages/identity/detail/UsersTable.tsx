@@ -202,8 +202,19 @@ export default function UsersTable({
               new Set(pms.map((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '')).filter(Boolean))
             );
             const teamId = teamIds.length === 1 ? teamIds[0] : '';
+
+            const getTeamNameFromPm = (pm: any): string =>
+              String(pm?.project?.name ?? pm?.project_name ?? pm?.project?.title ?? '').trim();
+            const getTeamSlugFromPm = (pm: any): string =>
+              String(pm?.project?.slug ?? pm?.project_slug ?? '').trim();
+
             const team = teamId ? teamById.get(String(teamId)) : null;
-            const teamSlugOrId = team ? (team as any).slug || String((team as any).id) : teamId;
+            const pmForTeam = teamId ? pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(teamId)) : null;
+            const teamSlugOrId =
+              (team ? String((team as any).slug || (team as any).id || '') : '') ||
+              (pmForTeam ? getTeamSlugFromPm(pmForTeam) : '') ||
+              teamId;
+            const teamName = (team ? String((team as any).name || '').trim() : '') || (pmForTeam ? getTeamNameFromPm(pmForTeam) : '') || teamId;
 
             const canViewUser = typeof onViewUser === 'function';
             const canViewMembership = hasOrgMembership && typeof onViewMembership === 'function';
@@ -213,13 +224,22 @@ export default function UsersTable({
                 {!isTeamRoute && (
                   <td style={compactTextTdStyle}>
                     {teamIds.length > 1 ? (
-                      <span title={teamIds.map((id) => teamById.get(String(id))?.name || id).join(', ')}>Multiple</span>
+                      <span
+                        title={teamIds
+                          .map((id) => {
+                            const t = teamById.get(String(id));
+                            return String((t as any)?.name || '').trim() || id;
+                          })
+                          .join(', ')}
+                      >
+                        Multiple
+                      </span>
                     ) : teamSlugOrId ? (
                       <Link
                         to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}`}
                         className="text-blue-600 hover:underline"
                       >
-                        {team?.name || teamId}
+                        {teamName}
                       </Link>
                     ) : (
                       '—'

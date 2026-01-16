@@ -270,6 +270,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     >
   >(new Map());
 
+  const orgMembersFetchTokenRef = useRef(0);
+
   const getParentProjectId = (p: any): string | null => {
     const parent = p?.parent_project || p?.parent || p?.parent_project_id || p?.parent_id;
     if (!parent) return null;
@@ -575,6 +577,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
   const fetchOrgMembers = async (force = false) => {
     if (orgMembersLoading) return;
+    const fetchToken = ++orgMembersFetchTokenRef.current;
     const haveMembershipDetails = orgMembers.some((item: any) => {
       const u = item?.user || item;
       const details =
@@ -653,10 +656,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
       params.set('include_project_memberships', 'true');
       params.set('include_role_assignments', 'true');
       params.set('include_project_membership_details', 'true');
-      params.set('page_size', '250');
+      // Bigger pages reduce perceived latency (fewer roundtrips).
+      params.set('page_size', '500');
 
       const membersUrl = `${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/members/?${params.toString()}`;
-      const allMembers = await fetchAllPages<any>(
+
+      // Progressive load: show the first page ASAP, then fill in remaining pages.
+      const firstPage = await fetchAllPages<any>(
         membersUrl,
         {
           headers: {
@@ -666,9 +672,36 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
           },
           credentials: 'include',
         },
-        force ? { bypass: true } : undefined
+        { ...(force ? { bypass: true } : undefined), maxPages: 1 }
       );
-      setOrgMembers(allMembers);
+
+      if (orgMembersFetchTokenRef.current === fetchToken) {
+        setOrgMembers(firstPage);
+      }
+
+      // Background: fetch the complete roster (uses cached first page).
+      void (async () => {
+        try {
+          const allMembers = await fetchAllPages<any>(
+            membersUrl,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-Organisation-ID': String(resolvedOrg?.id || (project as any)?.organisation_id || ''),
+              },
+              credentials: 'include',
+            },
+            force ? { bypass: true } : undefined
+          );
+          if (orgMembersFetchTokenRef.current === fetchToken) {
+            setOrgMembers(allMembers);
+          }
+        } catch (e) {
+          // keep first page
+          console.warn('[ProjectDetailPage] Background org members fetch failed:', e);
+        }
+      })();
     } catch (e) {
       console.error('[ProjectDetailPage] Org members fetch failed:', e);
       setOrgMembers([]);
