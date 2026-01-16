@@ -4,7 +4,7 @@ import { Alert, Button } from '@django-core/design-system';
 import { PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
-import { periodPathKey } from '../../utils/periodPath';
+import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 
 const getEnvelopeData = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
@@ -68,9 +68,18 @@ export default function LegacyMatchRedirectPage() {
         const seasonKeyOrId = (season && periodPathKey(season)) || seasonUuid;
 
         // 3) Determine org
+        const orgCandidates = [
+          String(competition?.organisation?.slug || '').trim(),
+          String(match?.organisation?.slug || '').trim(),
+          String(match?.project?.organisation?.slug || '').trim(),
+          String(competition?.organisation?.id || '').trim(),
+          String(match?.organisation?.id || '').trim(),
+          String(match?.project?.organisation?.id || '').trim(),
+        ].filter(Boolean);
         const orgSlugOrId =
-          String(competition?.organisation?.slug || competition?.organisation?.id || '').trim() ||
-          String(match?.organisation?.slug || match?.organisation?.id || '').trim();
+          orgCandidates.find((v) => v && !looksLikeUuid(v)) ||
+          orgCandidates[0] ||
+          '';
 
         if (!orgSlugOrId) {
           setStatus('fallback');
@@ -79,16 +88,19 @@ export default function LegacyMatchRedirectPage() {
 
         // Prefer a stable canonical slug in the URL (e.g. /knvb/...), even when upstream data only has UUIDs.
         let orgKeyOrId = orgSlugOrId;
-        try {
-          const orgRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, {
-            credentials: 'include',
-          });
-          if (orgRes.ok) {
-            const org = getEnvelopeData<any>(await orgRes.json());
-            orgKeyOrId = String(org?.slug || org?.id || orgSlugOrId).trim() || orgSlugOrId;
+        if (looksLikeUuid(orgSlugOrId)) {
+          try {
+            const orgRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, {
+              credentials: 'include',
+            });
+            if (orgRes.ok) {
+              const org = getEnvelopeData<any>(await orgRes.json());
+              const resolved = String(org?.slug || org?.id || orgSlugOrId).trim();
+              if (resolved) orgKeyOrId = resolved;
+            }
+          } catch {
+            // ignore
           }
-        } catch {
-          // ignore
         }
 
         // 4) Determine project/team + optional club (parent project)
@@ -99,6 +111,33 @@ export default function LegacyMatchRedirectPage() {
         }
 
         let clubSlugOrId: string | null = null;
+
+        // Best case: parent project is already embedded on the match payload.
+        const embeddedParent = match?.project?.parent_project;
+        if (embeddedParent) {
+          clubSlugOrId = String(embeddedParent.slug || embeddedParent.id || '').trim() || null;
+        }
+
+        // If we only have an ID for the parent, try to resolve a slug.
+        const embeddedParentId = !clubSlugOrId
+          ? String(match?.project?.parent_project_id || match?.project?.parent_project || '').trim()
+          : '';
+        if (!clubSlugOrId && embeddedParentId) {
+          try {
+            const clubRes = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(embeddedParentId)}/`, {
+              credentials: 'include',
+            });
+            if (clubRes.ok) {
+              const club = getEnvelopeData<any>(await clubRes.json());
+              clubSlugOrId = String(club?.slug || club?.id || embeddedParentId).trim() || null;
+            } else {
+              clubSlugOrId = embeddedParentId;
+            }
+          } catch {
+            clubSlugOrId = embeddedParentId;
+          }
+        }
+
         try {
           // First try org-scoped project endpoint, then fall back to global project endpoint.
           const projectRes = await fetch(
@@ -117,8 +156,28 @@ export default function LegacyMatchRedirectPage() {
             }
           }
 
-          const parent = project?.parent_project;
-          clubSlugOrId = parent ? String(parent.slug || parent.id || '').trim() : null;
+          if (!clubSlugOrId) {
+            const parent = project?.parent_project;
+            const parentId = String(project?.parent_project_id || '').trim();
+
+            if (parent) {
+              clubSlugOrId = String(parent.slug || parent.id || '').trim() || null;
+            } else if (parentId) {
+              try {
+                const clubRes = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(parentId)}/`, {
+                  credentials: 'include',
+                });
+                if (clubRes.ok) {
+                  const club = getEnvelopeData<any>(await clubRes.json());
+                  clubSlugOrId = String(club?.slug || club?.id || parentId).trim() || null;
+                } else {
+                  clubSlugOrId = parentId;
+                }
+              } catch {
+                clubSlugOrId = parentId;
+              }
+            }
+          }
         } catch {
           // ignore
         }
@@ -129,7 +188,7 @@ export default function LegacyMatchRedirectPage() {
 
         const target = clubSlugOrId
           ? `${seasonsBasePath}/${seasonKeyOrId}/${competitionKeyOrId}/${matchKeyOrId}`
-          : `${seasonsBasePath}/${seasonKeyOrId}/competitions/${competitionId}/matches/${matchKeyOrId}`;
+          : `${seasonsBasePath}/${seasonKeyOrId}/competitions/${competitionKeyOrId}/matches/${matchKeyOrId}`;
 
         // If somehow already at target, avoid loops.
         if (location.pathname === target) {
