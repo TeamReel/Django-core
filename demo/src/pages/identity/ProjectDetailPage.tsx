@@ -587,12 +587,10 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     if (!force && orgMembers.length > 0 && haveMembershipDetails) return;
     if (!currentOrgSlug) return;
 
-    // Detail pages should not load the full organisation roster.
-    // - Team pages: load only members for this team.
-    // - Club pages: load only members for this club + teams under this club.
-    // Then adapt to the same shape as org members (so filtering/season assignment works).
+    // Detail pages should not load the full organisation roster when we're in a team context.
+    // Team pages: load only members for this team.
+    // Club pages: keep the full org roster (needed to see all users).
     const teamIdForMembers = (isTeamRoute || isLikelyTeam) ? String(project?.id || '').trim() : '';
-    const clubIdForMembers = !teamIdForMembers ? String(project?.id || '').trim() : '';
 
     setOrgMembersLoading(true);
     try {
@@ -638,80 +636,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
               id: orgMembershipId || key,
               user: userObj,
               // Keep org membership role unknown in this fast path.
-              project_memberships: [normalizedPm],
-              project_membership_details: [normalizedPm],
-            });
-          } else {
-            existing.project_memberships = [...(existing.project_memberships || []), normalizedPm];
-            existing.project_membership_details = [...(existing.project_membership_details || []), normalizedPm];
-          }
-        }
-
-        setOrgMembers(Array.from(byOrgMembershipId.values()));
-        return;
-      }
-
-      if (clubIdForMembers) {
-        const clubIdValue = String(clubIdForMembers).trim();
-        const clubTeams = await fetchClubTeamsForPeriodScope();
-        const teamIds = (clubTeams || []).map((t: any) => String(t?.id || '')).filter(Boolean);
-        // Include club project memberships too (club admins/support roles etc.)
-        const projectIdsToFetch = [clubIdValue, ...teamIds];
-
-        const fetchMembersForProject = async (pid: string) => {
-          const params = new URLSearchParams();
-          params.set('page_size', '500');
-          const url = `${apiV1BaseUrl}/projects/${encodeURIComponent(pid)}/members/?${params.toString()}`;
-          return await fetchAllPages<any>(
-            url,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-Organisation-ID': String(resolvedOrg?.id || (project as any)?.organisation_id || ''),
-              },
-              credentials: 'include',
-            },
-            force ? { bypass: true } : undefined
-          );
-        };
-
-        const allMemberships: any[] = [];
-        const chunkSize = 8;
-        for (let i = 0; i < projectIdsToFetch.length; i += chunkSize) {
-          const chunk = projectIdsToFetch.slice(i, i + chunkSize);
-          const chunkResults = await Promise.all(chunk.map((pid) => fetchMembersForProject(pid).catch(() => [])));
-          for (let j = 0; j < chunk.length; j++) {
-            const pid = chunk[j];
-            const list = Array.isArray(chunkResults[j]) ? chunkResults[j] : [];
-            for (const pm of list) {
-              allMemberships.push({ pm, projectId: pid });
-            }
-          }
-        }
-
-        const byOrgMembershipId = new Map<string, any>();
-        for (const row of allMemberships) {
-          const pm = row?.pm;
-          const projectIdValue = String(row?.projectId || '').trim();
-          const orgMembershipId = String(pm?.organisation_membership_id || '').trim();
-          const userObj = pm?.user;
-          const userId = String(userObj?.id || '').trim();
-          const key = orgMembershipId || (userId ? `user:${userId}` : `${projectIdValue}:${String(pm?.id || '')}`);
-          if (!key) continue;
-
-          const existing = byOrgMembershipId.get(key);
-          const normalizedPm = {
-            ...pm,
-            project_id: projectIdValue,
-            club_id: clubIdValue,
-            period_id: pm?.period_id ?? pm?.period ?? null,
-          };
-
-          if (!existing) {
-            byOrgMembershipId.set(key, {
-              id: orgMembershipId || key,
-              user: userObj,
               project_memberships: [normalizedPm],
               project_membership_details: [normalizedPm],
             });
@@ -2997,12 +2921,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                         {(() => {
                           const normalizedQuery = memberSearch.trim().toLowerCase();
 
-                        // Only show real org members (exclude virtual/inherited members from project assignments)
-                        const orgOnlyMembers = orgMembers.filter((item: any) => {
-                          const membershipId = item.id;
-                          const isVirtualMember = item.source === 'assignment' || item.source === 'project_membership' || String(membershipId).startsWith('pm:');
-                          return !isVirtualMember;
-                        });
+                        // Include all org-visible users (direct org memberships + project members + role assignments).
+                        // This ensures team pages still show users even when they only exist via project memberships.
+                        const orgOnlyMembers = orgMembers;
 
                         const seasonTeamById = new Map<string, string>();
                         for (const p of seasons as any[]) {
@@ -3011,7 +2932,10 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           if (teamId) seasonTeamById.set(String(p.id), teamId);
                         }
 
-                        const effectiveClubId = currentClubId;
+                        // Club detail must show the full organisation roster by default.
+                        // Team detail is already scoped in fetchOrgMembers (fast path), so we don't need
+                        // an extra implicit club filter here.
+                        const effectiveClubId = '';
                         const effectiveTeamId =
                           effectiveUserTeamFilterId ||
                           (userSeasonFilterId && String(userSeasonFilterId) !== '__unassigned__'
@@ -3067,7 +2991,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           if (normalizedQuery && !haystack.includes(normalizedQuery)) return false;
 
                           const pms = getMemberProjectMemberships(item);
-                          if ((effectiveClubId || effectiveTeamId) && (!pms || pms.length === 0)) return false;
                           if (effectiveClubId) {
                             const ok = pms.some((pm: any) => getPmClubId(pm) === String(effectiveClubId));
                             if (!ok) return false;

@@ -46,6 +46,10 @@ export default function UsersTable({
   onEditMembership,
   onRemoveMembership,
 }: Props) {
+  const looksLikeUuid = (value: string): boolean => {
+    const v = String(value || '').trim();
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+  };
   const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
   const TEAMREEL_ROLE_RANK: Record<string, number> = {
     superadmin: 100,
@@ -179,6 +183,7 @@ export default function UsersTable({
           {pageItems.map((item: any) => {
             const userObj = item.user || item;
             const membershipId = String((item as any)?.organisation_membership_id || (item as any)?.organisationMembershipId || item.id);
+            const hasOrgMembership = looksLikeUuid(membershipId);
 
             const roleDisplay = getRoleDisplay(item);
 
@@ -199,6 +204,9 @@ export default function UsersTable({
             const teamId = teamIds.length === 1 ? teamIds[0] : '';
             const team = teamId ? teamById.get(String(teamId)) : null;
             const teamSlugOrId = team ? (team as any).slug || String((team as any).id) : teamId;
+
+            const canViewUser = typeof onViewUser === 'function';
+            const canViewMembership = hasOrgMembership && typeof onViewMembership === 'function';
 
             return (
               <tr key={String(userObj.id)}>
@@ -238,13 +246,27 @@ export default function UsersTable({
                     <div style={compactActionsStyle}>
                       <button
                         type="button"
-                        onClick={() => (onViewUser ? onViewUser(userObj) : onViewMembership(membershipId))}
+                        disabled={!canViewUser && !canViewMembership}
+                        onClick={() => {
+                          if (canViewUser) return onViewUser(userObj);
+                          if (canViewMembership) return onViewMembership(membershipId);
+                        }}
                         className="app-action-button"
                         style={actionButtonStyle('primary')}
                       >
                         View
                       </button>
-                      <button type="button" onClick={() => onEditMembership(item)} className="app-action-button" style={actionButtonStyle('warning')}>
+                      <button
+                        type="button"
+                        disabled={!hasOrgMembership}
+                        onClick={() => {
+                          if (!hasOrgMembership) return;
+                          onEditMembership(item);
+                        }}
+                        className="app-action-button"
+                        style={actionButtonStyle('warning')}
+                        title={!hasOrgMembership ? 'User has no direct federation membership to edit' : undefined}
+                      >
                         Edit
                       </button>
                       {onOpenAssignSeason ? (
@@ -271,12 +293,15 @@ export default function UsersTable({
                       ) : null}
                       <button
                         type="button"
+                        disabled={!hasOrgMembership}
                         onClick={async () => {
+                          if (!hasOrgMembership) return;
                           if (!window.confirm(`Remove ${userObj.email} from federation?`)) return;
                           await onRemoveMembership(membershipId, String(userObj.email || ''));
                         }}
                         className="app-action-button"
                         style={actionButtonStyle('danger')}
+                        title={!hasOrgMembership ? 'User has no direct federation membership to remove' : undefined}
                       >
                         Remove
                       </button>
