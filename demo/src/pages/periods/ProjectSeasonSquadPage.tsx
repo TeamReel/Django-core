@@ -77,15 +77,38 @@ function MembershipEditModal({
   opened: boolean;
   onClose: () => void;
   membership: any | null;
-  onSave: (payload: { role: string }) => Promise<void>;
+  onSave: (payload: { role: string; functional_roles: string[] }) => Promise<void>;
 }) {
   const [role, setRole] = useState('viewer');
+  const [functionalRoles, setFunctionalRoles] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string }> = [
+    { value: 'coach', label: 'Coach' },
+    { value: 'player', label: 'Player' },
+    { value: 'keeper', label: 'Keeper' },
+    { value: 'assistant', label: 'Assistant' },
+    { value: 'verzorger', label: 'Verzorger' },
+    { value: 'supporter', label: 'Supporter' },
+    { value: 'manager', label: 'Manager' },
+  ];
+
+  const readFunctionalRolesFromMembership = (m: any): string[] => {
+    const direct = (m as any)?.functional_roles ?? (m as any)?.functionalRoles;
+    if (Array.isArray(direct)) {
+      return direct.map((r) => String(r || '').trim()).filter(Boolean);
+    }
+
+    const meta = (m as any)?.metadata || {};
+    const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
+    return legacy ? [legacy] : [];
+  };
 
   useEffect(() => {
     if (!opened || !membership) return;
     setRole(String(membership?.role || 'viewer'));
+    setFunctionalRoles(readFunctionalRolesFromMembership(membership));
     setError(null);
   }, [opened, membership]);
 
@@ -146,7 +169,7 @@ function MembershipEditModal({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <label style={{ fontWeight: 600 }} htmlFor="membership-role">
-              Role
+              Access role
             </label>
             <select
               id="membership-role"
@@ -164,6 +187,49 @@ function MembershipEditModal({
               <option value="editor">editor</option>
               <option value="admin">admin</option>
             </select>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ fontWeight: 600 }}>Functional roles</div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                gap: '8px 12px',
+                padding: '10px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+              }}
+            >
+              {FUNCTIONAL_ROLE_OPTIONS.map((opt) => {
+                const checked = functionalRoles.includes(opt.value);
+                return (
+                  <label
+                    key={opt.value}
+                    style={{ display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => {
+                        const nextChecked = e.currentTarget.checked;
+                        setFunctionalRoles((prev) => {
+                          const normalized = (Array.isArray(prev) ? prev : [])
+                            .map((r) => String(r || '').trim())
+                            .filter(Boolean);
+                          const set = new Set(normalized);
+                          if (nextChecked) set.add(opt.value);
+                          else set.delete(opt.value);
+                          return Array.from(set.values()).sort((a, b) => a.localeCompare(b));
+                        });
+                      }}
+                    />
+                    <span>{opt.label}</span>
+                  </label>
+                );
+              })}
+            </div>
           </div>
 
           {error && <div style={{ color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
@@ -188,7 +254,7 @@ function MembershipEditModal({
                 setSaving(true);
                 setError(null);
                 try {
-                  await onSave({ role });
+                  await onSave({ role, functional_roles: functionalRoles });
                   onClose();
                 } catch (e) {
                   setError(e instanceof Error ? e.message : 'Failed to save');
@@ -840,7 +906,7 @@ export default function ProjectSeasonSquadPage() {
             setIsMembershipEditModalOpen(false);
             setSelectedMembership(null);
           }}
-          onSave={async ({ role }) => {
+          onSave={async ({ role, functional_roles }) => {
             const membershipId = String(selectedMembership?.id || '').trim();
             const projectId = String(project?.id || '').trim();
             if (!membershipId || !projectId) return;
@@ -864,8 +930,64 @@ export default function ProjectSeasonSquadPage() {
               throw new Error(detail || 'Failed to save member');
             }
 
+            const membershipUserId = Number(selectedMembership?.user?.id);
+            if (!membershipUserId) throw new Error('Missing user id');
+
+            const prevDirect = (selectedMembership as any)?.functional_roles ?? (selectedMembership as any)?.functionalRoles;
+            const prevRoles = Array.isArray(prevDirect)
+              ? prevDirect.map((r: any) => String(r || '').trim()).filter(Boolean)
+              : [];
+            const nextRoles = (Array.isArray(functional_roles) ? functional_roles : [])
+              .map((r: any) => String(r || '').trim())
+              .filter(Boolean);
+
+            const prevSet = new Set(prevRoles);
+            const nextSet = new Set(nextRoles);
+            const toAdd = Array.from(nextSet).filter((r) => !prevSet.has(r));
+            const toRemove = Array.from(prevSet).filter((r) => !nextSet.has(r));
+
+            if (toAdd.length) {
+              const assignRes = await fetch(
+                `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/functional-roles/assign/`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCsrfToken(),
+                  },
+                  credentials: 'include',
+                  body: JSON.stringify({ user_id: membershipUserId, roles: toAdd }),
+                }
+              );
+              if (!assignRes.ok) {
+                const detail = await assignRes.text().catch(() => '');
+                throw new Error(detail || 'Failed to assign functional roles');
+              }
+            }
+
+            if (toRemove.length) {
+              const unassignRes = await fetch(
+                `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/functional-roles/unassign/`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCsrfToken(),
+                  },
+                  credentials: 'include',
+                  body: JSON.stringify({ user_id: membershipUserId, roles: toRemove }),
+                }
+              );
+              if (!unassignRes.ok) {
+                const detail = await unassignRes.text().catch(() => '');
+                throw new Error(detail || 'Failed to unassign functional roles');
+              }
+            }
+
             setMembers((prev) =>
-              prev.map((m: any) => (String(m.id) === membershipId ? { ...m, role } : m))
+              prev.map((m: any) => (String(m.id) === membershipId ? { ...m, role, functional_roles } : m))
             );
           }}
         />
