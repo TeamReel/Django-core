@@ -1764,7 +1764,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                 ? [
                     {
                       label: clubSlugOrId || 'Club',
-                      onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+                      onClick: () => navigate(`/${orgSlugOrId}/${clubSlugOrId}`),
                     },
                     { label: projectId || 'Team', current: true },
                   ]
@@ -1796,7 +1796,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                 ? [
                     {
                       label: clubSlugOrId || 'Club',
-                      onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+                      onClick: () => navigate(`/${orgSlugOrId}/${clubSlugOrId}`),
                     },
                     { label: projectId || 'Team', current: true },
                   ]
@@ -1875,7 +1875,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   ];
 
   const backPath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`
+    ? `/${orgSlugOrId}/${clubSlugOrId}`
     : clubsListPath;
 
 
@@ -1891,7 +1891,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             ? [
                 {
                    label: club?.name || 'Club',
-                   onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`)
+                   onClick: () => navigate(`/${orgSlugOrId}/${clubSlugOrId}`)
                 },
                 {
                   label: (
@@ -3096,7 +3096,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                   <tr key={team.id}>
                                     <td style={compactTextTdStyle}>
                                       <Link
-                                        to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
+                                        to={`/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`}
                                         className="text-blue-600 hover:underline"
                                       >
                                         {team.name}

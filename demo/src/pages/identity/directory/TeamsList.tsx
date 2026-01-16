@@ -408,11 +408,11 @@ export const TeamsList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                           {orgSlugOrId && clubSlugOrId ? (
                             <a
-                              href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
+                              href={`/${orgSlugOrId}/${clubSlugOrId}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`);
+                                navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
                               }}
                             >
                               {clubName}
@@ -425,11 +425,11 @@ export const TeamsList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                           {orgSlugOrId && clubSlugOrId ? (
                             <a
-                              href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`}
+                              href={`/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`);
+                                navigate(`/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`);
                               }}
                             >
                               {team.name}

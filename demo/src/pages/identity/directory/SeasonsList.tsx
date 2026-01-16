@@ -573,7 +573,7 @@ export const SeasonsList: React.FC = () => {
                     const seasonSlugOrId = periodPathKey(season) || season.slug || season.id;
 
                     const teamDetailPath = (orgSlugOrId && clubSlugOrId && teamSlugOrId)
-                      ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`
+                      ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`
                       : (orgSlugOrId && teamSlugOrId)
                         ? `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}`
                         : null;
@@ -608,11 +608,11 @@ export const SeasonsList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                           {clubSlugOrId && orgSlugOrId ? (
                             <a
-                              href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
+                              href={`/${orgSlugOrId}/${clubSlugOrId}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`);
+                                navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
                               }}
                             >
                               {clubName}

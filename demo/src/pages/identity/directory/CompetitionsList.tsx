@@ -789,7 +789,7 @@ export const CompetitionsList: React.FC = () => {
                     const teamSlugOrId = teamSlug || teamId;
                     const seasonSlugOrId = seasonSlug || seasonId;
                     const teamBasePath = clubSlugOrId
-                      ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`
+                      ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`
                       : `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}`;
 
                     return (
@@ -811,11 +811,11 @@ export const CompetitionsList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                           {clubId ? (
                             <a
-                              href={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`}
+                              href={`/${orgSlugOrId}/${clubSlugOrId}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                                navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`);
+                                navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
                               }}
                             >
                               {clubName}
