@@ -148,6 +148,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   const [userTeamFilterId, setUserTeamFilterId] = useState<string>('');
   const [userSeasonFilterId, setUserSeasonFilterId] = useState<string>('');
   const [usersPage, setUsersPage] = useState(1);
+  const [usersLinkedPage, setUsersLinkedPage] = useState(1);
+  const [usersUnlinkedPage, setUsersUnlinkedPage] = useState(1);
   const [usersPageSize] = useState(25);
 
   // Teams tab filters
@@ -2768,6 +2770,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               setUserTeamFilterId(e.target.value);
                               setUserSeasonFilterId('');
                               setUsersPage(1);
+                              setUsersLinkedPage(1);
+                              setUsersUnlinkedPage(1);
                             }}
                             style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                           >
@@ -2784,10 +2788,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           onChange={(e) => {
                             setUserSeasonFilterId(e.target.value);
                             setUsersPage(1);
+                            setUsersLinkedPage(1);
+                            setUsersUnlinkedPage(1);
                           }}
                           style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                         >
                           <option value="">Season: All</option>
+                          {effectiveUserTeamFilterId && <option value="__unassigned__">Season: Unassigned</option>}
                           {(seasons as any[])
                             .filter((p: any) => isSeasonPeriod(p))
                             .filter((p: any) => {
@@ -2806,6 +2813,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           onChange={(e) => {
                             setUserRoleFilter(e.target.value);
                             setUsersPage(1);
+                            setUsersLinkedPage(1);
+                            setUsersUnlinkedPage(1);
                           }}
                           style={{ padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '14px', backgroundColor: 'var(--app-surface)' }}
                         >
@@ -2825,6 +2834,8 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             if (!isTeamRoute) setUserTeamFilterId('');
                             setUserSeasonFilterId('');
                             setUsersPage(1);
+                            setUsersLinkedPage(1);
+                            setUsersUnlinkedPage(1);
                           }}
                         >
                           Clear
@@ -2859,6 +2870,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           if (teamId) seasonTeamById.set(String(p.id), teamId);
                         }
 
+                        const effectiveClubId = currentClubId;
+                        const effectiveTeamId =
+                          effectiveUserTeamFilterId ||
+                          (userSeasonFilterId && String(userSeasonFilterId) !== '__unassigned__'
+                            ? seasonTeamById.get(String(userSeasonFilterId)) || ''
+                            : '');
+
                         const getMemberProjectMemberships = (item: any): any[] => {
                           const u = item?.user || item;
                           const list =
@@ -2881,7 +2899,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               ''
                           );
 
-                        const filteredMembers = orgOnlyMembers.filter((item: any) => {
+                        const baseMembers = orgOnlyMembers.filter((item: any) => {
                           const u = item.user || item;
                           const role = item.role || 'member';
 
@@ -2891,10 +2909,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           // Search filter
                           const haystack = `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase();
                           if (normalizedQuery && !haystack.includes(normalizedQuery)) return false;
-
-                          // Club scope: ONLY this club
-                          const effectiveClubId = currentClubId;
-                          const effectiveTeamId = effectiveUserTeamFilterId || (userSeasonFilterId ? seasonTeamById.get(String(userSeasonFilterId)) || '' : '');
 
                           const pms = getMemberProjectMemberships(item);
                           if ((effectiveClubId || effectiveTeamId) && (!pms || pms.length === 0)) return false;
@@ -2907,23 +2921,147 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             if (!ok) return false;
                           }
 
-                          // Season filter: require a project membership scoped to this season.
-                          // Organisation members may have many project memberships; we filter by membership.period_id.
-                          if (userSeasonFilterId) {
-                            const seasonId = String(userSeasonFilterId);
-                            const ok = pms.some((pm: any) => {
-                              const pmSeasonId = String(pm?.period_id ?? pm?.period ?? '').trim();
-                              if (!pmSeasonId || pmSeasonId !== seasonId) return false;
-                              if (effectiveTeamId) return getPmTeamId(pm) === String(effectiveTeamId);
-                              return true;
-                            });
-                            if (!ok) return false;
-                          }
-
                           return true;
                         });
 
+                        const isUnassignedSeasonFilter = String(userSeasonFilterId || '') === '__unassigned__';
+                        const isSpecificSeasonFilter = Boolean(userSeasonFilterId) && !isUnassignedSeasonFilter;
+
+                        const getPmPeriodId = (pm: any) => String(pm?.period_id ?? pm?.period ?? '').trim();
+                        const hasTeamMembershipForSeason = (item: any, seasonId: string) => {
+                          const pms = getMemberProjectMemberships(item);
+                          return pms.some((pm: any) => {
+                            if (getPmTeamId(pm) !== String(effectiveTeamId)) return false;
+                            return getPmPeriodId(pm) === String(seasonId);
+                          });
+                        };
+
+                        const hasTeamMembershipWithoutSeason = (item: any) => {
+                          const pms = getMemberProjectMemberships(item);
+                          return pms.some((pm: any) => {
+                            if (getPmTeamId(pm) !== String(effectiveTeamId)) return false;
+                            return !getPmPeriodId(pm);
+                          });
+                        };
+
+                        const filteredMembers = (() => {
+                          if (!userSeasonFilterId) return baseMembers;
+                          if (!effectiveTeamId) return baseMembers;
+
+                          if (isUnassignedSeasonFilter) {
+                            return baseMembers.filter((item: any) => hasTeamMembershipWithoutSeason(item));
+                          }
+
+                          // For a specific season: we render two groups below.
+                          return baseMembers;
+                        })();
+
                         if (filteredMembers.length === 0) return <Alert variant="info">No users match your search.</Alert>;
+
+                        const handleRemoveMembership = async (membershipId: string, _email?: string) => {
+                          const apiV1BaseUrl = getApiV1BaseUrl();
+                          const res = await fetch(
+                            `${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/members/${membershipId}/`,
+                            {
+                              method: 'DELETE',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCsrfToken() || '',
+                              },
+                              credentials: 'include',
+                            }
+                          );
+                          if (!res.ok) {
+                            throw new Error('Failed to remove user');
+                          }
+                          setOrgMembers((prev) => prev.filter((m: any) => String(m.id) !== String(membershipId)));
+                        };
+
+                        const renderPagedUsersTable = (
+                          items: any[],
+                          page: number,
+                          setPage: (n: number) => void,
+                          label?: string,
+                        ) => {
+                          const totalPages = Math.max(1, Math.ceil(items.length / usersPageSize));
+                          const safePage = Math.min(page, totalPages);
+                          const start = (safePage - 1) * usersPageSize;
+                          const pageItems = items.slice(start, start + usersPageSize);
+
+                          const teamById = new Map<string, any>();
+                          for (const t of childProjects as any[]) teamById.set(String(t.id), t);
+                          // Ensure we can resolve the current team in team-detail mode
+                          if (isTeamRoute && project) teamById.set(String(project.id), project);
+
+                          return (
+                            <>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                                <div style={{ fontSize: '0.85rem', color: 'var(--app-muted-text)' }}>
+                                  {label ? `${label} · ` : ''}Page {safePage} of {totalPages} ({items.length} users)
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <Button variant="secondary" size="sm" disabled={safePage <= 1} onClick={() => setPage(Math.max(1, safePage - 1))}>
+                                    Previous
+                                  </Button>
+                                  <Button variant="secondary" size="sm" disabled={safePage >= totalPages} onClick={() => setPage(Math.min(totalPages, safePage + 1))}>
+                                    Next
+                                  </Button>
+                                </div>
+                              </div>
+                              <UsersTable
+                                isTeamRoute={isTeamRoute}
+                                pageItems={pageItems}
+                                currentOrgSlug={String(currentOrgSlug || '')}
+                                currentClubSlugOrId={String(currentClubSlugOrId || '')}
+                                currentClubId={String(currentClubId || '')}
+                                currentProjectId={String(project?.id || '')}
+                                teamById={teamById}
+                                userCanManageMembers={Boolean(userCanManageMembers)}
+                                onViewUser={(userObj) => {
+                                  setDetailUser(userObj);
+                                  setIsUserDetailModalOpen(true);
+                                }}
+                                onViewMembership={() => {
+                                  // View is handled via onViewUser (modal).
+                                }}
+                                onEditMembership={(item) => {
+                                  setEditingMember(item);
+                                  setEditingMemberRole((item?.role || 'member') as any);
+                                  setEditMemberRoleError(null);
+                                  setIsEditMemberRoleModalOpen(true);
+                                }}
+                                onRemoveMembership={handleRemoveMembership as any}
+                              />
+                            </>
+                          );
+                        };
+
+                        if (isSpecificSeasonFilter && effectiveTeamId) {
+                          const seasonId = String(userSeasonFilterId);
+                          const linked = baseMembers.filter((item: any) => hasTeamMembershipForSeason(item, seasonId));
+                          const unlinked = baseMembers.filter((item: any) => !hasTeamMembershipForSeason(item, seasonId));
+
+                          return (
+                            <>
+                              <div style={{ marginBottom: '16px' }}>
+                                <h4 style={{ margin: '8px 0' }}>Linked to selected season</h4>
+                                {linked.length === 0 ? (
+                                  <Alert variant="info">No users are linked to this season.</Alert>
+                                ) : (
+                                  renderPagedUsersTable(linked, usersLinkedPage, setUsersLinkedPage)
+                                )}
+                              </div>
+                              <div style={{ marginBottom: '8px' }}>
+                                <h4 style={{ margin: '8px 0' }}>Not linked to selected season</h4>
+                                {unlinked.length === 0 ? (
+                                  <Alert variant="info">Everyone is linked to this season.</Alert>
+                                ) : (
+                                  renderPagedUsersTable(unlinked, usersUnlinkedPage, setUsersUnlinkedPage)
+                                )}
+                              </div>
+                            </>
+                          );
+                        }
 
                         const totalPages = Math.max(1, Math.ceil(filteredMembers.length / usersPageSize));
                         const safePage = Math.min(usersPage, totalPages);
@@ -2972,24 +3110,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 setEditMemberRoleError(null);
                                 setIsEditMemberRoleModalOpen(true);
                               }}
-                              onRemoveMembership={async (membershipId) => {
-                                const apiV1BaseUrl = getApiV1BaseUrl();
-                                const res = await fetch(
-                                  `${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/members/${membershipId}/`,
-                                  {
-                                    method: 'DELETE',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      'X-CSRFToken': getCsrfToken() || '',
-                                    },
-                                    credentials: 'include',
-                                  }
-                                );
-                                if (!res.ok) {
-                                  throw new Error('Failed to remove user');
-                                }
-                                setOrgMembers((prev) => prev.filter((m: any) => String(m.id) !== String(membershipId)));
-                              }}
+                              onRemoveMembership={handleRemoveMembership as any}
                             />
                           </>
                         );
