@@ -587,10 +587,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     if (!force && orgMembers.length > 0 && haveMembershipDetails) return;
     if (!currentOrgSlug) return;
 
-    // Team detail pages should not load the full organisation roster.
-    // Instead, load only the members for this team and adapt to the same shape
-    // as org members (so filtering/season assignment works).
-    const teamIdForMembers = isTeamRoute ? String(project?.id || '').trim() : '';
+    // Detail pages should not load the full organisation roster.
+    // - Team pages: load only members for this team.
+    // - Club pages: load only members for this club + teams under this club.
+    // Then adapt to the same shape as org members (so filtering/season assignment works).
+    const teamIdForMembers = (isTeamRoute || isLikelyTeam) ? String(project?.id || '').trim() : '';
+    const clubIdForMembers = !teamIdForMembers ? String(project?.id || '').trim() : '';
 
     setOrgMembersLoading(true);
     try {
@@ -613,6 +615,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
           force ? { bypass: true } : undefined
         );
 
+        const inferredClubId = String((club as any)?.id || currentClubId || '').trim();
         const byOrgMembershipId = new Map<string, any>();
         for (const pm of memberships || []) {
           const orgMembershipId = String(pm?.organisation_membership_id || '').trim();
@@ -625,6 +628,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
           const normalizedPm = {
             ...pm,
             project_id: teamIdForMembers,
+            club_id: inferredClubId || undefined,
             // Normalise to the shapes expected by the rest of this page
             period_id: pm?.period_id ?? pm?.period ?? null,
           };
@@ -634,6 +638,80 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
               id: orgMembershipId || key,
               user: userObj,
               // Keep org membership role unknown in this fast path.
+              project_memberships: [normalizedPm],
+              project_membership_details: [normalizedPm],
+            });
+          } else {
+            existing.project_memberships = [...(existing.project_memberships || []), normalizedPm];
+            existing.project_membership_details = [...(existing.project_membership_details || []), normalizedPm];
+          }
+        }
+
+        setOrgMembers(Array.from(byOrgMembershipId.values()));
+        return;
+      }
+
+      if (clubIdForMembers) {
+        const clubIdValue = String(clubIdForMembers).trim();
+        const clubTeams = await fetchClubTeamsForPeriodScope();
+        const teamIds = (clubTeams || []).map((t: any) => String(t?.id || '')).filter(Boolean);
+        // Include club project memberships too (club admins/support roles etc.)
+        const projectIdsToFetch = [clubIdValue, ...teamIds];
+
+        const fetchMembersForProject = async (pid: string) => {
+          const params = new URLSearchParams();
+          params.set('page_size', '500');
+          const url = `${apiV1BaseUrl}/projects/${encodeURIComponent(pid)}/members/?${params.toString()}`;
+          return await fetchAllPages<any>(
+            url,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-Organisation-ID': String(resolvedOrg?.id || (project as any)?.organisation_id || ''),
+              },
+              credentials: 'include',
+            },
+            force ? { bypass: true } : undefined
+          );
+        };
+
+        const allMemberships: any[] = [];
+        const chunkSize = 8;
+        for (let i = 0; i < projectIdsToFetch.length; i += chunkSize) {
+          const chunk = projectIdsToFetch.slice(i, i + chunkSize);
+          const chunkResults = await Promise.all(chunk.map((pid) => fetchMembersForProject(pid).catch(() => [])));
+          for (let j = 0; j < chunk.length; j++) {
+            const pid = chunk[j];
+            const list = Array.isArray(chunkResults[j]) ? chunkResults[j] : [];
+            for (const pm of list) {
+              allMemberships.push({ pm, projectId: pid });
+            }
+          }
+        }
+
+        const byOrgMembershipId = new Map<string, any>();
+        for (const row of allMemberships) {
+          const pm = row?.pm;
+          const projectIdValue = String(row?.projectId || '').trim();
+          const orgMembershipId = String(pm?.organisation_membership_id || '').trim();
+          const userObj = pm?.user;
+          const userId = String(userObj?.id || '').trim();
+          const key = orgMembershipId || (userId ? `user:${userId}` : `${projectIdValue}:${String(pm?.id || '')}`);
+          if (!key) continue;
+
+          const existing = byOrgMembershipId.get(key);
+          const normalizedPm = {
+            ...pm,
+            project_id: projectIdValue,
+            club_id: clubIdValue,
+            period_id: pm?.period_id ?? pm?.period ?? null,
+          };
+
+          if (!existing) {
+            byOrgMembershipId.set(key, {
+              id: orgMembershipId || key,
+              user: userObj,
               project_memberships: [normalizedPm],
               project_membership_details: [normalizedPm],
             });
@@ -2952,15 +3030,30 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                         };
 
                         const getPmTeamId = (pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '');
-                        const getPmClubId = (pm: any) =>
-                          String(
+                        const getPmClubId = (pm: any) => {
+                          const raw =
                             pm?.club_id ??
-                              pm?.club?.id ??
-                              pm?.project?.parent_id ??
-                              pm?.project?.parent?.id ??
-                              pm?.project?.parent_project_id ??
-                              ''
-                          );
+                            pm?.club?.id ??
+                            pm?.project?.parent_id ??
+                            pm?.project?.parent?.id ??
+                            pm?.project?.parent_project_id ??
+                            '';
+
+                          const clubIdValue = String(raw || '').trim();
+                          if (clubIdValue) return clubIdValue;
+
+                          // When we load members via /projects/:id/members (fast path), the API payload
+                          // may not include club linkage. If we're on a team route, treat memberships for
+                          // the current team as belonging to the current club.
+                          if (isTeamRoute && currentClubId) {
+                            const teamIdValue = getPmTeamId(pm);
+                            if (teamIdValue && teamIdValue === String(effectiveTeamId || effectiveUserTeamFilterId || (project as any)?.id || '')) {
+                              return String(currentClubId);
+                            }
+                          }
+
+                          return '';
+                        };
 
                         const baseMembers = orgOnlyMembers.filter((item: any) => {
                           const u = item.user || item;

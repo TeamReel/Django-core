@@ -572,23 +572,23 @@ export default function HierarchyMatchDetailPage() {
         });
 
         // 2) Organisation memberships (membership ids + user) — best-effort only.
-        // If this endpoint is permission-restricted, we can still build a valid roster from
-        // organisation_membership_id on project members.
+        // This is expensive for large orgs; only fetch it if we truly need it.
+        // If project members already include organisation_membership_id, we can render rosters without it.
         let orgMembers: OrgMember[] = [];
-        try {
-          const orgMembersRes = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(String(orgSlugOrId))}/members/?page_size=1000`,
-            { credentials: 'include' }
-          );
-          if (orgMembersRes.ok) {
-            const orgMembersRaw = await orgMembersRes.json().catch(() => null);
-            orgMembers = extractList(orgMembersRaw) as OrgMember[];
-          } else if (eligibleFromProjectMembers.length === 0) {
-            const detail = await orgMembersRes.text().catch(() => '');
-            throw new Error(`Failed to load organisation members (${orgMembersRes.status}) ${detail || ''}`.trim());
-          }
-        } catch (e) {
-          if (eligibleFromProjectMembers.length === 0) {
+        if (eligibleFromProjectMembers.length === 0) {
+          try {
+            const orgMembersRes = await fetch(
+              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(String(orgSlugOrId))}/members/?page_size=1000`,
+              { credentials: 'include' }
+            );
+            if (orgMembersRes.ok) {
+              const orgMembersRaw = await orgMembersRes.json().catch(() => null);
+              orgMembers = extractList(orgMembersRaw) as OrgMember[];
+            } else {
+              const detail = await orgMembersRes.text().catch(() => '');
+              throw new Error(`Failed to load organisation members (${orgMembersRes.status}) ${detail || ''}`.trim());
+            }
+          } catch (e) {
             throw e;
           }
         }
