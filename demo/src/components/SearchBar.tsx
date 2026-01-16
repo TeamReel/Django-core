@@ -67,6 +67,8 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
     const labels: Record<string, string> = {
       clubs: 'Clubs',
       teams: 'Teams',
+      seasons: 'Seasons',
+      competitions: 'Competitions',
       periods: 'Seasons & Competitions',
       matches: 'Matches',
       activities: 'Activities',
@@ -81,6 +83,8 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
     const icons: Record<string, string> = {
       clubs: '🏟️',
       teams: '👕',
+      seasons: '🗓️',
+      competitions: '🏆',
       periods: '🗓️',
       matches: '🎯',
       activities: '📅',
@@ -94,6 +98,8 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
   const totalResults = results
     ? (results.clubs?.length || 0) +
       (results.teams?.length || 0) +
+      (results.seasons?.length || 0) +
+      (results.competitions?.length || 0) +
       (results.periods?.length || 0) +
       (results.matches?.length || 0) +
       (results.activities?.length || 0) +

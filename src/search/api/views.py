@@ -12,7 +12,7 @@ from search.backend.postgres import PostgresSearchBackend
 from search.api.serializers import SearchEntrySerializer
 from search.utils import sanitize_query
 from projects.models import Project
-from activities.models import Activity
+from activities.models import Activity, Period
 
 
 # Simple category tokens supported by the frontend.
@@ -27,27 +27,34 @@ CATEGORY_TO_MODEL_LABELS = {
     # Activities/Periods
     "activities": ["activities.activity"],
     "matches": ["activities.activity"],
+    # periods are split by hierarchy into seasons vs competitions
     "periods": ["activities.period"],
+    "seasons": ["activities.period"],
+    "competitions": ["activities.period"],
 }
 
 
-def _normalize_types(types_param: str | None) -> tuple[list[str] | None, str | None, str | None]:
-    """Return (model_labels, project_scope, activity_scope).
+def _normalize_types(
+    types_param: str | None,
+) -> tuple[list[str] | None, str | None, str | None, str | None]:
+    """Return (model_labels, project_scope, activity_scope, period_scope).
 
     - model_labels: list of 'app.model' labels to filter content types.
     - project_scope: 'clubs' | 'teams' | None for additional project hierarchy filtering.
     - activity_scope: 'matches' | None for additional activity filtering.
+    - period_scope: 'seasons' | 'competitions' | None for additional period hierarchy filtering.
     """
     if not types_param:
-        return None, None, None
+        return None, None, None, None
 
     raw_tokens = [t.strip() for t in types_param.split(",") if t.strip()]
     if not raw_tokens:
-        return None, None, None
+        return None, None, None, None
 
     model_labels: list[str] = []
     project_scope: str | None = None
     activity_scope: str | None = None
+    period_scope: str | None = None
 
     for token in raw_tokens:
         lower = token.lower()
@@ -57,6 +64,12 @@ def _normalize_types(types_param: str | None) -> tuple[list[str] | None, str | N
                 project_scope = lower
             if lower == "matches":
                 activity_scope = "matches"
+            if lower in {"seasons", "competitions"}:
+                # If multiple period scopes are provided, don't apply hierarchy filtering.
+                if period_scope is None:
+                    period_scope = lower
+                elif period_scope != lower:
+                    period_scope = None
             continue
 
         # Assume it's already an 'app.model' label.
@@ -65,7 +78,7 @@ def _normalize_types(types_param: str | None) -> tuple[list[str] | None, str | N
     # De-duplicate while preserving order
     seen = set()
     model_labels = [x for x in model_labels if not (x in seen or seen.add(x))]
-    return model_labels or None, project_scope, activity_scope
+    return model_labels or None, project_scope, activity_scope, period_scope
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -93,9 +106,9 @@ class SearchAPIView(APIView):
         # Parse types
         # Supported:
         # - ?types=projects.project,accounts.user (explicit model labels)
-        # - ?types=users|organisations|projects|clubs|teams|matches|activities|periods (frontend category tokens)
+        # - ?types=users|organisations|projects|clubs|teams|matches|activities|periods|seasons|competitions (frontend category tokens)
         types_param = request.query_params.get("types")
-        types, project_scope, activity_scope = _normalize_types(types_param)
+        types, project_scope, activity_scope, period_scope = _normalize_types(types_param)
 
         backend = PostgresSearchBackend()
         # Get base queryset from backend (includes permission filtering and ranking)
@@ -133,6 +146,20 @@ class SearchAPIView(APIView):
             )
             queryset = queryset.filter(content_type=activity_ct, object_id__in=match_ids)
 
+        # Optional period hierarchy filter
+        if period_scope in {"seasons", "competitions"}:
+            period_ct = ContentType.objects.get_for_model(Period)
+            period_qs = Period.objects.all()
+            if period_scope == "seasons":
+                period_qs = period_qs.filter(parent_period__isnull=True)
+            else:
+                period_qs = period_qs.filter(parent_period__isnull=False)
+
+            period_ids = period_qs.annotate(id_str=Cast("id", CharField())).values_list(
+                "id_str", flat=True
+            )
+            queryset = queryset.filter(content_type=period_ct, object_id__in=period_ids)
+
         # Add Highlighting
         # We need to reconstruct the SearchQuery to use in SearchHeadline
         # Ideally backend.search would return the query object or we re-parse it.
@@ -164,7 +191,8 @@ class SearchAPIView(APIView):
             grouped: dict[str, list] = {
                 "clubs": [],
                 "teams": [],
-                "periods": [],
+                "seasons": [],
+                "competitions": [],
                 "matches": [],
                 "activities": [],
                 "users": [],
@@ -183,7 +211,12 @@ class SearchAPIView(APIView):
                     except (AttributeError, TypeError, ValueError):
                         key = "clubs"
                 elif model_name == "period":
-                    key = "periods"
+                    try:
+                        obj = entry.content_object
+                        is_competition = bool(getattr(obj, "parent_period_id", None))
+                        key = "competitions" if is_competition else "seasons"
+                    except (AttributeError, TypeError, ValueError):
+                        key = "seasons"
                 elif model_name == "activity":
                     try:
                         obj = entry.content_object
@@ -209,7 +242,8 @@ class SearchAPIView(APIView):
             for key in [
                 "clubs",
                 "teams",
-                "periods",
+                "seasons",
+                "competitions",
                 "matches",
                 "activities",
                 "users",

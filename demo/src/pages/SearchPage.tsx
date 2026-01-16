@@ -44,6 +44,8 @@ export default function SearchPage() {
     const labels: Record<string, string> = {
       clubs: 'Clubs',
       teams: 'Teams',
+      seasons: 'Seasons',
+      competitions: 'Competitions',
       periods: 'Seasons & Competitions',
       matches: 'Matches',
       activities: 'Activities',
@@ -58,6 +60,8 @@ export default function SearchPage() {
     const icons: Record<string, string> = {
       clubs: '🏟️',
       teams: '👕',
+      seasons: '🗓️',
+      competitions: '🏆',
       periods: '🗓️',
       matches: '🎯',
       activities: '📅',
@@ -71,6 +75,8 @@ export default function SearchPage() {
   const totalResults = groupedResults
     ? (groupedResults.clubs?.length || 0) +
       (groupedResults.teams?.length || 0) +
+      (groupedResults.seasons?.length || 0) +
+      (groupedResults.competitions?.length || 0) +
       (groupedResults.periods?.length || 0) +
       (groupedResults.matches?.length || 0) +
       (groupedResults.activities?.length || 0) +
