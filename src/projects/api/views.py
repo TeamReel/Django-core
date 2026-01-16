@@ -1,6 +1,7 @@
 """DRF views for Projects & Workspaces."""
 
 import logging
+import uuid
 
 from django.db.models import OuterRef, Q, Subquery
 from rest_framework import status, viewsets
@@ -530,6 +531,23 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectMembershipSerializer
     permission_classes = [IsAuthenticated]
 
+    def _get_project(self) -> Project:
+        """Resolve project by numeric id or by slug.
+
+        This ViewSet is mounted under /api/v1/projects/{project_pk}/..., where
+        {project_pk} may be an integer id or a slug depending on caller.
+        """
+        project_pk = (self.kwargs.get("project_pk") or "").strip()
+        if not project_pk:
+            raise ValidationError({"detail": "Project not found."})
+
+        try:
+            if project_pk.isdigit():
+                return Project.objects.get(pk=int(project_pk))
+            return Project.objects.get(slug=project_pk)
+        except Project.DoesNotExist as exc:
+            raise ValidationError({"detail": "Project not found."}) from exc
+
     def _check_can_manage_members(self, project: Project) -> None:
         user = self.request.user
 
@@ -639,8 +657,14 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
 
     def _get_project(self) -> Project:
         project_pk = self.kwargs.get("project_pk")
+        project_key = str(project_pk or "").strip()
+        if not project_key:
+            raise ValidationError({"detail": "Project not found."})
+
         try:
-            return Project.objects.get(pk=project_pk)
+            if project_key.isdigit():
+                return Project.objects.get(pk=int(project_key))
+            return Project.objects.get(slug=project_key)
         except Project.DoesNotExist as exc:
             raise ValidationError({"detail": "Project not found."}) from exc
 
@@ -778,21 +802,13 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         """Return memberships for the specific project."""
-        # We expect project_pk to be passed from the nested router or URL kwarg
-        project_pk = self.kwargs.get("project_pk")
-        if not project_pk:
-            return ProjectMembership.objects.none()
-
-        try:
-            project = Project.objects.get(pk=project_pk)
-        except Project.DoesNotExist:
-            return ProjectMembership.objects.none()
+        project = self._get_project()
 
         # Enforce read access (avoid leaking rosters by UUID guessing)
         self._check_can_view_members(project)
 
         qs = ProjectMembership.objects.filter(
-            project_id=project_pk,
+            project_id=project.id,
             deleted_at__isnull=True,
         ).select_related("user", "project", "project__organisation")
 
@@ -803,6 +819,11 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
             or ""
         ).strip()
         if period_param:
+            try:
+                uuid.UUID(str(period_param))
+            except (ValueError, TypeError) as exc:
+                raise ValidationError({"period": "Invalid UUID."}) from exc
+
             qs = qs.filter(period_id=period_param)
 
         # Provide organisation membership id (used for lineup/participations).
@@ -824,8 +845,7 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
 
     def perform_create(self, serializer):
         """Use service to add member."""
-        project_pk = self.kwargs.get("project_pk")
-        project = Project.objects.get(pk=project_pk)
+        project = self._get_project()
 
         self._check_can_manage_members(project)
 
@@ -946,8 +966,9 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
         - List of users with id, email, first_name, last_name, full_name
         """
         try:
-            project = Project.objects.select_related("organisation").get(pk=project_pk)
-        except Project.DoesNotExist:
+            project = self._get_project()
+            project = Project.objects.select_related("organisation").get(pk=project.id)
+        except ValidationError:
             return Response({"detail": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # This reveals user identities; require manage permission.
@@ -957,6 +978,11 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
         period_param = (
             request.query_params.get("period") or request.query_params.get("period_id") or ""
         ).strip()
+        if period_param:
+            try:
+                uuid.UUID(str(period_param))
+            except (ValueError, TypeError) as exc:
+                raise ValidationError({"period": "Invalid UUID."}) from exc
         existing_qs = ProjectMembership.objects.filter(project=project, deleted_at__isnull=True)
         if period_param:
             existing_qs = existing_qs.filter(period_id=period_param)
