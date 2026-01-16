@@ -758,9 +758,7 @@ export const MatchesList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                             {(() => {
                               const matchKey = (m as any).slug || m.id;
-                              const matchPath = (seasonTarget && compTarget)
-                                ? `${teamBasePath}/seasons/${seasonTarget}/competitions/${compTarget}/matches/${matchKey}`
-                                : `/matches/${matchKey}`;
+                              const matchPath = `/matches/${matchKey}`;
                               return (
                                 <a
                                   href={matchPath}

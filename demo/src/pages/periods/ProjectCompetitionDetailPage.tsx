@@ -1395,13 +1395,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   };
 
   const matchDetailPath = (matchId: string) => {
-    const seasonForLink = String(periodPathKey(season) || seasonKeyOrId || '').trim();
-    const competitionForLink = String(periodPathKey(competition) || competitionKeyOrId || '').trim();
     const matchForLink = String((matches || []).find((m: any) => String(m?.id) === String(matchId))?.slug || matchId).trim();
-    if (!seasonForLink || !competitionForLink) return `/matches/${matchForLink || matchId}`;
-    return isTeamRoute
-      ? `${seasonsBasePath}/${seasonForLink}/${competitionForLink}/${matchForLink || matchId}`
-      : `${seasonsBasePath}/${seasonForLink}/competitions/${competitionForLink}/matches/${matchForLink || matchId}`;
+    return `/matches/${matchForLink || matchId}`;
   };
 
   const renderMatchesTable = (rows: any[]) => {

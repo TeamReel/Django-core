@@ -1153,7 +1153,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       <tr key={match.id}>
                                         <td style={compactTextTdStyle}>
                                           <Link
-                                            to={`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}/matches/${(match as any).slug || match.id}`}
+                                            to={`/matches/${(match as any).slug || match.id}`}
                                             className="text-blue-600 hover:underline"
                                             style={{ textDecoration: 'none' }}
                                           >
@@ -1550,11 +1550,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   const compId = String(
                                     (match as any).period_id || match.period?.id || (match as any).period || ''
                                   ).trim();
-                                  const compKey = periodPathKey(match.period as any) || compId;
                                   const matchKey = (match as any).slug || match.id;
-                                  const matchPath = compId
-                                    ? `${seasonsBasePath}/${seasonPathKey}/competitions/${compKey}/matches/${matchKey}`
-                                    : `/matches/${matchKey}`;
+                                  const matchPath = `/matches/${matchKey}`;
                                   return (
                                 <Link
                                       to={matchPath}
