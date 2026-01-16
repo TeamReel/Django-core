@@ -175,6 +175,14 @@ export default function HierarchyMatchDetailPage() {
   const [addHomeMemberId, setAddHomeMemberId] = useState<string>('');
   const [addAwayMemberId, setAddAwayMemberId] = useState<string>('');
 
+  const [lineupBulkSubmitting, setLineupBulkSubmitting] = useState(false);
+  const [lineupEligibleSearchHome, setLineupEligibleSearchHome] = useState('');
+  const [lineupEligibleSearchAway, setLineupEligibleSearchAway] = useState('');
+  const [selectedEligibleLineupMemberIdsHome, setSelectedEligibleLineupMemberIdsHome] = useState<Set<string>>(new Set());
+  const [selectedEligibleLineupMemberIdsAway, setSelectedEligibleLineupMemberIdsAway] = useState<Set<string>>(new Set());
+  const [selectedLineupParticipationIdsHome, setSelectedLineupParticipationIdsHome] = useState<Set<string>>(new Set());
+  const [selectedLineupParticipationIdsAway, setSelectedLineupParticipationIdsAway] = useState<Set<string>>(new Set());
+
   const isTeamRoute = Boolean(clubId);
   const orgSlugOrId = String(orgId || '').trim();
   const projectSlugOrId = String(projectId || '').trim();
@@ -1088,6 +1096,69 @@ export default function HierarchyMatchDetailPage() {
     await refreshMatch();
   };
 
+  const bulkCreateParticipations = async (memberIds: string[], side: 'home' | 'away') => {
+    const ids = (memberIds || []).map((x) => String(x || '').trim()).filter(Boolean);
+    if (!ids.length) return;
+
+    // Prefer one bulk request for N adds.
+    if (ids.length > 1) {
+      const teamId = side === 'home' ? String(match?.project?.id || '') : String(match?.opponent_project?.id || '');
+      const teamName = side === 'home' ? homeTeamName : awayTeamName;
+
+      const res = await fetch(`${apiBaseUrl}/api/v1/participations/bulk/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          activity_id: String(match?.id),
+          member_ids: ids,
+          role: 'starter',
+          status: 'confirmed',
+          data: {
+            side,
+            team_id: teamId || undefined,
+            team_name: teamName,
+          },
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, 'Failed to add participants'));
+      }
+      await refreshMatch();
+      return;
+    }
+
+    await createParticipation(ids[0], side);
+  };
+
+  const bulkDeleteParticipations = async (participationIds: string[]) => {
+    const ids = (participationIds || []).map((x) => String(x || '').trim()).filter(Boolean);
+    if (!ids.length) return;
+
+    if (ids.length > 1) {
+      const res = await fetch(`${apiBaseUrl}/api/v1/participations/bulk-delete/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify({ participation_ids: ids }),
+      });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, 'Failed to remove participants'));
+      }
+      await refreshMatch();
+      return;
+    }
+
+    const p = (match?.participations || []).find((x) => String((x as any)?.id || '') === ids[0]);
+    if (p) await deleteParticipation(p);
+  };
+
   const renderLineupEditor = (side: 'home' | 'away') => {
     const isHome = side === 'home';
     const title = isHome ? homeTeamName : awayTeamName;
@@ -1099,6 +1170,21 @@ export default function HierarchyMatchDetailPage() {
     const currentAddId = isHome ? addHomeMemberId : addAwayMemberId;
     const setCurrentAddId = isHome ? setAddHomeMemberId : setAddAwayMemberId;
 
+    const eligibleSearch = isHome ? lineupEligibleSearchHome : lineupEligibleSearchAway;
+    const setEligibleSearch = isHome ? setLineupEligibleSearchHome : setLineupEligibleSearchAway;
+
+    const selectedEligibleIds = isHome ? selectedEligibleLineupMemberIdsHome : selectedEligibleLineupMemberIdsAway;
+    const setSelectedEligibleIds = isHome ? setSelectedEligibleLineupMemberIdsHome : setSelectedEligibleLineupMemberIdsAway;
+
+    const selectedLineupIds = isHome ? selectedLineupParticipationIdsHome : selectedLineupParticipationIdsAway;
+    const setSelectedLineupIds = isHome ? setSelectedLineupParticipationIdsHome : setSelectedLineupParticipationIdsAway;
+
+    const filteredAvailable = (() => {
+      const q = String(eligibleSearch || '').trim().toLowerCase();
+      if (!q) return available;
+      return available.filter((m) => displayMemberName(m).toLowerCase().includes(q));
+    })();
+
     return (
       <Card title={`Lineup: ${title}`}>
         {rosterError && <Alert variant="error">{rosterError}</Alert>}
@@ -1109,115 +1195,332 @@ export default function HierarchyMatchDetailPage() {
             or the organisation members endpoint is not accessible for this user.
           </Alert>
         )}
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
-          <label className="text-sm" style={{ color: 'var(--app-text-secondary)' }}>
-            Add player
-          </label>
-          <select
-            value={currentAddId}
-            onChange={(e) => setCurrentAddId(e.target.value)}
-            disabled={rosterLoading || available.length === 0}
-            style={{
-              minWidth: '240px',
-              padding: '8px',
-              borderRadius: '6px',
-              border: '1px solid var(--app-border)',
-              background: 'var(--app-surface)',
-              color: 'var(--app-text)',
-            }}
-          >
-            <option value="">{rosterLoading ? 'Loading roster…' : available.length ? 'Select player…' : 'No players available'}</option>
-            {available.map((m) => (
-              <option key={String(m.id)} value={String(m.id)}>
-                {displayMemberName(m)}
-              </option>
-            ))}
-          </select>
-          <Button
-            variant="secondary"
-            disabled={!currentAddId}
-            onClick={async () => {
-              try {
-                await createParticipation(currentAddId, side);
-                setCurrentAddId('');
-              } catch (e) {
-                alert(e instanceof Error ? e.message : 'Failed to add player');
-              }
-            }}
-          >
-            Add to lineup
-          </Button>
+        <div style={{ display: 'grid', gap: '14px' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <label className="text-sm" style={{ color: 'var(--app-text-secondary)' }}>
+              Add player (single)
+            </label>
+            <select
+              value={currentAddId}
+              onChange={(e) => setCurrentAddId(e.target.value)}
+              disabled={rosterLoading || available.length === 0 || lineupBulkSubmitting}
+              style={{
+                minWidth: '240px',
+                padding: '8px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                background: 'var(--app-surface)',
+                color: 'var(--app-text)',
+              }}
+            >
+              <option value="">{rosterLoading ? 'Loading roster…' : available.length ? 'Select player…' : 'No players available'}</option>
+              {available.map((m) => (
+                <option key={String(m.id)} value={String(m.id)}>
+                  {displayMemberName(m)}
+                </option>
+              ))}
+            </select>
+            <Button
+              variant="secondary"
+              disabled={!currentAddId || lineupBulkSubmitting}
+              onClick={async () => {
+                try {
+                  await createParticipation(currentAddId, side);
+                  setCurrentAddId('');
+                } catch (e) {
+                  alert(e instanceof Error ? e.message : 'Failed to add player');
+                }
+              }}
+            >
+              Add to lineup
+            </Button>
+          </div>
+
+          <div style={{ display: 'grid', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'grid', gap: 2 }}>
+                <div style={{ fontWeight: 600 }}>Not in lineup</div>
+                <div style={{ fontSize: 13, color: 'var(--app-muted-text)' }}>Select team members and assign them to this match lineup.</div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    const allIds = filteredAvailable.map((m) => String(m.id)).filter(Boolean);
+                    const allSelected = allIds.length > 0 && allIds.every((id) => selectedEligibleIds.has(id));
+                    setSelectedEligibleIds(allSelected ? new Set() : new Set(allIds));
+                  }}
+                  disabled={lineupBulkSubmitting || filteredAvailable.length === 0}
+                >
+                  {(() => {
+                    const allIds = filteredAvailable.map((m) => String(m.id)).filter(Boolean);
+                    const allSelected = allIds.length > 0 && allIds.every((id) => selectedEligibleIds.has(id));
+                    return allSelected ? 'Unselect all' : 'Select all';
+                  })()}
+                </Button>
+                <button
+                  type="button"
+                  className="app-action-button"
+                  disabled={lineupBulkSubmitting || selectedEligibleIds.size === 0}
+                  onClick={async () => {
+                    const ids = Array.from(selectedEligibleIds.values()).filter(Boolean);
+                    if (!ids.length) return;
+                    try {
+                      setLineupBulkSubmitting(true);
+                      await bulkCreateParticipations(ids, side);
+                      setSelectedEligibleIds(new Set());
+                      setEligibleSearch('');
+                    } catch (e) {
+                      alert(e instanceof Error ? e.message : 'Failed to add players');
+                    } finally {
+                      setLineupBulkSubmitting(false);
+                    }
+                  }}
+                  style={{
+                    padding: '8px 14px',
+                    fontSize: '14px',
+                    minWidth: '160px',
+                    fontWeight: 500,
+                    background: '#16a34a',
+                    color: 'white',
+                    borderRadius: '6px',
+                  }}
+                >
+                  Assign ({selectedEligibleIds.size})
+                </button>
+              </div>
+            </div>
+
+            <input
+              value={eligibleSearch}
+              onChange={(e) => setEligibleSearch(e.target.value)}
+              placeholder="Search"
+              disabled={lineupBulkSubmitting}
+              style={{
+                width: '280px',
+                padding: '8px',
+                borderRadius: '6px',
+                border: '1px solid var(--app-border)',
+                background: 'var(--app-surface)',
+                color: 'var(--app-text)',
+              }}
+            />
+
+            {filteredAvailable.length === 0 ? (
+              <Alert variant="info">Everyone eligible is already in the lineup.</Alert>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <thead>
+                    <tr>
+                      <th style={{ width: '44px' }}></th>
+                      <th>Name</th>
+                      <th style={{ width: '120px' }} className="text-right"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAvailable.map((m) => {
+                      const memberId = String(m.id || '').trim();
+                      const checked = Boolean(memberId && selectedEligibleIds.has(memberId));
+                      return (
+                        <tr key={memberId}>
+                          <td>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              disabled={!memberId || lineupBulkSubmitting}
+                              onChange={() => {
+                                if (!memberId) return;
+                                setSelectedEligibleIds((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(memberId)) next.delete(memberId);
+                                  else next.add(memberId);
+                                  return next;
+                                });
+                              }}
+                            />
+                          </td>
+                          <td>
+                            <div className="font-medium">{displayMemberName(m)}</div>
+                          </td>
+                          <td className="text-right">
+                            <Button
+                              variant="secondary"
+                              disabled={!memberId || lineupBulkSubmitting}
+                              onClick={async () => {
+                                if (!memberId) return;
+                                try {
+                                  setLineupBulkSubmitting(true);
+                                  await bulkCreateParticipations([memberId], side);
+                                } catch (e) {
+                                  alert(e instanceof Error ? e.message : 'Failed to add player');
+                                } finally {
+                                  setLineupBulkSubmitting(false);
+                                }
+                              }}
+                            >
+                              Assign
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </Table>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <Table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th style={{ width: '140px' }}>Role</th>
-                <th style={{ width: '90px' }} className="text-right"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {selected.length === 0 ? (
+        <div style={{ marginTop: '16px', display: 'grid', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'grid', gap: 2 }}>
+              <div style={{ fontWeight: 600 }}>In lineup</div>
+              <div style={{ fontSize: 13, color: 'var(--app-muted-text)' }}>Select lineup entries and unassign them.</div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  const allIds = selected.map((p) => String(p.id || '').trim()).filter(Boolean);
+                  const allSelected = allIds.length > 0 && allIds.every((id) => selectedLineupIds.has(id));
+                  setSelectedLineupIds(allSelected ? new Set() : new Set(allIds));
+                }}
+                disabled={lineupBulkSubmitting || selected.length === 0}
+              >
+                {(() => {
+                  const allIds = selected.map((p) => String(p.id || '').trim()).filter(Boolean);
+                  const allSelected = allIds.length > 0 && allIds.every((id) => selectedLineupIds.has(id));
+                  return allSelected ? 'Unselect all' : 'Select all';
+                })()}
+              </Button>
+              <button
+                type="button"
+                className="app-action-button"
+                disabled={lineupBulkSubmitting || selectedLineupIds.size === 0}
+                onClick={async () => {
+                  const ids = Array.from(selectedLineupIds.values()).filter(Boolean);
+                  if (!ids.length) return;
+                  try {
+                    setLineupBulkSubmitting(true);
+                    await bulkDeleteParticipations(ids);
+                    setSelectedLineupIds(new Set());
+                  } catch (e) {
+                    alert(e instanceof Error ? e.message : 'Failed to remove players');
+                  } finally {
+                    setLineupBulkSubmitting(false);
+                  }
+                }}
+                style={{
+                  padding: '8px 14px',
+                  fontSize: '14px',
+                  minWidth: '160px',
+                  fontWeight: 500,
+                  background: '#dc2626',
+                  color: 'white',
+                  borderRadius: '6px',
+                }}
+              >
+                Unassign ({selectedLineupIds.size})
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <Table>
+              <thead>
                 <tr>
-                  <td colSpan={3} className="text-gray-500 text-center py-4">
-                    No lineup selected
-                  </td>
+                  <th style={{ width: '44px' }}></th>
+                  <th>Name</th>
+                  <th style={{ width: '140px' }}>Role</th>
+                  <th style={{ width: '120px' }} className="text-right"></th>
                 </tr>
-              ) : (
-                selected.map((p) => (
-                  <tr key={String(p.id)}>
-                    <td>
-                      <div className="font-medium">{p.member?.user_name || 'Unknown Player'}</div>
-                      {p.data?.jersey_number ? (
-                        <div className="text-xs text-gray-500">#{p.data.jersey_number}</div>
-                      ) : null}
-                    </td>
-                    <td>
-                      <select
-                        value={String(p.role || 'starter')}
-                        onChange={async (e) => {
-                          const nextRole = e.target.value;
-                          try {
-                            await updateParticipation(p, { role: nextRole });
-                          } catch (err) {
-                            alert(err instanceof Error ? err.message : 'Failed to update role');
-                          }
-                        }}
-                        style={{
-                          width: '100%',
-                          padding: '8px',
-                          borderRadius: '6px',
-                          border: '1px solid var(--app-border)',
-                          background: 'var(--app-surface)',
-                          color: 'var(--app-text)',
-                        }}
-                      >
-                        <option value="starter">Starter</option>
-                        <option value="substitute">Substitute</option>
-                      </select>
-                    </td>
-                    <td className="text-right">
-                      <Button
-                        variant="secondary"
-                        onClick={async () => {
-                          if (!window.confirm('Remove this player from the lineup?')) return;
-                          try {
-                            await deleteParticipation(p);
-                          } catch (err) {
-                            alert(err instanceof Error ? err.message : 'Failed to remove player');
-                          }
-                        }}
-                      >
-                        Remove
-                      </Button>
+              </thead>
+              <tbody>
+                {selected.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="text-gray-500 text-center py-4">
+                      No lineup selected
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
+                ) : (
+                  selected.map((p) => {
+                    const pid = String(p.id || '').trim();
+                    const checked = Boolean(pid && selectedLineupIds.has(pid));
+                    return (
+                      <tr key={pid}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={!pid || lineupBulkSubmitting}
+                            onChange={() => {
+                              if (!pid) return;
+                              setSelectedLineupIds((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(pid)) next.delete(pid);
+                                else next.add(pid);
+                                return next;
+                              });
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <div className="font-medium">{p.member?.user_name || 'Unknown Player'}</div>
+                          {p.data?.jersey_number ? <div className="text-xs text-gray-500">#{p.data.jersey_number}</div> : null}
+                        </td>
+                        <td>
+                          <select
+                            value={String(p.role || 'starter')}
+                            disabled={lineupBulkSubmitting}
+                            onChange={async (e) => {
+                              const nextRole = e.target.value;
+                              try {
+                                await updateParticipation(p, { role: nextRole });
+                              } catch (err) {
+                                alert(err instanceof Error ? err.message : 'Failed to update role');
+                              }
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              borderRadius: '6px',
+                              border: '1px solid var(--app-border)',
+                              background: 'var(--app-surface)',
+                              color: 'var(--app-text)',
+                            }}
+                          >
+                            <option value="starter">Starter</option>
+                            <option value="substitute">Substitute</option>
+                          </select>
+                        </td>
+                        <td className="text-right">
+                          <Button
+                            variant="secondary"
+                            disabled={lineupBulkSubmitting}
+                            onClick={async () => {
+                              try {
+                                setLineupBulkSubmitting(true);
+                                await bulkDeleteParticipations([pid]);
+                              } catch (err) {
+                                alert(err instanceof Error ? err.message : 'Failed to remove player');
+                              } finally {
+                                setLineupBulkSubmitting(false);
+                              }
+                            }}
+                          >
+                            Unassign
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </Table>
+          </div>
         </div>
       </Card>
     );

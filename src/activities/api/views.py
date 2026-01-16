@@ -717,6 +717,201 @@ class ParticipationViewSet(viewsets.ModelViewSet):
 
         return super().create(request, *args, **kwargs)
 
+    def _check_can_edit_match_participations(self, request, activity: Activity) -> None:
+        """Centralize match lineup permission checks for bulk endpoints."""
+
+        if _user_is_system_admin(request.user):
+            return
+
+        if getattr(activity, "activity_type", None) != "match":
+            # For non-match activities, fall back to standard ParticipationPermission behavior.
+            return
+
+        from permissions.evaluator import check_permission
+
+        # Some roles may be granted lineup rights via B08 (project.manage_participations)
+        # instead of match.* permissions.
+        try:
+            from permissions.utils import has_permission as b08_has_permission
+
+            if b08_has_permission(request.user, "project.manage_participations", activity.project):
+                return
+        except ImportError:
+            pass
+
+        # Direct team permission
+        if check_permission(
+            request.user.id,
+            "match.edit_own_team",
+            resource_type="project",
+            resource_id=activity.project_id,
+        ):
+            return
+
+        # Club admin acting on child team
+        parent_project_id = getattr(activity.project, "parent_project_id", None)
+        if parent_project_id and check_permission(
+            request.user.id,
+            "match.edit_own_team",
+            resource_type="project",
+            resource_id=parent_project_id,
+        ):
+            return
+
+        raise PermissionDenied("You do not have permission to edit this match")
+
+    @action(detail=False, methods=["post"], url_path="bulk")
+    def bulk(self, request):
+        """Bulk create participations (primarily for match lineups).
+
+        Payload options:
+        - {"activity_id": "...", "member_ids": ["..."], "role": "starter", "status": "confirmed", "data": {...}}
+        - {"participations": [{"member_id": "...", "activity_id": "...", ...}, ...]}
+
+        Returns:
+        - {"created": N, "skipped": N, "errors": [...]}
+        """
+
+        payload = request.data
+        if not isinstance(payload, dict):
+            return Response({"detail": "Invalid payload."}, status=status.HTTP_400_BAD_REQUEST)
+
+        items: list[dict] | None = None
+
+        if isinstance(payload.get("participations"), list):
+            items = payload.get("participations")
+        elif payload.get("activity_id") and isinstance(payload.get("member_ids"), list):
+            activity_id = payload.get("activity_id")
+            role = payload.get("role", "starter")
+            status_value = payload.get("status", "confirmed")
+            data = payload.get("data")
+            notes = payload.get("notes")
+            items = [
+                {
+                    "member_id": mid,
+                    "activity_id": activity_id,
+                    "role": role,
+                    "status": status_value,
+                    "data": data,
+                    "notes": notes,
+                }
+                for mid in payload.get("member_ids")
+            ]
+
+        if not isinstance(items, list):
+            return Response(
+                {"detail": "Expected 'participations' list or 'activity_id' + 'member_ids'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        max_batch = 200
+        if len(items) > max_batch:
+            return Response(
+                {"detail": f"Too many participations in one request (max {max_batch})."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Determine the activity once (enforces match permissions once).
+        activity_id = None
+        for it in items:
+            if isinstance(it, dict) and it.get("activity_id"):
+                activity_id = it.get("activity_id")
+                break
+
+        if not activity_id:
+            return Response({"detail": "Missing activity_id."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            activity = Activity.objects.select_related("project").get(id=activity_id)
+        except Activity.DoesNotExist as e:
+            raise PermissionDenied("Invalid activity") from e
+
+        self._check_can_edit_match_participations(request, activity)
+
+        created_count = 0
+        skipped_count = 0
+        errors: list[dict] = []
+
+        for raw_item in items:
+            if not isinstance(raw_item, dict):
+                errors.append({"detail": "Invalid participation item"})
+                continue
+
+            serializer = self.get_serializer(data=raw_item)
+            try:
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                created_count += 1
+            except Exception as e:
+                msg = str(e)
+                # Treat common duplicate-ish failures as skips (idempotent bulk UI)
+                if "unique" in msg.lower() or "already" in msg.lower() or "exists" in msg.lower():
+                    skipped_count += 1
+                else:
+                    errors.append(
+                        {
+                            "member_id": raw_item.get("member_id"),
+                            "detail": msg,
+                        }
+                    )
+
+        return Response(
+            {"created": created_count, "skipped": skipped_count, "errors": errors},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["post"], url_path="bulk-delete")
+    def bulk_delete(self, request):
+        """Bulk delete participations by ID.
+
+        Payload:
+        - {"participation_ids": ["uuid", ...]}
+        """
+
+        payload = request.data
+        if not isinstance(payload, dict) or not isinstance(payload.get("participation_ids"), list):
+            return Response(
+                {"detail": "Expected 'participation_ids' list."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        participation_ids = payload.get("participation_ids")
+        max_batch = 200
+        if len(participation_ids) > max_batch:
+            return Response(
+                {"detail": f"Too many participations in one request (max {max_batch})."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        qs = Participation.objects.select_related("activity__project").filter(
+            id__in=participation_ids
+        )
+        first = qs.first()
+        if not first:
+            return Response({"removed": 0, "errors": []}, status=status.HTTP_200_OK)
+
+        # Ensure all ids belong to the same activity for safety.
+        activity_id = first.activity_id
+        if qs.exclude(activity_id=activity_id).exists():
+            return Response(
+                {"detail": "All participation_ids must belong to the same activity."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if first.activity:
+            self._check_can_edit_match_participations(request, first.activity)
+
+        removed = 0
+        errors: list[dict] = []
+        for p in qs:
+            try:
+                p.delete()
+                removed += 1
+            except Exception as e:
+                errors.append({"participation_id": str(p.id), "detail": str(e)})
+
+        return Response({"removed": removed, "errors": errors}, status=status.HTTP_200_OK)
+
     def get_queryset(self):
         """Apply query param filters"""
         queryset = super().get_queryset()
