@@ -1215,6 +1215,8 @@ export default function UsersPage() {
         onClose={() => setIsModalOpen(false)}
         user={editingUser}
         onSave={handleSaveUser}
+                organisationSlug={String(orgIdParam || context.organisation?.slug || '')}
+                scopeProjectKey={String(selectedTeamKey || selectedClubKey || '')}
       />
 
       <InviteMemberModal
