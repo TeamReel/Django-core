@@ -198,8 +198,19 @@ export default function LinkUserModal({
     const pid = String(projectId || '').trim();
     if (!pid) return;
 
+    const resolveAccessRole = (teamRole: string): 'viewer' | 'editor' | 'admin' => {
+      const v = String(teamRole || '').trim().toLowerCase();
+      if (v === 'admin' || v === 'owner') return 'admin';
+      if (v === 'editor') return 'editor';
+      // Sports-ish roles (player/coach/manager) map to viewer access by default.
+      return 'viewer';
+    };
+
     // Best-effort idempotency.
     if (existingProjectIds.has(pid)) return;
+
+    const accessRole = resolveAccessRole(projectRole);
+    const teamRole = String(projectRole || '').trim();
 
     const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/`, {
       method: 'POST',
@@ -210,7 +221,8 @@ export default function LinkUserModal({
       credentials: 'include',
       body: JSON.stringify({
         user_id: Number(user.id),
-        role: projectRole,
+        role: accessRole,
+        metadata: teamRole ? { team_role: teamRole } : undefined,
       }),
     });
 
