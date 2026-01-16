@@ -726,12 +726,12 @@ export const MatchesList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                              {season ? (
                                 <a
-                            href={`${teamBasePath}/seasons/${seasonTarget}`}
+                            href={`${teamBasePath}/${seasonTarget}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     if(seasonTarget) {
-                                navigate(`${teamBasePath}/seasons/${seasonTarget}`);
+                                navigate(`${teamBasePath}/${seasonTarget}`);
                                     }
                                 }}
                                 >
@@ -742,12 +742,12 @@ export const MatchesList: React.FC = () => {
                             <td style={compactTextTdStyle}>
                               {competition ? (
                                 <a
-                            href={`${teamBasePath}/seasons/${seasonTarget}/competitions/${compTarget}`}
+                            href={`${teamBasePath}/${seasonTarget}/${compTarget}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
                                   if(seasonTarget && compTarget) {
-                              navigate(`${teamBasePath}/seasons/${seasonTarget}/competitions/${compTarget}`);
+                              navigate(`${teamBasePath}/${seasonTarget}/${compTarget}`);
                                   }
                                 }}
                                 >

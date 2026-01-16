@@ -182,13 +182,13 @@ export default function LegacyMatchRedirectPage() {
           // ignore
         }
 
-        const seasonsBasePath = clubSlugOrId
-          ? `/${orgKeyOrId}/${clubSlugOrId}/${teamSlugOrId}/seasons`
+        const teamBasePath = clubSlugOrId
+          ? `/${orgKeyOrId}/${clubSlugOrId}/${teamSlugOrId}`
           : `/${orgKeyOrId}/projects/${teamSlugOrId}/seasons`;
 
         const target = clubSlugOrId
-          ? `${seasonsBasePath}/${seasonKeyOrId}/${competitionKeyOrId}/${matchKeyOrId}`
-          : `${seasonsBasePath}/${seasonKeyOrId}/competitions/${competitionKeyOrId}/matches/${matchKeyOrId}`;
+          ? `${teamBasePath}/${seasonKeyOrId}/${competitionKeyOrId}/${matchKeyOrId}`
+          : `${teamBasePath}/${seasonKeyOrId}/competitions/${competitionKeyOrId}/matches/${matchKeyOrId}`;
 
         // If somehow already at target, avoid loops.
         if (location.pathname === target) {

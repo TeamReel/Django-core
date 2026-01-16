@@ -233,11 +233,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const userCanDeleteProject = canDeleteProject(permissionContext);
 
   const projectDetailPath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}`
+    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
 
   const seasonsBasePath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
+    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
 
   const activeTab = useMemo(() => {
@@ -269,12 +269,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+      { label: org?.name || 'Federation', onClick: () => navigate(`/${orgSlugOrId}`) },
       ...(isTeamRoute
         ? [
             {
               label: club?.name || 'Club',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+              onClick: () => navigate(`/${orgSlugOrId}/${clubSlugOrId}`),
             },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
@@ -840,7 +840,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   <tr key={competition.id}>
                                     <td style={compactTextTdStyle}>
                                       <Link
-                                        to={`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`}
+                                        to={
+                                          isTeamRoute
+                                            ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
+                                            : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
+                                        }
                                         className="text-blue-600 hover:underline"
                                         style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
                                       >
@@ -1063,7 +1067,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               }}
                             >
                               <Link
-                                to={`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`}
+                                to={
+                                  isTeamRoute
+                                    ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
+                                    : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
+                                }
                                 className="text-blue-600 hover:underline"
                                 style={{
                                   textDecoration: 'none',
@@ -1423,7 +1431,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             <tr key={competition.id}>
                               <td style={compactTextTdStyle}>
                                 <Link
-                                  to={`${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`}
+                                  to={
+                                    isTeamRoute
+                                      ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
+                                      : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
+                                  }
                                   className="text-blue-600 hover:underline"
                                   style={{ textDecoration: 'none' }}
                                 >
@@ -1566,7 +1578,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {match.period?.id ? (
                                   <Link
-                                    to={`${seasonsBasePath}/${seasonPathKey}/competitions/${String(match.period?.id)}`}
+                                    to={
+                                      isTeamRoute
+                                        ? `${seasonsBasePath}/${seasonPathKey}/${String(match.period?.id)}`
+                                        : `${seasonsBasePath}/${seasonPathKey}/competitions/${String(match.period?.id)}`
+                                    }
                                     className="text-blue-600 hover:underline"
                                     style={{ textDecoration: 'none' }}
                                   >

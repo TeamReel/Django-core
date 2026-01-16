@@ -1849,15 +1849,15 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   })();
 
   const handleTeamSwitch = (option: BreadcrumbSwitcherOption) => {
-    navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${option.slug || option.id}`);
+    navigate(`/${orgSlugOrId}/${clubSlugOrId}/${option.slug || option.id}`);
   };
 
   const teamOrProjectDetailPath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}`
+    ? `/${orgSlugOrId}/${clubSlugOrId}/${project.slug || project.id}`
     : `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}`;
 
   const seasonsPath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${project.slug || project.id}/seasons`
+    ? `/${orgSlugOrId}/${clubSlugOrId}/${project.slug || project.id}?tab=seasons`
     : `/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/seasons`;
 
   // Tab order: hierarchy first (teams → seasons → competitions → matches), then users/people, then audit.
@@ -2450,9 +2450,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                       <tr key={comp.id}>
                                         <td style={compactTextTdStyle}>
                                           <Link
-                                            to={`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${
-                                              project.slug || project.id
-                                            }/seasons/${periodPathKey(season) || season.slug || season.id}/competitions/${comp.slug || comp.id}`}
+                                            to={`/${orgSlugOrId}/${clubSlugOrId}/${project.slug || project.id}/${periodPathKey(season) || season.slug || season.id}/${comp.slug || comp.id}`}
                                             className="font-medium text-blue-600 hover:underline"
                                           >
                                             {comp.name}
@@ -2604,9 +2602,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             >
                               <h4 style={{ margin: 0, flex: 1, fontSize: '16px', fontWeight: 600 }}>
                                 <Link
-                                  to={`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
-                                    team.slug || team.id
-                                  }`}
+                                  to={`/${orgSlugOrId}/${project.slug || project.id}/${team.slug || team.id}`}
                                   className="text-blue-600 hover:underline"
                                 >
                                   {team.name}
@@ -2643,9 +2639,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                       <tr key={season.id}>
                                         <td style={compactTextTdStyle}>
                                           <Link
-                                            to={`/organisations/${orgSlugOrId}/projects/${project.slug || project.id}/teams/${
-                                              team.slug || team.id
-                                            }/seasons/${periodPathKey(season) || season.slug || season.id}`}
+                                            to={`/${orgSlugOrId}/${project.slug || project.id}/${team.slug || team.id}/${periodPathKey(season) || season.slug || season.id}`}
                                             className="font-medium text-blue-600 hover:underline"
                                           >
                                             {season.name}
@@ -3337,7 +3331,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 : computedMatchesCount;
 
                               const openHref = currentClubSlugOrId && teamSlugOrId
-                                ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+                                ? `/${currentOrgSlug}/${currentClubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
                                 : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`;
 
                               return (
@@ -3346,7 +3340,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                     <td style={compactTextTdStyle}>
                                       {teamSlugOrId ? (
                                         <Link
-                                          to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                          to={currentClubSlugOrId ? `/${currentOrgSlug}/${currentClubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
                                           className="text-blue-600 hover:underline"
                                         >
                                           {team?.name || teamId || '—'}
@@ -3662,7 +3656,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               const seasonSlugOrId = season?.slug || season?.id || seasonId;
 
                               const openHref = currentClubSlugOrId && teamSlugOrId && seasonSlugOrId
-                                ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${comp.slug || comp.id}`
+                                ? `/${currentOrgSlug}/${currentClubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${comp.slug || comp.id}`
                                 : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${comp.slug || comp.id}`;
 
                               const matchesCount = matchCountByCompetitionId[String(comp.id)] || 0;
@@ -3676,7 +3670,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                     <td style={compactTextTdStyle}>
                                       {teamSlugOrId ? (
                                         <Link
-                                          to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                          to={currentClubSlugOrId ? `/${currentOrgSlug}/${currentClubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
                                           className="text-blue-600 hover:underline"
                                         >
                                           {team?.name || teamId || '—'}
@@ -3687,7 +3681,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                   <td style={compactTextTdStyle}>
                                     {seasonSlugOrId && teamSlugOrId ? (
                                       <Link
-                                        to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
+                                          to={currentClubSlugOrId ? `/${currentOrgSlug}/${currentClubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
                                         className="text-blue-600 hover:underline"
                                       >
                                         {season?.name || comp.parent_period?.name || seasonId || '—'}
@@ -4036,7 +4030,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                   <td style={compactTextTdStyle}>
                                     {teamSlugOrId ? (
                                       <Link
-                                        to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
+                                        to={currentClubSlugOrId ? `/${currentOrgSlug}/${currentClubSlugOrId}/${teamSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}`}
                                         className="text-blue-600 hover:underline"
                                       >
                                         {team?.name || teamId || '-'}
@@ -4047,7 +4041,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 <td style={compactTextTdStyle}>
                                   {season && seasonSlugOrId && teamSlugOrId ? (
                                     <Link
-                                      to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
+                                      to={currentClubSlugOrId ? `/${currentOrgSlug}/${currentClubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
                                       className="text-blue-600 hover:underline"
                                     >
                                       {season.name}
@@ -4057,7 +4051,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 <td style={compactTextTdStyle}>
                                   {competition && seasonSlugOrId && teamSlugOrId ? (
                                     <Link
-                                      to={currentClubSlugOrId ? `/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}`}
+                                      to={currentClubSlugOrId ? `/${currentOrgSlug}/${currentClubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${competition.slug || periodId}` : `/organisations/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}`}
                                       className="text-blue-600 hover:underline"
                                     >
                                       {competition.name || m.period?.name}

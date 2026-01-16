@@ -176,21 +176,19 @@ export default function HierarchyMatchDetailPage() {
   const effectiveMatchId = String(matchId || '').trim();
 
   const seasonsBasePath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
-    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
+    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
+    : `/${orgSlugOrId}/projects/${projectSlugOrId}`;
 
   const competitionBasePath = useMemo(() => {
     const seasonKey = String(seasonKeyOrId || '').trim();
     const compKey = String(effectiveCompetitionId || '').trim();
     if (!seasonKey || !compKey) return '';
-    return isTeamRoute
-      ? `${seasonsBasePath}/${seasonKey}/${compKey}`
-      : `${seasonsBasePath}/${seasonKey}/competitions/${compKey}`;
+    return `${seasonsBasePath}/${seasonKey}/${compKey}`;
   }, [effectiveCompetitionId, isTeamRoute, seasonKeyOrId, seasonsBasePath]);
 
   const matchBasePath = useMemo(() => {
     if (!competitionBasePath || !effectiveMatchId) return '';
-    return `${competitionBasePath}/matches/${effectiveMatchId}`;
+    return `${competitionBasePath}/${effectiveMatchId}`;
   }, [competitionBasePath, effectiveMatchId]);
 
   const activeTab = useMemo(() => {
@@ -324,9 +322,7 @@ export default function HierarchyMatchDetailPage() {
         ) {
           const suffix = location.search ? location.search : '';
           navigate(
-            isTeamRoute
-              ? `${seasonsBasePath}/${desiredSeasonKey}/${desiredCompetitionKey}/matches/${effectiveMatchId}${suffix}`
-              : `${seasonsBasePath}/${desiredSeasonKey}/competitions/${desiredCompetitionKey}/matches/${effectiveMatchId}${suffix}`,
+            `${seasonsBasePath}/${desiredSeasonKey}/${desiredCompetitionKey}/${effectiveMatchId}${suffix}`,
             { replace: true }
           );
           return;
@@ -342,9 +338,7 @@ export default function HierarchyMatchDetailPage() {
           const seasonKey = periodPathKey(seasonJson) || String(seasonKeyOrId);
           const compKey = periodPathKey(competitionJson) || String(effectiveCompetitionId);
           navigate(
-            isTeamRoute
-              ? `${seasonsBasePath}/${seasonKey}/${compKey}/matches/${desiredMatchKey}${suffix}`
-              : `${seasonsBasePath}/${seasonKey}/competitions/${compKey}/matches/${desiredMatchKey}${suffix}`,
+            `${seasonsBasePath}/${seasonKey}/${compKey}/${desiredMatchKey}${suffix}`,
             { replace: true }
           );
           return;
@@ -639,17 +633,17 @@ export default function HierarchyMatchDetailPage() {
 
   const breadcrumbs = useMemo(() => {
     const projectDetailPath = isTeamRoute
-      ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}`
-      : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
+      ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
+      : `/${orgSlugOrId}/projects/${projectSlugOrId}`;
 
     return [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+      { label: org?.name || 'Federation', onClick: () => navigate(`/${orgSlugOrId}`) },
       ...(isTeamRoute
         ? [
             {
               label: club?.name || 'Club',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+              onClick: () => navigate(`/${orgSlugOrId}/${clubSlugOrId}`),
             },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
@@ -660,7 +654,7 @@ export default function HierarchyMatchDetailPage() {
       },
       {
         label: competition?.name || 'Competition',
-        onClick: () => navigate(`${seasonsBasePath}/${seasonKeyOrId}/competitions/${effectiveCompetitionId}`),
+        onClick: () => navigate(`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}`),
       },
       {
         label: (
@@ -696,6 +690,7 @@ export default function HierarchyMatchDetailPage() {
     season?.name,
     seasonKeyOrId,
     seasonsBasePath,
+    isTeamRoute,
   ]);
 
   const saveMatchEdits = async (matchToEdit: any, patch: any) => {
@@ -1408,14 +1403,14 @@ export default function HierarchyMatchDetailPage() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}/competitions/${effectiveCompetitionId}`)}
+                    onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}`)}
                   >
                     Competition
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}/competitions/${effectiveCompetitionId}?tab=matches`)}
+                    onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}?tab=matches`)}
                   >
                     Matches
                   </Button>
@@ -1456,7 +1451,9 @@ export default function HierarchyMatchDetailPage() {
                         <td>
                           {competition ? (
                             <Link
-                              to={`${seasonsBasePath}/${seasonKeyOrId}/competitions/${effectiveCompetitionId}`}
+                              to={
+                                `${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}`
+                              }
                               className="text-blue-600 hover:underline"
                               style={{ textDecoration: 'none' }}
                             >

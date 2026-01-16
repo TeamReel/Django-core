@@ -839,12 +839,12 @@ export const CompetitionsList: React.FC = () => {
                         <td style={compactTextTdStyle}>
                             {seasonId ? (
                                 <a
-                                href={`${teamBasePath}/seasons/${seasonSlugOrId}`}
+                            href={`${teamBasePath}/${seasonSlugOrId}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     navigate(
-                                        `${teamBasePath}/seasons/${seasonSlugOrId}`
+                                `${teamBasePath}/${seasonSlugOrId}`
                                     );
                                 }}
                                 >
@@ -856,12 +856,12 @@ export const CompetitionsList: React.FC = () => {
                         </td>
                         <td style={compactTextTdStyle}>
                             <a
-                            href={`${teamBasePath}/seasons/${seasonSlugOrId}/competitions/${comp.slug || comp.id}`}
+                          href={`${teamBasePath}/${seasonSlugOrId}/${comp.slug || comp.id}`}
                             className="text-blue-600 hover:underline"
                             onClick={(e) => {
                                 e.preventDefault();
                                 navigate(
-                                `${teamBasePath}/seasons/${seasonSlugOrId}/competitions/${comp.slug || comp.id}`,
+                            `${teamBasePath}/${seasonSlugOrId}/${comp.slug || comp.id}`,
                                 );
                             }}
                             >

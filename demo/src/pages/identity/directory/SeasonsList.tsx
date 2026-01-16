@@ -579,7 +579,7 @@ export const SeasonsList: React.FC = () => {
                         : null;
 
                     const seasonDetailPath = (orgSlugOrId && clubSlugOrId && teamSlugOrId && seasonSlugOrId)
-                      ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+                      ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
                       : (orgSlugOrId && teamSlugOrId && seasonSlugOrId)
                         ? `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
                         : null;

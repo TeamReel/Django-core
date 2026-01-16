@@ -155,6 +155,19 @@ export default function CompetitionsPage() {
   const selectedTeam = selectedTeamId ? teams.find((t) => String(t.id) === String(selectedTeamId)) : null;
   const teamSlugOrId = (selectedTeam as any)?.slug || (selectedTeam as any)?.id || selectedTeamId;
 
+  const selectedClub = selectedClubId ? clubs.find((c) => String(c.id) === String(selectedClubId)) : null;
+  const inferredClubId =
+    String(selectedClub?.id || '').trim() ||
+    String((selectedTeam as any)?.parent_id || (selectedTeam as any)?.parent || '').trim();
+  const inferredClub = inferredClubId ? clubs.find((c) => String(c.id) === String(inferredClubId)) : null;
+  const clubSlugOrId =
+    (selectedClub as any)?.slug ||
+    (selectedClub as any)?.id ||
+    (inferredClub as any)?.slug ||
+    (inferredClub as any)?.id ||
+    inferredClubId ||
+    '';
+
   const breadcrumbs = [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
     { label: 'Federations', onClick: () => navigate('/federations') },
@@ -232,18 +245,21 @@ export default function CompetitionsPage() {
                   {competitions.map((comp) => {
                     const seasonId = (comp as any).parent_period_id || comp.parent_period?.id;
                     const seasonSlug = comp.parent_period?.slug;
+                    const seasonKeyOrId = String(seasonSlug || seasonId || '').trim();
+                    const competitionKeyOrId = String(comp.slug || comp.id || '').trim();
+                    const competitionHref = orgSlugOrId && clubSlugOrId && teamSlugOrId && seasonKeyOrId && competitionKeyOrId
+                      ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}`
+                      : `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonKeyOrId}/competitions/${competitionKeyOrId}`;
                     return (
                       <tr key={comp.id}>
                         <td>
                           <a
-                            href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`}
+                            href={competitionHref}
                             className="text-blue-600 hover:underline"
                             style={{ fontSize: '0.85rem' }}
                             onClick={(e) => {
                               e.preventDefault();
-                              navigate(
-                                `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`,
-                              );
+                              navigate(competitionHref);
                             }}
                           >
                             {comp.name}

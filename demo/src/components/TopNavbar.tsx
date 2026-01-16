@@ -250,6 +250,28 @@ export default function TopNavbar() {
   useEffect(() => {
     const path = location.pathname;
 
+    const reservedRootSegments = new Set([
+      '',
+      'dashboard',
+      'login',
+      'register',
+      'directory',
+      'organisations',
+      'projects',
+      'matches',
+      'health',
+      'studio',
+      'content',
+      'notifications',
+      'usage-events',
+      'settings',
+    ]);
+
+    const vanityMatch = path.match(/^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/);
+    const vanityCompetition = path.match(/^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/);
+    const vanitySeason = path.match(/^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/);
+    const isVanity = (m: RegExpMatchArray | null) => Boolean(m && !reservedRootSegments.has(String(m[1] || '')));
+
     const hierarchyMatchTeam = path.match(
       /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/
     );
@@ -264,6 +286,39 @@ export default function TopNavbar() {
     const competitionMatch = path.match(
       /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)/
     );
+
+    if (isVanity(vanityMatch)) {
+      writeLastAppContext({
+        orgSlug: vanityMatch![1],
+        clubSlugOrId: vanityMatch![2],
+        teamSlugOrId: vanityMatch![3],
+        seasonSlugOrId: vanityMatch![4],
+        competitionSlugOrId: vanityMatch![5],
+        matchId: vanityMatch![6],
+      });
+      return;
+    }
+
+    if (isVanity(vanityCompetition)) {
+      writeLastAppContext({
+        orgSlug: vanityCompetition![1],
+        clubSlugOrId: vanityCompetition![2],
+        teamSlugOrId: vanityCompetition![3],
+        seasonSlugOrId: vanityCompetition![4],
+        competitionSlugOrId: vanityCompetition![5],
+      });
+      return;
+    }
+
+    if (isVanity(vanitySeason)) {
+      writeLastAppContext({
+        orgSlug: vanitySeason![1],
+        clubSlugOrId: vanitySeason![2],
+        teamSlugOrId: vanitySeason![3],
+        seasonSlugOrId: vanitySeason![4],
+      });
+      return;
+    }
 
     if (hierarchyMatchTeam) {
       writeLastAppContext({
@@ -615,40 +670,29 @@ export default function TopNavbar() {
     // - /organisations                  -> redirects to /directory?tab=federations
     // - /organisations/:orgId/projects   -> redirects to /directory?tab=clubs
     // So we always fall back "up" to the nearest available *detail* route.
-    const federationPath = orgSlug ? `/organisations/${orgSlug}` : '/dashboard';
+    const federationPath = orgSlug ? `/${orgSlug}` : '/dashboard';
 
     const clubPath = orgSlug && clubSlugOrId
-      ? `/organisations/${orgSlug}/projects/${clubSlugOrId}`
+      ? `/${orgSlug}/${clubSlugOrId}`
       : federationPath;
 
-    // If clubId is unknown, fall back to /organisations/:org/projects/:id which will resolve to a detail redirect,
-    // not a directory tab.
+    // If clubId is unknown, fall back to an organisations-based detail route (not a directory-tab redirect).
     const teamPath = orgSlug && clubSlugOrId && teamSlugOrId
-      ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`
+      ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}`
       : (orgSlug && teamSlugOrId
         ? `/organisations/${orgSlug}/projects/${teamSlugOrId}`
         : clubPath);
 
-    const seasonPath = orgSlug && seasonSlugOrId
-      ? (clubSlugOrId && teamSlugOrId
-        ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
-        : (teamSlugOrId
-          ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
-          : teamPath))
+    const seasonPath = orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId
+      ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
       : teamPath;
 
-    const competitionPath = orgSlug && seasonSlugOrId && competitionSlugOrId
-      ? (clubSlugOrId && teamSlugOrId
-        ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`
-        : (teamSlugOrId
-          ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`
-          : seasonPath))
+    const competitionPath = orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId
+      ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${competitionSlugOrId}`
       : seasonPath;
 
-    const matchPath = matchId && orgSlug && seasonSlugOrId && competitionSlugOrId
-      ? (clubSlugOrId && teamSlugOrId
-        ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}/${competitionSlugOrId}/${matchId}`
-        : `/matches/${matchId}`)
+    const matchPath = matchId && orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId
+      ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${competitionSlugOrId}/${matchId}`
       : (matchId ? `/matches/${matchId}` : competitionPath);
 
     return {

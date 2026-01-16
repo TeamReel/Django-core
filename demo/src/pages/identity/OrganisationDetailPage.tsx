@@ -2903,7 +2903,7 @@ export const OrganisationDetailPage: React.FC = () => {
                           const matchesCount = getRecursiveMatchesCount(season);
 
                           const openHref = clubSlugOrId
-                            ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`
+                            ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlug || seasonId}`
                             : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`;
 
                           return (
@@ -3223,7 +3223,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
                           const seasonSlug = season?.slug || comp.parent_period?.slug;
                           const openHref = clubSlugOrId
-                            ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/${comp.slug || comp.id}`
+                            ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlug || seasonId}/${comp.slug || comp.id}`
                             : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}/competitions/${comp.slug || comp.id}`;
 
                           const matchesCount = getRecursiveMatchesCount(comp);
@@ -3253,7 +3253,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {season && seasonId ? (
                                   <Link
-                                    to={clubSlugOrId && teamSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlug || seasonId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
+                                    to={clubSlugOrId && teamSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlug || seasonId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlug || seasonId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {season.name}
@@ -3648,7 +3648,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {season && seasonSlugOrId ? (
                                   <Link
-                                    to={clubSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
+                                    to={clubSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {season.name}
@@ -3658,7 +3658,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {competition ? (
                                   <Link
-                                    to={clubSlugOrId && seasonSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}/${competition.slug || periodId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}`}
+                                    to={clubSlugOrId && seasonSlugOrId ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${competition.slug || periodId}` : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competition.slug || periodId}`}
                                     className="text-blue-600 hover:underline"
                                   >
                                     {competition.name || m.period?.name}

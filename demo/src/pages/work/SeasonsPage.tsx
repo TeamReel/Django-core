@@ -158,6 +158,19 @@ export default function SeasonsPage() {
   const selectedTeam = selectedTeamId ? teams.find((t) => String(t.id) === String(selectedTeamId)) : null;
   const teamSlugOrId = (selectedTeam as any)?.slug || (selectedTeam as any)?.id || selectedTeamId;
 
+  const selectedClub = selectedClubId ? clubs.find((c) => String(c.id) === String(selectedClubId)) : null;
+  const inferredClubId =
+    String(selectedClub?.id || '').trim() ||
+    String((selectedTeam as any)?.parent_id || (selectedTeam as any)?.parent || '').trim();
+  const inferredClub = inferredClubId ? clubs.find((c) => String(c.id) === String(inferredClubId)) : null;
+  const clubSlugOrId =
+    (selectedClub as any)?.slug ||
+    (selectedClub as any)?.id ||
+    (inferredClub as any)?.slug ||
+    (inferredClub as any)?.id ||
+    inferredClubId ||
+    '';
+
   const breadcrumbs = [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
     { label: 'Federations', onClick: () => navigate('/federations') },
@@ -234,17 +247,25 @@ export default function SeasonsPage() {
                   {seasons.map((season) => (
                     <tr key={season.id}>
                       <td>
+                        {(() => {
+                          const seasonKey = periodPathKey(season) || season.id;
+                          const seasonHref = orgSlugOrId && clubSlugOrId && teamSlugOrId
+                            ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}/${seasonKey}`
+                            : `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonKey}`;
+                          return (
                         <a
-                          href={`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${periodPathKey(season) || season.id}`}
+                          href={seasonHref}
                           className="text-blue-600 hover:underline"
                           style={{ fontSize: '0.85rem' }}
                           onClick={(e) => {
                             e.preventDefault();
-                            navigate(`/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${periodPathKey(season) || season.id}`);
+                            navigate(seasonHref);
                           }}
                         >
                           {season.name}
                         </a>
+                          );
+                        })()}
                       </td>
                       <td style={{ fontSize: '0.85rem' }}>{season.start_date || '-'}</td>
                       <td style={{ fontSize: '0.85rem' }}>{season.end_date || '-'}</td>

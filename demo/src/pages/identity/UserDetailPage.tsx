@@ -902,10 +902,10 @@ export const UserDetailPage: React.FC = () => {
     const rows = teamSeasonPairs.map((p) => {
       const clubSlug = clubSlugById.get(p.clubId) || '';
       const teamPath = clubSlug
-        ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${p.teamSlug || p.teamId}`
+        ? `/${primaryOrgSlug}/${clubSlug}/${p.teamSlug || p.teamId}`
         : '';
       const seasonPath = clubSlug
-        ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${p.teamSlug || p.teamId}/seasons/${p.seasonId}`
+        ? `/${primaryOrgSlug}/${clubSlug}/${p.teamSlug || p.teamId}/${p.seasonId}`
         : '';
       return {
         ...p,
@@ -1432,9 +1432,9 @@ export const UserDetailPage: React.FC = () => {
                   const clubSlug = clubSlugById.get(clubIdValue) || '';
                   const teamSlugOrId = String(t?.slug || t?.id || '').trim();
                   const teamPath = primaryOrgSlug && clubSlug && teamSlugOrId
-                    ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
+                    ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}`
                     : '';
-                  const clubPath = primaryOrgSlug && clubSlug ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}` : '';
+                  const clubPath = primaryOrgSlug && clubSlug ? `/${primaryOrgSlug}/${clubSlug}` : '';
                   const projectId = String(t?.id || '').trim();
                   const membershipId = (t as any)?.membership_id;
                   return (
@@ -1536,7 +1536,7 @@ export const UserDetailPage: React.FC = () => {
                     const clubSlug = clubSlugById.get(r.clubId) || '';
                     const teamSlugOrId = String(r.teamSlug || r.teamId).trim();
                     const seasonPath = primaryOrgSlug && clubSlug && teamSlugOrId && r.seasonId
-                      ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${r.seasonId}`
+                      ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}/${r.seasonId}`
                       : '';
                     return (
                       <tr key={`${r.teamId}::${r.seasonId}`}>
@@ -1545,14 +1545,14 @@ export const UserDetailPage: React.FC = () => {
                           {renderNavLink(
                             r.teamName || r.teamId,
                             primaryOrgSlug && clubSlug && teamSlugOrId
-                              ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
+                              ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}`
                               : ''
                           )}
                         </td>
                         <td style={compactTextTdStyle}>
                           {renderNavLink(
                             r.clubName || r.clubId,
-                            primaryOrgSlug && clubSlug ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}` : ''
+                            primaryOrgSlug && clubSlug ? `/${primaryOrgSlug}/${clubSlug}` : ''
                           )}
                         </td>
                         <td style={compactTdStyle}>
@@ -1601,7 +1601,7 @@ export const UserDetailPage: React.FC = () => {
                     const teamSlugOrId = String(team?.slug || team?.id || '').trim();
                     const parentSeasonId = String(c?.parent_period_id ?? c?.parent_period?.id ?? '').trim();
                     const competitionPath = primaryOrgSlug && clubSlug && teamSlugOrId && parentSeasonId && c?.id
-                      ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${parentSeasonId}/competitions/${c.id}`
+                      ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}/${parentSeasonId}/${c.id}`
                       : '';
                     return (
                       <tr key={String(c?.id)}>
@@ -1610,7 +1610,7 @@ export const UserDetailPage: React.FC = () => {
                           {renderNavLink(
                             String(c?.parent_period?.name || ''),
                             parentSeasonId && primaryOrgSlug && clubSlug && teamSlugOrId
-                              ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}/seasons/${parentSeasonId}`
+                              ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}/${parentSeasonId}`
                               : ''
                           )}
                         </td>
@@ -1618,7 +1618,7 @@ export const UserDetailPage: React.FC = () => {
                           {renderNavLink(
                             String(team?.name || ''),
                             primaryOrgSlug && clubSlug && teamSlugOrId
-                              ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
+                              ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}`
                               : ''
                           )}
                         </td>
