@@ -77,6 +77,20 @@ export default function LegacyMatchRedirectPage() {
           return;
         }
 
+        // Prefer a stable canonical slug in the URL (e.g. /knvb/...), even when upstream data only has UUIDs.
+        let orgKeyOrId = orgSlugOrId;
+        try {
+          const orgRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, {
+            credentials: 'include',
+          });
+          if (orgRes.ok) {
+            const org = getEnvelopeData<any>(await orgRes.json());
+            orgKeyOrId = String(org?.slug || org?.id || orgSlugOrId).trim() || orgSlugOrId;
+          }
+        } catch {
+          // ignore
+        }
+
         // 4) Determine project/team + optional club (parent project)
         const teamSlugOrId = String(match?.project?.slug || match?.project?.id || '').trim();
         if (!teamSlugOrId) {
@@ -86,22 +100,32 @@ export default function LegacyMatchRedirectPage() {
 
         let clubSlugOrId: string | null = null;
         try {
+          // First try org-scoped project endpoint, then fall back to global project endpoint.
           const projectRes = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(teamSlugOrId)}/`,
+            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgKeyOrId)}/projects/${encodeURIComponent(teamSlugOrId)}/`,
             { credentials: 'include' }
           );
+          let project: any | null = null;
           if (projectRes.ok) {
-            const project = getEnvelopeData<any>(await projectRes.json());
-            const parent = project?.parent_project;
-            clubSlugOrId = parent ? String(parent.slug || parent.id || '').trim() : null;
+            project = getEnvelopeData<any>(await projectRes.json());
+          } else {
+            const projectResFallback = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamSlugOrId)}/`, {
+              credentials: 'include',
+            });
+            if (projectResFallback.ok) {
+              project = getEnvelopeData<any>(await projectResFallback.json());
+            }
           }
+
+          const parent = project?.parent_project;
+          clubSlugOrId = parent ? String(parent.slug || parent.id || '').trim() : null;
         } catch {
           // ignore
         }
 
         const seasonsBasePath = clubSlugOrId
-          ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}/seasons`
-          : `/${orgSlugOrId}/projects/${teamSlugOrId}/seasons`;
+          ? `/${orgKeyOrId}/${clubSlugOrId}/${teamSlugOrId}/seasons`
+          : `/${orgKeyOrId}/projects/${teamSlugOrId}/seasons`;
 
         const target = clubSlugOrId
           ? `${seasonsBasePath}/${seasonKeyOrId}/${competitionKeyOrId}/${matchKeyOrId}`
