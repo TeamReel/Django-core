@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { BreadcrumbContextSwitcher, type BreadcrumbSwitcherOption, PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
@@ -95,6 +95,14 @@ type Period = {
   parent_period?: { id: string; name: string } | null;
 };
 
+const looksLikeIdentifier = (value: string) => {
+  const v = String(value || '').trim();
+  if (!v) return false;
+  if (/^\d+$/.test(v)) return true;
+  if (looksLikeUuid(v)) return true;
+  return false;
+};
+
 const getEnvelopeData = <T,>(raw: any): T => {
   return (raw?.data ?? raw) as T;
 };
@@ -174,6 +182,69 @@ export default function HierarchyMatchDetailPage() {
   const seasonKeyOrId = String(seasonId || '').trim();
   const effectiveCompetitionId = String(competitionId || '').trim();
   const effectiveMatchId = String(matchId || '').trim();
+
+  // Canonicalize club segment: if it's an id, resolve slug and redirect.
+  const shouldResolveClubSlug = useMemo(
+    () => isTeamRoute && looksLikeIdentifier(clubSlugOrId),
+    [clubSlugOrId, isTeamRoute]
+  );
+  const [resolvedClubSlug, setResolvedClubSlug] = useState<string>('');
+  const [clubSlugResolved, setClubSlugResolved] = useState(false);
+
+  useEffect(() => {
+    const run = async () => {
+      try {
+        if (!shouldResolveClubSlug) return;
+        if (!orgSlugOrId || !clubSlugOrId) return;
+
+        const res = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
+          { credentials: 'include' }
+        );
+        if (res.ok) {
+          const project = getEnvelopeData<Project>(await res.json().catch(() => null));
+          const slug = String(project?.slug || '').trim();
+          if (slug) {
+            setResolvedClubSlug(slug);
+            return;
+          }
+        }
+
+        const res2 = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(clubSlugOrId)}/`, {
+          credentials: 'include',
+        });
+        if (res2.ok) {
+          const project = getEnvelopeData<Project>(await res2.json().catch(() => null));
+          const slug = String(project?.slug || '').trim();
+          if (slug) setResolvedClubSlug(slug);
+        }
+      } finally {
+        setClubSlugResolved(true);
+      }
+    };
+
+    run();
+  }, [apiBaseUrl, clubSlugOrId, orgSlugOrId, shouldResolveClubSlug]);
+
+  if (shouldResolveClubSlug && !clubSlugResolved) return null;
+
+  if (
+    shouldResolveClubSlug &&
+    resolvedClubSlug &&
+    resolvedClubSlug !== clubSlugOrId &&
+    orgSlugOrId &&
+    projectSlugOrId &&
+    seasonKeyOrId &&
+    effectiveCompetitionId &&
+    effectiveMatchId
+  ) {
+    return (
+      <Navigate
+        to={`/${orgSlugOrId}/${resolvedClubSlug}/${projectSlugOrId}/${seasonKeyOrId}/${effectiveCompetitionId}/${effectiveMatchId}${location.search || ''}`}
+        replace
+      />
+    );
+  }
 
   const seasonsBasePath = isTeamRoute
     ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
