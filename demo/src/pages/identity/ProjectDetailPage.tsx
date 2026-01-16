@@ -587,9 +587,66 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     if (!force && orgMembers.length > 0 && haveMembershipDetails) return;
     if (!currentOrgSlug) return;
 
+    // Team detail pages should not load the full organisation roster.
+    // Instead, load only the members for this team and adapt to the same shape
+    // as org members (so filtering/season assignment works).
+    const teamIdForMembers = isTeamRoute ? String(project?.id || '').trim() : '';
+
     setOrgMembersLoading(true);
     try {
       const apiV1BaseUrl = getApiV1BaseUrl();
+
+      if (teamIdForMembers) {
+        const params = new URLSearchParams();
+        params.set('page_size', '500');
+        const url = `${apiV1BaseUrl}/projects/${encodeURIComponent(teamIdForMembers)}/members/?${params.toString()}`;
+        const memberships = await fetchAllPages<any>(
+          url,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-Organisation-ID': String(resolvedOrg?.id || (project as any)?.organisation_id || ''),
+            },
+            credentials: 'include',
+          },
+          force ? { bypass: true } : undefined
+        );
+
+        const byOrgMembershipId = new Map<string, any>();
+        for (const pm of memberships || []) {
+          const orgMembershipId = String(pm?.organisation_membership_id || '').trim();
+          const userObj = pm?.user;
+          const userId = String(userObj?.id || '').trim();
+          const key = orgMembershipId || (userId ? `user:${userId}` : String(pm?.id || ''));
+          if (!key) continue;
+
+          const existing = byOrgMembershipId.get(key);
+          const normalizedPm = {
+            ...pm,
+            project_id: teamIdForMembers,
+            // Normalise to the shapes expected by the rest of this page
+            period_id: pm?.period_id ?? pm?.period ?? null,
+          };
+
+          if (!existing) {
+            byOrgMembershipId.set(key, {
+              id: orgMembershipId || key,
+              user: userObj,
+              // Keep org membership role unknown in this fast path.
+              project_memberships: [normalizedPm],
+              project_membership_details: [normalizedPm],
+            });
+          } else {
+            existing.project_memberships = [...(existing.project_memberships || []), normalizedPm];
+            existing.project_membership_details = [...(existing.project_membership_details || []), normalizedPm];
+          }
+        }
+
+        setOrgMembers(Array.from(byOrgMembershipId.values()));
+        return;
+      }
+
       const params = new URLSearchParams();
       params.set('include_project_memberships', 'true');
       params.set('include_role_assignments', 'true');
@@ -600,12 +657,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
       const allMembers = await fetchAllPages<any>(
         membersUrl,
         {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-Organisation-ID': String(resolvedOrg?.id || (project as any)?.organisation_id || ''),
-        },
-        credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-Organisation-ID': String(resolvedOrg?.id || (project as any)?.organisation_id || ''),
+          },
+          credentials: 'include',
         },
         force ? { bypass: true } : undefined
       );

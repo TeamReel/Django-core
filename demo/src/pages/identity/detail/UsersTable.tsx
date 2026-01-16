@@ -178,7 +178,7 @@ export default function UsersTable({
         <tbody>
           {pageItems.map((item: any) => {
             const userObj = item.user || item;
-            const membershipId = String(item.id);
+            const membershipId = String((item as any)?.organisation_membership_id || (item as any)?.organisationMembershipId || item.id);
 
             const roleDisplay = getRoleDisplay(item);
 
