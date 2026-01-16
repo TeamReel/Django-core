@@ -202,6 +202,17 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   const [editMemberRoleError, setEditMemberRoleError] = useState<string | null>(null);
   const [editMemberRoleSaving, setEditMemberRoleSaving] = useState(false);
 
+  // Edit team membership (access role + functional roles)
+  const [isEditTeamMembershipModalOpen, setIsEditTeamMembershipModalOpen] = useState(false);
+  const [editingTeamMember, setEditingTeamMember] = useState<any | null>(null);
+  const [editingTeamId, setEditingTeamId] = useState<string>('');
+  const [editingTeamMembershipId, setEditingTeamMembershipId] = useState<string>('');
+  const [editingTeamAccessRole, setEditingTeamAccessRole] = useState<'viewer' | 'editor' | 'admin'>('viewer');
+  const [editingTeamFunctionalRoles, setEditingTeamFunctionalRoles] = useState<string[]>([]);
+  const [editingTeamInitialFunctionalRoles, setEditingTeamInitialFunctionalRoles] = useState<string[]>([]);
+  const [editTeamMembershipError, setEditTeamMembershipError] = useState<string | null>(null);
+  const [editTeamMembershipSaving, setEditTeamMembershipSaving] = useState(false);
+
   // Period helper functions (matching OrganisationDetailPage pattern)
   const getPeriodType = (p: any): string => {
     const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
@@ -892,6 +903,137 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     } catch (e) {
       setEditMemberRoleError(e instanceof Error ? e.message : 'Failed to update role');
     }
+  };
+
+  const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string }> = [
+    { value: 'coach', label: 'Coach' },
+    { value: 'player', label: 'Player' },
+    { value: 'keeper', label: 'Keeper' },
+    { value: 'assistant', label: 'Assistant' },
+    { value: 'verzorger', label: 'Verzorger' },
+    { value: 'supporter', label: 'Supporter' },
+    { value: 'manager', label: 'Manager' },
+  ];
+
+  const getFunctionalRolesFromPm = (pm: any): string[] => {
+    const direct = (pm as any)?.functional_roles ?? (pm as any)?.functionalRoles;
+    if (Array.isArray(direct)) return direct.map((r) => String(r || '').trim()).filter(Boolean);
+    const meta = (pm as any)?.metadata || {};
+    const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
+    return legacy ? [legacy] : [];
+  };
+
+  const openTeamMembershipModal = (args: { item: any; teamId: string }) => {
+    const { item, teamId } = args;
+    const tid = String(teamId || '').trim();
+    if (!tid) return;
+
+    const u = item?.user || item;
+    const pms =
+      (item as any)?.project_memberships ||
+      (u as any)?.project_memberships ||
+      (item as any)?.project_membership_details ||
+      (u as any)?.project_membership_details ||
+      [];
+    const list = Array.isArray(pms) ? pms : [];
+
+    const matchesTeam = (pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '').trim() === tid;
+    const isBaseMembership = (pm: any) => !String(pm?.period_id ?? pm?.period ?? '').trim();
+    const basePm = list.find((pm: any) => matchesTeam(pm) && isBaseMembership(pm));
+    const anyPm = list.find((pm: any) => matchesTeam(pm));
+    const pm = basePm || anyPm;
+
+    const pmId = String(pm?.id ?? '').trim();
+    const roleRaw = String(pm?.role ?? '').trim().toLowerCase();
+    const access: 'viewer' | 'editor' | 'admin' = roleRaw === 'admin' ? 'admin' : roleRaw === 'editor' ? 'editor' : 'viewer';
+    const fr = getFunctionalRolesFromPm(pm);
+
+    setEditingTeamMember(item);
+    setEditingTeamId(tid);
+    setEditingTeamMembershipId(pmId);
+    setEditingTeamAccessRole(access);
+    setEditingTeamFunctionalRoles(fr);
+    setEditingTeamInitialFunctionalRoles(fr);
+    setEditTeamMembershipError(null);
+    setIsEditTeamMembershipModalOpen(true);
+  };
+
+  const saveTeamMembership = async () => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const tid = String(editingTeamId || '').trim();
+    if (!tid) throw new Error('Team missing');
+    if (!editingTeamMembershipId) throw new Error('User has no membership for this team');
+
+    // 1) Update access role
+    const roleRes = await fetch(
+      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(tid)}/members/${encodeURIComponent(String(editingTeamMembershipId))}/`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken() || '',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ role: editingTeamAccessRole }),
+      }
+    );
+    if (!roleRes.ok) {
+      const text = await roleRes.text().catch(() => '');
+      throw new Error(text || 'Failed to update access role');
+    }
+
+    // 2) Update functional roles (diff)
+    const u = (editingTeamMember as any)?.user || editingTeamMember;
+    const userId = Number(u?.id);
+    if (!userId) throw new Error('User id missing');
+
+    const prev = new Set((editingTeamInitialFunctionalRoles || []).map((r) => String(r || '').trim()).filter(Boolean));
+    const next = new Set((editingTeamFunctionalRoles || []).map((r) => String(r || '').trim()).filter(Boolean));
+    const toAdd = Array.from(next).filter((r) => !prev.has(r));
+    const toRemove = Array.from(prev).filter((r) => !next.has(r));
+
+    if (toAdd.length) {
+      const res = await fetch(
+        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(tid)}/functional-roles/assign/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken() || '',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ user_id: userId, roles: toAdd }),
+        }
+      );
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || 'Failed to assign functional roles');
+      }
+    }
+    if (toRemove.length) {
+      const res = await fetch(
+        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(tid)}/functional-roles/unassign/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken() || '',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ user_id: userId, roles: toRemove }),
+        }
+      );
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || 'Failed to unassign functional roles');
+      }
+    }
+
+    setEditingTeamInitialFunctionalRoles(Array.from(next.values()).sort((a, b) => a.localeCompare(b)));
+    await fetchOrgMembers(true);
   };
 
   const saveProjectEdits = async (projectToEdit: any, patch: any) => {
@@ -3395,7 +3537,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 onViewMembership={() => {
                                   // View is handled via onViewUser (modal).
                                 }}
-                                onEditMembership={(item) => {
+                                onEditMembership={({ item, teamId }) => {
+                                  const tid = String(teamId || '').trim();
+                                  if (tid) {
+                                    openTeamMembershipModal({ item, teamId: tid });
+                                    return;
+                                  }
+
                                   setEditingMember(item);
                                   setEditingMemberRole((item?.role || 'member') as any);
                                   setEditMemberRoleError(null);
@@ -3506,7 +3654,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               onViewMembership={() => {
                                 // View is handled via onViewUser (modal).
                               }}
-                              onEditMembership={(item) => {
+                              onEditMembership={({ item, teamId }) => {
+                                const tid = String(teamId || '').trim();
+                                if (tid) {
+                                  openTeamMembershipModal({ item, teamId: tid });
+                                  return;
+                                }
+
                                 setEditingMember(item);
                                 setEditingMemberRole((item?.role || 'member') as any);
                                 setEditMemberRoleError(null);
@@ -5096,6 +5250,163 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                   }
                 }}
                 loading={editMemberRoleSaving}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isEditTeamMembershipModalOpen && editingTeamMember ? (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--app-surface)',
+              padding: '24px',
+              borderRadius: '8px',
+              width: '640px',
+              maxWidth: '95%',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              color: 'var(--app-text)',
+              border: '1px solid var(--app-border)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+              <h2 style={{ margin: 0 }}>Edit Team Member</h2>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setIsEditTeamMembershipModalOpen(false);
+                  setEditingTeamMember(null);
+                  setEditingTeamId('');
+                  setEditingTeamMembershipId('');
+                }}
+                disabled={editTeamMembershipSaving}
+              >
+                Close
+              </Button>
+            </div>
+
+            <div style={{ marginTop: '12px', fontSize: '14px', color: 'var(--app-text-muted)' }}>
+              {String((editingTeamMember as any)?.user?.email || (editingTeamMember as any)?.email || '')}
+            </div>
+
+            {editTeamMembershipError ? (
+              <div style={{ marginTop: '12px', padding: '10px 12px', borderRadius: '6px', backgroundColor: '#fee', color: '#c00' }}>
+                {editTeamMembershipError}
+              </div>
+            ) : null}
+
+            <div style={{ marginTop: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Access role</label>
+              <select
+                value={editingTeamAccessRole}
+                onChange={(e) => setEditingTeamAccessRole(e.target.value as any)}
+                disabled={editTeamMembershipSaving}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                }}
+              >
+                <option value="viewer">viewer</option>
+                <option value="editor">editor</option>
+                <option value="admin">admin</option>
+              </select>
+              {!editingTeamMembershipId ? (
+                <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                  User has no direct membership for this team.
+                </div>
+              ) : null}
+            </div>
+
+            <div style={{ marginTop: '14px' }}>
+              <div style={{ fontWeight: 600, marginBottom: '6px' }}>Functional roles</div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: '8px 12px',
+                  padding: '10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                }}
+              >
+                {FUNCTIONAL_ROLE_OPTIONS.map((opt) => {
+                  const checked = (editingTeamFunctionalRoles || []).includes(opt.value);
+                  return (
+                    <label key={opt.value} style={{ display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={editTeamMembershipSaving}
+                        onChange={(e) => {
+                          const nextChecked = e.currentTarget.checked;
+                          setEditingTeamFunctionalRoles((prev) => {
+                            const normalized = (Array.isArray(prev) ? prev : []).map((r) => String(r || '').trim()).filter(Boolean);
+                            const set = new Set(normalized);
+                            if (nextChecked) set.add(opt.value);
+                            else set.delete(opt.value);
+                            return Array.from(set.values()).sort((a, b) => a.localeCompare(b));
+                          });
+                        }}
+                      />
+                      <span>{opt.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '18px' }}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsEditTeamMembershipModalOpen(false);
+                  setEditingTeamMember(null);
+                  setEditingTeamId('');
+                  setEditingTeamMembershipId('');
+                }}
+                disabled={editTeamMembershipSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    setEditTeamMembershipSaving(true);
+                    setEditTeamMembershipError(null);
+                    await saveTeamMembership();
+                    setIsEditTeamMembershipModalOpen(false);
+                    setEditingTeamMember(null);
+                    setEditingTeamId('');
+                    setEditingTeamMembershipId('');
+                  } catch (e) {
+                    setEditTeamMembershipError(e instanceof Error ? e.message : 'Failed to save');
+                  } finally {
+                    setEditTeamMembershipSaving(false);
+                  }
+                }}
+                loading={editTeamMembershipSaving}
               >
                 Save
               </Button>

@@ -25,7 +25,7 @@ type Props = {
   onOpenUnassignSeason?: (item: any) => void;
   onViewUser?: (user: any) => void;
   onViewMembership: (membershipId: string) => void;
-  onEditMembership: (item: any) => void;
+  onEditMembership: (args: { item: any; teamId?: string }) => void;
   onRemoveMembership: (membershipId: string, email: string) => Promise<void>;
 };
 
@@ -346,14 +346,22 @@ export default function UsersTable({
                       </button>
                       <button
                         type="button"
-                        disabled={!hasOrgMembership}
+                        disabled={!userCanManageMembers}
                         onClick={() => {
-                          if (!hasOrgMembership) return;
-                          onEditMembership(item);
+                          const scopedTeamId = isTeamRoute ? String(currentProjectId || '').trim() : String(teamId || '').trim();
+                          onEditMembership({ item, teamId: scopedTeamId || undefined });
                         }}
                         className="app-action-button"
                         style={actionButtonStyle('warning')}
-                        title={!hasOrgMembership ? 'User has no direct federation membership to edit' : undefined}
+                        title={
+                          isTeamRoute
+                            ? 'Edit team access + functional roles'
+                            : teamId
+                              ? 'Edit team access + functional roles'
+                              : hasOrgMembership
+                                ? 'Edit federation role'
+                                : 'Select a team (or open a user) to edit roles'
+                        }
                       >
                         Edit
                       </button>

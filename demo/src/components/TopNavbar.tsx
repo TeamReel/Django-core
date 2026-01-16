@@ -1256,7 +1256,14 @@ export default function TopNavbar() {
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Search Bar */}
-            <div className="nav-search-container" style={{ width: '300px', maxWidth: '300px' }}>
+            <div
+              className="nav-search-container"
+              style={{
+                flex: '1 1 360px',
+                minWidth: '220px',
+                maxWidth: '560px',
+              }}
+            >
               <SearchBar placeholder="Search..." />
             </div>
 
@@ -1462,6 +1469,13 @@ export default function TopNavbar() {
       </div>
 
       <style>{`
+        .nav-search-container {
+          transition: max-width 160ms ease, flex-basis 160ms ease;
+        }
+        .nav-search-container:focus-within {
+          max-width: 820px !important;
+          flex-basis: 640px;
+        }
         @media (max-width: 1024px) {
           .mobile-menu-button {
             display: block !important;
@@ -1482,6 +1496,7 @@ export default function TopNavbar() {
             width: auto !important;
             flex: 1;
             min-width: 120px;
+            max-width: none !important;
           }
         }
         @media (max-width: 480px) {
@@ -1492,7 +1507,7 @@ export default function TopNavbar() {
             display: none !important;
           }
           .nav-search-container {
-            min-width: 80px;
+            min-width: 120px;
           }
         }
       `}</style>
