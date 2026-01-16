@@ -13,7 +13,6 @@ import LinkUserModal from './LinkUserModal';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import { useAuth } from '@django-core/auth-ui';
-import MatchDetailModal from './MatchDetailModal';
 import MatchEditModal from './MatchEditModal';
 import {
   actionButtonStyle,
@@ -213,8 +212,6 @@ export const UserDetailPage: React.FC = () => {
   const [loadingRelations, setLoadingRelations] = useState(false);
   const [relationsReloadToken, setRelationsReloadToken] = useState(0);
 
-  const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
-  const [selectedDetailMatch, setSelectedDetailMatch] = useState<any | null>(null);
   const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
   const [selectedEditMatch, setSelectedEditMatch] = useState<any | null>(null);
 
@@ -1667,7 +1664,7 @@ export const UserDetailPage: React.FC = () => {
                     const clubSlug = clubSlugById.get(clubIdValue) || '';
                     const teamSlugOrId = String(team?.slug || team?.id || '').trim();
                     const teamPath = primaryOrgSlug && clubSlug && teamSlugOrId
-                      ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
+                      ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}`
                       : '';
                     const teamName = String(team?.name || m?.project?.name || m?.project_name || '').trim();
                     const matchPath = (m as any)?.id ? `/matches/${String((m as any)?.slug || (m as any)?.id)}` : '';
@@ -1689,8 +1686,7 @@ export const UserDetailPage: React.FC = () => {
                               }}
                               onClick={(e) => {
                                 e.preventDefault();
-                                setSelectedDetailMatch(m);
-                                setIsMatchDetailModalOpen(true);
+                                navigate(matchPath);
                               }}
                               title="Open match details"
                             >
@@ -1708,9 +1704,9 @@ export const UserDetailPage: React.FC = () => {
                               type="button"
                               className="app-action-button"
                               onClick={() => {
-                                setSelectedDetailMatch(m);
-                                setIsMatchDetailModalOpen(true);
+                                if (matchPath) navigate(matchPath);
                               }}
+                              disabled={!matchPath}
                               style={actionButtonStyle('primary')}
                             >
                               View
@@ -1766,15 +1762,6 @@ export const UserDetailPage: React.FC = () => {
           </div>
         )}
       </PageContent>
-
-      <MatchDetailModal
-        opened={isMatchDetailModalOpen}
-        onClose={() => {
-          setIsMatchDetailModalOpen(false);
-          setSelectedDetailMatch(null);
-        }}
-        match={selectedDetailMatch}
-      />
 
       <MatchEditModal
         opened={isMatchEditModalOpen}
