@@ -617,45 +617,51 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
           force ? { bypass: true } : undefined
         );
 
-        const inferredClubId = String((club as any)?.id || currentClubId || '').trim();
-        const byOrgMembershipId = new Map<string, any>();
-        for (const pm of memberships || []) {
-          const orgMembershipId = String(pm?.organisation_membership_id || '').trim();
-          const userObj = pm?.user;
-          const userId = String(userObj?.id || '').trim();
-          const key = orgMembershipId || (userId ? `user:${userId}` : String(pm?.id || ''));
-          if (!key) continue;
+        // If the fast-path endpoint returns nothing (often due to permission or endpoint issues),
+        // fall back to the organisation members endpoint below.
+        if (!Array.isArray(memberships) || memberships.length === 0) {
+          // do not early-return; let the broader org roster load handle this case
+        } else {
+          const inferredClubId = String((club as any)?.id || currentClubId || '').trim();
+          const byOrgMembershipId = new Map<string, any>();
+          for (const pm of memberships || []) {
+            const orgMembershipId = String(pm?.organisation_membership_id || '').trim();
+            const userObj = pm?.user;
+            const userId = String(userObj?.id || '').trim();
+            const key = orgMembershipId || (userId ? `user:${userId}` : String(pm?.id || ''));
+            if (!key) continue;
 
-          const existing = byOrgMembershipId.get(key);
-          const normalizedPm = {
-            ...pm,
-            project_id: teamIdForMembers,
-            club_id: inferredClubId || undefined,
-            project: {
-              id: String((project as any)?.id || teamIdForMembers),
-              slug: String((project as any)?.slug || ''),
-              name: String((project as any)?.name || ''),
-            },
-            // Normalise to the shapes expected by the rest of this page
-            period_id: pm?.period_id ?? pm?.period ?? null,
-          };
+            const existing = byOrgMembershipId.get(key);
+            const normalizedPm = {
+              ...pm,
+              project_id: teamIdForMembers,
+              club_id: inferredClubId || undefined,
+              project: {
+                id: String((project as any)?.id || teamIdForMembers),
+                slug: String((project as any)?.slug || ''),
+                name: String((project as any)?.name || ''),
+              },
+              // Normalise to the shapes expected by the rest of this page
+              period_id: pm?.period_id ?? pm?.period ?? null,
+            };
 
-          if (!existing) {
-            byOrgMembershipId.set(key, {
-              id: orgMembershipId || key,
-              user: userObj,
-              // Keep org membership role unknown in this fast path.
-              project_memberships: [normalizedPm],
-              project_membership_details: [normalizedPm],
-            });
-          } else {
-            existing.project_memberships = [...(existing.project_memberships || []), normalizedPm];
-            existing.project_membership_details = [...(existing.project_membership_details || []), normalizedPm];
+            if (!existing) {
+              byOrgMembershipId.set(key, {
+                id: orgMembershipId || key,
+                user: userObj,
+                // Keep org membership role unknown in this fast path.
+                project_memberships: [normalizedPm],
+                project_membership_details: [normalizedPm],
+              });
+            } else {
+              existing.project_memberships = [...(existing.project_memberships || []), normalizedPm];
+              existing.project_membership_details = [...(existing.project_membership_details || []), normalizedPm];
+            }
           }
-        }
 
-        setOrgMembers(Array.from(byOrgMembershipId.values()));
-        return;
+          setOrgMembers(Array.from(byOrgMembershipId.values()));
+          return;
+        }
       }
 
       if (clubIdForMembers) {
