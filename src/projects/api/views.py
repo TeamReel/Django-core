@@ -11,7 +11,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
-from projects.models import Project, ProjectInvite, ProjectMembership, ProjectMembershipPromotion
+from projects.models import (
+    Project,
+    ProjectFunctionalRoleAssignment,
+    ProjectInvite,
+    ProjectMembership,
+    ProjectMembershipPromotion,
+)
 from projects.services.invitation_service import InvitationService
 from projects.services.membership_service import MembershipService
 from projects.services.promotion_service import PromotionService
@@ -21,6 +27,7 @@ from .serializers import (
     AcceptInvitationSerializer,
     ProjectDetailSerializer,
     ProjectInviteSerializer,
+    ProjectFunctionalRoleAssignSerializer,
     ProjectListSerializer,
     ProjectMembershipPromotionSerializer,
     ProjectMembershipSerializer,
@@ -614,6 +621,124 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
             return
 
         raise PermissionDenied("You do not have access to this project's members.")
+
+
+class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
+    """Manage functional (domain) roles for users on a team project.
+
+    Routes (registered under /api/v1/projects/{project_pk}/functional-roles/):
+    - POST assign/   { user_id, roles: [...] }
+    - POST unassign/ { user_id, roles: [...] }
+
+    Notes:
+    - This is intentionally separate from access roles (ProjectMembership.role) and RBAC.
+    - Functional roles are team-level labels and a user may hold multiple roles per team.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def _get_project(self) -> Project:
+        project_pk = self.kwargs.get("project_pk")
+        try:
+            return Project.objects.get(pk=project_pk)
+        except Project.DoesNotExist as exc:
+            raise ValidationError({"detail": "Project not found."}) from exc
+
+    def _check_can_manage_functional_roles(self, project: Project) -> None:
+        """Reuse the same intent as membership management permissions."""
+        user = self.request.user
+
+        if user.is_superuser or user.is_staff:
+            return
+
+        # Legacy: explicit project admin membership
+        if ProjectMembership.objects.filter(
+            project=project,
+            user=user,
+            role=ProjectMembership.Role.ADMIN,
+            deleted_at__isnull=True,
+        ).exists():
+            return
+
+        from permissions.evaluator import check_permission
+
+        # Direct team-member management capability on this project
+        if check_permission(
+            user.id,
+            "profile.edit_team",
+            resource_type="project",
+            resource_id=project.id,
+        ):
+            return
+
+        # Club Admin can manage child teams via project.edit_children on the parent (club)
+        if project.parent_project_id and check_permission(
+            user.id,
+            "project.edit_children",
+            resource_type="project",
+            resource_id=project.parent_project_id,
+        ):
+            return
+
+        raise PermissionDenied("Only team admins can manage functional roles.")
+
+    def _ensure_team_project(self, project: Project) -> None:
+        if project.parent_project_id is None:
+            raise ValidationError(
+                {"detail": "Functional roles are only supported on team projects."}
+            )
+
+    @action(detail=False, methods=["post"], url_path="assign")
+    def assign(self, request, project_pk=None):
+        project = self._get_project()
+        self._ensure_team_project(project)
+        self._check_can_manage_functional_roles(project)
+
+        serializer = ProjectFunctionalRoleAssignSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user_id = serializer.validated_data["user_id"]
+        roles = serializer.validated_data["roles"]
+
+        created = []
+        skipped = []
+        for role in roles:
+            obj, was_created = ProjectFunctionalRoleAssignment.objects.get_or_create(
+                project=project,
+                user_id=user_id,
+                role=role,
+                defaults={
+                    "assignment_reason": ProjectFunctionalRoleAssignment.AssignmentReason.MANUAL,
+                },
+            )
+            if was_created:
+                created.append(obj.role)
+            else:
+                skipped.append(obj.role)
+
+        return Response({"created": created, "skipped": skipped})
+
+    @action(detail=False, methods=["post"], url_path="unassign")
+    def unassign(self, request, project_pk=None):
+        project = self._get_project()
+        self._ensure_team_project(project)
+        self._check_can_manage_functional_roles(project)
+
+        serializer = ProjectFunctionalRoleAssignSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user_id = serializer.validated_data["user_id"]
+        roles = serializer.validated_data["roles"]
+
+        qs = ProjectFunctionalRoleAssignment.objects.filter(
+            project=project,
+            user_id=user_id,
+            role__in=roles,
+        )
+        removed = list(qs.values_list("role", flat=True))
+        qs.delete()
+
+        return Response({"removed": sorted(removed)})
 
     def get_throttles(self):
         """Apply different rate limits for read vs write operations."""

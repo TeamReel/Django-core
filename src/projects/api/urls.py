@@ -4,6 +4,7 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
+    ProjectFunctionalRoleViewSet,
     ProjectMembershipViewSet,
     ProjectViewSet,
     ProjectInviteViewSet,
@@ -14,6 +15,11 @@ from .views import (
 router = DefaultRouter()
 router.register(
     r"(?P<project_pk>[^/.]+)/members", ProjectMembershipViewSet, basename="project-members"
+)
+router.register(
+    r"(?P<project_pk>[^/.]+)/functional-roles",
+    ProjectFunctionalRoleViewSet,
+    basename="project-functional-roles",
 )
 router.register(
     r"(?P<project_pk>[^/.]+)/invitations",

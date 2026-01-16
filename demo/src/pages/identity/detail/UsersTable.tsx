@@ -149,6 +149,15 @@ export default function UsersTable({
     return { label, title };
   };
 
+  const getFunctionalRolesForProjectMembership = (pm: any): string[] => {
+    const roles = (pm as any)?.functional_roles ?? (pm as any)?.functionalRoles;
+    if (Array.isArray(roles)) return roles.map((r) => String(r || '').trim()).filter(Boolean);
+
+    const meta = (pm as any)?.metadata || {};
+    const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
+    return legacy ? [legacy] : [];
+  };
+
   return (
     <Card>
       <Table style={compactTableStyle}>
@@ -158,6 +167,7 @@ export default function UsersTable({
               <col style={{ width: '260px' }} />
               <col style={{ width: '260px' }} />
               <col style={{ width: '140px' }} />
+              <col style={{ width: '200px' }} />
               <col style={{ width: '330px' }} />
             </>
           ) : (
@@ -176,6 +186,7 @@ export default function UsersTable({
             <th style={compactThStyle}>User</th>
             <th style={compactThStyle}>Email</th>
             <th style={compactThStyle}>Role</th>
+            {isTeamRoute ? <th style={compactThStyle}>Functional</th> : null}
             <th style={compactThStyle}>Actions</th>
           </tr>
         </thead>
@@ -201,6 +212,11 @@ export default function UsersTable({
             const rawProjectIds = Array.from(
               new Set(pms.map((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '')).filter(Boolean))
             );
+
+            const scopedTeamPm = isTeamRoute
+              ? pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(currentProjectId))
+              : null;
+            const functionalRoles = scopedTeamPm ? getFunctionalRolesForProjectMembership(scopedTeamPm) : [];
 
             // The People table "Team" column should show teams, not the club.
             // Users can have a direct club membership AND a team membership (or multiple season memberships
@@ -298,6 +314,21 @@ export default function UsersTable({
                     {roleDisplay.label}
                   </Badge>
                 </td>
+                {isTeamRoute ? (
+                  <td style={compactTdStyle}>
+                    {functionalRoles.length ? (
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {functionalRoles.map((r) => (
+                          <Badge key={r} variant="default">
+                            {r}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                ) : null}
                 <td style={compactTdStyle}>
                   {userCanManageMembers ? (
                     <div style={compactActionsStyle}>

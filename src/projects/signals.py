@@ -13,7 +13,7 @@ import logging
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
-from .models import Project, ProjectMembership
+from .models import Project, ProjectFunctionalRoleAssignment, ProjectMembership
 from .services.cache_service import CacheService
 
 logger = logging.getLogger(__name__)
@@ -125,6 +125,22 @@ def invalidate_on_membership_change(sender, instance, **kwargs):
 @receiver(post_delete, sender=ProjectMembership)
 def invalidate_on_membership_delete(sender, instance, **kwargs):
     """Invalidate cache when membership deleted."""
+    try:
+        # If a user is no longer a member of a team, remove any functional-role
+        # assignments for that team to avoid stale role rows.
+        manager = getattr(ProjectFunctionalRoleAssignment, "objects", None)
+        if manager is not None:
+            manager.filter(
+                project_id=instance.project_id,
+                user_id=instance.user_id,
+            ).delete()
+    except Exception:
+        # Best-effort cleanup; never break core deletes.
+        logger.warning(
+            "Failed to cleanup functional role assignments on membership delete",
+            exc_info=True,
+        )
+
     try:
         cache_service = CacheService()
         cache_service.invalidate_user_project_permissions(

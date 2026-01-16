@@ -27,6 +27,7 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
     period = serializers.UUIDField(source="period_id", read_only=True)
     period_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
     metadata = serializers.JSONField(required=False)
+    functional_roles = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ProjectMembership
@@ -39,10 +40,87 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
             "period_id",
             "role",
             "metadata",
+            "functional_roles",
             "assignment_reason",
             "created_at",
         ]
         read_only_fields = ["id", "created_at", "assignment_reason"]
+
+    def get_functional_roles(self, obj):
+        """Return functional roles for this user on this project.
+
+        Notes:
+        - This is team-level domain data, distinct from access roles.
+        - We also include a derived 'coach' role when the membership access role is admin.
+        - During transition, we also read legacy metadata hints (team_role/character_role).
+        """
+        roles = set()
+
+        try:
+            from projects.models import ProjectFunctionalRoleAssignment
+
+            qs = ProjectFunctionalRoleAssignment.objects.filter(
+                project_id=obj.project_id,
+                user_id=obj.user_id,
+            ).values_list("role", flat=True)
+            roles.update(qs)
+        except Exception:
+            # Best-effort: do not break members endpoint if functional roles table is missing.
+            pass
+
+        # Derived: admins are considered coaches on team projects.
+        try:
+            if (
+                getattr(obj.project, "parent_project_id", None)
+                and obj.role == ProjectMembership.Role.ADMIN
+            ):
+                roles.add("coach")
+        except Exception:
+            pass
+
+        # Legacy metadata hints.
+        meta = getattr(obj, "metadata", None) or {}
+        for key in ("team_role", "character_role"):
+            raw = str(meta.get(key, "") or "").strip().lower()
+            if not raw:
+                continue
+            # Normalize common variants
+            mapping = {
+                "coach": "coach",
+                "trainer": "coach",
+                "manager": "manager",
+                "player": "player",
+                "speler": "player",
+                "keeper": "keeper",
+                "goalkeeper": "keeper",
+                "assistent": "assistant",
+                "assistant": "assistant",
+                "verzorger": "verzorger",
+                "supporter": "supporter",
+            }
+            normalized = mapping.get(raw)
+            if normalized:
+                roles.add(normalized)
+
+        return sorted(roles)
+
+
+class ProjectFunctionalRoleAssignSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    roles = serializers.ListField(
+        child=serializers.ChoiceField(
+            choices=[
+                "coach",
+                "player",
+                "keeper",
+                "assistant",
+                "verzorger",
+                "supporter",
+                "manager",
+            ]
+        ),
+        allow_empty=False,
+    )
 
     def validate_user_id(self, value):
         """Ensure user exists."""

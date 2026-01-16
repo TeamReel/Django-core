@@ -55,7 +55,8 @@ export default function LinkUserModal({
 
   const [clubId, setClubId] = useState('');
   const [teamId, setTeamId] = useState('');
-  const [projectRole, setProjectRole] = useState<string>('viewer');
+  const [accessRole, setAccessRole] = useState<'viewer' | 'editor' | 'admin'>('viewer');
+  const [functionalRoles, setFunctionalRoles] = useState<string[]>([]);
 
   const [seasonId, setSeasonId] = useState('');
   const [seasonOptions, setSeasonOptions] = useState<PeriodOption[]>([]);
@@ -156,13 +157,20 @@ export default function LinkUserModal({
     setError(null);
     setSuccessNote(null);
     setOrgRole('member');
-    setProjectRole('viewer');
+    setAccessRole('viewer');
+    setFunctionalRoles([]);
     setClubId('');
     setTeamId('');
     setSeasonId('');
     setSeasonOptions([]);
     setOrganisationId(initialOrgIdFromSlugOrId || '');
   }, [initialOrgIdFromSlugOrId, opened]);
+
+  // Reset functional roles when switching teams.
+  useEffect(() => {
+    if (!opened) return;
+    setFunctionalRoles([]);
+  }, [opened, teamId]);
 
   // If a team is selected, auto-set the parent club if known.
   useEffect(() => {
@@ -245,20 +253,11 @@ export default function LinkUserModal({
     const pid = String(projectId || '').trim();
     if (!pid) return;
 
-    const resolveAccessRole = (teamRole: string): 'viewer' | 'editor' | 'admin' => {
-      const v = String(teamRole || '').trim().toLowerCase();
-      if (v === 'admin' || v === 'owner') return 'admin';
-      if (v === 'editor') return 'editor';
-      // Sports-ish roles (player/coach/manager) map to viewer access by default.
-      return 'viewer';
-    };
-
     // Best-effort idempotency.
     // If a period is specified, we allow creating an additional membership scoped to that period.
     if (!periodId && existingProjectIds.has(pid)) return;
 
-    const accessRole = resolveAccessRole(projectRole);
-    const teamRole = String(projectRole || '').trim();
+    const roleToSend = accessRole;
     const effectivePeriodId = String(periodId || '').trim() || undefined;
 
     const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/`, {
@@ -270,8 +269,7 @@ export default function LinkUserModal({
       credentials: 'include',
       body: JSON.stringify({
         user_id: Number(user.id),
-        role: accessRole,
-        metadata: teamRole ? { team_role: teamRole } : undefined,
+        role: roleToSend,
         period_id: effectivePeriodId,
       }),
     });
@@ -280,6 +278,34 @@ export default function LinkUserModal({
       const text = await res.text().catch(() => '');
       if (/already|exists|duplicate/i.test(text)) return;
       throw new Error(text || 'Failed to assign user to project');
+    }
+  };
+
+  const assignFunctionalRoles = async (projectId: string, roles: string[]) => {
+    if (!user) return;
+    const pid = String(projectId || '').trim();
+    if (!pid) return;
+    const cleaned = (Array.isArray(roles) ? roles : [])
+      .map((r) => String(r || '').trim())
+      .filter(Boolean);
+    if (cleaned.length === 0) return;
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/functional-roles/assign/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        user_id: Number(user.id),
+        roles: cleaned,
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to assign functional roles');
     }
   };
 
@@ -434,6 +460,7 @@ export default function LinkUserModal({
       }
       if (teamId) {
         await createProjectMembership(String(teamId), seasonId || undefined);
+        await assignFunctionalRoles(String(teamId), functionalRoles);
       }
 
       setSuccessNote('Linked successfully.');
@@ -448,13 +475,20 @@ export default function LinkUserModal({
 
   if (!opened) return null;
 
-  const projectRoleOptions = [
+  const accessRoleOptions: Array<{ value: 'viewer' | 'editor' | 'admin'; label: string }> = [
     { value: 'viewer', label: 'Viewer' },
-    { value: 'player', label: 'Player' },
-    { value: 'coach', label: 'Coach' },
-    { value: 'manager', label: 'Manager' },
+    { value: 'editor', label: 'Editor' },
     { value: 'admin', label: 'Admin' },
-    { value: 'owner', label: 'Owner' },
+  ];
+
+  const functionalRoleOptions: Array<{ value: string; label: string }> = [
+    { value: 'player', label: 'Player' },
+    { value: 'keeper', label: 'Keeper' },
+    { value: 'coach', label: 'Coach' },
+    { value: 'assistant', label: 'Assistant' },
+    { value: 'verzorger', label: 'Verzorger' },
+    { value: 'manager', label: 'Manager' },
+    { value: 'supporter', label: 'Supporter' },
   ];
 
   return (
@@ -757,11 +791,11 @@ export default function LinkUserModal({
 
             <div>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>
-                Club/Team Role
+                Access Role (permissions)
               </label>
               <select
-                value={projectRole}
-                onChange={(e) => setProjectRole(e.target.value)}
+                value={accessRole}
+                onChange={(e) => setAccessRole((e.target.value as any) || 'viewer')}
                 style={{
                   width: '100%',
                   padding: '8px',
@@ -773,15 +807,59 @@ export default function LinkUserModal({
                 }}
                 disabled={!clubId && !teamId}
               >
-                {projectRoleOptions.map((o) => (
+                {accessRoleOptions.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
                   </option>
                 ))}
               </select>
               <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px', lineHeight: 1.35 }}>
-                This is a sports role label (stored as membership metadata). Access permissions are mapped to the backend
-                role automatically: Player/Coach/Manager → Viewer, Admin/Owner → Admin.
+                This controls backend access for the Club/Team (viewer/editor/admin). Team-level functional roles are managed
+                separately and can be multi-valued.
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>
+                Functional Roles (team only)
+              </label>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: '8px 12px',
+                  padding: '10px',
+                  border: '1px solid var(--app-border)',
+                  borderRadius: '6px',
+                  backgroundColor: 'var(--app-surface)',
+                  opacity: teamId ? 1 : 0.6,
+                }}
+              >
+                {functionalRoleOptions.map((opt) => {
+                  const checked = functionalRoles.includes(opt.value);
+                  return (
+                    <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                      <input
+                        type="checkbox"
+                        disabled={!teamId}
+                        checked={checked}
+                        onChange={(e) => {
+                          const nextChecked = e.target.checked;
+                          setFunctionalRoles((prev) => {
+                            const set = new Set(prev);
+                            if (nextChecked) set.add(opt.value);
+                            else set.delete(opt.value);
+                            return Array.from(set);
+                          });
+                        }}
+                      />
+                      {opt.label}
+                    </label>
+                  );
+                })}
+              </div>
+              <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px', lineHeight: 1.35 }}>
+                Tip: Team Admins automatically show as “Coach” in the API.
               </div>
             </div>
 
