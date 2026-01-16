@@ -57,24 +57,25 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
   const clubSlugOrId = clubId || '';
 
   const projectDetailPath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}`
+    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
 
   const seasonsBasePath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`
+    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
 
   const seasonPathKey = periodPathKey(season) || effectiveSeasonId;
+  const competitionPathKey = periodPathKey(competition) || effectiveCompetitionId;
 
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+      { label: org?.name || 'Federation', onClick: () => navigate(`/${orgSlugOrId}`) },
       ...(isTeamRoute
         ? [
             {
               label: club?.name || 'Club',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+              onClick: () => navigate(`/${orgSlugOrId}/${clubSlugOrId}`),
             },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
@@ -83,7 +84,11 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
       {
         label: competition?.name || 'Competition',
         onClick: () =>
-          navigate(`${seasonsBasePath}/${seasonPathKey}/competitions/${effectiveCompetitionId}`),
+          navigate(
+            isTeamRoute
+              ? `${seasonsBasePath}/${seasonPathKey}/${competitionPathKey}`
+              : `${seasonsBasePath}/${seasonPathKey}/competitions/${effectiveCompetitionId}`
+          ),
       },
       { label: 'Matches', current: true },
     ],
@@ -99,6 +104,7 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
       projectDetailPath,
       seasonPathKey,
       effectiveCompetitionId,
+      competitionPathKey,
       isTeamRoute,
       clubSlugOrId,
     ]
@@ -268,11 +274,19 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
                             <Button
                               size="sm"
                               variant="secondary"
-                              onClick={() =>
-                                navigate(
-                                  `/matches/${(match as any).slug || match.id}`
-                                )
-                              }
+                              onClick={() => {
+                                const matchKeyOrId = String((match as any).slug || match.id || '').trim();
+                                if (!matchKeyOrId) return;
+
+                                if (isTeamRoute && orgSlugOrId && clubSlugOrId && projectSlugOrId && seasonPathKey && competitionPathKey) {
+                                  navigate(
+                                    `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonPathKey}/${competitionPathKey}/${matchKeyOrId}`
+                                  );
+                                  return;
+                                }
+
+                                navigate(`/matches/${matchKeyOrId}`);
+                              }}
                             >
                               View
                             </Button>

@@ -38,6 +38,7 @@ import {
 import { AuditLogTable } from '../../components/AuditLog/AuditLogTable';
 import { PolicyList } from '../../components/Organisations/PolicyList';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
+import { periodPathKey } from '../../utils/periodPath';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -212,6 +213,57 @@ export const OrganisationDetailPage: React.FC = () => {
     const list = allClubsForTeams.length > 0 ? allClubsForTeams : clubs;
     return (list || []) as any[];
   }, [allClubsForTeams, clubs]);
+
+  const getBestMatchDetailPath = (m: any): string => {
+    const matchSlugOrId = String((m as any)?.slug || m?.id || '').trim();
+    if (!matchSlugOrId) return '/matches';
+
+    const orgSlug = String(currentOrgSlug || '').trim();
+    if (!orgSlug) return `/matches/${matchSlugOrId}`;
+
+    const clubById = new Map<string, any>();
+    for (const c of clubs as any[]) {
+      if (!c) continue;
+      clubById.set(String(c.id), c);
+    }
+
+    const teamById = new Map<string, any>();
+    for (const t of teams as any[]) {
+      if (!t) continue;
+      teamById.set(String(t.id), t);
+    }
+
+    const periodById = new Map<string, any>();
+    for (const p of orgPeriods as any[]) {
+      if (!p) continue;
+      periodById.set(String(p.id), p);
+    }
+
+    const teamId = String(m?.project?.id ?? m?.project_id ?? '').trim();
+    const team = teamId ? teamById.get(teamId) : null;
+    const teamSlugOrId = String(team?.slug || team?.id || teamId || '').trim();
+
+    const rawClubId = String(
+      (team?.parent_id ?? team?.parent ?? team?.parent_project ?? team?.parent_project_id) ??
+        (m?.project?.parent_id ?? m?.project?.parent?.id ?? m?.project?.parent_project_id) ??
+        ''
+    ).trim();
+    const club = rawClubId ? clubById.get(rawClubId) : null;
+    const clubSlugOrId = String(club?.slug || club?.id || rawClubId || '').trim();
+
+    const periodId = String(m?.period?.id ?? m?.period_id ?? '').trim();
+    const competition = periodId ? (periodById.get(periodId) || m?.period) : m?.period;
+    const competitionKeyOrId = String(periodPathKey(competition) || (competition as any)?.slug || (competition as any)?.id || periodId || '').trim();
+    const seasonId = String((competition as any)?.parent_period_id ?? (competition as any)?.parent_period?.id ?? '').trim();
+    const season = seasonId ? periodById.get(seasonId) : (competition as any)?.parent_period;
+    const seasonKeyOrId = String(periodPathKey(season) || (season as any)?.slug || (season as any)?.id || seasonId || '').trim();
+
+    if (orgSlug && clubSlugOrId && teamSlugOrId && seasonKeyOrId && competitionKeyOrId) {
+      return `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}/${matchSlugOrId}`;
+    }
+
+    return `/matches/${matchSlugOrId}`;
+  };
 
   const membershipUserCounts = useMemo(() => {
     const clubUserIdsByClubId = new Map<string, Set<string>>();
@@ -1480,7 +1532,7 @@ export const OrganisationDetailPage: React.FC = () => {
                                 <td style={compactTdStyle}>
                                   <button
                                     className="text-xs text-blue-600 hover:underline"
-                                    onClick={() => navigate(`/matches/${(m as any).slug || m.id}`)}
+                                    onClick={() => navigate(getBestMatchDetailPath(m))}
                                   >
                                     View
                                   </button>
@@ -1531,7 +1583,7 @@ export const OrganisationDetailPage: React.FC = () => {
                               </div>
                               <button
                                 className="text-xs text-blue-600 mt-1 hover:underline bg-transparent border-0 p-0 cursor-pointer"
-                                onClick={() => navigate(`/matches/${(m as any).slug || m.id}`)}
+                                onClick={() => navigate(getBestMatchDetailPath(m))}
                               >
                                 View Details →
                               </button>
@@ -3619,7 +3671,9 @@ export const OrganisationDetailPage: React.FC = () => {
                           const seasonSlugOrId = season?.slug || season?.id || compSeasonId;
                           const compSlugOrId = String((competition as any)?.slug || periodId || '').trim();
                           const matchSlugOrId = String((m as any)?.slug || m.id || '').trim();
-                          const matchDetailPath = `/matches/${matchSlugOrId}`;
+                          const matchDetailPath = (currentOrgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId && compSlugOrId)
+                            ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${compSlugOrId}/${matchSlugOrId}`
+                            : `/matches/${matchSlugOrId}`;
 
                           const formattedStart = m.start_time ? new Date(m.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
 

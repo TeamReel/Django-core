@@ -213,17 +213,48 @@ export default function MatchesPage() {
                   {matches.map((m) => (
                     <tr key={m.id}>
                       <td>
+                        {(() => {
+                          const matchSlugOrId = String((m as any).slug || m.id || '').trim();
+
+                          const orgObj: any = organisations.find((o: any) => String(o?.id) === String(selectedOrgId));
+                          const orgSlugOrId = String(orgObj?.slug || selectedOrgId || '').trim();
+
+                          const teamObj: any = teams.find((t: any) => String(t?.id) === String(selectedTeamId));
+                          const teamSlugOrId = String(teamObj?.slug || selectedTeamId || '').trim();
+
+                          const inferredClubId = String(
+                            selectedClubId || teamObj?.parent_id || teamObj?.parent || teamObj?.parent_project_id || teamObj?.parent_project || ''
+                          ).trim();
+                          const clubObj: any = clubs.find((c: any) => String(c?.id) === inferredClubId);
+                          const clubSlugOrId = String(clubObj?.slug || inferredClubId || '').trim();
+
+                          const competition: any = (m as any)?.period;
+                          const competitionKeyOrId = String(competition?.slug || competition?.id || '').trim();
+                          const seasonKeyOrId = String(
+                            competition?.parent_period?.slug ||
+                              competition?.parent_period?.id ||
+                              competition?.parent_period_id ||
+                              ''
+                          ).trim();
+
+                          const matchPath = (orgSlugOrId && clubSlugOrId && teamSlugOrId && seasonKeyOrId && competitionKeyOrId && matchSlugOrId)
+                            ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}/${matchSlugOrId}`
+                            : `/matches/${matchSlugOrId}`;
+
+                          return (
                         <a
-                          href={`/matches/${(m as any).slug || m.id}`}
+                          href={matchPath}
                           className="text-blue-600 hover:underline"
                           style={{ fontSize: '0.85rem' }}
                           onClick={(e) => {
                             e.preventDefault();
-                            navigate(`/matches/${(m as any).slug || m.id}`);
+                            navigate(matchPath);
                           }}
                         >
                           {m.title}
                         </a>
+                          );
+                        })()}
                       </td>
                       <td style={{ fontSize: '0.85rem' }}>{m.period?.name || '-'}</td>
                       <td style={{ fontSize: '0.85rem' }}>{m.start_time || '-'}</td>

@@ -859,11 +859,11 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const clubSlugOrId = clubId || '';
 
   const projectDetailPath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
+    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
 
   const seasonsBasePath = isTeamRoute
-    ? `/organisations/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/seasons`
+    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
 
   const activeTab = useMemo(() => {
@@ -907,12 +907,12 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+      { label: org?.name || 'Federation', onClick: () => navigate(`/${orgSlugOrId}`) },
       ...(isTeamRoute
         ? [
             {
               label: club?.name || 'Club',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/${clubSlugOrId}`),
+              onClick: () => navigate(`/${orgSlugOrId}/${clubSlugOrId}`),
             },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]
@@ -1396,6 +1396,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
   const matchDetailPath = (matchId: string) => {
     const matchForLink = String((matches || []).find((m: any) => String(m?.id) === String(matchId))?.slug || matchId).trim();
+    if (isTeamRoute && competitionBasePath && matchForLink) return `${competitionBasePath}/${matchForLink}`;
     return `/matches/${matchForLink || matchId}`;
   };
 

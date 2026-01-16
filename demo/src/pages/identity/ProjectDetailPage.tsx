@@ -501,6 +501,27 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
       .find((row) => row.startsWith('csrftoken='))
       ?.split('=')[1] || '';
 
+  const getBestMatchDetailPath = (m: any): string => {
+    const matchSlugOrId = String((m as any)?.slug || m?.id || '').trim();
+    if (!matchSlugOrId) return '/matches';
+
+    const teamSlugOrId = String(m?.project?.slug || m?.project?.id || m?.project_id || '').trim() || String((project as any)?.slug || project?.id || '').trim();
+
+    const periodId = String(m?.period?.id ?? m?.period_id ?? '').trim();
+    const competition = periodId ? (competitions as any[]).find((c: any) => String(c?.id) === periodId) : null;
+    const compSeasonId = String(competition?.parent_period_id ?? competition?.parent_period?.id ?? '').trim();
+    const season = compSeasonId ? (seasons as any[]).find((s: any) => String((s as any)?.id) === compSeasonId) : null;
+
+    const seasonSlugOrId = String((season as any)?.slug || (season as any)?.id || compSeasonId || '').trim();
+    const compSlugOrId = String((competition as any)?.slug || (competition as any)?.id || periodId || '').trim();
+
+    if (currentOrgSlug && currentClubSlugOrId && teamSlugOrId && seasonSlugOrId && compSlugOrId) {
+      return `/${currentOrgSlug}/${currentClubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${compSlugOrId}/${matchSlugOrId}`;
+    }
+
+    return `/matches/${matchSlugOrId}`;
+  };
+
   const createModalOrganisations = useMemo(() => {
     const o = resolvedOrg?.id ? [{ id: String(resolvedOrg.id), name: resolvedOrg.name, slug: (resolvedOrg as any).slug }] : [];
     return o as any[];
@@ -2287,7 +2308,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               <button
                                 type="button"
                                 className="app-unstyled-button text-xs text-blue-600 mt-1 hover:underline bg-transparent border-0 p-0 cursor-pointer"
-                                onClick={() => navigate(`/matches/${(m as any).slug || m.id}`)}
+                                onClick={() => navigate(getBestMatchDetailPath(m))}
                               >
                                 View Details →
                               </button>
@@ -4009,8 +4030,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             const seasonSlugOrId = season?.slug || season?.id || compSeasonId;
                             const compSlugOrId = String((competition as any)?.slug || periodId || '').trim();
                             const matchSlugOrId = String((m as any)?.slug || m.id || '').trim();
-                            // Always use the neutral match route so links work from any detail page (canonical or organisations/projects paths).
-                            const matchDetailPath = `/matches/${matchSlugOrId}`;
+                            const matchDetailPath = (currentOrgSlug && currentClubSlugOrId && teamSlugOrId && seasonSlugOrId && compSlugOrId)
+                              ? `/${currentOrgSlug}/${currentClubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${compSlugOrId}/${matchSlugOrId}`
+                              : `/matches/${matchSlugOrId}`;
 
                             const formattedStart = m.start_time
                               ? new Date(m.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' })
