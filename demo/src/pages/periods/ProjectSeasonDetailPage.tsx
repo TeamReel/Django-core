@@ -693,6 +693,57 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     });
   };
 
+  const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+  const getRetryDelayMsFromResponse = async (res: Response): Promise<number | null> => {
+    const header = res.headers.get('retry-after');
+    if (header) {
+      const seconds = Number(header);
+      if (Number.isFinite(seconds) && seconds > 0) return Math.max(500, Math.round(seconds * 1000));
+    }
+
+    try {
+      const rawText = await res.text();
+      // Example payload:
+      // {"status":"error","error":{"message":"Request was throttled. Expected available in 30 seconds."}}
+      const match = rawText.match(/Expected available in\s+(\d+)\s+seconds/i);
+      if (match?.[1]) {
+        const seconds = Number(match[1]);
+        if (Number.isFinite(seconds) && seconds > 0) return Math.max(500, Math.round(seconds * 1000));
+      }
+      // If response isn't JSON or doesn't match, fall through.
+    } catch {
+      // ignore
+    }
+
+    return null;
+  };
+
+  const fetchWithThrottleRetry = async (
+    input: RequestInfo | URL,
+    init: RequestInit,
+    opts?: { maxAttempts?: number; baseDelayMs?: number }
+  ): Promise<Response> => {
+    const maxAttempts = opts?.maxAttempts ?? 6;
+    const baseDelayMs = opts?.baseDelayMs ?? 500;
+
+    let attempt = 0;
+    // We intentionally run sequentially to reduce pressure on API.
+    // This helper adds retry + backoff when the server throttles (HTTP 429).
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      attempt += 1;
+      const res = await fetch(input, init);
+
+      if (res.status !== 429) return res;
+
+      if (attempt >= maxAttempts) return res;
+
+      const retryDelayMs = (await getRetryDelayMsFromResponse(res)) ?? baseDelayMs * attempt;
+      await sleep(Math.min(60_000, retryDelayMs));
+    }
+  };
+
   const assignUsersToSeasonSquad = async (userIds: string[]) => {
     const projectIdForMembers = String((project as any)?.id || '').trim();
     const seasonUuid = String(resolvedSeasonId || '').trim();
@@ -704,8 +755,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     try {
       setBulkSubmitting(true);
       for (const uid of ids) {
+        // Pace requests to avoid hitting server throttles when selecting many users.
+        await sleep(250);
         const role = getBestRoleForUser(uid);
-        const res = await fetch(
+        const res = await fetchWithThrottleRetry(
           `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
           {
             method: 'POST',
@@ -754,7 +807,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     try {
       setBulkSubmitting(true);
       for (const membershipId of ids) {
-        const res = await fetch(
+        // Pace requests to avoid hitting server throttles when unassigning many users.
+        await sleep(200);
+        const res = await fetchWithThrottleRetry(
           `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/${encodeURIComponent(membershipId)}/`,
           {
             method: 'DELETE',
