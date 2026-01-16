@@ -12,6 +12,7 @@ from search.backend.postgres import PostgresSearchBackend
 from search.api.serializers import SearchEntrySerializer
 from search.utils import sanitize_query
 from projects.models import Project
+from activities.models import Activity
 
 
 # Simple category tokens supported by the frontend.
@@ -23,24 +24,30 @@ CATEGORY_TO_MODEL_LABELS = {
     # clubs/teams are both projects.project, but with an additional hierarchy filter.
     "clubs": ["projects.project"],
     "teams": ["projects.project"],
+    # Activities/Periods
+    "activities": ["activities.activity"],
+    "matches": ["activities.activity"],
+    "periods": ["activities.period"],
 }
 
 
-def _normalize_types(types_param: str | None) -> tuple[list[str] | None, str | None]:
-    """Return (model_labels, project_scope).
+def _normalize_types(types_param: str | None) -> tuple[list[str] | None, str | None, str | None]:
+    """Return (model_labels, project_scope, activity_scope).
 
     - model_labels: list of 'app.model' labels to filter content types.
     - project_scope: 'clubs' | 'teams' | None for additional project hierarchy filtering.
+    - activity_scope: 'matches' | None for additional activity filtering.
     """
     if not types_param:
-        return None, None
+        return None, None, None
 
     raw_tokens = [t.strip() for t in types_param.split(",") if t.strip()]
     if not raw_tokens:
-        return None, None
+        return None, None, None
 
     model_labels: list[str] = []
     project_scope: str | None = None
+    activity_scope: str | None = None
 
     for token in raw_tokens:
         lower = token.lower()
@@ -48,6 +55,8 @@ def _normalize_types(types_param: str | None) -> tuple[list[str] | None, str | N
             model_labels.extend(CATEGORY_TO_MODEL_LABELS[lower])
             if lower in {"clubs", "teams"}:
                 project_scope = lower
+            if lower == "matches":
+                activity_scope = "matches"
             continue
 
         # Assume it's already an 'app.model' label.
@@ -56,7 +65,7 @@ def _normalize_types(types_param: str | None) -> tuple[list[str] | None, str | N
     # De-duplicate while preserving order
     seen = set()
     model_labels = [x for x in model_labels if not (x in seen or seen.add(x))]
-    return model_labels or None, project_scope
+    return model_labels or None, project_scope, activity_scope
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -84,9 +93,9 @@ class SearchAPIView(APIView):
         # Parse types
         # Supported:
         # - ?types=projects.project,accounts.user (explicit model labels)
-        # - ?types=users|organisations|projects|clubs|teams (frontend category tokens)
+        # - ?types=users|organisations|projects|clubs|teams|matches|activities|periods (frontend category tokens)
         types_param = request.query_params.get("types")
-        types, project_scope = _normalize_types(types_param)
+        types, project_scope, activity_scope = _normalize_types(types_param)
 
         backend = PostgresSearchBackend()
         # Get base queryset from backend (includes permission filtering and ranking)
@@ -113,6 +122,16 @@ class SearchAPIView(APIView):
                 content_type=project_ct,
                 object_id__in=project_ids,
             )
+
+        # Optional activity subtype filter
+        if activity_scope == "matches":
+            activity_ct = ContentType.objects.get_for_model(Activity)
+            match_ids = (
+                Activity.objects.filter(activity_type="match")
+                .annotate(id_str=Cast("id", CharField()))
+                .values_list("id_str", flat=True)
+            )
+            queryset = queryset.filter(content_type=activity_ct, object_id__in=match_ids)
 
         # Add Highlighting
         # We need to reconstruct the SearchQuery to use in SearchHeadline
@@ -145,6 +164,9 @@ class SearchAPIView(APIView):
             grouped: dict[str, list] = {
                 "clubs": [],
                 "teams": [],
+                "periods": [],
+                "matches": [],
+                "activities": [],
                 "users": [],
                 "organisations": [],
             }
@@ -160,6 +182,18 @@ class SearchAPIView(APIView):
                         key = "teams" if is_team else "clubs"
                     except (AttributeError, TypeError, ValueError):
                         key = "clubs"
+                elif model_name == "period":
+                    key = "periods"
+                elif model_name == "activity":
+                    try:
+                        obj = entry.content_object
+                        key = (
+                            "matches"
+                            if getattr(obj, "activity_type", None) == "match"
+                            else "activities"
+                        )
+                    except (AttributeError, TypeError, ValueError):
+                        key = "activities"
                 elif model_name == "user":
                     key = "users"
                 elif model_name in {"organisation", "organization"}:
@@ -172,7 +206,15 @@ class SearchAPIView(APIView):
                     grouped[key].append(entry)
 
             response_data: dict[str, list] = {}
-            for key in ["clubs", "teams", "users", "organisations"]:
+            for key in [
+                "clubs",
+                "teams",
+                "periods",
+                "matches",
+                "activities",
+                "users",
+                "organisations",
+            ]:
                 if grouped.get(key):
                     serializer = SearchEntrySerializer(grouped[key], many=True)
                     response_data[key] = serializer.data

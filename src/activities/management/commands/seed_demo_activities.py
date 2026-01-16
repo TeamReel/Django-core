@@ -307,7 +307,8 @@ class Command(BaseCommand):
             start_time=start,
             defaults={
                 "title": title,
-                "activity_type": type_label,
+                # Frontend treats match activities as activity_type=match
+                "activity_type": "match",
                 "end_time": end,
                 "location": location,
                 "description": description,
@@ -315,6 +316,7 @@ class Command(BaseCommand):
                     "opponent": opponent_name,
                     "is_home": is_home,
                     "context": context_label,
+                    "match_label": type_label,
                     # Add score for past matches (40% chance)
                     **(
                         {

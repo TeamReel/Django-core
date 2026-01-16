@@ -14,6 +14,9 @@ export interface SearchResult {
 export interface GroupedSearchResults {
   clubs?: SearchResult[];
   teams?: SearchResult[];
+  periods?: SearchResult[];
+  matches?: SearchResult[];
+  activities?: SearchResult[];
   users?: SearchResult[];
   organisations?: SearchResult[];
   projects?: SearchResult[];

@@ -77,7 +77,12 @@ class ActivityIndex(SearchIndex):
 
     def get_url(self, obj):
         """Returns the relative URL to the resource."""
-        # Activities don't have a dedicated detail view yet, link to admin
+        # TeamReel: match activities have a dedicated frontend route.
+        if getattr(obj, "activity_type", None) == "match":
+            key = getattr(obj, "slug", None) or str(obj.pk)
+            return f"/matches/{key}"
+
+        # Other activity types don't have a dedicated detail view yet.
         return f"/admin/activities/activity/{obj.pk}/change/"
 
     def get_visible_ids(self, user):
