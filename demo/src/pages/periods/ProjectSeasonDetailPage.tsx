@@ -754,6 +754,45 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
     try {
       setBulkSubmitting(true);
+
+      // Prefer bulk endpoint to avoid per-user write throttling.
+      if (ids.length > 1) {
+        const res = await fetchWithThrottleRetry(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/bulk/`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              members: ids.map((uid) => ({
+                user_id: Number(uid),
+                role: getBestRoleForUser(uid),
+                period_id: String(seasonUuid),
+              })),
+            }),
+          }
+        );
+
+        if (res.status === 404) {
+          // Older backend: fall back to sequential single-member POSTs.
+        } else if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(text || 'Failed to assign users');
+        } else {
+          setSelectedEligibleUserIds((prev) => {
+            const next = new Set(prev);
+            for (const uid of ids) next.delete(uid);
+            return next;
+          });
+          setMembersReloadToken((x) => x + 1);
+          setTeamRosterReloadToken((x) => x + 1);
+          return;
+        }
+      }
+
       for (const uid of ids) {
         // Pace requests to avoid hitting server throttles when selecting many users.
         await sleep(250);
@@ -806,6 +845,37 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
     try {
       setBulkSubmitting(true);
+
+      // Prefer bulk endpoint to avoid per-row throttling.
+      if (ids.length > 1) {
+        const res = await fetchWithThrottleRetry(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/bulk-delete/`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            credentials: 'include',
+            body: JSON.stringify({ membership_ids: ids }),
+          }
+        );
+
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(text || 'Failed to unassign users');
+        }
+
+        setSelectedSquadMembershipIds((prev) => {
+          const next = new Set(prev);
+          for (const membershipId of ids) next.delete(membershipId);
+          return next;
+        });
+        setMembersReloadToken((x) => x + 1);
+        setTeamRosterReloadToken((x) => x + 1);
+        return;
+      }
+
       for (const membershipId of ids) {
         // Pace requests to avoid hitting server throttles when unassigning many users.
         await sleep(200);

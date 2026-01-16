@@ -619,7 +619,14 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         """Apply different rate limits for read vs write operations."""
         if self.action in ["list", "retrieve"]:
             return [ProjectMembershipReadThrottle()]
-        elif self.action in ["create", "update", "partial_update", "destroy"]:
+        elif self.action in [
+            "create",
+            "update",
+            "partial_update",
+            "destroy",
+            "bulk",
+            "bulk_delete",
+        ]:
             return [ProjectMembershipWriteThrottle()]
         return []
 
@@ -913,6 +920,167 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         ]
 
         return Response({"data": users_data})
+
+    @action(detail=False, methods=["post"], url_path="bulk")
+    def bulk(self, request, project_pk=None):
+        """Bulk add members to a project.
+
+        This exists primarily to support UI bulk-assign flows without triggering
+        per-request write throttles (30/min). One bulk call counts as one write.
+
+        Accepted payloads:
+        - {"members": [{"user_id": 1, "role": "viewer", "period_id": "...", "metadata": {...}}, ...]}
+        - {"user_ids": [1,2,3], "role": "viewer", "period_id": "...", "metadata": {...}}
+        - Or a raw list of member objects.
+
+        Returns:
+        - {"created": N, "skipped": N, "errors": [{"user_id": .., "detail": "..."}, ...]}
+        """
+
+        try:
+            project = Project.objects.select_related("organisation").get(pk=project_pk)
+        except Project.DoesNotExist:
+            return Response({"detail": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        self._check_can_manage_members(project)
+
+        payload = request.data
+        items = None
+
+        if isinstance(payload, list):
+            items = payload
+        elif isinstance(payload, dict) and isinstance(payload.get("members"), list):
+            items = payload.get("members")
+        elif isinstance(payload, dict) and isinstance(payload.get("user_ids"), list):
+            base_role = payload.get("role")
+            base_period_id = payload.get("period_id")
+            base_metadata = payload.get("metadata")
+            items = [
+                {
+                    "user_id": uid,
+                    "role": base_role,
+                    "period_id": base_period_id,
+                    "metadata": base_metadata,
+                }
+                for uid in payload.get("user_ids")
+            ]
+
+        if not isinstance(items, list):
+            raise ValidationError({"detail": "Expected 'members' list or 'user_ids' list."})
+
+        # Guardrail to prevent accidental huge writes from UI.
+        max_batch = 200
+        if len(items) > max_batch:
+            raise ValidationError({"detail": f"Too many members in one request (max {max_batch})."})
+
+        # Preload users to avoid N queries.
+        user_ids = []
+        for item in items:
+            try:
+                user_ids.append(int(item.get("user_id")))
+            except Exception:
+                # Validation will catch bad user_id.
+                continue
+
+        from django.contrib.auth import get_user_model
+
+        user_model = get_user_model()
+        users_by_id = user_model.objects.in_bulk(user_ids)
+
+        service = MembershipService()
+        created_count = 0
+        skipped_count = 0
+        errors = []
+
+        for raw_item in items:
+            serializer = self.get_serializer(data=raw_item)
+            try:
+                serializer.is_valid(raise_exception=True)
+            except ValidationError as e:
+                errors.append({"user_id": raw_item.get("user_id"), "detail": e.detail})
+                continue
+
+            uid = serializer.validated_data["user_id"]
+            role = serializer.validated_data["role"]
+            period_id = serializer.validated_data.get("period_id")
+            metadata = serializer.validated_data.get("metadata")
+
+            user = users_by_id.get(uid)
+            if not user:
+                errors.append({"user_id": uid, "detail": "User not found."})
+                continue
+
+            try:
+                service.add_member(
+                    project=project,
+                    user=user,
+                    role=role,
+                    period_id=str(period_id) if period_id else None,
+                    metadata=metadata or {},
+                    actor=request.user,
+                )
+                created_count += 1
+            except ValueError as e:
+                msg = str(e)
+                # Treat duplicates as a skip so bulk flows are idempotent.
+                if (
+                    "already" in msg.lower()
+                    or "exists" in msg.lower()
+                    or "duplicate" in msg.lower()
+                ):
+                    skipped_count += 1
+                else:
+                    errors.append({"user_id": uid, "detail": msg})
+
+        return Response(
+            {"created": created_count, "skipped": skipped_count, "errors": errors},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["post"], url_path="bulk-delete")
+    def bulk_delete(self, request, project_pk=None):
+        """Bulk remove members from a project by membership IDs.
+
+        Payload:
+        - {"membership_ids": ["uuid", ...]}
+        """
+
+        try:
+            project = Project.objects.select_related("organisation").get(pk=project_pk)
+        except Project.DoesNotExist:
+            return Response({"detail": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        self._check_can_manage_members(project)
+
+        membership_ids = (
+            request.data.get("membership_ids") if isinstance(request.data, dict) else None
+        )
+        if not isinstance(membership_ids, list):
+            raise ValidationError({"membership_ids": "Expected a list of membership IDs."})
+
+        max_batch = 200
+        if len(membership_ids) > max_batch:
+            raise ValidationError(
+                {"detail": f"Too many membership IDs in one request (max {max_batch})."}
+            )
+
+        qs = ProjectMembership.objects.filter(
+            project_id=project_pk,
+            deleted_at__isnull=True,
+            id__in=membership_ids,
+        )
+
+        service = MembershipService()
+        removed_count = 0
+        errors = []
+        for membership in qs:
+            try:
+                service.remove_member(membership=membership, actor=request.user)
+                removed_count += 1
+            except Exception as e:
+                errors.append({"membership_id": str(membership.id), "detail": str(e)})
+
+        return Response({"removed": removed_count, "errors": errors}, status=status.HTTP_200_OK)
 
 
 class ProjectInviteThrottle(UserRateThrottle):
