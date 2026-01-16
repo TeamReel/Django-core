@@ -8,6 +8,14 @@ import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 
 const getEnvelopeData = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
+const looksLikeIdentifier = (value: string) => {
+  const v = String(value || '').trim();
+  if (!v) return false;
+  if (/^\d+$/.test(v)) return true;
+  if (looksLikeUuid(v)) return true;
+  return false;
+};
+
 export default function LegacyMatchRedirectPage() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
@@ -113,25 +121,41 @@ export default function LegacyMatchRedirectPage() {
         let clubSlugOrId: string | null = null;
 
         // Best case: parent project is already embedded on the match payload.
-        const embeddedParent = match?.project?.parent_project;
+        const embeddedParent = match?.project?.parent_project || match?.project?.parent;
         if (embeddedParent) {
           clubSlugOrId = String(embeddedParent.slug || embeddedParent.id || '').trim() || null;
         }
 
         // If we only have an ID for the parent, try to resolve a slug.
         const embeddedParentId = !clubSlugOrId
-          ? String(match?.project?.parent_project_id || match?.project?.parent_project || '').trim()
+          ? String(
+              match?.project?.parent_project_id ||
+                match?.project?.parent_id ||
+                match?.project?.parent_project ||
+                match?.project?.parent ||
+                ''
+            ).trim()
           : '';
         if (!clubSlugOrId && embeddedParentId) {
           try {
-            const clubRes = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(embeddedParentId)}/`, {
-              credentials: 'include',
-            });
+            // Prefer org-scoped endpoint; global /projects/:id might not resolve numeric IDs.
+            const clubRes = await fetch(
+              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgKeyOrId)}/projects/${encodeURIComponent(embeddedParentId)}/`,
+              { credentials: 'include' }
+            );
             if (clubRes.ok) {
               const club = getEnvelopeData<any>(await clubRes.json());
               clubSlugOrId = String(club?.slug || club?.id || embeddedParentId).trim() || null;
             } else {
-              clubSlugOrId = embeddedParentId;
+              const clubResFallback = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(embeddedParentId)}/`, {
+                credentials: 'include',
+              });
+              if (clubResFallback.ok) {
+                const club = getEnvelopeData<any>(await clubResFallback.json());
+                clubSlugOrId = String(club?.slug || club?.id || embeddedParentId).trim() || null;
+              } else {
+                clubSlugOrId = embeddedParentId;
+              }
             }
           } catch {
             clubSlugOrId = embeddedParentId;
@@ -157,8 +181,8 @@ export default function LegacyMatchRedirectPage() {
           }
 
           if (!clubSlugOrId) {
-            const parent = project?.parent_project;
-            const parentId = String(project?.parent_project_id || '').trim();
+            const parent = project?.parent_project || project?.parent;
+            const parentId = String(project?.parent_project_id || project?.parent_id || '').trim();
 
             if (parent) {
               clubSlugOrId = String(parent.slug || parent.id || '').trim() || null;
@@ -180,6 +204,32 @@ export default function LegacyMatchRedirectPage() {
           }
         } catch {
           // ignore
+        }
+
+        // Final guard: if we have a club id, try to upgrade it to a slug.
+        if (clubSlugOrId && looksLikeIdentifier(clubSlugOrId)) {
+          try {
+            const clubRes = await fetch(
+              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgKeyOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
+              { credentials: 'include' }
+            );
+            if (clubRes.ok) {
+              const club = getEnvelopeData<any>(await clubRes.json());
+              const resolved = String(club?.slug || '').trim();
+              if (resolved) clubSlugOrId = resolved;
+            } else {
+              const clubResFallback = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(clubSlugOrId)}/`, {
+                credentials: 'include',
+              });
+              if (clubResFallback.ok) {
+                const club = getEnvelopeData<any>(await clubResFallback.json());
+                const resolved = String(club?.slug || '').trim();
+                if (resolved) clubSlugOrId = resolved;
+              }
+            }
+          } catch {
+            // ignore
+          }
         }
 
         const teamBasePath = clubSlugOrId
