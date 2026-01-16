@@ -590,10 +590,11 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     if (!force && orgMembers.length > 0 && haveMembershipDetails) return;
     if (!currentOrgSlug) return;
 
-    // Detail pages should not load the full organisation roster when we're in a team context.
-    // Team pages: load only members for this team.
-    // Club pages: keep the full org roster (needed to see all users).
+    // Detail pages should avoid loading the full organisation roster whenever possible.
+    // - Team pages: load only members for this team.
+    // - Club pages: load only members for this club + its teams.
     const teamIdForMembers = (isTeamRoute || isLikelyTeam) ? String(project?.id || '').trim() : '';
+    const clubIdForMembers = !teamIdForMembers && !isLikelyTeam ? String(currentClubId || '').trim() : '';
 
     setOrgMembersLoading(true);
     try {
@@ -630,6 +631,11 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             ...pm,
             project_id: teamIdForMembers,
             club_id: inferredClubId || undefined,
+            project: {
+              id: String((project as any)?.id || teamIdForMembers),
+              slug: String((project as any)?.slug || ''),
+              name: String((project as any)?.name || ''),
+            },
             // Normalise to the shapes expected by the rest of this page
             period_id: pm?.period_id ?? pm?.period ?? null,
           };
@@ -649,6 +655,106 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         }
 
         setOrgMembers(Array.from(byOrgMembershipId.values()));
+        return;
+      }
+
+      if (clubIdForMembers) {
+        const byOrgMembershipId = new Map<string, any>();
+        const clubProject = project;
+
+        const mergeMembership = (pm: any, projectInfo: any) => {
+          const orgMembershipId = String(pm?.organisation_membership_id || '').trim();
+          const userObj = pm?.user;
+          const userId = String(userObj?.id || '').trim();
+          const key = orgMembershipId || (userId ? `user:${userId}` : String(pm?.id || ''));
+          if (!key) return;
+
+          const existing = byOrgMembershipId.get(key);
+          const normalizedPm = {
+            ...pm,
+            project_id: String(projectInfo?.id || pm?.project_id || pm?.project?.id || '').trim(),
+            club_id: clubIdForMembers,
+            project: {
+              id: String(projectInfo?.id || ''),
+              slug: String(projectInfo?.slug || ''),
+              name: String(projectInfo?.name || ''),
+            },
+            period_id: pm?.period_id ?? pm?.period ?? null,
+          };
+
+          if (!existing) {
+            byOrgMembershipId.set(key, {
+              id: orgMembershipId || key,
+              user: userObj,
+              project_memberships: [normalizedPm],
+              project_membership_details: [normalizedPm],
+            });
+          } else {
+            existing.project_memberships = [...(existing.project_memberships || []), normalizedPm];
+            existing.project_membership_details = [...(existing.project_membership_details || []), normalizedPm];
+          }
+        };
+
+        const headers = {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Organisation-ID': String(resolvedOrg?.id || (project as any)?.organisation_id || ''),
+        };
+
+        const params = new URLSearchParams();
+        params.set('page_size', '500');
+
+        const clubMembersUrl = `${apiV1BaseUrl}/projects/${encodeURIComponent(String(clubIdForMembers))}/members/?${params.toString()}`;
+
+        // Progressive: show club direct members first.
+        const clubFirstPage = await fetchAllPages<any>(
+          clubMembersUrl,
+          { headers, credentials: 'include' },
+          { ...(force ? { bypass: true } : undefined), maxPages: 1 }
+        );
+        for (const pm of clubFirstPage || []) {
+          mergeMembership(pm, clubProject);
+        }
+        if (orgMembersFetchTokenRef.current === fetchToken) {
+          setOrgMembers(Array.from(byOrgMembershipId.values()));
+        }
+
+        // Background: fetch all team members and merge.
+        void (async () => {
+          try {
+            const teams = await ensureChildTeamsLoaded(clubProject);
+            const teamList = Array.isArray(teams) ? teams : [];
+
+            // Ensure club direct members are complete (cached first page will be reused).
+            const clubAll = await fetchAllPages<any>(
+              clubMembersUrl,
+              { headers, credentials: 'include' },
+              force ? { bypass: true } : undefined
+            );
+            for (const pm of clubAll || []) mergeMembership(pm, clubProject);
+            if (orgMembersFetchTokenRef.current === fetchToken) {
+              setOrgMembers(Array.from(byOrgMembershipId.values()));
+            }
+
+            for (const t of teamList) {
+              const teamId = String((t as any)?.id || '').trim();
+              if (!teamId) continue;
+              const teamMembersUrl = `${apiV1BaseUrl}/projects/${encodeURIComponent(teamId)}/members/?${params.toString()}`;
+              const teamMembers = await fetchAllPages<any>(
+                teamMembersUrl,
+                { headers, credentials: 'include' },
+                force ? { bypass: true } : undefined
+              );
+              for (const pm of teamMembers || []) mergeMembership(pm, t);
+              if (orgMembersFetchTokenRef.current === fetchToken) {
+                setOrgMembers(Array.from(byOrgMembershipId.values()));
+              }
+            }
+          } catch (e) {
+            console.warn('[ProjectDetailPage] Background club members fetch failed:', e);
+          }
+        })();
+
         return;
       }
 
@@ -3284,6 +3390,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 seasons={seasonsForEffectiveTeam}
                                 member={seasonPickerMember}
                                 projectId={String(effectiveTeamId || '')}
+                                projectName={
+                                  String(
+                                    (childProjects as any[])?.find((t: any) => String(t?.id) === String(effectiveTeamId))?.name ||
+                                      (project as any)?.name ||
+                                      ''
+                                  )
+                                }
                                 onClose={() => {
                                   setSeasonPickerOpen(false);
                                   setSeasonPickerMember(null);
@@ -3361,6 +3474,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               seasons={seasonsForEffectiveTeam}
                               member={seasonPickerMember}
                               projectId={String(effectiveTeamId || '')}
+                              projectName={
+                                String(
+                                  (childProjects as any[])?.find((t: any) => String(t?.id) === String(effectiveTeamId))?.name ||
+                                    (project as any)?.name ||
+                                    ''
+                                )
+                              }
                               onClose={() => {
                                 setSeasonPickerOpen(false);
                                 setSeasonPickerMember(null);

@@ -16,6 +16,7 @@ type Props = {
   seasons: Season[];
   member: any | null;
   projectId: string;
+  projectName?: string;
   onClose: () => void;
   onConfirm: (seasonId: string) => Promise<void>;
 };
@@ -79,7 +80,7 @@ function seasonLabel(season: Season): string {
   return String(season?.name ?? season?.label ?? season?.title ?? season?.slug ?? season?.id);
 }
 
-export default function SeasonPickerModal({ open, mode, seasons, member, projectId, onClose, onConfirm }: Props) {
+export default function SeasonPickerModal({ open, mode, seasons, member, projectId, projectName, onClose, onConfirm }: Props) {
   const [selectedSeasonId, setSelectedSeasonId] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -102,6 +103,7 @@ export default function SeasonPickerModal({ open, mode, seasons, member, project
 
   const title = mode === 'assign' ? 'Assign to season' : 'Unassign from season';
   const email = String(member?.email || member?.user?.email || '');
+  const teamLabel = String(projectName || '').trim();
 
   return (
     <div
@@ -117,6 +119,7 @@ export default function SeasonPickerModal({ open, mode, seasons, member, project
           <div style={{ display: 'grid', gap: 2 }}>
             <div style={{ fontWeight: 700 }}>{title}</div>
             {email ? <div style={{ fontSize: 12, opacity: 0.85 }}>{email}</div> : null}
+            {teamLabel ? <div style={{ fontSize: 12, opacity: 0.85 }}>Team: {teamLabel}</div> : null}
           </div>
           <button
             type="button"
@@ -147,7 +150,7 @@ export default function SeasonPickerModal({ open, mode, seasons, member, project
                 <option value="">Select…</option>
                 {availableSeasons.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {seasonLabel(s)}
+                    {teamLabel ? `${teamLabel} · ${seasonLabel(s)}` : seasonLabel(s)}
                   </option>
                 ))}
               </select>

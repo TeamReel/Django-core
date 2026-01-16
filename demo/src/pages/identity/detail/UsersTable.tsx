@@ -219,19 +219,23 @@ export default function UsersTable({
             const canViewUser = typeof onViewUser === 'function';
             const canViewMembership = hasOrgMembership && typeof onViewMembership === 'function';
 
+            const multiTeamTitle = teamIds
+              .map((id) => {
+                const t = teamById.get(String(id));
+                const teamNameFromMap = String((t as any)?.name || '').trim();
+                if (teamNameFromMap) return teamNameFromMap;
+                const pm = pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(id));
+                const nameFromPm = String(pm?.project?.name ?? pm?.project_name ?? '').trim();
+                return nameFromPm || id;
+              })
+              .join(', ');
+
             return (
               <tr key={String(userObj.id)}>
                 {!isTeamRoute && (
                   <td style={compactTextTdStyle}>
                     {teamIds.length > 1 ? (
-                      <span
-                        title={teamIds
-                          .map((id) => {
-                            const t = teamById.get(String(id));
-                            return String((t as any)?.name || '').trim() || id;
-                          })
-                          .join(', ')}
-                      >
+                      <span title={multiTeamTitle}>
                         Multiple
                       </span>
                     ) : teamSlugOrId ? (
