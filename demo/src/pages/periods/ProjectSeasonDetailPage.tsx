@@ -1519,7 +1519,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     {teamRosterError && <Alert variant="error">{teamRosterError}</Alert>}
 
                     {userCanEditProject ? (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', alignItems: 'start' }}>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
                             <div style={{ display: 'grid', gap: 2 }}>
@@ -1640,19 +1640,44 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 Select squad members and unassign them from this season.
                               </div>
                             </div>
-                            <button
-                              type="button"
-                              className="app-action-button"
-                              disabled={bulkSubmitting || selectedSquadMembershipIds.size === 0}
-                              onClick={async () => {
-                                const ids = Array.from(selectedSquadMembershipIds.values()).filter(Boolean);
-                                await unassignMembershipsFromSeasonSquad(ids);
-                              }}
-                              style={{ ...actionButtonStyle('danger'), padding: '8px 14px', fontSize: '14px', minWidth: '170px', fontWeight: 500 }}
-                              title="Unassign selected users from the squad"
-                            >
-                              Unassign ({selectedSquadMembershipIds.size})
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => {
+                                  const allIds = (members || [])
+                                    .map((m: any) => String(m?.id || '').trim())
+                                    .filter(Boolean);
+                                  const allSelected =
+                                    allIds.length > 0 && allIds.every((id: string) => selectedSquadMembershipIds.has(id));
+                                  setSelectedSquadMembershipIds(allSelected ? new Set() : new Set(allIds));
+                                }}
+                                disabled={bulkSubmitting || (members || []).length === 0}
+                              >
+                                {(() => {
+                                  const allIds = (members || [])
+                                    .map((m: any) => String(m?.id || '').trim())
+                                    .filter(Boolean);
+                                  const allSelected =
+                                    allIds.length > 0 && allIds.every((id: string) => selectedSquadMembershipIds.has(id));
+                                  return allSelected ? 'Unselect all' : 'Select all';
+                                })()}
+                              </Button>
+
+                              <button
+                                type="button"
+                                className="app-action-button"
+                                disabled={bulkSubmitting || selectedSquadMembershipIds.size === 0}
+                                onClick={async () => {
+                                  const ids = Array.from(selectedSquadMembershipIds.values()).filter(Boolean);
+                                  await unassignMembershipsFromSeasonSquad(ids);
+                                }}
+                                style={{ ...actionButtonStyle('danger'), padding: '8px 14px', fontSize: '14px', minWidth: '170px', fontWeight: 500 }}
+                                title="Unassign selected users from the squad"
+                              >
+                                Unassign ({selectedSquadMembershipIds.size})
+                              </button>
+                            </div>
                           </div>
 
                           {!membersLoading && !membersError && members.length === 0 ? (
